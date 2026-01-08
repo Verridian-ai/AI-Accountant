@@ -1,0 +1,27 @@
+{
+  "name": "cba-statements-parse",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@hono/node-server": "^1.19.7",
+    "better-sqlite3": "^12.5.0",
+    "chokidar": "^5.0.0",
+    "csv-parse": "^6.1.0",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.1",
+    "google-auth-library": "^10.5.0",
+    "hono": "^4.11.3",
+    "magika": "^1.0.0",
+    "openai": "^6.15.0",
+    "pdf-parse": "^2.4.5",
+    "sharp": "^0.34.5"
+  }
+}

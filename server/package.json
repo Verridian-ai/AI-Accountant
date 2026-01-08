@@ -1,0 +1,33 @@
+{
+    "name": "cba-server",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx --watch src/index.ts",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate"
+    },
+    "dependencies": {
+        "@hono/node-server": "^1.2.0",
+        "@libsql/client": "^0.17.0",
+        "chokidar": "^3.6.0",
+        "csv-parse": "^5.5.0",
+        "dotenv": "^16.4.0",
+        "drizzle-orm": "^0.29.0",
+        "google-auth-library": "^9.0.0",
+        "hono": "^4.0.0",
+        "magika": "^0.2.0",
+        "openai": "^4.28.0",
+        "pdf-parse": "^1.1.1",
+        "pdfjs-dist": "^5.4.530",
+        "sharp": "^0.33.0"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.0",
+        "@types/node": "^20.0.0",
+        "@types/pdf-parse": "^1.1.4",
+        "drizzle-kit": "^0.20.0",
+        "tsx": "^4.7.0",
+        "typescript": "^5.0.0"
+    }
+}
