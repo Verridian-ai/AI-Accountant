@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Statement, api } from '../api';
-import { FileText, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { api } from '../api';
+import type { Statement } from '../api';
+import { FileText, CheckCircle2, Clock, AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function StatementList() {
     const [statements, setStatements] = useState<Statement[]>([]);
     const [loading, setLoading] = useState(true);
+    const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
 
     const refreshStatements = async () => {
         try {
@@ -15,6 +17,22 @@ export function StatementList() {
             console.error('Failed to fetch statements', e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRetry = async (id: string) => {
+        try {
+            setRetryingIds(prev => new Set(prev).add(id));
+            await api.reprocessStatement(id);
+            await refreshStatements();
+        } catch (e) {
+            console.error('Retry failed', e);
+        } finally {
+            setRetryingIds(prev => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+            });
         }
     };
 
@@ -65,7 +83,7 @@ export function StatementList() {
                 </div>
                 <span className="text-xs text-gray-500">{statements.length} files</span>
             </div>
-            
+
             {statements.length === 0 ? (
                 <div className="p-8 text-center text-gray-400">
                     <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
@@ -88,12 +106,24 @@ export function StatementList() {
                                         </p>
                                     </div>
                                 </div>
-                                <span className={cn(
-                                    "px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap",
-                                    getStatusColor(stmt.parsingStatus)
-                                )}>
-                                    {stmt.parsingStatus}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className={cn(
+                                        "px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap",
+                                        getStatusColor(stmt.parsingStatus)
+                                    )}>
+                                        {stmt.parsingStatus}
+                                    </span>
+                                    {stmt.parsingStatus === 'FAILED' && (
+                                        <button
+                                            onClick={() => handleRetry(stmt.id)}
+                                            disabled={retryingIds.has(stmt.id)}
+                                            className="p-1 text-gray-400 hover:text-blue-600 transition-colors disabled:opacity-50"
+                                            title="Retry processing"
+                                        >
+                                            <RefreshCw className={cn("h-3.5 w-3.5", retryingIds.has(stmt.id) && "animate-spin")} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -102,4 +132,3 @@ export function StatementList() {
         </div>
     );
 }
-

@@ -4,7 +4,9 @@ import { ChatInterface } from './components/ChatInterface';
 import { StatCard } from './components/StatCard';
 import { StatementList } from './components/StatementList';
 import { CategoryChart } from './components/CategoryChart';
-import { Transaction, api, TransactionStats } from './api';
+import { MonthlyTrendChart } from './components/MonthlyTrendChart';
+import { api } from './api';
+import type { Transaction, TransactionStats } from './api';
 import {
   Activity,
   TrendingUp,
@@ -120,6 +122,7 @@ function App() {
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
             <StatementList />
+            <MonthlyTrendChart transactions={transactions} />
             <CategoryChart data={stats?.categoryBreakdown || {}} />
             <ChatInterface />
           </div>
