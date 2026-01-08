@@ -39,33 +39,76 @@ export class PipelineService {
 
             // 1. Read and parse PDF text content
             console.log(`[Pipeline] Extracting text from PDF: ${filePath}`);
-            const pdfBuffer = await readFile(filePath);
-            const pdfData = await pdfParse(pdfBuffer);
-            const pdfText = pdfData.text;
+            let pdfText = '';
+            try {
+                const pdfBuffer = await readFile(filePath);
+                const pdfData = await pdfParse(pdfBuffer);
+                pdfText = pdfData.text;
+
+                if (!pdfText || pdfText.trim().length < 50) {
+                    throw new Error("PDF contained very little readable text. It might be a scanned image without OCR, or a password-protected file.");
+                }
+            } catch (pdfErr: any) {
+                console.error("[Pipeline PDF Error]", pdfErr);
+                await db.update(statements)
+                    .set({
+                        parsingStatus: 'FAILED',
+                        errorType: 'PDF_READ_ERROR',
+                        errorMessage: pdfErr.message || "Failed to read PDF content.",
+                        errorDetails: JSON.stringify({ filename: stmt?.filename })
+                    })
+                    .where(eq(statements.id, statementId));
+                events.emit('update', { type: 'statement_updated', id: statementId, status: 'FAILED', userId });
+                return;
+            }
 
             console.log(`[Pipeline] Extracted ${pdfText.length} characters from PDF`);
 
             // 2. Use AI to parse the text content into structured transactions
             console.log(`[Pipeline] Sending to AI for parsing...`);
-            const rawData = await aiService.parseStatementText(pdfText, settings?.modelParsingText);
+            let rawData;
+            try {
+                rawData = await aiService.parseStatementText(pdfText, settings?.modelParsingText);
+                if (!rawData || !rawData.transactions) {
+                    throw new Error("AI failed to return any transaction data from the text.");
+                }
+            } catch (aiErr: any) {
+                console.error("[Pipeline AI Error]", aiErr);
+                await db.update(statements)
+                    .set({
+                        parsingStatus: 'FAILED',
+                        errorType: 'AI_PARSE_ERROR',
+                        errorMessage: "The AI was unable to find transactions in this document. Ensure it is a valid CBA bank statement.",
+                        errorDetails: JSON.stringify({ rawError: aiErr.message })
+                    })
+                    .where(eq(statements.id, statementId));
+                events.emit('update', { type: 'statement_updated', id: statementId, status: 'FAILED', userId });
+                return;
+            }
 
             // 3. Save Transactions
-            if (rawData && rawData.transactions && rawData.transactions.length > 0) {
+            if (rawData.transactions.length > 0) {
                 console.log(`[Pipeline] Extracted ${rawData.transactions.length} transactions. Categorizing in batch...`);
 
                 // Batch Categorize
-                const categorizations = await aiService.categorizeTransactionsBatch(rawData.transactions.map(tx => ({
-                    description: tx.description,
-                    amount_cents: tx.amount_cents
-                })), settings?.modelCategorization);
+                let categorizations: Array<{ category: string, gst: boolean, notes: string }> = [];
+
+                try {
+                    categorizations = await aiService.categorizeTransactionsBatch(rawData.transactions.map(tx => ({
+                        description: tx.description,
+                        amount_cents: tx.amount_cents
+                    })), settings?.modelCategorization);
+                } catch (catErr) {
+                    console.error("[Pipeline Category Error]", catErr);
+                }
 
                 // Prepare Batch Insert
                 const toInsert = rawData.transactions.map((tx, i) => {
-                    const aiCat = categorizations[i] || { category: 'Uncategorized', gst: false, notes: 'Missing from batch' };
+                    const aiCat = (categorizations && categorizations[i]) || { category: 'Uncategorized', gst: false, notes: 'Missing from batch' };
                     return {
                         id: crypto.randomUUID(),
                         statementId: statementId,
-                        userId: userId, // Propagate userId to transactions
+                        userId: userId,
                         date: tx.date,
                         description: tx.description,
                         amount: tx.amount_cents,
@@ -73,14 +116,14 @@ export class PipelineService {
                         category: aiCat.category,
                         gstApplicable: aiCat.gst,
                         aiReasoningNotes: aiCat.notes,
-                        confidenceScore: 0.9 // Placeholder
+                        confidenceScore: 0.9
                     };
                 });
 
                 if (toInsert.length > 0) {
                     console.log(`[Pipeline] Inserting ${toInsert.length} transactions into database...`);
                     await db.insert(transactions).values(toInsert);
-                    
+
                     // 4. Index in Cognee for RAG
                     console.log(`[Pipeline] Indexing ${toInsert.length} transactions in Cognee...`);
                     try {
@@ -100,15 +143,23 @@ export class PipelineService {
             } else {
                 console.log(`[Pipeline] No transactions found in statement ${statementId}`);
                 await db.update(statements)
-                    .set({ parsingStatus: 'COMPLETED', aiModelUsed: settings?.modelParsingText || 'google/gemini-3-flash-preview' })
+                    .set({
+                        parsingStatus: 'FAILED',
+                        errorType: 'EMPTY_STATEMENT',
+                        errorMessage: "No transactions were detected. Please check if this is a valid transaction statement page.",
+                    })
                     .where(eq(statements.id, statementId));
-                events.emit('update', { type: 'statement_updated', id: statementId, status: 'COMPLETED', userId });
+                events.emit('update', { type: 'statement_updated', id: statementId, status: 'FAILED', userId });
             }
 
-        } catch (err) {
-            console.error(`[Pipeline Error]`, err);
+        } catch (err: any) {
+            console.error(`[Pipeline Critical Error]`, err);
             await db.update(statements)
-                .set({ parsingStatus: 'FAILED' })
+                .set({
+                    parsingStatus: 'FAILED',
+                    errorType: 'CRITICAL_ERROR',
+                    errorMessage: err.message || "An unexpected system error occurred during processing."
+                })
                 .where(eq(statements.id, statementId));
             events.emit('update', { type: 'statement_updated', id: statementId, status: 'FAILED' });
         }

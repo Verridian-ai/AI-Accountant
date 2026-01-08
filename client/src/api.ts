@@ -23,7 +23,11 @@ export interface Statement {
     hash: string;
     uploadDate: string;
     parsingStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-    aiModelUsed?: string;
+    aiModelUsed: string | null;
+    errorMessage?: string | null;
+    errorType?: 'PDF_READ_ERROR' | 'AI_PARSE_ERROR' | 'EMPTY_STATEMENT' | 'CRITICAL_ERROR' | null;
+    errorDetails?: string | null;
+    userId: string | null;
 }
 
 export interface TransactionStats {
@@ -96,6 +100,31 @@ export const api = {
             body: JSON.stringify({ splits })
         });
         if (!res.ok) throw new Error('Failed to split transaction');
+    },
+
+    uploadStatement: async (file: File): Promise<{ id: string; message: string; isDuplicate?: boolean }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(`${API_URL}/statements/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        if (res.status === 409) {
+            const data = await res.json();
+            return { id: data.id, message: 'Duplicate file', isDuplicate: true };
+        }
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Upload failed' }));
+            throw new Error(error.error || 'Upload failed');
+        }
+        return res.json();
+    },
+
+    reprocessStatement: async (id: string): Promise<void> => {
+        const res = await fetch(`${API_URL}/statements/${id}/reprocess`, {
+            method: 'POST'
+        });
+        if (!res.ok) throw new Error('Failed to reprocess statement');
     }
 };
 

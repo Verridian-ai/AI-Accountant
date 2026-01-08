@@ -1,15 +1,28 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { api } from '../api';
 import type { Statement } from '../api';
-import { FileText, CheckCircle2, Clock, AlertCircle, Loader2, RefreshCw, Upload } from 'lucide-react';
+import { FileText, CheckCircle2, Clock, AlertCircle, Loader2, RefreshCw, Upload, X, Files } from 'lucide-react';
 import { cn } from '../lib/utils';
+
+// Upload queue item status
+type UploadStatus = 'queued' | 'uploading' | 'complete' | 'failed' | 'duplicate';
+
+interface UploadQueueItem {
+    id: string;
+    file: File;
+    status: UploadStatus;
+    error?: string;
+    statementId?: string;
+}
 
 export function StatementList() {
     const [statements, setStatements] = useState<Statement[]>([]);
     const [loading, setLoading] = useState(true);
-    const [uploading, setUploading] = useState(false);
     const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
+    const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
+    const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const isProcessingRef = useRef(false);
 
     const refreshStatements = async () => {
         try {
@@ -38,22 +51,111 @@ export function StatementList() {
         }
     };
 
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    // Add files to upload queue
+    const addFilesToQueue = useCallback((files: FileList | File[]) => {
+        const newItems: UploadQueueItem[] = Array.from(files).map(file => ({
+            id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            file,
+            status: 'queued' as UploadStatus
+        }));
+        setUploadQueue(prev => [...prev, ...newItems]);
+    }, []);
 
-        setUploading(true);
-        try {
-            await api.uploadStatement(file);
-            await refreshStatements();
-        } catch (e) {
-            console.error('Upload failed', e);
-            alert(e instanceof Error ? e.message : 'Upload failed');
-        } finally {
-            setUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
+    // Process upload queue
+    const processQueue = useCallback(async () => {
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+
+        const processNext = async () => {
+            const nextItem = uploadQueue.find(item => item.status === 'queued');
+            if (!nextItem) {
+                isProcessingRef.current = false;
+                return;
+            }
+
+            // Update status to uploading
+            setUploadQueue(prev => prev.map(item =>
+                item.id === nextItem.id ? { ...item, status: 'uploading' as UploadStatus } : item
+            ));
+
+            try {
+                const result = await api.uploadStatement(nextItem.file);
+                setUploadQueue(prev => prev.map(item =>
+                    item.id === nextItem.id
+                        ? {
+                            ...item,
+                            status: result.isDuplicate ? 'duplicate' as UploadStatus : 'complete' as UploadStatus,
+                            statementId: result.id
+                        }
+                        : item
+                ));
+                await refreshStatements();
+            } catch (e) {
+                setUploadQueue(prev => prev.map(item =>
+                    item.id === nextItem.id
+                        ? { ...item, status: 'failed' as UploadStatus, error: e instanceof Error ? e.message : 'Upload failed' }
+                        : item
+                ));
+            }
+
+            // Process next item
+            await processNext();
+        };
+
+        await processNext();
+    }, [uploadQueue]);
+
+    // Start processing when queue changes
+    useEffect(() => {
+        if (uploadQueue.some(item => item.status === 'queued') && !isProcessingRef.current) {
+            processQueue();
+        }
+    }, [uploadQueue, processQueue]);
+
+    // Handle file input change (multiple files)
+    const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        addFilesToQueue(files);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    // Drag and drop handlers
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            addFilesToQueue(files);
         }
     };
+
+    // Clear completed/failed items from queue
+    const clearCompletedFromQueue = () => {
+        setUploadQueue(prev => prev.filter(item => item.status === 'queued' || item.status === 'uploading'));
+    };
+
+    // Get queue stats
+    const queueStats = {
+        total: uploadQueue.length,
+        queued: uploadQueue.filter(i => i.status === 'queued').length,
+        uploading: uploadQueue.filter(i => i.status === 'uploading').length,
+        complete: uploadQueue.filter(i => i.status === 'complete').length,
+        failed: uploadQueue.filter(i => i.status === 'failed').length,
+        duplicate: uploadQueue.filter(i => i.status === 'duplicate').length,
+    };
+
+    const isUploading = queueStats.uploading > 0 || queueStats.queued > 0;
 
     useEffect(() => {
         refreshStatements();
