@@ -1,4 +1,4 @@
-import { db, statements, transactions } from '../db.js';
+import { db, statements, transactions } from '../schema.js';
 import { aiService } from './ai.js';
 import { eq } from 'drizzle-orm';
 import fs from 'fs';
@@ -12,6 +12,10 @@ export class PipelineService {
     async processStatement(statementId: string, filePath: string) {
         try {
             console.log(`[Pipeline] Starting processing for ${statementId}`);
+
+            // Fetch statement to get userId
+            const stmt = await db.select().from(statements).where(eq(statements.id, statementId)).get();
+            const userId = stmt?.userId;
 
             // Update status to PROCESSING
             await db.update(statements)
@@ -47,6 +51,7 @@ export class PipelineService {
                     return {
                         id: crypto.randomUUID(),
                         statementId: statementId,
+                        userId: userId, // Propagate userId to transactions
                         date: tx.date,
                         description: tx.description,
                         amount: tx.amount_cents,

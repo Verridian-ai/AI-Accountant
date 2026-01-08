@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api } from '../api';
 import type { Statement } from '../api';
-import { FileText, CheckCircle2, Clock, AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { FileText, CheckCircle2, Clock, AlertCircle, Loader2, RefreshCw, Upload } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function StatementList() {
     const [statements, setStatements] = useState<Statement[]>([]);
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
     const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const refreshStatements = async () => {
         try {
@@ -33,6 +35,23 @@ export function StatementList() {
                 next.delete(id);
                 return next;
             });
+        }
+    };
+
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            await api.uploadStatement(file);
+            await refreshStatements();
+        } catch (e) {
+            console.error('Upload failed', e);
+            alert(e instanceof Error ? e.message : 'Upload failed');
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -79,16 +98,33 @@ export function StatementList() {
             <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-gray-600" />
-                    <h3 className="font-semibold text-gray-800">Uploaded Statements</h3>
+                    <h3 className="font-semibold text-gray-800">Statements</h3>
                 </div>
-                <span className="text-xs text-gray-500">{statements.length} files</span>
+                <div className="flex items-center gap-2">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleUpload}
+                        className="hidden"
+                        accept=".pdf,.csv,.png"
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        Upload
+                    </button>
+                    <span className="text-xs text-gray-500 ml-2">{statements.length} files</span>
+                </div>
             </div>
 
             {statements.length === 0 ? (
                 <div className="p-8 text-center text-gray-400">
                     <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
                     <p>No statements uploaded yet</p>
-                    <p className="text-xs mt-1">Drop PDF files in the statements folder</p>
+                    <p className="text-xs mt-1">Upload PDF, CSV or PNG statements</p>
                 </div>
             ) : (
                 <div className="divide-y divide-gray-100 max-h-[300px] overflow-y-auto">

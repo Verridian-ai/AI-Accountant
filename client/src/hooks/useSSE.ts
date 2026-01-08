@@ -1,5 +1,5 @@
 import { useContext, useEffect } from 'react';
-import { SSEContext } from '../context/SSEContext';
+import { SSEContext } from '../context/SSEContextDef';
 
 export function useSSE(onUpdate: () => void) {
     const context = useContext(SSEContext);
