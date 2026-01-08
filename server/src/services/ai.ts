@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
-import fs from 'fs';
+import { readFile } from 'fs/promises';
 
 dotenv.config({ path: '../env.local' });
 
@@ -34,16 +34,9 @@ export class AIService {
         });
     }
 
-    async parseWithVision(imagePaths: string[], model: VisionModel = 'gpt-5.2-vision'): Promise<any> {
+    async parseWithVision(imagePaths: string[], model: string = 'google/gemini-3-flash-preview'): Promise<any> {
         console.log(`[AI Vision] Processing ${imagePaths.length} images with ${model}...`);
-
-        // Map internal model names to OpenRouter IDs
-        let modelId = 'openai/gpt-4o'; // precise fallback
-        if (model === 'gpt-5.2-vision') modelId = 'openai/gpt-5-vision'; // hypothetical
-        if (model === 'gemini-3.0-pro') modelId = 'google/gemini-3.0-pro'; // hypothetical openrouter ID
-
-        // For safety in this demo, fallback to known working models if 2026 models aren't real strings yet
-        // modelId = 'openai/gpt-4o'; 
+        const modelId = model || 'google/gemini-3-flash-preview';
 
         const prompt = `
       You are an expert financial OCR machine. 
@@ -64,8 +57,9 @@ export class AIService {
     `;
 
         try {
-            const contentImages = imagePaths.map(path => {
-                const b64 = fs.readFileSync(path).toString('base64');
+            const contentImages = await Promise.all(imagePaths.map(async path => {
+                const buffer = await readFile(path);
+                const b64 = buffer.toString('base64');
                 return {
                     type: 'image_url',
                     image_url: {
@@ -73,7 +67,7 @@ export class AIService {
                         detail: 'high'
                     }
                 } as any;
-            });
+            }));
 
             const response = await this.client.chat.completions.create({
                 model: modelId,
@@ -90,7 +84,7 @@ export class AIService {
             });
 
             const raw = response.choices[0].message.content;
-            return JSON.parse(raw || '{}');
+            return JSON.parse(raw || '{"transactions": []}');
 
         } catch (err) {
             console.error("[AI Vision Error]", err);
@@ -98,11 +92,9 @@ export class AIService {
         }
     }
 
-    async categorizeTransaction(description: string, amount: number): Promise<{ category: string, gst: boolean, notes: string }> {
+    async categorizeTransaction(description: string, amount: number, model?: string): Promise<{ category: string, gst: boolean, notes: string }> {
         console.log(`[AI Reasoning] Categorizing: ${description} ($${amount})`);
-
-        // Choose a reasoning model (o3-mini is good for strict output)
-        const modelId = 'openai/gpt-4o'; // Use 4o for speed, or o3-mini if available in 2026 via OpenRouter
+        const modelId = model || 'google/gemini-3-flash-preview';
 
         const prompt = `
       You are an Australian Tax Expert. 
@@ -132,9 +124,50 @@ export class AIService {
             return { category: 'Uncategorized', gst: false, notes: 'Error calling AI' };
         }
     }
-    async generateInsight(query: string, context: any): Promise<string> {
+
+    async categorizeTransactionsBatch(txs: Array<{ description: string, amount_cents: number }>, model?: string): Promise<Array<{ category: string, gst: boolean, notes: string }>> {
+        console.log(`[AI Reasoning] Batch Categorizing ${txs.length} transactions...`);
+        const modelId = model || 'google/gemini-3-flash-preview';
+
+        const prompt = `
+You are an Australian Tax Expert. 
+Categorize these bank transactions for a generic business.
+
+Transactions:
+${JSON.stringify(txs, null, 2)}
+
+Return a JSON object with a "categorizations" array of objects:
+{
+  "categorizations": [
+    {
+      "category": "string (e.g. 'Office Supplies', 'Travel', 'Meals', 'Utilities', 'Professional Fees')",
+      "gst": boolean,
+      "notes": "short reasoning"
+    }
+  ]
+}
+Matches the indices of the input array.
+`;
+
+        try {
+            const response = await this.client.chat.completions.create({
+                model: modelId,
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: "json_object" }
+            });
+
+            const raw = response.choices[0].message.content;
+            const parsed = JSON.parse(raw || '{"categorizations": []}');
+            return parsed.categorizations;
+        } catch (err) {
+            console.error("[AI Batch Error]", err);
+            return txs.map(() => ({ category: 'Uncategorized', gst: false, notes: 'Error' }));
+        }
+    }
+
+    async generateInsight(query: string, context: any, model?: string): Promise<string> {
         console.log(`[AI Insight] Query: ${query}`);
-        const modelId = 'openai/gpt-4o';
+        const modelId = model || 'google/gemini-3-flash-preview';
 
         const prompt = `
       You are a helpful financial assistant.
@@ -160,9 +193,9 @@ export class AIService {
         }
     }
 
-    async parseStatementText(pdfText: string): Promise<{ transactions: Array<{ date: string; description: string; amount_cents: number; balance_cents?: number }> }> {
+    async parseStatementText(pdfText: string, model?: string): Promise<{ transactions: Array<{ date: string; description: string; amount_cents: number; balance_cents?: number }> }> {
         console.log(`[AI Parse] Parsing statement text (${pdfText.length} chars)...`);
-        const modelId = 'openai/gpt-4o';
+        const modelId = model || 'google/gemini-3-flash-preview';
 
         const prompt = `
 You are an expert financial OCR and parsing machine.

@@ -1,6 +1,6 @@
 /** @type { import("drizzle-kit").Config } */
 module.exports = {
-    schema: "./src/db.ts",
+    schema: "./src/schema.ts",
     out: "./drizzle",
     driver: "turso",
     dbCredentials: {

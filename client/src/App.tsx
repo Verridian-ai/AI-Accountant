@@ -116,8 +116,13 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Transactions Table */}
           <div className="lg:col-span-2 space-y-6">
-            <TransactionTable transactions={transactions} loading={loading} />
+            <TransactionTable
+              transactions={transactions}
+              loading={loading}
+              onDataChange={refreshData}
+            />
           </div>
+
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">

@@ -10,17 +10,21 @@
     "dependencies": {
         "@hono/node-server": "^1.2.0",
         "@libsql/client": "^0.17.0",
+        "@types/bcryptjs": "^2.4.6",
+        "bcryptjs": "^3.0.3",
         "chokidar": "^3.6.0",
         "csv-parse": "^5.5.0",
         "dotenv": "^16.4.0",
         "drizzle-orm": "^0.29.0",
         "google-auth-library": "^9.0.0",
         "hono": "^4.0.0",
+        "hono-rate-limiter": "^0.5.3",
         "magika": "^0.2.0",
         "openai": "^4.28.0",
         "pdf-parse": "^1.1.1",
         "pdfjs-dist": "^5.4.530",
-        "sharp": "^0.33.0"
+        "sharp": "^0.33.0",
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
         "@types/better-sqlite3": "^7.6.0",

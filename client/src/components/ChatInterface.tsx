@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Send, Bot } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { api } from '../api';
 
 export function ChatInterface() {
     const [input, setInput] = useState('');
@@ -18,14 +19,8 @@ export function ChatInterface() {
         setLoading(true);
 
         try {
-            const res = await fetch('http://localhost:3000/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: userMsg })
-            });
-            const data = await res.json();
-
-            setMessages(prev => [...prev, { role: 'assistant', content: data.answer }]);
+            const { answer } = await api.sendChatMessage(userMsg);
+            setMessages(prev => [...prev, { role: 'assistant', content: answer }]);
         } catch (e) {
             setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I couldn't reach the AI service." }]);
         } finally {

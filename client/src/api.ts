@@ -10,8 +10,12 @@ export interface Transaction {
     gstApplicable: boolean;
     confidenceScore: number;
     aiReasoningNotes?: string;
+    isEdited?: boolean;
+    parentTransactionId?: string;
     statementId?: string;
+    userId?: string;
 }
+
 
 export interface Statement {
     id: string;
@@ -74,5 +78,24 @@ export const api = {
             transactionCount: transactions.length,
             categoryBreakdown
         };
+    },
+
+    updateTransaction: async (id: string, updates: Partial<Transaction>): Promise<void> => {
+        const res = await fetch(`${API_URL}/transactions/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates)
+        });
+        if (!res.ok) throw new Error('Failed to update transaction');
+    },
+
+    splitTransaction: async (id: string, splits: Array<{ category: string, amount: number, description: string, gst: boolean }>): Promise<void> => {
+        const res = await fetch(`${API_URL}/transactions/${id}/split`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ splits })
+        });
+        if (!res.ok) throw new Error('Failed to split transaction');
     }
 };
+
