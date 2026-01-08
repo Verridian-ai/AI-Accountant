@@ -60,8 +60,31 @@ app.get('/api/statements', async (c) => {
 
 import { aiService } from './services/ai.js';
 
+// Simple in-memory rate limiter for chat
+const chatRateLimit = new Map<string, { count: number, resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 10; // 10 requests per minute
+
 app.post('/api/chat', async (c) => {
     try {
+        // Basic rate limiting by IP (or 'local' if not available)
+        const ip = c.req.header('x-forwarded-for') || 'local';
+        const now = Date.now();
+        const userLimit = chatRateLimit.get(ip);
+
+        if (userLimit) {
+            if (now < userLimit.resetTime) {
+                if (userLimit.count >= MAX_REQUESTS) {
+                    return c.json({ error: 'Too many requests. Please try again later.' }, 429);
+                }
+                userLimit.count++;
+            } else {
+                chatRateLimit.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+            }
+        } else {
+            chatRateLimit.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+        }
+
         const { query } = await c.req.json();
         // Fetch recent context (last 50 transactions)
         const context = await db.select().from(transactions).orderBy(desc(transactions.date)).limit(50);
