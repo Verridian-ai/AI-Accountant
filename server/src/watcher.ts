@@ -4,6 +4,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { db, statements } from './db.js';
 import { eq } from 'drizzle-orm';
+import { events } from './events.js';
 
 // Watch the "statements" folder in the root
 const WATCH_DIR = path.resolve(process.cwd(), '../statements');
@@ -53,6 +54,8 @@ watcher.on('add', async (filePath) => {
             uploadDate: new Date().toISOString(),
             parsingStatus: 'PENDING',
         });
+
+        events.emit('update', { type: 'statement_added', id: newStatementId });
 
         // Trigger Parsing Pipeline
         console.log(`Parsing triggered for ${newStatementId}...`);

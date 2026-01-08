@@ -3,6 +3,7 @@ import { aiService } from './ai.js';
 import { eq } from 'drizzle-orm';
 import fs from 'fs';
 import crypto from 'crypto';
+import { events } from '../events.js';
 // @ts-ignore - pdf-parse doesn't have proper ESM types
 import pdfParse from 'pdf-parse';
 
@@ -16,6 +17,7 @@ export class PipelineService {
             await db.update(statements)
                 .set({ parsingStatus: 'PROCESSING' })
                 .where(eq(statements.id, statementId));
+            events.emit('update', { type: 'statement_updated', id: statementId, status: 'PROCESSING' });
 
             // 1. Read and parse PDF text content
             console.log(`[Pipeline] Extracting text from PDF: ${filePath}`);
@@ -31,16 +33,19 @@ export class PipelineService {
 
             // 3. Save Transactions
             if (rawData && rawData.transactions && rawData.transactions.length > 0) {
-                console.log(`[Pipeline] Extracted ${rawData.transactions.length} transactions`);
+                console.log(`[Pipeline] Extracted ${rawData.transactions.length} transactions. Categorizing in batch...`);
 
-                for (const tx of rawData.transactions) {
-                    const txId = crypto.randomUUID();
+                // Batch Categorize
+                const categorizations = await aiService.categorizeTransactionsBatch(rawData.transactions.map(tx => ({
+                    description: tx.description,
+                    amount_cents: tx.amount_cents
+                })));
 
-                    // Categorize
-                    const aiCat = await aiService.categorizeTransaction(tx.description, tx.amount_cents);
-
-                    await db.insert(transactions).values({
-                        id: txId,
+                // Prepare Batch Insert
+                const toInsert = rawData.transactions.map((tx, i) => {
+                    const aiCat = categorizations[i] || { category: 'Uncategorized', gst: false, notes: 'Missing from batch' };
+                    return {
+                        id: crypto.randomUUID(),
                         statementId: statementId,
                         date: tx.date,
                         description: tx.description,
@@ -50,13 +55,19 @@ export class PipelineService {
                         gstApplicable: aiCat.gst,
                         aiReasoningNotes: aiCat.notes,
                         confidenceScore: 0.9 // Placeholder
-                    });
+                    };
+                });
+
+                if (toInsert.length > 0) {
+                    console.log(`[Pipeline] Inserting ${toInsert.length} transactions into database...`);
+                    await db.insert(transactions).values(toInsert);
                 }
 
                 // Update status to COMPLETED
                 await db.update(statements)
                     .set({ parsingStatus: 'COMPLETED', aiModelUsed: 'gpt-4o' })
                     .where(eq(statements.id, statementId));
+                events.emit('update', { type: 'statement_updated', id: statementId, status: 'COMPLETED' });
 
                 console.log(`[Pipeline] Processing complete for ${statementId}`);
             } else {
@@ -64,6 +75,7 @@ export class PipelineService {
                 await db.update(statements)
                     .set({ parsingStatus: 'COMPLETED', aiModelUsed: 'gpt-4o' })
                     .where(eq(statements.id, statementId));
+                events.emit('update', { type: 'statement_updated', id: statementId, status: 'COMPLETED' });
             }
 
         } catch (err) {
@@ -71,6 +83,7 @@ export class PipelineService {
             await db.update(statements)
                 .set({ parsingStatus: 'FAILED' })
                 .where(eq(statements.id, statementId));
+            events.emit('update', { type: 'statement_updated', id: statementId, status: 'FAILED' });
         }
     }
 }
