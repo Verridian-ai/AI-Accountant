@@ -1,4 +1,4 @@
-import { Activity, BarChart3, FileText, Wallet, Brain, LayoutDashboard, Calculator, Receipt } from 'lucide-react';
+import { Activity, BarChart3, FileText, Wallet, Brain, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type TabId = 'dashboard' | 'transactions' | 'accounts' | 'analytics' | 'bas' | 'tax';

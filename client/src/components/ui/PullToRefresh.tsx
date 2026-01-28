@@ -373,7 +373,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
       (clientY: number) => {
         if (!dragRef.current?.isTracking) return;
 
-        const { startY, lastY, lastTime, startScrollTop } = dragRef.current;
+        const { startY, lastY, lastTime } = dragRef.current;
         const content = contentRef.current;
 
         // Check if we should start pulling
@@ -422,7 +422,6 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
     const handleDragEnd = useCallback(() => {
       if (!dragRef.current?.isTracking) return;
 
-      const { velocity } = dragRef.current;
       dragRef.current.isTracking = false;
       dragRef.current = null;
 
@@ -441,14 +440,18 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
 
     const handleTouchStart = useCallback(
       (e: React.TouchEvent) => {
-        handleDragStart(e.touches[0].clientY);
+        const touch = e.touches[0];
+        if (!touch) return;
+        handleDragStart(touch.clientY);
       },
       [handleDragStart]
     );
 
     const handleTouchMove = useCallback(
       (e: React.TouchEvent) => {
-        handleDragMove(e.touches[0].clientY);
+        const touch = e.touches[0];
+        if (!touch) return;
+        handleDragMove(touch.clientY);
 
         // Prevent default only when pulling
         if (pullDistance > 0) {
@@ -566,7 +569,7 @@ PullToRefresh.displayName = 'PullToRefresh';
 /**
  * Hook for managing pull-to-refresh state externally
  */
-export function usePullToRefresh(onRefresh: () => Promise<void>) {
+export function usePullToRefresh(_onRefresh: () => Promise<void>) {
   const refreshRef = useRef<PullToRefreshRef>(null);
 
   const triggerRefresh = useCallback(async () => {

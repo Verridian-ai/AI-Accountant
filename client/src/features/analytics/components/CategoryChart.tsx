@@ -117,7 +117,7 @@ export function CategoryChart({ data, title = 'Allocation Matrix', loading = fal
 
             <div className="space-y-5">
                 {entries.map(([category, amount]) => {
-                    const color = getCategoryColor(category);
+                    const color = getCategoryColor(category) ?? { gradient: 'from-zinc-500 to-zinc-400', dot: 'bg-zinc-500' };
                     return (
                         <div key={category} className="space-y-2.5 group/item">
                             <div className="flex items-center justify-between px-1">

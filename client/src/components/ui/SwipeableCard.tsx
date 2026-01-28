@@ -134,7 +134,8 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
       rightActions = [],
       disabled = false,
       swipeThreshold = 0.3,
-      maxSwipe = 0.5,
+      // maxSwipe is available for future use
+      maxSwipe: _maxSwipe = 0.5,
       onOpen,
       onClose,
       className,
@@ -248,7 +249,6 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
         let newOffset = startOffset + deltaX;
 
         // Apply constraints
-        const containerWidth = containerRef.current?.offsetWidth || 300;
         const maxPositive = rightActions.length > 0 ? maxRightOffset : 0;
         const maxNegative = leftActions.length > 0 ? -maxLeftOffset : 0;
 
@@ -338,14 +338,18 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
 
     const handleTouchStart = useCallback(
       (e: React.TouchEvent) => {
-        handleDragStart(e.touches[0].clientX);
+        const touch = e.touches[0];
+        if (!touch) return;
+        handleDragStart(touch.clientX);
       },
       [handleDragStart]
     );
 
     const handleTouchMove = useCallback(
       (e: React.TouchEvent) => {
-        handleDragMove(e.touches[0].clientX);
+        const touch = e.touches[0];
+        if (!touch) return;
+        handleDragMove(touch.clientX);
       },
       [handleDragMove]
     );

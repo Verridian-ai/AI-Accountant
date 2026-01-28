@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Transaction, Account, Statement } from '../api';
+import type { Transaction, Account } from '../api';
 
 // ============================================================================
 // TYPES

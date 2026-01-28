@@ -21,7 +21,7 @@ interface UploadedFile {
     statementId?: string;
 }
 
-export function StatementUploadStep({ data, updateData, onSkip }: OnboardingStepProps) {
+export function StatementUploadStep({ data: _data, updateData, onSkip }: OnboardingStepProps) {
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
     const [isDragging, setIsDragging] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +42,7 @@ export function StatementUploadStep({ data, updateData, onSkip }: OnboardingStep
 
         // Add files to state with unique IDs
         const newUploads: (UploadedFile & { id: string })[] = validFiles.map((file, i) => ({
-            id: fileIds[i],
+            id: fileIds[i]!,
             file,
             status: 'pending' as const,
         }));
@@ -51,8 +51,8 @@ export function StatementUploadStep({ data, updateData, onSkip }: OnboardingStep
 
         // Upload each file - use file ID instead of index to avoid stale closure issues
         for (let i = 0; i < validFiles.length; i++) {
-            const file = validFiles[i];
-            const fileId = fileIds[i];
+            const file = validFiles[i]!;
+            const fileId = fileIds[i]!;
 
             setUploadedFiles(prev =>
                 prev.map((u) =>

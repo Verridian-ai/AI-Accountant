@@ -9,7 +9,7 @@ import { TaxSetupStep } from './steps/TaxSetupStep';
 import { GoalsStep } from './steps/GoalsStep';
 import { CompletionStep } from './steps/CompletionStep';
 import {
-    OnboardingData,
+    type OnboardingData,
     ONBOARDING_STORAGE_KEY,
     createInitialOnboardingData,
 } from './types';
@@ -114,7 +114,9 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
 
     if (!isOpen) return null;
 
-    const CurrentStepComponent = STEPS[currentStep].component;
+    const currentStepConfig = STEPS[currentStep];
+    if (!currentStepConfig) return null;
+    const CurrentStepComponent = currentStepConfig.component;
     const isFirstStep = currentStep === 0;
     const isLastStep = currentStep === STEPS.length - 1;
 
@@ -209,7 +211,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
                             updateData={updateData}
                             onNext={isLastStep ? handleComplete : handleNext}
                             onBack={handleBack}
-                            onSkip={STEPS[currentStep].skippable ? handleSkip : undefined}
+                            onSkip={currentStepConfig.skippable ? handleSkip : undefined}
                             isFirstStep={isFirstStep}
                             isLastStep={isLastStep}
                         />
@@ -234,7 +236,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
                         </button>
 
                         <div className="flex items-center gap-3">
-                            {STEPS[currentStep].skippable && (
+                            {currentStepConfig.skippable && (
                                 <button
                                     onClick={handleSkip}
                                     className="px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-300 transition-colors"

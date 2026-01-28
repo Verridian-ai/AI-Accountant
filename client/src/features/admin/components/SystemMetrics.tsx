@@ -15,10 +15,7 @@ import {
     Database,
     FileText,
     Server,
-    TrendingUp,
-    TrendingDown,
     Clock,
-    Zap,
     RefreshCw,
     ArrowUpRight,
     ArrowDownRight,
@@ -268,7 +265,7 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
                 {/* Simple Bar Chart */}
                 <div className="relative h-[140px] mt-4">
                     <div className="flex items-end justify-between h-full gap-2 px-2">
-                        {timeSeriesData.map((point, index) => (
+                        {timeSeriesData.map((point) => (
                             <div
                                 key={point.timestamp}
                                 className="flex-1 flex flex-col items-center gap-2"

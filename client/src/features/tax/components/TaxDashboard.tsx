@@ -8,9 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
-import { Loader2, Calculator, Building2, TrendingUp, Receipt, PiggyBank, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Calculator, Building2, TrendingUp, Receipt, PiggyBank } from 'lucide-react';
 import { taxApi } from '@/api';
-import type { TaxCalculationResult, TaxSummary, Deduction, CGTAsset, CGTEvent, DepreciableAsset } from '@/types/tax';
+import type { TaxCalculationResult, TaxSummary, Deduction, CGTAsset, CGTEvent, DepreciableAsset } from '@/api';
 
 const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-AU', {

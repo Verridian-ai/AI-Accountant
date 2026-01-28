@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Users,
     Activity,
-    CreditCard,
     FileCheck,
     MessageSquare,
     Download,
@@ -14,9 +13,10 @@ import {
     RefreshCw,
     Settings,
     LayoutDashboard,
+    CreditCard,
 } from 'lucide-react';
 
-import { UserManagement, type User } from './components/UserManagement';
+import { UserManagement } from './components/UserManagement';
 import { SystemMetrics } from './components/SystemMetrics';
 import { SubscriptionOverview } from './components/SubscriptionOverview';
 import { ParserHealth, type ParserError } from './components/ParserHealth';

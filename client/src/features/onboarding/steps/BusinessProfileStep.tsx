@@ -32,10 +32,10 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
             return false;
         }
         // Basic ABN validation algorithm
-        const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+        const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19] as const;
         const digits = cleaned.split('').map(Number);
-        digits[0] -= 1;
-        const sum = digits.reduce((acc, digit, i) => acc + digit * weights[i], 0);
+        digits[0] = digits[0]! - 1;
+        const sum = digits.reduce((acc, digit, i) => acc + digit * weights[i]!, 0);
         if (sum % 89 !== 0) {
             setAbnError('Invalid ABN checksum');
             return false;

@@ -375,6 +375,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
         e.preventDefault();
       }
       const touch = e.touches[0];
+      if (!touch) return;
       handleStart(touch.clientX, touch.clientY);
     },
     [handleStart, mergedConfig.preventDefault]
@@ -386,6 +387,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
         e.preventDefault();
       }
       const touch = e.touches[0];
+      if (!touch) return;
       handleMove(touch.clientX, touch.clientY);
     },
     [handleMove, mergedConfig.preventDefault]
@@ -595,6 +597,7 @@ export function usePinchToZoom(config: PinchConfig = {}): UsePinchReturn {
 
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
+      if (!touch1 || !touch2) return;
       const distance = getDistance(touch1, touch2);
       const center = getCenter(touch1, touch2);
 
@@ -622,6 +625,7 @@ export function usePinchToZoom(config: PinchConfig = {}): UsePinchReturn {
 
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
+      if (!touch1 || !touch2) return;
       const distance = getDistance(touch1, touch2);
       const center = getCenter(touch1, touch2);
 

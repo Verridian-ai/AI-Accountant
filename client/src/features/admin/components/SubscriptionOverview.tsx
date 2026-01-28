@@ -11,9 +11,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
-    CreditCard,
     DollarSign,
-    TrendingUp,
     Users,
     ArrowUpRight,
     ArrowDownRight,
@@ -119,7 +117,7 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
         <div className={cn('space-y-6', className)}>
             {/* Revenue Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {revenueMetrics.map((metric, index) => (
+                {revenueMetrics.map((metric) => (
                     <div
                         key={metric.label}
                         className="neu-raised rounded-[2rem] p-6 interactive-card group relative overflow-hidden border border-white/5"

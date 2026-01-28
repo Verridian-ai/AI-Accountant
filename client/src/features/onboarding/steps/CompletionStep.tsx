@@ -22,7 +22,7 @@ export function CompletionStep({ data, onNext }: OnboardingStepProps) {
     const selectedGoalLabels = useMemo(() => {
         return data.selectedGoals
             .map(id => FINANCIAL_GOALS.find(g => g.id === id)?.label)
-            .filter(Boolean);
+            .filter((label): label is NonNullable<typeof label> => Boolean(label));
     }, [data.selectedGoals]);
 
     // Calculate setup completion score

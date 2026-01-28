@@ -60,7 +60,6 @@ export interface BottomSheetRef {
 // ============================================================================
 
 const DEFAULT_SNAP_POINTS = [50, 90];
-const DRAG_THRESHOLD = 50; // Minimum drag distance to trigger snap
 const VELOCITY_THRESHOLD = 0.5; // Velocity threshold for quick swipes
 
 // ============================================================================
@@ -94,7 +93,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       velocity: number;
     } | null>(null);
 
-    const [currentSnapIndex, setCurrentSnapIndex] = useState(initialSnap);
+    const [_currentSnapIndex, setCurrentSnapIndex] = useState(initialSnap);
     const [isDragging, setIsDragging] = useState(false);
     const [height, setHeight] = useState(snapPoints[initialSnap]);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -189,14 +188,14 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       (clientY: number) => {
         dragRef.current = {
           startY: clientY,
-          startHeight: height,
+          startHeight: height ?? sortedSnapPoints[0] ?? 50,
           lastY: clientY,
           lastTime: Date.now(),
           velocity: 0,
         };
         setIsDragging(true);
       },
-      [height]
+      [height, sortedSnapPoints]
     );
 
     const handleDragMove = useCallback(
@@ -226,17 +225,19 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const handleDragEnd = useCallback(() => {
       if (!dragRef.current) return;
 
-      const { startHeight, velocity } = dragRef.current;
-      const deltaHeight = height - startHeight;
+      const { velocity } = dragRef.current;
 
       setIsDragging(false);
       dragRef.current = null;
+
+      const currentHeight = height ?? sortedSnapPoints[0] ?? 50;
+      const firstSnap = sortedSnapPoints[0] ?? 50;
 
       // Handle quick swipes
       if (Math.abs(velocity) > VELOCITY_THRESHOLD) {
         if (velocity > 0) {
           // Swiped up - expand
-          const nextSnap = sortedSnapPoints.findIndex((sp) => sp > height);
+          const nextSnap = sortedSnapPoints.findIndex((sp) => sp > currentHeight);
           if (nextSnap !== -1) {
             animateToSnap(nextSnap);
           } else {
@@ -244,12 +245,12 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           }
         } else {
           // Swiped down - collapse or close
-          if (height < sortedSnapPoints[0] / 2) {
+          if (currentHeight < firstSnap / 2) {
             animateClose();
           } else {
             const prevSnap = [...sortedSnapPoints]
               .reverse()
-              .findIndex((sp) => sp < height);
+              .findIndex((sp) => sp < currentHeight);
             const actualIndex =
               prevSnap !== -1 ? sortedSnapPoints.length - 1 - prevSnap : 0;
             animateToSnap(actualIndex);
@@ -259,17 +260,19 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       }
 
       // Handle regular drag - snap to nearest point or close
-      if (height < sortedSnapPoints[0] / 2) {
+      if (currentHeight < firstSnap / 2) {
         animateClose();
         return;
       }
 
       // Find nearest snap point
       let nearestSnap = 0;
-      let minDistance = Math.abs(height - sortedSnapPoints[0]);
+      let minDistance = Math.abs(currentHeight - firstSnap);
 
       for (let i = 1; i < sortedSnapPoints.length; i++) {
-        const distance = Math.abs(height - sortedSnapPoints[i]);
+        const snapPoint = sortedSnapPoints[i];
+        if (snapPoint === undefined) continue;
+        const distance = Math.abs(currentHeight - snapPoint);
         if (distance < minDistance) {
           minDistance = distance;
           nearestSnap = i;
@@ -292,7 +295,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
     const handleTouchStart = useCallback(
       (e: React.TouchEvent) => {
-        handleDragStart(e.touches[0].clientY);
+        const touch = e.touches[0];
+        if (!touch) return;
+        handleDragStart(touch.clientY);
       },
       [handleDragStart]
     );
@@ -305,7 +310,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       };
 
       const handleTouchMove = (e: TouchEvent) => {
-        handleDragMove(e.touches[0].clientY);
+        const touch = e.touches[0];
+        if (!touch) return;
+        handleDragMove(touch.clientY);
       };
 
       const handleEnd = () => {
