@@ -20,6 +20,7 @@ import { aiService } from './services/ai.js';
 import { ragService } from './services/rag.js';
 import { accountService } from './services/accounts.js';
 import { agentService, AgentType } from './services/agents.js';
+import { getVertexAIClient, VERTEX_AI_MODELS, FINTECH_MODEL_PRESETS } from './services/vertex-ai.js';
 
 const app = new Hono()
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -135,6 +136,33 @@ app.use('/api/*', async (c, next) => {
 
 app.get('/', (c) => {
     return c.text('CBA Statement Parser API is running!')
+})
+
+// Health check for Cloud Run
+app.get('/health', (c) => {
+    return c.json({ status: 'healthy', timestamp: new Date().toISOString() })
+})
+
+// Vertex AI test endpoint (public for testing)
+app.get('/api/vertex-ai/models', (c) => {
+    return c.json({
+        models: VERTEX_AI_MODELS,
+        presets: FINTECH_MODEL_PRESETS,
+        count: VERTEX_AI_MODELS.length
+    })
+})
+
+app.get('/api/vertex-ai/test', async (c) => {
+    try {
+        const client = getVertexAIClient();
+        const result = await client.testConnection();
+        return c.json(result)
+    } catch (error) {
+        return c.json({
+            success: false,
+            error: error instanceof Error ? error.message : String(error)
+        }, 500)
+    }
 })
 
 app.get('/api/transactions', async (c) => {
