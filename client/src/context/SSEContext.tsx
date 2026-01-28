@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SSEContext } from './SSEContextDef';
+import { getToken } from '../api';
 
 export function SSEProvider({ children }: { children: React.ReactNode }) {
     const [connected, setConnected] = useState(false);
@@ -20,7 +21,13 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
                 eventSourceRef.current.close();
             }
 
-            const es = new EventSource('http://localhost:3000/api/events');
+            const token = getToken();
+            if (!token) {
+                // Not logged in, don't connect to SSE
+                return;
+            }
+
+            const es = new EventSource(`http://localhost:3501/api/events?token=${token}`);
 
             es.onopen = () => {
                 console.log('SSE connection opened');

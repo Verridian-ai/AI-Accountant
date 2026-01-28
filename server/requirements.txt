@@ -1,0 +1,7 @@
+pydantic>=2.0.0
+pydantic-ai>=0.0.1
+cognee>=0.1.0
+python-dotenv>=1.0.0
+openai>=1.0.0
+fastembed>=0.2.0
+uuid>=1.30

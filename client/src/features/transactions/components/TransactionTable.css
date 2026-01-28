@@ -1,0 +1,19 @@
+.transaction-table {
+    min-width: min(100%, 750px);
+}
+
+.dynamic-column-width {
+    width: var(--column-width, auto);
+}
+
+.pulse-delay-0 {
+    animation-delay: 0s;
+}
+
+.pulse-delay-1 {
+    animation-delay: 0.2s;
+}
+
+.pulse-delay-2 {
+    animation-delay: 0.4s;
+}

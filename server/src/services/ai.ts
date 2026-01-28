@@ -243,6 +243,327 @@ ${pdfText}
             return { transactions: [] };
         }
     }
+
+    async extractAccountInfo(pdfText: string, model?: string): Promise<{
+        accountNumber: string | null;
+        accountNumberMasked: string | null;
+        bankName: string | null;
+        accountType: string | null;
+        statementPeriod: { start: string; end: string } | null;
+        openingBalance: number | null;
+        closingBalance: number | null;
+        confidence: number;
+    }> {
+        console.log(`[AI Account] Extracting account info from statement...`);
+        const modelId = model || 'google/gemini-3-flash-preview';
+
+        const prompt = `
+You are an expert at reading bank statements.
+Extract the account information from this bank statement text.
+
+Return strict JSON with this schema:
+{
+  "account_number": "the full account number if visible, or null",
+  "account_number_masked": "masked version like XXX-XXX-1234 showing last 4 digits",
+  "bank_name": "name of the bank (e.g., 'Commonwealth Bank', 'ANZ', 'Westpac', 'NAB')",
+  "account_type": "one of: 'checking', 'savings', 'credit_card', 'loan', 'investment', 'unknown'",
+  "statement_period": {
+    "start": "YYYY-MM-DD",
+    "end": "YYYY-MM-DD"
+  },
+  "opening_balance_cents": integer or null,
+  "closing_balance_cents": integer or null,
+  "confidence": 0.0 to 1.0 (how confident you are in this extraction)
+}
+
+Rules:
+- Look for BSB, account numbers, card numbers
+- For credit cards, extract the card number (masked is fine)
+- Detect the bank from logos, headers, or formatting
+- Extract statement period dates
+- Balance amounts should be in cents (e.g., $1,234.56 = 123456)
+- Return ONLY valid JSON
+
+Bank Statement Text:
+${pdfText.slice(0, 8000)}
+`;
+
+        try {
+            const response = await this.client.chat.completions.create({
+                model: modelId,
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: "json_object" }
+            });
+
+            const raw = response.choices[0].message.content;
+            const parsed = JSON.parse(raw || '{}');
+
+            return {
+                accountNumber: parsed.account_number || null,
+                accountNumberMasked: parsed.account_number_masked || null,
+                bankName: parsed.bank_name || null,
+                accountType: parsed.account_type || null,
+                statementPeriod: parsed.statement_period || null,
+                openingBalance: parsed.opening_balance_cents ?? null,
+                closingBalance: parsed.closing_balance_cents ?? null,
+                confidence: parsed.confidence || 0.5
+            };
+        } catch (err) {
+            console.error("[AI Account Error]", err);
+            return {
+                accountNumber: null,
+                accountNumberMasked: null,
+                bankName: null,
+                accountType: null,
+                statementPeriod: null,
+                openingBalance: null,
+                closingBalance: null,
+                confidence: 0
+            };
+        }
+    }
+
+    async categorizeWithMemory(
+        transactions: Array<{ description: string; amount_cents: number }>,
+        merchantMemory: Array<{ pattern: string; category: string; gst: boolean }>,
+        model?: string
+    ): Promise<Array<{
+        category: string;
+        gst: boolean;
+        notes: string;
+        confidence: number;
+        merchantNormalized: string;
+        needsReview: boolean;
+    }>> {
+        console.log(`[AI Categorize] Categorizing ${transactions.length} transactions with ${merchantMemory.length} memory entries...`);
+        const modelId = model || 'google/gemini-3-flash-preview';
+
+        const prompt = `
+You are an Australian Tax Expert with memory of previous categorizations.
+
+LEARNED MERCHANT PATTERNS (use these for matching):
+${JSON.stringify(merchantMemory, null, 2)}
+
+NEW TRANSACTIONS TO CATEGORIZE:
+${JSON.stringify(transactions, null, 2)}
+
+For each transaction:
+1. First check if the description matches any learned merchant pattern
+2. If matched, use the learned category
+3. If not matched or unclear, make your best guess but mark for review
+4. Normalize the merchant name for future matching
+
+Return JSON:
+{
+  "categorizations": [
+    {
+      "category": "string",
+      "gst": boolean,
+      "notes": "reasoning",
+      "confidence": 0.0 to 1.0,
+      "merchant_normalized": "normalized merchant name for pattern matching",
+      "needs_review": boolean (true if confidence < 0.7 or no memory match)
+    }
+  ]
+}
+`;
+
+        try {
+            const response = await this.client.chat.completions.create({
+                model: modelId,
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: "json_object" }
+            });
+
+            const raw = response.choices[0].message.content;
+            const parsed = JSON.parse(raw || '{"categorizations": []}');
+
+            return (parsed.categorizations || []).map((c: any) => ({
+                category: c.category || 'Uncategorized',
+                gst: c.gst || false,
+                notes: c.notes || '',
+                confidence: c.confidence || 0.5,
+                merchantNormalized: c.merchant_normalized || '',
+                needsReview: c.needs_review ?? true
+            }));
+        } catch (err) {
+            console.error("[AI Categorize Error]", err);
+            return transactions.map(() => ({
+                category: 'Uncategorized',
+                gst: false,
+                notes: 'Error',
+                confidence: 0,
+                merchantNormalized: '',
+                needsReview: true
+            }));
+        }
+    }
+
+    async detectTransfers(
+        transactions: Array<{ id: string; date: string; description: string; amount_cents: number; accountId?: string }>,
+        model?: string
+    ): Promise<Array<{
+        sourceTransactionId: string;
+        destinationTransactionId: string;
+        confidence: number;
+        reasoning: string;
+    }>> {
+        console.log(`[AI Transfer] Detecting transfers among ${transactions.length} transactions...`);
+        const modelId = model || 'google/gemini-3-flash-preview';
+
+        const prompt = `
+Analyze these transactions from multiple bank accounts to detect internal transfers.
+A transfer is when money moves from one account to another - it appears as a debit in one account and a credit in another.
+
+TRANSACTIONS:
+${JSON.stringify(transactions, null, 2)}
+
+Look for:
+1. Matching amounts (one negative, one positive) on same or adjacent dates
+2. Descriptions mentioning "transfer", "TFR", "internal", account numbers
+3. Transactions between different accountIds
+
+Return JSON:
+{
+  "transfers": [
+    {
+      "source_transaction_id": "id of the debit/outgoing transaction",
+      "destination_transaction_id": "id of the credit/incoming transaction",
+      "confidence": 0.0 to 1.0,
+      "reasoning": "why these are linked"
+    }
+  ]
+}
+
+Only include transfers you're reasonably confident about (> 0.6).
+`;
+
+        try {
+            const response = await this.client.chat.completions.create({
+                model: modelId,
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: "json_object" }
+            });
+
+            const raw = response.choices[0].message.content;
+            const parsed = JSON.parse(raw || '{"transfers": []}');
+
+            return (parsed.transfers || []).map((t: any) => ({
+                sourceTransactionId: t.source_transaction_id,
+                destinationTransactionId: t.destination_transaction_id,
+                confidence: t.confidence || 0.5,
+                reasoning: t.reasoning || ''
+            }));
+        } catch (err) {
+            console.error("[AI Transfer Error]", err);
+            return [];
+        }
+    }
+
+    async analyzeDebtPayoff(
+        accounts: Array<{
+            id: string;
+            name: string;
+            type: string;
+            balance: number;
+            interestRate: number;
+            minimumPayment: number;
+        }>,
+        monthlyBudget: number,
+        model?: string
+    ): Promise<{
+        aggressive: DebtStrategy;
+        moderate: DebtStrategy;
+        minimum: DebtStrategy;
+    }> {
+        console.log(`[AI Debt] Analyzing debt payoff for ${accounts.length} accounts...`);
+        const modelId = model || 'google/gemini-3-flash-preview';
+
+        const prompt = `
+You are a financial advisor calculating debt payoff strategies.
+
+ACCOUNTS WITH DEBT:
+${JSON.stringify(accounts, null, 2)}
+
+AVAILABLE MONTHLY BUDGET FOR EXTRA PAYMENTS: ${monthlyBudget} cents
+
+Calculate three strategies:
+
+1. AGGRESSIVE: Pay off debt as fast as possible
+   - Use debt avalanche (highest interest first) or snowball (smallest balance first)
+   - Put all extra budget toward debt
+
+2. MODERATE: Balanced approach
+   - Pay more than minimums but keep some savings buffer
+   - 70% of extra budget to debt, 30% to savings
+
+3. MINIMUM: Pay only minimum payments
+   - Just the required minimum payments
+   - Maximum time, maximum interest
+
+For each strategy, calculate:
+- Total months to pay off all debt
+- Total interest paid over life of debt
+- Monthly payment breakdown per account
+- Month-by-month projection (first 24 months)
+
+Return JSON:
+{
+  "aggressive": {
+    "total_months": integer,
+    "total_interest_cents": integer,
+    "total_paid_cents": integer,
+    "monthly_payments": [{"account_id": "...", "payment_cents": ...}],
+    "monthly_breakdown": [{"month": 1, "balances": {"account_id": balance_cents}, "interest_paid": cents}]
+  },
+  "moderate": { same structure },
+  "minimum": { same structure }
+}
+`;
+
+        try {
+            const response = await this.client.chat.completions.create({
+                model: modelId,
+                messages: [{ role: 'user', content: prompt }],
+                response_format: { type: "json_object" }
+            });
+
+            const raw = response.choices[0].message.content;
+            const parsed = JSON.parse(raw || '{}');
+
+            const mapStrategy = (s: any): DebtStrategy => ({
+                totalMonths: s?.total_months || 0,
+                totalInterestCents: s?.total_interest_cents || 0,
+                totalPaidCents: s?.total_paid_cents || 0,
+                monthlyPayments: s?.monthly_payments || [],
+                monthlyBreakdown: s?.monthly_breakdown || []
+            });
+
+            return {
+                aggressive: mapStrategy(parsed.aggressive),
+                moderate: mapStrategy(parsed.moderate),
+                minimum: mapStrategy(parsed.minimum)
+            };
+        } catch (err) {
+            console.error("[AI Debt Error]", err);
+            const empty: DebtStrategy = {
+                totalMonths: 0,
+                totalInterestCents: 0,
+                totalPaidCents: 0,
+                monthlyPayments: [],
+                monthlyBreakdown: []
+            };
+            return { aggressive: empty, moderate: empty, minimum: empty };
+        }
+    }
+}
+
+interface DebtStrategy {
+    totalMonths: number;
+    totalInterestCents: number;
+    totalPaidCents: number;
+    monthlyPayments: Array<{ account_id: string; payment_cents: number }>;
+    monthlyBreakdown: Array<{ month: number; balances: Record<string, number>; interest_paid: number }>;
 }
 
 export const aiService = new AIService();

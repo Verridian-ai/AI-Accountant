@@ -1,0 +1,17 @@
+node_modules
+.env
+.env.local
+env.local
+sqlite.db
+sqlite.db-journal
+dist
+.auto-claude/
+server/check-db.cjs
+server/init-db.cjs
+server/scripts/init-db.js
+server/test-schema.ts
+server/test-schema.cjs
+server/check-db-manual.cjs
+server/migrate-manual.cjs
+statements/*
+!statements/.gitkeep

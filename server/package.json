@@ -3,9 +3,10 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "tsx --watch src/index.ts",
+        "dev": "tsx watch --clear-screen=false src/index.ts",
         "db:generate": "drizzle-kit generate",
-        "db:migrate": "drizzle-kit migrate"
+        "db:migrate": "drizzle-kit migrate",
+        "test": "vitest run"
     },
     "dependencies": {
         "@hono/node-server": "^1.2.0",
@@ -16,6 +17,7 @@
         "csv-parse": "^5.5.0",
         "dotenv": "^16.4.0",
         "drizzle-orm": "^0.29.0",
+        "exceljs": "^4.4.0",
         "google-auth-library": "^9.0.0",
         "hono": "^4.0.0",
         "hono-rate-limiter": "^0.5.3",
@@ -23,15 +25,20 @@
         "openai": "^4.28.0",
         "pdf-parse": "^1.1.1",
         "pdfjs-dist": "^5.4.530",
+        "resend": "^6.9.1",
         "sharp": "^0.33.0",
-        "xlsx": "^0.18.5"
+        "stripe": "^20.2.0"
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.2",
         "@types/better-sqlite3": "^7.6.0",
-        "@types/node": "^20.0.0",
+        "@types/node": "^20.19.29",
         "@types/pdf-parse": "^1.1.4",
         "drizzle-kit": "^0.20.0",
+        "globals": "^17.0.0",
         "tsx": "^4.7.0",
-        "typescript": "^5.0.0"
+        "typescript": "^5.0.0",
+        "typescript-eslint": "^8.52.0",
+        "vitest": "^4.0.16"
     }
 }
