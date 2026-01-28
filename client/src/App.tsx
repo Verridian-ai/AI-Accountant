@@ -19,6 +19,7 @@ import { api, getToken } from './api';
 import type { Transaction, TransactionStats, Account } from './api';
 import {
   Activity,
+
   TrendingUp,
   TrendingDown,
   Wallet,
@@ -126,8 +127,8 @@ function App() {
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <div className="relative group">
               <div className="absolute -inset-0.5 cba-gold-gradient rounded-xl blur-sm opacity-20 group-hover:opacity-30 transition-opacity" />
-              <div className="relative cba-gold-gradient p-2.5 sm:p-3 rounded-xl">
-                <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-[#0a0a0f]" />
+              <div className="relative cba-gold-gradient p-2.5 sm:p-3 rounded-xl flex items-center justify-center">
+                <img src="/cba-logo.svg" alt="CBA Logo" className="h-5 w-5 sm:h-6 sm:w-6 object-contain" />
               </div>
             </div>
             <div>

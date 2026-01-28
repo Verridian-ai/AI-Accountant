@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '@/api';
-import { Activity, User, Lock, Loader2, ArrowRight, UserPlus, LogIn, Sparkles } from 'lucide-react';
+import { User, Lock, Loader2, ArrowRight, UserPlus, LogIn, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AuthProps {
@@ -47,8 +47,8 @@ export function Auth({ onLogin }: AuthProps) {
                     <div className="relative group mb-5">
                         {/* Subtle glow ring */}
                         <div className="absolute -inset-1 cba-gold-gradient rounded-2xl blur opacity-25 group-hover:opacity-35 transition-opacity" />
-                        <div className="relative cba-gold-gradient p-5 rounded-2xl">
-                            <Activity className="h-12 w-12 text-[#0a0a0f]" />
+                        <div className="relative cba-gold-gradient p-5 rounded-2xl flex items-center justify-center">
+                            <img src="/cba-logo.svg" alt="CBA Logo" className="h-12 w-12 object-contain" />
                         </div>
                     </div>
                     <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-gradient-gold">

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Activity, Filter, Plus } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileLayoutProps {
@@ -27,8 +27,8 @@ export function MobileLayout({
             <div className="sticky top-0 z-40 bg-[#0a0a0f]/95 backdrop-blur-xl border-b border-white/5 pb-2">
                 <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 neu-raised-sm rounded-xl flex items-center justify-center text-[#FFCC00]">
-                            <Activity className="h-5 w-5" />
+                        <div className="w-10 h-10 neu-raised-sm rounded-xl flex items-center justify-center overflow-hidden p-2">
+                            <img src="/cba-logo.svg" alt="CBA Logo" className="w-full h-full object-contain" />
                         </div>
                         <div>
                             <h1 className="text-lg font-black text-white uppercase tracking-tight">{title}</h1>
@@ -54,7 +54,7 @@ export function MobileLayout({
                         )}
                     </div>
                 </div>
-                
+
                 {/* Summary Stats Bar */}
                 {summaryStats && (
                     <div className="px-4 overflow-x-auto scrollbar-hide">
