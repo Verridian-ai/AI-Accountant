@@ -1,5 +1,496 @@
 @import "tailwindcss";
 
-body {
-    background-color: #f9fafb;
+/* ═══════════════════════════════════════════════════════════════════════════
+   CBA DARK NEUMORPHIC + GLASSMORPHIC DESIGN SYSTEM
+   Premium UI with physics-based animations and depth effects
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* CSS Custom Properties - CBA Brand + Neumorphic Tokens */
+:root {
+    /* CBA Brand Colors */
+    --cba-gold: #FFCC00;
+    --cba-gold-light: #FFE066;
+    --cba-gold-dark: #E6B800;
+    --cba-gold-glow: rgba(255, 204, 0, 0.2);
+
+    /* Dark Theme Base */
+    --dark-base: #0a0a0f;
+    --dark-surface: #12121a;
+    --dark-elevated: #1a1a24;
+    --dark-card: #16161f;
+    --dark-border: rgba(255, 255, 255, 0.06);
+
+    /* Neumorphic Shadows */
+    --neu-shadow-dark: rgba(0, 0, 0, 0.7);
+    --neu-shadow-light: rgba(255, 255, 255, 0.03);
+    --neu-inset-dark: rgba(0, 0, 0, 0.5);
+    --neu-inset-light: rgba(255, 255, 255, 0.02);
+
+    /* Glass Effects */
+    --glass-bg: rgba(22, 22, 31, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.05);
+
+    /* Text Colors */
+    --text-primary: #f5f5f7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+
+    /* Status Colors */
+    --success: #22c55e;
+    --success-glow: rgba(34, 197, 94, 0.3);
+    --danger: #ef4444;
+    --danger-glow: rgba(239, 68, 68, 0.3);
+    --info: #3b82f6;
+    --info-glow: rgba(59, 130, 246, 0.3);
+}
+
+@layer base {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply antialiased overflow-x-hidden;
+        background: var(--dark-base);
+        background-image:
+            radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 204, 0, 0.08), transparent),
+            radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 204, 0, 0.04), transparent);
+        color: var(--text-primary);
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    ::selection {
+        background: var(--cba-gold);
+        color: var(--dark-base);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--dark-surface);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--dark-elevated);
+        border-radius: 4px;
+        border: 2px solid var(--dark-surface);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--cba-gold-dark);
+    }
+}
+
+@layer utilities {
+
+    /* Touch Target */
+    .touch-target {
+        @apply min-h-[44px] min-w-[44px] flex items-center justify-center transition-all;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       NEUMORPHIC EFFECTS
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    /* Raised Neumorphic Surface */
+    .neu-raised {
+        background: var(--dark-card);
+        box-shadow:
+            8px 8px 16px var(--neu-shadow-dark),
+            -4px -4px 12px var(--neu-shadow-light),
+            inset 0 1px 0 var(--glass-highlight);
+        border: 1px solid var(--dark-border);
+    }
+
+    .neu-raised-sm {
+        background: var(--dark-card);
+        box-shadow:
+            4px 4px 8px var(--neu-shadow-dark),
+            -2px -2px 6px var(--neu-shadow-light),
+            inset 0 1px 0 var(--glass-highlight);
+        border: 1px solid var(--dark-border);
+    }
+
+    /* Inset/Pressed Neumorphic */
+    .neu-inset {
+        background: var(--dark-base);
+        box-shadow:
+            inset 4px 4px 8px var(--neu-inset-dark),
+            inset -2px -2px 6px var(--neu-inset-light);
+        border: 1px solid var(--dark-border);
+    }
+
+    /* Floating Neumorphic (hover state) */
+    .neu-float {
+        box-shadow:
+            12px 12px 24px var(--neu-shadow-dark),
+            -6px -6px 16px var(--neu-shadow-light),
+            inset 0 1px 0 var(--glass-highlight);
+        transform: translateY(-2px);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       GLASSMORPHISM EFFECTS
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    .glass {
+        background: var(--glass-bg);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid var(--glass-border);
+    }
+
+    .glass-card {
+        background: linear-gradient(135deg,
+                rgba(22, 22, 31, 0.8) 0%,
+                rgba(22, 22, 31, 0.6) 100%);
+        -webkit-backdrop-filter: blur(24px) saturate(200%);
+        backdrop-filter: blur(24px) saturate(200%);
+        border: 1px solid var(--glass-border);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 var(--glass-highlight);
+    }
+
+    .glass-intense {
+        background: linear-gradient(135deg,
+                rgba(255, 255, 255, 0.08) 0%,
+                rgba(255, 255, 255, 0.02) 100%);
+        -webkit-backdrop-filter: blur(40px) saturate(200%);
+        backdrop-filter: blur(40px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       CBA GOLD ACCENTS
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    .cba-gold-text {
+        color: var(--cba-gold);
+    }
+
+    .cba-gold-gradient {
+        background: linear-gradient(135deg, var(--cba-gold) 0%, var(--cba-gold-light) 100%);
+    }
+
+    .cba-gold-glow {
+        box-shadow: 0 0 15px var(--cba-gold-glow), 0 0 30px rgba(255, 204, 0, 0.1);
+    }
+
+    .cba-gold-border {
+        border: 1px solid var(--cba-gold);
+        box-shadow: 0 0 12px var(--cba-gold-glow);
+    }
+
+    .cba-gold-bg {
+        background: var(--cba-gold);
+        color: var(--dark-base);
+    }
+
+    /* Gold Shimmer Effect */
+    .cba-shimmer {
+        background: linear-gradient(90deg,
+                var(--cba-gold-dark) 0%,
+                var(--cba-gold-light) 50%,
+                var(--cba-gold-dark) 100%);
+        background-size: 200% 100%;
+        animation: shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+
+        0%,
+        100% {
+            background-position: 200% 0;
+        }
+
+        50% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       PHYSICS-BASED ANIMATIONS
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    /* Spring-like bounce */
+    .animate-spring {
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Smooth elastic */
+    .animate-elastic {
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    /* Gentle float */
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-8px);
+        }
+    }
+
+    /* Pulse glow */
+    .animate-pulse-glow {
+        animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+
+        0%,
+        100% {
+            box-shadow: 0 0 20px var(--cba-gold-glow);
+            opacity: 1;
+        }
+
+        50% {
+            box-shadow: 0 0 40px var(--cba-gold-glow), 0 0 60px rgba(255, 204, 0, 0.15);
+            opacity: 0.9;
+        }
+    }
+
+    /* Subtle breathing */
+    .animate-breathe {
+        animation: breathe 4s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.02);
+        }
+    }
+
+    /* Ripple effect on click */
+    .ripple {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ripple::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--cba-gold-glow) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .ripple:active::after {
+        opacity: 1;
+    }
+
+    /* Magnetic hover */
+    .magnetic {
+        transition: transform 0.2s ease-out;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       INTERACTIVE STATES
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    .interactive-card {
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .interactive-card:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow:
+            16px 16px 32px var(--neu-shadow-dark),
+            -8px -8px 20px var(--neu-shadow-light),
+            0 0 30px rgba(255, 204, 0, 0.1);
+    }
+
+    .interactive-card:active {
+        transform: translateY(0) scale(0.99);
+    }
+
+    /* Button press effect */
+    .btn-press {
+        transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .btn-press:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-press:active {
+        transform: translateY(1px) scale(0.98);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       STATUS INDICATORS
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    .status-success {
+        color: var(--success);
+        text-shadow: 0 0 10px var(--success-glow);
+    }
+
+    .status-danger {
+        color: var(--danger);
+        text-shadow: 0 0 10px var(--danger-glow);
+    }
+
+    .status-info {
+        color: var(--info);
+        text-shadow: 0 0 10px var(--info-glow);
+    }
+
+    .glow-success {
+        box-shadow: 0 0 20px var(--success-glow);
+    }
+
+    .glow-danger {
+        box-shadow: 0 0 20px var(--danger-glow);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       UTILITY PATTERNS
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    /* Gradient text */
+    .text-gradient-gold {
+        background: linear-gradient(135deg, var(--cba-gold) 0%, var(--cba-gold-light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Divider with glow */
+    .divider-glow {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--cba-gold-glow), transparent);
+    }
+
+    /* Noise texture overlay */
+    .noise-overlay::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        opacity: 0.02;
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    /* Focus ring */
+    .focus-gold:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--cba-gold-glow), 0 0 20px var(--cba-gold-glow);
+    }
+
+    /* Skeleton loading */
+    .skeleton {
+        background: linear-gradient(90deg,
+                var(--dark-elevated) 25%,
+                var(--dark-card) 50%,
+                var(--dark-elevated) 75%);
+        background-size: 200% 100%;
+        animation: skeleton-loading 1.5s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-loading {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Slide up animation for mobile panels */
+    @keyframes slide-up {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .animate-slide-up {
+        animation: slide-up 0.3s ease-out forwards;
+    }
+
+    /* Safe area padding for mobile devices with notches/home indicators */
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    /* Bottom navigation specific styles */
+    .bottom-nav-item {
+        position: relative;
+    }
+
+    .bottom-nav-item::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%) scaleX(0);
+        width: 32px;
+        height: 2px;
+        background: var(--cba-gold);
+        border-radius: 1px;
+        transition: transform 0.2s ease-out;
+    }
+
+    .bottom-nav-item.active::before {
+        transform: translateX(-50%) scaleX(1);
+    }
+
+    /* Animation delay utilities */
+    .animate-delay-0 {
+        animation-delay: 0ms;
+    }
+
+    .animate-delay-150 {
+        animation-delay: 150ms;
+    }
+
+    .animate-delay-200 {
+        animation-delay: 0.2s;
+    }
+
+    .animate-delay-300 {
+        animation-delay: 300ms;
+    }
+
+    .animate-delay-400 {
+        animation-delay: 0.4s;
+    }
+
+    .animate-delay-2s {
+        animation-delay: 2s;
+    }
 }

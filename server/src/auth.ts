@@ -1,5 +1,7 @@
 import { sign, verify } from 'hono/jwt';
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+dotenv.config({ path: '../env.local' });
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
