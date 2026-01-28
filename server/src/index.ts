@@ -117,8 +117,14 @@ app.get('/auth/me', async (c) => {
     }
 });
 
-// Protect all /api routes
+// Protect all /api routes (except public endpoints)
 app.use('/api/*', async (c, next) => {
+    // Public endpoints that don't require auth
+    const publicPaths = ['/api/vertex-ai/models', '/api/vertex-ai/test'];
+    if (publicPaths.includes(c.req.path)) {
+        return next();
+    }
+
     // For SSE, standard EventSource doesn't support headers, so we allow query param
     const token = c.req.query('token');
     if (token && c.req.path === '/api/events') {
