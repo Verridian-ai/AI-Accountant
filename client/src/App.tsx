@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { TransactionTable } from './features/transactions/components/TransactionTable';
+import { LedgerPage } from './features/transactions/components/LedgerPage';
+import { Toaster } from 'sonner';
 import { FloatingChat } from './features/chat/components/FloatingChat';
 import { StatCard, StatCardSkeleton } from './features/analytics/components/StatCard';
 import { StatementList } from './features/statements/components/StatementList';
@@ -292,7 +293,7 @@ function App() {
 
         {activeTab === 'transactions' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <TransactionTable
+            <LedgerPage
               transactions={transactions}
               accounts={accounts}
               loading={loading}
@@ -460,6 +461,8 @@ function App() {
           </div>
         </div>
       </footer>
+
+      <Toaster theme="dark" position="bottom-right" />
     </div >
   );
 }

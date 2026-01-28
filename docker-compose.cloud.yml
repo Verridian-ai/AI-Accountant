@@ -1,0 +1,164 @@
+# =============================================================================
+# docker-compose.cloud.yml - Local development mimicking Cloud Run environment
+# =============================================================================
+# Usage: docker-compose -f docker-compose.cloud.yml up
+#
+# This configuration simulates the Cloud Run environment locally with:
+# - Cloud SQL Proxy for database connectivity
+# - Environment variables matching Cloud Run
+# - Health checks and container constraints
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Backend API Service (Hono + Node.js)
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-accountant-backend
+    ports:
+      - "8080:8080"
+    environment:
+      # Cloud Run injects PORT
+      - PORT=8080
+      - NODE_ENV=production
+
+      # Database connection (via Cloud SQL Proxy)
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@cloudsql-proxy:5432/${DB_NAME}
+
+      # AI/LLM API Keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+
+      # Authentication
+      - JWT_SECRET=${JWT_SECRET}
+
+      # Google Cloud (for Cloud Storage, etc.)
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/service-account.json
+
+      # Feature flags
+      - ENABLE_RAG=${ENABLE_RAG:-true}
+      - ENABLE_AGENTS=${ENABLE_AGENTS:-true}
+    volumes:
+      # Mount service account for local development
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-./secrets/service-account.json}:/secrets/service-account.json:ro
+      # Statement files (in production, use Cloud Storage)
+      - ./statements:/app/statements:ro
+    depends_on:
+      cloudsql-proxy:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    # Simulate Cloud Run resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Cloud SQL Proxy (connects to remote Cloud SQL instance)
+  # ---------------------------------------------------------------------------
+  cloudsql-proxy:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
+    container_name: cloudsql-proxy
+    command:
+      - "--address=0.0.0.0"
+      - "--port=5432"
+      - "--credentials-file=/secrets/service-account.json"
+      - "${CLOUD_SQL_CONNECTION_NAME}"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-./secrets/service-account.json}:/secrets/service-account.json:ro
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # AI Worker (Python Pydantic AI agents) - For local job testing
+  # ---------------------------------------------------------------------------
+  ai-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai-worker
+    container_name: ai-accountant-worker
+    environment:
+      # AI/LLM API Keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+
+      # Database connection (for RAG queries)
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@cloudsql-proxy:5432/${DB_NAME}
+
+      # Observability
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
+      - LANGFUSE_HOST=${LANGFUSE_HOST:-https://cloud.langfuse.com}
+    volumes:
+      - ${GOOGLE_APPLICATION_CREDENTIALS:-./secrets/service-account.json}:/secrets/service-account.json:ro
+    depends_on:
+      cloudsql-proxy:
+        condition: service_healthy
+    # Worker runs as a job, not a long-running service
+    profiles:
+      - worker
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # Local PostgreSQL (alternative to Cloud SQL for fully local development)
+  # ---------------------------------------------------------------------------
+  postgres-local:
+    image: postgres:15-alpine
+    container_name: postgres-local
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-localdev}
+      - POSTGRES_DB=${DB_NAME:-ai_accountant}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - local-db
+    restart: unless-stopped
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local
+
+# -----------------------------------------------------------------------------
+# Networks
+# -----------------------------------------------------------------------------
+networks:
+  default:
+    name: ai-accountant-network
+    driver: bridge

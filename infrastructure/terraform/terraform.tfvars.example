@@ -1,0 +1,192 @@
+# ==============================================================================
+# Example Terraform Variables File
+# Copy this file to terraform.tfvars and update with your actual values
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# REQUIRED: Project Configuration
+# ------------------------------------------------------------------------------
+
+# Your GCP Project ID
+project_id = "your-gcp-project-id"
+
+# Project name prefix for resource naming
+project_name = "ai-accountant"
+
+# Environment (dev, staging, prod)
+environment = "prod"
+
+# GCP region for resources (Australia Sydney)
+region = "australia-southeast1"
+
+# ------------------------------------------------------------------------------
+# Cloud SQL Configuration
+# ------------------------------------------------------------------------------
+
+# Cloud SQL instance name
+db_instance_name = "ai-accountant-db"
+
+# Machine tier - upgrade for production workloads
+# Options: db-f1-micro (shared CPU, cheapest), db-g1-small, db-n1-standard-1, etc.
+db_tier = "db-g1-small"
+
+# PostgreSQL version
+db_version = "POSTGRES_15"
+
+# Database name
+db_name = "accountant_db"
+
+# Database username
+db_user = "app_user"
+
+# High availability (true for production, false for dev/staging)
+db_high_availability = false
+
+# Backup start time (UTC) - 14:00 UTC = 00:00 AEST (midnight in Sydney)
+db_backup_start_time = "14:00"
+
+# Maintenance window day (1=Monday, 7=Sunday)
+db_maintenance_window_day = 7
+
+# Maintenance window hour (UTC) - 16:00 UTC = 02:00 AEST
+db_maintenance_window_hour = 16
+
+# ------------------------------------------------------------------------------
+# Cloud Run Backend Configuration
+# ------------------------------------------------------------------------------
+
+# Backend service name
+backend_service_name = "ai-accountant-backend"
+
+# CPU allocation (1, 2, 4, 8)
+backend_cpu = "1"
+
+# Memory allocation (128Mi, 256Mi, 512Mi, 1Gi, 2Gi, 4Gi, 8Gi)
+backend_memory = "512Mi"
+
+# Minimum number of instances (0 for dev, 1+ for prod to avoid cold starts)
+backend_min_instances = 1
+
+# Maximum number of instances
+backend_max_instances = 100
+
+# Request timeout in seconds
+backend_timeout_seconds = 300
+
+# Maximum concurrent requests per instance
+backend_concurrency = 80
+
+# ------------------------------------------------------------------------------
+# Cloud Run Jobs Configuration
+# ------------------------------------------------------------------------------
+
+# CPU allocation for AI jobs
+ai_job_cpu = "2"
+
+# Memory allocation for AI jobs
+ai_job_memory = "2Gi"
+
+# Timeout for AI jobs (seconds) - 20 minutes
+ai_job_timeout_seconds = 1200
+
+# Maximum retries for failed jobs
+ai_job_max_retries = 3
+
+# ------------------------------------------------------------------------------
+# Cloud Storage Configuration
+# ------------------------------------------------------------------------------
+
+# Storage bucket name (leave empty for auto-generated name)
+storage_bucket_name = ""
+
+# Storage location (region or multi-region)
+storage_location = "australia-southeast1"
+
+# Storage class (STANDARD, NEARLINE, COLDLINE, ARCHIVE)
+storage_class = "STANDARD"
+
+# Days to retain temporary files before deletion
+temp_file_retention_days = 7
+
+# ------------------------------------------------------------------------------
+# Security Configuration
+# ------------------------------------------------------------------------------
+
+# CIDR blocks allowed to access Cloud Run services
+# ["0.0.0.0/0"] = allow all, or specify your IP ranges
+allowed_ingress_cidrs = ["0.0.0.0/0"]
+
+# CORS origins for backend API
+# ["*"] = allow all origins (dev only), or specify exact origins for production
+cors_origins = ["*"]
+
+# Rate limit threshold (requests per minute per IP)
+rate_limit_threshold = 100
+
+# Enable Cloud Armor security policy
+# Set to false for dev to save costs, true for production
+enable_cloud_armor = true
+
+# Allowed countries (ISO 3166-1 alpha-2 codes)
+# Empty list = all countries allowed
+# Example: ["AU", "NZ", "US", "GB"]
+allowed_countries = []
+
+# ------------------------------------------------------------------------------
+# Container Images
+# Update these after building and pushing your containers
+# ------------------------------------------------------------------------------
+
+# Backend container image
+# Example: "gcr.io/your-project-id/backend:latest"
+backend_image = "gcr.io/cloudrun/hello"
+
+# PDF processor container image
+# Example: "gcr.io/your-project-id/pdf-processor:latest"
+pdf_processor_image = "gcr.io/cloudrun/hello"
+
+# AI categorization container image
+# Example: "gcr.io/your-project-id/ai-categorization:latest"
+ai_categorization_image = "gcr.io/cloudrun/hello"
+
+# ------------------------------------------------------------------------------
+# Labels
+# Applied to all resources for organization and cost tracking
+# ------------------------------------------------------------------------------
+
+labels = {
+  application = "ai-accountant"
+  managed-by  = "terraform"
+  team        = "engineering"
+  cost-center = "development"
+}
+
+# ==============================================================================
+# PRODUCTION CONFIGURATION EXAMPLE
+# ==============================================================================
+
+# For production, consider these settings:
+#
+# db_tier = "db-n1-standard-2"
+# db_high_availability = true
+# backend_min_instances = 2
+# backend_max_instances = 200
+# backend_cpu = "2"
+# backend_memory = "1Gi"
+# enable_cloud_armor = true
+# allowed_countries = ["AU", "NZ"]  # Restrict to specific countries
+# cors_origins = ["https://yourdomain.com"]  # Restrict CORS
+
+# ==============================================================================
+# DEVELOPMENT CONFIGURATION EXAMPLE
+# ==============================================================================
+
+# For development, use these cost-saving settings:
+#
+# environment = "dev"
+# db_tier = "db-f1-micro"
+# db_high_availability = false
+# backend_min_instances = 0
+# backend_max_instances = 10
+# enable_cloud_armor = false
+# allowed_ingress_cidrs = ["YOUR_DEV_IP/32"]  # Restrict to your IP

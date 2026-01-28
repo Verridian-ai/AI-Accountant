@@ -1,0 +1,11 @@
+# GCP Configuration for AI Accountant
+export GCP_PROJECT_ID="accountant-485713"
+export GCP_REGION="australia-southeast1"
+export ARTIFACT_REGISTRY="australia-southeast1-docker.pkg.dev/accountant-485713/ai-accountant"
+export CLOUD_SQL_INSTANCE="accountant-485713:australia-southeast1:ai-accountant-db"
+export CLOUD_SQL_IP="35.189.25.241"
+export DATABASE_NAME="ai_accountant"
+export DATABASE_USER="app_user"
+export STORAGE_BUCKET="ai-accountant-statements-485713"
+export SA_BACKEND="ai-accountant-backend@accountant-485713.iam.gserviceaccount.com"
+export SA_WORKER="ai-accountant-worker@accountant-485713.iam.gserviceaccount.com"

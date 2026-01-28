@@ -399,10 +399,11 @@
         border-radius: inherit;
     }
 
-    /* Focus ring */
+    /* Focus ring - WCAG 2.1 AA compliant */
     .focus-gold:focus-visible {
-        outline: none;
-        box-shadow: 0 0 0 3px var(--cba-gold-glow), 0 0 20px var(--cba-gold-glow);
+        outline: 2px solid var(--cba-gold);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px var(--cba-gold-glow), 0 0 20px var(--cba-gold-glow);
     }
 
     /* Skeleton loading */

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Transaction } from '@/api';
 import { CurrencyDisplay } from '@/components/common/CurrencyDisplay';
+import { CategorySelect } from './CategorySelect';
 import { cn } from '@/lib/utils';
 import {
     Activity,
@@ -91,12 +92,12 @@ export function TransactionCard({
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Category</label>
-                        <input
-                            type="text"
-                            value={editForm.category || ''}
-                            onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                            className="w-full px-4 py-3 text-sm neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] font-bold"
+                        <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Category</label>
+                        <CategorySelect
+                            value={editForm.category || 'Uncategorized'}
+                            onChange={(value) => setEditForm({ ...editForm, category: value })}
+                            aria-label="Edit category"
+                            size="md"
                         />
                     </div>
 
