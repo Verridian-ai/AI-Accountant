@@ -2648,7 +2648,7 @@ app.post('/api/admin/ingest-knowledge', async (c) => {
     }
 });
 
-const port = 3501;
+const port = parseInt(process.env.PORT || '3501', 10);
 console.log(`Server is running on port ${port}`);
 
 serve({
