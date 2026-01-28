@@ -1,40 +1,20 @@
-
 # -----------------------------------------------------------------------------
-# Dockerfile for Server (Hybrid Node.js + Python Environment)
+# Dockerfile for Server (Node.js - Production)
 # -----------------------------------------------------------------------------
-FROM node:20-slim AS base
-
-# Install Python and build dependencies
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:20-slim
 
 WORKDIR /app
 
-# -----------------------------------------------------------------------------
-# Node Dependencies
-# -----------------------------------------------------------------------------
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 
-# -----------------------------------------------------------------------------
-# Python Dependencies (Virtual Environment)
-# -----------------------------------------------------------------------------
-COPY requirements.txt ./
-RUN python3 -m venv venv
-ENV PATH="/app/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r requirements.txt
-
-# -----------------------------------------------------------------------------
-# App Source
-# -----------------------------------------------------------------------------
+# Copy source
 COPY . .
 
-# Expose API port
-EXPOSE 3501
+# Cloud Run uses PORT env variable (defaults to 8080)
+ENV PORT=8080
+EXPOSE 8080
 
-# Start the server (tsx for TypeScript execution)
-CMD ["npm", "run", "dev"]
+# Start with node --import to load tsx
+CMD ["node", "--import", "tsx/esm", "src/index.ts"]

@@ -4,6 +4,8 @@
     "type": "module",
     "scripts": {
         "dev": "tsx watch --clear-screen=false src/index.ts",
+        "start": "npx tsx src/index.ts",
+        "build": "tsc",
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
         "db:migrate:postgres": "tsx drizzle/migrate-to-postgres.ts",

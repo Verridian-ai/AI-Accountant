@@ -1,11 +1,13 @@
 /**
  * SQLite Schema for AI Accountant
- * Used with Drizzle ORM + better-sqlite3/libsql
+ * Used with Drizzle ORM + better-sqlite3/libsql (local) or PostgreSQL (production)
  */
 
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
-import { drizzle } from 'drizzle-orm/libsql';
+import { drizzle as drizzleSqlite } from 'drizzle-orm/libsql';
+import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres';
 import { createClient } from '@libsql/client';
+import pg from 'pg';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -13,8 +15,100 @@ dotenv.config();
 // DATABASE CONNECTION
 // ============================================================================
 
-const client = createClient({ url: process.env.DATABASE_URL || 'file:sqlite.db' });
-export const db = drizzle(client);
+const isProduction = process.env.NODE_ENV === 'production';
+const dbUrl = process.env.DATABASE_URL || 'file:sqlite.db';
+const usePostgres = isProduction || dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://');
+
+/**
+ * Create a Proxy wrapper around the PostgreSQL db to intercept query chains
+ * and add .get() / .all() / .run() methods that are SQLite-specific.
+ */
+function wrapPgDb(pgDb: any): any {
+    const handler: ProxyHandler<any> = {
+        get(target, prop, receiver) {
+            const value = Reflect.get(target, prop, receiver);
+            if (typeof value === 'function') {
+                return function (this: any, ...args: any[]) {
+                    const result = value.apply(target, args);
+                    // Wrap the result in a proxy to add .get()/.all()/.run()
+                    if (result && typeof result === 'object' && typeof result.then === 'function') {
+                        return addSqliteCompat(result);
+                    }
+                    if (result && typeof result === 'object') {
+                        return addSqliteCompat(result);
+                    }
+                    return result;
+                };
+            }
+            return value;
+        },
+    };
+    return new Proxy(pgDb, handler);
+}
+
+function addSqliteCompat(obj: any): any {
+    if (!obj || typeof obj !== 'object') return obj;
+    // Avoid double-wrapping
+    if (obj.__pgWrapped) return obj;
+
+    return new Proxy(obj, {
+        get(target, prop, receiver) {
+            if (prop === '__pgWrapped') return true;
+            if (prop === 'get') {
+                return async function () {
+                    const rows = await target;
+                    return Array.isArray(rows) ? rows[0] ?? undefined : rows;
+                };
+            }
+            if (prop === 'all') {
+                return async function () {
+                    const rows = await target;
+                    return Array.isArray(rows) ? rows : [rows];
+                };
+            }
+            if (prop === 'run') {
+                return async function () {
+                    return await target;
+                };
+            }
+            const value = Reflect.get(target, prop, receiver);
+            if (typeof value === 'function') {
+                return function (this: any, ...args: any[]) {
+                    const result = value.apply(target, args);
+                    if (result && typeof result === 'object') {
+                        return addSqliteCompat(result);
+                    }
+                    return result;
+                };
+            }
+            return value;
+        },
+    });
+}
+
+function createDb() {
+    if (usePostgres) {
+        console.log('[DB] Using PostgreSQL');
+        const pool = new pg.Pool({
+            host: process.env.DB_HOST || '127.0.0.1',
+            port: parseInt(process.env.DB_PORT || '5432'),
+            database: process.env.DB_NAME || 'ai_accountant',
+            user: process.env.DB_USER || 'app_user',
+            password: process.env.DB_PASSWORD,
+            ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
+            max: 20,
+        });
+        const pgDb = drizzlePg(pool);
+        console.log('[DB] PostgreSQL compatibility layer applied (get/all/run via Proxy)');
+        return wrapPgDb(pgDb);
+    } else {
+        console.log('[DB] Using SQLite');
+        const client = createClient({ url: dbUrl });
+        return drizzleSqlite(client);
+    }
+}
+
+export const db = createDb();
 
 // ============================================================================
 // USERS & AUTHENTICATION
