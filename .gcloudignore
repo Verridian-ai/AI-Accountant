@@ -1,0 +1,59 @@
+# Node modules (rebuilt in Docker)
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+env.local
+.env.cloud
+
+# SQLite database
+*.db
+*.db-journal
+
+# Build artifacts
+dist/
+build/
+client/dist/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+*.test.ts
+*.spec.ts
+__tests__/
+coverage/
+
+# Life OS / unrelated
+life-os/
+.serena/
+.claude/
+.auto-claude/
+cba-statements/
+
+# Python cache
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Terraform state
+*.tfstate*
+.terraform/
+
+# Large files
+cloud-sql-proxy.exe
+nul
