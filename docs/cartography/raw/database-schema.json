@@ -1,0 +1,275 @@
+{
+  "$schema": "cartography-database-v1",
+  "generated": "2026-01-29",
+  "database": "SQLite",
+  "orm": "Drizzle ORM",
+  "schemaFile": "server/src/schema.ts",
+  "tables": {
+    "users": {
+      "id": "table-users",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "username", "type": "text", "constraints": "UNIQUE, NOT NULL"},
+        {"name": "passwordHash", "type": "text", "constraints": "NOT NULL"}
+      ],
+      "referencedBy": ["statements", "transactions", "accounts", "userSettings", "merchantMemory", "basPeriods", "deductions", "cgtAssets"]
+    },
+    "userSettings": {
+      "id": "table-user-settings",
+      "columns": [
+        {"name": "userId", "type": "text", "constraints": "PK, FK→users"},
+        {"name": "modelParsingText", "type": "text", "default": "google/gemini-3-flash-preview"},
+        {"name": "modelParsingVision", "type": "text", "default": "google/gemini-3-flash-preview"},
+        {"name": "modelCategorization", "type": "text", "default": "google/gemini-3-flash-preview"},
+        {"name": "modelChat", "type": "text", "default": "google/gemini-3-flash-preview"},
+        {"name": "modelEmbedding", "type": "text", "default": "openai/text-embedding-3-large"}
+      ],
+      "references": ["users"]
+    },
+    "statements": {
+      "id": "table-statements",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "filename", "type": "text", "constraints": "NOT NULL"},
+        {"name": "hash", "type": "text", "constraints": "UNIQUE, NOT NULL"},
+        {"name": "uploadDate", "type": "text", "constraints": "NOT NULL"},
+        {"name": "parsingStatus", "type": "text", "default": "PENDING"},
+        {"name": "aiModelUsed", "type": "text"},
+        {"name": "errorMessage", "type": "text"},
+        {"name": "errorType", "type": "text"},
+        {"name": "errorDetails", "type": "text"},
+        {"name": "userId", "type": "text", "constraints": "FK→users"},
+        {"name": "periodStartDate", "type": "text"},
+        {"name": "periodEndDate", "type": "text"},
+        {"name": "openingBalance", "type": "integer"},
+        {"name": "closingBalance", "type": "integer"},
+        {"name": "transactionCount", "type": "integer", "default": 0},
+        {"name": "isComplete", "type": "boolean", "default": true},
+        {"name": "validationErrors", "type": "text"}
+      ],
+      "indexes": ["userIdIdx", "uploadDateIdx", "userDateIdx", "periodIdx"],
+      "references": ["users"],
+      "referencedBy": ["transactions", "statementAccounts"]
+    },
+    "transactions": {
+      "id": "table-transactions",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "date", "type": "text", "constraints": "NOT NULL"},
+        {"name": "description", "type": "text", "constraints": "NOT NULL"},
+        {"name": "amount", "type": "integer", "constraints": "NOT NULL"},
+        {"name": "balance", "type": "integer"},
+        {"name": "category", "type": "text"},
+        {"name": "gstApplicable", "type": "boolean", "default": false},
+        {"name": "gstAmount", "type": "integer"},
+        {"name": "gstCategory", "type": "text", "default": "taxable_10"},
+        {"name": "aiReasoningNotes", "type": "text"},
+        {"name": "confidenceScore", "type": "real", "default": 1.0},
+        {"name": "isEdited", "type": "boolean", "default": false},
+        {"name": "isTransfer", "type": "boolean", "default": false},
+        {"name": "transferLinkId", "type": "text"},
+        {"name": "merchantNormalized", "type": "text"},
+        {"name": "parentTransactionId", "type": "text"},
+        {"name": "statementId", "type": "text", "constraints": "FK→statements"},
+        {"name": "accountId", "type": "text"},
+        {"name": "userId", "type": "text", "constraints": "FK→users"}
+      ],
+      "indexes": ["dateIdx", "userIdIdx", "statementIdIdx", "categoryIdx", "userDateIdx", "accountIdIdx", "transferIdx"],
+      "references": ["statements", "users"],
+      "referencedBy": ["transactionHistory", "transferLinks", "pendingCategorizations"]
+    },
+    "transactionHistory": {
+      "id": "table-transaction-history",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "transactionId", "type": "text", "constraints": "FK→transactions"},
+        {"name": "changeType", "type": "text", "constraints": "NOT NULL"},
+        {"name": "oldData", "type": "text"},
+        {"name": "newData", "type": "text"},
+        {"name": "timestamp", "type": "text", "constraints": "NOT NULL"}
+      ],
+      "references": ["transactions"]
+    },
+    "accounts": {
+      "id": "table-accounts",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "userId", "type": "text", "constraints": "FK→users, NOT NULL"},
+        {"name": "accountNumber", "type": "text", "constraints": "NOT NULL"},
+        {"name": "accountNumberHash", "type": "text", "constraints": "NOT NULL"},
+        {"name": "accountName", "type": "text", "constraints": "NOT NULL"},
+        {"name": "accountType", "type": "text", "constraints": "NOT NULL"},
+        {"name": "bankName", "type": "text"},
+        {"name": "currentBalance", "type": "integer", "default": 0},
+        {"name": "lastStatementDate", "type": "text"},
+        {"name": "interestRate", "type": "real"},
+        {"name": "creditLimit", "type": "integer"},
+        {"name": "minimumPayment", "type": "integer"},
+        {"name": "paymentDueDay", "type": "integer"},
+        {"name": "linkedPaymentAccountId", "type": "text"},
+        {"name": "isActive", "type": "boolean", "default": true},
+        {"name": "createdAt", "type": "text", "constraints": "NOT NULL"},
+        {"name": "updatedAt", "type": "text", "constraints": "NOT NULL"}
+      ],
+      "indexes": ["userIdIdx", "accountHashIdx"],
+      "references": ["users"]
+    },
+    "merchantMemory": {
+      "id": "table-merchant-memory",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "userId", "type": "text", "constraints": "FK→users, NOT NULL"},
+        {"name": "merchantPattern", "type": "text", "constraints": "NOT NULL"},
+        {"name": "merchantDisplayName", "type": "text"},
+        {"name": "category", "type": "text", "constraints": "NOT NULL"},
+        {"name": "gstApplicable", "type": "boolean", "default": false},
+        {"name": "timesUsed", "type": "integer", "default": 1},
+        {"name": "lastUsed", "type": "text", "constraints": "NOT NULL"},
+        {"name": "isUserConfirmed", "type": "boolean", "default": false},
+        {"name": "createdAt", "type": "text", "constraints": "NOT NULL"}
+      ],
+      "indexes": ["userPatternIdx", "categoryIdx"],
+      "references": ["users"]
+    },
+    "transferLinks": {
+      "id": "table-transfer-links",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "sourceTransactionId", "type": "text", "constraints": "FK→transactions"},
+        {"name": "destinationTransactionId", "type": "text", "constraints": "FK→transactions"},
+        {"name": "confidence", "type": "real"},
+        {"name": "createdAt", "type": "text"}
+      ],
+      "references": ["transactions"]
+    },
+    "pendingCategorizations": {
+      "id": "table-pending-categorizations",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "transactionId", "type": "text", "constraints": "FK→transactions"},
+        {"name": "suggestedCategory", "type": "text"},
+        {"name": "confidence", "type": "real"},
+        {"name": "reasoning", "type": "text"},
+        {"name": "status", "type": "text", "default": "pending"},
+        {"name": "createdAt", "type": "text"}
+      ],
+      "references": ["transactions"]
+    },
+    "basPeriods": {
+      "id": "table-bas-periods",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "userId", "type": "text", "constraints": "FK→users"},
+        {"name": "quarter", "type": "text", "constraints": "NOT NULL"},
+        {"name": "startDate", "type": "text", "constraints": "NOT NULL"},
+        {"name": "endDate", "type": "text", "constraints": "NOT NULL"},
+        {"name": "status", "type": "text", "default": "draft"},
+        {"name": "createdAt", "type": "text"},
+        {"name": "lodgedAt", "type": "text"}
+      ],
+      "references": ["users"],
+      "referencedBy": ["basCalculations"]
+    },
+    "basCalculations": {
+      "id": "table-bas-calculations",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "periodId", "type": "text", "constraints": "FK→basPeriods"},
+        {"name": "g1_totalSales", "type": "integer", "default": 0},
+        {"name": "g2_exportSales", "type": "integer", "default": 0},
+        {"name": "g3_otherGstFree", "type": "integer", "default": 0},
+        {"name": "g10_capitalPurchases", "type": "integer", "default": 0},
+        {"name": "g11_otherPurchases", "type": "integer", "default": 0},
+        {"name": "label1a_gstOnSales", "type": "integer", "default": 0},
+        {"name": "label1b_gstOnPurchases", "type": "integer", "default": 0},
+        {"name": "netGst", "type": "integer", "default": 0},
+        {"name": "paygInstalment", "type": "integer", "default": 0},
+        {"name": "totalPayable", "type": "integer", "default": 0},
+        {"name": "createdAt", "type": "text"},
+        {"name": "notes", "type": "text"}
+      ],
+      "references": ["basPeriods"]
+    },
+    "deductions": {
+      "id": "table-deductions",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "userId", "type": "text", "constraints": "FK→users"},
+        {"name": "financialYear", "type": "text", "constraints": "NOT NULL"},
+        {"name": "category", "type": "text", "constraints": "NOT NULL"},
+        {"name": "description", "type": "text", "constraints": "NOT NULL"},
+        {"name": "amount", "type": "integer", "constraints": "NOT NULL"},
+        {"name": "receiptPath", "type": "text"},
+        {"name": "transactionId", "type": "text"},
+        {"name": "substantiated", "type": "boolean", "default": false},
+        {"name": "createdAt", "type": "text"}
+      ],
+      "references": ["users"]
+    },
+    "cgtAssets": {
+      "id": "table-cgt-assets",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "userId", "type": "text", "constraints": "FK→users"},
+        {"name": "assetType", "type": "text", "constraints": "NOT NULL"},
+        {"name": "description", "type": "text", "constraints": "NOT NULL"},
+        {"name": "acquisitionDate", "type": "text", "constraints": "NOT NULL"},
+        {"name": "acquisitionCost", "type": "integer", "constraints": "NOT NULL"},
+        {"name": "currentValue", "type": "integer"},
+        {"name": "quantity", "type": "real", "default": 1},
+        {"name": "incidentalCosts", "type": "integer", "default": 0},
+        {"name": "improvements", "type": "integer", "default": 0},
+        {"name": "disposed", "type": "boolean", "default": false},
+        {"name": "createdAt", "type": "text"},
+        {"name": "updatedAt", "type": "text"}
+      ],
+      "references": ["users"],
+      "referencedBy": ["cgtEvents"]
+    },
+    "cgtEvents": {
+      "id": "table-cgt-events",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "assetId", "type": "text", "constraints": "FK→cgtAssets"},
+        {"name": "eventDate", "type": "text", "constraints": "NOT NULL"},
+        {"name": "proceeds", "type": "integer", "constraints": "NOT NULL"},
+        {"name": "costBase", "type": "integer", "constraints": "NOT NULL"},
+        {"name": "capitalGain", "type": "integer"},
+        {"name": "discountedGain", "type": "integer"},
+        {"name": "method", "type": "text", "default": "discount"},
+        {"name": "createdAt", "type": "text"}
+      ],
+      "references": ["cgtAssets"]
+    },
+    "depreciationSchedules": {
+      "id": "table-depreciation-schedules",
+      "columns": [
+        {"name": "id", "type": "text", "constraints": "PK"},
+        {"name": "userId", "type": "text", "constraints": "FK→users"},
+        {"name": "assetDescription", "type": "text", "constraints": "NOT NULL"},
+        {"name": "purchaseDate", "type": "text", "constraints": "NOT NULL"},
+        {"name": "purchaseCost", "type": "integer", "constraints": "NOT NULL"},
+        {"name": "effectiveLife", "type": "integer", "constraints": "NOT NULL"},
+        {"name": "method", "type": "text", "default": "diminishing"},
+        {"name": "businessUsePercent", "type": "integer", "default": 100},
+        {"name": "writtenDownValue", "type": "integer"},
+        {"name": "isPooled", "type": "boolean", "default": false},
+        {"name": "createdAt", "type": "text"}
+      ],
+      "references": ["users"]
+    },
+    "statementAccounts": {
+      "id": "table-statement-accounts",
+      "columns": [
+        {"name": "statementId", "type": "text", "constraints": "PK, FK→statements"},
+        {"name": "accountId", "type": "text", "constraints": "FK→accounts, NOT NULL"}
+      ],
+      "references": ["statements", "accounts"]
+    }
+  },
+  "summary": {
+    "totalTables": 17,
+    "totalColumns": 150,
+    "totalIndexes": 15
+  }
+}

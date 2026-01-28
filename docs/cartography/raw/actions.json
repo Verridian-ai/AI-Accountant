@@ -1,0 +1,66 @@
+{
+  "$schema": "cartography-actions-v1",
+  "generated": "2026-01-29",
+  "actions": {
+    "authentication": [
+      {"id": "action-login", "name": "Login", "trigger": "Click 'Sign In' button", "component": "Auth", "apiCall": "api-call-login"},
+      {"id": "action-register", "name": "Register", "trigger": "Click 'Create Account' button", "component": "Auth", "apiCall": "api-call-register"},
+      {"id": "action-logout", "name": "Logout", "trigger": "Click logout button", "component": "App"}
+    ],
+    "statements": [
+      {"id": "action-upload-statement", "name": "Upload Statement", "trigger": "Drag-drop file or click to select", "component": "FileUpload", "apiCall": "api-call-upload-statement"},
+      {"id": "action-reprocess-statement", "name": "Reprocess Statement", "trigger": "Click 'Retry' button on failed statement", "component": "StatementList", "apiCall": "api-call-reprocess-statement"}
+    ],
+    "transactions": [
+      {"id": "action-edit-transaction", "name": "Edit Transaction", "trigger": "Click cell in transaction table", "component": "TransactionTable", "apiCall": "api-call-update-transaction", "undoable": true},
+      {"id": "action-split-transaction", "name": "Split Transaction", "trigger": "Click 'Split' button on transaction", "component": "TransactionTable", "apiCall": "api-call-split-transaction"},
+      {"id": "action-delete-transaction", "name": "Delete Transaction", "trigger": "Click delete button with confirmation", "component": "TransactionTable", "apiCall": "api-call-delete-transaction"},
+      {"id": "action-filter-transactions", "name": "Filter Transactions", "trigger": "Enter search term, select category, or set date range", "component": "TransactionTable", "clientSide": true},
+      {"id": "action-sort-transactions", "name": "Sort Transactions", "trigger": "Click column header", "component": "TransactionTable", "clientSide": true},
+      {"id": "action-export-transactions", "name": "Export Transactions", "trigger": "Click 'Export' button", "component": "TransactionTable"},
+      {"id": "action-undo-edit", "name": "Undo Transaction Edit", "trigger": "Click undo button or Ctrl+Z", "component": "TransactionTable"}
+    ],
+    "categorization": [
+      {"id": "action-review-categorization", "name": "Review AI Categorization", "trigger": "View pending categorizations panel", "component": "PendingCategorizationReview"},
+      {"id": "action-approve-category", "name": "Approve Category", "trigger": "Click checkmark on pending item", "component": "PendingCategorizationReview", "apiCall": "api-call-resolve-categorization"},
+      {"id": "action-modify-category", "name": "Modify Category", "trigger": "Click edit on pending item", "component": "PendingCategorizationReview", "apiCall": "api-call-resolve-categorization"}
+    ],
+    "accounts": [
+      {"id": "action-create-account", "name": "Create Account", "trigger": "Click 'Add Account' button", "component": "AccountSetupWizard", "apiCall": "api-call-create-account"},
+      {"id": "action-edit-account", "name": "Edit Account", "trigger": "Click edit on account card", "component": "AccountsOverview", "apiCall": "api-call-update-account"},
+      {"id": "action-link-transfer", "name": "Link Transfer", "trigger": "Select two transactions and click 'Link as Transfer'", "component": "TransactionTable", "apiCall": "api-call-create-transfer-link"},
+      {"id": "action-auto-detect-transfers", "name": "Auto-Detect Transfers", "trigger": "Click 'Detect Transfers' button", "component": "TransactionTable", "apiCall": "api-call-auto-detect-transfers"}
+    ],
+    "chat": [
+      {"id": "action-send-chat", "name": "Send Chat Message", "trigger": "Type message and press Enter or click Send", "component": "FloatingChat", "apiCall": "api-call-send-chat"},
+      {"id": "action-toggle-chat", "name": "Toggle Chat", "trigger": "Click chat bubble button", "component": "FloatingChat", "clientSide": true}
+    ],
+    "settings": [
+      {"id": "action-open-settings", "name": "Open Settings", "trigger": "Click settings gear icon", "component": "App", "clientSide": true},
+      {"id": "action-change-ai-model", "name": "Change AI Model", "trigger": "Select model from dropdown in settings", "component": "SettingsModal", "apiCall": "api-call-update-settings"}
+    ],
+    "bas": [
+      {"id": "action-calculate-bas", "name": "Calculate BAS", "trigger": "Select quarter and click 'Calculate'", "component": "BASDashboard", "apiCall": "api-call-calculate-bas"},
+      {"id": "action-save-bas", "name": "Save BAS", "trigger": "Click 'Save' on BAS form", "component": "BASDashboard", "apiCall": "api-call-save-bas"}
+    ],
+    "tax": [
+      {"id": "action-calculate-tax", "name": "Calculate Tax", "trigger": "Enter income details and click 'Calculate'", "component": "TaxDashboard", "apiCall": "api-call-calculate-tax"},
+      {"id": "action-add-deduction", "name": "Add Deduction", "trigger": "Click 'Add Deduction' and fill form", "component": "TaxDashboard", "apiCall": "api-call-add-deduction"},
+      {"id": "action-add-cgt-asset", "name": "Add CGT Asset", "trigger": "Click 'Add Asset' in CGT section", "component": "TaxDashboard", "apiCall": "api-call-add-cgt-asset"},
+      {"id": "action-record-disposal", "name": "Record Asset Disposal", "trigger": "Click 'Record Disposal' on asset", "component": "TaxDashboard", "apiCall": "api-call-record-disposal"}
+    ],
+    "analytics": [
+      {"id": "action-view-debt-plan", "name": "View Debt Reduction Plan", "trigger": "Enter monthly budget and click 'Calculate'", "component": "DebtReductionPlanner", "apiCall": "api-call-fetch-debt-recommendations"}
+    ],
+    "navigation": [
+      {"id": "action-switch-tab", "name": "Switch Tab", "trigger": "Click tab in header or bottom navigation", "component": "App", "clientSide": true},
+      {"id": "action-refresh-data", "name": "Refresh Data", "trigger": "Click refresh button", "component": "App"}
+    ]
+  },
+  "summary": {
+    "totalActions": 35,
+    "clientSideActions": 6,
+    "apiDrivenActions": 29,
+    "undoableActions": 1
+  }
+}

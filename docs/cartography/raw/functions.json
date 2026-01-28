@@ -1,0 +1,97 @@
+{
+  "$schema": "cartography-functions-v1",
+  "generated": "2026-01-29",
+  "services": {
+    "pipeline": {
+      "id": "svc-pipeline",
+      "file": "server/src/services/pipeline.ts",
+      "functions": [
+        {"name": "processStatement", "params": ["statementId", "filePath"], "returns": "Promise<void>"},
+        {"name": "detectBank", "params": ["pdfText"], "returns": "string | null"},
+        {"name": "extractTransactions", "params": ["pdfText", "bank"], "returns": "Transaction[]"},
+        {"name": "extractMetadata", "params": ["pdfText"], "returns": "StatementMetadata"},
+        {"name": "validateStatement", "params": ["transactions", "metadata"], "returns": "ValidationResult"}
+      ]
+    },
+    "ai": {
+      "id": "svc-ai",
+      "file": "server/src/services/ai.ts",
+      "functions": [
+        {"name": "categorizeTransactions", "params": ["transactions", "model"], "returns": "CategorizedTransaction[]"},
+        {"name": "generateInsight", "params": ["query", "context", "model"], "returns": "string"},
+        {"name": "parseStatementWithVision", "params": ["imagePath", "model"], "returns": "ParsedStatement"},
+        {"name": "parseStatementWithText", "params": ["pdfText", "model"], "returns": "ParsedStatement"},
+        {"name": "extractMerchantName", "params": ["description"], "returns": "string"},
+        {"name": "calculateConfidence", "params": ["category", "reasoning"], "returns": "number"},
+        {"name": "batchCategorize", "params": ["transactions", "batchSize"], "returns": "CategorizedTransaction[]"},
+        {"name": "callOpenRouter", "params": ["messages", "model"], "returns": "AIResponse"}
+      ]
+    },
+    "accounts": {
+      "id": "svc-accounts",
+      "file": "server/src/services/accounts.ts",
+      "functions": [
+        {"name": "findOrCreateAccount", "params": ["userId", "accountData"], "returns": "Account"},
+        {"name": "updateBalance", "params": ["accountId", "balance"], "returns": "void"},
+        {"name": "linkStatementToAccount", "params": ["statementId", "accountId"], "returns": "void"},
+        {"name": "calculateNetWorth", "params": ["userId"], "returns": "number"},
+        {"name": "getAccountHistory", "params": ["accountId", "startDate", "endDate"], "returns": "BalanceHistory[]"},
+        {"name": "detectAccountFromStatement", "params": ["pdfText", "userId"], "returns": "Account | null"}
+      ]
+    },
+    "rag": {
+      "id": "svc-rag",
+      "file": "server/src/services/rag.ts",
+      "functions": [
+        {"name": "searchKnowledge", "params": ["query", "model"], "returns": "SearchResult[]"},
+        {"name": "addDocument", "params": ["document", "metadata"], "returns": "void"},
+        {"name": "updateEmbeddings", "params": ["documentId"], "returns": "void"}
+      ]
+    },
+    "bas": {
+      "id": "svc-bas",
+      "file": "server/src/services/bas.ts",
+      "functions": [
+        {"name": "calculateBAS", "params": ["userId", "quarter"], "returns": "BASCalculation"},
+        {"name": "getGSTSummary", "params": ["transactions"], "returns": "GSTSummary"},
+        {"name": "aggregateByGSTCategory", "params": ["transactions"], "returns": "GSTAggregation"},
+        {"name": "generateBASReport", "params": ["calculation"], "returns": "BASReport"}
+      ]
+    },
+    "tax": {
+      "id": "svc-tax",
+      "file": "server/src/services/tax.ts",
+      "functions": [
+        {"name": "calculateIncomeTax", "params": ["grossIncome", "deductions", "options"], "returns": "TaxCalculation"},
+        {"name": "applyTaxBrackets", "params": ["taxableIncome", "year"], "returns": "number"},
+        {"name": "calculateMedicareLevy", "params": ["taxableIncome", "hasPrivateHealth"], "returns": "number"},
+        {"name": "calculateLITO", "params": ["taxableIncome"], "returns": "number"},
+        {"name": "calculateCGT", "params": ["asset", "disposalDetails"], "returns": "CGTResult"},
+        {"name": "applyDepreciation", "params": ["asset", "method"], "returns": "DepreciationResult"}
+      ]
+    },
+    "transfers": {
+      "id": "svc-transfers",
+      "file": "server/src/services/transfers/",
+      "functions": [
+        {"name": "detectTransfers", "params": ["transactions"], "returns": "TransferMatch[]"},
+        {"name": "createTransferLink", "params": ["sourceId", "destId"], "returns": "TransferLink"},
+        {"name": "findMatchingTransactions", "params": ["transaction", "candidates"], "returns": "Match[]"},
+        {"name": "calculateMatchConfidence", "params": ["tx1", "tx2"], "returns": "number"}
+      ]
+    },
+    "agents": {
+      "id": "svc-agents",
+      "file": "server/src/services/agents.ts",
+      "functions": [
+        {"name": "runAgent", "params": ["agentType", "input"], "returns": "AgentResponse"},
+        {"name": "executeFinancialAnalyst", "params": ["query", "context"], "returns": "AnalystResponse"},
+        {"name": "executeBASAgent", "params": ["query", "basData"], "returns": "BASAgentResponse"}
+      ]
+    }
+  },
+  "summary": {
+    "totalServices": 8,
+    "totalFunctions": 42
+  }
+}

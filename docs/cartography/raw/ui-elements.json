@@ -1,0 +1,78 @@
+{
+  "$schema": "cartography-ui-elements-v1",
+  "generated": "2026-01-29",
+  "framework": "React 19",
+  "uiLibrary": "Radix UI + Tailwind CSS",
+  "components": {
+    "features": [
+      {"id": "ui-cmp-auth", "name": "Auth", "file": "features/auth/components/Auth.tsx", "feature": "auth"},
+      {"id": "ui-cmp-accounts-overview", "name": "AccountsOverview", "file": "features/accounts/components/AccountsOverview.tsx", "feature": "accounts"},
+      {"id": "ui-cmp-statement-list", "name": "StatementList", "file": "features/statements/components/StatementList.tsx", "feature": "statements"},
+      {"id": "ui-cmp-debt-reduction-planner", "name": "DebtReductionPlanner", "file": "features/accounts/components/DebtReductionPlanner.tsx", "feature": "accounts"},
+      {"id": "ui-cmp-account-setup-wizard", "name": "AccountSetupWizard", "file": "features/accounts/components/AccountSetupWizard.tsx", "feature": "accounts"},
+      {"id": "ui-cmp-monthly-trend-chart", "name": "MonthlyTrendChart", "file": "features/analytics/components/MonthlyTrendChart.tsx", "feature": "analytics"},
+      {"id": "ui-cmp-category-chart", "name": "CategoryChart", "file": "features/analytics/components/CategoryChart.tsx", "feature": "analytics"},
+      {"id": "ui-cmp-bas-dashboard", "name": "BASDashboard", "file": "features/bas/components/BASDashboard.tsx", "feature": "bas"},
+      {"id": "ui-cmp-floating-chat", "name": "FloatingChat", "file": "features/chat/components/FloatingChat.tsx", "feature": "chat"},
+      {"id": "ui-cmp-settings-modal", "name": "SettingsModal", "file": "features/settings/components/SettingsModal.tsx", "feature": "settings"},
+      {"id": "ui-cmp-merchant-memory-manager", "name": "MerchantMemoryManager", "file": "features/settings/components/MerchantMemoryManager.tsx", "feature": "settings"},
+      {"id": "ui-cmp-file-upload", "name": "FileUpload", "file": "features/statements/components/FileUpload.tsx", "feature": "statements"},
+      {"id": "ui-cmp-tax-dashboard", "name": "TaxDashboard", "file": "features/tax/components/TaxDashboard.tsx", "feature": "tax"},
+      {"id": "ui-cmp-tax-calculator", "name": "TaxCalculator", "file": "features/tax/components/TaxCalculator.tsx", "feature": "tax"},
+      {"id": "ui-cmp-deduction-manager", "name": "DeductionManager", "file": "features/tax/components/DeductionManager.tsx", "feature": "tax"},
+      {"id": "ui-cmp-cgt-asset-register", "name": "CGTAssetRegister", "file": "features/tax/components/CGTAssetRegister.tsx", "feature": "tax"},
+      {"id": "ui-cmp-depreciation-schedule", "name": "DepreciationSchedule", "file": "features/tax/components/DepreciationSchedule.tsx", "feature": "tax"},
+      {"id": "ui-cmp-transaction-table", "name": "TransactionTable", "file": "features/transactions/components/TransactionTable.tsx", "feature": "transactions"},
+      {"id": "ui-cmp-pending-categorization-review", "name": "PendingCategorizationReview", "file": "features/transactions/components/PendingCategorizationReview.tsx", "feature": "transactions"}
+    ],
+    "common": [
+      {"id": "ui-cmp-button", "name": "Button", "file": "components/ui/button.tsx"},
+      {"id": "ui-cmp-card", "name": "Card", "file": "components/ui/card.tsx"},
+      {"id": "ui-cmp-dialog", "name": "Dialog", "file": "components/ui/dialog.tsx"},
+      {"id": "ui-cmp-dropdown-menu", "name": "DropdownMenu", "file": "components/ui/dropdown-menu.tsx"},
+      {"id": "ui-cmp-input", "name": "Input", "file": "components/ui/input.tsx"},
+      {"id": "ui-cmp-label", "name": "Label", "file": "components/ui/label.tsx"},
+      {"id": "ui-cmp-popover", "name": "Popover", "file": "components/ui/popover.tsx"},
+      {"id": "ui-cmp-progress", "name": "Progress", "file": "components/ui/progress.tsx"},
+      {"id": "ui-cmp-scroll-area", "name": "ScrollArea", "file": "components/ui/scroll-area.tsx"},
+      {"id": "ui-cmp-select", "name": "Select", "file": "components/ui/select.tsx"},
+      {"id": "ui-cmp-switch", "name": "Switch", "file": "components/ui/switch.tsx"},
+      {"id": "ui-cmp-tabs", "name": "Tabs", "file": "components/ui/tabs.tsx"},
+      {"id": "ui-cmp-tooltip", "name": "Tooltip", "file": "components/ui/tooltip.tsx"},
+      {"id": "ui-cmp-hover-card", "name": "HoverCard", "file": "components/ui/hover-card.tsx"},
+      {"id": "ui-cmp-stat-card", "name": "StatCard", "file": "components/common/StatCard.tsx"}
+    ]
+  },
+  "buttons": [
+    {"id": "ui-btn-sign-in", "label": "Sign In", "component": "Auth", "action": "action-login"},
+    {"id": "ui-btn-create-account", "label": "Create Account", "component": "Auth", "action": "action-register"},
+    {"id": "ui-btn-logout", "label": "Logout", "component": "App", "action": "action-logout"},
+    {"id": "ui-btn-upload-statement", "label": "Upload Statement", "component": "FileUpload", "action": "action-upload-statement"},
+    {"id": "ui-btn-save-transaction", "label": "Save", "component": "TransactionTable", "action": "action-edit-transaction"},
+    {"id": "ui-btn-delete-transaction", "label": "Delete", "component": "TransactionTable", "action": "action-delete-transaction"},
+    {"id": "ui-btn-export-csv", "label": "Export CSV", "component": "TransactionTable", "action": "action-export-transactions"},
+    {"id": "ui-btn-export-xlsx", "label": "Export XLSX", "component": "TransactionTable", "action": "action-export-transactions"},
+    {"id": "ui-btn-link-transfer", "label": "Link as Transfer", "component": "TransactionTable", "action": "action-link-transfer"},
+    {"id": "ui-btn-calculate-bas", "label": "Calculate", "component": "BASDashboard", "action": "action-calculate-bas"},
+    {"id": "ui-btn-calculate-tax", "label": "Calculate", "component": "TaxDashboard", "action": "action-calculate-tax"},
+    {"id": "ui-btn-add-deduction", "label": "Add Deduction", "component": "DeductionManager", "action": "action-add-deduction"}
+  ],
+  "inputs": [
+    {"id": "ui-inp-username", "type": "text", "component": "Auth", "binding": "username"},
+    {"id": "ui-inp-password", "type": "password", "component": "Auth", "binding": "password"},
+    {"id": "ui-inp-search-filter", "type": "text", "component": "TransactionTable", "binding": "searchTerm"},
+    {"id": "ui-inp-date-start", "type": "date", "component": "TransactionTable", "binding": "dateRange.start"},
+    {"id": "ui-inp-date-end", "type": "date", "component": "TransactionTable", "binding": "dateRange.end"},
+    {"id": "ui-inp-category-filter", "type": "select", "component": "TransactionTable", "binding": "categoryFilter"},
+    {"id": "ui-inp-gross-income", "type": "number", "component": "TaxCalculator", "binding": "grossIncome"},
+    {"id": "ui-inp-deductions", "type": "number", "component": "TaxCalculator", "binding": "deductions"},
+    {"id": "ui-inp-monthly-budget", "type": "number", "component": "DebtReductionPlanner", "binding": "monthlyBudget"}
+  ],
+  "summary": {
+    "totalComponents": 34,
+    "featureComponents": 19,
+    "commonComponents": 15,
+    "buttons": 12,
+    "inputs": 9
+  }
+}

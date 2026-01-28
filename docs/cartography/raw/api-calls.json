@@ -1,0 +1,92 @@
+{
+  "$schema": "cartography-api-calls-v1",
+  "generated": "2026-01-29",
+  "sourceFile": "client/src/api.ts",
+  "baseUrl": "http://localhost:3501",
+  "apiObjects": {
+    "api": {
+      "description": "Core API methods",
+      "methods": [
+        {"id": "api-call-fetch-transactions", "name": "fetchTransactions", "method": "GET", "endpoint": "/api/transactions", "returns": "Transaction[]"},
+        {"id": "api-call-fetch-statements", "name": "fetchStatements", "method": "GET", "endpoint": "/api/statements", "returns": "Statement[]"},
+        {"id": "api-call-send-chat", "name": "sendChatMessage", "method": "POST", "endpoint": "/api/chat", "returns": "{ answer: string }"},
+        {"id": "api-call-calculate-stats", "name": "calculateStats", "type": "client-side", "returns": "TransactionStats"},
+        {"id": "api-call-update-transaction", "name": "updateTransaction", "method": "PATCH", "endpoint": "/api/transactions/:id"},
+        {"id": "api-call-split-transaction", "name": "splitTransaction", "method": "POST", "endpoint": "/api/transactions/:id/split"},
+        {"id": "api-call-delete-transaction", "name": "deleteTransaction", "method": "DELETE", "endpoint": "/api/transactions/:id"},
+        {"id": "api-call-export-csv", "name": "exportCSV", "method": "GET", "endpoint": "/api/transactions/export/csv", "returns": "Blob"},
+        {"id": "api-call-export-xlsx", "name": "exportXLSX", "method": "GET", "endpoint": "/api/transactions/export/xlsx", "returns": "Blob"},
+        {"id": "api-call-upload-statement", "name": "uploadStatement", "method": "POST", "endpoint": "/api/statements/upload", "returns": "Statement"},
+        {"id": "api-call-reprocess-statement", "name": "reprocessStatement", "method": "POST", "endpoint": "/api/statements/:id/reprocess"},
+        {"id": "api-call-delete-statement", "name": "deleteStatement", "method": "DELETE", "endpoint": "/api/statements/:id"},
+        {"id": "api-call-analyze-gaps", "name": "analyzeStatementGaps", "method": "GET", "endpoint": "/api/statements/gaps", "returns": "StatementGapAnalysis"},
+        {"id": "api-call-fetch-accounts", "name": "fetchAccounts", "method": "GET", "endpoint": "/api/accounts", "returns": "Account[]"},
+        {"id": "api-call-create-account", "name": "createAccount", "method": "POST", "endpoint": "/api/accounts"},
+        {"id": "api-call-update-account", "name": "updateAccount", "method": "PATCH", "endpoint": "/api/accounts/:id"},
+        {"id": "api-call-delete-account", "name": "deleteAccount", "method": "DELETE", "endpoint": "/api/accounts/:id"},
+        {"id": "api-call-fetch-balance-history", "name": "fetchBalanceHistory", "method": "GET", "endpoint": "/api/accounts/:id/balance-history"},
+        {"id": "api-call-fetch-transfers", "name": "fetchTransfers", "method": "GET", "endpoint": "/api/transfers"},
+        {"id": "api-call-create-transfer-link", "name": "createTransferLink", "method": "POST", "endpoint": "/api/transfers"},
+        {"id": "api-call-delete-transfer-link", "name": "deleteTransferLink", "method": "DELETE", "endpoint": "/api/transfers/:id"},
+        {"id": "api-call-auto-detect-transfers", "name": "autoDetectTransfers", "method": "POST", "endpoint": "/api/transfers/auto-detect"},
+        {"id": "api-call-fetch-pending-categorizations", "name": "fetchPendingCategorizations", "method": "GET", "endpoint": "/api/pending-categorizations"},
+        {"id": "api-call-resolve-categorization", "name": "resolveCategorization", "method": "POST", "endpoint": "/api/pending-categorizations/:id/resolve"},
+        {"id": "api-call-fetch-merchant-memory", "name": "fetchMerchantMemory", "method": "GET", "endpoint": "/api/merchant-memory"},
+        {"id": "api-call-update-merchant-memory", "name": "updateMerchantMemory", "method": "PATCH", "endpoint": "/api/merchant-memory/:id"},
+        {"id": "api-call-delete-merchant-memory", "name": "deleteMerchantMemory", "method": "DELETE", "endpoint": "/api/merchant-memory/:id"},
+        {"id": "api-call-fetch-settings", "name": "fetchSettings", "method": "GET", "endpoint": "/api/settings", "returns": "UserSettings"},
+        {"id": "api-call-update-settings", "name": "updateSettings", "method": "PATCH", "endpoint": "/api/settings"},
+        {"id": "api-call-fetch-categories", "name": "fetchCategories", "method": "GET", "endpoint": "/api/categories"},
+        {"id": "api-call-update-categories", "name": "updateCategories", "method": "PATCH", "endpoint": "/api/categories"},
+        {"id": "api-call-login", "name": "login", "method": "POST", "endpoint": "/auth/login", "returns": "{ token, user }"},
+        {"id": "api-call-register", "name": "register", "method": "POST", "endpoint": "/auth/register", "returns": "{ token, user }"},
+        {"id": "api-call-fetch-stats", "name": "fetchStats", "method": "GET", "endpoint": "/api/stats"}
+      ]
+    },
+    "basApi": {
+      "description": "BAS-related API methods",
+      "methods": [
+        {"id": "api-call-fetch-bas-periods", "name": "fetchPeriods", "method": "GET", "endpoint": "/api/bas/periods"},
+        {"id": "api-call-create-bas-period", "name": "createPeriod", "method": "POST", "endpoint": "/api/bas/periods"},
+        {"id": "api-call-fetch-bas-period", "name": "fetchPeriod", "method": "GET", "endpoint": "/api/bas/periods/:id"},
+        {"id": "api-call-calculate-bas", "name": "calculate", "method": "POST", "endpoint": "/api/bas/calculate"},
+        {"id": "api-call-save-bas", "name": "save", "method": "POST", "endpoint": "/api/bas/periods/:id/save"},
+        {"id": "api-call-fetch-gst-summary", "name": "fetchGSTSummary", "method": "GET", "endpoint": "/api/bas/gst-summary"},
+        {"id": "api-call-fetch-bas-history", "name": "fetchHistory", "method": "GET", "endpoint": "/api/bas/history"},
+        {"id": "api-call-export-bas-pdf", "name": "exportPDF", "method": "POST", "endpoint": "/api/bas/export-pdf"}
+      ]
+    },
+    "taxApi": {
+      "description": "Tax-related API methods",
+      "methods": [
+        {"id": "api-call-calculate-tax", "name": "calculate", "method": "POST", "endpoint": "/api/tax/calculate"},
+        {"id": "api-call-fetch-deductions", "name": "fetchDeductions", "method": "GET", "endpoint": "/api/tax/deductions"},
+        {"id": "api-call-add-deduction", "name": "addDeduction", "method": "POST", "endpoint": "/api/tax/deductions"},
+        {"id": "api-call-update-deduction", "name": "updateDeduction", "method": "PATCH", "endpoint": "/api/tax/deductions/:id"},
+        {"id": "api-call-delete-deduction", "name": "deleteDeduction", "method": "DELETE", "endpoint": "/api/tax/deductions/:id"},
+        {"id": "api-call-fetch-cgt-assets", "name": "fetchCGTAssets", "method": "GET", "endpoint": "/api/tax/cgt-assets"},
+        {"id": "api-call-add-cgt-asset", "name": "addCGTAsset", "method": "POST", "endpoint": "/api/tax/cgt-assets"},
+        {"id": "api-call-record-disposal", "name": "recordDisposal", "method": "POST", "endpoint": "/api/tax/cgt-assets/:id/dispose"},
+        {"id": "api-call-fetch-depreciation", "name": "fetchDepreciation", "method": "GET", "endpoint": "/api/tax/depreciation"},
+        {"id": "api-call-add-depreciation", "name": "addDepreciation", "method": "POST", "endpoint": "/api/tax/depreciation"}
+      ]
+    },
+    "multiBankApi": {
+      "description": "Multi-bank consolidation API methods",
+      "methods": [
+        {"id": "api-call-fetch-all-accounts", "name": "fetchAllAccounts", "method": "GET", "endpoint": "/api/multi-bank/accounts"},
+        {"id": "api-call-fetch-consolidated", "name": "fetchConsolidatedView", "method": "GET", "endpoint": "/api/multi-bank/consolidated"},
+        {"id": "api-call-fetch-cross-transfers", "name": "fetchCrossAccountTransfers", "method": "GET", "endpoint": "/api/multi-bank/transfers"}
+      ]
+    }
+  },
+  "summary": {
+    "totalMethods": 55,
+    "byObject": {
+      "api": 34,
+      "basApi": 8,
+      "taxApi": 10,
+      "multiBankApi": 3
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "$schema": "cartography-routes-v1",
+  "generated": "2026-01-29",
+  "framework": "Hono.js",
+  "sourceFile": "server/src/index.ts",
+  "baseUrl": "http://localhost:3501",
+  "routes": {
+    "auth": [
+      {"id": "route-auth-register", "method": "POST", "path": "/auth/register", "auth": false, "apiCall": "api-call-register"},
+      {"id": "route-auth-login", "method": "POST", "path": "/auth/login", "auth": false, "apiCall": "api-call-login"}
+    ],
+    "statements": [
+      {"id": "route-get-statements", "method": "GET", "path": "/api/statements", "auth": true, "apiCall": "api-call-fetch-statements"},
+      {"id": "route-upload-statement", "method": "POST", "path": "/api/statements/upload", "auth": true, "apiCall": "api-call-upload-statement"},
+      {"id": "route-reprocess-statement", "method": "POST", "path": "/api/statements/:id/reprocess", "auth": true, "apiCall": "api-call-reprocess-statement"},
+      {"id": "route-delete-statement", "method": "DELETE", "path": "/api/statements/:id", "auth": true, "apiCall": "api-call-delete-statement"},
+      {"id": "route-statement-gaps", "method": "GET", "path": "/api/statements/gaps", "auth": true, "apiCall": "api-call-analyze-gaps"}
+    ],
+    "transactions": [
+      {"id": "route-get-transactions", "method": "GET", "path": "/api/transactions", "auth": true, "apiCall": "api-call-fetch-transactions"},
+      {"id": "route-get-transaction", "method": "GET", "path": "/api/transactions/:id", "auth": true, "apiCall": "api-call-fetch-transaction"},
+      {"id": "route-update-transaction", "method": "PATCH", "path": "/api/transactions/:id", "auth": true, "apiCall": "api-call-update-transaction"},
+      {"id": "route-split-transaction", "method": "POST", "path": "/api/transactions/:id/split", "auth": true, "apiCall": "api-call-split-transaction"},
+      {"id": "route-delete-transaction", "method": "DELETE", "path": "/api/transactions/:id", "auth": true, "apiCall": "api-call-delete-transaction"},
+      {"id": "route-export-csv", "method": "GET", "path": "/api/transactions/export/csv", "auth": true, "apiCall": "api-call-export-csv"},
+      {"id": "route-export-xlsx", "method": "GET", "path": "/api/transactions/export/xlsx", "auth": true, "apiCall": "api-call-export-xlsx"}
+    ],
+    "accounts": [
+      {"id": "route-get-accounts", "method": "GET", "path": "/api/accounts", "auth": true, "apiCall": "api-call-fetch-accounts"},
+      {"id": "route-create-account", "method": "POST", "path": "/api/accounts", "auth": true, "apiCall": "api-call-create-account"},
+      {"id": "route-update-account", "method": "PATCH", "path": "/api/accounts/:id", "auth": true, "apiCall": "api-call-update-account"},
+      {"id": "route-delete-account", "method": "DELETE", "path": "/api/accounts/:id", "auth": true, "apiCall": "api-call-delete-account"},
+      {"id": "route-get-balance-history", "method": "GET", "path": "/api/accounts/:id/balance-history", "auth": true, "apiCall": "api-call-fetch-balance-history"}
+    ],
+    "transfers": [
+      {"id": "route-get-transfers", "method": "GET", "path": "/api/transfers", "auth": true, "apiCall": "api-call-fetch-transfers"},
+      {"id": "route-create-transfer", "method": "POST", "path": "/api/transfers", "auth": true, "apiCall": "api-call-create-transfer-link"},
+      {"id": "route-delete-transfer", "method": "DELETE", "path": "/api/transfers/:id", "auth": true, "apiCall": "api-call-delete-transfer-link"},
+      {"id": "route-auto-detect-transfers", "method": "POST", "path": "/api/transfers/auto-detect", "auth": true, "apiCall": "api-call-auto-detect-transfers"}
+    ],
+    "categorization": [
+      {"id": "route-get-pending", "method": "GET", "path": "/api/pending-categorizations", "auth": true, "apiCall": "api-call-fetch-pending-categorizations"},
+      {"id": "route-resolve-categorization", "method": "POST", "path": "/api/pending-categorizations/:id/resolve", "auth": true, "apiCall": "api-call-resolve-categorization"},
+      {"id": "route-get-merchant-memory", "method": "GET", "path": "/api/merchant-memory", "auth": true, "apiCall": "api-call-fetch-merchant-memory"},
+      {"id": "route-update-merchant-memory", "method": "PATCH", "path": "/api/merchant-memory/:id", "auth": true, "apiCall": "api-call-update-merchant-memory"},
+      {"id": "route-delete-merchant-memory", "method": "DELETE", "path": "/api/merchant-memory/:id", "auth": true, "apiCall": "api-call-delete-merchant-memory"}
+    ],
+    "chat": [
+      {"id": "route-chat", "method": "POST", "path": "/api/chat", "auth": true, "apiCall": "api-call-send-chat"}
+    ],
+    "settings": [
+      {"id": "route-get-settings", "method": "GET", "path": "/api/settings", "auth": true, "apiCall": "api-call-fetch-settings"},
+      {"id": "route-update-settings", "method": "PATCH", "path": "/api/settings", "auth": true, "apiCall": "api-call-update-settings"},
+      {"id": "route-get-categories", "method": "GET", "path": "/api/categories", "auth": true, "apiCall": "api-call-fetch-categories"},
+      {"id": "route-update-categories", "method": "PATCH", "path": "/api/categories", "auth": true, "apiCall": "api-call-update-categories"}
+    ],
+    "bas": [
+      {"id": "route-get-bas-periods", "method": "GET", "path": "/api/bas/periods", "auth": true, "apiCall": "api-call-fetch-bas-periods"},
+      {"id": "route-create-bas-period", "method": "POST", "path": "/api/bas/periods", "auth": true, "apiCall": "api-call-create-bas-period"},
+      {"id": "route-get-bas-period", "method": "GET", "path": "/api/bas/periods/:id", "auth": true, "apiCall": "api-call-fetch-bas-period"},
+      {"id": "route-calculate-bas", "method": "POST", "path": "/api/bas/calculate", "auth": true, "apiCall": "api-call-calculate-bas"},
+      {"id": "route-save-bas", "method": "POST", "path": "/api/bas/periods/:id/save", "auth": true, "apiCall": "api-call-save-bas"},
+      {"id": "route-get-gst-summary", "method": "GET", "path": "/api/bas/gst-summary", "auth": true, "apiCall": "api-call-fetch-gst-summary"},
+      {"id": "route-get-bas-history", "method": "GET", "path": "/api/bas/history", "auth": true, "apiCall": "api-call-fetch-bas-history"},
+      {"id": "route-export-bas-pdf", "method": "POST", "path": "/api/bas/export-pdf", "auth": true, "apiCall": "api-call-export-bas-pdf"}
+    ],
+    "tax": [
+      {"id": "route-calculate-tax", "method": "POST", "path": "/api/tax/calculate", "auth": true, "apiCall": "api-call-calculate-tax"},
+      {"id": "route-get-deductions", "method": "GET", "path": "/api/tax/deductions", "auth": true, "apiCall": "api-call-fetch-deductions"},
+      {"id": "route-add-deduction", "method": "POST", "path": "/api/tax/deductions", "auth": true, "apiCall": "api-call-add-deduction"},
+      {"id": "route-update-deduction", "method": "PATCH", "path": "/api/tax/deductions/:id", "auth": true, "apiCall": "api-call-update-deduction"},
+      {"id": "route-delete-deduction", "method": "DELETE", "path": "/api/tax/deductions/:id", "auth": true, "apiCall": "api-call-delete-deduction"},
+      {"id": "route-get-cgt-assets", "method": "GET", "path": "/api/tax/cgt-assets", "auth": true, "apiCall": "api-call-fetch-cgt-assets"},
+      {"id": "route-add-cgt-asset", "method": "POST", "path": "/api/tax/cgt-assets", "auth": true, "apiCall": "api-call-add-cgt-asset"},
+      {"id": "route-record-disposal", "method": "POST", "path": "/api/tax/cgt-assets/:id/dispose", "auth": true, "apiCall": "api-call-record-disposal"},
+      {"id": "route-get-depreciation", "method": "GET", "path": "/api/tax/depreciation", "auth": true, "apiCall": "api-call-fetch-depreciation"},
+      {"id": "route-add-depreciation", "method": "POST", "path": "/api/tax/depreciation", "auth": true, "apiCall": "api-call-add-depreciation"}
+    ],
+    "analytics": [
+      {"id": "route-get-stats", "method": "GET", "path": "/api/stats", "auth": true, "apiCall": "api-call-fetch-stats"},
+      {"id": "route-get-monthly-analytics", "method": "GET", "path": "/api/analytics/monthly", "auth": true, "apiCall": "api-call-fetch-monthly-analytics"},
+      {"id": "route-get-category-analytics", "method": "GET", "path": "/api/analytics/categories", "auth": true, "apiCall": "api-call-fetch-category-analytics"},
+      {"id": "route-debt-recommendations", "method": "POST", "path": "/api/debt/recommendations", "auth": true, "apiCall": "api-call-fetch-debt-recommendations"}
+    ],
+    "realtime": [
+      {"id": "route-sse-events", "method": "GET", "path": "/api/events", "auth": true, "type": "SSE"}
+    ],
+    "agents": [
+      {"id": "route-agent-financial", "method": "POST", "path": "/api/agents/financial-analyst", "auth": true, "apiCall": "api-call-run-financial-agent"},
+      {"id": "route-agent-bas", "method": "POST", "path": "/api/agents/bas", "auth": true, "apiCall": "api-call-run-bas-agent"},
+      {"id": "route-agent-tax", "method": "POST", "path": "/api/agents/tax", "auth": true, "apiCall": "api-call-run-tax-agent"},
+      {"id": "route-agent-reconciliation", "method": "POST", "path": "/api/agents/reconciliation", "auth": true, "apiCall": "api-call-run-reconciliation-agent"}
+    ]
+  },
+  "summary": {
+    "totalRoutes": 65,
+    "byCategory": {
+      "auth": 2,
+      "statements": 5,
+      "transactions": 7,
+      "accounts": 5,
+      "transfers": 4,
+      "categorization": 5,
+      "chat": 1,
+      "settings": 4,
+      "bas": 8,
+      "tax": 10,
+      "analytics": 4,
+      "realtime": 1,
+      "agents": 4
+    }
+  }
+}

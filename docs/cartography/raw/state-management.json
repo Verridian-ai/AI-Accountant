@@ -1,0 +1,61 @@
+{
+  "$schema": "cartography-state-v1",
+  "generated": "2026-01-29",
+  "contexts": [
+    {
+      "id": "ctx-sse",
+      "name": "SSEContext",
+      "file": "client/src/context/SSEContext.tsx",
+      "purpose": "Real-time event streaming via Server-Sent Events",
+      "provides": ["connection", "registerListener", "unregisterListener"],
+      "events": ["statement_added", "statement_processing", "statement_completed", "transactions_updated", "categorizations_pending"]
+    }
+  ],
+  "hooks": [
+    {
+      "id": "hook-use-undo-redo",
+      "name": "useUndoRedo",
+      "file": "client/src/hooks/useUndoRedo.ts",
+      "purpose": "Command pattern undo/redo for transaction edits",
+      "returns": ["canUndo", "canRedo", "undo", "redo", "executeEdit"],
+      "usedBy": ["TransactionTable"]
+    },
+    {
+      "id": "hook-use-event-source",
+      "name": "useEventSource",
+      "file": "client/src/hooks/useEventSource.ts",
+      "purpose": "SSE connection management",
+      "returns": ["connected", "lastEvent"],
+      "usedBy": ["SSEContext"]
+    },
+    {
+      "id": "hook-use-polling",
+      "name": "usePolling",
+      "file": "client/src/hooks/usePolling.ts",
+      "purpose": "Fallback polling when SSE unavailable",
+      "returns": ["data", "isPolling", "startPolling", "stopPolling"],
+      "usedBy": ["SSEContext"]
+    }
+  ],
+  "appState": {
+    "file": "client/src/App.tsx",
+    "variables": [
+      {"id": "state-is-authenticated", "name": "isAuthenticated", "type": "boolean", "default": false},
+      {"id": "state-user", "name": "user", "type": "User | null", "default": "null"},
+      {"id": "state-transactions", "name": "transactions", "type": "Transaction[]", "default": "[]"},
+      {"id": "state-statements", "name": "statements", "type": "Statement[]", "default": "[]"},
+      {"id": "state-stats", "name": "stats", "type": "TransactionStats", "default": "defaultStats"},
+      {"id": "state-accounts", "name": "accounts", "type": "Account[]", "default": "[]"},
+      {"id": "state-active-tab", "name": "activeTab", "type": "string", "default": "dashboard"},
+      {"id": "state-show-settings", "name": "showSettings", "type": "boolean", "default": false},
+      {"id": "state-show-chat", "name": "showChat", "type": "boolean", "default": false},
+      {"id": "state-is-loading", "name": "isLoading", "type": "boolean", "default": true},
+      {"id": "state-error", "name": "error", "type": "string | null", "default": "null"}
+    ]
+  },
+  "summary": {
+    "contexts": 1,
+    "hooks": 3,
+    "appStateVariables": 11
+  }
+}

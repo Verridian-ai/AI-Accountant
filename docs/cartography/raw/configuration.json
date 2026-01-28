@@ -1,0 +1,70 @@
+{
+  "$schema": "cartography-configuration-v1",
+  "generated": "2026-01-29",
+  "client": {
+    "package": {
+      "name": "cba-statements-client",
+      "framework": "React 19",
+      "buildTool": "Vite"
+    },
+    "dependencies": {
+      "core": ["react", "react-dom"],
+      "ui": ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select", "@radix-ui/react-tabs", "@radix-ui/react-tooltip"],
+      "table": ["@tanstack/react-table"],
+      "charts": ["recharts"],
+      "icons": ["lucide-react"],
+      "styling": ["tailwindcss", "tailwind-merge", "class-variance-authority", "clsx"]
+    },
+    "ports": {"dev": 5173}
+  },
+  "server": {
+    "package": {
+      "name": "cba-statements-server",
+      "framework": "Hono.js",
+      "database": "SQLite (Drizzle ORM)"
+    },
+    "dependencies": {
+      "core": ["hono", "@hono/node-server", "hono-rate-limiter"],
+      "database": ["drizzle-orm", "better-sqlite3"],
+      "auth": ["bcryptjs", "hono/jwt"],
+      "ai": ["openai"],
+      "pdf": ["pdf-parse", "pdf2pic"],
+      "export": ["exceljs"]
+    },
+    "ports": {"api": 3501}
+  },
+  "environment": {
+    "variables": [
+      {"name": "JWT_SECRET", "required": true},
+      {"name": "OPENROUTER_API_KEY", "required": true},
+      {"name": "COGNEE_API_URL", "required": false, "default": "http://localhost:8000"},
+      {"name": "DATABASE_URL", "required": false, "default": "./sqlite.db"}
+    ]
+  },
+  "aiModels": {
+    "defaults": {
+      "parsingText": "google/gemini-3-flash-preview",
+      "parsingVision": "google/gemini-3-flash-preview",
+      "categorization": "google/gemini-3-flash-preview",
+      "chat": "google/gemini-3-flash-preview"
+    },
+    "provider": "OpenRouter"
+  },
+  "supportedBanks": [
+    {"id": "cba", "name": "Commonwealth Bank"},
+    {"id": "anz", "name": "ANZ"},
+    {"id": "westpac", "name": "Westpac"},
+    {"id": "nab", "name": "NAB"},
+    {"id": "stgeorge", "name": "St George"},
+    {"id": "bendigo", "name": "Bendigo Bank"},
+    {"id": "ing", "name": "ING"},
+    {"id": "macquarie", "name": "Macquarie"}
+  ],
+  "categories": [
+    "Income - Salary", "Income - Business", "Income - Investment",
+    "Groceries & Supermarket", "Dining & Restaurants", "Transport & Fuel",
+    "Utilities", "Rent/Mortgage", "Insurance", "Healthcare", "Entertainment",
+    "Shopping", "Subscriptions", "Transfer", "Bank Fees", "Interest & Fees",
+    "Cash Withdrawal", "Business Expense", "Tax Payment", "Other"
+  ]
+}
