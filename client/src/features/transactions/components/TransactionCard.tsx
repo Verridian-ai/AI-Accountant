@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { Transaction } from '@/api';
 import { CurrencyDisplay } from '@/components/common/CurrencyDisplay';
 import { CategorySelect } from './CategorySelect';
+import { getCategoryColor } from '../constants/categoryColors';
+import { getTaxCodeForCategory } from '../constants/categories';
 import { cn } from '@/lib/utils';
 import {
     Activity,
@@ -14,7 +16,8 @@ import {
     Wallet,
     Calendar,
     Save,
-    X
+    X,
+    ArrowLeftRight,
 } from 'lucide-react';
 import type { Account } from '@/api';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -95,7 +98,10 @@ export function TransactionCard({
                         <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Category</label>
                         <CategorySelect
                             value={editForm.category || 'Uncategorized'}
-                            onChange={(value) => setEditForm({ ...editForm, category: value })}
+                            onChange={(value) => {
+                                const taxCode = getTaxCodeForCategory(value);
+                                setEditForm({ ...editForm, category: value, gstApplicable: taxCode === 'GST' });
+                            }}
                             aria-label="Edit category"
                             size="md"
                         />
@@ -131,13 +137,25 @@ export function TransactionCard({
                     <div className="flex flex-col overflow-hidden">
                         <span className="font-bold text-zinc-100 truncate text-sm">{transaction.description}</span>
                         <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-medium">
-                            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {transaction.date}</span>
-                            {transaction.category && (
+                            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {(() => { try { return new Date(transaction.date + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return transaction.date; } })()}</span>
+                            {transaction.isTransfer && (
                                 <>
                                     <span>•</span>
-                                    <span className="text-[#FFCC00]">{transaction.category}</span>
+                                    <span className="flex items-center gap-0.5 text-zinc-400"><ArrowLeftRight className="h-2.5 w-2.5" /> Transfer</span>
                                 </>
                             )}
+                            {transaction.category && (() => {
+                                const catColor = getCategoryColor(transaction.category);
+                                return (
+                                    <>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1">
+                                            <span className={cn('w-1.5 h-1.5 rounded-full', catColor.dot)} />
+                                            <span className={catColor.text}>{transaction.category}</span>
+                                        </span>
+                                    </>
+                                );
+                            })()}
                         </div>
                     </div>
                 </div>

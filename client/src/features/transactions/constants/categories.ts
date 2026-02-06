@@ -255,3 +255,22 @@ export function getCategoryByName(name: string): CategoryDefinition | undefined 
 export function getCategoryByAccountCode(code: string): CategoryDefinition | undefined {
   return CATEGORIES.find((c) => c.accountCode === code);
 }
+
+/**
+ * Category names grouped by type for structured dropdowns
+ */
+export const CATEGORY_NAMES_BY_TYPE: Record<string, string[]> = {
+  revenue: CATEGORIES.filter((c) => c.type === 'revenue').map((c) => c.name),
+  cogs: CATEGORIES.filter((c) => c.type === 'cogs').map((c) => c.name),
+  expense: CATEGORIES.filter((c) => c.type === 'expense').map((c) => c.name),
+  system: CATEGORIES.filter((c) => c.type === 'system').map((c) => c.name),
+};
+
+/**
+ * Get the tax code for a given category name.
+ * Returns the category's taxCode, or 'GST' as default for unknown categories.
+ */
+export function getTaxCodeForCategory(name: string): 'GST' | 'FRE' | 'N-T' | 'EXP' {
+  const cat = getCategoryByName(name);
+  return cat?.taxCode ?? 'GST';
+}

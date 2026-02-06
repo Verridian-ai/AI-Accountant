@@ -2,21 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import type { Transaction } from '../types/ledger';
 import type { FilterState } from '../types/ledger';
 import type { SortingState } from '@tanstack/react-table';
-
-/**
- * Default categories that are always available in the filter dropdown.
- * These are displayed even if no transactions have these categories.
- */
-const DEFAULT_CATEGORIES = [
-  'Office Supplies',
-  'Travel',
-  'Meals',
-  'Utilities',
-  'Professional Fees',
-  'Rent',
-  'Software',
-  'Uncategorized',
-] as const;
+import { CATEGORY_NAMES } from '../constants/categories';
 
 interface UseLedgerFiltersOptions {
   transactions: Transaction[];
@@ -30,6 +16,7 @@ interface UseLedgerFiltersReturn {
     setEndDate: (date: string) => void;
     setSelectedCategory: (category: string) => void;
     setGlobalFilter: (filter: string) => void;
+    setSelectedAccount: (account: string) => void;
   };
 
   // UI state
@@ -49,28 +36,6 @@ interface UseLedgerFiltersReturn {
   resetFilters: () => void;
 }
 
-/**
- * Custom hook for managing ledger filter state and logic.
- *
- * Extracts all filter-related functionality from TransactionTable including:
- * - Date range filtering (startDate, endDate)
- * - Category filtering
- * - Global text search
- * - Table sorting state
- * - Filter visibility toggle
- *
- * @example
- * ```tsx
- * const {
- *   filters,
- *   setFilters,
- *   filteredTransactions,
- *   categories,
- *   hasActiveFilters,
- *   resetFilters,
- * } = useLedgerFilters({ transactions });
- * ```
- */
 export function useLedgerFilters({
   transactions,
 }: UseLedgerFiltersOptions): UseLedgerFiltersReturn {
@@ -78,6 +43,7 @@ export function useLedgerFilters({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedAccount, setSelectedAccount] = useState('All');
   const [globalFilter, setGlobalFilter] = useState('');
 
   // UI state
@@ -86,105 +52,78 @@ export function useLedgerFilters({
   // Sorting state
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  /**
-   * Memoized list of available categories.
-   * Combines default categories with any unique categories from transactions.
-   * Always has 'All' as the first option, followed by alphabetically sorted categories.
-   */
   const categories = useMemo(() => {
-    // Collect unique categories from transactions
     const transactionCategories = new Set(
       transactions.map((t) => t.category || 'Uncategorized')
     );
 
-    // Combine with default categories
     const allCategories = new Set([
-      ...DEFAULT_CATEGORIES,
+      ...CATEGORY_NAMES,
       ...transactionCategories,
     ]);
 
-    // Sort alphabetically and prepend 'All'
-    const sortedCategories = Array.from(allCategories).sort();
+    const sorted = Array.from(allCategories)
+      .filter((c) => c !== 'Uncategorized')
+      .sort((a, b) => a.localeCompare(b));
 
-    return ['All', ...sortedCategories];
+    return ['All', ...sorted, 'Uncategorized'];
   }, [transactions]);
 
-  /**
-   * Memoized filtered transactions based on current filter state.
-   * Applies category, start date, and end date filters.
-   * Note: Global filter is handled separately by react-table.
-   */
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
-      // Category filter
       const matchesCategory =
         selectedCategory === 'All' ||
         (t.category || 'Uncategorized') === selectedCategory;
 
-      // Date range filters
       const matchesStart = !startDate || t.date >= startDate;
       const matchesEnd = !endDate || t.date <= endDate;
 
-      return matchesCategory && matchesStart && matchesEnd;
-    });
-  }, [transactions, selectedCategory, startDate, endDate]);
+      const matchesAccount =
+        selectedAccount === 'All' || t.accountId === selectedAccount;
 
-  /**
-   * Computed property indicating whether any filters are currently active.
-   * Used to show filter badge indicators and determine filter panel visibility.
-   */
+      return matchesCategory && matchesStart && matchesEnd && matchesAccount;
+    });
+  }, [transactions, selectedCategory, startDate, endDate, selectedAccount]);
+
   const hasActiveFilters = Boolean(
-    startDate || endDate || selectedCategory !== 'All' || globalFilter
+    startDate || endDate || selectedCategory !== 'All' || globalFilter || selectedAccount !== 'All'
   );
 
-  /**
-   * Reset all filters to their default state.
-   * Clears date range, category selection, and global search.
-   * Also hides the filter panel.
-   */
   const resetFilters = useCallback(() => {
     setStartDate('');
     setEndDate('');
     setSelectedCategory('All');
+    setSelectedAccount('All');
     setGlobalFilter('');
     setShowFilters(false);
   }, []);
 
-  // Bundle filter state for cleaner API
   const filters: FilterState = {
     startDate,
     endDate,
     selectedCategory,
     globalFilter,
+    selectedAccount,
   };
 
-  // Bundle setters for cleaner API
   const setFilters = {
     setStartDate,
     setEndDate,
     setSelectedCategory,
     setGlobalFilter,
+    setSelectedAccount,
   };
 
   return {
-    // Filter state
     filters,
     setFilters,
-
-    // UI state
     showFilters,
     setShowFilters,
-
-    // Sorting
     sorting,
     setSorting,
-
-    // Derived data
     filteredTransactions,
     categories,
     hasActiveFilters,
-
-    // Actions
     resetFilters,
   };
 }

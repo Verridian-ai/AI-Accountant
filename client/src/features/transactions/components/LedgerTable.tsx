@@ -42,6 +42,11 @@ const DynamicTh = ({
   );
 };
 
+interface BulkSelectActions {
+  isSelected: (id: string) => boolean;
+  toggle: (id: string) => void;
+}
+
 interface LedgerTableProps {
   transactions: Transaction[];
   accounts: Account[];
@@ -58,6 +63,8 @@ interface LedgerTableProps {
   handleDelete: (id: string) => void;
   handleSplitStart: (tx: Transaction) => void;
   categories: string[];
+  bulkSelect?: BulkSelectActions;
+  onSelectAll?: () => void;
 }
 
 export function LedgerTable({
@@ -76,12 +83,17 @@ export function LedgerTable({
   handleDelete,
   handleSplitStart,
   categories,
+  bulkSelect,
+  onSelectAll,
 }: LedgerTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
   // Use ref for edit state to prevent column recreation on every render
   const editStateRef = useRef({ editingId, editForm });
   editStateRef.current = { editingId, editForm };
+
+  const bulkSelectRef = useRef(bulkSelect || null);
+  bulkSelectRef.current = bulkSelect || null;
 
   const columns = useMemo(
     () =>
@@ -95,8 +107,10 @@ export function LedgerTable({
         handleDelete,
         handleSplitStart,
         setEditingId,
+        bulkSelectRef: bulkSelect ? bulkSelectRef : undefined,
+        onSelectAll,
       }),
-    [accounts, categories, setEditForm, handleEditStart, handleSave, handleDelete, handleSplitStart, setEditingId]
+    [accounts, categories, setEditForm, handleEditStart, handleSave, handleDelete, handleSplitStart, setEditingId, !!bulkSelect, onSelectAll]
   );
 
   const table = useReactTable({
@@ -219,8 +233,14 @@ export function LedgerTable({
                     ref={rowVirtualizer.measureElement}
                     className="group transition-all duration-300"
                   >
-                    {row.getVisibleCells().map((cell) => {
+                    {row.getVisibleCells().map((cell, cellIndex) => {
                       const isSticky = cell.column.id === 'actions';
+                      const tx = row.original;
+                      const borderColor = tx.isTransfer
+                        ? 'border-l-zinc-500/50'
+                        : tx.amount > 0
+                          ? 'border-l-emerald-500/50'
+                          : 'border-l-red-500/50';
                       return (
                         <td
                           key={cell.id}
@@ -228,6 +248,7 @@ export function LedgerTable({
                             'px-3 lg:px-6 py-3 lg:py-5 bg-[#12121a] first:rounded-l-xl last:rounded-r-xl border-y border-white/5 first:border-l last:border-r transition-shadow duration-300 group-hover:bg-[#16161f] group-hover:border-white/10 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]',
                             editingId === row.original.id && 'bg-[#16161f] border-[#FFCC00]/20',
                             cell.column.id === 'gstApplicable' && 'hidden md:table-cell',
+                            cellIndex === 0 && `border-l-2 ${borderColor}`,
                             isSticky &&
                               'lg:sticky lg:right-0 lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)] lg:border-l lg:border-white/5'
                           )}

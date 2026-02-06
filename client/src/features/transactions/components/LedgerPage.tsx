@@ -19,6 +19,7 @@ import { useLedgerFilters } from '../hooks/useLedgerFilters';
 import { useLedgerData } from '../hooks/useLedgerData';
 import { useInlineEdit } from '../hooks/useInlineEdit';
 import { useTransactionSplit } from '../hooks/useTransactionSplit';
+import { useBulkSelect } from '../hooks/useBulkSelect';
 
 // Components
 import { LedgerSkeleton } from './LedgerSkeleton';
@@ -30,6 +31,7 @@ import { TransactionCardList } from './TransactionCardList';
 import { LedgerFooter } from './LedgerFooter';
 import { SplitTransactionModal } from './SplitTransactionModal';
 import { DeleteConfirmDialog, useDeleteConfirm } from './DeleteConfirmDialog';
+import { BulkActionBar } from './BulkActionBar';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 
 interface LedgerPageProps {
@@ -37,6 +39,8 @@ interface LedgerPageProps {
   accounts?: Account[];
   loading?: boolean;
   onDataChange?: () => void;
+  totalTransactions?: number;
+  onLoadMore?: () => void;
 }
 
 export function LedgerPage({
@@ -44,6 +48,8 @@ export function LedgerPage({
   accounts = [],
   loading = false,
   onDataChange,
+  totalTransactions,
+  onLoadMore,
 }: LedgerPageProps) {
   // Filter hook - manages filter state, sorting, and filtered transactions
   const {
@@ -85,6 +91,16 @@ export function LedgerPage({
     isSaving: isSplitSaving,
   } = useTransactionSplit({ onDataChange });
 
+  // Bulk selection hook
+  const {
+    selectedIds,
+    isSelected,
+    toggle: toggleSelect,
+    selectAll,
+    clearSelection,
+    selectedCount,
+  } = useBulkSelect();
+
   // Delete confirmation dialog hook
   const {
     isOpen: isDeleteOpen,
@@ -113,6 +129,7 @@ export function LedgerPage({
     filters.endDate,
     filters.selectedCategory !== 'All' ? filters.selectedCategory : '',
     filters.globalFilter,
+    filters.selectedAccount !== 'All' ? filters.selectedAccount : '',
   ].filter(Boolean).length;
 
   // Ref for search input to enable Ctrl+F keyboard shortcut
@@ -187,9 +204,12 @@ export function LedgerPage({
             startDate={filters.startDate}
             endDate={filters.endDate}
             selectedCategory={filters.selectedCategory}
+            selectedAccount={filters.selectedAccount}
+            accounts={accounts}
             onStartDateChange={setFilters.setStartDate}
             onEndDateChange={setFilters.setEndDate}
             onCategoryChange={setFilters.setSelectedCategory}
+            onAccountChange={setFilters.setSelectedAccount}
             onReset={resetFilters}
           />
         )}
@@ -231,14 +251,25 @@ export function LedgerPage({
                 startDate={filters.startDate}
                 endDate={filters.endDate}
                 selectedCategory={filters.selectedCategory}
+                selectedAccount={filters.selectedAccount}
+                accounts={accounts}
                 onStartDateChange={setFilters.setStartDate}
                 onEndDateChange={setFilters.setEndDate}
                 onCategoryChange={setFilters.setSelectedCategory}
+                onAccountChange={setFilters.setSelectedAccount}
                 onReset={resetFilters}
               />
             </div>
           )}
         </div>
+
+        {/* Bulk action bar */}
+        <BulkActionBar
+          selectedCount={selectedCount}
+          selectedIds={selectedIds}
+          onClearSelection={clearSelection}
+          onDataChange={onDataChange}
+        />
 
         {/* Desktop table with virtualization */}
         <div className="neu-raised-sm lg:neu-raised rounded-3xl overflow-hidden border border-white/10">
@@ -258,11 +289,15 @@ export function LedgerPage({
             handleDelete={handleDeleteClick}
             handleSplitStart={handleSplitStart}
             categories={categories}
+            bulkSelect={{ isSelected, toggle: toggleSelect }}
+            onSelectAll={() => selectAll(filteredTransactions.map((t) => t.id))}
           />
 
           <LedgerFooter
-            totalCount={transactions.length}
+            totalCount={totalTransactions ?? transactions.length}
             filteredCount={filteredTransactions.length}
+            loadedCount={transactions.length}
+            onLoadMore={onLoadMore}
           />
         </div>
       </div>

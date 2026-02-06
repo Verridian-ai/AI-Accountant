@@ -4,10 +4,13 @@ import type { Transaction, Account } from '../types/ledger';
 import { CurrencyDisplay } from '@/components/common/CurrencyDisplay';
 import { AccountHoverCard } from '@/features/accounts/components/AccountHoverCard';
 import { getCategoryColor } from '../constants/categoryColors';
+import { getTaxCodeForCategory } from '../constants/categories';
 import { CategorySelect } from './CategorySelect';
 import { cn } from '@/lib/utils';
 import {
   ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   Calendar,
   FileText,
   DollarSign,
@@ -22,11 +25,18 @@ import {
   History,
   CreditCard,
   PiggyBank,
+  ArrowLeftRight,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface EditStateRef {
   editingId: string | null;
   editForm: Partial<Transaction>;
+}
+
+interface BulkSelectRef {
+  isSelected: (id: string) => boolean;
+  toggle: (id: string) => void;
 }
 
 interface CreateColumnsParams {
@@ -39,6 +49,8 @@ interface CreateColumnsParams {
   handleDelete: (id: string) => void;
   handleSplitStart: (tx: Transaction) => void;
   setEditingId: (id: string | null) => void;
+  bulkSelectRef?: MutableRefObject<BulkSelectRef | null>;
+  onSelectAll?: () => void;
 }
 
 export function createLedgerColumns({
@@ -51,31 +63,94 @@ export function createLedgerColumns({
   handleDelete,
   handleSplitStart,
   setEditingId,
+  bulkSelectRef,
+  onSelectAll,
 }: CreateColumnsParams): ColumnDef<Transaction>[] {
-  return [
+  const columns: ColumnDef<Transaction>[] = [];
+
+  // Checkbox Column (only when bulk select is enabled)
+  if (bulkSelectRef) {
+    columns.push({
+      id: 'select',
+      size: 40,
+      minSize: 40,
+      header: () => (
+        <div className="flex items-center justify-center">
+          <button
+            type="button"
+            onClick={onSelectAll}
+            className="w-5 h-5 neu-inset rounded-md flex items-center justify-center text-zinc-500 hover:text-[#FFCC00] transition-colors"
+            aria-label="Select all"
+            title="Select all"
+          >
+            <span className="text-[10px] font-black">All</span>
+          </button>
+        </div>
+      ),
+      cell: ({ row }) => {
+        if (!row) return null;
+        const tx = row.original;
+        const selected = bulkSelectRef.current?.isSelected(tx.id) ?? false;
+        return (
+          <div className="flex items-center justify-center">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); bulkSelectRef.current?.toggle(tx.id); }}
+              className={cn(
+                'w-5 h-5 rounded-md border transition-all flex items-center justify-center',
+                selected
+                  ? 'bg-[#FFCC00]/20 border-[#FFCC00]/50 text-[#FFCC00]'
+                  : 'neu-inset border-white/5 text-transparent hover:border-white/20'
+              )}
+              aria-label={selected ? 'Deselect' : 'Select'}
+            >
+              {selected && <span className="text-xs font-black">✓</span>}
+            </button>
+          </div>
+        );
+      },
+    });
+  }
+
+  columns.push(
     // Date Column
     {
       accessorKey: 'date',
       size: 100,
       minSize: 90,
-      header: ({ column }) => (
-        <button
-          type="button"
-          title="Sort by date"
-          className="flex items-center gap-2 hover:text-[#FFCC00] transition-colors group/head"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          <Calendar className="h-3 w-3 text-zinc-500 group-hover/head:text-[#FFCC00]" />
-          <span className="uppercase tracking-widest text-xs font-black">Date</span>
-          <ArrowUpDown className="h-3 w-3 opacity-50" />
-        </button>
-      ),
+      header: ({ column }) => {
+        const sorted = column.getIsSorted();
+        return (
+          <button
+            type="button"
+            title="Sort by date"
+            className="flex items-center gap-2 hover:text-[#FFCC00] transition-colors group/head"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            <Calendar className="h-3 w-3 text-zinc-500 group-hover/head:text-[#FFCC00]" />
+            <span className="uppercase tracking-widest text-xs font-black">Date</span>
+            {sorted === 'asc' ? (
+              <ArrowUp className="h-3 w-3 text-[#FFCC00]" />
+            ) : sorted === 'desc' ? (
+              <ArrowDown className="h-3 w-3 text-[#FFCC00]" />
+            ) : (
+              <ArrowUpDown className="h-3 w-3 opacity-50" />
+            )}
+          </button>
+        );
+      },
       cell: ({ row }) => {
         if (!row) return null;
+        const dateStr = row.original.date;
+        let formatted = dateStr;
+        try {
+          const d = new Date(dateStr + 'T00:00:00');
+          formatted = d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch { /* keep original */ }
         return (
           <div className="flex flex-col">
             <span className="font-mono text-xs font-black text-zinc-500 tracking-wider neu-inset px-2.5 py-1 rounded-lg border border-white/5 w-fit whitespace-nowrap">
-              {row.original.date}
+              {formatted}
             </span>
           </div>
         );
@@ -124,11 +199,16 @@ export function createLedgerColumns({
               <Activity className="h-3.5 w-3.5 text-zinc-600 group-hover:text-[#FFCC00] transition-colors" />
             </div>
             <div
-              className="max-w-[140px] sm:max-w-[220px] lg:max-w-[280px] truncate text-zinc-100 font-bold tracking-tight text-sm group-hover:text-[#FFCC00] transition-colors"
+              className="max-w-[200px] sm:max-w-[300px] lg:max-w-[400px] xl:max-w-[500px] truncate text-zinc-100 font-bold tracking-tight text-sm group-hover:text-[#FFCC00] transition-colors"
               title={tx.description}
             >
               {tx.description}
             </div>
+            {tx.isTransfer && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400 text-xs font-black uppercase tracking-[0.15em] border border-zinc-500/20 whitespace-nowrap">
+                <ArrowLeftRight className="h-2.5 w-2.5" /> Transfer
+              </span>
+            )}
             {tx.isEdited && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-black uppercase tracking-[0.15em] border border-amber-500/20 whitespace-nowrap">
                 <History className="h-2.5 w-2.5" /> Modified
@@ -152,18 +232,27 @@ export function createLedgerColumns({
       accessorKey: 'amount',
       size: 130,
       minSize: 110,
-      header: ({ column }) => (
-        <button
-          type="button"
-          title="Sort by amount"
-          className="flex items-center gap-2 hover:text-[#FFCC00] transition-colors group/head"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          <DollarSign className="h-3 w-3 text-zinc-500 group-hover/head:text-[#FFCC00]" />
-          <span className="uppercase tracking-widest text-xs font-black">Amount</span>
-          <ArrowUpDown className="h-3 w-3 opacity-50" />
-        </button>
-      ),
+      header: ({ column }) => {
+        const sorted = column.getIsSorted();
+        return (
+          <button
+            type="button"
+            title="Sort by amount"
+            className="flex items-center gap-2 hover:text-[#FFCC00] transition-colors group/head"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            <DollarSign className="h-3 w-3 text-zinc-500 group-hover/head:text-[#FFCC00]" />
+            <span className="uppercase tracking-widest text-xs font-black">Amount</span>
+            {sorted === 'asc' ? (
+              <ArrowUp className="h-3 w-3 text-[#FFCC00]" />
+            ) : sorted === 'desc' ? (
+              <ArrowDown className="h-3 w-3 text-[#FFCC00]" />
+            ) : (
+              <ArrowUpDown className="h-3 w-3 opacity-50" />
+            )}
+          </button>
+        );
+      },
       cell: ({ row }) => {
         if (!row) return null;
         const tx = row.original;
@@ -195,6 +284,42 @@ export function createLedgerColumns({
       },
     },
 
+    // Balance Column
+    {
+      accessorKey: 'balance',
+      size: 120,
+      minSize: 100,
+      header: ({ column }) => {
+        const sorted = column.getIsSorted();
+        return (
+          <button
+            type="button"
+            title="Sort by balance"
+            className="flex items-center gap-2 hover:text-[#FFCC00] transition-colors group/head"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            <Wallet className="h-3 w-3 text-zinc-500 group-hover/head:text-[#FFCC00]" />
+            <span className="uppercase tracking-widest text-xs font-black">Balance</span>
+            {sorted === 'asc' ? (
+              <ArrowUp className="h-3 w-3 text-[#FFCC00]" />
+            ) : sorted === 'desc' ? (
+              <ArrowDown className="h-3 w-3 text-[#FFCC00]" />
+            ) : (
+              <ArrowUpDown className="h-3 w-3 opacity-50" />
+            )}
+          </button>
+        );
+      },
+      cell: ({ row }) => {
+        if (!row) return null;
+        const balance = row.original.balance;
+        if (balance == null) {
+          return <span className="text-xs font-bold text-zinc-700">--</span>;
+        }
+        return <CurrencyDisplay amount={balance} />;
+      },
+    },
+
     // Category Column
     {
       accessorKey: 'category',
@@ -220,7 +345,10 @@ export function createLedgerColumns({
             <div className="min-w-[150px]">
               <CategorySelect
                 value={cat}
-                onChange={(value) => setEditForm({ ...editForm, category: value })}
+                onChange={(value) => {
+                  const taxCode = getTaxCodeForCategory(value);
+                  setEditForm({ ...editForm, category: value, gstApplicable: taxCode === 'GST' });
+                }}
                 aria-label="Edit category"
                 size="sm"
               />
@@ -229,20 +357,27 @@ export function createLedgerColumns({
         }
 
         const color = getCategoryColor(cat) || getCategoryColor('Uncategorized');
+        const confidence = tx.confidenceScore;
         return (
           <div className="flex items-center gap-2 min-w-[150px]">
             <span
               className={cn(
                 'px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border transition-all whitespace-nowrap',
-                color?.badge?.bg || 'bg-red-500/10',
-                color?.badge?.text || 'text-red-500',
-                color?.badge?.border || 'border-red-500/20',
+                color?.badge?.bg || 'bg-red-500/15',
+                color?.badge?.text || 'text-red-400',
+                color?.badge?.border || 'border-red-500/25',
                 color?.badge?.shadow || '',
                 'neu-raised-sm'
               )}
             >
               {cat}
             </span>
+            {confidence != null && confidence < 0.8 && (
+              <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500/60" title={`AI confidence: ${Math.round(confidence * 100)}%`}>
+                <AlertTriangle className="h-2.5 w-2.5" />
+                {Math.round(confidence * 100)}%
+              </span>
+            )}
           </div>
         );
       },
@@ -391,5 +526,7 @@ export function createLedgerColumns({
         );
       },
     },
-  ];
+  );
+
+  return columns;
 }

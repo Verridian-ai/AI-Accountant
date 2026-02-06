@@ -3,21 +3,12 @@ import { api, type PendingCategorization } from '@/api';
 import { Check, X, Edit2, Loader2, ChevronDown, Brain, Sparkles, ShieldAlert, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CategorySelect } from './CategorySelect';
+import { getTaxCodeForCategory } from '../constants/categories';
 
 interface PendingCategorizationReviewProps {
     onUpdate?: () => void;
 }
-
-const CATEGORIES = [
-    'Advertising & Marketing', 'Bank Fees', 'Business Insurance', 'Car & Transport',
-    'Clothing & Apparel', 'Computer & IT', 'Consulting & Professional Services',
-    'Donations & Charity', 'Education & Training', 'Entertainment', 'Equipment & Tools',
-    'Food & Dining', 'Gifts', 'Groceries', 'Health & Medical', 'Home Office',
-    'Income', 'Insurance', 'Interest & Fees', 'Legal & Accounting', 'Loan Repayment',
-    'Memberships & Subscriptions', 'Office Supplies', 'Personal Care', 'Rent & Utilities',
-    'Repairs & Maintenance', 'Salary & Wages', 'Shopping', 'Software & Apps',
-    'Superannuation', 'Tax', 'Telecommunications', 'Transfer', 'Travel', 'Uncategorized', 'Utilities'
-];
 
 export function PendingCategorizationReview({ onUpdate }: PendingCategorizationReviewProps) {
     const [pending, setPending] = useState<PendingCategorization[]>([]);
@@ -197,16 +188,16 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
                                     <div className="space-y-4">
                                         <div className="space-y-2">
                                             <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest ml-1">Manual Override</label>
-                                            <div className="relative">
-                                                <select
-                                                    value={editCategory}
-                                                    onChange={(e) => setEditCategory(e.target.value)}
-                                                    className="w-full pl-4 pr-10 py-3 text-xs font-bold neu-inset rounded-xl text-[#FFCC00] bg-transparent border-none focus:ring-0 appearance-none cursor-pointer"
-                                                >
-                                                    {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-[#12121a] text-zinc-300">{cat}</option>)}
-                                                </select>
-                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#FFCC00]/50 pointer-events-none" />
-                                            </div>
+                                            <CategorySelect
+                                                value={editCategory}
+                                                onChange={(value) => {
+                                                    setEditCategory(value);
+                                                    const taxCode = getTaxCodeForCategory(value);
+                                                    setEditGst(taxCode === 'GST');
+                                                }}
+                                                aria-label="Override category"
+                                                size="sm"
+                                            />
                                         </div>
                                         <div className="flex items-center justify-between p-3 neu-inset rounded-xl border border-white/5">
                                             <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Apply GST</span>

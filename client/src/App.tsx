@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { LedgerPage } from './features/transactions/components/LedgerPage';
+import { useSSE } from './hooks/useSSE';
 import { Toaster } from 'sonner';
 import { FloatingChat } from './features/chat/components/FloatingChat';
 import { StatCard, StatCardSkeleton } from './features/analytics/components/StatCard';
@@ -64,20 +65,33 @@ function App() {
     setStats(null);
   };
 
+  const [totalTransactions, setTotalTransactions] = useState(0);
+
   const refreshData = async () => {
     try {
-      const [txs, accts] = await Promise.all([
+      const [txResult, accts] = await Promise.all([
         api.fetchTransactions(),
         api.fetchAccounts()
       ]);
-      setTransactions(txs);
+      setTransactions(txResult.transactions);
+      setTotalTransactions(txResult.total);
       setAccounts(accts);
-      setStats(api.calculateStats(txs));
+      setStats(api.calculateStats(txResult.transactions));
       setLastUpdated(new Date());
     } catch (e) {
       console.error('Failed to fetch data', e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMoreTransactions = async () => {
+    try {
+      const result = await api.fetchTransactions({ offset: transactions.length, limit: 100 });
+      setTransactions(prev => [...prev, ...result.transactions]);
+      setTotalTransactions(result.total);
+    } catch (e) {
+      console.error('Failed to load more transactions', e);
     }
   };
 
@@ -99,12 +113,16 @@ function App() {
     initAuth();
   }, []);
 
+  const stableRefreshData = useCallback(() => {
+    refreshData();
+  }, [isAuthenticated]);
+
+  // SSE-driven refresh replaces polling
+  useSSE(stableRefreshData);
+
   useEffect(() => {
     if (!isAuthenticated) return;
-
     refreshData();
-    const interval = setInterval(refreshData, 5000);
-    return () => clearInterval(interval);
   }, [isAuthenticated]);
 
   const formatCurrency = (cents: number) => {
@@ -299,6 +317,8 @@ function App() {
               accounts={accounts}
               loading={loading}
               onDataChange={refreshData}
+              totalTransactions={totalTransactions}
+              onLoadMore={loadMoreTransactions}
             />
           </div>
         )}

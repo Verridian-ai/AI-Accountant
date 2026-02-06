@@ -98,16 +98,20 @@ export function useInlineEdit({
       return;
     }
 
+    // Optimistic: close edit form immediately
+    const savedForm = { ...editForm };
+    setEditingId(null);
+    setEditForm({});
     setIsSaving(true);
+
     try {
-      await api.updateTransaction(id, editForm);
-      setEditingId(null);
-      setEditForm({});
+      await api.updateTransaction(id, savedForm);
       onDataChange?.();
     } catch (err) {
       console.error('[useInlineEdit] Failed to save changes:', err);
-      // TODO: Replace with toast notification when available
-      // toast.error('Failed to save changes');
+      // Revert: reopen edit form with original values on error
+      setEditingId(id);
+      setEditForm(savedForm);
     } finally {
       setIsSaving(false);
     }

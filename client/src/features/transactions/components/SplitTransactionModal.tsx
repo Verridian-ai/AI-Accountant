@@ -216,31 +216,51 @@ export function SplitTransactionModal({
                   />
                 </div>
 
-                {/* Amount Input */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor={`split-amount-${idx}`}
-                    className="text-xs font-black uppercase text-zinc-600 tracking-widest ml-1"
-                  >
-                    Amount ($)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 font-black text-xs">
-                      $
-                    </span>
-                    <input
-                      id={`split-amount-${idx}`}
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      aria-label={`Amount for split part ${idx + 1}`}
-                      value={split.amount / 100}
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value) || 0;
-                        updateSplit(idx, { amount: Math.round(value * 100) });
-                      }}
-                      className="w-full pl-8 pr-4 py-4 text-sm neu-inset rounded-2xl text-[#FFCC00] font-bold focus-gold outline-none"
-                    />
+                {/* Amount + GST row */}
+                <div className="flex gap-4">
+                  <div className="flex-1 space-y-2">
+                    <label
+                      htmlFor={`split-amount-${idx}`}
+                      className="text-xs font-black uppercase text-zinc-600 tracking-widest ml-1"
+                    >
+                      Amount ($)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 font-black text-xs">
+                        $
+                      </span>
+                      <input
+                        id={`split-amount-${idx}`}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        aria-label={`Amount for split part ${idx + 1}`}
+                        value={split.amount / 100}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          updateSplit(idx, { amount: Math.round(value * 100) });
+                        }}
+                        className="w-full pl-8 pr-4 py-4 text-sm neu-inset rounded-2xl text-[#FFCC00] font-bold focus-gold outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="w-20 space-y-2">
+                    <label className="text-xs font-black uppercase text-zinc-600 tracking-widest ml-1">
+                      GST
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => updateSplit(idx, { gst: !split.gst })}
+                      className={cn(
+                        'w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border',
+                        split.gst
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                          : 'neu-inset text-zinc-600 border-zinc-800/50'
+                      )}
+                      aria-label={`GST for split part ${idx + 1}: ${split.gst ? 'included' : 'excluded'}`}
+                    >
+                      {split.gst ? 'GST' : 'N/A'}
+                    </button>
                   </div>
                 </div>
 

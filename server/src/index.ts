@@ -7,7 +7,7 @@ import { jwt, verify } from 'hono/jwt'
 import { stream } from 'hono/streaming'
 import { db, transactions, statements, users, userSettings, transactionHistory, accounts, merchantMemory, pendingCategorization, transferLinks, accountBalanceHistory, reconciliationAlerts, statementAccounts, businessProfiles } from './schema.js'
 import { validateABN, normalizeABN, formatABN, validateEntityType, validateBasFrequency, validateAnzsicCode, validateTaxAgentNumber, ENTITY_TYPES, BAS_FREQUENCIES, COMMON_ANZSIC_CODES } from './utils/abn.js'
-import { desc, eq, and, gte, lte, like, aliasedTable } from 'drizzle-orm'
+import { desc, eq, and, gte, lte, like, aliasedTable, sql } from 'drizzle-orm'
 
 import { pipeline } from './services/pipeline.js';
 import path from 'path';
@@ -174,11 +174,21 @@ app.get('/api/vertex-ai/test', async (c) => {
 app.get('/api/transactions', async (c) => {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
-    const result = await db.select().from(transactions)
-        .where(eq(transactions.userId, userId))
-        .orderBy(desc(transactions.date))
-        .limit(100);
-    return c.json(result);
+    const limit = Math.min(parseInt(c.req.query('limit') || '100'), 500);
+    const offset = parseInt(c.req.query('offset') || '0');
+
+    const [result, countResult] = await Promise.all([
+        db.select().from(transactions)
+            .where(eq(transactions.userId, userId))
+            .orderBy(desc(transactions.date))
+            .limit(limit)
+            .offset(offset),
+        db.select({ count: sql<number>`count(*)` }).from(transactions)
+            .where(eq(transactions.userId, userId)),
+    ]);
+
+    const total = countResult[0]?.count ?? 0;
+    return c.json({ transactions: result, total });
 });
 
 app.patch('/api/transactions/:id', async (c) => {

@@ -1,16 +1,26 @@
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CATEGORY_NAMES } from '../constants/categories';
+import { CATEGORY_NAMES_BY_TYPE } from '../constants/categories';
 import { getCategoryColor } from '../constants/categoryColors';
 
 interface CategorySelectProps {
   value: string;
   onChange: (value: string) => void;
-  includeAll?: boolean; // For filter bar - adds "All" option
+  includeAll?: boolean;
   className?: string;
   'aria-label'?: string;
   size?: 'sm' | 'md' | 'lg';
 }
+
+const GROUP_LABELS: Record<string, string> = {
+  revenue: 'Revenue',
+  cogs: 'Cost of Goods Sold',
+  expense: 'Expenses',
+  system: 'System',
+};
+
+const GROUP_ORDER = ['revenue', 'cogs', 'expense', 'system'];
 
 export function CategorySelect({
   value,
@@ -20,7 +30,10 @@ export function CategorySelect({
   'aria-label': ariaLabel = 'Select category',
   size = 'md',
 }: CategorySelectProps) {
-  const options = includeAll ? ['All', ...CATEGORY_NAMES] : CATEGORY_NAMES;
+  const [open, setOpen] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   const sizeClasses = {
     sm: 'py-2 px-3 text-xs',
@@ -28,35 +41,152 @@ export function CategorySelect({
     lg: 'py-4 px-5 text-base',
   };
 
-  // Get the color for the selected category for visual feedback
+  // Build flat list of all options for keyboard nav
+  const allOptions: string[] = [];
+  if (includeAll) allOptions.push('All');
+  for (const group of GROUP_ORDER) {
+    const items = CATEGORY_NAMES_BY_TYPE[group];
+    if (items) allOptions.push(...items);
+  }
+
   const selectedColor = value && value !== 'All' ? getCategoryColor(value) : null;
 
+  // Close on click outside
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  // Scroll highlighted item into view
+  useEffect(() => {
+    if (highlightIndex >= 0 && listRef.current) {
+      const items = listRef.current.querySelectorAll('[role="option"]');
+      items[highlightIndex]?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [highlightIndex]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!open) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setOpen(true);
+        setHighlightIndex(allOptions.indexOf(value));
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightIndex((prev) => Math.min(prev + 1, allOptions.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightIndex((prev) => Math.max(prev - 1, 0));
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (highlightIndex >= 0 && allOptions[highlightIndex]) {
+          onChange(allOptions[highlightIndex]);
+          setOpen(false);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setOpen(false);
+        break;
+    }
+  }, [open, highlightIndex, allOptions, value, onChange]);
+
   return (
-    <div className="relative">
-      <select
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        role="combobox"
         aria-label={ariaLabel}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        onClick={() => setOpen(!open)}
+        onKeyDown={handleKeyDown}
         className={cn(
-          "w-full neu-inset rounded-xl text-[#FFCC00] font-bold bg-transparent border-none focus-gold appearance-none cursor-pointer pr-10",
+          'w-full neu-inset rounded-xl text-[#FFCC00] font-bold bg-transparent border-none focus-gold cursor-pointer pr-10 text-left flex items-center gap-2',
           sizeClasses[size],
           className
         )}
-        style={selectedColor ? {
-          borderLeftColor: selectedColor.border.replace('border-', '').replace('-500', ''),
-        } : undefined}
       >
-        {options.map(cat => (
-          <option
-            key={cat}
-            value={cat}
-            className="bg-[#12121a] text-zinc-300"
-          >
-            {cat}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#FFCC00]/50 pointer-events-none" />
+        {selectedColor && (
+          <span className={cn('w-2 h-2 rounded-full shrink-0', selectedColor.dot)} />
+        )}
+        <span className="truncate">{value || 'Select...'}</span>
+        <ChevronDown className={cn(
+          'absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#FFCC00]/50 transition-transform',
+          open && 'rotate-180'
+        )} />
+      </button>
+
+      {open && (
+        <ul
+          ref={listRef}
+          role="listbox"
+          aria-label={ariaLabel}
+          className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto neu-raised rounded-xl border border-white/10 bg-[#12121a] shadow-2xl scrollbar-thin animate-in fade-in zoom-in-95 duration-150"
+          onKeyDown={handleKeyDown}
+        >
+          {includeAll && (
+            <li
+              role="option"
+              aria-selected={value === 'All'}
+              className={cn(
+                'px-4 py-2.5 text-xs font-bold cursor-pointer transition-colors',
+                value === 'All' ? 'text-[#FFCC00] bg-[#FFCC00]/5' : 'text-zinc-300 hover:bg-white/5',
+                highlightIndex === 0 && 'bg-white/10'
+              )}
+              onClick={() => { onChange('All'); setOpen(false); }}
+            >
+              All Categories
+            </li>
+          )}
+
+          {GROUP_ORDER.map((group) => {
+            const items = CATEGORY_NAMES_BY_TYPE[group];
+            if (!items || items.length === 0) return null;
+            return (
+              <li key={group} role="group">
+                <div className="px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 bg-black/30 sticky top-0">
+                  {GROUP_LABELS[group]}
+                </div>
+                {items.map((cat) => {
+                  const color = getCategoryColor(cat);
+                  const flatIndex = allOptions.indexOf(cat);
+                  return (
+                    <div
+                      key={cat}
+                      role="option"
+                      aria-selected={value === cat}
+                      className={cn(
+                        'px-4 py-2 text-xs font-bold cursor-pointer transition-colors flex items-center gap-2',
+                        value === cat ? 'text-[#FFCC00] bg-[#FFCC00]/5' : 'text-zinc-300 hover:bg-white/5',
+                        highlightIndex === flatIndex && 'bg-white/10'
+                      )}
+                      onClick={() => { onChange(cat); setOpen(false); }}
+                    >
+                      <span className={cn('w-2 h-2 rounded-full shrink-0', color.dot)} />
+                      {cat}
+                    </div>
+                  );
+                })}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
@@ -72,7 +202,7 @@ export function CategorySelectWithBadge({
     <div className="flex items-center gap-2">
       <div
         className={cn(
-          "w-3 h-3 rounded-full shrink-0",
+          'w-3 h-3 rounded-full shrink-0',
           color.dot
         )}
       />

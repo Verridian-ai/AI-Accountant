@@ -115,8 +115,12 @@ export interface TransactionStats {
 }
 
 export const api = {
-    fetchTransactions: async (): Promise<Transaction[]> => {
-        const res = await fetch(`${API_URL}/transactions`, {
+    fetchTransactions: async (options?: { limit?: number; offset?: number }): Promise<{ transactions: Transaction[]; total: number }> => {
+        const params = new URLSearchParams();
+        if (options?.limit) params.set('limit', String(options.limit));
+        if (options?.offset) params.set('offset', String(options.offset));
+        const qs = params.toString();
+        const res = await fetch(`${API_URL}/transactions${qs ? `?${qs}` : ''}`, {
             headers: getAuthHeaders()
         });
         if (!res.ok) throw new Error('Failed to fetch transactions');

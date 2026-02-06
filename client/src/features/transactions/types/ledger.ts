@@ -22,6 +22,8 @@ export interface FilterState {
   selectedCategory: string;
   /** Global search term to filter across all transaction fields */
   globalFilter: string;
+  /** Selected account ID to filter by, or 'All' for all accounts */
+  selectedAccount: string;
 }
 
 /**

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SSEContext } from './SSEContextDef';
-import { getToken } from '../api';
+import { getToken, BASE_URL } from '../api';
 
 export function SSEProvider({ children }: { children: React.ReactNode }) {
     const [connected, setConnected] = useState(false);
@@ -27,7 +27,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            const es = new EventSource(`http://localhost:3501/api/events?token=${token}`);
+            const es = new EventSource(`${BASE_URL}/api/events?token=${token}`);
 
             es.onopen = () => {
                 console.log('SSE connection opened');
