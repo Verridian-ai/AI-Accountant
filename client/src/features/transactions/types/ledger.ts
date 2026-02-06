@@ -24,6 +24,10 @@ export interface FilterState {
   globalFilter: string;
   /** Selected account ID to filter by, or 'All' for all accounts */
   selectedAccount: string;
+  /** Minimum amount for filtering transactions (in dollars) */
+  minAmount?: number;
+  /** Maximum amount for filtering transactions (in dollars) */
+  maxAmount?: number;
 }
 
 /**

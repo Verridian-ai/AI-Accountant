@@ -130,6 +130,8 @@ export function LedgerPage({
     filters.selectedCategory !== 'All' ? filters.selectedCategory : '',
     filters.globalFilter,
     filters.selectedAccount !== 'All' ? filters.selectedAccount : '',
+    filters.minAmount,
+    filters.maxAmount,
   ].filter(Boolean).length;
 
   // Ref for search input to enable Ctrl+F keyboard shortcut
@@ -204,11 +206,15 @@ export function LedgerPage({
             startDate={filters.startDate}
             endDate={filters.endDate}
             selectedCategory={filters.selectedCategory}
+            minAmount={filters.minAmount?.toString() ?? ''}
+            maxAmount={filters.maxAmount?.toString() ?? ''}
             selectedAccount={filters.selectedAccount}
             accounts={accounts}
             onStartDateChange={setFilters.setStartDate}
             onEndDateChange={setFilters.setEndDate}
             onCategoryChange={setFilters.setSelectedCategory}
+            onMinAmountChange={setFilters.setMinAmount}
+            onMaxAmountChange={setFilters.setMaxAmount}
             onAccountChange={setFilters.setSelectedAccount}
             onReset={resetFilters}
           />
@@ -251,11 +257,15 @@ export function LedgerPage({
                 startDate={filters.startDate}
                 endDate={filters.endDate}
                 selectedCategory={filters.selectedCategory}
+                minAmount={filters.minAmount?.toString() ?? ''}
+                maxAmount={filters.maxAmount?.toString() ?? ''}
                 selectedAccount={filters.selectedAccount}
                 accounts={accounts}
                 onStartDateChange={setFilters.setStartDate}
                 onEndDateChange={setFilters.setEndDate}
                 onCategoryChange={setFilters.setSelectedCategory}
+                onMinAmountChange={setFilters.setMinAmount}
+                onMaxAmountChange={setFilters.setMaxAmount}
                 onAccountChange={setFilters.setSelectedAccount}
                 onReset={resetFilters}
               />

@@ -17,6 +17,8 @@ interface UseLedgerFiltersReturn {
     setSelectedCategory: (category: string) => void;
     setGlobalFilter: (filter: string) => void;
     setSelectedAccount: (account: string) => void;
+    setMinAmount: (amount: string) => void;
+    setMaxAmount: (amount: string) => void;
   };
 
   // UI state
@@ -45,6 +47,8 @@ export function useLedgerFilters({
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedAccount, setSelectedAccount] = useState('All');
   const [globalFilter, setGlobalFilter] = useState('');
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
 
   // UI state
   const [showFilters, setShowFilters] = useState(false);
@@ -81,12 +85,17 @@ export function useLedgerFilters({
       const matchesAccount =
         selectedAccount === 'All' || t.accountId === selectedAccount;
 
-      return matchesCategory && matchesStart && matchesEnd && matchesAccount;
+      const minAmountCents = minAmount ? parseFloat(minAmount) * 100 : null;
+      const maxAmountCents = maxAmount ? parseFloat(maxAmount) * 100 : null;
+      const matchesMinAmount = minAmountCents === null || t.amount >= minAmountCents;
+      const matchesMaxAmount = maxAmountCents === null || t.amount <= maxAmountCents;
+
+      return matchesCategory && matchesStart && matchesEnd && matchesAccount && matchesMinAmount && matchesMaxAmount;
     });
-  }, [transactions, selectedCategory, startDate, endDate, selectedAccount]);
+  }, [transactions, selectedCategory, startDate, endDate, selectedAccount, minAmount, maxAmount]);
 
   const hasActiveFilters = Boolean(
-    startDate || endDate || selectedCategory !== 'All' || globalFilter || selectedAccount !== 'All'
+    startDate || endDate || selectedCategory !== 'All' || globalFilter || selectedAccount !== 'All' || minAmount || maxAmount
   );
 
   const resetFilters = useCallback(() => {
@@ -95,6 +104,8 @@ export function useLedgerFilters({
     setSelectedCategory('All');
     setSelectedAccount('All');
     setGlobalFilter('');
+    setMinAmount('');
+    setMaxAmount('');
     setShowFilters(false);
   }, []);
 
@@ -104,6 +115,8 @@ export function useLedgerFilters({
     selectedCategory,
     globalFilter,
     selectedAccount,
+    minAmount: minAmount ? parseFloat(minAmount) : undefined,
+    maxAmount: maxAmount ? parseFloat(maxAmount) : undefined,
   };
 
   const setFilters = {
@@ -112,6 +125,8 @@ export function useLedgerFilters({
     setSelectedCategory,
     setGlobalFilter,
     setSelectedAccount,
+    setMinAmount,
+    setMaxAmount,
   };
 
   return {
