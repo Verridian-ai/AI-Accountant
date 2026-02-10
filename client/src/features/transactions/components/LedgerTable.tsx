@@ -170,7 +170,7 @@ export function LedgerTable({
 
       <div
         ref={parentRef}
-        className="overflow-auto scrollbar-thin max-h-[70vh]"
+        className="overflow-scroll max-h-[70vh]"
       >
         <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 min-w-max">
           <table
