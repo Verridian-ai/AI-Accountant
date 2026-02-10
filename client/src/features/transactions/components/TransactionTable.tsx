@@ -332,6 +332,8 @@ export function TransactionTable({ transactions, accounts = [], loading = false,
         },
         {
             accessorKey: 'gstApplicable',
+            size: 80,
+            minSize: 70,
             header: () => (
                 <span className="uppercase tracking-widest text-[9px] font-black text-zinc-500">Tax</span>
             ),
@@ -407,6 +409,8 @@ export function TransactionTable({ transactions, accounts = [], loading = false,
         },
         {
             id: 'actions',
+            size: 120,
+            minSize: 100,
             header: () => (
                 <div className="flex justify-end pr-4">
                     <span className="uppercase tracking-widest text-[9px] font-black text-zinc-500">Actions</span>
@@ -816,7 +820,6 @@ export function TransactionTable({ transactions, accounts = [], loading = false,
                                     {table.getHeaderGroups().map(hg => (
                                         <tr key={hg.id} className="text-zinc-600">
                                             {hg.headers.map(h => {
-                                                const isSticky = h.id === 'actions';
                                                 const isSorted = h.column.getIsSorted();
                                                 const ariaSortValue: "ascending" | "descending" | "none" | undefined = !h.column.getCanSort() ? undefined :
                                                     (isSorted === 'asc' ? "ascending" : isSorted === 'desc' ? "descending" : "none");
@@ -829,7 +832,6 @@ export function TransactionTable({ transactions, accounts = [], loading = false,
                                                         className={cn(
                                                             "px-3 lg:px-6 pb-2 text-left whitespace-nowrap dynamic-column-width",
                                                             (h.id === 'gstApplicable') && "hidden md:table-cell",
-                                                            isSticky && "lg:sticky lg:right-0 lg:bg-[#12121a] lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)]"
                                                         )}
                                                         width={h.column.getSize() !== 150 ? h.column.getSize() : undefined}
                                                     >
@@ -870,7 +872,6 @@ export function TransactionTable({ transactions, accounts = [], loading = false,
                                                         className="group transition-all duration-300"
                                                     >
                                                         {row.getVisibleCells().map(cell => {
-                                                            const isSticky = cell.column.id === 'actions';
                                                             return (
                                                                 <td
                                                                     key={cell.id}
@@ -878,7 +879,6 @@ export function TransactionTable({ transactions, accounts = [], loading = false,
                                                                         "px-3 lg:px-6 py-3 lg:py-5 bg-[#12121a] first:rounded-l-xl last:rounded-r-xl border-y border-white/5 first:border-l last:border-r transition-shadow duration-300 group-hover:bg-[#16161f] group-hover:border-white/10 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]",
                                                                         editingId === row.original.id && "bg-[#16161f] border-[#FFCC00]/20",
                                                                         (cell.column.id === 'gstApplicable') && "hidden md:table-cell",
-                                                                        isSticky && "lg:sticky lg:right-0 lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)] lg:border-l lg:border-white/5"
                                                                     )}
                                                                 >
                                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
