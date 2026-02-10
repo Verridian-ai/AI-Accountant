@@ -150,7 +150,7 @@ function App() {
             <div className="relative group">
               <div className="absolute -inset-0.5 rounded-xl blur-sm opacity-20 group-hover:opacity-30 transition-opacity bg-[#FFCC00]/20" />
               <div className="relative neu-raised p-0.5 sm:p-1 rounded-xl flex items-center justify-center overflow-hidden">
-                <img src="/cba-logo.png" alt="GoldLedger" className="h-9 w-9 sm:h-10 sm:w-10 object-cover rounded-lg drop-shadow-[0_0_6px_rgba(255,204,0,0.3)]" />
+                <img src="/cba-logo.svg" alt="GoldLedger" className="h-9 w-9 sm:h-10 sm:w-10 object-cover rounded-lg drop-shadow-[0_0_6px_rgba(255,204,0,0.3)]" />
               </div>
             </div>
             <div>

@@ -48,7 +48,7 @@ export function Auth({ onLogin }: AuthProps) {
                         {/* Subtle glow ring */}
                         <div className="absolute -inset-2 rounded-3xl blur-md opacity-30 group-hover:opacity-45 transition-opacity bg-[#FFCC00]/25" />
                         <div className="relative neu-raised p-1 rounded-2xl flex items-center justify-center overflow-hidden">
-                            <img src="/cba-logo.png" alt="GoldLedger" className="h-20 w-20 object-cover rounded-xl drop-shadow-[0_0_12px_rgba(255,204,0,0.5)]" />
+                            <img src="/cba-logo.svg" alt="GoldLedger" className="h-20 w-20 object-cover rounded-xl drop-shadow-[0_0_12px_rgba(255,204,0,0.5)]" />
                         </div>
                     </div>
                     <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-gradient-gold">

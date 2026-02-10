@@ -28,7 +28,7 @@ export function MobileLayout({
                 <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 neu-raised-sm rounded-xl flex items-center justify-center overflow-hidden p-0.5">
-                            <img src="/cba-logo.png" alt="GoldLedger" className="w-full h-full object-cover rounded-lg drop-shadow-[0_0_6px_rgba(255,204,0,0.3)]" />
+                            <img src="/cba-logo.svg" alt="GoldLedger" className="w-full h-full object-cover rounded-lg drop-shadow-[0_0_6px_rgba(255,204,0,0.3)]" />
                         </div>
                         <div>
                             <h1 className="text-lg font-black text-white uppercase tracking-tight">{title}</h1>
