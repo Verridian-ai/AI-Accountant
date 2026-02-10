@@ -1,5 +1,5 @@
 import { useRef, useMemo, useLayoutEffect } from 'react';
-import type { SortingState } from '@tanstack/react-table';
+import type { SortingState, VisibilityState } from '@tanstack/react-table';
 import {
   flexRender,
   getCoreRowModel,
@@ -65,6 +65,8 @@ interface LedgerTableProps {
   categories: string[];
   bulkSelect?: BulkSelectActions;
   onSelectAll?: () => void;
+  columnVisibility: VisibilityState;
+  onColumnVisibilityChange: (visibility: VisibilityState) => void;
 }
 
 export function LedgerTable({
@@ -85,6 +87,8 @@ export function LedgerTable({
   categories,
   bulkSelect,
   onSelectAll,
+  columnVisibility,
+  onColumnVisibilityChange,
 }: LedgerTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -123,7 +127,11 @@ export function LedgerTable({
     },
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: { sorting, globalFilter },
+    state: { sorting, globalFilter, columnVisibility },
+    onColumnVisibilityChange: (updater) => {
+      const newVis = typeof updater === 'function' ? updater(columnVisibility) : updater;
+      onColumnVisibilityChange(newVis);
+    },
     onGlobalFilterChange,
   });
 
@@ -162,7 +170,7 @@ export function LedgerTable({
 
       <div
         ref={parentRef}
-        className="overflow-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent max-h-[70vh]"
+        className="overflow-auto scrollbar-thin max-h-[70vh]"
       >
         <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 min-w-max">
           <table

@@ -81,13 +81,13 @@
     }
 
     ::-webkit-scrollbar-thumb {
-        background: var(--dark-elevated);
+        background: var(--cba-gold-dark);
         border-radius: 4px;
         border: 2px solid var(--dark-surface);
     }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: var(--cba-gold-dark);
+        background: var(--cba-gold);
     }
 }
 

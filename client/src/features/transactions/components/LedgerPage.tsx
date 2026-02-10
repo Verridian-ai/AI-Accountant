@@ -12,6 +12,7 @@
  * - Keyboard shortcuts (Ctrl+F for search, Escape for cancel/close)
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
+import type { VisibilityState } from '@tanstack/react-table';
 import type { Transaction, Account } from '../types/ledger';
 
 // Hooks
@@ -100,6 +101,9 @@ export function LedgerPage({
     clearSelection,
     selectedCount,
   } = useBulkSelect();
+
+  // Column visibility state
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   // Delete confirmation dialog hook
   const {
@@ -248,6 +252,8 @@ export function LedgerPage({
             hasActiveFilters={hasActiveFilters}
             onExport={handleExport}
             searchInputRef={searchInputRef}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={setColumnVisibility}
           />
 
           {/* Expandable filter panel */}
@@ -301,6 +307,8 @@ export function LedgerPage({
             categories={categories}
             bulkSelect={{ isSelected, toggle: toggleSelect }}
             onSelectAll={() => selectAll(filteredTransactions.map((t) => t.id))}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={setColumnVisibility}
           />
 
           <LedgerFooter

@@ -34,7 +34,6 @@ import {
   Calculator,
   LayoutDashboard,
   FileText,
-  Bot,
   GitCompareArrows,
   ShieldCheck,
   LineChart,
@@ -146,13 +145,8 @@ function App() {
       <header className="glass sticky top-0 z-40 border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-4">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <div className="relative group">
-              <div className="absolute -inset-0.5 rounded-xl blur-sm opacity-20 group-hover:opacity-30 transition-opacity bg-[#FFCC00]/20" />
-              <div className="relative neu-raised p-0.5 sm:p-1 rounded-xl flex items-center justify-center overflow-hidden">
-                <img src="/cba-logo.svg" alt="GoldLedger" className="h-9 w-9 sm:h-10 sm:w-10 object-cover rounded-lg drop-shadow-[0_0_6px_rgba(255,204,0,0.3)]" />
-              </div>
-            </div>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <img src="/cba-logo.svg" alt="GoldLedger" className="h-[48px] w-[48px] sm:h-[52px] sm:w-[52px] drop-shadow-[0_0_8px_rgba(255,204,0,0.3)]" />
             <div>
               <h1 className="text-lg sm:text-xl font-bold tracking-tight leading-tight text-gradient-gold">
                 GoldLedger
@@ -163,34 +157,6 @@ function App() {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-0.5 bg-white/5 p-1 rounded-xl border border-white/10 overflow-x-auto">
-            {([
-              { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
-              { id: 'transactions', label: 'Ledger', icon: FileText },
-              { id: 'accounts', label: 'Vaults', icon: Wallet },
-              { id: 'analytics', label: 'Insights', icon: LineChart },
-              { id: 'gst', label: 'GST', icon: ShieldCheck },
-              { id: 'bas', label: 'BAS', icon: Calculator },
-              { id: 'transfers', label: 'Transfers', icon: GitCompareArrows },
-              { id: 'tax', label: 'Tax', icon: Receipt },
-            ] as const).map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-2.5 lg:px-3 py-1.5 rounded-lg text-xs lg:text-sm font-bold transition-all duration-300 whitespace-nowrap",
-                  activeTab === item.id
-                    ? "bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]"
-                    : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
-                )}
-              >
-                <item.icon className="w-4 h-4" />
-                <span className="hidden lg:inline">{item.label}</span>
-              </button>
-            ))}
-          </nav>
-
           {/* Actions */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {user && (
@@ -199,17 +165,6 @@ function App() {
                 {user.username}
               </span>
             )}
-
-            {/* Desktop Agents Button */}
-            <button
-              type="button"
-              title="AI Agents"
-              className="hidden md:flex items-center gap-2 neu-raised-sm px-3 py-2 text-zinc-400 hover:text-[#FFCC00] hover:cba-gold-glow rounded-xl btn-press mr-2 transition-all"
-              onClick={() => setIsAgentsPanelOpen(true)}
-            >
-              <Bot className="h-5 w-5" />
-              <span className="text-xs font-bold uppercase tracking-wider">Agents</span>
-            </button>
 
             {/* Sync Status Pill */}
             <div className="hidden lg:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest neu-inset px-4 py-2 rounded-full text-zinc-500">
@@ -256,6 +211,38 @@ function App() {
             </button>
           </div>
         </div>
+
+        {/* Desktop Navigation - Dedicated Row */}
+        <nav className="hidden md:block border-t border-white/5">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center gap-1 py-2">
+              {([
+                { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
+                { id: 'transactions', label: 'Ledger', icon: FileText },
+                { id: 'accounts', label: 'Vaults', icon: Wallet },
+                { id: 'analytics', label: 'Insights', icon: LineChart },
+                { id: 'gst', label: 'GST', icon: ShieldCheck },
+                { id: 'bas', label: 'BAS', icon: Calculator },
+                { id: 'transfers', label: 'Transfers', icon: GitCompareArrows },
+                { id: 'tax', label: 'Tax', icon: Receipt },
+              ] as const).map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 whitespace-nowrap",
+                    activeTab === item.id
+                      ? "bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]"
+                      : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                  )}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </nav>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
@@ -388,7 +375,7 @@ function App() {
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsAgentsPanelOpen(false)} />
             <div className="absolute bottom-0 left-0 right-0 max-h-[80vh] overflow-y-auto neu-raised rounded-t-3xl animate-slide-up">
               <div className="p-4 border-b border-white/5 flex items-center justify-between sticky top-0 glass">
-                <h2 className="text-lg font-bold text-gradient-gold">AI Agents</h2>
+                <h2 className="text-lg font-bold text-gradient-gold">Menu</h2>
                 <button
                   type="button"
                   onClick={() => setIsAgentsPanelOpen(false)}
