@@ -53,8 +53,8 @@ export interface BatchEmailJob {
 
 const config = {
     apiKey: process.env.RESEND_API_KEY || '',
-    from: process.env.EMAIL_FROM || 'CBA Parser <noreply@cba-parser.com>',
-    baseUrl: process.env.APP_URL || 'https://cba-parser.com',
+    from: process.env.EMAIL_FROM || 'GoldLedger <noreply@goldledger.com.au>',
+    baseUrl: process.env.APP_URL || 'https://goldledger.com.au',
     rateLimitPerSecond: 10,
     maxBatchSize: 100,
     retryAttempts: 3,
@@ -66,15 +66,15 @@ const config = {
 // ============================================================================
 
 const BRAND = {
-    primaryColor: '#FFCC00', // CBA Gold
+    primaryColor: '#FFCC00',
     secondaryColor: '#000000',
     backgroundColor: '#F5F5F5',
     cardBackground: '#FFFFFF',
     textColor: '#333333',
     mutedColor: '#666666',
     logoUrl: `${config.baseUrl}/logo.png`,
-    appName: 'CBA Parser',
-    supportEmail: 'support@cba-parser.com',
+    appName: 'GoldLedger',
+    supportEmail: 'support@goldledger.com.au',
 };
 
 // ============================================================================
@@ -151,7 +151,7 @@ function baseTemplate(content: string, preheader: string = ''): string {
                                 <tr>
                                     <td style="text-align: center; color: ${BRAND.mutedColor}; font-size: 12px; line-height: 1.6;">
                                         <p style="margin: 0 0 10px;">
-                                            ${BRAND.appName} - Australian Bank Statement Parser
+                                            ${BRAND.appName} - AI-Powered Financial Intelligence
                                         </p>
                                         <p style="margin: 0 0 10px;">
                                             <a href="${config.baseUrl}/settings/notifications" style="color: ${BRAND.mutedColor}; text-decoration: underline;">Manage notification preferences</a>
@@ -363,7 +363,7 @@ export class EmailService {
             </p>
 
             <ul style="margin: 0 0 20px; padding-left: 20px; color: ${BRAND.textColor}; font-size: 16px; line-height: 1.8;">
-                <li>Upload and parse CBA bank statements automatically</li>
+                <li>Upload and parse bank statements automatically</li>
                 <li>Categorize transactions with AI assistance</li>
                 <li>Generate BAS reports for tax compliance</li>
                 <li>Track your financial health with insights</li>

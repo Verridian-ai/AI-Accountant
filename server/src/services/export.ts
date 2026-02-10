@@ -531,7 +531,7 @@ export class ExportService {
   private generateTextReport(data: unknown, type: ExportType): string {
     const lines: string[] = [];
     lines.push('=' .repeat(60));
-    lines.push(`CBA Statement Parser - ${type.toUpperCase()} Export`);
+    lines.push(`GoldLedger - ${type.toUpperCase()} Export`);
     lines.push(`Generated: ${new Date().toISOString()}`);
     lines.push('='.repeat(60));
     lines.push('');

@@ -318,8 +318,8 @@ export class AIProxy {
         headers: {
           'Authorization': `Bearer ${this.openrouterKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://cba-parser.local',
-          'X-Title': 'CBA Statement Parser',
+          'HTTP-Referer': 'https://goldledger.com.au',
+          'X-Title': 'GoldLedger',
         },
         body: JSON.stringify({
           model,
@@ -382,8 +382,8 @@ export class AIProxy {
         headers: {
           'Authorization': `Bearer ${this.openrouterKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://cba-parser.local',
-          'X-Title': 'CBA Statement Parser',
+          'HTTP-Referer': 'https://goldledger.com.au',
+          'X-Title': 'GoldLedger',
         },
         body: JSON.stringify({
           model,
@@ -636,8 +636,8 @@ export class AIProxy {
         headers: {
           'Authorization': `Bearer ${this.openrouterKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://cba-parser.local',
-          'X-Title': 'CBA Statement Parser',
+          'HTTP-Referer': 'https://goldledger.com.au',
+          'X-Title': 'GoldLedger',
         },
         body: JSON.stringify({
           model,

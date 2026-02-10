@@ -14,13 +14,15 @@ import { MerchantMemoryManager } from './features/transactions/components/Mercha
 import { AccountsOverview } from './features/accounts/components/AccountsOverview';
 import { DebtReductionPlanner } from './features/analytics/components/DebtReductionPlanner';
 import { BottomNavigation } from './components/layout/BottomNavigation';
-import { BASDashboard } from './features/bas/components/BASDashboard';
+import { BASPage } from './features/bas/components/BASPage';
 import { TaxDashboard } from './features/tax/components/TaxDashboard';
+import { GSTPage } from './features/gst/components/GSTPage';
+import { TransfersPage } from './features/transfers/components/TransfersPage';
+import { AnalyticsDashboard } from './features/analytics/components/AnalyticsDashboard';
+import { AccountManager } from './features/accounts/components/AccountManager';
 import { api, getToken } from './api';
 import type { Transaction, TransactionStats, Account } from './api';
 import {
-  Activity,
-
   TrendingUp,
   TrendingDown,
   Wallet,
@@ -32,8 +34,10 @@ import {
   Calculator,
   LayoutDashboard,
   FileText,
-  BarChart3,
-  Bot
+  Bot,
+  GitCompareArrows,
+  ShieldCheck,
+  LineChart,
 } from 'lucide-react';
 import { cn } from './lib/utils';
 
@@ -49,7 +53,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!getToken());
   const [user, setUser] = useState<{ id: string; username: string } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions' | 'accounts' | 'analytics' | 'bas' | 'tax'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions' | 'accounts' | 'analytics' | 'bas' | 'tax' | 'gst' | 'transfers'>('dashboard');
 
   const handleLogin = (token: string, userData: { id: string; username: string }) => {
     localStorage.setItem('token', token);
@@ -144,29 +148,31 @@ function App() {
           {/* Logo & Brand */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <div className="relative group">
-              <div className="absolute -inset-0.5 cba-gold-gradient rounded-xl blur-sm opacity-20 group-hover:opacity-30 transition-opacity" />
-              <div className="relative cba-gold-gradient p-2.5 sm:p-3 rounded-xl flex items-center justify-center">
-                <img src="/cba-logo.svg" alt="CBA Logo" className="h-5 w-5 sm:h-6 sm:w-6 object-contain" />
+              <div className="absolute -inset-0.5 rounded-xl blur-sm opacity-20 group-hover:opacity-30 transition-opacity bg-[#FFCC00]/20" />
+              <div className="relative neu-raised p-0.5 sm:p-1 rounded-xl flex items-center justify-center overflow-hidden">
+                <img src="/cba-logo.png" alt="GoldLedger" className="h-9 w-9 sm:h-10 sm:w-10 object-cover rounded-lg drop-shadow-[0_0_6px_rgba(255,204,0,0.3)]" />
               </div>
             </div>
             <div>
               <h1 className="text-lg sm:text-xl font-bold tracking-tight leading-tight text-gradient-gold">
-                CBA AI
+                GoldLedger
               </h1>
               <p className="hidden sm:block text-[10px] text-zinc-500 uppercase tracking-[0.2em] font-semibold">
-                Statement Parser
+                Financial Intelligence
               </p>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-0.5 bg-white/5 p-1 rounded-xl border border-white/10">
+          <nav className="hidden md:flex items-center gap-0.5 bg-white/5 p-1 rounded-xl border border-white/10 overflow-x-auto">
             {([
               { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
               { id: 'transactions', label: 'Ledger', icon: FileText },
               { id: 'accounts', label: 'Vaults', icon: Wallet },
-              { id: 'analytics', label: 'Insights', icon: BarChart3 },
+              { id: 'analytics', label: 'Insights', icon: LineChart },
+              { id: 'gst', label: 'GST', icon: ShieldCheck },
               { id: 'bas', label: 'BAS', icon: Calculator },
+              { id: 'transfers', label: 'Transfers', icon: GitCompareArrows },
               { id: 'tax', label: 'Tax', icon: Receipt },
             ] as const).map((item) => (
               <button
@@ -329,22 +335,32 @@ function App() {
               <AccountsOverview />
               <StatementList />
             </div>
+            <AccountManager />
             <DebtReductionPlanner />
           </div>
         )}
 
         {activeTab === 'analytics' && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <MonthlyTrendChart transactions={transactions} loading={loading} />
-              <CategoryChart data={stats?.categoryBreakdown || {}} loading={loading} />
-            </div>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <AnalyticsDashboard />
+          </div>
+        )}
+
+        {activeTab === 'gst' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <GSTPage />
           </div>
         )}
 
         {activeTab === 'bas' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <BASDashboard />
+            <BASPage />
+          </div>
+        )}
+
+        {activeTab === 'transfers' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <TransfersPage />
           </div>
         )}
 
@@ -388,6 +404,24 @@ function App() {
                   className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
                   onClick={() => {
                     setIsAgentsPanelOpen(false);
+                    setActiveTab('gst');
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="neu-inset p-2 rounded-xl text-emerald-400">
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-zinc-100">GST Dashboard</h3>
+                      <p className="text-xs text-zinc-500">Classify, review & track GST</p>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
+                  onClick={() => {
+                    setIsAgentsPanelOpen(false);
                     setActiveTab('bas');
                   }}
                 >
@@ -396,8 +430,44 @@ function App() {
                       <Calculator className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-zinc-100">BAS Dashboard</h3>
-                      <p className="text-xs text-zinc-500">GST calculations & quarterly BAS</p>
+                      <h3 className="font-bold text-zinc-100">BAS Reporting</h3>
+                      <p className="text-xs text-zinc-500">Calculate, pre-fill & compare BAS</p>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
+                  onClick={() => {
+                    setIsAgentsPanelOpen(false);
+                    setActiveTab('transfers');
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="neu-inset p-2 rounded-xl text-blue-400">
+                      <GitCompareArrows className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-zinc-100">Cross-Account</h3>
+                      <p className="text-xs text-zinc-500">Transfers, money flow & net positions</p>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
+                  onClick={() => {
+                    setIsAgentsPanelOpen(false);
+                    setActiveTab('analytics');
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="neu-inset p-2 rounded-xl text-purple-400">
+                      <LineChart className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-zinc-100">Analytics & Insights</h3>
+                      <p className="text-xs text-zinc-500">Spending patterns, budgets & forecasts</p>
                     </div>
                   </div>
                 </button>
@@ -410,46 +480,12 @@ function App() {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2 rounded-xl text-emerald-400">
-                      <TrendingUp className="h-5 w-5" />
+                    <div className="neu-inset p-2 rounded-xl text-amber-400">
+                      <Receipt className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="font-bold text-zinc-100">Tax Dashboard</h3>
                       <p className="text-xs text-zinc-500">Income tax, CGT & deductions</p>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
-                  onClick={() => {
-                    setIsAgentsPanelOpen(false);
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2 rounded-xl text-blue-400">
-                      <Activity className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-zinc-100">Financial Analyst</h3>
-                      <p className="text-xs text-zinc-500">Spending patterns & insights</p>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
-                  onClick={() => {
-                    setIsAgentsPanelOpen(false);
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2 rounded-xl text-purple-400">
-                      <Receipt className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-zinc-100">Reconciliation</h3>
-                      <p className="text-xs text-zinc-500">Find duplicates & verify balances</p>
                     </div>
                   </div>
                 </button>
@@ -473,7 +509,7 @@ function App() {
       <footer className="hidden md:block mt-16 py-8 border-t border-white/5 mb-16 md:mb-0">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-sm text-zinc-600 font-medium">
-            CBA Statement AI Parser • <span className="text-gradient-gold">Powered by GPT-4o</span>
+            GoldLedger • <span className="text-gradient-gold">AI-Powered Financial Intelligence</span>
           </p>
           <div className="mt-3 flex justify-center gap-1">
             {[...Array(5)].map((_, i) => (

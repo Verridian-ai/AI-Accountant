@@ -793,7 +793,7 @@ export class SBRExporter {
     <DocumentType>BAS</DocumentType>
     <LodgementDate>${lodgementDate}</LodgementDate>
     <SoftwareProduct>
-      <Name>CBA Statement Parser</Name>
+      <Name>GoldLedger</Name>
       <Version>1.0.0</Version>
     </SoftwareProduct>
   </DocumentHeader>

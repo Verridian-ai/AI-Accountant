@@ -1,7 +1,7 @@
 {
-  "name": "CBA AI Statement Parser",
-  "short_name": "CBA Parser",
-  "description": "AI-powered Australian bank statement parser with tax compliance, GST tracking, and financial intelligence",
+  "name": "GoldLedger",
+  "short_name": "GoldLedger",
+  "description": "AI-powered financial intelligence platform with bank statement parsing, tax compliance, GST tracking, and analytics",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0f",
@@ -131,7 +131,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+cbaparser",
+      "protocol": "web+goldledger",
       "url": "/handle-protocol?url=%s"
     }
   ],

@@ -44,19 +44,19 @@ export function Auth({ onLogin }: AuthProps) {
             <div className="w-full max-w-md relative z-10">
                 {/* Brand Logo */}
                 <div className="flex flex-col items-center mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-                    <div className="relative group mb-5">
+                    <div className="relative group mb-4">
                         {/* Subtle glow ring */}
-                        <div className="absolute -inset-1 cba-gold-gradient rounded-2xl blur opacity-25 group-hover:opacity-35 transition-opacity" />
-                        <div className="relative cba-gold-gradient p-5 rounded-2xl flex items-center justify-center">
-                            <img src="/cba-logo.svg" alt="CBA Logo" className="h-12 w-12 object-contain" />
+                        <div className="absolute -inset-2 rounded-3xl blur-md opacity-30 group-hover:opacity-45 transition-opacity bg-[#FFCC00]/25" />
+                        <div className="relative neu-raised p-1 rounded-2xl flex items-center justify-center overflow-hidden">
+                            <img src="/cba-logo.png" alt="GoldLedger" className="h-20 w-20 object-cover rounded-xl drop-shadow-[0_0_12px_rgba(255,204,0,0.5)]" />
                         </div>
                     </div>
                     <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-gradient-gold">
-                        CBA AI Parser
+                        GoldLedger
                     </h1>
                     <p className="text-zinc-500 font-medium mt-2 flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-[#FFCC00]" />
-                        Smart Finance Automation
+                        AI-Powered Financial Intelligence
                     </p>
                 </div>
 
@@ -186,7 +186,7 @@ export function Auth({ onLogin }: AuthProps) {
                 {/* Footer */}
                 <div className="mt-10 text-center">
                     <p className="text-[10px] text-zinc-600 uppercase tracking-[0.2em] font-semibold">
-                        © 2026 CBA Statement Parser AI
+                        © 2026 GoldLedger
                     </p>
                     <div className="mt-3 flex justify-center gap-1">
                         {[...Array(5)].map((_, i) => (

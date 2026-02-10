@@ -9,6 +9,35 @@ import { events } from '../events.js';
 import pdfParse from 'pdf-parse';
 import { PdfParsingError, AiParseError } from '../errors.js';
 import { logger } from '../utils/logger.js';
+import { orchestrator } from './claude/orchestrator.js';
+import { isClaudeAgentsEnabled } from './claude/config.js';
+
+// GST auto-calculation helpers
+const GST_RATE = 0.10; // 10% Australian GST
+
+function calculateGstAmount(amountCents: number): number {
+    return Math.round(Math.abs(amountCents) * GST_RATE / (1 + GST_RATE));
+}
+
+// Map transaction categories to GST categories
+const GST_FREE_CATEGORIES = new Set([
+    'Government & Tax', 'Internal Transfer', 'Transfer',
+    'Interest & Dividends', 'Loan/Liability Payment',
+    'Superannuation', 'Insurance', 'Medical & Health',
+    'Education & Childcare', 'Donations & Charity',
+    'Employment Income', 'Salary & Wages',
+]);
+
+const INPUT_TAXED_CATEGORIES = new Set([
+    'Interest & Dividends', 'Financial Services',
+]);
+
+function inferGstCategory(category: string, gstApplicable: boolean): string {
+    if (!gstApplicable) return 'gst_free';
+    if (INPUT_TAXED_CATEGORIES.has(category)) return 'input_taxed';
+    if (GST_FREE_CATEGORIES.has(category)) return 'gst_free';
+    return 'taxable_10';
+}
 
 async function withRetry<T>(
     fn: () => Promise<T>,
@@ -168,6 +197,161 @@ export class PipelineService {
             // 3. Use AI to parse the text content into structured transactions
             logger.info(`[Pipeline] Sending to AI for parsing...`);
             let rawData;
+
+            // --- Claude Agent Mode ---
+            if (isClaudeAgentsEnabled()) {
+                logger.info(`[Pipeline] Using Claude agent orchestrator`);
+                try {
+                    const merchantMemoryData = userId ? await accountService.getMerchantMemory(userId) : [];
+                    const memoryPatterns = merchantMemoryData.map(m => ({
+                        pattern: m.merchantPattern,
+                        category: m.category,
+                        gst: m.gstApplicable ?? false
+                    }));
+
+                    const agentResult = await orchestrator.processStatement(
+                        parseInt(statementId, 10) || 0,
+                        pdfText,
+                        stmt?.filename || 'unknown.pdf',
+                        memoryPatterns
+                    );
+
+                    // Map agent output to existing format
+                    rawData = {
+                        transactions: agentResult.parsed.transactions.map(tx => ({
+                            date: tx.date,
+                            description: tx.description,
+                            amount_cents: tx.amount,
+                            balance_cents: tx.balance,
+                        }))
+                    };
+
+                    // Map categorizations from agent output
+                    const categorizations: Array<{
+                        category: string;
+                        gst: boolean;
+                        notes: string;
+                        confidence: number;
+                        merchantNormalized: string;
+                        needsReview: boolean;
+                    }> = agentResult.categorized.results.map(r => ({
+                        category: r.category,
+                        gst: r.gstCategory === 'gst_applicable' || r.gstCategory === 'taxable_10',
+                        notes: r.aiReasoningNotes,
+                        confidence: r.confidence,
+                        merchantNormalized: r.merchantKey || '',
+                        needsReview: r.confidence < 0.7,
+                    }));
+
+                    // Update account detection from agent parser output
+                    if (agentResult.parsed.accountInfo) {
+                        const info = agentResult.parsed.accountInfo;
+                        accountDetection.detectedInfo.accountNumber = info.accountNumber || null;
+                        accountDetection.detectedInfo.bankName = agentResult.parsed.bankId || null;
+                        accountDetection.detectedInfo.accountType = info.accountType || null;
+                        accountDetection.detectedInfo.openingBalance = info.openingBalance ?? null;
+                        accountDetection.detectedInfo.closingBalance = info.closingBalance ?? null;
+                    }
+
+                    // Jump to the insertion section with these categorizations
+                    if (rawData.transactions.length > 0) {
+                        logger.info(`[Pipeline] Claude agents extracted ${rawData.transactions.length} transactions`);
+
+                        const toInsert = rawData.transactions.map((tx: any, i: number) => {
+                            const aiCat = (categorizations && categorizations[i]) || {
+                                category: 'Uncategorized', gst: false, notes: 'Missing from batch',
+                                confidence: 0, merchantNormalized: '', needsReview: true
+                            };
+                            return {
+                                id: crypto.randomUUID(),
+                                statementId, userId,
+                                accountId: accountDetection.accountId,
+                                date: tx.date, description: tx.description,
+                                amount: tx.amount_cents, balance: tx.balance_cents,
+                                category: aiCat.category, gstApplicable: aiCat.gst,
+                                aiReasoningNotes: aiCat.notes, confidenceScore: aiCat.confidence,
+                                merchantNormalized: aiCat.merchantNormalized || null,
+                                isTransfer: false,
+                            };
+                        });
+
+                        if (toInsert.length > 0) {
+                            await db.transaction(async (tx) => {
+                                await tx.insert(transactions).values(toInsert);
+
+                                const pendingItems: typeof pendingCategorization.$inferInsert[] = [];
+                                for (let i = 0; i < categorizations.length; i++) {
+                                    const cat = categorizations[i];
+                                    const t = toInsert[i];
+                                    if (cat && cat.needsReview && cat.confidence < 0.7 && userId) {
+                                        pendingItems.push({
+                                            id: crypto.randomUUID(), userId,
+                                            transactionId: t.id,
+                                            suggestedCategory: t.category,
+                                            suggestedConfidence: cat.confidence,
+                                            aiReasoning: cat.notes || null,
+                                            status: 'pending',
+                                            createdAt: new Date().toISOString(),
+                                        });
+                                    }
+                                }
+                                if (pendingItems.length > 0) {
+                                    await tx.insert(pendingCategorization).values(pendingItems);
+                                }
+
+                                if (userId) {
+                                    const highConf = categorizations.filter(c => c.confidence >= 0.8 && c.merchantNormalized);
+                                    if (highConf.length > 0) {
+                                        await accountService.batchUpdateMerchantMemory(userId, highConf.map(cat => ({
+                                            merchantPattern: cat.merchantNormalized,
+                                            merchantDisplayName: undefined,
+                                            category: cat.category,
+                                            gstApplicable: cat.gst,
+                                            isUserConfirmed: false,
+                                            createdAt: new Date().toISOString(),
+                                        })));
+                                    }
+                                }
+                            });
+                        }
+
+                        if (accountDetection.accountId) {
+                            await accountService.linkStatementToAccount(statementId, accountDetection.accountId);
+                        }
+
+                        try { await ragService.indexTransactions(toInsert); } catch (ragErr) {
+                            logger.error("[Pipeline Cognee Error]", ragErr);
+                        }
+
+                        const finalStatus = accountDetection.needsSetup ? 'NEEDS_ACCOUNT_SETUP' : 'COMPLETED';
+                        const sortedDates = rawData.transactions.map((t: any) => t.date).sort();
+
+                        await db.update(statements).set({
+                            parsingStatus: finalStatus,
+                            aiModelUsed: 'claude-agent-orchestrator',
+                            periodStartDate: sortedDates[0] || null,
+                            periodEndDate: sortedDates[sortedDates.length - 1] || null,
+                            openingBalance: rawData.transactions[0]?.balance_cents ?? null,
+                            closingBalance: rawData.transactions[rawData.transactions.length - 1]?.balance_cents ?? null,
+                            transactionCount: rawData.transactions.length,
+                            isComplete: true,
+                        }).where(eq(statements.id, statementId));
+
+                        events.emit('update', {
+                            type: 'statement_updated', id: statementId, status: finalStatus, userId,
+                            accountDetection: accountDetection.needsSetup ? accountDetection : undefined,
+                        });
+
+                        logger.info(`[Pipeline] Claude agent processing complete for ${statementId}`);
+                        return; // Done — skip the legacy path below
+                    }
+                } catch (agentErr: any) {
+                    logger.warn(`[Pipeline] Claude agent failed, falling back to legacy AI: ${agentErr.message}`);
+                    // Fall through to legacy path
+                }
+            }
+
+            // --- Legacy AI Mode (fallback) ---
             try {
                 rawData = await withRetry(async () => {
                     const result = await aiService.parseStatementText(pdfText, settings?.modelParsingText);
@@ -183,7 +367,7 @@ export class PipelineService {
                     .set({
                         parsingStatus: 'FAILED',
                         errorType: 'AI_PARSE_ERROR',
-                        errorMessage: "The AI was unable to find transactions in this document. Ensure it is a valid CBA bank statement.",
+                        errorMessage: "The AI was unable to find transactions in this document. Ensure it is a valid bank statement.",
                         errorDetails: JSON.stringify({ rawError: aiErr.message })
                     })
                     .where(eq(statements.id, statementId));
@@ -254,6 +438,12 @@ export class PipelineService {
                         merchantNormalized: '',
                         needsReview: true
                     };
+                    const gstApplicable = aiCat.gst;
+                    const gstCategory = inferGstCategory(aiCat.category, gstApplicable);
+                    const gstAmount = (gstApplicable && gstCategory === 'taxable_10')
+                        ? calculateGstAmount(tx.amount_cents)
+                        : 0;
+
                     return {
                         id: crypto.randomUUID(),
                         statementId: statementId,
@@ -264,7 +454,9 @@ export class PipelineService {
                         amount: tx.amount_cents,
                         balance: tx.balance_cents,
                         category: aiCat.category,
-                        gstApplicable: aiCat.gst,
+                        gstApplicable: gstApplicable,
+                        gstAmount: gstAmount,
+                        gstCategory: gstCategory,
                         aiReasoningNotes: aiCat.notes,
                         confidenceScore: aiCat.confidence,
                         merchantNormalized: aiCat.merchantNormalized || null,
@@ -335,6 +527,10 @@ export class PipelineService {
                 } catch (ragErr) {
                     logger.error("[Pipeline Cognee Error]", ragErr);
                 }
+
+                // 9. Emit events to trigger auto-recalculation of BAS/tax on client
+                events.emit('update', { type: 'bas_updated', userId });
+                events.emit('update', { type: 'tax_updated', userId });
 
                 // Determine final status
                 const finalStatus = accountDetection.needsSetup ? 'NEEDS_ACCOUNT_SETUP' : 'COMPLETED';

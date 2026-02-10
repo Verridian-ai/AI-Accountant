@@ -21,6 +21,7 @@ import { ragService } from './services/rag.js';
 import { accountService } from './services/accounts.js';
 import { agentService, AgentType } from './services/agents.js';
 import { getVertexAIClient, VERTEX_AI_MODELS, FINTECH_MODEL_PRESETS } from './services/vertex-ai.js';
+import agentRoutes from './routes/agents.js';
 
 const app = new Hono()
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -141,7 +142,7 @@ app.use('/api/*', async (c, next) => {
 });
 
 app.get('/', (c) => {
-    return c.text('CBA Statement Parser API is running!')
+    return c.text('GoldLedger API is running!')
 })
 
 // Health check for Cloud Run
@@ -743,6 +744,9 @@ app.post('/api/chat', async (c) => {
         const userId = payload.userId;
 
         const { query } = await c.req.json();
+        if (!query || typeof query !== 'string' || !query.trim()) {
+            return c.json({ answer: 'Please enter a question about your finances.' }, 400);
+        }
         // Fetch recent context (last 50 transactions for THIS user)
         const context = await db.select().from(transactions)
             .where(eq(transactions.userId, userId))
@@ -768,8 +772,9 @@ app.post('/api/chat', async (c) => {
         try {
             console.log(`[Chat] Searching Cognee for: ${query}`);
             const ragResults = await ragService.search(query, settings.modelChat);
-            if (ragResults && ragResults.status === 'success') {
+            if (ragResults && ragResults.results && ragResults.results.length > 0) {
                 ragContext = JSON.stringify(ragResults.results);
+                console.log(`[Chat] Cognee returned ${ragResults.results.length} results`);
             }
         } catch (ragErr) {
             console.error("[Chat Cognee Error]", ragErr);
@@ -784,8 +789,8 @@ app.post('/api/chat', async (c) => {
         const answer = await aiService.generateInsight(query, combinedContext, settings.modelChat);
         return c.json({ answer });
     } catch (err) {
-        console.error(err);
-        return c.json({ error: 'Failed' }, 500);
+        console.error('[Chat Error]', err);
+        return c.json({ answer: 'I encountered an error processing your request. Please try again.' }, 500);
     }
 });
 
@@ -1885,7 +1890,49 @@ app.get('/api/bas/:quarter/calculate', async (c) => {
             method
         );
 
-        return c.json(result);
+        // Map server BASResult to client BASCalculation format
+        const g5 = result.labels.G2 + result.labels.G3;
+        const g6 = result.labels.G1 - g5;
+        const g9 = result.labels['1A'];
+        const g12 = result.labels.G10 + result.labels.G11;
+        const g19 = result.labels['1B'];
+        const g20 = g9 - g19;
+        const netPayable = result.totalPayable;
+
+        const mapped = {
+            periodId: `${financialYear}-Q${quarterNum}`,
+            g1_total_sales: result.labels.G1,
+            g2_export_sales: result.labels.G2,
+            g3_gst_free_sales: result.labels.G3,
+            g4_input_taxed_sales: 0,
+            g5_g2_to_g4: g5,
+            g6_total_taxable_sales: g6,
+            g7_adjustments: 0,
+            g8_total_sales_subject_gst: g6,
+            g9_gst_on_sales: g9,
+            g10_capital_purchases: result.labels.G10,
+            g11_non_capital_purchases: result.labels.G11,
+            g12_g10_plus_g11: g12,
+            g13_purchases_no_gst_credit: 0,
+            g14_estimated_purchases: 0,
+            g15_total_purchases: g12,
+            g16_g12_minus_g15: g12,
+            g17_adjustments: 0,
+            g18_total_purchases_credit: g12,
+            g19_gst_credits: g19,
+            g20_net_gst: g20,
+            w1_gross_wages: result.labels.W1,
+            w2_amounts_withheld: result.labels.W2,
+            payg_instalment_5a: result.labels['5A'],
+            fuel_tax_credits_7c: result.labels['7C'],
+            wine_equalisation_7d: result.labels['7D'],
+            net_amount_payable: netPayable > 0 ? netPayable : 0,
+            net_refund: netPayable < 0 ? Math.abs(netPayable) : 0,
+            // Include raw data for pipeline use
+            _raw: result,
+        };
+
+        return c.json(mapped);
     } catch (err) {
         console.error('BAS calculation failed:', err);
         return c.json({ error: 'BAS calculation failed' }, 500);
@@ -1982,6 +2029,516 @@ app.post('/api/transactions/categorize-gst', async (c) => {
     }
 });
 
+// ============ GST ENDPOINTS (for GSTPage: Overview, Review Queue, Input Credits) ============
+
+// Helper: resolve period string to quarter dates
+function resolvePeriod(period: string): { financialYear: string; quarter: number } {
+    if (period === 'current') {
+        return basService.constructor.prototype.constructor ?
+            (() => {
+                const today = new Date();
+                const month = today.getMonth() + 1;
+                const year = today.getFullYear();
+                const fy = month >= 7 ? `${year}-${(year + 1).toString().slice(2)}` : `${year - 1}-${year.toString().slice(2)}`;
+                let q: number;
+                if (month >= 7 && month <= 9) q = 1;
+                else if (month >= 10 && month <= 12) q = 2;
+                else if (month >= 1 && month <= 3) q = 3;
+                else q = 4;
+                return { financialYear: fy, quarter: q };
+            })() : { financialYear: '2024-25', quarter: 1 };
+    }
+    // Format: YYYY-QN (e.g., 2024-Q1)
+    const [year, q] = period.split('-Q');
+    const quarterNum = parseInt(q);
+    const fyStartYear = parseInt(year);
+    const financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`;
+    return { financialYear, quarter: quarterNum };
+}
+
+// GST Summary endpoint (Overview tab)
+app.get('/api/gst/summary', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const period = c.req.query('period') || 'current';
+
+        const { financialYear, quarter } = resolvePeriod(period);
+        const result = await basService.calculateBAS(userId, financialYear, quarter);
+
+        // Calculate breakdown by GST category
+        const dates = (await import('./services/bas.js')).getQuarterDates(financialYear, quarter);
+        const quarterTxns = await db.select().from(transactions)
+            .where(and(
+                eq(transactions.userId, userId),
+                gte(transactions.date, dates.startDate),
+                lte(transactions.date, dates.endDate),
+                eq(transactions.isTransfer, false)
+            )).all();
+
+        let taxableSales = 0, taxablePurchases = 0;
+        let gstFreeSales = 0, gstFreePurchases = 0;
+        let inputTaxed = 0, capital = 0, privateTx = 0;
+        let classifiedCount = 0, needReviewCount = 0;
+
+        for (const tx of quarterTxns) {
+            const cat = tx.gstCategory || 'taxable_10';
+            const amt = Math.abs(tx.amount);
+
+            if (!tx.gstCategory) {
+                needReviewCount++;
+            } else {
+                classifiedCount++;
+            }
+
+            if (tx.amount > 0) {
+                // Sales
+                if (cat === 'gst_free') gstFreeSales += amt;
+                else if (cat === 'input_taxed') inputTaxed += amt;
+                else if (cat === 'private') privateTx += amt;
+                else taxableSales += amt;
+            } else {
+                // Purchases
+                if (cat === 'gst_free') gstFreePurchases += amt;
+                else if (cat === 'capital') capital += amt;
+                else if (cat === 'private') privateTx += amt;
+                else if (cat === 'input_taxed') inputTaxed += amt;
+                else taxablePurchases += amt;
+            }
+        }
+
+        // Try to get previous period's net GST
+        let previousPeriodNetGST: number | undefined;
+        try {
+            const prevQ = quarter > 1 ? quarter - 1 : 4;
+            const prevFY = quarter > 1 ? financialYear : (() => {
+                const y = parseInt(financialYear.split('-')[0]) - 1;
+                return `${y}-${(y + 1).toString().slice(2)}`;
+            })();
+            const prevResult = await basService.calculateBAS(userId, prevFY, prevQ);
+            previousPeriodNetGST = prevResult.netGst;
+        } catch { /* no previous data */ }
+
+        const summary = {
+            gstCollected: result.labels['1A'],
+            gstCredits: result.labels['1B'],
+            netGST: result.netGst,
+            breakdown: {
+                taxable: { sales: taxableSales, purchases: taxablePurchases },
+                gstFree: { sales: gstFreeSales, purchases: gstFreePurchases },
+                inputTaxed,
+                capital,
+                private: privateTx,
+            },
+            transactionsClassified: classifiedCount,
+            transactionsNeedReview: needReviewCount,
+            previousPeriodNetGST,
+        };
+
+        return c.json(summary);
+    } catch (err) {
+        console.error('Failed to fetch GST summary:', err);
+        return c.json({
+            gstCollected: 0, gstCredits: 0, netGST: 0,
+            breakdown: { taxable: { sales: 0, purchases: 0 }, gstFree: { sales: 0, purchases: 0 }, inputTaxed: 0, capital: 0, private: 0 },
+            transactionsClassified: 0, transactionsNeedReview: 0,
+        });
+    }
+});
+
+// GST Review Queue endpoint
+app.get('/api/gst/review-queue', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+
+        // Find transactions without GST classification or with low confidence
+        const reviewItems = await db.select().from(transactions)
+            .where(and(
+                eq(transactions.userId, userId),
+                eq(transactions.isTransfer, false),
+                sql`(${transactions.gstCategory} IS NULL OR ${transactions.gstCategory} = '')`
+            ))
+            .limit(50)
+            .all();
+
+        const items = reviewItems.map(tx => {
+            const absAmount = Math.abs(tx.amount);
+            // Auto-suggest category based on amount direction and category
+            let suggestedCategory = 'taxable_10';
+            let confidence = 0.3;
+
+            const cat = (tx.category || '').toLowerCase();
+            if (cat.includes('medical') || cat.includes('health') || cat.includes('education')) {
+                suggestedCategory = 'gst_free';
+                confidence = 0.7;
+            } else if (cat.includes('investment') || cat.includes('interest') || cat.includes('dividend')) {
+                suggestedCategory = 'input_taxed';
+                confidence = 0.6;
+            } else if (cat.includes('personal') || cat.includes('entertainment')) {
+                suggestedCategory = 'private';
+                confidence = 0.5;
+            } else if (tx.amount < 0 && absAmount > 100000) { // >$1000 expense
+                suggestedCategory = 'capital';
+                confidence = 0.4;
+            } else if (tx.amount > 0) {
+                suggestedCategory = 'taxable_10';
+                confidence = 0.6;
+            } else {
+                suggestedCategory = 'taxable_10';
+                confidence = 0.5;
+            }
+
+            const suggestedGstAmount = suggestedCategory === 'taxable_10'
+                ? Math.round(absAmount / 11)  // GST = amount / 11 for inclusive
+                : 0;
+
+            return {
+                id: typeof tx.id === 'string' ? parseInt(tx.id) || 0 : tx.id,
+                date: tx.date,
+                description: tx.description,
+                amount: tx.amount,
+                suggestedCategory,
+                suggestedGstAmount,
+                confidence,
+                currentCategory: tx.category || 'Uncategorized',
+            };
+        });
+
+        return c.json(items);
+    } catch (err) {
+        console.error('Failed to fetch GST review queue:', err);
+        return c.json([]);
+    }
+});
+
+// GST Classify (approve/change classification)
+app.post('/api/gst/classify/:id', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const id = c.req.param('id');
+        const { gstCategory } = await c.req.json();
+
+        // Calculate GST amount based on category
+        const tx = await db.select().from(transactions)
+            .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+            .get();
+
+        if (!tx) return c.json({ error: 'Transaction not found' }, 404);
+
+        const gstAmount = gstCategory === 'taxable_10'
+            ? Math.round(Math.abs(tx.amount) / 11)
+            : 0;
+
+        await db.update(transactions)
+            .set({ gstCategory, gstAmount, isEdited: true })
+            .where(eq(transactions.id, id));
+
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('GST classify failed:', err);
+        return c.json({ error: 'Failed to classify GST' }, 500);
+    }
+});
+
+// GST Bulk Approve
+app.post('/api/gst/bulk-approve', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const { ids } = await c.req.json();
+
+        if (!Array.isArray(ids)) return c.json({ error: 'ids must be an array' }, 400);
+
+        for (const id of ids) {
+            const tx = await db.select().from(transactions)
+                .where(and(eq(transactions.id, String(id)), eq(transactions.userId, userId)))
+                .get();
+
+            if (tx) {
+                const gstCategory = 'taxable_10'; // Default approval
+                const gstAmount = Math.round(Math.abs(tx.amount) / 11);
+                await db.update(transactions)
+                    .set({ gstCategory, gstAmount, isEdited: true })
+                    .where(eq(transactions.id, String(id)));
+            }
+        }
+
+        events.emit('update', { type: 'transactions_updated' });
+        return c.json({ success: true, updated: ids.length });
+    } catch (err) {
+        console.error('GST bulk approve failed:', err);
+        return c.json({ error: 'Failed to bulk approve' }, 500);
+    }
+});
+
+// GST Input Tax Credits
+app.get('/api/gst/input-tax-credits', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const period = c.req.query('period') || 'current';
+
+        const { financialYear, quarter } = resolvePeriod(period);
+        const dates = (await import('./services/bas.js')).getQuarterDates(financialYear, quarter);
+
+        // Get expense transactions with GST credits for the period
+        const txns = await db.select().from(transactions)
+            .where(and(
+                eq(transactions.userId, userId),
+                gte(transactions.date, dates.startDate),
+                lte(transactions.date, dates.endDate),
+                eq(transactions.isTransfer, false),
+                sql`${transactions.amount} < 0`  // Expenses only
+            )).all();
+
+        // Group by category
+        const creditsByCategory: Record<string, { gstCredits: number; transactionCount: number }> = {};
+
+        for (const tx of txns) {
+            const cat = tx.gstCategory || 'taxable_10';
+            if (cat === 'private' || cat === 'input_taxed') continue; // No credits for these
+
+            const category = tx.category || 'Uncategorized';
+            const gstAmount = tx.gstAmount || (cat === 'taxable_10' ? Math.round(Math.abs(tx.amount) / 11) : 0);
+
+            if (gstAmount > 0) {
+                if (!creditsByCategory[category]) {
+                    creditsByCategory[category] = { gstCredits: 0, transactionCount: 0 };
+                }
+                creditsByCategory[category].gstCredits += gstAmount;
+                creditsByCategory[category].transactionCount++;
+            }
+        }
+
+        const credits = Object.entries(creditsByCategory).map(([category, data]) => ({
+            category,
+            gstCredits: data.gstCredits,
+            hasInvoice: data.gstCredits <= 8250, // Auto-true for amounts ≤$82.50
+            transactionCount: data.transactionCount,
+        }));
+
+        return c.json(credits);
+    } catch (err) {
+        console.error('Failed to fetch input tax credits:', err);
+        return c.json([]);
+    }
+});
+
+// ============ BAS ENHANCED ENDPOINTS (for BASPage: Pre-Fill Report, Compare) ============
+
+// BAS Calculate (query param format for gstApi — returns BASCalculationEnhanced format)
+app.get('/api/bas/calculate', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const quarter = c.req.query('quarter') || 'current';
+        const method = c.req.query('method') || 'full';
+
+        const { financialYear, quarter: quarterNum } = resolvePeriod(quarter);
+        const result = await basService.calculateBAS(userId, financialYear, quarterNum, method === 'cash' ? 'cash' : 'accrual');
+        const dates = (await import('./services/bas.js')).getQuarterDates(financialYear, quarterNum);
+
+        // Check for existing saved status
+        const saved = await basService.getSavedBASCalculation(userId, financialYear, quarterNum);
+        const status = saved?.period?.status || 'draft';
+
+        // Generate warnings
+        const warnings: string[] = [];
+        if (result.transactionCount === 0) {
+            warnings.push('No transactions found for this period');
+        }
+        if (result.labels['1B'] > result.labels['1A'] * 2) {
+            warnings.push('GST credits are unusually high relative to GST collected — review for accuracy');
+        }
+        if (result.labels.G1 === 0 && result.labels.G10 + result.labels.G11 > 0) {
+            warnings.push('No sales recorded but purchases exist — check if all income is captured');
+        }
+
+        const enhanced = {
+            quarter: { year: parseInt(financialYear.split('-')[0]), quarter: quarterNum },
+            method: method === 'simpler' ? 'simpler' : 'full',
+            labels: {
+                G1: result.labels.G1,
+                G2: result.labels.G2,
+                G3: result.labels.G3,
+                G4: 0,
+                G5: result.labels.G2 + result.labels.G3,
+                G6: result.labels.G1 - (result.labels.G2 + result.labels.G3),
+                G7: 0,
+                G8: result.labels.G1 - (result.labels.G2 + result.labels.G3),
+                G9: result.labels['1A'],
+                G10: result.labels.G10,
+                G11: result.labels.G11,
+                G12: result.labels.G10 + result.labels.G11,
+                '1A': result.labels['1A'],
+                '1B': result.labels['1B'],
+                W1: result.labels.W1,
+                W2: result.labels.W2,
+                '5A': result.labels['5A'],
+                '7C': result.labels['7C'],
+                '7D': result.labels['7D'],
+            },
+            netGST: result.netGst,
+            totalPayable: result.totalPayable,
+            status,
+            dueDate: dates.lodgementDue,
+            warnings,
+            transactionCounts: {
+                total: result.transactionCount,
+            },
+        };
+
+        return c.json(enhanced);
+    } catch (err) {
+        console.error('BAS enhanced calculation failed:', err);
+        return c.json({ error: 'BAS calculation failed' }, 500);
+    }
+});
+
+// BAS Status Update
+app.patch('/api/bas/:quarter/status', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const quarter = c.req.param('quarter');
+        const { status } = await c.req.json();
+
+        const [year, q] = quarter.split('-Q');
+        const quarterNum = parseInt(q);
+        const fyStartYear = parseInt(year);
+        const financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`;
+
+        // Get or create the period
+        const period = await basService.getOrCreatePeriod(userId, financialYear, quarterNum);
+
+        await basService.updatePeriodStatus(
+            period.id,
+            status,
+            status === 'lodged' ? new Date().toISOString() : undefined
+        );
+
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('Failed to update BAS status:', err);
+        return c.json({ error: 'Failed to update BAS status' }, 500);
+    }
+});
+
+// BAS Comparison
+app.get('/api/bas/compare', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const q1 = c.req.query('q1') || '';
+        const q2 = c.req.query('q2') || '';
+
+        if (!q1 || !q2) return c.json({ error: 'Both q1 and q2 are required' }, 400);
+
+        const period1 = resolvePeriod(q1);
+        const period2 = resolvePeriod(q2);
+
+        const [result1, result2] = await Promise.all([
+            basService.calculateBAS(userId, period1.financialYear, period1.quarter),
+            basService.calculateBAS(userId, period2.financialYear, period2.quarter),
+        ]);
+
+        const comparison = {
+            periodA: {
+                quarter: q1,
+                labels: {
+                    G1: result1.labels.G1,
+                    G2: result1.labels.G2,
+                    G3: result1.labels.G3,
+                    G10: result1.labels.G10,
+                    G11: result1.labels.G11,
+                    '1A': result1.labels['1A'],
+                    '1B': result1.labels['1B'],
+                    W1: result1.labels.W1,
+                    W2: result1.labels.W2,
+                    netGST: result1.netGst,
+                    totalPayable: result1.totalPayable,
+                },
+            },
+            periodB: {
+                quarter: q2,
+                labels: {
+                    G1: result2.labels.G1,
+                    G2: result2.labels.G2,
+                    G3: result2.labels.G3,
+                    G10: result2.labels.G10,
+                    G11: result2.labels.G11,
+                    '1A': result2.labels['1A'],
+                    '1B': result2.labels['1B'],
+                    W1: result2.labels.W1,
+                    W2: result2.labels.W2,
+                    netGST: result2.netGst,
+                    totalPayable: result2.totalPayable,
+                },
+            },
+        };
+
+        return c.json(comparison);
+    } catch (err) {
+        console.error('BAS comparison failed:', err);
+        return c.json({ error: 'BAS comparison failed' }, 500);
+    }
+});
+
+// BAS Drill-Down (transactions for a specific BAS label)
+app.get('/api/bas/:quarter/drill-down/:label', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const quarter = c.req.param('quarter');
+        const label = c.req.param('label');
+
+        const [year, q] = quarter.split('-Q');
+        const quarterNum = parseInt(q);
+        const fyStartYear = parseInt(year);
+        const financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`;
+        const dates = (await import('./services/bas.js')).getQuarterDates(financialYear, quarterNum);
+
+        // Get transactions for the quarter
+        const txns = await db.select().from(transactions)
+            .where(and(
+                eq(transactions.userId, userId),
+                gte(transactions.date, dates.startDate),
+                lte(transactions.date, dates.endDate),
+                eq(transactions.isTransfer, false)
+            )).all();
+
+        // Filter by BAS label
+        const filtered = txns.filter(tx => {
+            const cat = tx.gstCategory || 'taxable_10';
+            switch (label) {
+                case 'G1': return tx.amount > 0 && cat === 'taxable_10';
+                case 'G2': return tx.amount > 0 && cat === 'export';
+                case 'G3': return tx.amount > 0 && cat === 'gst_free';
+                case 'G10': return tx.amount < 0 && cat === 'capital';
+                case 'G11': return tx.amount < 0 && cat === 'taxable_10';
+                case '1A': return tx.amount > 0 && cat === 'taxable_10';
+                case '1B': return tx.amount < 0 && (cat === 'taxable_10' || cat === 'capital');
+                default: return false;
+            }
+        });
+
+        return c.json(filtered.map(tx => ({
+            id: tx.id,
+            date: tx.date,
+            description: tx.description,
+            amount: tx.amount,
+            gstCategory: tx.gstCategory,
+            gstAmount: tx.gstAmount,
+            category: tx.category,
+        })));
+    } catch (err) {
+        console.error('BAS drill-down failed:', err);
+        return c.json([]);
+    }
+});
+
 // ============ TAX ENDPOINTS ============
 
 // Get tax calculation for a year
@@ -1997,9 +2554,49 @@ app.get('/api/tax/calculate/:year', async (c) => {
         const hasPrivateHealth = body.hasPrivateHealth === 'true';
         const applyLITO = body.applyLITO !== 'false';
 
-        const result = taxService.calculateFullTax(grossIncome, totalDeductions, hasPrivateHealth, applyLITO);
+        const result = taxService.calculateFullTax(grossIncome / 100, totalDeductions / 100, hasPrivateHealth, applyLITO);
 
-        return c.json({ ...result, taxYear });
+        // Map to client's expected snake_case TaxCalculationResult format (values in cents)
+        const taxableIncome = result.taxableIncome;
+        const brackets = [];
+        for (const bracket of [
+            { min: 0, max: 18200, rate: 0 },
+            { min: 18201, max: 45000, rate: 0.16 },
+            { min: 45001, max: 135000, rate: 0.30 },
+            { min: 135001, max: 190000, rate: 0.37 },
+            { min: 190001, max: Infinity, rate: 0.45 },
+        ]) {
+            if (taxableIncome > bracket.min) {
+                const incomeInBracket = Math.min(taxableIncome, bracket.max) - bracket.min + 1;
+                const taxForBracket = incomeInBracket * bracket.rate;
+                brackets.push({
+                    bracket: bracket.max === Infinity ? `$${bracket.min.toLocaleString()}+` : `$${bracket.min.toLocaleString()} - $${bracket.max.toLocaleString()}`,
+                    income_in_bracket: Math.round(incomeInBracket * 100),
+                    tax_for_bracket: Math.round(taxForBracket * 100),
+                });
+            }
+        }
+
+        // Determine marginal rate
+        let marginalRate = 0;
+        if (taxableIncome > 190000) marginalRate = 0.45;
+        else if (taxableIncome > 135000) marginalRate = 0.37;
+        else if (taxableIncome > 45000) marginalRate = 0.30;
+        else if (taxableIncome > 18200) marginalRate = 0.16;
+
+        return c.json({
+            taxYear,
+            gross_income: grossIncome,
+            taxable_income: Math.round(result.taxableIncome * 100),
+            income_tax: Math.round(result.incomeTax * 100),
+            medicare_levy: Math.round(result.medicareLevy * 100),
+            medicare_surcharge: Math.round(result.medicareSurcharge * 100),
+            lito: Math.round(result.taxOffsets * 100),
+            total_tax: Math.round(result.totalTax * 100),
+            effective_rate: result.effectiveTaxRate / 100,
+            marginal_rate: marginalRate,
+            brackets_breakdown: brackets,
+        });
     } catch (err) {
         console.error('Tax calculation failed:', err);
         return c.json({ error: 'Tax calculation failed' }, 500);
@@ -2294,7 +2891,23 @@ app.get('/api/tax/summary/:year', async (c) => {
             .get();
 
         if (existingSummary) {
-            return c.json(existingSummary);
+            // Map DB fields to client TaxSummary format
+            return c.json({
+                id: existingSummary.id,
+                userId: existingSummary.userId,
+                taxYear: existingSummary.taxYear,
+                grossIncomeCents: existingSummary.grossIncome || 0,
+                totalDeductionsCents: existingSummary.totalDeductions || 0,
+                taxableIncomeCents: existingSummary.taxableIncome || 0,
+                netCapitalGainCents: existingSummary.netCapitalGain || 0,
+                carriedForwardLossesCents: 0,
+                taxPayableCents: existingSummary.taxPayable || 0,
+                taxWithheldCents: existingSummary.taxWithheld || 0,
+                taxRefundCents: 0,
+                medicareLevy: existingSummary.medicareLevy || 0,
+                medicareSurcharge: 0,
+                isFinalized: false,
+            });
         }
 
         // Calculate summary from transactions
@@ -2321,27 +2934,29 @@ app.get('/api/tax/summary/:year', async (c) => {
         const netCGT = cgtEventsList
             .reduce((sum, e) => sum + ((e.capitalGainNet || 0) - (e.capitalLoss || 0)), 0);
 
-        // Calculate tax using the tax service
-        const taxCalc = taxService.calculateFullTax(totalIncome, totalDeductionsAmount, false, true);
+        // Calculate tax using the tax service (expects dollars, not cents)
+        const taxCalc = taxService.calculateFullTax(totalIncome / 100, totalDeductionsAmount / 100, false, true);
 
-        // Create a partial summary object for response (not saving to DB)
+        // Map to client's expected TaxSummary format (values in cents)
+        const taxableIncomeCents = totalIncome - totalDeductionsAmount + Math.max(0, netCGT);
+        const totalTaxPayableCents = Math.round(taxCalc.totalTax * 100);
+        const totalCapitalLosses = cgtEventsList.reduce((sum, e) => sum + (e.capitalLoss || 0), 0);
+
         const calculatedSummary = {
             id: crypto.randomUUID(),
             userId,
             taxYear,
-            totalGrossIncome: totalIncome,
-            totalDeductions: totalDeductionsAmount,
-            taxableIncome: totalIncome - totalDeductionsAmount + Math.max(0, netCGT),
-            netCapitalGain: Math.max(0, netCGT),
-            totalCapitalGains: cgtEventsList.reduce((sum, e) => sum + (e.capitalGainGross || 0), 0),
-            capitalLossesOffset: cgtEventsList.reduce((sum, e) => sum + (e.capitalLoss || 0), 0),
-            taxOnTaxableIncome: taxCalc.incomeTax,
-            medicareLevy: taxCalc.medicareLevy,
-            medicareLevySurcharge: taxCalc.medicareSurcharge,
-            taxOffsetsTotal: taxCalc.taxOffsets,
-            totalTaxPayable: taxCalc.totalTax,
-            effectiveTaxRate: taxCalc.effectiveTaxRate,
-            taxWithheld: 0,
+            grossIncomeCents: totalIncome,
+            totalDeductionsCents: totalDeductionsAmount,
+            taxableIncomeCents,
+            netCapitalGainCents: Math.max(0, netCGT),
+            carriedForwardLossesCents: totalCapitalLosses,
+            taxPayableCents: totalTaxPayableCents,
+            taxWithheldCents: 0,
+            taxRefundCents: 0,
+            medicareLevy: Math.round(taxCalc.medicareLevy * 100),
+            medicareSurcharge: Math.round(taxCalc.medicareSurcharge * 100),
+            isFinalized: false,
             status: 'draft',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -2691,6 +3306,508 @@ app.post('/api/admin/ingest-knowledge', async (c) => {
         return c.json({ error: 'Ingestion failed' }, 500);
     }
 });
+
+// ============ ANALYTICS ENDPOINTS ============
+
+// Category color palette for responses
+const CATEGORY_COLORS: Record<string, string> = {
+  'Groceries & Supermarkets': '#22c55e', 'Dining & Restaurants': '#f97316',
+  'Transport & Auto': '#3b82f6', 'Entertainment & Recreation': '#a855f7',
+  'Shopping & Retail': '#ec4899', 'Utilities & Bills': '#eab308',
+  'Housing & Rent': '#ef4444', 'Medical & Health': '#06b6d4',
+  'Education & Childcare': '#8b5cf6', 'Insurance': '#14b8a6',
+  'Government & Tax': '#64748b', 'Financial Services': '#6366f1',
+  'Employment Income': '#10b981', 'Salary & Wages': '#10b981',
+  'Interest & Dividends': '#84cc16', 'Business Revenue': '#22c55e',
+  'Internal Transfer': '#71717a', 'Transfer': '#71717a',
+  'Subscription Services': '#d946ef', 'Travel & Accommodation': '#0ea5e9',
+  'Personal Care': '#f43f5e', 'Donations & Charity': '#f59e0b',
+  'Loan/Liability Payment': '#78716c', 'Superannuation': '#14b8a6',
+  'Merchant Fees': '#ef4444', 'Other': '#71717a',
+};
+
+function getCatColor(cat: string): string {
+  return CATEGORY_COLORS[cat] || '#FFCC00';
+}
+
+// Helper: get cutoff date relative to the user's latest transaction
+async function getRelativeCutoff(userId: string, months: number): Promise<string> {
+    const latest = await db.select({ maxDate: sql<string>`MAX(${transactions.date})` })
+      .from(transactions).where(eq(transactions.userId, userId)).get();
+    const refDate = latest?.maxDate ? new Date(latest.maxDate) : new Date();
+    refDate.setMonth(refDate.getMonth() - months);
+    return refDate.toISOString().split('T')[0];
+}
+
+// 1. Category Breakdown
+app.get('/api/analytics/category-breakdown', async (c) => {
+  try {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+    const period = c.req.query('period') || '3m_expenses';
+    const [monthStr, mode] = period.split('_');
+    const months = parseInt(monthStr) || 3;
+    const isExpense = mode !== 'income';
+
+    const cutoffStr = await getRelativeCutoff(userId, months);
+
+    const txns = await db.select()
+      .from(transactions)
+      .where(and(
+        eq(transactions.userId, userId),
+        gte(transactions.date, cutoffStr),
+        eq(transactions.isTransfer, false)
+      ))
+      .all();
+
+    const filtered = txns.filter(t => isExpense ? t.amount < 0 : t.amount > 0);
+    const totalAbs = filtered.reduce((s, t) => s + Math.abs(t.amount), 0);
+
+    const byCategory: Record<string, { total: number; count: number }> = {};
+    for (const t of filtered) {
+      const cat = t.category || 'Other';
+      if (!byCategory[cat]) byCategory[cat] = { total: 0, count: 0 };
+      byCategory[cat].total += Math.abs(t.amount);
+      byCategory[cat].count++;
+    }
+
+    const result = Object.entries(byCategory)
+      .map(([category, data]) => ({
+        category,
+        total: data.total,
+        percentage: totalAbs > 0 ? Math.round((data.total / totalAbs) * 10000) / 100 : 0,
+        color: getCatColor(category),
+        transactionCount: data.count,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    return c.json(result);
+  } catch (err) {
+    console.error('Category breakdown failed:', err);
+    return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+// 2. Recurring Payments
+app.get('/api/analytics/recurring-payments', async (c) => {
+  try {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+
+    const txns = await db.select()
+      .from(transactions)
+      .where(and(eq(transactions.userId, userId), eq(transactions.isTransfer, false)))
+      .all();
+
+    // Group by normalized description to find recurring patterns
+    const byMerchant: Record<string, Array<{ amount: number; date: string }>> = {};
+    for (const t of txns) {
+      if (t.amount >= 0) continue; // Only expenses
+      const key = (t.description || '').replace(/\d{2,}/g, '').trim().substring(0, 40);
+      if (!key) continue;
+      if (!byMerchant[key]) byMerchant[key] = [];
+      byMerchant[key].push({ amount: Math.abs(t.amount), date: t.date });
+    }
+
+    const recurring: any[] = [];
+    const now = new Date();
+
+    for (const [merchant, occurrences] of Object.entries(byMerchant)) {
+      if (occurrences.length < 2) continue;
+
+      // Sort by date
+      occurrences.sort((a, b) => a.date.localeCompare(b.date));
+
+      // Calculate average interval in days
+      let totalGap = 0;
+      for (let i = 1; i < occurrences.length; i++) {
+        const d1 = new Date(occurrences[i - 1].date);
+        const d2 = new Date(occurrences[i].date);
+        totalGap += (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
+      }
+      const avgGap = totalGap / (occurrences.length - 1);
+
+      // Determine frequency
+      let frequency: string;
+      if (avgGap <= 10) frequency = 'weekly';
+      else if (avgGap <= 20) frequency = 'fortnightly';
+      else if (avgGap <= 45) frequency = 'monthly';
+      else if (avgGap <= 120) frequency = 'quarterly';
+      else frequency = 'annual';
+
+      const typicalAmount = Math.round(
+        occurrences.reduce((s, o) => s + o.amount, 0) / occurrences.length
+      );
+      const lastDate = occurrences[occurrences.length - 1].date;
+      const lastDateObj = new Date(lastDate);
+      const nextExpected = new Date(lastDateObj);
+      nextExpected.setDate(nextExpected.getDate() + Math.round(avgGap));
+
+      // Determine if missed (more than 1.5x the gap since last)
+      const daysSinceLast = (now.getTime() - lastDateObj.getTime()) / (1000 * 60 * 60 * 24);
+      const isMissed = daysSinceLast > avgGap * 1.5;
+
+      // Amount changed?
+      const last = occurrences[occurrences.length - 1].amount;
+      const prev = occurrences.length > 1 ? occurrences[occurrences.length - 2].amount : last;
+      const amountChanged = Math.abs(last - prev) > prev * 0.1;
+
+      // Annual cost
+      const multiplier = { weekly: 52, fortnightly: 26, monthly: 12, quarterly: 4, annual: 1 }[frequency] || 12;
+
+      recurring.push({
+        id: crypto.randomUUID(),
+        merchantPattern: merchant,
+        typicalAmount,
+        frequency,
+        lastOccurrence: lastDate,
+        nextExpected: nextExpected.toISOString().split('T')[0],
+        isActive: !isMissed,
+        category: undefined,
+        annualCost: typicalAmount * multiplier,
+        isMissed,
+        amountChanged,
+      });
+    }
+
+    recurring.sort((a, b) => b.annualCost - a.annualCost);
+    return c.json(recurring);
+  } catch (err) {
+    console.error('Recurring payments failed:', err);
+    return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+// 3. Spending Trends
+app.get('/api/analytics/spending-trends', async (c) => {
+  try {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+    const months = parseInt(c.req.query('months') || '6');
+
+    const cutoffStr = await getRelativeCutoff(userId, months);
+
+    const txns = await db.select()
+      .from(transactions)
+      .where(and(
+        eq(transactions.userId, userId),
+        gte(transactions.date, cutoffStr),
+        eq(transactions.isTransfer, false)
+      ))
+      .all();
+
+    // Group by month
+    const byMonth: Record<string, Record<string, number>> = {};
+    for (const t of txns) {
+      if (t.amount >= 0) continue; // Expenses only
+      const month = t.date.substring(0, 7); // YYYY-MM
+      if (!byMonth[month]) byMonth[month] = {};
+      const cat = t.category || 'Other';
+      byMonth[month][cat] = (byMonth[month][cat] || 0) + Math.abs(t.amount);
+    }
+
+    const result = Object.entries(byMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, categories]) => ({
+        month,
+        categories,
+        total: Object.values(categories).reduce((s, v) => s + v, 0),
+      }));
+
+    return c.json(result);
+  } catch (err) {
+    console.error('Spending trends failed:', err);
+    return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+// 4. Budget vs Actual
+app.get('/api/analytics/budget-vs-actual', async (c) => {
+  try {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+    const period = c.req.query('period') || 'monthly';
+
+    // Use the latest transaction month as "current"
+    const latestResult = await db.select({ maxDate: sql<string>`MAX(${transactions.date})` })
+      .from(transactions).where(eq(transactions.userId, userId)).get();
+    const refDate = latestResult?.maxDate ? new Date(latestResult.maxDate) : new Date();
+    const monthStart = `${refDate.getFullYear()}-${String(refDate.getMonth() + 1).padStart(2, '0')}-01`;
+    const nextMonth = new Date(refDate.getFullYear(), refDate.getMonth() + 1, 1);
+    const monthEnd = nextMonth.toISOString().split('T')[0];
+
+    const txns = await db.select()
+      .from(transactions)
+      .where(and(
+        eq(transactions.userId, userId),
+        gte(transactions.date, monthStart),
+        lte(transactions.date, monthEnd),
+        eq(transactions.isTransfer, false)
+      ))
+      .all();
+
+    // Sum actuals by category
+    const actuals: Record<string, number> = {};
+    for (const t of txns) {
+      if (t.amount >= 0) continue;
+      const cat = t.category || 'Other';
+      actuals[cat] = (actuals[cat] || 0) + Math.abs(t.amount);
+    }
+
+    // Generate budget entries (auto-estimated from average spending)
+    // Get 3-month history for estimates
+    const histCutoff = await getRelativeCutoff(userId, 3);
+    const histTxns = await db.select()
+      .from(transactions)
+      .where(and(
+        eq(transactions.userId, userId),
+        gte(transactions.date, histCutoff),
+        eq(transactions.isTransfer, false)
+      ))
+      .all();
+
+    const monthlyAvg: Record<string, number> = {};
+    for (const t of histTxns) {
+      if (t.amount >= 0) continue;
+      const cat = t.category || 'Other';
+      monthlyAvg[cat] = (monthlyAvg[cat] || 0) + Math.abs(t.amount);
+    }
+    // Divide by 3 to get monthly average
+    for (const cat of Object.keys(monthlyAvg)) {
+      monthlyAvg[cat] = Math.round(monthlyAvg[cat] / 3);
+    }
+
+    // Combine all categories
+    const allCats = new Set([...Object.keys(actuals), ...Object.keys(monthlyAvg)]);
+    const result: any[] = [];
+    for (const cat of allCats) {
+      const budgetAmount = monthlyAvg[cat] || 0;
+      const actualAmount = actuals[cat] || 0;
+      const variance = budgetAmount - actualAmount;
+      const utilizationPercent = budgetAmount > 0 ? Math.round((actualAmount / budgetAmount) * 100) : 0;
+      result.push({
+        id: crypto.randomUUID(),
+        category: cat,
+        periodType: 'monthly',
+        periodStart: monthStart,
+        amountCents: budgetAmount,
+        actualCents: actualAmount,
+        variance,
+        utilizationPercent,
+      });
+    }
+
+    result.sort((a, b) => b.actualCents - a.actualCents);
+    return c.json(result);
+  } catch (err) {
+    console.error('Budget vs actual failed:', err);
+    return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+// 5. Budgets CRUD
+app.get('/api/analytics/budgets', async (c) => {
+  try {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+    // Redirect to budget-vs-actual for now
+    const period = c.req.query('period') || 'monthly';
+    const url = new URL(c.req.url);
+    url.pathname = '/api/analytics/budget-vs-actual';
+    const response = await app.fetch(new Request(url.toString(), { headers: c.req.raw.headers }));
+    return response;
+  } catch (err) {
+    return c.json([], 200);
+  }
+});
+
+app.post('/api/analytics/budgets', async (c) => {
+  try {
+    // Budget save - placeholder for now
+    return c.json({ success: true });
+  } catch (err) {
+    return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+// 6. Anomaly Detection
+app.get('/api/analytics/anomalies', async (c) => {
+  try {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+
+    const txns = await db.select()
+      .from(transactions)
+      .where(and(eq(transactions.userId, userId), eq(transactions.isTransfer, false)))
+      .all();
+
+    const anomalies: any[] = [];
+    const now = new Date().toISOString();
+
+    // Calculate average and stddev per category
+    const catStats: Record<string, { amounts: number[]; dates: string[] }> = {};
+    for (const t of txns) {
+      const cat = t.category || 'Other';
+      if (!catStats[cat]) catStats[cat] = { amounts: [], dates: [] };
+      catStats[cat].amounts.push(Math.abs(t.amount));
+      catStats[cat].dates.push(t.date);
+    }
+
+    // Detect anomalies
+    for (const t of txns) {
+      const cat = t.category || 'Other';
+      const stats = catStats[cat];
+      if (!stats || stats.amounts.length < 3) continue;
+
+      const avg = stats.amounts.reduce((s, v) => s + v, 0) / stats.amounts.length;
+      const variance = stats.amounts.reduce((s, v) => s + (v - avg) ** 2, 0) / stats.amounts.length;
+      const stddev = Math.sqrt(variance);
+      const absAmount = Math.abs(t.amount);
+
+      // Unusually large amount (>2 stddev)
+      if (stddev > 0 && absAmount > avg + 2 * stddev) {
+        anomalies.push({
+          id: crypto.randomUUID(),
+          transactionId: t.id,
+          type: 'amount',
+          severity: absAmount > avg + 3 * stddev ? 'critical' : 'warning',
+          description: `${t.description}: $${(absAmount / 100).toFixed(2)} is ${((absAmount - avg) / stddev).toFixed(1)}x standard deviations above average ($${(avg / 100).toFixed(2)}) for ${cat}`,
+          isDismissed: false,
+          createdAt: now,
+        });
+      }
+
+      // Round number detection (exactly divisible by 100, >$50)
+      if (absAmount >= 5000 && absAmount % 10000 === 0) {
+        anomalies.push({
+          id: crypto.randomUUID(),
+          transactionId: t.id,
+          type: 'round_number',
+          severity: 'info',
+          description: `${t.description}: Round amount of $${(absAmount / 100).toFixed(0)} — verify if correct`,
+          isDismissed: false,
+          createdAt: now,
+        });
+      }
+    }
+
+    // Duplicate detection (same amount + same day)
+    const txByDate: Record<string, typeof txns> = {};
+    for (const t of txns) {
+      if (!txByDate[t.date]) txByDate[t.date] = [];
+      txByDate[t.date].push(t);
+    }
+    for (const [date, dayTxns] of Object.entries(txByDate)) {
+      for (let i = 0; i < dayTxns.length; i++) {
+        for (let j = i + 1; j < dayTxns.length; j++) {
+          if (dayTxns[i].amount === dayTxns[j].amount && dayTxns[i].amount < 0) {
+            anomalies.push({
+              id: crypto.randomUUID(),
+              transactionId: dayTxns[j].id,
+              type: 'duplicate',
+              severity: 'warning',
+              description: `Possible duplicate: "${dayTxns[i].description}" and "${dayTxns[j].description}" — same amount ($${(Math.abs(dayTxns[i].amount) / 100).toFixed(2)}) on ${date}`,
+              isDismissed: false,
+              createdAt: now,
+            });
+          }
+        }
+      }
+    }
+
+    anomalies.sort((a, b) => {
+      const sev = { critical: 0, warning: 1, info: 2 };
+      return (sev[a.severity as keyof typeof sev] || 2) - (sev[b.severity as keyof typeof sev] || 2);
+    });
+
+    return c.json(anomalies.slice(0, 50));
+  } catch (err) {
+    console.error('Anomaly detection failed:', err);
+    return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+app.post('/api/analytics/anomalies/:id/dismiss', async (c) => {
+  return c.json({ success: true });
+});
+
+// 7. Cash Flow Forecast
+app.get('/api/analytics/cash-flow-forecast', async (c) => {
+  try {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+    const forecastMonths = parseInt(c.req.query('months') || '3');
+
+    // Get last 6 months of transactions for trend analysis
+    const cutoffStr = await getRelativeCutoff(userId, 6);
+
+    const txns = await db.select()
+      .from(transactions)
+      .where(and(
+        eq(transactions.userId, userId),
+        gte(transactions.date, cutoffStr),
+        eq(transactions.isTransfer, false)
+      ))
+      .all();
+
+    // Calculate monthly net flows
+    const monthlyNet: Record<string, number> = {};
+    for (const t of txns) {
+      const month = t.date.substring(0, 7);
+      monthlyNet[month] = (monthlyNet[month] || 0) + t.amount;
+    }
+
+    const monthValues = Object.entries(monthlyNet).sort(([a], [b]) => a.localeCompare(b));
+    const avgMonthlyNet = monthValues.length > 0
+      ? monthValues.reduce((s, [_, v]) => s + v, 0) / monthValues.length
+      : 0;
+
+    // Calculate variance for confidence bands
+    const varianceVal = monthValues.length > 1
+      ? monthValues.reduce((s, [_, v]) => s + (v - avgMonthlyNet) ** 2, 0) / monthValues.length
+      : 0;
+    const stddev = Math.sqrt(varianceVal);
+
+    // Get latest balance
+    const latestTx = await db.select()
+      .from(transactions)
+      .where(eq(transactions.userId, userId))
+      .orderBy(sql`${transactions.date} DESC`)
+      .limit(1)
+      .all();
+
+    let currentBalance = latestTx[0]?.balance || 0;
+
+    // Generate forecast
+    const forecast: any[] = [];
+    const now = new Date();
+
+    for (let i = 1; i <= forecastMonths; i++) {
+      const futureDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const month = `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, '0')}`;
+
+      currentBalance += avgMonthlyNet;
+      const confidence = Math.max(0.5, 1 - (i * 0.1)); // Decreasing confidence
+      const band = stddev * i * 0.5;
+
+      forecast.push({
+        month,
+        projectedBalance: Math.round(currentBalance),
+        confidence: Math.round(confidence * 100) / 100,
+        upperBound: Math.round(currentBalance + band),
+        lowerBound: Math.round(currentBalance - band),
+      });
+    }
+
+    return c.json(forecast);
+  } catch (err) {
+    console.error('Cash flow forecast failed:', err);
+    return c.json({ error: 'Failed' }, 500);
+  }
+});
+
+// Mount Claude agent framework routes (separate from legacy agent endpoints)
+app.route('/api/claude-agents', agentRoutes);
 
 const port = parseInt(process.env.PORT || '3501', 10);
 console.log(`Server is running on port ${port}`);
