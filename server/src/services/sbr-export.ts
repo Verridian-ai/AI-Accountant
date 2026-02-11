@@ -560,7 +560,7 @@ export class SBRExporter {
       .orderBy(desc(exportHistory.createdAt))
       .limit(limit);
 
-    return history.map((h) => {
+    return history.map((h: any) => {
       let financialYear = '';
       let quarter = 0;
 

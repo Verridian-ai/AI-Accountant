@@ -1,11 +1,12 @@
 /**
  * Claude Agent Framework — Cognee RAG Tools
  *
- * Wraps Cognee REST API for use as Claude agent tools.
+ * Thin wrapper around cogneeClient (the single source of truth for Cognee HTTP).
+ * Adds dataset-prefix support and batch chunking for agent use.
  */
 
-const COGNEE_API_URL =
-  process.env.COGNEE_API_URL || 'http://localhost:8000';
+import { cogneeClient } from '../cognee_client.js';
+import type { CogneeSearchType } from '../cognee_client.js';
 
 export interface CogneeToolConfig {
   searchTopK: number;
@@ -28,84 +29,46 @@ export class CogneeTools {
 
   /**
    * Search Cognee knowledge graph for relevant context.
+   * Supports configurable search type for different use cases.
    */
-  async search(query: string, dataset: string): Promise<string[]> {
-    try {
-      const res = await fetch(`${COGNEE_API_URL}/api/v1/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query_text: query,
-          query_type: 'INSIGHTS',
-          datasets: [this.prefixDataset(dataset)],
-          top_k: this.config.searchTopK,
-        }),
-      });
-
-      if (!res.ok) {
-        console.warn(`[CogneeTools] Search failed: ${res.status}`);
-        return [];
-      }
-
-      const data = await res.json();
-      // Cognee returns array of result objects; extract text content
-      if (Array.isArray(data)) {
-        return data.map((item: Record<string, unknown>) =>
-          typeof item === 'string' ? item : JSON.stringify(item)
-        );
-      }
-      return [];
-    } catch (err) {
-      console.warn('[CogneeTools] Search error:', err);
-      return [];
-    }
+  async search(
+    query: string,
+    dataset: string,
+    searchType: CogneeSearchType = 'GRAPH_COMPLETION'
+  ): Promise<string[]> {
+    return cogneeClient.search(
+      query,
+      this.prefixDataset(dataset),
+      this.config.searchTopK,
+      searchType
+    );
   }
 
   /**
    * Index data into a Cognee dataset.
+   * Delegates to cogneeClient.add() which uses multipart FormData.
    */
   async index(data: string[], dataset: string): Promise<void> {
-    try {
-      // Batch in chunks
-      for (let i = 0; i < data.length; i += this.config.indexBatchSize) {
-        const batch = data.slice(i, i + this.config.indexBatchSize);
-        const res = await fetch(`${COGNEE_API_URL}/api/v1/add`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            data: batch,
-            dataset_name: this.prefixDataset(dataset),
-          }),
-        });
-
-        if (!res.ok) {
-          console.warn(`[CogneeTools] Index failed: ${res.status}`);
-        }
-      }
-    } catch (err) {
-      console.warn('[CogneeTools] Index error:', err);
+    for (let i = 0; i < data.length; i += this.config.indexBatchSize) {
+      const batch = data.slice(i, i + this.config.indexBatchSize);
+      await cogneeClient.add(batch, this.prefixDataset(dataset));
     }
   }
 
   /**
    * Build knowledge graph from indexed data.
+   * Passes dataset name to cognify (required — empty body returns 400).
    */
   async cognify(dataset: string): Promise<void> {
-    try {
-      const res = await fetch(`${COGNEE_API_URL}/api/v1/cognify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          datasets: [this.prefixDataset(dataset)],
-        }),
-      });
+    await cogneeClient.cognify([this.prefixDataset(dataset)], true);
+  }
 
-      if (!res.ok) {
-        console.warn(`[CogneeTools] Cognify failed: ${res.status}`);
-      }
-    } catch (err) {
-      console.warn('[CogneeTools] Cognify error:', err);
-    }
+  /**
+   * Index data and then trigger cognify in one step.
+   */
+  async indexAndCognify(data: string[], dataset: string): Promise<void> {
+    await this.index(data, dataset);
+    await this.cognify(dataset);
   }
 
   private prefixDataset(dataset: string): string {

@@ -102,6 +102,7 @@ export class ANZParser extends BaseBankParser {
         inTransactionSection &&
         (/^\s*Closing\s+Balance/i.test(line) || /^\s*Total\s+/i.test(line))
       ) {
+        inTransactionSection = false;
         continue;
       }
 

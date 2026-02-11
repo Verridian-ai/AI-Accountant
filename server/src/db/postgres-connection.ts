@@ -208,7 +208,7 @@ export async function rawQuery<T>(
  * Critical for financial data integrity
  */
 export async function withTransaction<T>(
-    callback: (client: Pool['prototype']) => Promise<T>
+    callback: (client: any) => Promise<T>
 ): Promise<T> {
     const connectionPool = initializePool();
     const client = await connectionPool.connect();

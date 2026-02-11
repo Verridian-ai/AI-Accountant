@@ -253,7 +253,7 @@ export class ParserMetrics {
                 .orderBy(parserMetrics.totalDurationMs)
                 .all();
 
-            const durationValues = durations.map(d => d.duration);
+            const durationValues = durations.map((d: { duration: number }) => d.duration);
             const p50 = this.percentile(durationValues, 50);
             const p95 = this.percentile(durationValues, 95);
 
@@ -413,7 +413,7 @@ export class ParserMetrics {
                 errorMessage: error.errorMessage || 'No message',
                 count: Number(error.count || 0),
                 lastOccurred: error.lastOccurred || '',
-                affectedParsers: parsers.map(p => p.bankId),
+                affectedParsers: parsers.map((p: { bankId: string }) => p.bankId),
             });
         }
 
@@ -658,34 +658,34 @@ export class ParserMetrics {
 
         // Calculate aggregates
         const totalParseAttempts = metrics.length;
-        const successfulParses = metrics.filter(m => m.parseErrorCount === 0).length;
+        const successfulParses = metrics.filter((m: { parseErrorCount: number | null }) => m.parseErrorCount === 0).length;
         const failedParses = totalParseAttempts - successfulParses;
-        const totalTransactionsParsed = metrics.reduce((sum, m) => sum + (m.transactionsParsed || 0), 0);
+        const totalTransactionsParsed = metrics.reduce((sum: number, m: { transactionsParsed: number | null }) => sum + (m.transactionsParsed || 0), 0);
 
-        const durations = metrics.map(m => m.totalDurationMs).sort((a, b) => a - b);
-        const avgDurationMs = durations.reduce((a, b) => a + b, 0) / durations.length;
+        const durations = metrics.map((m: { totalDurationMs: number }) => m.totalDurationMs).sort((a: number, b: number) => a - b);
+        const avgDurationMs = durations.reduce((a: number, b: number) => a + b, 0) / durations.length;
         const minDurationMs = durations[0];
         const maxDurationMs = durations[durations.length - 1];
         const p50DurationMs = this.percentile(durations, 50);
         const p95DurationMs = this.percentile(durations, 95);
 
         const confidenceScores = metrics
-            .filter(m => m.detectionConfidence !== null)
-            .map(m => m.detectionConfidence!);
+            .filter((m: { detectionConfidence: number | null }) => m.detectionConfidence !== null)
+            .map((m: { detectionConfidence: number | null }) => m.detectionConfidence!);
         const avgConfidenceScore = confidenceScores.length > 0
-            ? confidenceScores.reduce((a, b) => a + b, 0) / confidenceScores.length
+            ? confidenceScores.reduce((a: number, b: number) => a + b, 0) / confidenceScores.length
             : null;
 
-        const totalHighConfidence = metrics.reduce((sum, m) => sum + (m.highConfidenceCount || 0), 0);
-        const totalLowConfidence = metrics.reduce((sum, m) => sum + (m.lowConfidenceCount || 0), 0);
+        const totalHighConfidence = metrics.reduce((sum: number, m: { highConfidenceCount: number | null }) => sum + (m.highConfidenceCount || 0), 0);
+        const totalLowConfidence = metrics.reduce((sum: number, m: { lowConfidenceCount: number | null }) => sum + (m.lowConfidenceCount || 0), 0);
         const totalConfidenceItems = totalHighConfidence + totalLowConfidence;
 
-        const textExtractionCount = metrics.filter(m => m.extractionMethod === 'text').length;
-        const visionExtractionCount = metrics.filter(m => m.extractionMethod === 'vision').length;
-        const hybridExtractionCount = metrics.filter(m => m.extractionMethod === 'hybrid').length;
+        const textExtractionCount = metrics.filter((m: { extractionMethod: string | null }) => m.extractionMethod === 'text').length;
+        const visionExtractionCount = metrics.filter((m: { extractionMethod: string | null }) => m.extractionMethod === 'vision').length;
+        const hybridExtractionCount = metrics.filter((m: { extractionMethod: string | null }) => m.extractionMethod === 'hybrid').length;
 
         // Get error breakdown from statements
-        const stmtIds = metrics.map(m => m.statementId).filter(id => id && typeof id === 'string');
+        const stmtIds = metrics.map((m: { statementId: string | null }) => m.statementId).filter((id: string | null) => id && typeof id === 'string');
         const errorBreakdown: Record<string, number> = {};
 
         if (stmtIds.length > 0) {

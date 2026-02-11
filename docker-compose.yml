@@ -32,6 +32,9 @@ services:
       - ./server/drizzle/0006_postgres_migration.sql:/docker-entrypoint-initdb.d/01-cba-schema.sql:ro
       - ./docker/init-cognee-db.sql:/docker-entrypoint-initdb.d/02-extensions.sql:ro
       - ./docker/init-cognee-db.sh:/docker-entrypoint-initdb.d/03-cognee-db.sh:ro
+      - ./server/drizzle/0007_missing_tables.sql:/docker-entrypoint-initdb.d/04-missing-tables.sql:ro
+      - ./server/drizzle/0008_account_ownership.sql:/docker-entrypoint-initdb.d/05-account-ownership.sql:ro
+      - ./docker/migrations/0009_complete_schema.sql:/docker-entrypoint-initdb.d/06-complete-schema.sql:ro
     networks:
       - cba-network
     healthcheck:
@@ -89,6 +92,12 @@ services:
       - ACCEPT_LOCAL_FILE_PATH=true
       - ALLOW_HTTP_REQUESTS=true
       - TELEMETRY_DISABLED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/settings"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     volumes:
       - cognee-data:/app/.cognee_system
     extra_hosts:
@@ -119,7 +128,7 @@ services:
       # Server config
       - PORT=3501
       - NODE_ENV=production
-      - JWT_SECRET=${JWT_SECRET:-cba-statement-parser-jwt-secret-key-2025}
+      - JWT_SECRET=${JWT_SECRET}
       # AI Keys
       - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
       - VITE_OPENROUTER_API_KEY=${VITE_OPENROUTER_API_KEY}
@@ -130,6 +139,9 @@ services:
       # Cognee
       - USE_COGNEE=${USE_COGNEE:-true}
       - COGNEE_API_URL=http://cognee:8000
+      # Enrichment APIs
+      - ABNLOOKUP_GUID=${ABNLOOKUP_GUID}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       # Database — shared PostgreSQL (triggers usePostgres in schema.ts)
       - DATABASE_URL=postgresql://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ai_accountant}
       - DB_HOST=postgres
@@ -138,6 +150,12 @@ services:
       - DB_USER=${POSTGRES_USER:-app_user}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_SSL=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3501/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     volumes:
       - ./statements:/statements
     networks:
@@ -160,6 +178,11 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - cba-network
     depends_on:

@@ -2,7 +2,10 @@
  * Transaction Enrichment Pipeline
  *
  * Runs after statement parsing to enrich transactions:
+ * 0. Cache lookup — check merchantMemory for existing mappings (skip AI if hit)
  * 1. Merchant Intelligence Agent → resolve merchant name, ABN, GST status
+ *    1a. ABN validation via ABR API (if ABN found)
+ *    1b. Google Places lookup for address (if merchant name resolved)
  * 2. TransactionCategorizerAgent → categorize with enriched context
  * 3. GSTCalculatorAgent → determine GST treatment
  *
@@ -19,6 +22,8 @@ import { cogneeClient } from './cognee_client.js';
 import { logger } from '../utils/logger.js';
 import { events } from '../events.js';
 import { calculateGstFromInclusive } from './bas.js';
+import { ABNLookupService } from './enrichment/abn-lookup.js';
+import { PlacesLookupService } from './enrichment/places-lookup.js';
 import crypto from 'crypto';
 
 /** Enrichment status for tracking */
@@ -34,8 +39,26 @@ const GST_FREE_CATEGORIES = new Set([
 ]);
 
 const INPUT_TAXED_CATEGORIES = new Set([
-  'Interest & Dividends', 'Financial Services',
+  'Financial Services',
 ]);
+
+/**
+ * Payment prefixes to strip when matching merchant patterns.
+ * These appear at the start of transaction descriptions and obscure the merchant name.
+ */
+const PAYMENT_PREFIXES = [
+  'EFTPOS', 'BPAY', 'DIRECT DEBIT', 'ATM', 'OSKO',
+  'PAY/TRANSFER', 'VISA PURCHASE', 'VISA DEBIT',
+  'MASTERCARD', 'PENDING', 'INTERNATIONAL',
+  'CARD PURCHASE', 'TRANSFER TO', 'TRANSFER FROM',
+  'INTERNET BANKING', 'MOBILE BANKING',
+];
+
+/** Compiled prefix pattern for stripping payment method prefixes */
+const PREFIX_REGEX = new RegExp(
+  `^(${PAYMENT_PREFIXES.map(p => p.replace(/[/\\]/g, '\\$&')).join('|')})\\s+`,
+  'i'
+);
 
 function inferGstCategory(category: string, amount: number): { gstCategory: string; gstAmount: number } {
   if (INPUT_TAXED_CATEGORIES.has(category)) {
@@ -51,20 +74,32 @@ function inferGstCategory(category: string, amount: number): { gstCategory: stri
   };
 }
 
+/**
+ * Strip common payment prefixes from a transaction description
+ * to isolate the merchant name portion.
+ */
+function stripPaymentPrefix(description: string): string {
+  return description.replace(PREFIX_REGEX, '').trim();
+}
+
 export class EnrichmentService {
   private merchantAgent: MerchantIntelligenceAgent;
   private categorizerAgent: TransactionCategorizerAgent;
   private gstAgent: GSTCalculatorAgent;
+  private abnLookup: ABNLookupService;
+  private placesLookup: PlacesLookupService;
 
   constructor() {
     this.merchantAgent = new MerchantIntelligenceAgent();
     this.categorizerAgent = new TransactionCategorizerAgent();
     this.gstAgent = new GSTCalculatorAgent();
+    this.abnLookup = new ABNLookupService();
+    this.placesLookup = new PlacesLookupService();
   }
 
   /**
    * Enrich a batch of transactions after parsing.
-   * Runs the 3-stage pipeline: Merchant → Category → GST
+   * Runs the multi-stage pipeline: Cache → Merchant → ABN → Places → Category → GST
    */
   async enrichTransactions(
     transactionIds: string[],
@@ -90,28 +125,56 @@ export class EnrichmentService {
       .where(eq(merchantMemory.userId, userId))
       .all();
 
-    const existingMappings = memoryRecords.map((m: any) => ({
-      pattern: m.merchantPattern,
-      displayName: m.merchantDisplayName || m.merchantPattern,
-      category: m.category,
-      gstRegistered: m.gstApplicable ?? false,
-    }));
+    const existingMappings = memoryRecords
+      .filter((m: any) => !m.merchantPattern.startsWith('abn:') && !m.merchantPattern.startsWith('places:'))
+      .map((m: any) => ({
+        pattern: m.merchantPattern,
+        displayName: m.merchantDisplayName || m.merchantPattern,
+        category: m.category,
+        gstRegistered: m.gstApplicable ?? false,
+      }));
 
-    // Stage 1: Merchant Intelligence (if agent enabled)
+    // Stage 0: Cache lookup — resolve what we can from memory before calling AI
+    const uncachedTxs: typeof txList = [];
+    const cacheHits = new Map<string, { category: string; merchantNormalized: string; gstRegistered: boolean }>();
+
+    for (const tx of txList) {
+      const desc = stripPaymentPrefix((tx as any).description || '');
+      const matched = existingMappings.find(
+        (m: any) => desc.toLowerCase().includes(m.pattern.toLowerCase())
+      );
+      if (matched && matched.category) {
+        cacheHits.set(tx.id, {
+          category: matched.category,
+          merchantNormalized: matched.displayName,
+          gstRegistered: matched.gstRegistered,
+        });
+      } else {
+        uncachedTxs.push(tx);
+      }
+    }
+
+    if (cacheHits.size > 0) {
+      logger.info(`[Enrichment] Stage 0: ${cacheHits.size} transactions resolved from cache`);
+    }
+
+    // Stage 1: Merchant Intelligence (only for uncached transactions)
     let merchantResults: Array<{
       transactionId: number;
       canonicalName: string;
       gstRegistered: boolean;
       defaultCategory: string;
       confidence: number;
+      abn?: string;
+      industry?: string;
     }> = [];
 
-    if (isAgentEnabled('merchant_intelligence')) {
+    if (uncachedTxs.length > 0 && isAgentEnabled('merchant_intelligence')) {
       try {
-        logger.info(`[Enrichment] Running Merchant Intelligence on ${txList.length} transactions`);
+        logger.info(`[Enrichment] Stage 1: Running Merchant Intelligence on ${uncachedTxs.length} transactions`);
 
         const merchantInput = {
-          merchants: txList.map((tx: any) => ({
+          merchants: uncachedTxs.map((tx: any) => ({
             transactionId: parseInt(tx.id, 10) || 0,
             description: tx.description,
             amount: tx.amount,
@@ -123,14 +186,60 @@ export class EnrichmentService {
         const result = await this.merchantAgent.invoke(merchantInput);
         merchantResults = result.results;
 
-        // Store new merchant mappings
+        // Store new merchant mappings (with ABN and industry now persisted)
         for (const mapping of result.newMappings) {
           await this.storeMerchantMapping(userId, mapping);
         }
 
-        logger.info(`[Enrichment] Merchant Intelligence resolved ${merchantResults.length} merchants`);
+        // Trigger cognify on merchant_mappings if new mappings were stored
+        if (result.newMappings.length > 0) {
+          cogneeClient.cognify(['merchant_mappings'], true).catch(err =>
+            logger.warn('[Enrichment] Background cognify for merchant_mappings failed:', err)
+          );
+        }
+
+        logger.info(`[Enrichment] Stage 1: Merchant Intelligence resolved ${merchantResults.length} merchants`);
       } catch (err) {
         logger.warn('[Enrichment] Merchant Intelligence failed, continuing with fallback', err);
+      }
+    }
+
+    // Stage 1a: ABN validation via ABR API (for merchants with ABNs)
+    if (this.abnLookup.available && merchantResults.length > 0) {
+      for (const mr of merchantResults) {
+        if (mr.abn) {
+          try {
+            const abnResult = await this.abnLookup.searchByABN(mr.abn);
+            if (abnResult) {
+              // Update GST status from authoritative ABR data
+              mr.gstRegistered = abnResult.gstRegistered;
+              if (abnResult.businessName && !mr.canonicalName) {
+                mr.canonicalName = abnResult.businessName;
+              }
+              await this.abnLookup.cacheResult(userId, abnResult);
+              logger.debug(`[Enrichment] ABN ${mr.abn}: GST=${abnResult.gstRegistered}, name="${abnResult.businessName}"`);
+            }
+          } catch (err) {
+            logger.warn(`[Enrichment] ABN lookup failed for ${mr.abn}:`, err);
+          }
+        }
+      }
+    }
+
+    // Stage 1b: Google Places lookup for address (optional, for resolved merchants)
+    if (this.placesLookup.available && merchantResults.length > 0) {
+      for (const mr of merchantResults) {
+        if (mr.canonicalName && mr.canonicalName.length >= 3) {
+          try {
+            const placeResult = await this.placesLookup.searchPlace(mr.canonicalName);
+            if (placeResult) {
+              await this.placesLookup.cacheResult(userId, mr.canonicalName, placeResult);
+              logger.debug(`[Enrichment] Places: "${mr.canonicalName}" → ${placeResult.formattedAddress}`);
+            }
+          } catch (err) {
+            logger.warn(`[Enrichment] Places lookup failed for "${mr.canonicalName}":`, err);
+          }
+        }
       }
     }
 
@@ -138,35 +247,71 @@ export class EnrichmentService {
     for (const tx of txList) {
       try {
         const txId = tx.id;
-        const merchantInfo = merchantResults.find(
-          (m) => m.transactionId === (parseInt(txId, 10) || 0)
-        );
 
-        // Apply merchant enrichment
-        let category = tx.category || merchantInfo?.defaultCategory || '';
-        let merchantNormalized = merchantInfo?.canonicalName || tx.merchantNormalized || '';
-        let gstRegistered = merchantInfo?.gstRegistered ?? true;
+        // Check if resolved from cache (Stage 0)
+        const cached = cacheHits.get(txId);
+        let category = (tx as any).category || '';
+        let merchantNormalized = (tx as any).merchantNormalized || '';
+        let gstRegistered = true;
 
-        // If no category from merchant intelligence, try memory patterns
-        if (!category) {
-          const matched = existingMappings.find(
-            (m) => (tx.description || '').toLowerCase().includes(m.pattern.toLowerCase())
+        if (cached) {
+          category = category || cached.category;
+          merchantNormalized = merchantNormalized || cached.merchantNormalized;
+          gstRegistered = cached.gstRegistered;
+        } else {
+          // Check merchant intelligence results
+          const merchantInfo = merchantResults.find(
+            (m) => m.transactionId === (parseInt(txId, 10) || 0)
           );
-          if (matched) {
-            category = matched.category;
-            merchantNormalized = matched.displayName;
-            gstRegistered = matched.gstRegistered;
+
+          if (merchantInfo) {
+            category = category || merchantInfo.defaultCategory;
+            merchantNormalized = merchantInfo.canonicalName || merchantNormalized;
+            gstRegistered = merchantInfo.gstRegistered;
+          }
+
+          // Fallback: try memory patterns with prefix stripping
+          if (!category) {
+            const desc = stripPaymentPrefix((tx as any).description || '');
+            const matched = existingMappings.find(
+              (m: any) => desc.toLowerCase().includes(m.pattern.toLowerCase())
+            );
+            if (matched) {
+              category = matched.category;
+              merchantNormalized = matched.displayName;
+              gstRegistered = matched.gstRegistered;
+            }
           }
         }
 
         // Stage 3: GST calculation (non-AI, rule-based)
         const gstResult = category
-          ? inferGstCategory(category, tx.amount)
-          : { gstCategory: 'taxable_10', gstAmount: calculateGstFromInclusive(tx.amount) };
+          ? inferGstCategory(category, (tx as any).amount)
+          : { gstCategory: 'taxable_10', gstAmount: calculateGstFromInclusive((tx as any).amount) };
 
         if (!gstRegistered) {
           gstResult.gstCategory = 'gst_free';
           gstResult.gstAmount = 0;
+        }
+
+        // Skip overwriting GST fields if user has manually edited this transaction
+        if ((tx as any).isEdited) {
+          logger.info(`[Enrichment] Skipping GST overwrite for edited transaction ${txId}`);
+          const updateData: Record<string, any> = {};
+          if (merchantNormalized) {
+            updateData.merchantNormalized = merchantNormalized;
+          }
+          if (category && !(tx as any).category) {
+            updateData.category = category;
+          }
+          if (Object.keys(updateData).length > 0) {
+            await db
+              .update(transactions)
+              .set(updateData)
+              .where(eq(transactions.id, txId));
+          }
+          stats.enriched++;
+          continue;
         }
 
         // Update transaction
@@ -179,7 +324,7 @@ export class EnrichmentService {
         if (merchantNormalized) {
           updateData.merchantNormalized = merchantNormalized;
         }
-        if (category && !tx.category) {
+        if (category && !(tx as any).category) {
           updateData.category = category;
         }
 
@@ -209,6 +354,7 @@ export class EnrichmentService {
 
   /**
    * Store a new merchant mapping in both local DB and Cognee.
+   * Checks for duplicates before inserting. Persists ABN and industry fields.
    */
   private async storeMerchantMapping(
     userId: string,
@@ -222,7 +368,7 @@ export class EnrichmentService {
     }
   ): Promise<void> {
     try {
-      // Check if pattern already exists
+      // Check if pattern already exists (prevents Cognee append-only duplication)
       const existing = await db
         .select()
         .from(merchantMemory)
@@ -262,15 +408,17 @@ export class EnrichmentService {
         });
       }
 
-      // Also store in Cognee for semantic search
-      await cogneeClient.storeMerchantMapping(
-        mapping.abbreviatedName,
-        mapping.canonicalName,
-        mapping.abn,
-        mapping.gstRegistered,
-        mapping.industry,
-        mapping.defaultCategory
-      );
+      // Only store to Cognee if the mapping is new (prevents append-only duplication)
+      if (!existing) {
+        await cogneeClient.storeMerchantMapping(
+          mapping.abbreviatedName,
+          mapping.canonicalName,
+          mapping.abn,
+          mapping.gstRegistered,
+          mapping.industry,
+          mapping.defaultCategory
+        );
+      }
     } catch (err) {
       logger.warn('[Enrichment] Failed to store merchant mapping:', err);
     }

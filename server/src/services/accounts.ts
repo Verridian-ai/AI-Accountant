@@ -168,14 +168,14 @@ export class AccountService {
             ))
             .all();
 
-        const existingMap = new Map(existingMemories.map(m => [m.merchantPattern, m]));
+        const existingMap = new Map(existingMemories.map((m: any) => [m.merchantPattern, m]));
         const now = new Date().toISOString();
 
         const toInsert: typeof merchantMemory.$inferInsert[] = [];
         const updatePromises: Promise<any>[] = [];
 
         for (const [pattern, data] of uniqueUpdates) {
-            const existing = existingMap.get(pattern);
+            const existing = existingMap.get(pattern) as any;
             if (existing) {
                 updatePromises.push(
                     db.update(merchantMemory)

@@ -121,6 +121,10 @@ export interface ParsedTransaction {
   rawAmount?: string;
   rawDescription?: string;
   lineNumber?: number;
+
+  // Provenance fields
+  parserVersion?: string;
+  extractionHash?: string;
 }
 
 /**

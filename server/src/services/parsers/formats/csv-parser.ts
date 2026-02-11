@@ -55,7 +55,7 @@ export const BANK_CSV_CONFIGS: Record<string, BankCSVConfig> = {
     skipRows: 0,
     delimiter: ',',
     identifyPatterns: ['commonwealth', 'netbank', 'cba'],
-    positiveIsCredit: false, // CBA uses negative for debits
+    positiveIsCredit: true, // CBA CSVs: negative = debit, positive = credit
     amountMultiplier: 100,
   },
   anz: {

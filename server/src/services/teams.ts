@@ -234,8 +234,8 @@ export class TeamService {
             return [];
         }
 
-        const teamIds = memberships.map(m => m.teamId);
-        const teamRoles = new Map(memberships.map(m => [m.teamId, m.role as TeamRole]));
+        const teamIds = memberships.map((m: typeof teamMembers.$inferSelect) => m.teamId);
+        const teamRoles = new Map(memberships.map((m: typeof teamMembers.$inferSelect) => [m.teamId, m.role as TeamRole]));
 
         // Get team details
         const teamList = await db.select()
@@ -254,7 +254,7 @@ export class TeamService {
 
             result.push({
                 ...team as Team,
-                role: teamRoles.get(team.id) || 'viewer',
+                role: (teamRoles.get(team.id) ?? 'viewer') as TeamRole,
                 memberCount: members.length
             });
         }
@@ -681,7 +681,7 @@ export class TeamService {
             .where(eq(teamMembers.teamId, teamId))
             .all();
 
-        return members.map(m => ({
+        return members.map((m: { member: typeof teamMembers.$inferSelect; user: typeof users.$inferSelect }) => ({
             ...m.member as TeamMember,
             username: m.user.username
         }));
@@ -1115,7 +1115,7 @@ export class TeamService {
             .where(eq(teamMembers.teamId, teamId))
             .all();
 
-        const memberIds = members.map(m => m.userId);
+        const memberIds = members.map((m: typeof teamMembers.$inferSelect) => m.userId);
 
         // Build query
         let query = db.select()
@@ -1129,16 +1129,16 @@ export class TeamService {
         let filtered = results;
 
         if (options?.startDate) {
-            filtered = filtered.filter(e => e.timestamp >= options.startDate!);
+            filtered = filtered.filter((e: typeof auditLog.$inferSelect) => e.timestamp >= options.startDate!);
         }
         if (options?.endDate) {
-            filtered = filtered.filter(e => e.timestamp <= options.endDate!);
+            filtered = filtered.filter((e: typeof auditLog.$inferSelect) => e.timestamp <= options.endDate!);
         }
         if (options?.action) {
-            filtered = filtered.filter(e => e.action === options.action);
+            filtered = filtered.filter((e: typeof auditLog.$inferSelect) => e.action === options.action);
         }
         if (options?.entityType) {
-            filtered = filtered.filter(e => e.entityType === options.entityType);
+            filtered = filtered.filter((e: typeof auditLog.$inferSelect) => e.entityType === options.entityType);
         }
 
         // Apply pagination
@@ -1181,8 +1181,8 @@ export class TeamService {
         }
 
         const accountantIds = options?.userId
-            ? accountants.filter(a => a.userId === options.userId).map(a => a.userId)
-            : accountants.map(a => a.userId);
+            ? accountants.filter((a: typeof teamMembers.$inferSelect) => a.userId === options.userId).map((a: typeof teamMembers.$inferSelect) => a.userId)
+            : accountants.map((a: typeof teamMembers.$inferSelect) => a.userId);
 
         if (accountantIds.length === 0) {
             return [];
@@ -1199,10 +1199,10 @@ export class TeamService {
         let filtered = results;
 
         if (options?.startDate) {
-            filtered = filtered.filter(e => e.timestamp >= options.startDate!);
+            filtered = filtered.filter((e: typeof auditLog.$inferSelect) => e.timestamp >= options.startDate!);
         }
         if (options?.endDate) {
-            filtered = filtered.filter(e => e.timestamp <= options.endDate!);
+            filtered = filtered.filter((e: typeof auditLog.$inferSelect) => e.timestamp <= options.endDate!);
         }
 
         // Apply limit

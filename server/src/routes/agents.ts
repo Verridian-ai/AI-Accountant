@@ -84,7 +84,7 @@ agents.post('/bas/calculate', async (c) => {
 
     const result = await orchestrator.invoke('gst_calculator', {
       transactions: quarterTxs.map((tx: any) => ({
-        id: typeof tx.id === 'string' ? parseInt(tx.id, 10) || 0 : tx.id,
+        id: tx.id,
         date: tx.date,
         description: tx.description,
         amount: tx.amount,
@@ -92,7 +92,7 @@ agents.post('/bas/calculate', async (c) => {
         gstCategory: tx.gstCategory || undefined,
       })),
       quarter: { year: quarter.year, quarter: quarter.quarter },
-      accountId: accountId ? parseInt(accountId, 10) : undefined,
+      accountId: accountId || undefined,
     });
 
     return c.json(result);
@@ -125,8 +125,8 @@ agents.post('/reconcile', async (c) => {
     }
 
     const result = await orchestrator.invoke('account_reconciler', {
-      accountId: parseInt(accountId, 10),
-      statementIds: statementIds?.map((id: string) => parseInt(id, 10)),
+      accountId,
+      statementIds: statementIds || [],
       includeTransferDetection: true,
     });
 
@@ -160,9 +160,7 @@ agents.post('/transfers/analyze', async (c) => {
     }
 
     const result = await orchestrator.invoke('cross_account_tracer', {
-      accountIds: accountIds.map((id: string | number) =>
-        typeof id === 'string' ? parseInt(id, 10) : id
-      ),
+      accountIds,
       dateRange,
       includeFlowDiagram: true,
     });

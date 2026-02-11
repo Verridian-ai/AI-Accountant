@@ -8,7 +8,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
-import type { CategorizerInput, CategorizerOutput } from '../types.js';
+import { cogneeClient } from '../../cognee_client.js';
+import type { CategorizerInput, CategorizerOutput, TokenUsage } from '../types.js';
 
 // Category taxonomy — kept in sync with client/src/features/transactions/constants/categories.ts
 const CATEGORY_TAXONOMY = [
@@ -144,7 +145,7 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
       'search_similar_transactions',
       async (input) => {
         const description = input.description as string;
-        return cogneeTools.search(description, 'bank_transactions');
+        return cogneeTools.search(description, 'bank_transactions', 'CHUNKS');
       },
     ],
     [
@@ -196,10 +197,41 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
   }
 
   /**
-   * Override invoke to inject merchant memory before agent loop.
+   * Override invoke to inject merchant memory before agent loop,
+   * and store new merchant mappings back to Cognee after categorization
+   * (learning loop).
    */
   async invoke(input: CategorizerInput) {
     this.merchantMemory = input.existingMerchantMemory || [];
-    return super.invoke(input);
+    const output: CategorizerOutput & { usage: TokenUsage } = await super.invoke(input);
+
+    // Learning loop: store high-confidence categorizations back to Cognee
+    // so future runs benefit from merchant memory.
+    const highConfidenceResults = output.results.filter(r => r.confidence >= 0.8 && r.merchantKey);
+    if (highConfidenceResults.length > 0) {
+      // Build a lookup from input transactions for descriptions
+      const txMap = new Map(input.transactions.map(tx => [tx.id, tx]));
+
+      for (const result of highConfidenceResults) {
+        const tx = txMap.get(result.transactionId);
+        if (!tx) continue;
+
+        const gstApplicable = result.gstCategory === 'gst_applicable';
+        try {
+          await cogneeClient.storeMerchantMapping(
+            result.merchantKey!,        // abbreviated name (merchant key)
+            result.merchantKey!,        // canonical name (use merchant key as best available)
+            undefined,                  // abn
+            gstApplicable,
+            undefined,                  // industry
+            result.category             // default category
+          );
+        } catch {
+          // Non-fatal: don't break categorization if Cognee store fails
+        }
+      }
+    }
+
+    return output;
   }
 }

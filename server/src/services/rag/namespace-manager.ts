@@ -253,7 +253,7 @@ export class NamespaceManager {
       .from(ragChunks)
       .where(eq(ragChunks.namespaceId, namespaceId));
 
-    const chunkIds = namespaceChunks.map(c => c.id);
+    const chunkIds = namespaceChunks.map((c: any) => c.id);
 
     // Delete all citations referencing these chunks (using parameterized query)
     if (chunkIds.length > 0) {
@@ -408,7 +408,7 @@ export class NamespaceManager {
       .from(ragChunks)
       .where(eq(ragChunks.documentId, documentId));
 
-    const chunkIds = docChunks.map(c => c.id);
+    const chunkIds = docChunks.map((c: any) => c.id);
 
     // Delete citations referencing this document's chunks (using parameterized query)
     if (chunkIds.length > 0) {
@@ -621,12 +621,12 @@ export class NamespaceManager {
       userId: record.userId,
       name: record.name,
       description: record.description,
-      embeddingModel: record.embeddingModel,
-      embeddingDimensions: record.embeddingDimensions,
+      embeddingModel: record.embeddingModel ?? '',
+      embeddingDimensions: record.embeddingDimensions ?? 0,
       chunkCount: record.chunkCount || 0,
       documentCount: record.documentCount || 0,
       lastIndexedAt: record.lastIndexedAt,
-      status: record.status,
+      status: record.status ?? '',
       settings: parsedSettings,
     };
   }

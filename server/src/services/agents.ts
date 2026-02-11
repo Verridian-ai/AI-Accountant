@@ -11,7 +11,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PYTHON_PATH = path.resolve(__dirname, '../venv/Scripts/python.exe');
 const RUNNER_PATH = path.resolve(__dirname, './services/agents/runner.py');
 
-export type AgentType = 'financial_analyst' | 'bas' | 'tax' | 'reconciliation';
+/** @deprecated Use AgentType from './claude/types.js' for production agents */
+export type PythonAgentType = 'financial_analyst' | 'bas' | 'tax' | 'reconciliation';
+
+// Re-export the canonical AgentType from the Claude agent system
+export type { AgentType } from './claude/types.js';
 
 export interface AgentContext {
     transactions?: any[];
@@ -81,7 +85,7 @@ class AgentService {
      * Run an AI agent with a query and context.
      */
     async runAgent(
-        agentType: AgentType,
+        agentType: PythonAgentType,
         query: string,
         context: AgentContext = {}
     ): Promise<AgentResponse> {
@@ -106,7 +110,7 @@ class AgentService {
     /**
      * Get information about available agents.
      */
-    async getAgentInfo(agentType?: AgentType): Promise<AgentInfo> {
+    async getAgentInfo(agentType?: PythonAgentType): Promise<AgentInfo> {
         const args = ['info'];
         if (agentType) {
             args.push(agentType);

@@ -168,7 +168,8 @@ Return a JSON object matching the MerchantIntelligenceOutput schema.`;
         const name = input.merchantName as string;
         const results = await cogneeTools.search(
           `merchant mapping for "${name}"`,
-          'merchant_mappings'
+          'merchant_mappings',
+          'CHUNKS_LEXICAL'
         );
         return { found: results.length > 0, results };
       },

@@ -97,6 +97,7 @@ export class NABParser extends BaseBankParser {
         inTransactionSection &&
         /^\s*(?:Closing|Total)\s+/i.test(line)
       ) {
+        inTransactionSection = false;
         continue;
       }
 

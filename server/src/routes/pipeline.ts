@@ -48,7 +48,7 @@ pipelineRoutes.post('/transfers/detect', async (c) => {
         // Get existing links to avoid duplicates
         const existingLinks = await db.select().from(transferLinks)
             .where(eq(transferLinks.userId, userId)).all();
-        const existingPairs = existingLinks.map(l => ({
+        const existingPairs = existingLinks.map((l: any) => ({
             sourceId: l.sourceTransactionId as any,
             targetId: l.destinationTransactionId as any,
         }));

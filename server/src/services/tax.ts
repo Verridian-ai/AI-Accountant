@@ -1051,7 +1051,7 @@ export class TaxService {
 
         // Get saved deductions
         const savedDeductions = await this.getDeductions(userId, taxYear);
-        const totalDeductions = savedDeductions.reduce((sum, d) => sum + d.amount, 0);
+        const totalDeductions = savedDeductions.reduce((sum: number, d: any) => sum + d.amount, 0);
 
         // Calculate tax
         const result = this.calculateFullTax(

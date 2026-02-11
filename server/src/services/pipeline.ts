@@ -4,7 +4,7 @@ import { ragService } from './rag.js';
 import { accountService } from './accounts.js';
 import { cogneeClient } from './cognee_client.js';
 import { enrichmentService } from './enrichment.js';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { readFile } from 'fs/promises';
 import crypto from 'crypto';
 import { events } from '../events.js';
@@ -18,6 +18,35 @@ import { TransferDetector, type TransferCandidate, type AccountContext } from '.
 import { persistTransferMatches, markOwnerContributions } from './transfers/persistence.js';
 import { detectCreditCardStatement, parseCreditCardStatement } from './parsers/documents/credit-card/index.js';
 import { hasCreditCardIndicators } from './parsers/detector.js';
+
+// Transaction deduplication helper
+function computeTransactionHash(date: string, description: string, amount: number, accountId: string | null): string {
+    const raw = `${date}|${description}|${amount}|${accountId ?? ''}`;
+    return crypto.createHash('sha256').update(raw).digest('hex');
+}
+
+// Transfer-like description patterns for fallback flagging
+const TRANSFER_KEYWORDS = /\b(transfer|tfr|trf|internal|bpay\s+transfer|pay\s+anyone|direct\s+credit|direct\s+debit)\b/i;
+
+/** Flag transactions as likely transfers based on description keywords when full detection fails */
+async function flagLikelyTransfersByDescription(txList: Array<{ id: string; description: string; category?: string }>) {
+    let flagged = 0;
+    for (const tx of txList) {
+        if (TRANSFER_KEYWORDS.test(tx.description) || tx.category === 'Internal Transfer' || tx.category === 'Transfer') {
+            try {
+                await db.update(transactions)
+                    .set({ isTransfer: true })
+                    .where(eq(transactions.id, tx.id));
+                flagged++;
+            } catch (err: any) {
+                logger.warn(`[Pipeline] Failed to flag transfer ${tx.id}: ${err.message}`);
+            }
+        }
+    }
+    if (flagged > 0) {
+        logger.info(`[Pipeline] Flagged ${flagged} transactions as likely transfers by description`);
+    }
+}
 
 // GST auto-calculation helpers
 const GST_RATE = 0.10; // 10% Australian GST
@@ -36,7 +65,7 @@ const GST_FREE_CATEGORIES = new Set([
 ]);
 
 const INPUT_TAXED_CATEGORIES = new Set([
-    'Interest & Dividends', 'Financial Services',
+    'Financial Services',
 ]);
 
 function inferGstCategory(category: string, gstApplicable: boolean): string {
@@ -53,11 +82,23 @@ function computeStatementMetadata(
 ) {
     const sortedDates = txs.map(t => t.date).filter(Boolean).sort();
     const sortedByDate = [...txs].sort((a, b) => a.date.localeCompare(b.date));
+    const openingBalance = accountDetection.detectedInfo.openingBalance ?? sortedByDate[0]?.balance_cents ?? null;
+    const closingBalance = accountDetection.detectedInfo.closingBalance ?? sortedByDate[sortedByDate.length - 1]?.balance_cents ?? null;
+
+    // Balance invariant validation: opening + sum(transactions) should equal closing
+    if (openingBalance !== null && closingBalance !== null) {
+        const txSum = txs.reduce((sum, tx) => sum + tx.amount_cents, 0);
+        const expectedClosing = openingBalance + txSum;
+        if (expectedClosing !== closingBalance) {
+            logger.warn(`[Pipeline] Balance invariant failed: ${openingBalance} + ${txSum} = ${expectedClosing}, expected ${closingBalance}, diff=${expectedClosing - closingBalance}`);
+        }
+    }
+
     return {
         periodStartDate: sortedDates[0] || null,
         periodEndDate: sortedDates[sortedDates.length - 1] || null,
-        openingBalance: accountDetection.detectedInfo.openingBalance ?? sortedByDate[0]?.balance_cents ?? null,
-        closingBalance: accountDetection.detectedInfo.closingBalance ?? sortedByDate[sortedByDate.length - 1]?.balance_cents ?? null,
+        openingBalance,
+        closingBalance,
         transactionCount: txs.length,
     };
 }
@@ -174,7 +215,29 @@ export class PipelineService {
             };
 
             try {
-                const accountInfo = await withRetry(() => aiService.extractAccountInfo(pdfText, settings?.modelParsingText), 2, 1000, "Account Info Extraction");
+                // Try parser's extractAccountInfo first (faster, no AI cost)
+                let accountInfo: any = null;
+                const bankDetections = parserRegistry.detectBank(pdfText);
+                if (bankDetections.length > 0 && bankDetections[0].confidence >= 0.5) {
+                    const parser = parserRegistry.getParser(bankDetections[0].bankId);
+                    if (parser) {
+                        try {
+                            const parserAccountInfo = await parser.extractAccountInfo(pdfText);
+                            if (parserAccountInfo && parserAccountInfo.accountNumber && parserAccountInfo.accountNumber !== 'UNKNOWN') {
+                                logger.info(`[Pipeline] Parser extracted account info (bank: ${bankDetections[0].bankId})`);
+                                accountInfo = parserAccountInfo;
+                            }
+                        } catch (parserAccErr: any) {
+                            logger.warn(`[Pipeline] Parser account info extraction failed: ${parserAccErr.message}`);
+                        }
+                    }
+                }
+
+                // Fall back to AI if parser didn't produce account info
+                if (!accountInfo) {
+                    accountInfo = await withRetry(() => aiService.extractAccountInfo(pdfText, settings?.modelParsingText), 2, 1000, "Account Info Extraction");
+                }
+
                 accountDetection.detectedInfo = {
                     accountNumber: accountInfo.accountNumber,
                     accountNumberMasked: accountInfo.accountNumberMasked,
@@ -441,7 +504,7 @@ export class PipelineService {
                     if (rawData.transactions.length > 0) {
                         logger.info(`[Pipeline] Claude agents extracted ${rawData.transactions.length} transactions`);
 
-                        const toInsert = rawData.transactions.map((tx: any, i: number) => {
+                        const allAgentInserts = rawData.transactions.map((tx: any, i: number) => {
                             const aiCat = (categorizations && categorizations[i]) || {
                                 category: 'Uncategorized', gst: false, notes: 'Missing from batch',
                                 confidence: 0, merchantNormalized: '', needsReview: true
@@ -456,8 +519,28 @@ export class PipelineService {
                                 aiReasoningNotes: aiCat.notes, confidenceScore: aiCat.confidence,
                                 merchantNormalized: aiCat.merchantNormalized || null,
                                 isTransfer: false,
+                                transactionHash: computeTransactionHash(tx.date, tx.description, tx.amount_cents, accountDetection.accountId),
                             };
                         });
+
+                        // Deduplicate agent path
+                        const toInsert: typeof allAgentInserts = [];
+                        for (const tx of allAgentInserts) {
+                            const existing = await db.select({ id: transactions.id })
+                                .from(transactions)
+                                .where(
+                                    and(
+                                        eq(transactions.transactionHash, tx.transactionHash),
+                                        eq(transactions.statementId, statementId)
+                                    )
+                                )
+                                .get();
+                            if (!existing) {
+                                toInsert.push(tx);
+                            } else {
+                                logger.info(`[Pipeline] Agent path: skipping duplicate ${tx.date} ${tx.description} ${tx.amount}`);
+                            }
+                        }
 
                         if (toInsert.length > 0) {
                             await db.transaction(async (tx: any) => {
@@ -698,8 +781,8 @@ export class PipelineService {
                     }
                 }
 
-                // Prepare Batch Insert
-                const toInsert = rawData.transactions.map((tx, i) => {
+                // Prepare Batch Insert with deduplication
+                const allToInsert = rawData.transactions.map((tx, i) => {
                     const aiCat = (categorizations && categorizations[i]) || {
                         category: 'Uncategorized',
                         gst: false,
@@ -734,8 +817,31 @@ export class PipelineService {
                         confidenceScore: aiCat.confidence,
                         merchantNormalized: aiCat.merchantNormalized || null,
                         isTransfer: false,
+                        transactionHash: computeTransactionHash(tx.date, tx.description, tx.amount_cents, accountDetection.accountId),
                     };
                 });
+
+                // Deduplicate: check for existing transactions with the same hash
+                const toInsert: typeof allToInsert = [];
+                for (const tx of allToInsert) {
+                    const existing = await db.select({ id: transactions.id })
+                        .from(transactions)
+                        .where(
+                            and(
+                                eq(transactions.transactionHash, tx.transactionHash),
+                                eq(transactions.statementId, statementId)
+                            )
+                        )
+                        .get();
+                    if (existing) {
+                        logger.info(`[Pipeline] Skipping duplicate transaction: ${tx.date} ${tx.description} ${tx.amount}`);
+                    } else {
+                        toInsert.push(tx);
+                    }
+                }
+                if (allToInsert.length !== toInsert.length) {
+                    logger.info(`[Pipeline] Dedup: ${allToInsert.length - toInsert.length} duplicates skipped, ${toInsert.length} to insert`);
+                }
 
                 if (toInsert.length > 0) {
                     logger.info(`[Pipeline] Inserting ${toInsert.length} transactions into database...`);
@@ -872,7 +978,12 @@ export class PipelineService {
                         }
                     } catch (transferErr: any) {
                         logger.warn(`[Pipeline] Transfer detection error (non-fatal): ${transferErr.message}`);
+                        // Flag transactions that look like transfers by description keywords
+                        await flagLikelyTransfersByDescription(toInsert);
                     }
+                } else if (userId && toInsert.length > 0) {
+                    // Only 1 account or no accounts — still flag description-based transfers
+                    await flagLikelyTransfersByDescription(toInsert);
                 }
 
                 // 8. Index in Cognee for RAG

@@ -99,6 +99,7 @@ export class WestpacParser extends BaseBankParser {
         inTransactionSection &&
         /^\s*(?:Closing|Total)\s+/i.test(line)
       ) {
+        inTransactionSection = false;
         continue;
       }
 

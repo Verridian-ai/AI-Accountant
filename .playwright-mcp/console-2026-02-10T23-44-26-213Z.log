@@ -1,0 +1,77 @@
+[    9898ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/transactions:0
+[    9899ms] [ERROR] Failed to fetch data Error: Failed to fetch transactions
+    at Object.fetchTransactions (http://localhost:4176/assets/index-CwT_6p3e.js:9:42638)
+    at async Promise.all (index 0)
+    at async se (http://localhost:4176/assets/index-CwT_6p3e.js:60:90319) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[    9901ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/pending-categorizations:0
+[    9901ms] [ERROR] Failed to fetch pending categorizations: Error: Failed to fetch pending categorizations
+    at Object.fetchPendingCategorizations (http://localhost:4176/assets/index-CwT_6p3e.js:9:46715)
+    at async http://localhost:4176/assets/index-CwT_6p3e.js:15:159155 @ http://localhost:4176/assets/index-CwT_6p3e.js:14
+[ 6685637ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/transactions:0
+[ 6685637ms] [ERROR] Failed to fetch data Error: Failed to fetch transactions
+    at Object.fetchTransactions (http://localhost:4176/assets/index-CwT_6p3e.js:9:42638)
+    at async Promise.all (index 0)
+    at async se (http://localhost:4176/assets/index-CwT_6p3e.js:60:90319) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 6685638ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/pending-categorizations:0
+[ 6685638ms] [ERROR] Failed to fetch pending categorizations: Error: Failed to fetch pending categorizations
+    at Object.fetchPendingCategorizations (http://localhost:4176/assets/index-CwT_6p3e.js:9:46715)
+    at async http://localhost:4176/assets/index-CwT_6p3e.js:15:159155 @ http://localhost:4176/assets/index-CwT_6p3e.js:14
+[ 6689876ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/analytics/category-breakdown?period=3m_expenses:0
+[ 6689876ms] [ERROR] Failed to fetch category breakdown: Error: Failed to fetch category breakdown
+    at Object.fetchCategoryBreakdown (http://localhost:4176/assets/index-CwT_6p3e.js:9:56056)
+    at async v (http://localhost:4176/assets/index-CwT_6p3e.js:60:48950) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 6690815ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/gst/summary?period=current:0
+[ 6690815ms] [ERROR] Failed to load GST summary: Error: Failed to fetch GST summary
+    at Object.fetchSummary (http://localhost:4176/assets/index-CwT_6p3e.js:9:53596)
+    at async u (http://localhost:4176/assets/index-CwT_6p3e.js:60:15870) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 6691850ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/bas/history:0
+[ 6691850ms] [ERROR] Failed to load BAS history: Error: Failed to fetch BAS history
+    at Object.fetchHistory (http://localhost:4176/assets/index-CwT_6p3e.js:9:49979)
+    at async j (http://localhost:4176/assets/index-CwT_6p3e.js:55:38408) @ http://localhost:4176/assets/index-CwT_6p3e.js:54
+[ 6691860ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/bas/2025-Q3/calculate?method=accrual:0
+[ 6691860ms] [ERROR] Auto-calculate BAS failed: Error: Failed to calculate BAS
+    at Object.calculateBAS (http://localhost:4176/assets/index-CwT_6p3e.js:9:49612)
+    at async N (http://localhost:4176/assets/index-CwT_6p3e.js:55:38280) @ http://localhost:4176/assets/index-CwT_6p3e.js:54
+[ 6712550ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/gst/summary?period=current:0
+[ 6712550ms] [ERROR] Failed to load GST summary: Error: Failed to fetch GST summary
+    at Object.fetchSummary (http://localhost:4176/assets/index-CwT_6p3e.js:9:53596)
+    at async u (http://localhost:4176/assets/index-CwT_6p3e.js:60:15870) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 6715493ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/analytics/category-breakdown?period=3m_expenses:0
+[ 6715493ms] [ERROR] Failed to fetch category breakdown: Error: Failed to fetch category breakdown
+    at Object.fetchCategoryBreakdown (http://localhost:4176/assets/index-CwT_6p3e.js:9:56056)
+    at async v (http://localhost:4176/assets/index-CwT_6p3e.js:60:48950) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 6717929ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/analytics/recurring-payments:0
+[ 6717929ms] [ERROR] Failed to fetch recurring payments: Error: Failed to fetch recurring payments
+    at Object.fetchRecurringPayments (http://localhost:4176/assets/index-CwT_6p3e.js:9:56242)
+    at async h (http://localhost:4176/assets/index-CwT_6p3e.js:60:53285) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 6718438ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/analytics/spending-trends?months=6:0
+[ 6718438ms] [ERROR] Failed to fetch spending trends: Error: Failed to fetch spending trends
+    at Object.fetchSpendingTrends (http://localhost:4176/assets/index-CwT_6p3e.js:9:56434)
+    at async v (http://localhost:4176/assets/index-CwT_6p3e.js:60:59056) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 6719437ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/analytics/budget-vs-actual?period=monthly:0
+[ 6719437ms] [ERROR] Failed to fetch budgets: Error: Failed to fetch budget vs actual
+    at Object.fetchBudgetVsActual (http://localhost:4176/assets/index-CwT_6p3e.js:9:57032)
+    at async w (http://localhost:4176/assets/index-CwT_6p3e.js:60:65024) @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 6723975ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://ai-accountant-backend-305528064936.australia-southeast1.run.app/api/chat:0
+[ 6723975ms] [ERROR] Chat failed: Error: Failed to send chat message
+    at Object.sendChatMessage (http://localhost:4176/assets/index-CwT_6p3e.js:9:43024)
+    at async N (http://localhost:4176/assets/index-CwT_6p3e.js:15:93855) @ http://localhost:4176/assets/index-CwT_6p3e.js:14
+[ 6984640ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 7292154ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 7599669ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 7907181ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 8214696ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 8522206ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 8829722ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 9137233ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 9444748ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[ 9752264ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[10059785ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[10367297ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[10675098ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[10982619ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[11290133ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[11597645ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[11905157ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[12212669ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59
+[12520180ms] [ERROR] SSE error: Event @ http://localhost:4176/assets/index-CwT_6p3e.js:59

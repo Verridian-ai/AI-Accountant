@@ -470,7 +470,7 @@ export class SparseSearchEngine {
       .limit(topK * 2); // Fetch more for scoring
 
     // Calculate a simple term frequency score
-    const scoredResults = chunks.map((chunk) => {
+    const scoredResults = chunks.map((chunk: any) => {
       const contentLower = chunk.content.toLowerCase();
       let score = 0;
       const matchedTerms: string[] = [];
@@ -499,10 +499,10 @@ export class SparseSearchEngine {
     });
 
     // Sort by score and take topK
-    scoredResults.sort((a, b) => b.score - a.score);
+    scoredResults.sort((a: any, b: any) => b.score - a.score);
     const topResults = scoredResults.slice(0, topK);
 
-    return topResults.map((result, index) => ({
+    return topResults.map((result: any, index: number) => ({
       chunkId: result.chunk.id,
       documentId: result.chunk.documentId,
       content: result.chunk.content,

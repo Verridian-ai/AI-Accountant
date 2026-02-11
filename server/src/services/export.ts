@@ -193,7 +193,7 @@ export class ExportService {
       .orderBy(desc(transactions.date));
 
     // Transform for export
-    const exportData = txns.map(tx => ({
+    const exportData = txns.map((tx: any) => ({
       date: tx.date,
       description: tx.description,
       amount: (tx.amount / 100).toFixed(2),
@@ -288,7 +288,7 @@ export class ExportService {
       .orderBy(desc(deductions.taxYear));
 
     const exportData = {
-      tax_summaries: summaries.map(s => ({
+      tax_summaries: summaries.map((s: any) => ({
         tax_year: s.taxYear,
         gross_salary_wages: (s.grossSalaryWages / 100).toFixed(2),
         gross_business_income: (s.grossBusinessIncome / 100).toFixed(2),
@@ -307,7 +307,7 @@ export class ExportService {
         effective_tax_rate: s.effectiveTaxRate?.toFixed(2) || '0.00',
         status: s.status,
       })),
-      deductions: userDeductions.map(d => ({
+      deductions: userDeductions.map((d: any) => ({
         tax_year: d.taxYear,
         category: d.category,
         subcategory: d.subcategory || '',
@@ -357,20 +357,20 @@ export class ExportService {
     const exportData = {
       exportDate: new Date().toISOString(),
       exportVersion: '1.0',
-      transactions: userTransactions.map(tx => ({
+      transactions: userTransactions.map((tx: any) => ({
         ...tx,
         amount: tx.amount / 100,
         balance: tx.balance ? tx.balance / 100 : null,
         gstAmount: tx.gstAmount ? tx.gstAmount / 100 : null,
       })),
-      accounts: userAccounts.map(acc => ({
+      accounts: userAccounts.map((acc: any) => ({
         ...acc,
         currentBalance: acc.currentBalance ? acc.currentBalance / 100 : null,
         creditLimit: acc.creditLimit ? acc.creditLimit / 100 : null,
         minimumPayment: acc.minimumPayment ? acc.minimumPayment / 100 : null,
       })),
       basPeriods: userBasPeriods,
-      taxSummaries: userTaxSummaries.map(s => ({
+      taxSummaries: userTaxSummaries.map((s: any) => ({
         ...s,
         // Convert all cent values to dollars
         grossSalaryWages: s.grossSalaryWages / 100,
@@ -380,7 +380,7 @@ export class ExportService {
         taxableIncome: s.taxableIncome / 100,
         totalTaxPayable: s.totalTaxPayable / 100,
       })),
-      deductions: userDeductions.map(d => ({
+      deductions: userDeductions.map((d: any) => ({
         ...d,
         amount: d.amount / 100,
       })),

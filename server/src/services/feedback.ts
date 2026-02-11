@@ -160,7 +160,7 @@ export class FeedbackManager {
             feedbackType,
             originalValue,
             correctedValue,
-            aiConfidence: transaction.confidenceScore || null,
+            aiConfidence: transaction.confidenceScore != null ? String(transaction.confidenceScore) : null,
             userNotes: comment || null,
             status: 'pending',
             createdAt: now,
@@ -529,15 +529,15 @@ export class FeedbackManager {
             .all();
 
         // Group by transaction to get merchant info
-        const transactionIds = [...new Set(feedback.map(f => f.transactionId))];
+        const transactionIds = [...new Set(feedback.map((f: any) => f.transactionId as string))];
         const txns = transactionIds.length > 0
             ? await db.select()
                 .from(transactions)
-                .where(inArray(transactions.id, transactionIds))
+                .where(inArray(transactions.id, transactionIds as string[]))
                 .all()
             : [];
 
-        const txnMap = new Map(txns.map(t => [t.id, t]));
+        const txnMap = new Map(txns.map((t: any) => [t.id, t]));
 
         // Group feedback by merchant pattern + corrected value
         const patternMap = new Map<string, {
@@ -548,7 +548,7 @@ export class FeedbackManager {
         }>();
 
         for (const fb of feedback) {
-            const txn = txnMap.get(fb.transactionId);
+            const txn = txnMap.get(fb.transactionId) as any;
             if (!txn || !txn.merchantNormalized) continue;
 
             const key = `${txn.merchantNormalized}::${fb.correctedValue}`;
@@ -917,10 +917,10 @@ export class FeedbackManager {
             .where(inArray(parserFeedback.id, feedbackIds))
             .all();
 
-        const userIds = [...new Set(feedback.map(f => f.userId))];
+        const userIds = [...new Set(feedback.map((f: any) => f.userId as string))];
 
         for (const userId of userIds) {
-            const result = await this.applyFeedbackToMerchantMemory(userId, minOccurrences);
+            const result = await this.applyFeedbackToMerchantMemory(userId as string, minOccurrences);
             totalUpdated += result.updated;
             totalCreated += result.created;
         }

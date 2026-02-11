@@ -88,6 +88,7 @@ export class BendigoParser extends BaseBankParser {
       }
 
       if (inTransactionSection && /^\s*(?:Closing|Total)\s+/i.test(line)) {
+        inTransactionSection = false;
         continue;
       }
 

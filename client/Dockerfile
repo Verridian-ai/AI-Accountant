@@ -12,7 +12,7 @@ ENV VITE_API_URL=$VITE_API_URL
 
 # Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Copy source
 COPY . .
@@ -24,6 +24,9 @@ RUN npm run build
 # Production Serve (Nginx)
 # -----------------------------------------------------------------------------
 FROM nginx:alpine
+
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Copy build artifacts
 COPY --from=builder /app/dist /usr/share/nginx/html

@@ -295,8 +295,8 @@ export class LedgerService {
         id: lineId,
         lineNumber: i + 1,
         accountId: account.id,
-        accountCode: account.accountCode,
-        accountName: account.accountName,
+        accountCode: account.accountCode ?? '',
+        accountName: account.accountName ?? '',
         description: line.description || null,
         debitAmount: line.debitAmount,
         creditAmount: line.creditAmount,
@@ -364,7 +364,7 @@ export class LedgerService {
 
     // Create reversal entry with swapped debits/credits
     const reversalLines: JournalEntryLine[] = await Promise.all(
-      originalLines.map(async (line) => {
+      originalLines.map(async (line: any) => {
         const account = await db
           .select()
           .from(chartOfAccounts)
@@ -611,9 +611,9 @@ export class LedgerService {
 
       balances.push({
         accountId: account.id,
-        accountCode: account.accountCode,
-        accountName: account.accountName,
-        accountType: account.accountType,
+        accountCode: account.accountCode ?? '',
+        accountName: account.accountName ?? '',
+        accountType: account.accountType ?? '',
         openingBalance: 0, // Would need to calculate from previous periods
         totalDebits,
         totalCredits,

@@ -5,6 +5,7 @@
  * Provides common parsing utilities and structure.
  */
 
+import { createHash } from 'crypto';
 import {
   BankParser,
   BankParserConfig,
@@ -154,6 +155,7 @@ export function parseAmount(amountStr: string): number | null {
  * Abstract base class for bank parsers
  */
 export abstract class BaseBankParser implements BankParser {
+  static readonly VERSION = '1.0.0';
   abstract config: BankParserConfig;
 
   /**
@@ -226,6 +228,13 @@ export abstract class BaseBankParser implements BankParser {
           return [];
         }),
       ]);
+
+      // Stamp provenance on each transaction
+      for (const tx of transactions) {
+        tx.parserVersion = BaseBankParser.VERSION;
+        const hashInput = `${tx.date}|${tx.description}|${tx.amount}|${tx.balance ?? ''}`;
+        tx.extractionHash = createHash('sha256').update(hashInput).digest('hex').slice(0, 16);
+      }
 
       // Validation warnings
       if (transactions.length === 0) {

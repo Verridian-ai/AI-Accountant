@@ -237,7 +237,7 @@ export class BASService {
         for (const tx of quarterTransactions) {
             const amount = tx.amount;
             const gstCategory = (tx.gstCategory as GSTCategory) || GSTCategory.TAXABLE_10;
-            const gstAmount = tx.gstAmount || calculateGstFromInclusive(amount);
+            const gstAmount = tx.gstAmount ?? calculateGstFromInclusive(amount);
 
             if (amount > 0) {
                 // Income/Sales

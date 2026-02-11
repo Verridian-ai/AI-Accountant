@@ -53,6 +53,10 @@ export abstract class ClaudeAgent<TInput, TOutput> {
       },
     ];
 
+    // Per-tool circuit breaker: skip tools that fail 3 times in a row
+    const toolFailures = new Map<string, number>();
+    const TOOL_CIRCUIT_BREAKER_THRESHOLD = 3;
+
     let iterations = 0;
     const maxIterations = budget.maxToolCalls + 2; // safety ceiling
 
@@ -112,6 +116,21 @@ export abstract class ClaudeAgent<TInput, TOutput> {
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
       for (const toolUse of toolUseBlocks) {
         usage.toolCalls++;
+
+        // Circuit breaker: skip tools that have failed too many times
+        const failures = toolFailures.get(toolUse.name) ?? 0;
+        if (failures >= TOOL_CIRCUIT_BREAKER_THRESHOLD) {
+          toolResults.push({
+            type: 'tool_result',
+            tool_use_id: toolUse.id,
+            content: JSON.stringify({
+              error: `Tool "${toolUse.name}" circuit-breaked after ${failures} consecutive failures. Proceed without this tool.`,
+            }),
+            is_error: true,
+          });
+          continue;
+        }
+
         const handler = this.toolHandlers.get(toolUse.name);
 
         if (!handler) {
@@ -135,7 +154,10 @@ export abstract class ClaudeAgent<TInput, TOutput> {
             tool_use_id: toolUse.id,
             content: JSON.stringify(result),
           });
+          // Reset failure count on success
+          toolFailures.set(toolUse.name, 0);
         } catch (err) {
+          toolFailures.set(toolUse.name, failures + 1);
           toolResults.push({
             type: 'tool_result',
             tool_use_id: toolUse.id,

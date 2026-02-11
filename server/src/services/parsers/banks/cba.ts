@@ -262,9 +262,13 @@ export class CBAParser extends BaseBankParser {
     const lines = pdfText.split(/\r?\n/);
 
     const period = this.extractStatementPeriod(pdfText);
-    const statementYear = period?.startYear || new Date().getFullYear();
-    const periodStartMonth = period?.startMonth || 1;
-    const periodEndMonth = period?.endMonth || 12;
+    // Derive year from statement period dates — never use new Date() for determinism
+    if (!period) {
+      console.warn('[CBAParser] No statement period found in PDF — transactions may have incorrect years');
+    }
+    const statementYear = period?.startYear ?? 2000;
+    const periodStartMonth = period?.startMonth ?? 1;
+    const periodEndMonth = period?.endMonth ?? 12;
 
     // State: we collect lines into a "pending transaction" and finalize when we
     // see the amount+balance (which might be on the same line or a continuation line)

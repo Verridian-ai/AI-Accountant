@@ -196,6 +196,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
           transactions.push(pendingForeignTransaction as CreditCardTransaction);
           pendingForeignTransaction = null;
         }
+        inTransactionSection = false;
         continue;
       }
 
@@ -222,7 +223,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
       }
 
       // Try to parse as a transaction
-      const tx = this.parseTransactionLine(line, lineNumber);
+      const tx = this.parseTransactionLine(line, lineNumber, pdfText);
       if (tx) {
         // Check if this might have foreign currency details on the next line
         if (this.mightHaveForeignDetails(line)) {
@@ -273,7 +274,8 @@ export class CBACreditCardParser extends BaseCreditCardParser {
    */
   private parseTransactionLine(
     line: string,
-    lineNumber: number
+    lineNumber: number,
+    pdfText: string
   ): CreditCardTransaction | null {
     // CBA credit card formats:
     // DD/MM/YYYY Description Amount
@@ -281,30 +283,38 @@ export class CBACreditCardParser extends BaseCreditCardParser {
     // DD MMM Description Amount
 
     // Try format with separate transaction and posting dates
+    // Allow optional CR/DR suffix after amount for credit card payments
     const dualDateMatch = line.match(
-      /(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})\s*$/
+      /(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i
     );
 
     if (dualDateMatch) {
       const [, transDate, postDate, rawDesc, rawAmount] = dualDateMatch;
 
       // Add year to dates if needed
-      // Use smart year inference: if the month is in the future, use previous year
+      // Derive year from statement billing period — never use new Date() for determinism
       const inferYear = (dateStr: string): string => {
         if (!dateStr.includes('/') || dateStr.split('/').length !== 2) {
           return dateStr;
         }
-        const [dayStr, monthStr] = dateStr.split('/');
-        const day = parseInt(dayStr, 10);
-        const month = parseInt(monthStr, 10);
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth() + 1;
-
-        // If the date's month is more than 1 month in the future, it's likely from last year
-        // (handles December statements processed in January)
-        const year = (month > currentMonth + 1) ? currentYear - 1 : currentYear;
-        return `${dateStr}/${year}`;
+        // Use billing cycle end year from account info if available
+        // Parse statement period from the PDF text
+        let statementYear: number | null = null;
+        for (const pattern of this.config.statementPeriodPatterns || []) {
+          const match = pdfText.match(pattern);
+          if (match) {
+            const endDate = this.parseDate(match[2]);
+            if (endDate) {
+              statementYear = parseInt(endDate.split('-')[0], 10);
+              break;
+            }
+          }
+        }
+        if (!statementYear) {
+          // Fallback: can't determine year without statement period
+          return dateStr;
+        }
+        return `${dateStr}/${statementYear}`;
       };
 
       const transDateFull = inferYear(transDate);
@@ -335,7 +345,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
 
     // Try standard format: DD/MM/YYYY Description Amount
     const standardMatch = line.match(
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})\s*$/
+      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i
     );
 
     if (standardMatch) {
@@ -364,7 +374,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
 
     // Try format with month name: DD MMM Description Amount
     const monthNameMatch = line.match(
-      /(\d{1,2}\s+\w{3}(?:\s+\d{2,4})?)\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})\s*$/
+      /(\d{1,2}\s+\w{3}(?:\s+\d{2,4})?)\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i
     );
 
     if (monthNameMatch) {

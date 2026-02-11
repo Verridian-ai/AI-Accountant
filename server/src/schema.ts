@@ -19,6 +19,20 @@ const isProduction = process.env.NODE_ENV === 'production';
 const dbUrl = process.env.DATABASE_URL || 'file:sqlite.db';
 const usePostgres = isProduction || dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://');
 
+/** SQLite-compat query builder that adds .get()/.all()/.run() to PG query chains */
+interface SqliteCompatQuery<T = any> {
+    get(): Promise<T | undefined>;
+    all(): Promise<T[]>;
+    run(): Promise<void>;
+    where(...args: any[]): SqliteCompatQuery<T>;
+    set(...args: any[]): SqliteCompatQuery<T>;
+    values(...args: any[]): SqliteCompatQuery<T>;
+    from(...args: any[]): SqliteCompatQuery<T>;
+    leftJoin(...args: any[]): SqliteCompatQuery<T>;
+    orderBy(...args: any[]): SqliteCompatQuery<T>;
+    [key: string]: any;
+}
+
 /**
  * Create a Proxy wrapper around the PostgreSQL db to intercept query chains
  * and add .get() / .all() / .run() methods that are SQLite-specific.
@@ -216,7 +230,10 @@ export const transactions = sqliteTable('transactions', {
   isTransfer: integer('is_transfer', { mode: 'boolean' }).default(false),
   transferLinkId: text('transfer_link_id'),
   isOwnerContribution: integer('is_owner_contribution', { mode: 'boolean' }).default(false),
+  transactionHash: text('transaction_hash'),
   merchantNormalized: text('merchant_normalized'),
+  parserVersion: text('parser_version'),
+  extractionHash: text('extraction_hash'),
   parentTransactionId: text('parent_transaction_id'),
   statementId: text('statement_id').references(() => statements.id, { onDelete: 'set null' }),
   accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
@@ -520,6 +537,8 @@ export const teams = sqliteTable('teams', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   ownerId: text('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  description: text('description'),
+  settings: text('settings'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
@@ -541,6 +560,7 @@ export const teamInvitations = sqliteTable('team_invitations', {
   invitedBy: text('invited_by').notNull().references(() => users.id),
   status: text('status').notNull().default('pending'),
   expiresAt: text('expires_at').notNull(),
+  acceptedAt: text('accepted_at'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -596,6 +616,14 @@ export const parserMetrics = sqliteTable('parser_metrics', {
   errorsCount: integer('errors_count').default(0),
   warningsCount: integer('warnings_count').default(0),
   usedVisionFallback: integer('used_vision_fallback', { mode: 'boolean' }).default(false),
+  bankId: text('bank_id'),
+  totalDurationMs: integer('total_duration_ms'),
+  parseErrorCount: integer('parse_error_count'),
+  transactionsParsed: integer('transactions_parsed'),
+  detectionConfidence: real('detection_confidence'),
+  highConfidenceCount: integer('high_confidence_count'),
+  lowConfidenceCount: integer('low_confidence_count'),
+  extractionMethod: text('extraction_method'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -610,6 +638,8 @@ export const parserAccuracyAggregates = sqliteTable('parser_accuracy_aggregates'
   avgConfidenceScore: real('avg_confidence_score'),
   avgExtractionTimeMs: real('avg_extraction_time_ms'),
   visionFallbackRate: real('vision_fallback_rate'),
+  bankId: text('bank_id'),
+  periodType: text('period_type'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -623,7 +653,12 @@ export const parserFeedback = sqliteTable('parser_feedback', {
   correctedValue: text('corrected_value'),
   fieldName: text('field_name'),
   notes: text('notes'),
+  aiConfidence: text('ai_confidence'),
+  userNotes: text('user_notes'),
   status: text('status').notNull().default('pending'),
+  bankId: text('bank_id'),
+  reviewedAt: text('reviewed_at'),
+  reviewNotes: text('review_notes'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -640,6 +675,12 @@ export const chartOfAccounts = sqliteTable('chart_of_accounts', {
   parentId: text('parent_id'),
   isSystem: integer('is_system', { mode: 'boolean' }).default(false),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  accountCode: text('account_code'),
+  accountName: text('account_name'),
+  accountType: text('account_type'),
+  normalBalance: text('normal_balance'),
+  taxCode: text('tax_code'),
+  basLabel: text('bas_label'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -664,6 +705,9 @@ export const journalEntryLines = sqliteTable('journal_entry_lines', {
   credit: integer('credit').default(0),
   description: text('description'),
   lineOrder: integer('line_order').notNull().default(0),
+  journalEntryId: text('journal_entry_id'),
+  debitAmount: integer('debit_amount'),
+  creditAmount: integer('credit_amount'),
 });
 
 export const accountingPeriods = sqliteTable('accounting_periods', {
@@ -698,6 +742,12 @@ export const ragNamespaces = sqliteTable('rag_namespaces', {
   name: text('name').notNull(),
   description: text('description'),
   chunkCount: integer('chunk_count').default(0),
+  embeddingModel: text('embedding_model'),
+  embeddingDimensions: integer('embedding_dimensions'),
+  documentCount: integer('document_count'),
+  lastIndexedAt: text('last_indexed_at'),
+  status: text('status'),
+  settings: text('settings'),
   lastUpdated: text('last_updated').notNull().default('CURRENT_TIMESTAMP'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
@@ -713,6 +763,15 @@ export const ragChunks = sqliteTable('rag_chunks', {
   embedding: text('embedding'),
   sourceId: text('source_id'),
   sourceType: text('source_type'),
+  documentId: text('document_id'),
+  category: text('category'),
+  accountId: text('account_id'),
+  dateStart: text('date_start'),
+  dateEnd: text('date_end'),
+  contentTokens: integer('content_tokens'),
+  totalAmount: integer('total_amount'),
+  transactionCount: integer('transaction_count'),
+  merchantNormalized: text('merchant_normalized'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -726,6 +785,7 @@ export const ragDocuments = sqliteTable('rag_documents', {
   version: integer('version').notNull().default(1),
   chunkCount: integer('chunk_count').default(0),
   status: text('status').notNull().default('indexed'),
+  contentHash: text('content_hash'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
@@ -737,7 +797,39 @@ export const ragCitations = sqliteTable('rag_citations', {
   chunkId: text('chunk_id').notNull().references(() => ragChunks.id, { onDelete: 'cascade' }),
   relevanceScore: real('relevance_score'),
   usedInResponse: integer('used_in_response', { mode: 'boolean' }).default(false),
+  documentId: text('document_id'),
+  rerankScore: real('rerank_score'),
+  position: integer('position'),
+  excerptUsed: text('excerpt_used'),
+  wasHelpful: integer('was_helpful', { mode: 'boolean' }),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+});
+
+// ============================================================================
+// TAX OFFSETS & CAPITAL LOSSES
+// ============================================================================
+
+export const taxOffsets = sqliteTable('tax_offsets', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  taxYear: text('tax_year').notNull(),
+  offsetType: text('offset_type').notNull(),
+  amount: integer('amount').notNull(),
+  description: text('description'),
+  createdAt: text('created_at').notNull(),
+});
+
+export const capitalLosses = sqliteTable('capital_losses', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  taxYear: text('tax_year').notNull(),
+  assetDescription: text('asset_description').notNull(),
+  acquisitionDate: text('acquisition_date'),
+  disposalDate: text('disposal_date'),
+  lossAmount: integer('loss_amount').notNull(),
+  appliedAmount: integer('applied_amount'),
+  carriedForward: integer('carried_forward', { mode: 'boolean' }),
+  createdAt: text('created_at').notNull(),
 });
 
 // ============================================================================
@@ -839,6 +931,12 @@ export type RagNamespace = typeof ragNamespaces.$inferSelect;
 export type RagChunk = typeof ragChunks.$inferSelect;
 export type RagDocument = typeof ragDocuments.$inferSelect;
 export type RagCitation = typeof ragCitations.$inferSelect;
+
+// Tax Offsets & Capital Losses
+export type TaxOffset = typeof taxOffsets.$inferSelect;
+export type NewTaxOffset = typeof taxOffsets.$inferInsert;
+export type CapitalLoss = typeof capitalLosses.$inferSelect;
+export type NewCapitalLoss = typeof capitalLosses.$inferInsert;
 
 // Upload Queue
 export type UploadQueueItem = typeof uploadQueue.$inferSelect;
