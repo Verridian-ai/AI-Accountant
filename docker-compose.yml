@@ -1,34 +1,182 @@
-version: '3.8'
+# =============================================================================
+# CBA Statements Parse — Full Stack Docker Compose
+# =============================================================================
+# Services:
+#   - postgres:  PostgreSQL 17 + pgvector (shared by CBA app + Cognee)
+#   - cognee:    Cognee AI knowledge graph (built from cloned repo)
+#   - server:    Hono API server (Node.js + Python)
+#   - client:    React frontend (nginx with API proxy)
+#
+# Usage:
+#   docker compose up --build -d
+#   Open http://localhost:8080
+# =============================================================================
 
 services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL + pgvector (shared database)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: cba-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_accountant}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./server/drizzle/0006_postgres_migration.sql:/docker-entrypoint-initdb.d/01-cba-schema.sql:ro
+      - ./docker/init-cognee-db.sql:/docker-entrypoint-initdb.d/02-extensions.sql:ro
+      - ./docker/init-cognee-db.sh:/docker-entrypoint-initdb.d/03-cognee-db.sh:ro
+    networks:
+      - cba-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app_user} -d ${POSTGRES_DB:-ai_accountant}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Cognee — AI Knowledge Graph (built from cloned repo)
+  # ---------------------------------------------------------------------------
+  cognee:
+    container_name: cba-cognee
+    restart: unless-stopped
+    build:
+      context: ./cognee-repo
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - ENVIRONMENT=local
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - CORS_ALLOWED_ORIGINS=*
+      # LLM via OpenRouter (Gemini 3 Flash Preview)
+      - LLM_PROVIDER=custom
+      - LLM_MODEL=openrouter/google/gemini-3-flash-preview
+      - LLM_ENDPOINT=https://openrouter.ai/api/v1
+      - LLM_API_KEY=${VITE_OPENROUTER_API_KEY}
+      - LLM_MAX_TOKENS=16384
+      # Embeddings via OpenRouter (text-embedding-3-small)
+      - EMBEDDING_PROVIDER=openai
+      - EMBEDDING_MODEL=text-embedding-3-small
+      - EMBEDDING_DIMENSIONS=1536
+      - EMBEDDING_MAX_TOKENS=8191
+      - EMBEDDING_API_KEY=${VITE_OPENROUTER_API_KEY}
+      - EMBEDDING_ENDPOINT=https://openrouter.ai/api/v1
+      # Database — shared PostgreSQL
+      - DB_PROVIDER=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=cognee_db
+      - DB_USERNAME=${POSTGRES_USER:-app_user}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      # Vector store — pgvector (same Postgres instance)
+      - VECTOR_DB_PROVIDER=pgvector
+      - VECTOR_DB_URL=postgresql://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD}@postgres:5432/cognee_db
+      # Graph store — embedded Kuzu (no extra service needed)
+      - GRAPH_DATABASE_PROVIDER=kuzu
+      # Security
+      - REQUIRE_AUTHENTICATION=false
+      - ENABLE_BACKEND_ACCESS_CONTROL=false
+      - ACCEPT_LOCAL_FILE_PATH=true
+      - ALLOW_HTTP_REQUESTS=true
+      - TELEMETRY_DISABLED=1
+    volumes:
+      - cognee-data:/app/.cognee_system
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - cba-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+
+  # ---------------------------------------------------------------------------
+  # CBA Server — Hono API (Node.js + Python for agents)
+  # ---------------------------------------------------------------------------
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     container_name: cba-server
+    restart: unless-stopped
     ports:
       - "3501:3501"
     environment:
+      # Server config
+      - PORT=3501
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-cba-statement-parser-jwt-secret-key-2025}
+      # AI Keys
       - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
       - VITE_OPENROUTER_API_KEY=${VITE_OPENROUTER_API_KEY}
-      - JWT_SECRET=${JWT_SECRET:-dev_secret_key_123}
-      - PORT=3501
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # Claude Agents
+      - USE_CLAUDE_AGENTS=${USE_CLAUDE_AGENTS:-true}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-5-20250929}
+      # Cognee
+      - USE_COGNEE=${USE_COGNEE:-true}
+      - COGNEE_API_URL=http://cognee:8000
+      # Database — shared PostgreSQL (triggers usePostgres in schema.ts)
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ai_accountant}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB:-ai_accountant}
+      - DB_USER=${POSTGRES_USER:-app_user}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_SSL=false
     volumes:
-      # Persist SQLite DB
-      - ./server/sqlite.db:/app/sqlite.db
-      # Persist Statement Files
       - ./statements:/statements
-      # Persist Cognee DB (if local)
-      - ./server/.cognee:/app/.cognee
-    restart: unless-stopped
+    networks:
+      - cba-network
+    depends_on:
+      postgres:
+        condition: service_healthy
 
+  # ---------------------------------------------------------------------------
+  # CBA Client — React + Nginx (with API proxy to server)
+  # ---------------------------------------------------------------------------
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        # Empty = client uses nginx proxy (location /api/ → server:3501)
+        VITE_API_URL: ""
     container_name: cba-client
+    restart: unless-stopped
     ports:
       - "8080:80"
+    networks:
+      - cba-network
     depends_on:
       - server
-    restart: unless-stopped
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres-data:
+    driver: local
+  cognee-data:
+    driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  cba-network:
+    driver: bridge

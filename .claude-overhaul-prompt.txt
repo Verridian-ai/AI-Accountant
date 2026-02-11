@@ -1,0 +1,323 @@
+# CBA STATEMENTS PARSE — Full Platform Overhaul
+# Agent Team Prompt for Claude Code (4 Teammates, Delegate Mode)
+
+## PROJECT CONTEXT
+Working directory: /mnt/c/Users/Danie/Desktop/CBA Statements Parse
+
+Australian bank statement parsing & financial intelligence platform.
+- **Stack**: Hono (TS backend, port 3501) + Drizzle ORM + SQLite/PostgreSQL + Vite React client
+- **AI**: Claude Agents SDK (Anthropic) with tool-use loops in `server/src/services/claude/`
+- **RAG**: Cognee integration for merchant memory and knowledge graphs
+- **Parsers**: Bank-specific parsers in `server/src/services/parsers/banks/` (CBA, ANZ, Westpac, NAB, St George, Bendigo, ING, Macquarie)
+- **Credit Card Parsers**: `server/src/services/parsers/documents/credit-card/`
+- **29 real PDF statements** in `statements/` directory for testing
+- **Existing docs**: `docs/AGENT_ARCHITECTURE.md`, `docs/FEATURE_SPEC.md`, `docs/COGNEE_INTEGRATION.md`, `docs/GST_BAS_RULES.md`
+
+## EXISTING CLAUDE AGENTS (server/src/services/claude/agents/)
+1. `statement-parser.ts` — StatementParserAgent: extracts transactions from PDFs
+2. `transaction-categorizer.ts` — TransactionCategorizerAgent: categorizes transactions
+3. `gst-calculator.ts` — GSTCalculatorAgent: GST compliance calculations
+4. `budget-analyzer.ts` — BudgetAnalyzerAgent: budget analysis
+5. `cross-account-tracer.ts` — CrossAccountTracerAgent: traces money flows between accounts
+6. `account-reconciler.ts` — AccountReconcilerAgent: reconciles accounts
+- Base class: `base-agent.ts` (agentic tool-use loop with token tracking, budget enforcement)
+- Config: `config.ts`, Client: `client.ts`, Types: `types.ts`, Retry: `retry.ts`
+- Orchestrator: `orchestrator.ts` + `server/src/services/orchestrator/` (coordinates multi-agent workflows)
+- Cognee tools: `cognee-tools.ts`
+
+## KEY SERVER FILES
+- `server/src/index.ts` — Main Hono server with all routes
+- `server/src/schema.ts` — Drizzle ORM schema (SQLite tables: users, accounts, transactions, statements, etc.)
+- `server/src/services/ai.ts` — Legacy OpenAI/OpenRouter AI service (569 lines, being replaced by Claude agents)
+- `server/src/services/parsers/registry.ts` — Bank parser registry and detection
+- `server/src/services/parsers/detector.ts` — Bank statement type detection
+- `server/src/services/parsers/base-parser.ts` — Base parser class
+- `server/src/services/parsers/types.ts` — Parser type definitions
+- `server/src/services/transfers/detector.ts` — Cross-account transfer detection
+- `server/src/services/cognee_client.ts` — Cognee RAG integration
+- `server/src/services/rag.ts` — RAG pipeline
+- `server/src/services/pipeline.ts` — Processing pipeline
+- `server/src/services/queue.ts` — Job queue
+- `server/src/events.ts` — SSE events system
+- `server/src/services/bas.ts` — BAS calculations
+- `server/src/services/tax.ts` — Tax calculations
+- `server/src/services/export.ts` — Export functionality
+- `server/src/routes/agents.ts` — Agent API routes
+
+## KEY CLIENT FILES
+- `client/src/api.ts` — Full API layer (1024+ lines)
+- `client/src/App.tsx` — React app with routing
+- `client/src/features/statements/components/UploadZone.tsx` — Statement upload UI
+- `client/src/features/statements/components/FileUpload.tsx` — File upload component
+- `client/src/features/statements/components/StatementList.tsx` — Statement list
+- `client/src/features/accounts/components/AccountsOverview.tsx` — Accounts overview
+- `client/src/features/accounts/components/AccountSetupWizard.tsx` — Account setup
+- `client/src/features/transactions/components/LedgerPage.tsx` — Main ledger view
+- `client/src/features/transactions/components/LedgerTable.tsx` — Transaction table
+- `client/src/features/transfers/components/TransfersPage.tsx` — Transfers view
+- `client/src/features/transfers/components/MoneyFlowDiagram.tsx` — Flow visualization
+- `client/src/features/bas/components/BASDashboard.tsx` — BAS dashboard
+- `client/src/features/gst/components/GSTPage.tsx` — GST page
+- `client/src/features/analytics/` — Analytics dashboard components
+- `client/src/features/chat/components/ChatInterface.tsx` — AI chat
+- `client/src/context/SSEContext.tsx` — SSE event context
+
+## ENV VARS
+- ANTHROPIC_API_KEY (Claude Sonnet 4.5)
+- OPENROUTER_API_KEY, OPENAI_API_KEY
+- CLAUDE_MODEL=claude-sonnet-4-5-20250929
+- USE_CLAUDE_AGENTS=true, USE_COGNEE=true
+- PostgreSQL: POSTGRES_USER=app_user, POSTGRES_DB=ai_accountant, PORT=3501
+
+---
+
+## DELEGATE TO TEAMMATES:
+
+### Teammate 1: "Batch Processing & Parser Engineer"
+**Focus**: `server/src/services/parsers/`, `server/src/services/claude/agents/statement-parser.ts`, `server/src/services/pipeline.ts`, `server/src/services/queue.ts`, `client/src/features/statements/`
+
+**Read first**: `server/src/services/parsers/registry.ts`, `server/src/services/parsers/detector.ts`, `server/src/services/parsers/base-parser.ts`, `server/src/services/parsers/types.ts`, `server/src/schema.ts`, `server/src/events.ts`, `client/src/features/statements/components/UploadZone.tsx`
+
+**Tasks:**
+
+1. **Drag-and-Drop Batch Upload UI**
+   - Enhance `client/src/features/statements/components/UploadZone.tsx` for multi-file drag-drop (accept 10+ PDFs at once)
+   - Add progress bar per file, overall progress, real-time status messages
+   - Show detected bank type and account info per file as parsing completes
+   - Support cancel/retry per individual file
+
+2. **Batch Processing API Endpoint**
+   - Create `POST /api/statements/batch` endpoint in `server/src/index.ts`
+   - Accept multipart form data with multiple PDF files
+   - For each PDF:
+     a. Run `detector.ts` to identify bank type (CBA, ANZ, etc.)
+     b. Run appropriate bank parser from registry
+     c. Extract account info (BSB, account number, account type)
+     d. Auto-create account record if this account hasn't been seen before
+     e. Link all parsed transactions to the correct `account_id`
+     f. Emit SSE progress events: `{ type: 'batch_progress', file: 'statement-3.pdf', status: 'parsing', bank: 'CBA', progress: '3/29' }`
+   - Handle errors per-file (don't fail entire batch if one statement errors)
+   - Return summary: files processed, accounts created, transactions extracted, errors
+
+3. **Credit Card Statement Detection**
+   - Enhance `server/src/services/parsers/detector.ts` to distinguish credit card vs transaction account statements
+   - Extend `server/src/services/parsers/documents/credit-card/` parsers
+   - Add credit card-specific fields: `credit_limit`, `minimum_payment`, `interest_charges`, `closing_balance`
+   - Auto-flag business credit card transactions: `gst_applicable=true`, `gst_category='taxable_10'`
+
+4. **Vision-Based Verification**
+   - After text-based parsing, send each PDF page as image to Claude Vision (Anthropic SDK)
+   - Compare vision extraction against text parser output
+   - Flag discrepancies with confidence scores for human review
+   - Store verification results in statement record
+
+5. **Account Auto-Creation Logic**
+   - When parser extracts account info (BSB + account number), check if account exists in DB
+   - If not, create new account record with: `bank_id`, `account_number`, `bsb`, `account_type` (transaction/savings/credit_card/loan), `account_name`
+   - Detect account type from statement content (credit card statements mention "credit limit", "minimum payment")
+   - Link all transactions from that statement to the account
+
+6. **Test with ALL 29 statements** in `statements/` directory
+   - Run batch upload of all 29 PDFs
+   - Verify correct bank detection, account creation, and transaction extraction
+   - Document results in `docs/BATCH_PROCESSING.md`
+
+---
+
+### Teammate 2: "Multi-Account & Transfer Intelligence"
+**Focus**: `server/src/services/transfers/`, `server/src/schema.ts`, `server/src/services/claude/agents/cross-account-tracer.ts`, `client/src/features/accounts/`, `client/src/features/transfers/`
+
+**Read first**: `server/src/schema.ts`, `server/src/services/transfers/detector.ts`, `server/src/services/claude/agents/cross-account-tracer.ts`, `client/src/features/accounts/components/AccountsOverview.tsx`, `client/src/features/transfers/components/TransfersPage.tsx`, `client/src/features/transfers/components/MoneyFlowDiagram.tsx`
+
+**Tasks:**
+
+1. **Enhanced Schema for Multi-Account**
+   - Review and enhance `server/src/schema.ts` accounts table:
+     - `account_type`: enum ('transaction', 'savings', 'credit_card', 'loan', 'offset')
+     - `ownership_tag`: enum ('personal', 'business')
+     - `credit_limit`, `interest_rate` (for credit cards/loans)
+     - `is_active`, `last_statement_date`
+   - Add `transfer_link_id` field to transactions table if not present
+   - Add `is_owner_contribution` boolean to transactions
+
+2. **Smart Transfer Detection Algorithm**
+   - Enhance `server/src/services/transfers/detector.ts` for cross-statement matching:
+     - Match by amount + date (within 1-2 business days) + opposite signs across accounts
+     - Credit card payments: match debit from transaction account with credit on credit card statement
+     - Owner contributions: transfers from personal-tagged accounts to business-tagged accounts
+     - Savings sweeps: automatic transfers between checking and savings
+   - Mark matched pairs: `is_transfer=true`, link both transactions via `transfer_link_id`
+   - Prevent these from counting as income/expenses in reports
+
+3. **Per-Account Navigation & UI**
+   - Build account switcher/filter component in client
+   - `client/src/features/accounts/` — account list sidebar or dropdown
+   - Clicking an account filters the ledger, analytics, and GST views to that account only
+   - "All Accounts" view shows unified transactions with account column
+   - Per-account summary cards: balance, transaction count, last activity, GST total
+
+4. **Money Flow Visualization**
+   - Build interactive Sankey diagram in `client/src/features/transfers/components/MoneyFlowDiagram.tsx`
+   - Show account interconnections: which accounts transfer to which
+   - Node sizes proportional to total flow volume
+   - Edge labels with total transferred amounts
+   - Time period selector (monthly, quarterly, full range)
+
+5. **Personal vs Business Separation**
+   - Account tagging UI in settings: toggle personal/business per account
+   - Owner contribution detection and auto-categorization
+   - Exclude personal accounts from BAS/GST calculations
+   - Separate dashboard sections for personal vs business
+
+6. **Account Balance Timeline**
+   - Chart showing balance over time per account (from statement opening/closing balances)
+   - Overlay multiple accounts on same timeline
+   - Highlight transfer events between accounts
+
+7. Write `docs/MULTI_ACCOUNT_TRANSFERS.md` with architecture decisions
+
+---
+
+### Teammate 3: "GST/BAS Compliance & Merchant Intelligence"
+**Focus**: `server/src/services/claude/agents/gst-calculator.ts`, `server/src/services/claude/agents/transaction-categorizer.ts`, `server/src/services/cognee_client.ts`, `server/src/services/bas.ts`, `server/src/services/tax.ts`, GST/BAS features
+
+**Read first**: `docs/GST_BAS_RULES.md`, `server/src/services/claude/agents/gst-calculator.ts`, `server/src/services/claude/agents/transaction-categorizer.ts`, `server/src/services/cognee_client.ts`, `server/src/services/bas.ts`, `client/src/features/bas/components/BASDashboard.tsx`, `client/src/features/gst/`, `server/src/services/claude/base-agent.ts`, `server/src/services/claude/cognee-tools.ts`
+
+**Tasks:**
+
+1. **GST Optimization Engine**
+   - Enhance GSTCalculatorAgent to comprehensively scan ALL business transactions for claimable GST
+   - Implement ATO GST rules from `docs/GST_BAS_RULES.md`:
+     - G1 (Total sales) → 1A (GST on sales)
+     - G10 (Capital purchases) → 1B (GST on purchases)  
+     - G11 (Non-capital purchases)
+     - Input tax credits: calculate 1/11th of GST-inclusive amounts
+   - Track GST on sales vs GST on purchases across all business accounts
+   - Ensure ZERO claimable GST is missed — maximize legitimate deductions
+   - Handle mixed-use assets, exempt supplies, GST-free items correctly
+   - Exclude personal account transactions from GST calculations
+
+2. **NEW: Merchant Intelligence Agent**
+   - Create `server/src/services/claude/agents/merchant-intelligence.ts` following `base-agent.ts` pattern
+   - Tools for this agent:
+     - `search_merchant_online`: Use Claude web search to resolve abbreviated merchant names (e.g., "SQ *COFFEE" → "Square - Local Coffee Shop Pty Ltd")
+     - `lookup_abn`: Query ABR (Australian Business Register) API for ABN/GST registration status
+     - `search_cognee_merchant`: Check Cognee for previously learned merchant mappings
+     - `store_merchant_mapping`: Save new merchant mapping to Cognee knowledge graph
+   - For each unknown merchant in transactions:
+     a. Check Cognee for existing mapping
+     b. If not found, search online for merchant identity
+     c. Look up ABN if business name found
+     d. Determine GST registration status
+     e. Infer correct GST category based on merchant type + ATO rules
+     f. Store enrichment in Cognee for future reference
+   - Schema for Cognee merchant memory:
+     ```
+     abbreviated_name → canonical_name → ABN → GST_registered (bool) → industry → default_category → last_verified_date
+     ```
+
+3. **Cognee Merchant Memory System**
+   - Enhance `server/src/services/cognee_client.ts` with merchant-specific methods:
+     - `storeMerchantMapping(abbreviated, canonical, abn, gstRegistered, industry)`
+     - `lookupMerchant(abbreviated) → MerchantInfo | null`
+     - `updateMerchantFromCorrection(transactionId, correctedCategory, correctedMerchant)`
+   - Continuous learning: when users correct categorizations, feed back into Cognee
+   - Batch enrichment: process all uncategorized transactions through merchant intelligence
+
+4. **Transaction Enrichment Pipeline**
+   - After parsing, run each transaction through:
+     a. Merchant Intelligence Agent → resolve merchant name, ABN, GST status
+     b. TransactionCategorizerAgent → categorize with enriched merchant context
+     c. GSTCalculatorAgent → determine GST treatment
+   - Store enrichment results on transaction record
+   - Show enrichment status in UI (enriched ✓, pending ⏳, unknown ❓)
+
+5. **BAS Dashboard Enhancement**
+   - Enhance `client/src/features/bas/components/BASDashboard.tsx`:
+     - Net GST position per BAS period (refund vs payable)
+     - Breakdown by account (business accounts only)
+     - Breakdown by GST category (G1, G10, G11, 1A, 1B)
+     - Visual charts: GST credits by category, by account
+     - BAS pre-fill report exportable as PDF
+   - Add BAS period selector (quarterly: Jul-Sep, Oct-Dec, Jan-Mar, Apr-Jun)
+
+6. Write `docs/GST_MERCHANT_INTELLIGENCE.md`
+
+---
+
+### Teammate 4: "Integration Tester & Quality Assurance"
+**Focus**: End-to-end testing, documentation, deployment readiness
+
+**Read first**: `docs/AGENT_ARCHITECTURE.md`, `docs/FEATURE_SPEC.md`, `package.json`, `docker-compose.yml`, `server/src/index.ts`
+
+**Tasks:**
+
+1. **Wait for teammates 1-3 to make initial progress** (check their output docs)
+
+2. **Test Batch Upload** (after Teammate 1 delivers):
+   - Upload all 29 PDFs from `statements/` directory via batch endpoint
+   - Verify each statement: correct bank detection, correct account type (transaction vs credit card)
+   - Verify all transactions extracted with correct dates, amounts, descriptions
+   - Check account auto-creation: correct BSB, account numbers, account types
+   - Check for duplicate transactions across overlapping statement periods
+   - Measure performance: time to process 29 statements, memory usage
+
+3. **Test Transfer Detection** (after Teammate 2 delivers):
+   - Verify transfers between accounts correctly matched (amount + date matching)
+   - Check credit card payments from transaction accounts are linked
+   - Verify owner contributions detected (personal → business transfers)
+   - Ensure transfer-linked transactions excluded from income/expense totals
+   - Test MoneyFlowDiagram renders correctly with real data
+
+4. **Test GST Calculations** (after Teammate 3 delivers):
+   - Verify GST calculated correctly across all business accounts
+   - Check BAS pre-fill numbers (G1, G10, G11, 1A, 1B) are accurate
+   - Verify merchant intelligence enrichment works on real transactions
+   - Test Cognee merchant memory: enrich → correct → re-enrich cycle
+   - Verify personal accounts excluded from GST calculations
+
+5. **Test Credit Card Features**:
+   - Verify credit card statements parsed with credit-specific fields
+   - Check interest calculations, balance tracking, utilization metrics
+   - Verify all business credit card transactions flagged for GST
+
+6. **Full E2E Test Suite**:
+   ```bash
+   cd /mnt/c/Users/Danie/Desktop/CBA Statements Parse
+   # Start server
+   cd server && npm run dev &
+   # Start client  
+   cd ../client && npm run dev &
+   # Test all API endpoints
+   curl http://localhost:3501/api/health
+   curl -X POST http://localhost:3501/api/statements/batch -F 'files=@statements/*.pdf'
+   curl http://localhost:3501/api/accounts
+   curl http://localhost:3501/api/transactions?account_id=...
+   curl http://localhost:3501/api/transfers/detect
+   curl http://localhost:3501/api/bas/prefill?period=2024-Q2
+   ```
+
+7. **Compile Final Report**: `docs/CBA_OVERHAUL_REPORT.md`
+   - Executive summary
+   - Architecture diagram (text-based)
+   - Test results per feature area (batch upload, transfers, GST, credit cards, merchant intelligence)
+   - Issues found: P0 (blockers), P1 (important), P2 (nice-to-have)
+   - Performance metrics
+   - Remaining work / tech debt
+   - Deployment checklist
+   - Screenshots or test output evidence
+
+---
+
+## CRITICAL REQUIREMENTS
+- ALL 29 PDF statements must parse successfully in batch mode
+- Transfer detection must work across statements (no duplicate counting of transfers)
+- GST calculations must be ATO-compliant and maximize legitimate deductions
+- Credit card statements must be detected and tracked separately from transaction accounts
+- Merchant intelligence must learn and improve over time via Cognee knowledge graphs
+- Personal vs business account separation must exclude personal from BAS/GST
+- Vision-based verification must double-check every parsed statement
+- All new Claude agents must follow the established pattern in `server/src/services/claude/base-agent.ts`
+- Use SSE events from `server/src/events.ts` for real-time progress
+- Mobile-first responsive UI (existing Tailwind setup)
+- No breaking changes to existing working features

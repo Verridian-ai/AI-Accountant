@@ -1,10 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useEffect, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Calculator, FileText, History, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import {
+    Loader2,
+    Calculator,
+    FileText,
+    History,
+    DollarSign,
+    TrendingUp,
+    TrendingDown,
+    ArrowRight,
+    RefreshCw,
+    Save,
+    Trash2,
+    ChevronRight,
+    BarChart3,
+    ShieldCheck,
+    AlertTriangle,
+} from 'lucide-react';
 import { basApi } from '@/api';
 import type { BASCalculation, BASQuarter } from '@/types/tax';
 
@@ -12,6 +25,14 @@ const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-AU', {
         style: 'currency',
         currency: 'AUD',
+    }).format(cents / 100);
+};
+
+const formatCurrencyShort = (cents: number) => {
+    return new Intl.NumberFormat('en-AU', {
+        style: 'currency',
+        currency: 'AUD',
+        maximumFractionDigits: 0,
     }).format(cents / 100);
 };
 
@@ -35,6 +56,7 @@ export function BASDashboard() {
     const [basData, setBASData] = useState<BASCalculation | null>(null);
     const [history, setHistory] = useState<BASQuarter[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'calculate' | 'breakdown' | 'history'>('calculate');
 
     useEffect(() => {
         loadHistory();
@@ -42,6 +64,28 @@ export function BASDashboard() {
         const { year, quarter } = getCurrentQuarter();
         setSelectedQuarter(`${year}-Q${quarter}`);
     }, []);
+
+    // Auto-calculate when quarter changes
+    useEffect(() => {
+        if (selectedQuarter) {
+            autoCalculate();
+        }
+    }, [selectedQuarter, method]);
+
+    const autoCalculate = async () => {
+        if (!selectedQuarter) return;
+        setCalculating(true);
+        setError(null);
+        try {
+            const data = await basApi.calculateBAS(selectedQuarter, method);
+            setBASData(data);
+        } catch (err) {
+            // Silently fail on auto-calculate -- user can retry manually
+            console.error('Auto-calculate BAS failed:', err);
+        } finally {
+            setCalculating(false);
+        }
+    };
 
     const loadHistory = async () => {
         try {
@@ -90,7 +134,8 @@ export function BASDashboard() {
             for (let q = 4; q >= 1; q--) {
                 options.push({
                     value: `${year}-Q${q}`,
-                    label: `Q${q} ${year}-${(year + 1).toString().slice(2)} (${getQuarterDates(year, q as 1 | 2 | 3 | 4)})`,
+                    label: `Q${q} ${year}-${(year + 1).toString().slice(2)}`,
+                    sublabel: getQuarterDates(year, q as 1 | 2 | 3 | 4),
                 });
             }
         }
@@ -108,308 +153,888 @@ export function BASDashboard() {
         return periods[quarter];
     };
 
+    // SVG bar chart data
+    const barChartData = useMemo(() => {
+        if (!basData) return null;
+        const sales = basData.g1_total_sales;
+        const purchases = basData.g12_g10_plus_g11;
+        const max = Math.max(sales, purchases, 1);
+        return { sales, purchases, max };
+    }, [basData]);
+
+    const isRefund = basData ? basData.net_amount_payable <= 0 : false;
+    const netAmount = basData ? Math.abs(basData.net_amount_payable || basData.net_refund) : 0;
+
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Business Activity Statement</h2>
-                    <p className="text-muted-foreground">
-                        Calculate and manage your quarterly BAS returns
-                    </p>
-                </div>
+        <div className="space-y-5">
+            {/* Page Header */}
+            <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-black text-gradient-gold tracking-tight">
+                    Business Activity Statement
+                </h2>
+                <p className="text-[11px] text-zinc-500">
+                    Calculate and manage your quarterly BAS returns for the ATO
+                </p>
             </div>
 
-            <Tabs defaultValue="calculate" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="calculate">
-                        <Calculator className="w-4 h-4 mr-2" />
-                        Calculate
-                    </TabsTrigger>
-                    <TabsTrigger value="history">
-                        <History className="w-4 h-4 mr-2" />
-                        History
-                    </TabsTrigger>
-                </TabsList>
+            {/* Tab Switcher */}
+            <div className="flex gap-1 neu-inset rounded-xl p-1 w-fit">
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('calculate')}
+                    className={cn(
+                        "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                        activeTab === 'calculate'
+                            ? "bg-[#FFCC00] text-[#0a0a0f]"
+                            : "text-zinc-500 hover:text-zinc-300"
+                    )}
+                >
+                    <Calculator className="w-3.5 h-3.5" />
+                    Calculate
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('breakdown')}
+                    className={cn(
+                        "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                        activeTab === 'breakdown'
+                            ? "bg-[#FFCC00] text-[#0a0a0f]"
+                            : "text-zinc-500 hover:text-zinc-300"
+                    )}
+                >
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    GST Breakdown
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('history')}
+                    className={cn(
+                        "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                        activeTab === 'history'
+                            ? "bg-[#FFCC00] text-[#0a0a0f]"
+                            : "text-zinc-500 hover:text-zinc-300"
+                    )}
+                >
+                    <History className="w-3.5 h-3.5" />
+                    History
+                </button>
+            </div>
 
-                <TabsContent value="calculate" className="space-y-4">
-                    {/* Controls */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>BAS Period</CardTitle>
-                            <CardDescription>
-                                Select the quarter and accounting method
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex gap-4 flex-wrap">
-                            <div className="flex-1 min-w-[200px]">
-                                <Select value={selectedQuarter} onValueChange={setSelectedQuarter}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select quarter" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {generateQuarterOptions().map((opt) => (
-                                            <SelectItem key={opt.value} value={opt.value}>
-                                                {opt.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+            {/* Calculate Tab */}
+            {activeTab === 'calculate' && (
+                <div className="space-y-5">
+                    {/* Controls Row */}
+                    <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-2">
+                                <Calculator className="w-4 h-4 text-[#FFCC00]" />
+                                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                                    BAS Period
+                                </span>
                             </div>
-                            <div className="flex-1 min-w-[200px]">
-                                <Select value={method} onValueChange={(v) => setMethod(v as 'accrual' | 'cash')}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Accounting method" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="accrual">Accrual Basis</SelectItem>
-                                        <SelectItem value="cash">Cash Basis</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="flex gap-1 neu-inset rounded-xl p-1">
+                                {(['accrual', 'cash'] as const).map((m) => (
+                                    <button
+                                        key={m}
+                                        type="button"
+                                        onClick={() => setMethod(m)}
+                                        className={cn(
+                                            "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                                            method === m
+                                                ? "bg-[#FFCC00] text-[#0a0a0f]"
+                                                : "text-zinc-500 hover:text-zinc-300"
+                                        )}
+                                    >
+                                        {m}
+                                    </button>
+                                ))}
                             </div>
-                            <Button onClick={calculateBAS} disabled={calculating || !selectedQuarter}>
-                                {calculating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                Calculate BAS
-                            </Button>
-                        </CardContent>
-                    </Card>
+                        </div>
 
+                        <div className="flex flex-wrap items-center gap-3">
+                            {/* Quarter Selector as pill buttons */}
+                            <div className="flex-1 min-w-[200px]">
+                                <div className="flex flex-wrap gap-1.5">
+                                    {generateQuarterOptions().slice(0, 8).map((opt) => (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => setSelectedQuarter(opt.value)}
+                                            className={cn(
+                                                "px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border",
+                                                selectedQuarter === opt.value
+                                                    ? "bg-[#FFCC00]/10 border-[#FFCC00]/30 text-[#FFCC00]"
+                                                    : "border-white/5 text-zinc-500 hover:text-zinc-300 hover:border-white/10"
+                                            )}
+                                        >
+                                            <span className="font-black">{opt.label}</span>
+                                            <span className="ml-1 text-[8px] opacity-70">{opt.sublabel}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Calculate Button */}
+                            <button
+                                type="button"
+                                onClick={calculateBAS}
+                                disabled={calculating || !selectedQuarter}
+                                className={cn(
+                                    "flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all",
+                                    "bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]",
+                                    "disabled:opacity-40 disabled:cursor-not-allowed",
+                                    "shadow-lg shadow-[#FFCC00]/10"
+                                )}
+                            >
+                                {calculating ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <RefreshCw className="w-4 h-4" />
+                                )}
+                                Calculate
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Error Banner */}
                     {error && (
-                        <Card className="border-destructive">
-                            <CardContent className="pt-6">
-                                <p className="text-destructive">{error}</p>
-                            </CardContent>
-                        </Card>
+                        <div className="neu-raised rounded-2xl border border-red-500/20 p-4 flex items-center gap-3">
+                            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+                            <p className="text-sm text-red-400">{error}</p>
+                        </div>
+                    )}
+
+                    {/* Loading State */}
+                    {calculating && !basData && (
+                        <div className="neu-raised rounded-2xl border border-white/5 p-12 flex items-center justify-center">
+                            <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+                        </div>
                     )}
 
                     {basData && (
                         <>
-                            {/* Summary Cards */}
-                            <div className="grid gap-4 md:grid-cols-3">
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">GST on Sales (G9)</CardTitle>
-                                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">{formatCurrency(basData.g9_gst_on_sales)}</div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Total taxable sales: {formatCurrency(basData.g1_total_sales)}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">GST Credits (G19)</CardTitle>
-                                        <TrendingDown className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold">{formatCurrency(basData.g19_gst_credits)}</div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Total purchases: {formatCurrency(basData.g12_g10_plus_g11)}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-
-                                <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium">
-                                            {basData.net_amount_payable > 0 ? 'Amount Payable' : 'Refund Due'}
-                                        </CardTitle>
-                                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className={`text-2xl font-bold ${basData.net_amount_payable > 0 ? 'text-destructive' : 'text-green-600'}`}>
-                                            {formatCurrency(Math.abs(basData.net_amount_payable || basData.net_refund))}
+                            {/* Net GST Position - Hero Card */}
+                            <div
+                                className={cn(
+                                    "neu-raised rounded-2xl border-2 p-6",
+                                    isRefund ? "border-emerald-500/30" : "border-red-500/30"
+                                )}
+                            >
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div className="flex items-center gap-4">
+                                        <div
+                                            className={cn(
+                                                "w-14 h-14 rounded-2xl flex items-center justify-center",
+                                                isRefund
+                                                    ? "bg-emerald-500/10 border border-emerald-500/20"
+                                                    : "bg-red-500/10 border border-red-500/20"
+                                            )}
+                                        >
+                                            <DollarSign
+                                                className={cn(
+                                                    "w-7 h-7",
+                                                    isRefund ? "text-emerald-400" : "text-red-400"
+                                                )}
+                                            />
                                         </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            Net GST (G20): {formatCurrency(basData.g20_net_gst)}
-                                        </p>
-                                    </CardContent>
-                                </Card>
+                                        <div>
+                                            <span
+                                                className={cn(
+                                                    "text-[10px] font-black uppercase tracking-[0.2em]",
+                                                    isRefund ? "text-emerald-400" : "text-red-400"
+                                                )}
+                                            >
+                                                {isRefund ? 'Refund Due' : 'Amount Payable'}
+                                            </span>
+                                            <div
+                                                className={cn(
+                                                    "text-3xl font-black tracking-tight",
+                                                    isRefund ? "text-emerald-400" : "text-red-400"
+                                                )}
+                                            >
+                                                {formatCurrency(netAmount)}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* G9 vs G19 inline comparison */}
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-center">
+                                            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">
+                                                G9 Sales GST
+                                            </p>
+                                            <p className="text-lg font-black text-zinc-200 tabular-nums">
+                                                {formatCurrencyShort(basData.g9_gst_on_sales)}
+                                            </p>
+                                        </div>
+                                        <ArrowRight className="w-4 h-4 text-zinc-600" />
+                                        <div className="text-center">
+                                            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">
+                                                G19 Credits
+                                            </p>
+                                            <p className="text-lg font-black text-zinc-200 tabular-nums">
+                                                {formatCurrencyShort(basData.g19_gst_credits)}
+                                            </p>
+                                        </div>
+                                        <div className="w-px h-10 bg-white/5 mx-1" />
+                                        <div className="text-center">
+                                            <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">
+                                                G20 Net GST
+                                            </p>
+                                            <p
+                                                className={cn(
+                                                    "text-lg font-black tabular-nums",
+                                                    isRefund ? "text-emerald-400" : "text-red-400"
+                                                )}
+                                            >
+                                                {formatCurrencyShort(basData.g20_net_gst)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Detailed BAS Labels */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>GST Calculation Details</CardTitle>
-                                    <CardDescription>
-                                        Breakdown of all BAS labels
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid gap-6 md:grid-cols-2">
-                                        {/* Sales Section */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-semibold border-b pb-2">Sales</h4>
-                                            <div className="space-y-2 text-sm">
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">G1 - Total Sales</span>
-                                                    <span className="font-medium">{formatCurrency(basData.g1_total_sales)}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">G2 - Export Sales</span>
-                                                    <span className="font-medium">{formatCurrency(basData.g2_export_sales)}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">G3 - GST-Free Sales</span>
-                                                    <span className="font-medium">{formatCurrency(basData.g3_gst_free_sales)}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">G4 - Input Taxed Sales</span>
-                                                    <span className="font-medium">{formatCurrency(basData.g4_input_taxed_sales)}</span>
-                                                </div>
-                                                <div className="flex justify-between font-semibold">
-                                                    <span>G9 - GST on Sales</span>
-                                                    <span>{formatCurrency(basData.g9_gst_on_sales)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Purchases Section */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-semibold border-b pb-2">Purchases</h4>
-                                            <div className="space-y-2 text-sm">
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">G10 - Capital Purchases</span>
-                                                    <span className="font-medium">{formatCurrency(basData.g10_capital_purchases)}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">G11 - Non-Capital Purchases</span>
-                                                    <span className="font-medium">{formatCurrency(basData.g11_non_capital_purchases)}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">G12 - Total Purchases</span>
-                                                    <span className="font-medium">{formatCurrency(basData.g12_g10_plus_g11)}</span>
-                                                </div>
-                                                <div className="flex justify-between font-semibold">
-                                                    <span>G19 - GST Credits</span>
-                                                    <span>{formatCurrency(basData.g19_gst_credits)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* PAYG Section */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-semibold border-b pb-2">PAYG Withholding</h4>
-                                            <div className="space-y-2 text-sm">
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">W1 - Gross Wages</span>
-                                                    <span className="font-medium">{formatCurrency(basData.w1_gross_wages)}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">W2 - Amounts Withheld</span>
-                                                    <span className="font-medium">{formatCurrency(basData.w2_amounts_withheld)}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">5A - PAYG Instalment</span>
-                                                    <span className="font-medium">{formatCurrency(basData.payg_instalment_5a)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Other Section */}
-                                        <div className="space-y-4">
-                                            <h4 className="font-semibold border-b pb-2">Other</h4>
-                                            <div className="space-y-2 text-sm">
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">7C - Fuel Tax Credits</span>
-                                                    <span className="font-medium">{formatCurrency(basData.fuel_tax_credits_7c)}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">7D - Wine Equalisation</span>
-                                                    <span className="font-medium">{formatCurrency(basData.wine_equalisation_7d)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                            {/* Summary Cards - G9, G19, Net */}
+                            <div className="grid gap-4 md:grid-cols-3">
+                                <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                                            GST on Sales (G9)
+                                        </span>
+                                        <TrendingUp className="h-4 w-4 text-[#FFCC00]/40" />
                                     </div>
+                                    <div className="text-2xl font-black text-zinc-200 tabular-nums">
+                                        {formatCurrency(basData.g9_gst_on_sales)}
+                                    </div>
+                                    <p className="text-[10px] text-zinc-600 mt-1">
+                                        Total taxable sales: {formatCurrencyShort(basData.g1_total_sales)}
+                                    </p>
+                                </div>
 
-                                    {/* Summary */}
-                                    <div className="mt-6 pt-4 border-t">
-                                        <div className="flex justify-between items-center text-lg font-bold">
-                                            <span>Net Amount {basData.net_amount_payable > 0 ? 'Payable' : 'Refundable'}</span>
-                                            <span className={basData.net_amount_payable > 0 ? 'text-destructive' : 'text-green-600'}>
-                                                {formatCurrency(Math.abs(basData.net_amount_payable || basData.net_refund))}
+                                <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                                            GST Credits (G19)
+                                        </span>
+                                        <TrendingDown className="h-4 w-4 text-[#FFCC00]/40" />
+                                    </div>
+                                    <div className="text-2xl font-black text-zinc-200 tabular-nums">
+                                        {formatCurrency(basData.g19_gst_credits)}
+                                    </div>
+                                    <p className="text-[10px] text-zinc-600 mt-1">
+                                        Total purchases: {formatCurrencyShort(basData.g12_g10_plus_g11)}
+                                    </p>
+                                </div>
+
+                                <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                                            {isRefund ? 'Refund Due' : 'Amount Payable'}
+                                        </span>
+                                        <DollarSign className="h-4 w-4 text-[#FFCC00]/40" />
+                                    </div>
+                                    <div
+                                        className={cn(
+                                            "text-2xl font-black tabular-nums",
+                                            isRefund ? "text-emerald-400" : "text-red-400"
+                                        )}
+                                    >
+                                        {formatCurrency(netAmount)}
+                                    </div>
+                                    <p className="text-[10px] text-zinc-600 mt-1">
+                                        Net GST (G20): {formatCurrencyShort(basData.g20_net_gst)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Sales vs Purchases Bar Chart */}
+                            {barChartData && (
+                                <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <BarChart3 className="w-4 h-4 text-[#FFCC00]" />
+                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                                            Sales vs Purchases
+                                        </span>
+                                    </div>
+                                    <svg viewBox="0 0 400 120" className="w-full h-auto" style={{ maxHeight: 140 }}>
+                                        {/* Labels */}
+                                        <text x="10" y="35" fill="#71717a" className="text-[9px] font-bold" dominantBaseline="middle">
+                                            G1 Sales
+                                        </text>
+                                        <text x="10" y="85" fill="#71717a" className="text-[9px] font-bold" dominantBaseline="middle">
+                                            G10+G11
+                                        </text>
+
+                                        {/* Background tracks */}
+                                        <rect x="80" y="20" width="280" height="28" rx="6" fill="rgba(255,255,255,0.03)" />
+                                        <rect x="80" y="70" width="280" height="28" rx="6" fill="rgba(255,255,255,0.03)" />
+
+                                        {/* Sales bar */}
+                                        <rect
+                                            x="80"
+                                            y="20"
+                                            width={Math.max((barChartData.sales / barChartData.max) * 280, 4)}
+                                            height="28"
+                                            rx="6"
+                                            fill="#FFCC00"
+                                            opacity={0.85}
+                                        />
+                                        <text
+                                            x={Math.max((barChartData.sales / barChartData.max) * 280, 4) + 86}
+                                            y="35"
+                                            fill="#e4e4e7"
+                                            className="text-[9px] font-black"
+                                            dominantBaseline="middle"
+                                        >
+                                            {formatCurrencyShort(barChartData.sales)}
+                                        </text>
+
+                                        {/* Purchases bar */}
+                                        <rect
+                                            x="80"
+                                            y="70"
+                                            width={Math.max((barChartData.purchases / barChartData.max) * 280, 4)}
+                                            height="28"
+                                            rx="6"
+                                            fill="#FFCC00"
+                                            opacity={0.5}
+                                        />
+                                        <text
+                                            x={Math.max((barChartData.purchases / barChartData.max) * 280, 4) + 86}
+                                            y="85"
+                                            fill="#e4e4e7"
+                                            className="text-[9px] font-black"
+                                            dominantBaseline="middle"
+                                        >
+                                            {formatCurrencyShort(barChartData.purchases)}
+                                        </text>
+                                    </svg>
+                                </div>
+                            )}
+
+                            {/* GST Calculation Details */}
+                            <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                <div className="flex items-center gap-2 mb-5">
+                                    <ShieldCheck className="w-4 h-4 text-[#FFCC00]" />
+                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                                        GST Calculation Details
+                                    </span>
+                                </div>
+
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    {/* Sales Section */}
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#FFCC00]" />
+                                            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                                Sales
                                             </span>
                                         </div>
+                                        <BASRow label="G1 - Total Sales" value={basData.g1_total_sales} />
+                                        <BASRow label="G2 - Export Sales" value={basData.g2_export_sales} />
+                                        <BASRow label="G3 - GST-Free Sales" value={basData.g3_gst_free_sales} />
+                                        <BASRow label="G4 - Input Taxed Sales" value={basData.g4_input_taxed_sales} />
+                                        <BASRow
+                                            label="G9 - GST on Sales"
+                                            value={basData.g9_gst_on_sales}
+                                            highlight
+                                        />
                                     </div>
-                                </CardContent>
-                            </Card>
+
+                                    {/* Purchases Section */}
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#FFCC00]" />
+                                            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                                Purchases
+                                            </span>
+                                        </div>
+                                        <BASRow
+                                            label="G10 - Capital Purchases"
+                                            value={basData.g10_capital_purchases}
+                                        />
+                                        <BASRow
+                                            label="G11 - Non-Capital Purchases"
+                                            value={basData.g11_non_capital_purchases}
+                                        />
+                                        <BASRow
+                                            label="G12 - Total Purchases"
+                                            value={basData.g12_g10_plus_g11}
+                                        />
+                                        <BASRow
+                                            label="G19 - GST Credits"
+                                            value={basData.g19_gst_credits}
+                                            highlight
+                                        />
+                                    </div>
+
+                                    {/* PAYG Section */}
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#FFCC00]" />
+                                            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                                PAYG Withholding
+                                            </span>
+                                        </div>
+                                        <BASRow label="W1 - Gross Wages" value={basData.w1_gross_wages} />
+                                        <BASRow
+                                            label="W2 - Amounts Withheld"
+                                            value={basData.w2_amounts_withheld}
+                                        />
+                                        <BASRow
+                                            label="5A - PAYG Instalment"
+                                            value={basData.payg_instalment_5a}
+                                        />
+                                    </div>
+
+                                    {/* Other Section */}
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#FFCC00]" />
+                                            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                                Other
+                                            </span>
+                                        </div>
+                                        <BASRow
+                                            label="7C - Fuel Tax Credits"
+                                            value={basData.fuel_tax_credits_7c}
+                                        />
+                                        <BASRow
+                                            label="7D - Wine Equalisation"
+                                            value={basData.wine_equalisation_7d}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Net Summary Footer */}
+                                <div className="mt-6 pt-4 border-t border-white/5">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-black text-zinc-300 uppercase tracking-wider">
+                                            Net Amount {isRefund ? 'Refundable' : 'Payable'}
+                                        </span>
+                                        <span
+                                            className={cn(
+                                                "text-xl font-black tabular-nums",
+                                                isRefund ? "text-emerald-400" : "text-red-400"
+                                            )}
+                                        >
+                                            {formatCurrency(netAmount)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* BAS Summary Grid (G1, G10, G11, 1A/1B) */}
+                            <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <FileText className="w-4 h-4 text-[#FFCC00]" />
+                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                                        BAS Summary Labels
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                                    <SummaryCell label="G1" title="Total Sales" value={basData.g1_total_sales} />
+                                    <SummaryCell
+                                        label="G10"
+                                        title="Capital Purchases"
+                                        value={basData.g10_capital_purchases}
+                                    />
+                                    <SummaryCell
+                                        label="G11"
+                                        title="Non-Capital"
+                                        value={basData.g11_non_capital_purchases}
+                                    />
+                                    <SummaryCell
+                                        label="1A"
+                                        title="GST on Sales"
+                                        value={basData.g9_gst_on_sales}
+                                    />
+                                    <SummaryCell
+                                        label="1B"
+                                        title="GST Credits"
+                                        value={basData.g19_gst_credits}
+                                    />
+                                </div>
+                            </div>
 
                             {/* Actions */}
-                            <div className="flex justify-end gap-4">
-                                <Button variant="outline" onClick={() => setBASData(null)}>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setBASData(null)}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-zinc-500 hover:text-zinc-300 border border-white/5 hover:border-white/10 transition-all"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
                                     Clear
-                                </Button>
-                                <Button onClick={saveBAS} disabled={loading}>
-                                    {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={saveBAS}
+                                    disabled={loading}
+                                    className={cn(
+                                        "flex items-center gap-2 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
+                                        "bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]",
+                                        "disabled:opacity-40 disabled:cursor-not-allowed",
+                                        "shadow-lg shadow-[#FFCC00]/10"
+                                    )}
+                                >
+                                    {loading ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                        <Save className="w-3.5 h-3.5" />
+                                    )}
                                     Save Draft
-                                </Button>
+                                </button>
                             </div>
                         </>
                     )}
-                </TabsContent>
+                </div>
+            )}
 
-                <TabsContent value="history" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>BAS History</CardTitle>
-                            <CardDescription>
-                                Previous BAS submissions and drafts
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {history.length === 0 ? (
-                                <p className="text-muted-foreground text-center py-8">
-                                    No BAS history found. Calculate your first BAS to get started.
-                                </p>
-                            ) : (
-                                <div className="space-y-4">
-                                    {history.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex items-center justify-between p-4 border rounded-lg"
-                                        >
-                                            <div>
-                                                <p className="font-medium">
-                                                    Q{item.quarter} {item.year}-{(item.year + 1).toString().slice(2)}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {item.startDate} - {item.endDate}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <Badge
-                                                    variant={
-                                                        item.status === 'lodged'
-                                                            ? 'default'
-                                                            : item.status === 'draft'
-                                                            ? 'secondary'
-                                                            : 'outline'
-                                                    }
-                                                >
-                                                    {item.status}
-                                                </Badge>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setSelectedQuarter(`${item.year}-Q${item.quarter}`);
-                                                        calculateBAS();
-                                                    }}
-                                                >
-                                                    <FileText className="w-4 h-4 mr-2" />
-                                                    View
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
+            {/* GST Breakdown Tab */}
+            {activeTab === 'breakdown' && (
+                <div className="space-y-5">
+                    {!basData ? (
+                        <div className="neu-raised rounded-2xl border border-white/5 p-12 text-center">
+                            <BarChart3 className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+                            <p className="text-sm text-zinc-500">
+                                Calculate a BAS period first to see the GST breakdown.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* GST by BAS Category Bars */}
+                            <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                <div className="flex items-center gap-2 mb-5">
+                                    <BarChart3 className="w-4 h-4 text-[#FFCC00]" />
+                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                                        GST by BAS Category
+                                    </span>
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
+                                <div className="space-y-4">
+                                    <GSTBar
+                                        label="G1 - Taxable Sales"
+                                        amount={basData.g1_total_sales}
+                                        total={Math.max(basData.g1_total_sales, basData.g12_g10_plus_g11, 1)}
+                                        color="#FFCC00"
+                                    />
+                                    <GSTBar
+                                        label="G2 - Export Sales"
+                                        amount={basData.g2_export_sales}
+                                        total={Math.max(basData.g1_total_sales, basData.g12_g10_plus_g11, 1)}
+                                        color="#60A5FA"
+                                    />
+                                    <GSTBar
+                                        label="G3 - GST-Free Sales"
+                                        amount={basData.g3_gst_free_sales}
+                                        total={Math.max(basData.g1_total_sales, basData.g12_g10_plus_g11, 1)}
+                                        color="#34D399"
+                                    />
+                                    <GSTBar
+                                        label="G10 - Capital Purchases"
+                                        amount={basData.g10_capital_purchases}
+                                        total={Math.max(basData.g1_total_sales, basData.g12_g10_plus_g11, 1)}
+                                        color="#F472B6"
+                                    />
+                                    <GSTBar
+                                        label="G11 - Non-Capital Purchases"
+                                        amount={basData.g11_non_capital_purchases}
+                                        total={Math.max(basData.g1_total_sales, basData.g12_g10_plus_g11, 1)}
+                                        color="#A78BFA"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* 1A vs 1B Comparison */}
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                                            1A — GST Collected
+                                        </span>
+                                        <TrendingUp className="w-4 h-4 text-[#FFCC00]/40" />
+                                    </div>
+                                    <div className="text-3xl font-black text-[#FFCC00] tabular-nums mb-2">
+                                        {formatCurrency(basData.g9_gst_on_sales)}
+                                    </div>
+                                    <p className="text-[10px] text-zinc-600">
+                                        GST collected on taxable sales (G1 / 11)
+                                    </p>
+                                    <div className="mt-4 w-full h-2 rounded-full bg-[#1a1a2e]">
+                                        <div
+                                            className="h-2 rounded-full bg-[#FFCC00] transition-all duration-500"
+                                            style={{
+                                                width: `${basData.g1_total_sales > 0
+                                                    ? Math.min((basData.g9_gst_on_sales / basData.g1_total_sales) * 100 * 11, 100)
+                                                    : 0}%`,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                                            1B — Input Tax Credits
+                                        </span>
+                                        <TrendingDown className="w-4 h-4 text-emerald-500/40" />
+                                    </div>
+                                    <div className="text-3xl font-black text-emerald-400 tabular-nums mb-2">
+                                        {formatCurrency(basData.g19_gst_credits)}
+                                    </div>
+                                    <p className="text-[10px] text-zinc-600">
+                                        GST credits on eligible business purchases
+                                    </p>
+                                    <div className="mt-4 w-full h-2 rounded-full bg-[#1a1a2e]">
+                                        <div
+                                            className="h-2 rounded-full bg-emerald-400 transition-all duration-500"
+                                            style={{
+                                                width: `${basData.g12_g10_plus_g11 > 0
+                                                    ? Math.min((basData.g19_gst_credits / basData.g12_g10_plus_g11) * 100 * 11, 100)
+                                                    : 0}%`,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* BAS Pre-Fill Summary */}
+                            <div className="neu-raised rounded-2xl border border-[#FFCC00]/10 p-5">
+                                <div className="flex items-center justify-between mb-5">
+                                    <div className="flex items-center gap-2">
+                                        <ShieldCheck className="w-4 h-4 text-[#FFCC00]" />
+                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                                            BAS Pre-Fill Summary
+                                        </span>
+                                    </div>
+                                    <span className="text-[9px] text-zinc-600">
+                                        Ready for lodgement review
+                                    </span>
+                                </div>
+
+                                <div className="grid gap-2 md:grid-cols-2">
+                                    <div className="flex justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <span className="text-[11px] font-bold text-zinc-400">1A — GST on sales</span>
+                                        <span className="text-[11px] font-black text-zinc-200 tabular-nums">
+                                            {formatCurrency(basData.g9_gst_on_sales)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <span className="text-[11px] font-bold text-zinc-400">1B — GST on purchases</span>
+                                        <span className="text-[11px] font-black text-zinc-200 tabular-nums">
+                                            {formatCurrency(basData.g19_gst_credits)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <span className="text-[11px] font-bold text-zinc-400">W2 — PAYG withheld</span>
+                                        <span className="text-[11px] font-black text-zinc-200 tabular-nums">
+                                            {formatCurrency(basData.w2_amounts_withheld)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <span className="text-[11px] font-bold text-zinc-400">5A — PAYG instalment</span>
+                                        <span className="text-[11px] font-black text-zinc-200 tabular-nums">
+                                            {formatCurrency(basData.payg_instalment_5a)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <span className="text-[11px] font-bold text-zinc-400">7C — Fuel tax credits</span>
+                                        <span className="text-[11px] font-black text-zinc-200 tabular-nums">
+                                            {formatCurrency(basData.fuel_tax_credits_7c)}
+                                        </span>
+                                    </div>
+                                    <div className={cn(
+                                        "flex justify-between p-2.5 rounded-xl border",
+                                        isRefund
+                                            ? "bg-emerald-500/5 border-emerald-500/20"
+                                            : "bg-red-500/5 border-red-500/20"
+                                    )}>
+                                        <span className={cn(
+                                            "text-[11px] font-black",
+                                            isRefund ? "text-emerald-400" : "text-red-400"
+                                        )}>
+                                            Net {isRefund ? 'Refund' : 'Payable'}
+                                        </span>
+                                        <span className={cn(
+                                            "text-[11px] font-black tabular-nums",
+                                            isRefund ? "text-emerald-400" : "text-red-400"
+                                        )}>
+                                            {formatCurrency(netAmount)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* History Tab */}
+            {activeTab === 'history' && (
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <History className="w-4 h-4 text-[#FFCC00]" />
+                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                            BAS History
+                        </span>
+                    </div>
+
+                    {history.length === 0 ? (
+                        <div className="neu-raised rounded-2xl border border-white/5 p-12 text-center">
+                            <FileText className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+                            <p className="text-sm text-zinc-500">
+                                No BAS history found. Calculate your first BAS to get started.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {history.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="neu-raised rounded-2xl border border-white/5 p-4 flex items-center justify-between group hover:border-[#FFCC00]/10 transition-all"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center">
+                                            <span className="text-[11px] font-black text-[#FFCC00]">
+                                                Q{item.quarter}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-zinc-200">
+                                                Q{item.quarter} {item.year}-
+                                                {(item.year + 1).toString().slice(2)}
+                                            </p>
+                                            <p className="text-[10px] text-zinc-600">
+                                                {item.startDate} - {item.endDate}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <Badge
+                                            variant="outline"
+                                            className={cn(
+                                                "text-[9px] font-black uppercase tracking-wider border",
+                                                item.status === 'lodged'
+                                                    ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/5"
+                                                    : item.status === 'draft'
+                                                    ? "border-[#FFCC00]/30 text-[#FFCC00] bg-[#FFCC00]/5"
+                                                    : "border-white/10 text-zinc-500"
+                                            )}
+                                        >
+                                            {item.status}
+                                        </Badge>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectedQuarter(
+                                                    `${item.year}-Q${item.quarter}`
+                                                );
+                                                setActiveTab('calculate');
+                                                calculateBAS();
+                                            }}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold text-zinc-500 hover:text-[#FFCC00] transition-all"
+                                        >
+                                            <FileText className="w-3.5 h-3.5" />
+                                            View
+                                            <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* -------- Sub-components -------- */
+
+function BASRow({
+    label,
+    value,
+    highlight = false,
+}: {
+    label: string;
+    value: number;
+    highlight?: boolean;
+}) {
+    return (
+        <div
+            className={cn(
+                "flex justify-between items-center py-2 px-3 rounded-lg text-sm transition-colors",
+                highlight
+                    ? "bg-[#FFCC00]/5 border border-[#FFCC00]/10"
+                    : "hover:bg-white/[0.02]"
+            )}
+        >
+            <span className={cn("text-[11px]", highlight ? "font-black text-zinc-200" : "text-zinc-500")}>
+                {label}
+            </span>
+            <span
+                className={cn(
+                    "tabular-nums",
+                    highlight ? "text-sm font-black text-[#FFCC00]" : "text-sm font-bold text-zinc-300"
+                )}
+            >
+                {formatCurrency(value)}
+            </span>
+        </div>
+    );
+}
+
+function GSTBar({
+    label,
+    amount,
+    total,
+    color,
+}: {
+    label: string;
+    amount: number;
+    total: number;
+    color: string;
+}) {
+    const percent = total > 0 ? (Math.abs(amount) / total) * 100 : 0;
+    return (
+        <div className="space-y-1.5">
+            <div className="flex justify-between text-[11px]">
+                <span className="text-zinc-500">{label}</span>
+                <span className="font-black text-zinc-300 tabular-nums">
+                    {formatCurrency(amount)}
+                </span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-[#1a1a2e]">
+                <div
+                    className="h-2 rounded-full transition-all duration-500"
+                    style={{
+                        width: `${Math.min(percent, 100)}%`,
+                        backgroundColor: color,
+                    }}
+                />
+            </div>
+        </div>
+    );
+}
+
+function SummaryCell({
+    label,
+    title,
+    value,
+}: {
+    label: string;
+    title: string;
+    value: number;
+}) {
+    return (
+        <div className="neu-inset rounded-xl p-3 border border-white/5">
+            <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-black text-[#FFCC00] uppercase">{label}</span>
+                <span className="text-[8px] text-zinc-600 truncate">{title}</span>
+            </div>
+            <p className="text-sm font-black text-zinc-200 tabular-nums">
+                {formatCurrencyShort(value)}
+            </p>
         </div>
     );
 }

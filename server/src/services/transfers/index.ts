@@ -14,3 +14,10 @@ export {
   type TransferMatch,
   type TransferDetectorConfig,
 } from './detector';
+
+export {
+  persistTransferMatches,
+  markOwnerContributions,
+  type PersistTransferOptions,
+  type PersistResult,
+} from './persistence';

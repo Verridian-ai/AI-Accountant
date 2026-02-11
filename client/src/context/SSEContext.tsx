@@ -1,17 +1,54 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SSEContext } from './SSEContextDef';
+import type { SSEEventMap } from './SSEContextDef';
 import { getToken, BASE_URL } from '../api';
+
+/** All typed event names (excluding 'update' which uses the legacy path). */
+const TYPED_EVENT_NAMES: Array<keyof SSEEventMap> = [
+    'batch_progress',
+    'parsing_complete',
+    'transfer_detected',
+    'enrichment_status',
+    'vision_verification',
+    'transfers_updated',
+    'pipeline_error',
+    'statement_updated',
+    'transactions_updated',
+    'accounts_updated',
+    'bas_updated',
+    'tax_updated',
+    'merchant_memory_updated',
+    'account_setup_needed',
+    'statement_added',
+];
 
 export function SSEProvider({ children }: { children: React.ReactNode }) {
     const [connected, setConnected] = useState(false);
     const [error, setError] = useState(false);
     const listenersRef = useRef<Set<() => void>>(new Set());
+    const typedListenersRef = useRef<Map<string, Set<(data: unknown) => void>>>(new Map());
     const eventSourceRef = useRef<EventSource | null>(null);
 
     const addListener = useCallback((listener: () => void) => {
         listenersRef.current.add(listener);
         return () => {
             listenersRef.current.delete(listener);
+        };
+    }, []);
+
+    const addTypedListener = useCallback(<K extends keyof SSEEventMap>(
+        eventType: K,
+        listener: (data: SSEEventMap[K]) => void,
+    ) => {
+        const key = eventType as string;
+        if (!typedListenersRef.current.has(key)) {
+            typedListenersRef.current.set(key, new Set());
+        }
+        const listenerSet = typedListenersRef.current.get(key)!;
+        const wrappedListener = listener as (data: unknown) => void;
+        listenerSet.add(wrappedListener);
+        return () => {
+            listenerSet.delete(wrappedListener);
         };
     }, []);
 
@@ -35,10 +72,26 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
                 setError(false);
             };
 
+            // Legacy 'update' listener — backward compatibility
             es.addEventListener('update', () => {
                 console.log('SSE update received, notifying listeners');
                 listenersRef.current.forEach(listener => listener());
             });
+
+            // Typed event listeners
+            for (const eventName of TYPED_EVENT_NAMES) {
+                es.addEventListener(eventName, (e: MessageEvent) => {
+                    const listeners = typedListenersRef.current.get(eventName);
+                    if (!listeners || listeners.size === 0) return;
+
+                    try {
+                        const data: unknown = JSON.parse(e.data as string);
+                        listeners.forEach(listener => listener(data));
+                    } catch (err) {
+                        console.error(`SSE: failed to parse ${eventName} data`, err);
+                    }
+                });
+            }
 
             es.onerror = (err) => {
                 console.error('SSE error:', err);
@@ -61,10 +114,8 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     return (
-        <SSEContext.Provider value={{ connected, error, addListener }}>
+        <SSEContext.Provider value={{ connected, error, addListener, addTypedListener }}>
             {children}
         </SSEContext.Provider>
     );
 }
-
-

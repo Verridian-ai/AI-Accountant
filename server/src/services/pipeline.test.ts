@@ -95,10 +95,17 @@ vi.mock('./accounts', () => ({
     }
 }));
 
-// Mock events
+// Mock events (include typed helper methods used by pipeline)
 vi.mock('../events', () => ({
     events: {
-        emit: mockEventsEmit
+        emit: mockEventsEmit,
+        emitBatchProgress: mockEventsEmit,
+        emitParsingComplete: mockEventsEmit,
+        emitTransferDetected: mockEventsEmit,
+        emitEnrichmentStatus: mockEventsEmit,
+        emitVisionVerification: mockEventsEmit,
+        emitPipelineError: mockEventsEmit,
+        emitStatementUpdated: mockEventsEmit,
     }
 }));
 
@@ -124,6 +131,87 @@ vi.mock('pdfjs-dist', () => ({
         })
     }),
     GlobalWorkerOptions: { workerSrc: '' }
+}));
+
+// Mock cognee_client
+vi.mock('./cognee_client', () => ({
+    cogneeClient: {
+        addStatementData: vi.fn().mockResolvedValue(undefined),
+        addTransaction: vi.fn().mockResolvedValue(undefined),
+        searchSimilarTransactions: vi.fn().mockResolvedValue([]),
+        cognify: vi.fn().mockResolvedValue(undefined),
+        storeMerchantMapping: vi.fn().mockResolvedValue(undefined),
+    }
+}));
+
+// Mock enrichment service
+vi.mock('./enrichment', () => ({
+    enrichmentService: {
+        enrichTransactions: vi.fn().mockResolvedValue({ enriched: 0, failed: 0, pending: 0 }),
+        enrichUncategorized: vi.fn().mockResolvedValue({ enriched: 0, failed: 0, pending: 0 }),
+    }
+}));
+
+// Mock logger
+vi.mock('../utils/logger', () => ({
+    logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+        debug: vi.fn(),
+    }
+}));
+
+// Mock errors module
+vi.mock('../errors', () => ({
+    PdfParsingError: class PdfParsingError extends Error { constructor(msg: string) { super(msg); this.name = 'PdfParsingError'; } },
+    AiParseError: class AiParseError extends Error { constructor(msg: string) { super(msg); this.name = 'AiParseError'; } },
+}));
+
+// Mock Claude orchestrator
+vi.mock('./claude/orchestrator', () => ({
+    orchestrator: {
+        isEnabled: vi.fn().mockReturnValue(false),
+        invoke: vi.fn().mockResolvedValue({ transactions: [] }),
+    }
+}));
+
+// Mock Claude config
+vi.mock('./claude/config', () => ({
+    isClaudeAgentsEnabled: vi.fn().mockReturnValue(false),
+    isAgentEnabled: vi.fn().mockReturnValue(false),
+}));
+
+// Mock parser registry
+vi.mock('./parsers/registry', () => ({
+    parserRegistry: {
+        detect: vi.fn().mockReturnValue(null),
+        parse: vi.fn().mockResolvedValue(null),
+    }
+}));
+
+// Mock transfer detection
+vi.mock('./transfers/index', () => ({
+    TransferDetector: class { detectTransfers() { return []; } },
+    detectTransfers: vi.fn().mockReturnValue([]),
+    excludeTransfers: vi.fn().mockReturnValue([]),
+}));
+
+// Mock transfer persistence
+vi.mock('./transfers/persistence', () => ({
+    persistTransferMatches: vi.fn().mockResolvedValue({ created: 0, skipped: 0, errors: [], linkIds: [] }),
+    markOwnerContributions: vi.fn().mockResolvedValue(0),
+}));
+
+// Mock credit card parsers
+vi.mock('./parsers/documents/credit-card/index', () => ({
+    detectCreditCardStatement: vi.fn().mockReturnValue(false),
+    parseCreditCardStatement: vi.fn().mockResolvedValue({ transactions: [] }),
+}));
+
+// Mock detector
+vi.mock('./parsers/detector', () => ({
+    hasCreditCardIndicators: vi.fn().mockReturnValue(false),
 }));
 
 import { PipelineService } from './pipeline';

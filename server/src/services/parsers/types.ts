@@ -140,6 +140,19 @@ export interface AccountInfo {
 }
 
 /**
+ * Credit card specific fields extracted from statements
+ */
+export interface CreditCardFields {
+  creditLimit?: number; // In cents
+  minimumPayment?: number; // In cents
+  interestCharges?: number; // In cents
+  closingBalance?: number; // In cents
+  paymentDueDate?: string; // ISO date
+  cardNumberMasked?: string; // e.g. "****1234"
+  statementType: 'credit_card';
+}
+
+/**
  * Complete result from parsing a bank statement
  */
 export interface StatementParseResult {
@@ -156,6 +169,12 @@ export interface StatementParseResult {
   detectionConfidence: number;
   parserUsed: string;
   processingTimeMs: number;
+
+  // Statement type detection
+  statementType?: 'transaction' | 'credit_card' | 'loan' | 'savings';
+
+  // Credit card specific fields (populated when statementType === 'credit_card')
+  creditCardFields?: CreditCardFields;
 }
 
 /**

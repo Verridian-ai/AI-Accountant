@@ -16,3 +16,21 @@ server/check-db-manual.cjs
 server/migrate-manual.cjs
 statements/*
 !statements/.gitkeep
+
+# Cloned external repos (built from source in Docker)
+cognee-repo/
+neon-repo/
+
+# Docker volumes & data
+postgres-data/
+cognee-data/
+
+# Cloud SQL proxy
+cloud-sql-proxy.exe
+
+# Misc
+nul
+.auto-claude-security.json
+.auto-claude-status
+.claude-cba-prompt.txt
+.claude_settings.json

@@ -151,6 +151,7 @@ export const accounts = sqliteTable('accounts', {
   paymentDueDay: integer('payment_due_day'),
   linkedPaymentAccountId: text('linked_payment_account_id'),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  ownershipTag: text('ownership_tag').default('business'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
@@ -214,6 +215,7 @@ export const transactions = sqliteTable('transactions', {
   isEdited: integer('is_edited', { mode: 'boolean' }).default(false),
   isTransfer: integer('is_transfer', { mode: 'boolean' }).default(false),
   transferLinkId: text('transfer_link_id'),
+  isOwnerContribution: integer('is_owner_contribution', { mode: 'boolean' }).default(false),
   merchantNormalized: text('merchant_normalized'),
   parentTransactionId: text('parent_transaction_id'),
   statementId: text('statement_id').references(() => statements.id, { onDelete: 'set null' }),

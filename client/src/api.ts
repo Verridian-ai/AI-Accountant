@@ -10,7 +10,7 @@ export interface UserSettings {
     modelEmbedding: string;
 }
 
-const getAuthHeaders = (): HeadersInit => {
+export const getAuthHeaders = (): HeadersInit => {
     const token = localStorage.getItem('token');
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
@@ -30,6 +30,7 @@ export interface Transaction {
     isEdited?: boolean;
     isTransfer?: boolean;
     transferLinkId?: string;
+    isOwnerContribution?: boolean;
     merchantNormalized?: string;
     accountId?: string;
     parentTransactionId?: string;
@@ -114,11 +115,44 @@ export interface TransactionStats {
     categoryBreakdown: Record<string, number>;
 }
 
+export interface BatchFileStatus {
+    id: string;
+    filename: string;
+    state: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+    statementId?: string;
+    error?: string;
+    retryCount?: number;
+}
+
+export interface BatchUploadResponse {
+    message: string;
+    jobId: string;
+    fileCount: number;
+    files: BatchFileStatus[];
+}
+
+export interface BatchJobStatus {
+    id: string;
+    state: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+    progress: {
+        total: number;
+        completed: number;
+        failed: number;
+        processing: number;
+    };
+    files: BatchFileStatus[];
+    createdAt: string;
+    startedAt?: string;
+    completedAt?: string;
+    error?: string;
+}
+
 export const api = {
-    fetchTransactions: async (options?: { limit?: number; offset?: number }): Promise<{ transactions: Transaction[]; total: number }> => {
+    fetchTransactions: async (options?: { limit?: number; offset?: number; accountId?: string }): Promise<{ transactions: Transaction[]; total: number }> => {
         const params = new URLSearchParams();
         if (options?.limit) params.set('limit', String(options.limit));
         if (options?.offset) params.set('offset', String(options.offset));
+        if (options?.accountId) params.set('accountId', options.accountId);
         const qs = params.toString();
         const res = await fetch(`${API_URL}/transactions${qs ? `?${qs}` : ''}`, {
             headers: getAuthHeaders()
@@ -234,6 +268,47 @@ export const api = {
             headers: getAuthHeaders()
         });
         if (!res.ok) throw new Error('Failed to reprocess statement');
+    },
+
+    uploadBatch: async (files: File[]): Promise<BatchUploadResponse> => {
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+        const res = await fetch(`${API_URL}/statements/batch`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: formData
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Batch upload failed' }));
+            throw new Error(error.error || 'Batch upload failed');
+        }
+        return res.json();
+    },
+
+    getBatchStatus: async (jobId: string): Promise<BatchJobStatus> => {
+        const res = await fetch(`${API_URL}/statements/batch/${jobId}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to get batch status');
+        return res.json();
+    },
+
+    cancelBatch: async (jobId: string): Promise<{ cancelled: boolean }> => {
+        const res = await fetch(`${API_URL}/statements/batch/${jobId}/cancel`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to cancel batch');
+        return res.json();
+    },
+
+    retryBatch: async (jobId: string): Promise<{ retried: boolean }> => {
+        const res = await fetch(`${API_URL}/statements/batch/${jobId}/retry`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to retry batch');
+        return res.json();
     },
 
     fetchStatementGapAnalysis: async (): Promise<StatementGapAnalysis> => {
@@ -462,6 +537,7 @@ export interface Account {
     paymentDueDay: number | null;
     linkedPaymentAccountId: string | null;
     isActive: boolean;
+    ownershipTag?: 'personal' | 'business';
     createdAt: string;
     updatedAt: string;
 }
@@ -1020,4 +1096,220 @@ export const multiBankApi = {
         if (!res.ok) throw new Error('Failed to fetch consolidated report');
         return res.json();
     }
+};
+
+// GST & BAS Enhanced API methods
+export const gstApi = {
+    fetchReviewQueue: async (): Promise<import('./features/gst/types').GSTReviewItem[]> => {
+        const res = await fetch(`${API_URL}/gst/review-queue`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch GST review queue');
+        return res.json();
+    },
+
+    approveClassification: async (id: number, gstCategory: string): Promise<void> => {
+        const res = await fetch(`${API_URL}/gst/classify/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify({ gstCategory })
+        });
+        if (!res.ok) throw new Error('Failed to approve GST classification');
+    },
+
+    bulkApprove: async (ids: number[]): Promise<void> => {
+        const res = await fetch(`${API_URL}/gst/bulk-approve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify({ ids })
+        });
+        if (!res.ok) throw new Error('Failed to bulk approve GST');
+    },
+
+    fetchSummary: async (period: string): Promise<import('./features/gst/types').GSTSummaryData> => {
+        const res = await fetch(`${API_URL}/gst/summary?period=${encodeURIComponent(period)}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch GST summary');
+        return res.json();
+    },
+
+    fetchBASCalculation: async (quarter: string, method?: string): Promise<import('./features/gst/types').BASCalculationEnhanced> => {
+        const params = new URLSearchParams({ quarter });
+        if (method) params.set('method', method);
+        const res = await fetch(`${API_URL}/bas/calculate?${params}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch BAS calculation');
+        return res.json();
+    },
+
+    saveBASdraft: async (quarter: string, data: import('./features/gst/types').BASCalculationEnhanced): Promise<void> => {
+        const res = await fetch(`${API_URL}/bas/${quarter}/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Failed to save BAS draft');
+    },
+
+    updateBASStatus: async (quarter: string, status: string): Promise<void> => {
+        const res = await fetch(`${API_URL}/bas/${quarter}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify({ status })
+        });
+        if (!res.ok) throw new Error('Failed to update BAS status');
+    },
+
+    fetchBASComparison: async (q1: string, q2: string): Promise<import('./features/gst/types').BASComparisonData> => {
+        const res = await fetch(`${API_URL}/bas/compare?q1=${encodeURIComponent(q1)}&q2=${encodeURIComponent(q2)}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch BAS comparison');
+        return res.json();
+    },
+
+    fetchBASDrillDown: async (quarter: string, label: string): Promise<any[]> => {
+        const res = await fetch(`${API_URL}/bas/${quarter}/drill-down/${label}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch BAS drill-down');
+        return res.json();
+    },
+
+    fetchInputTaxCredits: async (period: string): Promise<import('./features/gst/types').InputTaxCredit[]> => {
+        const res = await fetch(`${API_URL}/gst/input-tax-credits?period=${encodeURIComponent(period)}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch input tax credits');
+        return res.json();
+    },
+};
+
+// Analytics & Cross-Account API methods
+export const analyticsApi = {
+    // Transfer matching endpoints
+    fetchTransferMatches: async (): Promise<import('./features/transfers/types').TransferMatch[]> => {
+        const res = await fetch(`${API_URL}/transfers/matches`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch transfer matches');
+        return res.json();
+    },
+
+    confirmTransfer: async (id: string): Promise<void> => {
+        const res = await fetch(`${API_URL}/transfers/matches/${id}/confirm`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to confirm transfer');
+    },
+
+    rejectTransfer: async (id: string): Promise<void> => {
+        const res = await fetch(`${API_URL}/transfers/matches/${id}/reject`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to reject transfer');
+    },
+
+    fetchMoneyFlow: async (period: string): Promise<import('./features/transfers/types').MoneyFlow[]> => {
+        const res = await fetch(`${API_URL}/transfers/flow/${encodeURIComponent(period)}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch money flow');
+        return res.json();
+    },
+
+    fetchNetPosition: async (accountAId: number, accountBId: number, dateRange?: { start: string; end: string }): Promise<import('./features/transfers/types').NetPosition> => {
+        const params = new URLSearchParams({
+            accountA: accountAId.toString(),
+            accountB: accountBId.toString(),
+        });
+        if (dateRange) {
+            params.set('start', dateRange.start);
+            params.set('end', dateRange.end);
+        }
+        const res = await fetch(`${API_URL}/transfers/net-position?${params}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch net position');
+        return res.json();
+    },
+
+    // Analytics endpoints
+    fetchCategoryBreakdown: async (period: string): Promise<import('./features/analytics/types').CategoryBreakdownItem[]> => {
+        const res = await fetch(`${API_URL}/analytics/category-breakdown?period=${encodeURIComponent(period)}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch category breakdown');
+        return res.json();
+    },
+
+    fetchRecurringPayments: async (): Promise<import('./features/analytics/types').RecurringPayment[]> => {
+        const res = await fetch(`${API_URL}/analytics/recurring-payments`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch recurring payments');
+        return res.json();
+    },
+
+    fetchSpendingTrends: async (months: number): Promise<import('./features/analytics/types').SpendingTrend[]> => {
+        const res = await fetch(`${API_URL}/analytics/spending-trends?months=${months}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch spending trends');
+        return res.json();
+    },
+
+    fetchBudgets: async (period: string): Promise<import('./features/analytics/types').Budget[]> => {
+        const res = await fetch(`${API_URL}/analytics/budgets?period=${encodeURIComponent(period)}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch budgets');
+        return res.json();
+    },
+
+    saveBudget: async (budget: Partial<import('./features/analytics/types').Budget>): Promise<void> => {
+        const res = await fetch(`${API_URL}/analytics/budgets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify(budget)
+        });
+        if (!res.ok) throw new Error('Failed to save budget');
+    },
+
+    fetchBudgetVsActual: async (period: string): Promise<import('./features/analytics/types').Budget[]> => {
+        const res = await fetch(`${API_URL}/analytics/budget-vs-actual?period=${encodeURIComponent(period)}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch budget vs actual');
+        return res.json();
+    },
+
+    fetchAnomalies: async (): Promise<import('./features/analytics/types').Anomaly[]> => {
+        const res = await fetch(`${API_URL}/analytics/anomalies`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch anomalies');
+        return res.json();
+    },
+
+    dismissAnomaly: async (id: string, reason?: string): Promise<void> => {
+        const res = await fetch(`${API_URL}/analytics/anomalies/${id}/dismiss`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify({ reason })
+        });
+        if (!res.ok) throw new Error('Failed to dismiss anomaly');
+    },
+
+    fetchCashFlowForecast: async (months: number): Promise<import('./features/analytics/types').CashFlowForecast[]> => {
+        const res = await fetch(`${API_URL}/analytics/cash-flow-forecast?months=${months}`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to fetch cash flow forecast');
+        return res.json();
+    },
 };

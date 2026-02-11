@@ -27,6 +27,8 @@ export interface AccountContext {
   accountNumber: string;
   bankId: string;
   accountName?: string;
+  accountType?: string;
+  ownershipTag?: 'personal' | 'business';
 }
 
 /**
@@ -72,6 +74,15 @@ const DEFAULT_CONFIG: TransferDetectorConfig = {
     'direct debit',
     'internet transfer',
     'mobile transfer',
+    'credit card',
+    'cc payment',
+    'card payment',
+    'visa payment',
+    'mastercard',
+    'sweep',
+    'auto save',
+    'automatic transfer',
+    'scheduled transfer',
   ],
 };
 
@@ -235,6 +246,21 @@ export class TransferDetector {
       score += 0.1;
     }
 
+    // Credit card payment bonus
+    if (targetAccount && targetAccount.accountType === 'credit_card') {
+      const ccKeywords = ['credit card', 'cc payment', 'card payment', 'visa', 'mastercard'];
+      if (ccKeywords.some(kw => debitDesc.includes(kw))) {
+        matchReasons.push('Credit card payment');
+        score += 0.15;
+      }
+    }
+
+    // Owner contribution detection
+    if (sourceAccount?.ownershipTag === 'personal' && targetAccount?.ownershipTag === 'business') {
+      matchReasons.push('Owner contribution (personal → business)');
+      score += 0.1;
+    }
+
     // Cap at 1.0
     const confidence = Math.min(1, score);
 
@@ -324,6 +350,162 @@ export class TransferDetector {
     }
 
     return chains;
+  }
+
+  /**
+   * Detect credit card payments across accounts
+   */
+  detectCreditCardPayments(
+    transactions: TransferCandidate[],
+    accounts: AccountContext[]
+  ): TransferMatch[] {
+    const ccKeywords = ['credit card', 'cc payment', 'card payment', 'visa payment', 'mastercard'];
+    const creditCardAccounts = accounts.filter(a => a.accountType === 'credit_card');
+    if (creditCardAccounts.length === 0) return [];
+
+    const ccAccountIds = new Set(creditCardAccounts.map(a => a.id));
+    const matches: TransferMatch[] = [];
+    const usedTransactions = new Set<number>();
+
+    // Find debits from transaction accounts that match credits on credit card accounts
+    const debits = transactions.filter(tx => tx.amount < 0 && !ccAccountIds.has(tx.accountId));
+    const credits = transactions.filter(tx => tx.amount > 0 && ccAccountIds.has(tx.accountId));
+
+    for (const debit of debits) {
+      if (usedTransactions.has(debit.id)) continue;
+      const debitDesc = debit.description.toLowerCase();
+      const hasCcKeyword = ccKeywords.some(kw => debitDesc.includes(kw));
+
+      for (const credit of credits) {
+        if (usedTransactions.has(credit.id)) continue;
+
+        const match = this.evaluateMatch(debit, credit, accounts);
+        if (match) {
+          // Boost confidence for CC keyword matches
+          if (hasCcKeyword) {
+            match.confidence = Math.min(1, match.confidence + 0.15);
+            if (!match.matchReasons.includes('Credit card payment')) {
+              match.matchReasons.push('Credit card payment');
+            }
+          }
+          if (match.confidence >= this.config.minConfidence) {
+            matches.push(match);
+            usedTransactions.add(debit.id);
+            usedTransactions.add(credit.id);
+            break;
+          }
+        }
+      }
+    }
+
+    return matches;
+  }
+
+  /**
+   * Detect owner contributions (personal-to-business transfers)
+   */
+  detectOwnerContributions(
+    transactions: TransferCandidate[],
+    accounts: AccountContext[]
+  ): number[] {
+    const personalAccounts = accounts.filter(a => a.ownershipTag === 'personal');
+    const businessAccounts = accounts.filter(a => a.ownershipTag === 'business');
+    if (personalAccounts.length === 0 || businessAccounts.length === 0) return [];
+
+    const personalIds = new Set(personalAccounts.map(a => a.id));
+    const businessIds = new Set(businessAccounts.map(a => a.id));
+    const contributionIds: number[] = [];
+
+    // Find debits from personal accounts matching credits to business accounts
+    const debits = transactions.filter(tx => tx.amount < 0 && personalIds.has(tx.accountId));
+    const credits = transactions.filter(tx => tx.amount > 0 && businessIds.has(tx.accountId));
+    const usedCredits = new Set<number>();
+
+    for (const debit of debits) {
+      for (const credit of credits) {
+        if (usedCredits.has(credit.id)) continue;
+
+        const match = this.evaluateMatch(debit, credit, accounts);
+        if (match && match.confidence >= this.config.minConfidence) {
+          contributionIds.push(credit.id);
+          usedCredits.add(credit.id);
+          break;
+        }
+      }
+    }
+
+    return contributionIds;
+  }
+
+  /**
+   * Detect savings sweep patterns (regular automatic transfers to savings)
+   */
+  detectSavingsSweeps(
+    transactions: TransferCandidate[],
+    accounts: AccountContext[]
+  ): TransferMatch[] {
+    const sweepKeywords = ['sweep', 'auto save', 'automatic', 'scheduled', 'recurring'];
+    const matches: TransferMatch[] = [];
+    const usedTransactions = new Set<number>();
+
+    // Group transactions by amount to find recurring patterns
+    const debitsByAmount = new Map<number, TransferCandidate[]>();
+    for (const tx of transactions) {
+      if (tx.amount >= 0) continue;
+      const absAmount = Math.abs(tx.amount);
+      const list = debitsByAmount.get(absAmount) || [];
+      list.push(tx);
+      debitsByAmount.set(absAmount, list);
+    }
+
+    // Find recurring same-amount debits (at least 2 occurrences)
+    for (const [amount, debits] of debitsByAmount) {
+      if (debits.length < 2) continue;
+
+      // Check if the interval is regular
+      const sortedDebits = [...debits].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const intervals: number[] = [];
+      for (let i = 1; i < sortedDebits.length; i++) {
+        intervals.push(this.daysBetween(sortedDebits[i - 1].date, sortedDebits[i].date));
+      }
+
+      // Check for regularity: consistent interval (within 3 day tolerance)
+      const avgInterval = intervals.reduce((s, v) => s + v, 0) / intervals.length;
+      const isRegular = intervals.every(iv => Math.abs(iv - avgInterval) <= 3);
+
+      if (!isRegular) continue;
+
+      // Match each sweep debit to corresponding credit
+      for (const debit of sortedDebits) {
+        if (usedTransactions.has(debit.id)) continue;
+        const debitDesc = debit.description.toLowerCase();
+        const hasSweepKeyword = sweepKeywords.some(kw => debitDesc.includes(kw));
+
+        // Find matching credit in another account
+        const credits = transactions.filter(
+          tx => tx.amount > 0 && tx.accountId !== debit.accountId && !usedTransactions.has(tx.id)
+        );
+
+        for (const credit of credits) {
+          const match = this.evaluateMatch(debit, credit, accounts);
+          if (match) {
+            if (hasSweepKeyword) {
+              match.confidence = Math.min(1, match.confidence + 0.1);
+              match.matchReasons.push('Savings sweep pattern');
+            }
+            match.matchReasons.push(`Recurring (${intervals.length + 1} occurrences, ~${Math.round(avgInterval)}d interval)`);
+            if (match.confidence >= this.config.minConfidence) {
+              matches.push(match);
+              usedTransactions.add(debit.id);
+              usedTransactions.add(credit.id);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    return matches;
   }
 
   /**

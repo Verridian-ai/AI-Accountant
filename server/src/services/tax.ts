@@ -15,6 +15,7 @@ import {
     depreciableAssets,
     depreciationSchedule,
     taxYearSummary,
+    accounts,
 } from '../schema.js';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -1015,16 +1016,23 @@ export class TaxService {
     async calculateFromTransactions(userId: string, taxYear: string) {
         const dates = getFinancialYearDates(taxYear);
 
-        // Get transactions for the year
+        // Get transactions for the year, excluding personal accounts and transfers
         const yearTransactions = await db
-            .select()
+            .select({
+                id: transactions.id,
+                amount: transactions.amount,
+                date: transactions.date,
+            })
             .from(transactions)
+            .leftJoin(accounts, eq(transactions.accountId, accounts.id))
             .where(
                 and(
                     eq(transactions.userId, userId),
                     gte(transactions.date, dates.start),
                     lte(transactions.date, dates.end),
-                    eq(transactions.isTransfer, false)
+                    eq(transactions.isTransfer, false),
+                    // Exclude transactions from personal accounts
+                    sql`(${transactions.accountId} IS NULL OR ${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} != 'personal')`
                 )
             )
             .all();

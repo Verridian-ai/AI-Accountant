@@ -1,7 +1,9 @@
-import { db, statements, transactions, userSettings, pendingCategorization } from '../schema.js';
+import { db, statements, transactions, accounts, userSettings, pendingCategorization } from '../schema.js';
 import { aiService } from './ai.js';
 import { ragService } from './rag.js';
 import { accountService } from './accounts.js';
+import { cogneeClient } from './cognee_client.js';
+import { enrichmentService } from './enrichment.js';
 import { eq } from 'drizzle-orm';
 import { readFile } from 'fs/promises';
 import crypto from 'crypto';
@@ -11,6 +13,11 @@ import { PdfParsingError, AiParseError } from '../errors.js';
 import { logger } from '../utils/logger.js';
 import { orchestrator } from './claude/orchestrator.js';
 import { isClaudeAgentsEnabled } from './claude/config.js';
+import { parserRegistry } from './parsers/registry.js';
+import { TransferDetector, type TransferCandidate, type AccountContext } from './transfers/index.js';
+import { persistTransferMatches, markOwnerContributions } from './transfers/persistence.js';
+import { detectCreditCardStatement, parseCreditCardStatement } from './parsers/documents/credit-card/index.js';
+import { hasCreditCardIndicators } from './parsers/detector.js';
 
 // GST auto-calculation helpers
 const GST_RATE = 0.10; // 10% Australian GST
@@ -37,6 +44,22 @@ function inferGstCategory(category: string, gstApplicable: boolean): string {
     if (INPUT_TAXED_CATEGORIES.has(category)) return 'input_taxed';
     if (GST_FREE_CATEGORIES.has(category)) return 'gst_free';
     return 'taxable_10';
+}
+
+/** Compute statement metadata from parsed transactions */
+function computeStatementMetadata(
+    txs: Array<{ date: string; amount_cents: number; balance_cents?: number }>,
+    accountDetection: AccountDetectionResult
+) {
+    const sortedDates = txs.map(t => t.date).filter(Boolean).sort();
+    const sortedByDate = [...txs].sort((a, b) => a.date.localeCompare(b.date));
+    return {
+        periodStartDate: sortedDates[0] || null,
+        periodEndDate: sortedDates[sortedDates.length - 1] || null,
+        openingBalance: accountDetection.detectedInfo.openingBalance ?? sortedByDate[0]?.balance_cents ?? null,
+        closingBalance: accountDetection.detectedInfo.closingBalance ?? sortedByDate[sortedByDate.length - 1]?.balance_cents ?? null,
+        transactionCount: txs.length,
+    };
 }
 
 async function withRetry<T>(
@@ -176,17 +199,50 @@ export class PipelineService {
                             await accountService.updateAccountBalance(existingAccount.id, accountInfo.closingBalance);
                         }
                     } else {
+                        // Auto-create account from detected information
                         accountDetection.isNewAccount = true;
-                        accountDetection.needsSetup = true;
-                        logger.info(`[Pipeline] New account detected, needs setup`);
+                        logger.info(`[Pipeline] New account detected — auto-creating`);
 
-                        // Emit event for frontend to show account setup wizard
-                        events.emit('update', {
-                            type: 'account_setup_needed',
-                            statementId,
-                            userId,
-                            detectedInfo: accountDetection.detectedInfo
-                        });
+                        try {
+                            const accountType = accountDetection.detectedInfo.accountType || 'transaction';
+                            const bankName = accountDetection.detectedInfo.bankName || 'Unknown Bank';
+                            const accountName = `${bankName} ${accountType.charAt(0).toUpperCase() + accountType.slice(1)}`;
+
+                            const newAccount = await accountService.createAccount({
+                                userId,
+                                accountNumber: accountInfo.accountNumber,
+                                accountName,
+                                accountType,
+                                bankName,
+                            });
+
+                            // Update balance if we have closing balance info
+                            if (accountInfo.closingBalance !== null && accountInfo.closingBalance !== undefined) {
+                                await accountService.updateAccountBalance(newAccount.id, accountInfo.closingBalance);
+                            }
+
+                            accountDetection.accountId = newAccount.id;
+                            accountDetection.needsSetup = false;
+                            logger.info(`[Pipeline] Auto-created account: ${newAccount.id} (${accountName})`);
+
+                            events.emit('update', {
+                                type: 'account_created',
+                                statementId,
+                                userId,
+                                accountId: newAccount.id,
+                                detectedInfo: accountDetection.detectedInfo
+                            });
+                        } catch (createErr: any) {
+                            logger.warn(`[Pipeline] Auto-create account failed, marking for manual setup: ${createErr.message}`);
+                            accountDetection.needsSetup = true;
+
+                            events.emit('update', {
+                                type: 'account_setup_needed',
+                                statementId,
+                                userId,
+                                detectedInfo: accountDetection.detectedInfo
+                            });
+                        }
                     }
                 }
             } catch (accErr) {
@@ -194,16 +250,144 @@ export class PipelineService {
                 // Continue processing even if account detection fails
             }
 
-            // 3. Use AI to parse the text content into structured transactions
+            // 2b. Check if this is a credit card statement
+            let isCreditCardStatement = false;
+            let isBusinessCreditCard = false;
+            const ccIndicators = hasCreditCardIndicators(pdfText);
+            if (ccIndicators.isLikely) {
+                logger.info(`[Pipeline] Credit card indicators detected (score: ${ccIndicators.score.toFixed(2)}, patterns: ${ccIndicators.matchedPatterns.length})`);
+                isCreditCardStatement = true;
+                // Update account type detection
+                accountDetection.detectedInfo.accountType = 'credit';
+
+                // Check if this is a business credit card (for GST auto-flagging)
+                const businessKeywords = /business\s*(card|credit|account)|corporate\s*(card|credit)|company\s*(card|credit)/i;
+                if (businessKeywords.test(pdfText)) {
+                    isBusinessCreditCard = true;
+                    logger.info(`[Pipeline] Business credit card detected — will auto-flag GST`);
+                }
+
+                // Update account with credit card info if we have an account
+                if (accountDetection.accountId) {
+                    try {
+                        const ccLimitMatch = pdfText.match(/credit\s*limit[:\s]*\$?([\d,]+\.?\d*)/i);
+                        const ccMinPayMatch = pdfText.match(/minimum\s*(?:payment|amount\s*due)[:\s]*\$?([\d,]+\.?\d*)/i);
+                        const updateData: Record<string, any> = {};
+                        if (ccLimitMatch) {
+                            updateData.creditLimit = Math.round(parseFloat(ccLimitMatch[1].replace(/,/g, '')) * 100);
+                        }
+                        if (ccMinPayMatch) {
+                            updateData.minimumPayment = Math.round(parseFloat(ccMinPayMatch[1].replace(/,/g, '')) * 100);
+                        }
+                        if (Object.keys(updateData).length > 0) {
+                            await db.update(accounts)
+                                .set(updateData)
+                                .where(eq(accounts.id, accountDetection.accountId));
+                            logger.info(`[Pipeline] Updated credit card account with: ${JSON.stringify(updateData)}`);
+                        }
+                    } catch (ccUpdateErr: any) {
+                        logger.warn(`[Pipeline] Credit card info update failed: ${ccUpdateErr.message}`);
+                    }
+                }
+            }
+
+            // 3. Try bank-specific regex parser first (fastest, most reliable for known banks)
+            logger.info(`[Pipeline] Trying bank-specific parser...`);
+            let rawData: { transactions: Array<{ date: string; description: string; amount_cents: number; balance_cents?: number }> } | undefined;
+
+            // 3a. If credit card, try credit card parser first
+            if (isCreditCardStatement) {
+                try {
+                    const ccResult = await parseCreditCardStatement(pdfText);
+                    if (ccResult.success && ccResult.result && ccResult.result.transactions.length > 0) {
+                        logger.info(`[Pipeline] Credit card parser extracted ${ccResult.result.transactions.length} transactions`);
+
+                        rawData = {
+                            transactions: ccResult.result.transactions.map(tx => ({
+                                date: tx.date,
+                                description: tx.description,
+                                amount_cents: tx.amount,
+                                balance_cents: tx.balance,
+                            }))
+                        };
+
+                        // Update account detection from credit card parser
+                        if (ccResult.result.accountInfo) {
+                            const info = ccResult.result.accountInfo;
+                            accountDetection.detectedInfo.bankName = ccResult.result.bankName || accountDetection.detectedInfo.bankName;
+                            accountDetection.detectedInfo.accountType = 'credit';
+                            if (info.cardNumber) {
+                                accountDetection.detectedInfo.accountNumber = info.cardNumber;
+                            }
+                            if (info.openingBalance !== undefined) {
+                                accountDetection.detectedInfo.openingBalance = info.openingBalance ?? null;
+                            }
+                            if (info.closingBalance !== undefined) {
+                                accountDetection.detectedInfo.closingBalance = info.closingBalance ?? null;
+                            }
+                        }
+
+                        logger.info(`[Pipeline] Credit card parser success — skipping regular bank parser`);
+                    } else {
+                        logger.info(`[Pipeline] Credit card parser returned 0 transactions, trying regular bank parser`);
+                    }
+                } catch (ccErr: any) {
+                    logger.warn(`[Pipeline] Credit card parser error, trying regular bank parser: ${ccErr.message}`);
+                }
+            }
+
+            // 3b. Try regular bank parser if credit card parser didn't produce results
+            if (!rawData || rawData.transactions.length === 0) {
+            try {
+                const parseResult = await parserRegistry.parseStatement(pdfText, { fallbackToAI: false });
+                if (parseResult.success && parseResult.transactions.length > 0) {
+                    logger.info(`[Pipeline] Bank parser (${parseResult.bankId}) extracted ${parseResult.transactions.length} transactions (confidence: ${parseResult.detectionConfidence.toFixed(2)})`);
+
+                    // Map ParsedTransaction to pipeline format
+                    rawData = {
+                        transactions: parseResult.transactions.map(tx => ({
+                            date: tx.date,
+                            description: tx.description,
+                            amount_cents: tx.amount,      // Already in cents from parser
+                            balance_cents: tx.balance,     // Already in cents from parser
+                        }))
+                    };
+
+                    // Update account detection from parser results
+                    if (parseResult.accountInfo) {
+                        const info = parseResult.accountInfo;
+                        accountDetection.detectedInfo.bankName = parseResult.bankName || accountDetection.detectedInfo.bankName;
+                        accountDetection.detectedInfo.accountType = info.accountType || accountDetection.detectedInfo.accountType;
+                        if (info.accountNumber && info.accountNumber !== 'UNKNOWN') {
+                            accountDetection.detectedInfo.accountNumber = info.accountNumber;
+                        }
+                        if (info.openingBalance !== undefined) {
+                            accountDetection.detectedInfo.openingBalance = info.openingBalance;
+                        }
+                        if (info.closingBalance !== undefined) {
+                            accountDetection.detectedInfo.closingBalance = info.closingBalance;
+                        }
+                    }
+
+                    logger.info(`[Pipeline] Bank parser success — skipping AI text parsing`);
+                } else {
+                    logger.info(`[Pipeline] Bank parser returned 0 transactions (${parseResult.parseWarnings.join(', ')}), falling through to AI`);
+                }
+            } catch (parserErr: any) {
+                logger.warn(`[Pipeline] Bank parser error, falling through to AI: ${parserErr.message}`);
+            }
+            } // end if (!rawData) for regular parser
+
+            // 4. If regex parser didn't produce results, try AI parsing
+            if (!rawData || rawData.transactions.length === 0) {
             logger.info(`[Pipeline] Sending to AI for parsing...`);
-            let rawData;
 
             // --- Claude Agent Mode ---
             if (isClaudeAgentsEnabled()) {
                 logger.info(`[Pipeline] Using Claude agent orchestrator`);
                 try {
                     const merchantMemoryData = userId ? await accountService.getMerchantMemory(userId) : [];
-                    const memoryPatterns = merchantMemoryData.map(m => ({
+                    const memoryPatterns = merchantMemoryData.map((m: any) => ({
                         pattern: m.merchantPattern,
                         category: m.category,
                         gst: m.gstApplicable ?? false
@@ -276,7 +460,7 @@ export class PipelineService {
                         });
 
                         if (toInsert.length > 0) {
-                            await db.transaction(async (tx) => {
+                            await db.transaction(async (tx: any) => {
                                 await tx.insert(transactions).values(toInsert);
 
                                 const pendingItems: typeof pendingCategorization.$inferInsert[] = [];
@@ -319,8 +503,30 @@ export class PipelineService {
                             await accountService.linkStatementToAccount(statementId, accountDetection.accountId);
                         }
 
-                        try { await ragService.indexTransactions(toInsert); } catch (ragErr) {
+                        // Index in Cognee
+                        try {
+                            await ragService.indexTransactions(toInsert);
+                            await cogneeClient.addStatementData({
+                                id: statementId,
+                                filename: stmt?.filename || 'unknown.pdf',
+                                bankName: accountDetection.detectedInfo.bankName || undefined,
+                                periodStart: rawData.transactions[0]?.date,
+                                periodEnd: rawData.transactions[rawData.transactions.length - 1]?.date,
+                            });
+                        } catch (ragErr) {
                             logger.error("[Pipeline Cognee Error]", ragErr);
+                        }
+
+                        // Run enrichment for uncategorized transactions
+                        const agentUncategorized = toInsert
+                            .filter(t => !t.category || t.category === 'Uncategorized')
+                            .map(t => t.id);
+                        if (agentUncategorized.length > 0 && userId) {
+                            try {
+                                await enrichmentService.enrichTransactions(agentUncategorized, userId);
+                            } catch (enrichErr: any) {
+                                logger.warn(`[Pipeline] Agent path enrichment error: ${enrichErr.message}`);
+                            }
                         }
 
                         const finalStatus = accountDetection.needsSetup ? 'NEEDS_ACCOUNT_SETUP' : 'COMPLETED';
@@ -341,6 +547,16 @@ export class PipelineService {
                             type: 'statement_updated', id: statementId, status: finalStatus, userId,
                             accountDetection: accountDetection.needsSetup ? accountDetection : undefined,
                         });
+
+                        // Emit typed events
+                        events.emitParsingComplete({
+                            statementId,
+                            transactionCount: toInsert.length,
+                            accountId: accountDetection.accountId,
+                            bankName: accountDetection.detectedInfo.bankName,
+                        });
+                        events.emit('update', { type: 'bas_updated', userId });
+                        events.emit('update', { type: 'tax_updated', userId });
 
                         logger.info(`[Pipeline] Claude agent processing complete for ${statementId}`);
                         return; // Done — skip the legacy path below
@@ -374,14 +590,68 @@ export class PipelineService {
                 events.emit('update', { type: 'statement_updated', id: statementId, status: 'FAILED', userId });
                 return;
             }
+            } // end if (!rawData || rawData.transactions.length === 0)
 
-            // 4. Save Transactions with intelligent categorization
+            // 4b. Vision-based secondary verification (always runs as double-check)
+            // This ensures we can handle any statement regardless of bank
+            try {
+                const visionModel = settings?.modelParsingVision || 'google/gemini-3-flash-preview';
+                logger.info(`[Pipeline] Running vision-based secondary check with ${visionModel}...`);
+
+                const visionResult = await aiService.parseWithVisionBatched(filePath, visionModel);
+                const visionTxCount = visionResult.transactions?.length || 0;
+                const primaryTxCount = rawData?.transactions?.length || 0;
+
+                logger.info(`[Pipeline] Vision check: ${visionTxCount} transactions (primary: ${primaryTxCount})`);
+
+                if (primaryTxCount === 0 && visionTxCount > 0) {
+                    // Primary parser failed entirely — use vision results
+                    logger.info(`[Pipeline] Primary parser returned 0, using vision results (${visionTxCount} txs)`);
+                    rawData = { transactions: visionResult.transactions };
+                } else if (primaryTxCount > 0 && visionTxCount > 0) {
+                    // Both have results — log discrepancy for review but trust primary
+                    const discrepancy = Math.abs(primaryTxCount - visionTxCount);
+                    const discrepancyPct = discrepancy / Math.max(primaryTxCount, visionTxCount) * 100;
+                    const needsReview = discrepancyPct > 10;
+                    if (discrepancyPct > 20) {
+                        logger.warn(`[Pipeline] Vision discrepancy: primary=${primaryTxCount}, vision=${visionTxCount} (${discrepancyPct.toFixed(1)}% diff) — investigate`);
+                    } else {
+                        logger.info(`[Pipeline] Vision verification passed: counts within ${discrepancyPct.toFixed(1)}% tolerance`);
+                    }
+
+                    // Store verification results on statement
+                    const visionVerification = JSON.stringify({
+                        primaryCount: primaryTxCount,
+                        visionCount: visionTxCount,
+                        discrepancyPct: Math.round(discrepancyPct * 10) / 10,
+                        needsReview,
+                        verifiedAt: new Date().toISOString(),
+                    });
+                    await db.update(statements)
+                        .set({ validationErrors: visionVerification })
+                        .where(eq(statements.id, statementId));
+
+                    // Emit typed vision verification event
+                    events.emitVisionVerification({
+                        statementId,
+                        confidence: Math.round((100 - discrepancyPct) * 10) / 1000,
+                        matches: Math.min(primaryTxCount, visionTxCount),
+                        discrepancies: discrepancy,
+                        needsReview,
+                    });
+                }
+            } catch (visionErr: any) {
+                logger.warn(`[Pipeline] Vision secondary check failed (non-fatal): ${visionErr.message}`);
+                // Vision is supplementary — don't block pipeline on vision failure
+            }
+
+            // 5. Save Transactions with intelligent categorization
             if (rawData.transactions.length > 0) {
                 logger.info(`[Pipeline] Extracted ${rawData.transactions.length} transactions. Categorizing with memory...`);
 
                 // Get merchant memory for intelligent categorization
                 const merchantMemoryData = userId ? await accountService.getMerchantMemory(userId) : [];
-                const memoryPatterns = merchantMemoryData.map(m => ({
+                const memoryPatterns = merchantMemoryData.map((m: any) => ({
                     pattern: m.merchantPattern,
                     category: m.category,
                     gst: m.gstApplicable ?? false
@@ -438,8 +708,11 @@ export class PipelineService {
                         merchantNormalized: '',
                         needsReview: true
                     };
-                    const gstApplicable = aiCat.gst;
-                    const gstCategory = inferGstCategory(aiCat.category, gstApplicable);
+                    // Auto-flag GST for business credit card transactions
+                    const gstApplicable = isBusinessCreditCard ? true : aiCat.gst;
+                    const gstCategory = isBusinessCreditCard
+                        ? inferGstCategory(aiCat.category, true)
+                        : inferGstCategory(aiCat.category, gstApplicable);
                     const gstAmount = (gstApplicable && gstCategory === 'taxable_10')
                         ? calculateGstAmount(tx.amount_cents)
                         : 0;
@@ -467,7 +740,7 @@ export class PipelineService {
                 if (toInsert.length > 0) {
                     logger.info(`[Pipeline] Inserting ${toInsert.length} transactions into database...`);
 
-                    await db.transaction(async (tx) => {
+                    await db.transaction(async (tx: any) => {
                         // 4.1 Insert Transactions
                         await tx.insert(transactions).values(toInsert);
 
@@ -520,41 +793,142 @@ export class PipelineService {
                     await accountService.linkStatementToAccount(statementId, accountDetection.accountId);
                 }
 
+                // 7b. Auto-detect transfers across accounts
+                if (userId && toInsert.length > 0) {
+                    try {
+                        logger.info(`[Pipeline] Running transfer detection...`);
+
+                        // Get all user transactions (including newly inserted ones)
+                        const allUserTxs = await db.select().from(transactions)
+                            .where(eq(transactions.userId, userId)).all();
+
+                        // Get all user accounts
+                        const userAccounts = await db.select().from(accounts)
+                            .where(eq(accounts.userId, userId)).all();
+
+                        if (userAccounts.length > 1 && allUserTxs.length > 1) {
+                            // Convert to TransferCandidate format
+                            const candidates: TransferCandidate[] = allUserTxs.map((t: any) => ({
+                                id: t.id,
+                                accountId: t.accountId || '',
+                                date: t.date,
+                                description: t.description,
+                                amount: t.amount,
+                                isLinked: t.isTransfer || false,
+                                linkedTransactionId: t.transferLinkId || undefined,
+                            }));
+
+                            // Convert accounts to AccountContext format
+                            const accountContexts: AccountContext[] = userAccounts.map((a: any) => ({
+                                id: a.id,
+                                accountNumber: a.accountNumber,
+                                bankId: a.bankName || '',
+                                accountName: a.accountName,
+                                accountType: a.accountType,
+                                ownershipTag: a.ownershipTag || 'business',
+                            }));
+
+                            const detector = new TransferDetector();
+                            const matches = detector.detectTransfers(candidates, accountContexts);
+
+                            if (matches.length > 0) {
+                                logger.info(`[Pipeline] Found ${matches.length} potential transfers, persisting...`);
+                                const persistResult = await persistTransferMatches(matches, { userId });
+                                logger.info(`[Pipeline] Transfer persistence: ${persistResult.created} created, ${persistResult.skipped} skipped, ${persistResult.errors.length} errors`);
+
+                                // Emit typed SSE events for each detected transfer
+                                for (let mi = 0; mi < matches.length; mi++) {
+                                    const m = matches[mi];
+                                    const linkId = persistResult.linkIds[mi] || '';
+                                    if (linkId) {
+                                        events.emitTransferDetected({
+                                            sourceAccountId: String(m.sourceTransaction.accountId) || null,
+                                            destinationAccountId: String(m.targetTransaction.accountId) || null,
+                                            amount: Math.abs(m.sourceTransaction.amount),
+                                            confidence: m.confidence,
+                                            linkId,
+                                        });
+                                    }
+                                }
+
+                                // Detect owner contributions (personal → business)
+                                const ownerContribIds: string[] = [];
+                                for (const match of matches) {
+                                    const srcAcct = accountContexts.find(a => a.id === match.sourceTransaction.accountId);
+                                    const dstAcct = accountContexts.find(a => a.id === match.targetTransaction.accountId);
+                                    if (srcAcct?.ownershipTag === 'personal' && dstAcct?.ownershipTag === 'business') {
+                                        ownerContribIds.push(String(match.targetTransaction.id));
+                                    }
+                                }
+                                if (ownerContribIds.length > 0) {
+                                    const ownerUpdated = await markOwnerContributions(ownerContribIds);
+                                    logger.info(`[Pipeline] Marked ${ownerUpdated} transactions as owner contributions`);
+                                }
+
+                                events.emit('update', { type: 'transfers_updated', userId });
+                            } else {
+                                logger.info(`[Pipeline] No transfer matches found`);
+                            }
+                        }
+                    } catch (transferErr: any) {
+                        logger.warn(`[Pipeline] Transfer detection error (non-fatal): ${transferErr.message}`);
+                    }
+                }
+
                 // 8. Index in Cognee for RAG
                 logger.info(`[Pipeline] Indexing ${toInsert.length} transactions in Cognee...`);
                 try {
                     await ragService.indexTransactions(toInsert);
+
+                    // Also index statement metadata in Cognee
+                    await cogneeClient.addStatementData({
+                        id: statementId,
+                        filename: stmt?.filename || 'unknown.pdf',
+                        bankName: accountDetection.detectedInfo.bankName || undefined,
+                        periodStart: rawData.transactions[0]?.date,
+                        periodEnd: rawData.transactions[rawData.transactions.length - 1]?.date,
+                    });
                 } catch (ragErr) {
                     logger.error("[Pipeline Cognee Error]", ragErr);
+                }
+
+                // 8b. Run enrichment pipeline for uncategorized transactions
+                const uncategorizedIds = toInsert
+                    .filter(t => !t.category || t.category === 'Uncategorized')
+                    .map(t => t.id);
+                if (uncategorizedIds.length > 0 && userId) {
+                    try {
+                        logger.info(`[Pipeline] Running enrichment on ${uncategorizedIds.length} uncategorized transactions...`);
+                        await enrichmentService.enrichTransactions(uncategorizedIds, userId);
+                    } catch (enrichErr: any) {
+                        logger.warn(`[Pipeline] Enrichment error (non-fatal): ${enrichErr.message}`);
+                    }
                 }
 
                 // 9. Emit events to trigger auto-recalculation of BAS/tax on client
                 events.emit('update', { type: 'bas_updated', userId });
                 events.emit('update', { type: 'tax_updated', userId });
 
+                // Emit parsing_complete event
+                events.emitParsingComplete({
+                    statementId,
+                    transactionCount: toInsert.length,
+                    accountId: accountDetection.accountId,
+                    bankName: accountDetection.detectedInfo.bankName,
+                });
+
                 // Determine final status
                 const finalStatus = accountDetection.needsSetup ? 'NEEDS_ACCOUNT_SETUP' : 'COMPLETED';
 
-                // Calculate statement period from transactions
-                const sortedDates = rawData?.transactions.map(t => t.date).sort() || [];
-                const periodStartDate = sortedDates[0] || null;
-                const periodEndDate = sortedDates[sortedDates.length - 1] || null;
-
-                // Get opening and closing balances from first and last transactions
-                const sortedByDate = rawData?.transactions ? [...rawData.transactions].sort((a, b) => a.date.localeCompare(b.date)) : [];
-                const openingBalance = sortedByDate[0]?.balance_cents ?? null;
-                const closingBalance = sortedByDate[sortedByDate.length - 1]?.balance_cents ?? null;
+                // Compute metadata using helper
+                const metadata = computeStatementMetadata(rawData.transactions, accountDetection);
 
                 // Update status with period information
                 await db.update(statements)
                     .set({
                         parsingStatus: finalStatus,
-                        aiModelUsed: settings?.modelParsingText || 'google/gemini-3-flash-preview',
-                        periodStartDate,
-                        periodEndDate,
-                        openingBalance,
-                        closingBalance,
-                        transactionCount: rawData?.transactions.length || 0,
+                        aiModelUsed: settings?.modelParsingText || 'bank-regex-parser',
+                        ...metadata,
                         isComplete: true
                     })
                     .where(eq(statements.id, statementId));
@@ -590,6 +964,11 @@ export class PipelineService {
                 })
                 .where(eq(statements.id, statementId));
             events.emit('update', { type: 'statement_updated', id: statementId, status: 'FAILED' });
+            events.emitPipelineError({
+                statementId,
+                errorType: 'CRITICAL_ERROR',
+                message: err.message || 'An unexpected system error occurred during processing.',
+            });
         }
     }
 }

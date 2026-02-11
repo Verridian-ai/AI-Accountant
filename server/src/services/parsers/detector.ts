@@ -3,6 +3,7 @@
  *
  * Detects which bank a statement belongs to based on content analysis.
  * Returns detection results with confidence scores for parser selection.
+ * Also detects credit card vs transaction statements.
  */
 
 import { parserRegistry } from './registry';
@@ -12,6 +13,7 @@ import {
   StatementParseResult,
   ParseOptions,
 } from './types';
+import { detectCreditCardStatement } from './documents/credit-card/index';
 
 /**
  * Detection threshold levels
@@ -99,6 +101,56 @@ export function getBankDisplayName(bankId: BankId): string {
 }
 
 /**
+ * Detect if a statement is a credit card statement
+ */
+export function isCreditCardStatement(pdfText: string): {
+  isCreditCard: boolean;
+  bankId: string | null;
+  confidence: number;
+  cardType?: string;
+} {
+  return detectCreditCardStatement(pdfText);
+}
+
+/**
+ * Credit card detection patterns for quick classification
+ */
+const CREDIT_CARD_PATTERNS = [
+  /credit\s*card\s*statement/i,
+  /credit\s*limit/i,
+  /minimum\s*(?:payment|amount)\s*(?:due|required)/i,
+  /interest\s*charged/i,
+  /available\s*credit/i,
+  /closing\s*balance.*(?:cr|dr)/i,
+  /payment\s*due\s*date/i,
+  /cash\s*advance/i,
+  /annual\s*(?:card\s*)?fee/i,
+  /(?:visa|mastercard|amex)\s*(?:card|platinum|gold|diamond)/i,
+];
+
+/**
+ * Quick check if text has credit card indicators
+ */
+export function hasCreditCardIndicators(pdfText: string): {
+  isLikely: boolean;
+  matchedPatterns: string[];
+  score: number;
+} {
+  const matchedPatterns: string[] = [];
+  for (const pattern of CREDIT_CARD_PATTERNS) {
+    if (pattern.test(pdfText)) {
+      matchedPatterns.push(pattern.source);
+    }
+  }
+  const score = matchedPatterns.length / CREDIT_CARD_PATTERNS.length;
+  return {
+    isLikely: matchedPatterns.length >= 2,
+    matchedPatterns,
+    score,
+  };
+}
+
+/**
  * Analyze statement for detection metadata
  */
 export function analyzeStatement(pdfText: string): {
@@ -109,6 +161,9 @@ export function analyzeStatement(pdfText: string): {
   hasAccountNumber: boolean;
   hasTransactionSection: boolean;
   estimatedTransactionCount: number;
+  isCreditCard: boolean;
+  creditCardBankId: string | null;
+  creditCardConfidence: number;
 } {
   const detections = detectBank(pdfText);
   const bestMatch = detections.length > 0 ? detections[0] : null;
@@ -157,6 +212,9 @@ export function analyzeStatement(pdfText: string): {
     ? Math.max(0, dateMatches.length - 5) // Subtract header/footer dates
     : 0;
 
+  // Credit card detection
+  const ccDetection = detectCreditCardStatement(pdfText);
+
   return {
     detections,
     bestMatch,
@@ -165,6 +223,9 @@ export function analyzeStatement(pdfText: string): {
     hasAccountNumber,
     hasTransactionSection,
     estimatedTransactionCount,
+    isCreditCard: ccDetection.isCreditCard,
+    creditCardBankId: ccDetection.bankId,
+    creditCardConfidence: ccDetection.confidence,
   };
 }
 
@@ -209,6 +270,14 @@ export function generateDetectionReport(pdfText: string): string {
         `  ${det.bankName}: ${(det.confidence * 100).toFixed(1)}%`
       );
     }
+  }
+
+  lines.push('');
+  lines.push('Credit Card Detection:');
+  lines.push(`  Is Credit Card: ${analysis.isCreditCard}`);
+  if (analysis.isCreditCard) {
+    lines.push(`  Bank: ${analysis.creditCardBankId}`);
+    lines.push(`  Confidence: ${(analysis.creditCardConfidence * 100).toFixed(1)}%`);
   }
 
   return lines.join('\n');

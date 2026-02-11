@@ -77,6 +77,24 @@ export function TaxDashboard() {
             setCgtAssets(assets);
             setCgtEvents(events);
             setDepreciableAssets(depreciation);
+
+            // Auto-populate income from summary and trigger tax calc
+            if (summary && summary.grossIncomeCents > 0) {
+                const incomeDollars = (summary.grossIncomeCents / 100).toFixed(0);
+                setGrossIncome(incomeDollars);
+                // Auto-calculate tax from transactions
+                try {
+                    const result = await taxApi.calculateTax(
+                        selectedYear,
+                        summary.grossIncomeCents,
+                        entityType,
+                        hasPrivateHealth
+                    );
+                    setTaxResult(result);
+                } catch (calcErr) {
+                    console.error('Auto tax calc failed:', calcErr);
+                }
+            }
         } catch (err) {
             console.error('Failed to load tax data:', err);
         } finally {

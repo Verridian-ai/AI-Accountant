@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { api } from '@/api';
-import type { Statement, StatementGapAnalysis } from '@/api';
+import type { Statement, StatementGapAnalysis, BatchFileStatus } from '@/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import './StatementList.css';
 import { UploadZone } from './UploadZone';
@@ -21,12 +21,13 @@ import {
     Calendar,
     TrendingDown,
     Layers,
-    DollarSign
+    DollarSign,
+    Ban
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Upload queue item status
-type UploadStatus = 'queued' | 'uploading' | 'complete' | 'failed' | 'duplicate';
+type UploadStatus = 'queued' | 'uploading' | 'processing' | 'complete' | 'failed' | 'duplicate' | 'cancelled';
 
 interface UploadQueueItem {
     id: string;
@@ -34,6 +35,7 @@ interface UploadQueueItem {
     status: UploadStatus;
     error?: string;
     statementId?: string;
+    serverFileId?: string;
     duplicateOf?: {
         filename: string;
         uploadedOn: string;
@@ -46,15 +48,15 @@ export function StatementList() {
     const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
     const [expandedErrorId, setExpandedErrorId] = useState<string | null>(null);
     const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
+    const [batchJobId, setBatchJobId] = useState<string | null>(null);
     const [gapAnalysis, setGapAnalysis] = useState<StatementGapAnalysis | null>(null);
     const [showGapDetails, setShowGapDetails] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const isProcessingRef = useRef(false);
     const progressBarRef = useRef<HTMLDivElement>(null);
-    // Use a ref to track the current queue to avoid stale closure issues
     const uploadQueueRef = useRef<UploadQueueItem[]>([]);
+    const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // Keep the ref in sync with state
     useEffect(() => {
         uploadQueueRef.current = uploadQueue;
     }, [uploadQueue]);
@@ -91,74 +93,155 @@ export function StatementList() {
         }
     };
 
-    // Add files to upload queue
-    const addFilesToQueue = useCallback((files: FileList | File[]) => {
-        const newItems: UploadQueueItem[] = Array.from(files).map(file => ({
+    // Poll batch job status for real-time progress
+    const startBatchPolling = useCallback((jobId: string) => {
+        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+
+        const poll = async () => {
+            try {
+                const status = await api.getBatchStatus(jobId);
+                // Update upload queue items from server status
+                setUploadQueue(prev => prev.map(item => {
+                    const serverFile = status.files.find(
+                        (f: BatchFileStatus) => f.filename === item.file.name && item.serverFileId === f.id
+                    );
+                    if (!serverFile) return item;
+
+                    let newStatus: UploadStatus = item.status;
+                    if (serverFile.state === 'completed') newStatus = serverFile.error?.includes('Duplicate') ? 'duplicate' : 'complete';
+                    else if (serverFile.state === 'processing') newStatus = 'processing';
+                    else if (serverFile.state === 'failed') newStatus = 'failed';
+                    else if (serverFile.state === 'cancelled') newStatus = 'cancelled';
+                    else if (serverFile.state === 'pending') newStatus = 'uploading';
+
+                    return {
+                        ...item,
+                        status: newStatus,
+                        statementId: serverFile.statementId || item.statementId,
+                        error: serverFile.error || item.error,
+                    };
+                }));
+
+                // Stop polling when job is done
+                if (status.state === 'completed' || status.state === 'failed' || status.state === 'cancelled') {
+                    if (pollIntervalRef.current) {
+                        clearInterval(pollIntervalRef.current);
+                        pollIntervalRef.current = null;
+                    }
+                    isProcessingRef.current = false;
+                    await refreshStatements();
+                }
+            } catch (err) {
+                console.error('Batch poll failed', err);
+            }
+        };
+
+        // Poll immediately then every 2 seconds
+        poll();
+        pollIntervalRef.current = setInterval(poll, 2000);
+    }, [refreshStatements]);
+
+    // Clean up poll on unmount
+    useEffect(() => {
+        return () => {
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+        };
+    }, []);
+
+    // Add files to upload queue and submit batch
+    const addFilesToQueue = useCallback(async (files: FileList | File[]) => {
+        const fileArray = Array.from(files).filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf') || f.name.endsWith('.csv'));
+        if (fileArray.length === 0) return;
+
+        // For single file, use existing sequential upload
+        if (fileArray.length === 1) {
+            const file = fileArray[0];
+            const itemId = `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            const newItem: UploadQueueItem = { id: itemId, file, status: 'uploading' };
+            setUploadQueue(prev => [...prev, newItem]);
+
+            try {
+                const result = await api.uploadStatement(file);
+                setUploadQueue(prev => prev.map(i =>
+                    i.id === itemId
+                        ? {
+                            ...i,
+                            status: result.isDuplicate ? 'duplicate' as UploadStatus : 'complete' as UploadStatus,
+                            statementId: result.id,
+                            duplicateOf: result.isDuplicate && result.existingFilename ? {
+                                filename: result.existingFilename,
+                                uploadedOn: result.uploadedOn || ''
+                            } : undefined
+                        }
+                        : i
+                ));
+                await refreshStatements();
+            } catch (err) {
+                setUploadQueue(prev => prev.map(i =>
+                    i.id === itemId
+                        ? { ...i, status: 'failed' as UploadStatus, error: err instanceof Error ? err.message : 'Upload failed' }
+                        : i
+                ));
+            }
+            return;
+        }
+
+        // For multiple files, use batch API
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+
+        const newItems: UploadQueueItem[] = fileArray.map(file => ({
             id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
             file,
             status: 'queued' as UploadStatus
         }));
         setUploadQueue(prev => [...prev, ...newItems]);
-    }, []);
-
-    // Process a single upload item
-    const processItem = useCallback(async (item: UploadQueueItem): Promise<void> => {
-        // Update status to uploading
-        setUploadQueue(prev => prev.map(i =>
-            i.id === item.id ? { ...i, status: 'uploading' as UploadStatus } : i
-        ));
 
         try {
-            const result = await api.uploadStatement(item.file);
+            // Mark all as uploading
             setUploadQueue(prev => prev.map(i =>
-                i.id === item.id
-                    ? {
-                        ...i,
-                        status: result.isDuplicate ? 'duplicate' as UploadStatus : 'complete' as UploadStatus,
-                        statementId: result.id,
-                        duplicateOf: result.isDuplicate && result.existingFilename ? {
-                            filename: result.existingFilename,
-                            uploadedOn: result.uploadedOn || ''
-                        } : undefined
-                    }
-                    : i
+                newItems.find(n => n.id === i.id) ? { ...i, status: 'uploading' as UploadStatus } : i
             ));
+
+            const result = await api.uploadBatch(fileArray);
+            setBatchJobId(result.jobId);
+
+            // Map server file IDs to our queue items
+            setUploadQueue(prev => prev.map(item => {
+                const serverFile = result.files.find((f: BatchFileStatus) => f.filename === item.file.name);
+                if (serverFile && newItems.find(n => n.id === item.id)) {
+                    return { ...item, serverFileId: serverFile.id, status: 'uploading' as UploadStatus };
+                }
+                return item;
+            }));
+
+            // Start polling for progress
+            startBatchPolling(result.jobId);
         } catch (err) {
+            console.error('Batch upload failed', err);
             setUploadQueue(prev => prev.map(i =>
-                i.id === item.id
+                newItems.find(n => n.id === i.id)
                     ? { ...i, status: 'failed' as UploadStatus, error: err instanceof Error ? err.message : 'Upload failed' }
                     : i
             ));
-        }
-    }, []);
-
-    // Process upload queue - processes items sequentially using for loop instead of recursion
-    const processQueue = useCallback(async () => {
-        if (isProcessingRef.current) return;
-        isProcessingRef.current = true;
-
-        try {
-            // Get items to process at the start
-            const itemsToProcess = uploadQueueRef.current.filter(item => item.status === 'queued');
-
-            // Process each item sequentially
-            for (const item of itemsToProcess) {
-                await processItem(item);
-            }
-
-            // Refresh statements once after all items are processed
-            await refreshStatements();
-        } finally {
             isProcessingRef.current = false;
         }
-    }, [processItem, refreshStatements]);
+    }, [refreshStatements, startBatchPolling]);
 
-    // Start processing when queue changes
-    useEffect(() => {
-        if (uploadQueue.some(item => item.status === 'queued') && !isProcessingRef.current) {
-            processQueue();
+    // Cancel the current batch job
+    const cancelBatch = useCallback(async () => {
+        if (!batchJobId) return;
+        try {
+            await api.cancelBatch(batchJobId);
+            setUploadQueue(prev => prev.map(i =>
+                (i.status === 'queued' || i.status === 'uploading' || i.status === 'processing')
+                    ? { ...i, status: 'cancelled' as UploadStatus }
+                    : i
+            ));
+        } catch (err) {
+            console.error('Cancel failed', err);
         }
-    }, [uploadQueue, processQueue]);
+    }, [batchJobId]);
 
     // Handle file input change (multiple files)
     const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,7 +253,10 @@ export function StatementList() {
 
     // Clear completed/failed items from queue
     const clearCompletedFromQueue = () => {
-        setUploadQueue(prev => prev.filter(item => item.status === 'queued' || item.status === 'uploading'));
+        setUploadQueue(prev => prev.filter(item =>
+            item.status === 'queued' || item.status === 'uploading' || item.status === 'processing'
+        ));
+        setBatchJobId(null);
     };
 
     // Get queue stats
@@ -178,12 +264,14 @@ export function StatementList() {
         total: uploadQueue.length,
         queued: uploadQueue.filter(i => i.status === 'queued').length,
         uploading: uploadQueue.filter(i => i.status === 'uploading').length,
+        processing: uploadQueue.filter(i => i.status === 'processing').length,
         complete: uploadQueue.filter(i => i.status === 'complete').length,
         failed: uploadQueue.filter(i => i.status === 'failed').length,
         duplicate: uploadQueue.filter(i => i.status === 'duplicate').length,
+        cancelled: uploadQueue.filter(i => i.status === 'cancelled').length,
     };
 
-    const isUploading = queueStats.uploading > 0 || queueStats.queued > 0;
+    const isUploading = queueStats.uploading > 0 || queueStats.queued > 0 || queueStats.processing > 0;
 
     // Update progress bar CSS custom property
     useEffect(() => {
@@ -278,8 +366,10 @@ export function StatementList() {
         switch (status) {
             case 'complete': return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
             case 'uploading': return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
+            case 'processing': return <Loader2 className="h-4 w-4 text-[#FFCC00] animate-spin" />;
             case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />;
             case 'duplicate': return <Files className="h-4 w-4 text-amber-500" />;
+            case 'cancelled': return <Ban className="h-4 w-4 text-zinc-500" />;
             default: return <Clock className="h-4 w-4 text-zinc-600" />;
         }
     };
@@ -288,9 +378,20 @@ export function StatementList() {
         switch (status) {
             case 'complete': return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
             case 'uploading': return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+            case 'processing': return 'bg-[#FFCC00]/10 text-[#FFCC00] border border-[#FFCC00]/20';
             case 'failed': return 'bg-red-500/10 text-red-400 border border-red-500/20';
             case 'duplicate': return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+            case 'cancelled': return 'bg-zinc-800 text-zinc-500 border border-zinc-700';
             default: return 'bg-zinc-900 text-zinc-500 border border-zinc-800';
+        }
+    };
+
+    const getUploadStatusLabel = (status: UploadStatus) => {
+        switch (status) {
+            case 'processing': return 'Parsing';
+            case 'duplicate': return 'Duplicate';
+            case 'cancelled': return 'Cancelled';
+            default: return status;
         }
     };
 
@@ -318,9 +419,9 @@ export function StatementList() {
                         ref={fileInputRef}
                         onChange={handleUpload}
                         className="hidden"
-                        accept=".pdf"
+                        accept=".pdf,.csv"
                         multiple
-                        aria-label="Upload PDF statements"
+                        aria-label="Upload bank statements"
                     />
                     <button
                         type="button"
@@ -340,18 +441,36 @@ export function StatementList() {
             {uploadQueue.length > 0 && (
                 <div className="border-b border-white/5 p-6 bg-white/[0.01]">
                     <div className="flex items-center justify-between mb-4">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
-                            Quantum Queue ({queueStats.complete + queueStats.duplicate}/{queueStats.total})
-                        </span>
-                        {!isUploading && (
-                            <button
-                                type="button"
-                                onClick={clearCompletedFromQueue}
-                                className="text-[9px] font-black uppercase text-zinc-600 hover:text-red-400 transition-colors tracking-widest"
-                            >
-                                Purge
-                            </button>
-                        )}
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                Quantum Queue ({queueStats.complete + queueStats.duplicate}/{queueStats.total})
+                            </span>
+                            {queueStats.failed > 0 && (
+                                <span className="text-[9px] font-black text-red-400 uppercase tracking-widest">
+                                    {queueStats.failed} failed
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {isUploading && batchJobId && (
+                                <button
+                                    type="button"
+                                    onClick={cancelBatch}
+                                    className="text-[9px] font-black uppercase text-zinc-600 hover:text-red-400 transition-colors tracking-widest flex items-center gap-1"
+                                >
+                                    <Ban className="h-3 w-3" /> Cancel
+                                </button>
+                            )}
+                            {!isUploading && (
+                                <button
+                                    type="button"
+                                    onClick={clearCompletedFromQueue}
+                                    className="text-[9px] font-black uppercase text-zinc-600 hover:text-red-400 transition-colors tracking-widest"
+                                >
+                                    Purge
+                                </button>
+                            )}
+                        </div>
                     </div>
                     {/* Progress Bar */}
                     <div className="w-full h-3 neu-inset rounded-full overflow-hidden mb-4 p-0.5 border border-white/5">
@@ -361,19 +480,26 @@ export function StatementList() {
                         />
                     </div>
                     {/* Queue Items */}
-                    <div className="max-h-[140px] overflow-y-auto space-y-2 scrollbar-thin">
+                    <div className="max-h-[200px] overflow-y-auto space-y-2 scrollbar-thin">
                         {uploadQueue.map((item) => (
                             <div key={item.id} className="flex flex-col gap-1.5 p-3 rounded-xl neu-inset bg-white/[0.01]">
                                 <div className="flex items-center gap-3">
                                     <div className="shrink-0">{getUploadStatusIcon(item.status)}</div>
                                     <span className="flex-1 truncate text-[11px] font-bold text-zinc-300">{item.file.name}</span>
-                                    <span className={cn("px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest", getUploadStatusColor(item.status))}>
-                                        {item.status === 'duplicate' ? 'Duplicate' : item.status}
-                                    </span>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <span className={cn("px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest", getUploadStatusColor(item.status))}>
+                                            {getUploadStatusLabel(item.status)}
+                                        </span>
+                                    </div>
                                 </div>
                                 {item.status === 'duplicate' && item.duplicateOf && (
                                     <div className="ml-7 text-[9px] font-bold text-amber-500/70 italic">
                                         Collision: Already indexed as "{item.duplicateOf.filename}"
+                                    </div>
+                                )}
+                                {item.status === 'failed' && item.error && (
+                                    <div className="ml-7 text-[9px] font-bold text-red-400/70 italic">
+                                        {item.error}
                                     </div>
                                 )}
                             </div>

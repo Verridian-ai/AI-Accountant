@@ -20,6 +20,8 @@ import { GSTPage } from './features/gst/components/GSTPage';
 import { TransfersPage } from './features/transfers/components/TransfersPage';
 import { AnalyticsDashboard } from './features/analytics/components/AnalyticsDashboard';
 import { AccountManager } from './features/accounts/components/AccountManager';
+import { AccountSummaryCards } from './features/accounts/components/AccountSummaryCards';
+import { AccountBalanceTimeline } from './features/accounts/components/AccountBalanceTimeline';
 import { api, getToken } from './api';
 import type { Transaction, TransactionStats, Account } from './api';
 import {
@@ -322,6 +324,8 @@ function App() {
               <AccountsOverview />
               <StatementList />
             </div>
+            <AccountSummaryCards />
+            <AccountBalanceTimeline />
             <AccountManager />
             <DebtReductionPlanner />
           </div>

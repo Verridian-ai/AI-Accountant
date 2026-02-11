@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, Sparkles, User, Loader2, Cpu, Activity, MessageCircle, X, Minimize2 } from 'lucide-react';
+import { Send, Sparkles, User, Loader2, Activity, X, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api } from '@/api';
 
@@ -72,16 +72,16 @@ export function FloatingChat() {
                 type="button"
                 onClick={toggleChat}
                 className={cn(
-                    "fixed right-4 z-50 p-4 rounded-2xl shadow-2xl transition-all duration-300 btn-press group",
-                    "bottom-20 md:bottom-6 md:right-6", // Above bottom nav on mobile
+                    "fixed right-4 z-50 p-0 rounded-2xl transition-all duration-300 btn-press group",
+                    "bottom-20 md:bottom-6 md:right-6",
                     isOpen && !isMinimized
                         ? "scale-0 opacity-0 pointer-events-none"
-                        : "scale-100 opacity-100 cba-gold-gradient cba-gold-glow"
+                        : "scale-100 opacity-100 drop-shadow-[0_4px_20px_rgba(255,204,0,0.3)]"
                 )}
                 aria-label="Open chat"
             >
                 <div className="relative">
-                    <MessageCircle className="h-6 w-6 text-[#0a0a0f]" />
+                    <img src="/CEBA LOGO.png" alt="CEBA AI" className="h-36 w-36" />
                     {unreadCount > 0 && (
                         <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-black text-white animate-pulse">
                             {unreadCount}
@@ -89,7 +89,7 @@ export function FloatingChat() {
                     )}
                 </div>
                 <span className="absolute -top-12 right-0 neu-raised px-3 py-1.5 rounded-xl text-[10px] font-black text-zinc-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    Neural Core
+                    CEBA AI
                 </span>
             </button>
 
@@ -107,13 +107,10 @@ export function FloatingChat() {
                     <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/2">
                         <div className="flex items-center gap-3">
                             <div className="relative">
-                                <div className="absolute -inset-1 cba-gold-gradient rounded-xl blur opacity-20" />
-                                <div className="relative neu-inset p-2.5 rounded-xl text-[#FFCC00]">
-                                    <Cpu className="h-5 w-5" />
-                                </div>
+                                <img src="/CEBA LOGO.png" alt="CEBA AI" className="h-[72px] w-[72px] drop-shadow-[0_0_8px_rgba(255,204,0,0.3)]" />
                             </div>
                             <div>
-                                <h3 className="font-black text-zinc-100 uppercase tracking-widest text-xs">Neural Core</h3>
+                                <h3 className="font-black text-zinc-100 uppercase tracking-widest text-xs">CEBA AI</h3>
                                 <p className="text-[8px] text-zinc-500 uppercase tracking-[0.15em] flex items-center gap-1 font-bold">
                                     <Sparkles className="h-2.5 w-2.5 text-[#FFCC00]" /> Intelligence Engine v4
                                 </p>
@@ -148,10 +145,10 @@ export function FloatingChat() {
                         {messages.map((m, i) => (
                             <div key={i} className={cn("flex items-end gap-2", m.role === 'user' ? "flex-row-reverse" : "flex-row")}>
                                 <div className={cn(
-                                    "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border border-white/5",
-                                    m.role === 'user' ? "neu-raised bg-zinc-800 text-[#FFCC00]" : "neu-inset bg-black/20 text-zinc-500"
+                                    "rounded-lg flex items-center justify-center shrink-0",
+                                    m.role === 'user' ? "w-7 h-7 neu-raised bg-zinc-800 text-[#FFCC00] border border-white/5" : "w-14 h-14"
                                 )}>
-                                    {m.role === 'user' ? <User className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5" />}
+                                    {m.role === 'user' ? <User className="h-3.5 w-3.5" /> : <img src="/CEBA LOGO.png" alt="CEBA AI" className="h-14 w-14 drop-shadow-[0_0_4px_rgba(255,204,0,0.2)]" />}
                                 </div>
                                 <div className={cn(
                                     "max-w-[85%] rounded-2xl px-4 py-3 text-sm relative",
@@ -165,8 +162,8 @@ export function FloatingChat() {
                         ))}
                         {loading && (
                             <div className="flex items-end gap-2">
-                                <div className="w-7 h-7 rounded-lg flex items-center justify-center neu-inset bg-black/20 text-[#FFCC00]">
-                                    <Bot className="h-3.5 w-3.5 animate-pulse" />
+                                <div className="w-14 h-14 rounded-lg flex items-center justify-center shrink-0">
+                                    <img src="/CEBA LOGO.png" alt="CEBA AI" className="h-14 w-14 animate-pulse drop-shadow-[0_0_4px_rgba(255,204,0,0.2)]" />
                                 </div>
                                 <div className="neu-raised rounded-2xl rounded-bl-none px-4 py-3 border border-white/5">
                                     <div className="flex items-center gap-2">
@@ -223,11 +220,11 @@ export function FloatingChat() {
                         className="fixed bottom-6 right-6 z-50 neu-raised rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl border border-white/10 hover:border-[#FFCC00]/30 transition-all btn-press group"
                         aria-label="Expand chat"
                     >
-                        <div className="neu-inset p-2 rounded-xl text-[#FFCC00]">
-                            <Cpu className="h-4 w-4" />
+                        <div>
+                            <img src="/CEBA LOGO.png" alt="CEBA AI" className="h-16 w-16 drop-shadow-[0_0_6px_rgba(255,204,0,0.3)]" />
                         </div>
                         <div>
-                            <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">Neural Core</span>
+                            <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">CEBA AI</span>
                             <span className="text-[8px] text-zinc-600 block uppercase tracking-wider">Click to expand</span>
                         </div>
                         {unreadCount > 0 && (

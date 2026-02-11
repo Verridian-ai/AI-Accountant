@@ -25,8 +25,17 @@ export {
   getBankDisplayName,
   analyzeStatement,
   generateDetectionReport,
+  isCreditCardStatement,
+  hasCreditCardIndicators,
   CONFIDENCE_THRESHOLDS,
 } from './detector';
+
+// Credit card parsers
+export {
+  detectCreditCardStatement,
+  parseCreditCardStatement,
+  getSupportedCreditCardIssuers,
+} from './documents/credit-card/index';
 
 // Individual bank parsers (for direct use if needed)
 export {

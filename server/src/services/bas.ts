@@ -3,7 +3,7 @@
  * TypeScript service for Australian BAS calculations and management
  */
 
-import { db, transactions, basPeriods, basCalculations, taxCodes } from '../schema.js';
+import { db, transactions, basPeriods, basCalculations, taxCodes, accounts } from '../schema.js';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
@@ -201,16 +201,26 @@ export class BASService {
     ): Promise<BASResult> {
         const dates = getQuarterDates(financialYear, quarter);
 
-        // Get transactions for the quarter
+        // Get transactions for the quarter, excluding personal accounts and transfers
         const quarterTransactions = await db
-            .select()
+            .select({
+                id: transactions.id,
+                amount: transactions.amount,
+                gstCategory: transactions.gstCategory,
+                gstAmount: transactions.gstAmount,
+                date: transactions.date,
+            })
             .from(transactions)
+            .leftJoin(accounts, eq(transactions.accountId, accounts.id))
             .where(
                 and(
                     eq(transactions.userId, userId),
                     gte(transactions.date, dates.startDate),
                     lte(transactions.date, dates.endDate),
-                    eq(transactions.isTransfer, false) // Exclude transfers
+                    eq(transactions.isTransfer, false), // Exclude transfers
+                    // Exclude transactions from personal accounts
+                    // Include if no account linked (accountId is null) or account is not personal
+                    sql`(${transactions.accountId} IS NULL OR ${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} != 'personal')`
                 )
             )
             .all();

@@ -10,6 +10,7 @@ import { validateABN, normalizeABN, formatABN, validateEntityType, validateBasFr
 import { desc, eq, and, gte, lte, like, aliasedTable, sql } from 'drizzle-orm'
 
 import { pipeline } from './services/pipeline.js';
+import { bulkUploadQueue } from './services/queue.js';
 import path from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 import fs from 'fs';
@@ -22,6 +23,7 @@ import { accountService } from './services/accounts.js';
 import { agentService, AgentType } from './services/agents.js';
 import { getVertexAIClient, VERTEX_AI_MODELS, FINTECH_MODEL_PRESETS } from './services/vertex-ai.js';
 import agentRoutes from './routes/agents.js';
+import pipelineRoutes from './routes/pipeline.js';
 
 const app = new Hono()
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -177,15 +179,20 @@ app.get('/api/transactions', async (c) => {
     const userId = payload.userId;
     const limit = Math.min(parseInt(c.req.query('limit') || '100'), 500);
     const offset = parseInt(c.req.query('offset') || '0');
+    const accountId = c.req.query('accountId');
+
+    const whereConditions = accountId
+        ? and(eq(transactions.userId, userId), eq(transactions.accountId, accountId))
+        : eq(transactions.userId, userId);
 
     const [result, countResult] = await Promise.all([
         db.select().from(transactions)
-            .where(eq(transactions.userId, userId))
+            .where(whereConditions)
             .orderBy(desc(transactions.date))
             .limit(limit)
             .offset(offset),
         db.select({ count: sql<number>`count(*)` }).from(transactions)
-            .where(eq(transactions.userId, userId)),
+            .where(whereConditions),
     ]);
 
     const total = countResult[0]?.count ?? 0;
@@ -514,6 +521,159 @@ app.post('/api/statements/upload', async (c) => {
     return c.json({ message: 'File uploaded and processing started', id });
 });
 
+// Batch Upload Endpoint - accepts multiple PDFs via queue system
+app.post('/api/statements/batch', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+
+        const body = await c.req.parseBody({ all: true });
+        const files = body['files'];
+
+        if (!files) {
+            return c.json({ error: 'No files uploaded' }, 400);
+        }
+
+        // Normalize to array
+        const fileArray = Array.isArray(files) ? files : [files];
+        const validFiles = fileArray.filter((f): f is File => f instanceof File);
+
+        if (validFiles.length === 0) {
+            return c.json({ error: 'No valid files found' }, 400);
+        }
+
+        if (validFiles.length > 50) {
+            return c.json({ error: 'Maximum 50 files per batch' }, 400);
+        }
+
+        // Convert File objects to FileInfo for the queue
+        const fileInfos = await Promise.all(validFiles.map(async (file) => ({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            buffer: Buffer.from(await file.arrayBuffer()),
+        })));
+
+        // Submit to queue
+        const job = await bulkUploadQueue.addJob(fileInfos, userId, {
+            priority: validFiles.length > 10 ? 'normal' : 'high',
+            metadata: { source: 'batch_upload', fileCount: validFiles.length },
+        });
+
+        return c.json({
+            message: `Batch of ${validFiles.length} files queued for processing`,
+            jobId: job.id,
+            fileCount: validFiles.length,
+            files: job.files.map(f => ({
+                id: f.id,
+                filename: f.originalName,
+                state: f.state,
+            })),
+        });
+    } catch (err: any) {
+        console.error('[Batch Upload Error]', err);
+        if (err.code === 'BATCH_SIZE_EXCEEDED') {
+            return c.json({ error: err.message }, 400);
+        }
+        return c.json({ error: 'Batch upload failed: ' + (err.message || 'Unknown error') }, 500);
+    }
+});
+
+// Get batch job status
+app.get('/api/statements/batch/:jobId', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const jobId = c.req.param('jobId');
+
+        const job = bulkUploadQueue.getJobStatus(jobId);
+        if (!job) {
+            return c.json({ error: 'Job not found' }, 404);
+        }
+        if (job.userId !== userId) {
+            return c.json({ error: 'Unauthorized' }, 403);
+        }
+
+        return c.json({
+            id: job.id,
+            state: job.state,
+            progress: job.progress,
+            files: job.files.map(f => ({
+                id: f.id,
+                filename: f.originalName,
+                state: f.state,
+                statementId: f.statementId,
+                error: f.error,
+                retryCount: f.retryCount,
+            })),
+            createdAt: job.createdAt,
+            startedAt: job.startedAt,
+            completedAt: job.completedAt,
+            error: job.error,
+        });
+    } catch (err) {
+        console.error('[Batch Status Error]', err);
+        return c.json({ error: 'Failed to get batch status' }, 500);
+    }
+});
+
+// Cancel a batch job
+app.post('/api/statements/batch/:jobId/cancel', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const jobId = c.req.param('jobId');
+
+        const job = bulkUploadQueue.getJobStatus(jobId);
+        if (!job) {
+            return c.json({ error: 'Job not found' }, 404);
+        }
+        if (job.userId !== userId) {
+            return c.json({ error: 'Unauthorized' }, 403);
+        }
+
+        const cancelled = await bulkUploadQueue.cancelJob(jobId);
+        return c.json({ cancelled });
+    } catch (err) {
+        console.error('[Batch Cancel Error]', err);
+        return c.json({ error: 'Failed to cancel batch' }, 500);
+    }
+});
+
+// Retry a failed batch job
+app.post('/api/statements/batch/:jobId/retry', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const jobId = c.req.param('jobId');
+
+        const job = bulkUploadQueue.getJobStatus(jobId);
+        if (!job) {
+            return c.json({ error: 'Job not found' }, 404);
+        }
+        if (job.userId !== userId) {
+            return c.json({ error: 'Unauthorized' }, 403);
+        }
+
+        const retried = await bulkUploadQueue.retryJob(jobId);
+        return c.json({ retried });
+    } catch (err) {
+        console.error('[Batch Retry Error]', err);
+        return c.json({ error: 'Failed to retry batch' }, 500);
+    }
+});
+
+// Get queue stats
+app.get('/api/queue/stats', async (c) => {
+    try {
+        const stats = bulkUploadQueue.getStats();
+        return c.json(stats);
+    } catch (err) {
+        console.error('[Queue Stats Error]', err);
+        return c.json({ error: 'Failed to get queue stats' }, 500);
+    }
+});
+
 app.get('/api/settings', async (c) => {
     try {
         const payload = c.get('jwtPayload');
@@ -807,13 +967,18 @@ app.post('/api/statements/:id/reprocess', async (c) => {
         // 2. Clear existing transactions for this statement
         await db.delete(transactions).where(eq(transactions.statementId, id));
 
-        // 3. Reset status to PENDING and clear errors
+        // 3. Reset status to PENDING and clear all metadata
         await db.update(statements)
             .set({
                 parsingStatus: 'PENDING',
                 errorType: null,
                 errorMessage: null,
-                errorDetails: null
+                errorDetails: null,
+                transactionCount: 0,
+                periodStartDate: null,
+                periodEndDate: null,
+                openingBalance: null,
+                closingBalance: null,
             })
             .where(eq(statements.id, id));
 
@@ -837,7 +1002,13 @@ app.get('/api/events', (c) => {
 
     return stream(c, async (stream) => {
         const listener = (data: any) => {
-            stream.write(`event: update\ndata: ${JSON.stringify(data)}\n\n`);
+            const payload = JSON.stringify(data);
+            // Always send on 'update' channel for legacy listeners
+            stream.write(`event: update\ndata: ${payload}\n\n`);
+            // Also send on typed channel so clients can filter by event type
+            if (data?.type && data.type !== 'update') {
+                stream.write(`event: ${data.type}\ndata: ${payload}\n\n`);
+            }
         };
 
         events.on('update', listener);
@@ -1042,11 +1213,18 @@ app.get('/api/statements/gap-analysis', async (c) => {
 
 // ============ ACCOUNT MANAGEMENT ENDPOINTS ============
 
-// Get all accounts for the current user
+// Get all accounts for the current user (with optional ownershipTag filter)
 app.get('/api/accounts', async (c) => {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
-    const userAccounts = await accountService.getUserAccounts(userId);
+    const ownershipTag = c.req.query('ownershipTag'); // 'personal' | 'business' | undefined
+
+    let userAccounts = await accountService.getUserAccounts(userId);
+
+    if (ownershipTag) {
+        userAccounts = userAccounts.filter((a: any) => a.ownershipTag === ownershipTag);
+    }
+
     return c.json(userAccounts);
 });
 
@@ -1110,6 +1288,7 @@ app.patch('/api/accounts/:id', async (c) => {
             minimumPayment: body.minimumPayment ?? existing.minimumPayment,
             paymentDueDay: body.paymentDueDay ?? existing.paymentDueDay,
             linkedPaymentAccountId: body.linkedPaymentAccountId ?? existing.linkedPaymentAccountId,
+            ownershipTag: body.ownershipTag ?? existing.ownershipTag,
             updatedAt: new Date().toISOString(),
         })
         .where(eq(accounts.id, accountId));
@@ -1840,7 +2019,7 @@ app.post('/api/agents/reconcile', async (c) => {
 import { BASService } from './services/bas.js';
 import { TaxService } from './services/tax.js';
 import { parserRegistry, detectBank, getSupportedBanks, analyzeStatement } from './services/parsers/index.js';
-import { TransferDetector, detectTransfers, excludeTransfers } from './services/transfers/index.js';
+import { TransferDetector, detectTransfers, excludeTransfers, persistTransferMatches, markOwnerContributions } from './services/transfers/index.js';
 import {
   basPeriods, basCalculations, taxCodes, taxBrackets, deductions,
   cgtAssets, cgtEvents, depreciableAssets, depreciationSchedule, taxYearSummary
@@ -3060,11 +3239,13 @@ app.get('/api/accounts/consolidated', async (c) => {
     }
 });
 
-// Auto-detect transfers between accounts
+// Auto-detect transfers between accounts (with optional persist)
 app.post('/api/transfers/auto-detect', async (c) => {
     try {
         const payload = c.get('jwtPayload');
         const userId = payload.userId;
+        const body = await c.req.json().catch(() => ({}));
+        const persist = body.persist === true;
 
         const userTransactions = await db.select().from(transactions)
             .where(eq(transactions.userId, userId))
@@ -3094,6 +3275,8 @@ app.post('/api/transfers/auto-detect', async (c) => {
             accountNumber: a.accountNumber,
             bankId: a.bankName || 'unknown',
             accountName: a.accountName,
+            accountType: a.accountType,
+            ownershipTag: (a as any).ownershipTag || 'business',
         }));
 
         const existingLinkPairs = existingLinks.map(l => ({
@@ -3103,8 +3286,30 @@ app.post('/api/transfers/auto-detect', async (c) => {
 
         const matches = detectTransfers(candidates, accountContexts, existingLinkPairs);
 
+        // Optionally persist matches to DB
+        let persistResult = null;
+        if (persist && matches.length > 0) {
+            persistResult = await persistTransferMatches(matches, { userId });
+
+            // Detect owner contributions (personal → business)
+            const ownerContribIds: string[] = [];
+            for (const match of matches) {
+                const srcAcct = userAccounts.find(a => (parseInt(a.id) || 0) === match.sourceTransaction.accountId);
+                const dstAcct = userAccounts.find(a => (parseInt(a.id) || 0) === match.targetTransaction.accountId);
+                if ((srcAcct as any)?.ownershipTag === 'personal' && (dstAcct as any)?.ownershipTag === 'business') {
+                    ownerContribIds.push(String(match.targetTransaction.id));
+                }
+            }
+            if (ownerContribIds.length > 0) {
+                await markOwnerContributions(ownerContribIds);
+            }
+
+            events.emit('update', { type: 'transfers_updated' });
+        }
+
         return c.json({
             matchesFound: matches.length,
+            persisted: persist ? (persistResult?.created || 0) : 0,
             matches: matches.map(m => ({
                 sourceTransaction: m.sourceTransaction,
                 targetTransaction: m.targetTransaction,
@@ -3177,6 +3382,97 @@ app.post('/api/transfers/bulk-link', async (c) => {
     } catch (err) {
         console.error('Bulk link failed:', err);
         return c.json({ error: 'Bulk link failed' }, 500);
+    }
+});
+
+// NOTE: POST /api/transfers/detect is handled by routes/pipeline.ts (mounted at /api)
+
+// Get transfer summary aggregated by period
+// Query params: ?period=monthly|quarterly|all&from=YYYY-MM-DD&to=YYYY-MM-DD
+app.get('/api/transfers/summary', async (c) => {
+    try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const period = c.req.query('period') || 'monthly'; // monthly, quarterly, all, or legacy 1m/3m/6m/12m
+        const fromDate = c.req.query('from');
+        const toDate = c.req.query('to');
+
+        // Build date filter conditions
+        const conditions: any[] = [eq(transferLinks.userId, userId)];
+
+        if (fromDate) {
+            conditions.push(gte(transferLinks.transferDate, fromDate));
+        } else {
+            // Default: last 3 months if no date range specified
+            const legacyMap: Record<string, number> = { '1m': 1, '3m': 3, '6m': 6, '12m': 12 };
+            const defaultMonths = legacyMap[period] || 3;
+            const defaultStart = new Date();
+            defaultStart.setMonth(defaultStart.getMonth() - defaultMonths);
+            conditions.push(gte(transferLinks.transferDate, defaultStart.toISOString().split('T')[0]));
+        }
+
+        if (toDate) {
+            conditions.push(lte(transferLinks.transferDate, toDate));
+        }
+
+        const links = await db.select()
+            .from(transferLinks)
+            .where(and(...conditions))
+            .all();
+
+        // Aggregate by time period (monthly or quarterly)
+        const byPeriod: Record<string, { count: number; totalAmount: number }> = {};
+        for (const link of links) {
+            const date = link.transferDate || '';
+            let periodKey: string;
+
+            if (period === 'quarterly') {
+                const [year, month] = date.split('-').map(Number);
+                const q = Math.ceil(month / 3);
+                periodKey = `${year}-Q${q}`;
+            } else {
+                // monthly (default)
+                periodKey = date.substring(0, 7); // YYYY-MM
+            }
+
+            if (!byPeriod[periodKey]) {
+                byPeriod[periodKey] = { count: 0, totalAmount: 0 };
+            }
+            byPeriod[periodKey].count += 1;
+            byPeriod[periodKey].totalAmount += link.amount || 0;
+        }
+
+        // Aggregate by account pair (for MoneyFlowDiagram)
+        const byPair: Record<string, { sourceAccountId: string; destinationAccountId: string; count: number; totalAmount: number }> = {};
+        for (const link of links) {
+            const pairKey = `${link.sourceAccountId || 'unknown'}→${link.destinationAccountId || 'unknown'}`;
+            if (!byPair[pairKey]) {
+                byPair[pairKey] = {
+                    sourceAccountId: link.sourceAccountId || 'unknown',
+                    destinationAccountId: link.destinationAccountId || 'unknown',
+                    count: 0,
+                    totalAmount: 0,
+                };
+            }
+            byPair[pairKey].count += 1;
+            byPair[pairKey].totalAmount += link.amount || 0;
+        }
+
+        return c.json({
+            period,
+            totalTransfers: links.length,
+            totalAmount: links.reduce((sum, l) => sum + (l.amount || 0), 0),
+            confirmedCount: links.filter(l => l.isUserConfirmed).length,
+            pendingCount: links.filter(l => !l.isUserConfirmed).length,
+            byPeriod: Object.entries(byPeriod).sort(([a], [b]) => a.localeCompare(b)).map(([key, data]) => ({
+                period: key,
+                ...data,
+            })),
+            byAccountPair: Object.values(byPair).sort((a, b) => b.totalAmount - a.totalAmount),
+        });
+    } catch (err) {
+        console.error('Transfer summary failed:', err);
+        return c.json({ error: 'Transfer summary failed' }, 500);
     }
 });
 
@@ -3808,6 +4104,9 @@ app.get('/api/analytics/cash-flow-forecast', async (c) => {
 
 // Mount Claude agent framework routes (separate from legacy agent endpoints)
 app.route('/api/claude-agents', agentRoutes);
+
+// Mount pipeline integration routes (transfers, enrichment, BAS prefill)
+app.route('/api', pipelineRoutes);
 
 const port = parseInt(process.env.PORT || '3501', 10);
 console.log(`Server is running on port ${port}`);
