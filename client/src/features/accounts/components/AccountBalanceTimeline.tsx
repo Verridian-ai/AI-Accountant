@@ -94,7 +94,7 @@ export function AccountBalanceTimeline() {
     let colorIdx = 0;
     for (const acct of accounts) {
       if (selectedAccounts.has(acct.id)) {
-        map.set(acct.id, LINE_COLORS[colorIdx % LINE_COLORS.length]);
+        map.set(String(acct.id), LINE_COLORS[colorIdx % LINE_COLORS.length] ?? '#FFCC00');
         colorIdx++;
       }
     }
@@ -170,14 +170,16 @@ export function AccountBalanceTimeline() {
       const points: Array<{ x: number; y: number; value: number; idx: number; source: string }> = [];
 
       for (let i = 0; i < mergedData.length; i++) {
-        const val = mergedData[i].balances[accountId];
+        const entry = mergedData[i];
+        if (!entry) continue;
+        const val = entry.balances[accountId];
         if (val === undefined) continue;
         points.push({
           x: xScale(i),
           y: yScale(val),
           value: val,
           idx: i,
-          source: mergedData[i].sources[accountId] || 'calculated',
+          source: entry.sources[accountId] || 'calculated',
         });
       }
 
@@ -191,7 +193,8 @@ export function AccountBalanceTimeline() {
     const count = Math.min(7, mergedData.length);
     return Array.from({ length: count }, (_, i) => {
       const idx = Math.round(i * (mergedData.length - 1) / Math.max(count - 1, 1));
-      return { idx, label: formatDateLabel(mergedData[idx].date) };
+      const point = mergedData[idx];
+      return { idx, label: formatDateLabel(point?.date ?? '') };
     });
   }, [mergedData]);
 

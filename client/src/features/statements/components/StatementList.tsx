@@ -155,7 +155,7 @@ export function StatementList() {
 
         // For single file, use existing sequential upload
         if (fileArray.length === 1) {
-            const file = fileArray[0];
+            const file = fileArray[0]!;
             const itemId = `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
             const newItem: UploadQueueItem = { id: itemId, file, status: 'uploading' };
             setUploadQueue(prev => [...prev, newItem]);

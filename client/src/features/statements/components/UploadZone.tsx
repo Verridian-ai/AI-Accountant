@@ -607,8 +607,8 @@ export function UploadZone({
                     {/* Single file: inline clear button */}
                     {!showBatchSummary &&
                         files.length === 1 &&
-                        (files[0].status === 'completed' ||
-                            files[0].status === 'error') && (
+                        (files[0]?.status === 'completed' ||
+                            files[0]?.status === 'error') && (
                             <div className="flex justify-end">
                                 <button
                                     type="button"

@@ -47,7 +47,7 @@ export function AccountSummaryCards() {
           transactionCount: accountTxs.length,
           totalIncome: nonTransfers.filter((t: Transaction) => t.amount > 0).reduce((s: number, t: Transaction) => s + t.amount, 0),
           totalExpenses: nonTransfers.filter((t: Transaction) => t.amount < 0).reduce((s: number, t: Transaction) => s + Math.abs(t.amount), 0),
-          lastActivity: accountTxs.length > 0 ? accountTxs.sort((a: Transaction, b: Transaction) => b.date.localeCompare(a.date))[0].date : null,
+          lastActivity: accountTxs.length > 0 ? (accountTxs.sort((a: Transaction, b: Transaction) => b.date.localeCompare(a.date))[0]?.date ?? null) : null,
           gstTotal: accountTxs.filter((t: Transaction) => t.gstApplicable).reduce((s: number, t: Transaction) => s + Math.abs(t.amount), 0),
         };
       });
