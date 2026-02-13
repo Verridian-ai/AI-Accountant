@@ -1,7 +1,0 @@
-Agent 1 completed: Cognee Multi-User Schema Builder
-- Created docker/migrations/0015_cognee_multi_user.sql (2 tables, 4 indexes)
-- Added cogneeUserAccounts + cogneeSessions sqliteTable definitions to schema.ts
-- Added matching pgTable definitions to postgres-schema.ts (with indexes)
-- Added 4 type exports (CogneeUserAccount, NewCogneeUserAccount, CogneeSession, NewCogneeSession) to both files
-- Added cogneeUserAccounts, cogneeSessions to index.ts import
-- Verified: no new TypeScript errors introduced (all errors are pre-existing from other waves)
