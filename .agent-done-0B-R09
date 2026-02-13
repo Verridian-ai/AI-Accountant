@@ -1,0 +1,24 @@
+R09 Infrastructure Analysis Complete — 2026-02-13
+
+Output: wave0b-research/R09-infrastructure.md
+
+Sections covered:
+1. Current Infrastructure (5 services, all env vars, ports, volumes, health checks)
+2. Per-Wave Changes (Waves 1-10: new env vars, docker changes, migrations)
+3. Redis Plan (current usage, Wave 2 pub/sub, Wave 3 sessions, Wave 9 FX cache)
+4. Migration Runner (current limitations + 3 recommended approaches)
+5. New Dependencies (server: pdf-lib, bullmq, currency.js; client: stripe, react-pdf)
+6. Docker Compose Diff (per-wave yaml changes)
+7. Security Considerations (port exposure, secrets, Cognee auth)
+8. Dev vs Production (SSL, pooling, tsx vs compiled)
+9. Complete .env.example additions for all 10 waves
+10. Critical Pre-Wave-1 Tasks (migration runner, port lockdown, testing framework)
+
+Key findings:
+- No runtime migration runner exists (docker-entrypoint-initdb.d only runs once)
+- Redis is installed but underutilized (only cognee-sessions.ts)
+- SSE is in-process EventEmitter (no Redis pub/sub yet)
+- Ports 5432/6379/8000 exposed to host (security risk)
+- Migrations 0013-0022 don't exist yet (Waves 1-10 will create them)
+- Stripe SDK already installed but not configured
+- Recommend pdf-lib over Puppeteer for invoice PDFs (no Chromium bloat)

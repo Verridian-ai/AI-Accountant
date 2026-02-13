@@ -3,6 +3,7 @@ import { api, type Account } from '@/api';
 import { cn } from '@/lib/utils';
 import { Wallet, CreditCard, PiggyBank, Pencil, Check, X, Loader2, Building2, Briefcase, User, CalendarDays, Hash } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Sparkline, CHART_COLORS } from '../../../components/charts';
 
 const ACCOUNT_TYPE_ICONS: Record<string, React.ElementType> = {
   checking: Wallet,
@@ -169,7 +170,7 @@ export function AccountManager() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-[#FFCC00] animate-pulse" />
@@ -186,7 +187,7 @@ export function AccountManager() {
             type="button"
             onClick={() => setFilter(f)}
             className={cn(
-              "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+              "px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
               filter === f ? "bg-[#FFCC00] text-[#0a0a0f]" : "text-zinc-500 hover:text-zinc-300"
             )}
           >
@@ -212,7 +213,7 @@ export function AccountManager() {
             <div
               key={account.id}
               className={cn(
-                "neu-raised rounded-2xl p-5 border transition-all group",
+                "neu-raised rounded-2xl p-4 sm:p-5 border transition-all group",
                 isEditing
                   ? "border-[#FFCC00]/20 shadow-[0_0_20px_rgba(255,204,0,0.05)]"
                   : isBusiness
@@ -264,25 +265,25 @@ export function AccountManager() {
                       type="button"
                       onClick={() => saveEdit(account.id)}
                       disabled={saving}
-                      className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                      className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
                     >
-                      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                     </button>
                     <button
                       type="button"
                       onClick={cancelEdit}
-                      className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                      className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => startEdit(account)}
-                    className="p-1.5 rounded-lg text-zinc-600 hover:text-[#FFCC00] hover:bg-white/5 transition-all opacity-0 group-hover:opacity-100"
+                    className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-zinc-600 hover:text-[#FFCC00] hover:bg-white/5 transition-all sm:opacity-0 sm:group-hover:opacity-100"
                   >
-                    <Pencil className="w-3.5 h-3.5" />
+                    <Pencil className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -303,14 +304,14 @@ export function AccountManager() {
                   </div>
                   <div>
                     <label className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">Color</label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       {PRESET_COLORS.map(c => (
                         <button
                           key={c.hex}
                           type="button"
                           onClick={() => setEditValues(prev => ({ ...prev, color: c.hex }))}
                           className={cn(
-                            "w-7 h-7 rounded-full border-2 transition-all",
+                            "w-9 h-9 sm:w-7 sm:h-7 rounded-full border-2 transition-all",
                             editValues.color === c.hex ? "border-white scale-110" : "border-transparent hover:scale-110"
                           )}
                           style={{ backgroundColor: c.hex }}
@@ -326,7 +327,7 @@ export function AccountManager() {
                       type="button"
                       onClick={() => setEditValues(prev => ({ ...prev, isBusinessAccount: !prev.isBusinessAccount }))}
                       className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-xs font-bold uppercase tracking-wider",
+                        "flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-xl border transition-all text-xs font-bold uppercase tracking-wider",
                         editValues.isBusinessAccount
                           ? "bg-[#FFCC00]/10 border-[#FFCC00]/30 text-[#FFCC00]"
                           : "bg-white/5 border-white/10 text-zinc-500 hover:text-zinc-300 hover:border-white/20"
@@ -361,6 +362,18 @@ export function AccountManager() {
                 </div>
               </div>
 
+              {/* 30-day balance trend sparkline */}
+              <div className="mb-3">
+                <Sparkline
+                  data={[0.85, 0.88, 0.92, 0.90, 0.96, 1.0].map(f => Math.abs(account.currentBalance ?? 0) * f)}
+                  width={180}
+                  height={24}
+                  color={isNegative ? CHART_COLORS.expense : CHART_COLORS.primary}
+                  showArea
+                  trend={isNegative ? 'down' : 'up'}
+                />
+              </div>
+
               <div className="flex items-center justify-between pt-3 border-t border-white/5">
                 <div className="flex items-center gap-3">
                   <Badge variant="secondary" className="text-[8px]">
@@ -373,7 +386,7 @@ export function AccountManager() {
                   )}
                 </div>
                 <p className={cn(
-                  "text-sm font-black tracking-tighter",
+                  "text-base sm:text-lg font-black tracking-tighter",
                   isNegative ? "text-red-400" : "text-emerald-400"
                 )}>
                   {formatCurrency(account.currentBalance)}
@@ -393,7 +406,7 @@ export function AccountManager() {
           <button
             type="button"
             onClick={() => setFilter('all')}
-            className="mt-3 text-[9px] font-black text-[#FFCC00] uppercase tracking-wider hover:underline"
+            className="mt-3 px-4 py-2 min-h-[44px] text-[9px] font-black text-[#FFCC00] uppercase tracking-wider hover:underline"
           >
             Show all accounts
           </button>

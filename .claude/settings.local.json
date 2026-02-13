@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.cognee.ai)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.bitdoze.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:deepwiki.com)",
+      "WebFetch(domain:hub.docker.com)",
+      "WebFetch(domain:www.percona.com)",
+      "WebFetch(domain:neon.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:community.neon.tech)",
+      "Bash(git clone:*)",
+      "Bash(chmod:*)",
+      "Bash(docker compose config:*)",
+      "Bash(docker compose build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(docker compose up:*)",
+      "Bash(docker compose down:*)",
+      "Bash(curl:*)",
+      "Bash(npm run build:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(docker exec:*)",
+      "Bash(cat:*)",
+      "Bash(python3:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZWMxNmNkYi1hMWViLTRhMzktYTU5Zi03YTY4MGViZTZmMmEiLCJleHAiOjE3NzA4MjgwMDJ9.80-bdgKso-VyaX9VLd0H9yBX6W7qClkYN4IRx8ukxTg\")",
+      "Bash(STMT_ID=\"1ed069a7-fd33-45bf-a2f7-4840703826bb\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZWMxNmNkYi1hMWViLTRhMzktYTU5Zi03YTY4MGViZTZmMmEiLCJleHAiOjE3NzA4Mzk2ODl9.Cbvtn0xElz07U7Wma-Ox77tH4yJDowb2XqnJsIu4iKw\")",
+      "Bash(docker ps:*)"
+    ]
+  }
+}

@@ -6,8 +6,10 @@
  */
 
 import { events } from '../../events.js';
-import { isClaudeAgentsEnabled, isAgentEnabled } from './config.js';
+import { isClaudeAgentsEnabled, isAgentEnabled, VERCEL_MIGRATION_FLAGS } from './config.js';
 import { AgentCircuitBreaker } from './retry.js';
+import { CogneeTools } from './cognee-tools.js';
+import { cogneeSessionService, type CogneeSessionContext } from '../cognee-sessions.js';
 import { ClaudeAgent } from './base-agent.js';
 import { StatementParserAgent } from './agents/statement-parser.js';
 import { TransactionCategorizerAgent } from './agents/transaction-categorizer.js';
@@ -16,6 +18,17 @@ import { AccountReconcilerAgent } from './agents/account-reconciler.js';
 import { BudgetAnalyzerAgent } from './agents/budget-analyzer.js';
 import { CrossAccountTracerAgent } from './agents/cross-account-tracer.js';
 import { MerchantIntelligenceAgent } from './agents/merchant-intelligence.js';
+import { MarketIntelligenceAgent } from './agents/market-intelligence-agent.js';
+import { TenantRoutingAgent } from './agents/tenant-routing.js';
+import { InvoiceAgent } from './agents/invoice-agent.js';
+import { AccountsPayableAgent } from './agents/accounts-payable-agent.js';
+import { VercelTransactionCategorizer } from './agents/vercel/transaction-categorizer.js';
+import { VercelBudgetAnalyzer } from './agents/vercel/budget-analyzer.js';
+import { VercelFinancialPlanner } from './agents/vercel/financial-planner.js';
+import { VercelTaxStrategy } from './agents/vercel/tax-strategy.js';
+import { VercelMerchantIntelligence } from './agents/vercel/merchant-intelligence.js';
+import { ConfirmationFlowService } from './confirmation-flow.js';
+import { MutationTools } from './mutation-tools.js';
 import type {
   AgentType,
   StatementParserInput,
@@ -32,6 +45,18 @@ import type {
   CrossAccountTracerOutput,
   MerchantIntelligenceInput,
   MerchantIntelligenceOutput,
+  TaxStrategyInput,
+  TaxStrategyOutput,
+  FinancialPlannerInput,
+  FinancialPlannerOutput,
+  MarketIntelInput,
+  MarketIntelOutput,
+  TenantRoutingInput,
+  TenantRoutingOutput,
+  InvoiceAgentInput,
+  InvoiceAgentOutput,
+  AccountsPayableInput,
+  AccountsPayableOutput,
   TokenUsage,
 } from './types.js';
 
@@ -44,6 +69,13 @@ type AgentInputMap = {
   budget_analyzer: BudgetAnalyzerInput;
   cross_account_tracer: CrossAccountTracerInput;
   merchant_intelligence: MerchantIntelligenceInput;
+  tax_strategy: TaxStrategyInput;
+  financial_planner: FinancialPlannerInput;
+  market_intelligence: MarketIntelInput;
+  tenant_routing: TenantRoutingInput;
+  invoice_agent: InvoiceAgentInput;
+  accounts_payable_agent: AccountsPayableInput;
+  [key: string]: unknown;
 };
 
 type AgentOutputMap = {
@@ -54,14 +86,30 @@ type AgentOutputMap = {
   budget_analyzer: BudgetAnalyzerOutput;
   cross_account_tracer: CrossAccountTracerOutput;
   merchant_intelligence: MerchantIntelligenceOutput;
+  tax_strategy: TaxStrategyOutput;
+  financial_planner: FinancialPlannerOutput;
+  market_intelligence: MarketIntelOutput;
+  tenant_routing: TenantRoutingOutput;
+  invoice_agent: InvoiceAgentOutput;
+  accounts_payable_agent: AccountsPayableOutput;
+  [key: string]: unknown;
 };
 
 export class AgentOrchestrator {
   private agents: Map<AgentType, ClaudeAgent<unknown, unknown>> = new Map();
   private circuitBreakers: Map<AgentType, AgentCircuitBreaker> = new Map();
+  private confirmationFlow?: ConfirmationFlowService;
 
   constructor() {
     this.registerAgents();
+  }
+
+  /**
+   * Initialize the mutation framework.
+   * Called once during server startup, after db is available.
+   */
+  initMutationFramework(db: any): void {
+    this.confirmationFlow = new ConfirmationFlowService(db);
   }
 
   private registerAgents() {
@@ -73,6 +121,10 @@ export class AgentOrchestrator {
       ['budget_analyzer', new BudgetAnalyzerAgent() as ClaudeAgent<unknown, unknown>],
       ['cross_account_tracer', new CrossAccountTracerAgent() as ClaudeAgent<unknown, unknown>],
       ['merchant_intelligence', new MerchantIntelligenceAgent() as ClaudeAgent<unknown, unknown>],
+      ['market_intelligence', new MarketIntelligenceAgent() as ClaudeAgent<unknown, unknown>],
+      ['tenant_routing', new TenantRoutingAgent() as ClaudeAgent<unknown, unknown>],
+      ['invoice_agent', new InvoiceAgent() as ClaudeAgent<unknown, unknown>],
+      ['accounts_payable_agent', new AccountsPayableAgent() as ClaudeAgent<unknown, unknown>],
     ];
 
     for (const [type, agent] of agentDefs) {
@@ -96,9 +148,54 @@ export class AgentOrchestrator {
       throw new Error(`Agent ${agentType} is disabled`);
     }
 
+    // Vercel AI SDK migration: check if this agent should use Vercel path
+    if (VERCEL_MIGRATION_FLAGS[agentType]) {
+      if (agentType === 'transaction_categorizer') {
+        const vercelAgent = new VercelTransactionCategorizer();
+        const result = await vercelAgent.executeWithFallback(input as any);
+        this.emitProgress(agentType, 'completed');
+        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+      }
+      if (agentType === 'budget_analyzer') {
+        const vercelAgent = new VercelBudgetAnalyzer();
+        const result = await vercelAgent.executeWithFallback(input as any);
+        this.emitProgress(agentType, 'completed');
+        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+      }
+      if (agentType === 'financial_planner') {
+        const vercelAgent = new VercelFinancialPlanner();
+        const result = await vercelAgent.executeWithFallback(input as any);
+        this.emitProgress(agentType, 'completed');
+        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+      }
+      if (agentType === 'tax_strategy') {
+        const vercelAgent = new VercelTaxStrategy();
+        const result = await vercelAgent.executeWithFallback(input as any);
+        this.emitProgress(agentType, 'completed');
+        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+      }
+      if (agentType === 'merchant_intelligence') {
+        const vercelAgent = new VercelMerchantIntelligence();
+        const result = await vercelAgent.executeWithFallback(input as any);
+        this.emitProgress(agentType, 'completed');
+        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+      }
+    }
+
     const agent = this.agents.get(agentType);
     if (!agent) {
       throw new Error(`Agent not found: ${agentType}`);
+    }
+
+    // Inject MutationTools if mutation framework is active
+    if (this.confirmationFlow) {
+      try {
+        const session = await this.confirmationFlow.getOrCreateSession({});
+        const mutationTools = this.confirmationFlow.createMutationTools(session.id);
+        agent.setMutationTools(mutationTools);
+      } catch (err) {
+        console.warn(`[Orchestrator] Could not inject MutationTools for ${agentType}:`, err);
+      }
     }
 
     this.emitProgress(agentType, 'started');
@@ -130,12 +227,15 @@ export class AgentOrchestrator {
 
   /**
    * Process a full statement through the parsing → categorization → GST pipeline.
+   *
+   * @param tenantId - Optional tenant ID for tenant-scoped Cognee operations (Wave 23).
    */
   async processStatement(
     statementId: number,
     extractedText: string,
     fileName: string,
-    merchantMemory: Array<{ pattern: string; category: string; gst: boolean }> = []
+    merchantMemory: Array<{ pattern: string; category: string; gst: boolean }> = [],
+    _tenantId?: string,
   ) {
     // 1. Parse statement
     const parsed = await this.invoke('statement_parser', {
@@ -208,6 +308,44 @@ export class AgentOrchestrator {
    */
   isEnabled(): boolean {
     return isClaudeAgentsEnabled();
+  }
+
+  /**
+   * Get mutations for a specific session.
+   */
+  async getSessionMutations(sessionId: string): Promise<unknown[]> {
+    if (!this.confirmationFlow) return [];
+    return this.confirmationFlow.getPendingMutations(sessionId);
+  }
+
+  /**
+   * Get the confirmation flow service instance.
+   */
+  getConfirmationFlow(): ConfirmationFlowService | undefined {
+    return this.confirmationFlow;
+  }
+
+  /**
+   * Wave 3: Build user-scoped CogneeTools instance.
+   * When userId is provided, returns tools with per-user dataset prefix.
+   * Falls back to default (unprefixed) tools for admin/anonymous access.
+   */
+  getUserCogneeTools(userId?: string): CogneeTools {
+    return userId ? CogneeTools.forUser(userId) : new CogneeTools();
+  }
+
+  /**
+   * Wave 3: Retrieve conversation history from a Cognee session.
+   * Returns recent turns (last 5) as a formatted string for agent context.
+   */
+  async getSessionContext(sessionId?: string): Promise<string> {
+    if (!sessionId) return '';
+    const ctx = await cogneeSessionService.getCogneeSession(sessionId);
+    if (!ctx || ctx.conversationHistory.length === 0) return '';
+    return ctx.conversationHistory
+      .slice(-5)
+      .map(t => `${t.role}: ${t.content}`)
+      .join('\n');
   }
 
   private emitProgress(

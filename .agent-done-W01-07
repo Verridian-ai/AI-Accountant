@@ -1,0 +1,20 @@
+Agent 2 (intent-router-builder) — Task #7 COMPLETE
+
+Modified: server/src/services/claude/orchestrator.ts
+
+Changes:
+1. Added import for IntentRouter + IntentClassification
+2. Added `intentRouter` private field, initialized in constructor with `this` reference
+3. Added `routeAndDispatch(query, context?)` — intent-routed dispatch that returns classification + result + agentType
+4. Deprecated `analyze()` — now wraps `routeAndDispatch()` for backward compatibility
+5. Added `getAgentStatus()` — returns isRegistered + isEnabled for all 21 agents
+6. Added `getRegisteredAgents()` — returns type + description for all agents (used by IntentRouter for dynamic discovery)
+
+Key behaviors:
+- routeAndDispatch falls back to budget_analyzer if primary agent fails
+- Secondary agent failures are logged but non-fatal
+- getRegisteredAgents() returns descriptions from a static map keyed by AgentType
+- Existing callers (routes/agents.ts) continue to work via deprecated analyze()
+
+Verification:
+- `cd server && npx tsc --noEmit` passes clean (0 errors)

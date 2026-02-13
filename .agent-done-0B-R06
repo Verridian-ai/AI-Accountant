@@ -1,0 +1,13 @@
+R06 API Endpoint Mapper — COMPLETE
+Timestamp: 2026-02-13
+Output: wave0b-research/R06-api-endpoints.md
+
+Summary:
+- 254 existing endpoints catalogued (197 in index.ts + 4 in agents.ts + 7 in pipeline.ts + 46 from Waves 11-17)
+- 130 new endpoints mapped across Waves 1-10 (+1 rewrite of /api/chat)
+- Total API surface after Waves 1-10: 384 endpoints
+- 1 critical route registration order issue (Wave 1 agent routes vs wildcard :type)
+- 0 hard path collisions, 3 near-misses documented
+- Payroll namespace is largest (48 new endpoints across Waves 4-6)
+- Recommended separate route files for each Wave domain
+- Pattern guide documented (REST conventions, pagination, error format, middleware stack)

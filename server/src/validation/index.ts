@@ -293,6 +293,7 @@ export const chatMessageSchema = z.object({
       end: dateSchema,
     }).optional(),
   }).optional(),
+  sessionId: z.string().max(200).optional(), // Wave 3: Cognee session tracking
 });
 
 export const agentRequestSchema = z.object({

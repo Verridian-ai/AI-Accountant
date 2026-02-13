@@ -1,0 +1,13 @@
+DONE
+Agent: R01 — Codebase Current State Researcher
+Completed: 2026-02-13
+Output: wave0b-research/R01-codebase-current-state.md
+
+Summary:
+- 21 Claude agents (12 Sonnet, 9 Haiku) — all registered in orchestrator
+- 88 SQLite tables, 57 PostgreSQL tables (33 gap)
+- ~200 API endpoints in 6,426-line monolithic index.ts
+- 19 frontend tabs across 24 feature folders
+- 5 Docker services (postgres, redis, cognee, server, client)
+- 6 unmounted migrations (0023-0029)
+- 44+ server service files

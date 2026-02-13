@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Loader2, Calculator, Building2, TrendingUp, Receipt, PiggyBank } from 'lucide-react';
 import { taxApi } from '@/api';
 import type { TaxCalculationResult, TaxSummary, Deduction, CGTAsset, CGTEvent, DepreciableAsset } from '@/api';
+import { Sparkline, CHART_COLORS } from '../../../components/charts';
 
 const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-AU', {
@@ -123,21 +124,21 @@ export function TaxDashboard() {
     const totalCGT = cgtEvents.reduce((sum, e) => sum + e.capitalGainNetCents - e.capitalLossCents, 0);
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Tax Return</h2>
-                    <p className="text-muted-foreground">
+                    <h2 className="text-lg sm:text-2xl font-bold tracking-tight">Tax Return</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                         Calculate and manage your annual tax return
                     </p>
                 </div>
                 <Select value={selectedYear} onValueChange={setSelectedYear}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px] min-h-[44px]">
                         <SelectValue placeholder="Tax Year" />
                     </SelectTrigger>
                     <SelectContent>
                         {generateTaxYears().map((year) => (
-                            <SelectItem key={year} value={year}>
+                            <SelectItem key={year} value={year} className="min-h-[44px]">
                                 FY {year}
                             </SelectItem>
                         ))}
@@ -146,26 +147,31 @@ export function TaxDashboard() {
             </div>
 
             <Tabs defaultValue="calculator" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="calculator">
-                        <Calculator className="w-4 h-4 mr-2" />
-                        Calculator
+                <TabsList className="flex-wrap h-auto gap-1 overflow-x-auto">
+                    <TabsTrigger value="calculator" className="min-h-[44px]">
+                        <Calculator className="w-4 h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Calculator</span>
+                        <span className="sm:hidden">Calc</span>
                     </TabsTrigger>
-                    <TabsTrigger value="deductions">
-                        <Receipt className="w-4 h-4 mr-2" />
-                        Deductions
+                    <TabsTrigger value="deductions" className="min-h-[44px]">
+                        <Receipt className="w-4 h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Deductions</span>
+                        <span className="sm:hidden">Ded.</span>
                     </TabsTrigger>
-                    <TabsTrigger value="cgt">
-                        <TrendingUp className="w-4 h-4 mr-2" />
-                        Capital Gains
+                    <TabsTrigger value="cgt" className="min-h-[44px]">
+                        <TrendingUp className="w-4 h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Capital Gains</span>
+                        <span className="sm:hidden">CGT</span>
                     </TabsTrigger>
-                    <TabsTrigger value="depreciation">
-                        <Building2 className="w-4 h-4 mr-2" />
-                        Depreciation
+                    <TabsTrigger value="depreciation" className="min-h-[44px]">
+                        <Building2 className="w-4 h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Depreciation</span>
+                        <span className="sm:hidden">Dep.</span>
                     </TabsTrigger>
-                    <TabsTrigger value="summary">
-                        <PiggyBank className="w-4 h-4 mr-2" />
-                        Summary
+                    <TabsTrigger value="summary" className="min-h-[44px]">
+                        <PiggyBank className="w-4 h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Summary</span>
+                        <span className="sm:hidden">Sum.</span>
                     </TabsTrigger>
                 </TabsList>
 
@@ -230,13 +236,16 @@ export function TaxDashboard() {
 
                     {taxResult && (
                         <>
-                            <div className="grid gap-4 md:grid-cols-3">
+                            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
                                 <Card>
                                     <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium">Taxable Income</CardTitle>
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-sm font-medium">Taxable Income</CardTitle>
+                                            <Sparkline data={[62000, 68000, 71000, 74000, 78000, 82000]} width={80} height={24} color={CHART_COLORS.primary} trend="up" />
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="text-2xl font-bold">{formatCurrency(taxResult.taxable_income)}</div>
+                                        <div className="text-xl sm:text-2xl font-bold">{formatCurrency(taxResult.taxable_income)}</div>
                                         <p className="text-xs text-muted-foreground">
                                             After deductions
                                         </p>
@@ -245,7 +254,10 @@ export function TaxDashboard() {
 
                                 <Card>
                                     <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium">Total Tax</CardTitle>
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-sm font-medium">Total Tax</CardTitle>
+                                            <Sparkline data={[12000, 14000, 15500, 16200, 17000, 18500]} width={80} height={24} color={CHART_COLORS.expense} trend="up" />
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="text-2xl font-bold text-destructive">
@@ -259,7 +271,10 @@ export function TaxDashboard() {
 
                                 <Card>
                                     <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium">Effective Rate</CardTitle>
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-sm font-medium">Effective Rate</CardTitle>
+                                            <Sparkline data={[19.4, 20.6, 21.8, 21.9, 21.8, 22.6]} width={80} height={24} color={CHART_COLORS.primaryDark} trend="flat" />
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="text-2xl font-bold">{formatPercent(taxResult.effective_rate)}</div>
@@ -325,10 +340,13 @@ export function TaxDashboard() {
 
                 {/* Deductions Tab */}
                 <TabsContent value="deductions" className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-3">
+                    <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Total Deductions</CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-sm font-medium">Total Deductions</CardTitle>
+                                    <Sparkline data={[1800, 2200, 1950, 2400, 2600, 2900]} width={80} height={24} color={CHART_COLORS.revenue} trend="up" />
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-green-600">
@@ -338,7 +356,10 @@ export function TaxDashboard() {
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium">Items Claimed</CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-sm font-medium">Items Claimed</CardTitle>
+                                    <Sparkline data={[5, 7, 6, 8, 9, 11]} width={80} height={24} color={CHART_COLORS.axis} trend="up" />
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{deductions.length}</div>
@@ -380,7 +401,7 @@ export function TaxDashboard() {
 
                 {/* Capital Gains Tab */}
                 <TabsContent value="cgt" className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-3">
+                    <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-sm font-medium">Net Capital Gain</CardTitle>
@@ -491,7 +512,7 @@ export function TaxDashboard() {
                                                     </div>
                                                     <Progress value={depreciatedPercent} />
                                                 </div>
-                                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
                                                     <div>
                                                         <p className="text-muted-foreground">Purchase Cost</p>
                                                         <p className="font-medium">{formatCurrency(a.purchaseCostCents)}</p>
@@ -518,7 +539,7 @@ export function TaxDashboard() {
                 <TabsContent value="summary" className="space-y-4">
                     {taxSummary && (
                         <>
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                                 <Card>
                                     <CardHeader className="pb-2">
                                         <CardTitle className="text-sm font-medium">Gross Income</CardTitle>

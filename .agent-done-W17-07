@@ -1,0 +1,29 @@
+Agent W17-07: API Endpoints Builder — DONE
+
+## Summary
+Wired 14 new API routes under /api/intelligence/ in server/src/index.ts for Wave 17.
+
+## Changes Made
+
+### server/src/index.ts
+- Added 4 imports: TemporalCognifyService, CrossModuleIntelligenceService, IntelligenceSubscriptionService, CogneeSessionService
+- Added 4 service instantiations after existing Wave 16 services
+- Added 14 Hono routes organized as:
+  - Temporal Query Routes (4): POST query, POST save, GET saved/:userId, GET timeline/:userId
+  - Cross-Module Intelligence Routes (4): POST insights/scan, GET insights/detail/:insightId, GET insights/:userId, PATCH insights/:insightId/status
+  - Module Connection Routes (2): GET connections, POST correlations
+  - Subscription Routes (3): POST subscriptions, GET subscriptions/:userId, DELETE subscriptions/:subscriptionId
+  - Cache Health Route (1): GET cache/health
+- Route ordering: detail/:insightId registered BEFORE :userId to prevent Hono param collision
+- Subscription triggers wired into insight scan endpoint (checkTriggers + notifySubscribers)
+
+### Stub Files Created (for services not yet built by other agents)
+- server/src/services/cross-module-intelligence.ts (stub for Agent W17-03)
+- server/src/services/intelligence-subscriptions.ts (stub for Agent W17-05)
+
+## Verification
+- `npx tsc --noEmit` passes (only pre-existing forecasting.ts error)
+- All 14 routes confirmed via grep
+- Route ordering verified for parameterized path safety
+
+Completed: 2026-02-13

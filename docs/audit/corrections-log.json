@@ -1,0 +1,106 @@
+{
+  "timestamp": "2026-02-12T08:10:00Z",
+  "backup_created": true,
+  "backup_path": "server/sqlite.db.backup",
+  "total_transactions": 10320,
+  "total_corrections": 1244,
+  "corrections": [
+    {
+      "fix": "BizCap negative amounts to Loan Repayment",
+      "description": "496 BizCap/BizLoan daily loan repayments reclassified from Interest Expense to Loan Repayment. These are mixed principal+interest payments, not pure interest charges.",
+      "count": 496,
+      "total_amount_cents": -6938560,
+      "fields_updated": ["category", "gst_category", "gst_amount", "gst_applicable", "confidence_score", "is_edited", "ai_reasoning_notes"]
+    },
+    {
+      "fix": "BizCap positive amounts to Business Income",
+      "description": "13 BizCap loan proceeds and dishonoured payment returns reclassified to Business Income. Includes Fast Transfers (loan disbursements) and Return entries (payment reversals).",
+      "count": 13,
+      "total_amount_cents": 3765300,
+      "fields_updated": ["category", "gst_category", "gst_amount", "gst_applicable", "confidence_score", "is_edited", "ai_reasoning_notes"]
+    },
+    {
+      "fix": "Loan payment dishonour notes updated",
+      "description": "8 loan payment dishonour transactions reviewed and confirmed as Bank Fees (penalty charges). Notes updated to document audit decision.",
+      "count": 8,
+      "fields_updated": ["ai_reasoning_notes", "confidence_score", "is_edited"]
+    },
+    {
+      "fix": "Positive Interest Expense reclassified to Interest Income",
+      "description": "50 positive-amount transactions in Interest Expense (loan return/reversals) reclassified to Interest Income. These represent dishonoured loan payment reversals flowing back into the account.",
+      "count": 50,
+      "total_amount_cents": 4772919,
+      "fields_updated": ["category", "gst_category", "gst_amount", "confidence_score", "is_edited", "ai_reasoning_notes"]
+    },
+    {
+      "fix": "BNPL and loan repayments reclassified to Loan Repayment",
+      "description": "543 ZipPay, ZipMoney, CreditLine, MoneyMe, Autopay, Finance One, and CBA Loan repayments reclassified from Interest Expense to Loan Repayment. These are buy-now-pay-later and loan installment payments, not interest charges.",
+      "count": 543,
+      "total_amount_cents": -12994019,
+      "categories_affected": ["ZipPay (167)", "CreditLine (187)", "Autopay Loan (90 debits)", "ZipMoney (51)", "MoneyMe (29)", "CBA Loan (15)", "Finance One (4 debits)"],
+      "fields_updated": ["category", "gst_category", "gst_amount", "gst_applicable", "confidence_score", "is_edited", "ai_reasoning_notes"]
+    },
+    {
+      "fix": "Transfer transactions flagged with is_transfer",
+      "description": "123 transactions categorized as Transfer but missing the is_transfer=1 flag. Flag set and GST fields zeroed.",
+      "count": 123,
+      "fields_updated": ["is_transfer", "gst_category", "gst_amount", "gst_applicable"]
+    },
+    {
+      "fix": "GST amounts corrected on taxable_10 transactions",
+      "description": "11 transactions with gst_category=taxable_10 had incorrect GST amounts. Corrected to ROUND(ABS(amount) * 10/110).",
+      "count": 11,
+      "fields_updated": ["gst_amount"]
+    },
+    {
+      "fix": "Non-taxable transactions GST zeroed",
+      "description": "0 transactions found with non-zero GST on non-taxable categories. Already clean.",
+      "count": 0,
+      "fields_updated": ["gst_amount"]
+    }
+  ],
+  "remaining_interest_expense": {
+    "count": 42,
+    "total_amount_cents": -1648,
+    "breakdown": {
+      "Debit Excess Interest": 29,
+      "Debit Excess Int Adjusted": 13
+    },
+    "note": "These 42 transactions are genuine bank interest charges (excess interest debits) and are correctly categorized."
+  },
+  "category_distribution_after": {
+    "Transfer": {"count": 1971, "total_amount_cents": -18834269},
+    "Subscriptions": {"count": 1688, "total_amount_cents": -12521394},
+    "Sales Revenue": {"count": 1125, "total_amount_cents": 91839418},
+    "Loan Repayment": {"count": 1039, "total_amount_cents": -19932579},
+    "Entertainment": {"count": 665, "total_amount_cents": -4139210},
+    "Utilities": {"count": 492, "total_amount_cents": -1845971},
+    "Bank Fees": {"count": 446, "total_amount_cents": -501862},
+    "Motor Vehicle Expenses": {"count": 409, "total_amount_cents": -2817357},
+    "Wages & Salaries": {"count": 403, "total_amount_cents": -27162371},
+    "Insurance": {"count": 320, "total_amount_cents": -2268239},
+    "Education": {"count": 251, "total_amount_cents": -537466},
+    "Groceries": {"count": 238, "total_amount_cents": -2401545},
+    "Telephone & Internet": {"count": 233, "total_amount_cents": -3138140},
+    "Cost of Goods Sold": {"count": 158, "total_amount_cents": -5869123},
+    "Professional Fees": {"count": 116, "total_amount_cents": -2404914},
+    "Other Income": {"count": 98, "total_amount_cents": 11210022},
+    "Clothing & Personal": {"count": 97, "total_amount_cents": -825067},
+    "Medical & Health": {"count": 85, "total_amount_cents": -396761},
+    "Dining & Takeaway": {"count": 79, "total_amount_cents": -434639},
+    "Interest Income": {"count": 51, "total_amount_cents": 4772977},
+    "Advertising & Marketing": {"count": 49, "total_amount_cents": -466644},
+    "Fuel": {"count": 44, "total_amount_cents": -233162},
+    "Interest Expense": {"count": 42, "total_amount_cents": -1648},
+    "Repairs & Maintenance": {"count": 40, "total_amount_cents": -341747},
+    "Cash Withdrawal": {"count": 35, "total_amount_cents": -804000},
+    "Rent": {"count": 34, "total_amount_cents": -1577470},
+    "Transport": {"count": 30, "total_amount_cents": -1410268},
+    "Office Supplies": {"count": 23, "total_amount_cents": -89014},
+    "Travel": {"count": 19, "total_amount_cents": -321710},
+    "Computer & IT": {"count": 16, "total_amount_cents": -108837},
+    "Business Income": {"count": 13, "total_amount_cents": 3765300},
+    "Superannuation": {"count": 10, "total_amount_cents": -230012},
+    "Freight Costs": {"count": 1, "total_amount_cents": -3390}
+  }
+}

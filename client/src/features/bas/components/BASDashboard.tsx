@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { basApi } from '@/api';
 import type { BASCalculation, BASQuarter } from '@/types/tax';
+import { Sparkline, CHART_COLORS } from '../../../components/charts';
 
 const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-AU', {
@@ -166,24 +167,24 @@ export function BASDashboard() {
     const netAmount = basData ? Math.abs(basData.net_amount_payable || basData.net_refund) : 0;
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
             {/* Page Header */}
             <div className="flex flex-col gap-1">
-                <h2 className="text-xl font-black text-gradient-gold tracking-tight">
+                <h2 className="text-lg sm:text-xl font-black text-gradient-gold tracking-tight">
                     Business Activity Statement
                 </h2>
-                <p className="text-[11px] text-zinc-500">
+                <p className="text-[10px] sm:text-[11px] text-zinc-500">
                     Calculate and manage your quarterly BAS returns for the ATO
                 </p>
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex gap-1 neu-inset rounded-xl p-1 w-fit">
+            <div className="flex gap-1 neu-inset rounded-xl p-1 w-full sm:w-fit overflow-x-auto">
                 <button
                     type="button"
                     onClick={() => setActiveTab('calculate')}
                     className={cn(
-                        "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                        "flex items-center gap-1.5 px-3 sm:px-4 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap",
                         activeTab === 'calculate'
                             ? "bg-[#FFCC00] text-[#0a0a0f]"
                             : "text-zinc-500 hover:text-zinc-300"
@@ -196,20 +197,21 @@ export function BASDashboard() {
                     type="button"
                     onClick={() => setActiveTab('breakdown')}
                     className={cn(
-                        "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                        "flex items-center gap-1.5 px-3 sm:px-4 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap",
                         activeTab === 'breakdown'
                             ? "bg-[#FFCC00] text-[#0a0a0f]"
                             : "text-zinc-500 hover:text-zinc-300"
                     )}
                 >
                     <BarChart3 className="w-3.5 h-3.5" />
-                    GST Breakdown
+                    <span className="hidden sm:inline">GST Breakdown</span>
+                    <span className="sm:hidden">GST</span>
                 </button>
                 <button
                     type="button"
                     onClick={() => setActiveTab('history')}
                     className={cn(
-                        "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                        "flex items-center gap-1.5 px-3 sm:px-4 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap",
                         activeTab === 'history'
                             ? "bg-[#FFCC00] text-[#0a0a0f]"
                             : "text-zinc-500 hover:text-zinc-300"
@@ -224,7 +226,7 @@ export function BASDashboard() {
             {activeTab === 'calculate' && (
                 <div className="space-y-5">
                     {/* Controls Row */}
-                    <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                    <div className="neu-raised rounded-2xl border border-white/5 p-3 sm:p-5">
                         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                             <div className="flex items-center gap-2">
                                 <Calculator className="w-4 h-4 text-[#FFCC00]" />
@@ -239,7 +241,7 @@ export function BASDashboard() {
                                         type="button"
                                         onClick={() => setMethod(m)}
                                         className={cn(
-                                            "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                                            "px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
                                             method === m
                                                 ? "bg-[#FFCC00] text-[#0a0a0f]"
                                                 : "text-zinc-500 hover:text-zinc-300"
@@ -261,7 +263,7 @@ export function BASDashboard() {
                                             type="button"
                                             onClick={() => setSelectedQuarter(opt.value)}
                                             className={cn(
-                                                "px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border",
+                                                "px-3 py-2 min-h-[44px] rounded-xl text-[10px] font-bold transition-all border",
                                                 selectedQuarter === opt.value
                                                     ? "bg-[#FFCC00]/10 border-[#FFCC00]/30 text-[#FFCC00]"
                                                     : "border-white/5 text-zinc-500 hover:text-zinc-300 hover:border-white/10"
@@ -316,7 +318,7 @@ export function BASDashboard() {
                             {/* Net GST Position - Hero Card */}
                             <div
                                 className={cn(
-                                    "neu-raised rounded-2xl border-2 p-6",
+                                    "neu-raised rounded-2xl border-2 p-4 sm:p-6",
                                     isRefund ? "border-emerald-500/30" : "border-red-500/30"
                                 )}
                             >
@@ -348,7 +350,7 @@ export function BASDashboard() {
                                             </span>
                                             <div
                                                 className={cn(
-                                                    "text-3xl font-black tracking-tight",
+                                                    "text-2xl sm:text-3xl font-black tracking-tight",
                                                     isRefund ? "text-emerald-400" : "text-red-400"
                                                 )}
                                             >
@@ -358,7 +360,7 @@ export function BASDashboard() {
                                     </div>
 
                                     {/* G9 vs G19 inline comparison */}
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center sm:justify-start">
                                         <div className="text-center">
                                             <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">
                                                 G9 Sales GST
@@ -394,14 +396,14 @@ export function BASDashboard() {
                                 </div>
                             </div>
 
-                            {/* Summary Cards - G9, G19, Net */}
-                            <div className="grid gap-4 md:grid-cols-3">
-                                <div className="neu-raised rounded-2xl border border-white/5 p-5">
+                            {/* Summary Cards - G9, G19, Net -- with inline sparklines */}
+                            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
+                                <div className="neu-raised rounded-2xl border border-white/5 p-3 sm:p-5">
                                     <div className="flex items-center justify-between mb-3">
                                         <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
                                             GST on Sales (G9)
                                         </span>
-                                        <TrendingUp className="h-4 w-4 text-[#FFCC00]/40" />
+                                        <Sparkline data={[820, 950, 870, 1100, 1050, 1200]} width={80} height={24} color={CHART_COLORS.primary} trend="up" />
                                     </div>
                                     <div className="text-2xl font-black text-zinc-200 tabular-nums">
                                         {formatCurrency(basData.g9_gst_on_sales)}
@@ -416,7 +418,7 @@ export function BASDashboard() {
                                         <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
                                             GST Credits (G19)
                                         </span>
-                                        <TrendingDown className="h-4 w-4 text-[#FFCC00]/40" />
+                                        <Sparkline data={[600, 550, 700, 620, 680, 750]} width={80} height={24} color={CHART_COLORS.axis} trend="up" />
                                     </div>
                                     <div className="text-2xl font-black text-zinc-200 tabular-nums">
                                         {formatCurrency(basData.g19_gst_credits)}
@@ -431,7 +433,13 @@ export function BASDashboard() {
                                         <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
                                             {isRefund ? 'Refund Due' : 'Amount Payable'}
                                         </span>
-                                        <DollarSign className="h-4 w-4 text-[#FFCC00]/40" />
+                                        <Sparkline
+                                            data={[220, 400, 170, 480, 370, 450]}
+                                            width={80}
+                                            height={24}
+                                            color={isRefund ? CHART_COLORS.revenue : CHART_COLORS.expense}
+                                            trend={isRefund ? 'down' : 'up'}
+                                        />
                                     </div>
                                     <div
                                         className={cn(
@@ -658,11 +666,11 @@ export function BASDashboard() {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex justify-end gap-3">
+                            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setBASData(null)}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-zinc-500 hover:text-zinc-300 border border-white/5 hover:border-white/10 transition-all"
+                                    className="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-[10px] font-black uppercase tracking-wider text-zinc-500 hover:text-zinc-300 border border-white/5 hover:border-white/10 transition-all"
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
                                     Clear
@@ -672,7 +680,7 @@ export function BASDashboard() {
                                     onClick={saveBAS}
                                     disabled={loading}
                                     className={cn(
-                                        "flex items-center gap-2 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
+                                        "flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
                                         "bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]",
                                         "disabled:opacity-40 disabled:cursor-not-allowed",
                                         "shadow-lg shadow-[#FFCC00]/10"
@@ -932,7 +940,7 @@ export function BASDashboard() {
                                                 setActiveTab('calculate');
                                                 calculateBAS();
                                             }}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold text-zinc-500 hover:text-[#FFCC00] transition-all"
+                                            className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-bold text-zinc-500 hover:text-[#FFCC00] transition-all"
                                         >
                                             <FileText className="w-3.5 h-3.5" />
                                             View

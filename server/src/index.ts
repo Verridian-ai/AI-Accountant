@@ -5,7 +5,7 @@ import { bodyLimit } from 'hono/body-limit'
 import { rateLimiter } from 'hono-rate-limiter'
 import { jwt, verify } from 'hono/jwt'
 import { stream } from 'hono/streaming'
-import { db, transactions, statements, users, userSettings, transactionHistory, accounts, merchantMemory, pendingCategorization, transferLinks, accountBalanceHistory, reconciliationAlerts, statementAccounts, businessProfiles } from './schema.js'
+import { db, transactions, statements, users, userSettings, transactionHistory, accounts, merchantMemory, pendingCategorization, transferLinks, accountBalanceHistory, reconciliationAlerts, statementAccounts, businessProfiles, marketDataFeeds, economicIndicators, marketPrices, sentimentSnapshots, marketAlerts, economicCalendar, cogneeUserAccounts, cogneeSessions, employees, employeeBankDetails, employeeSuperFunds, employeeTaxDeclarations, payCategories, payStructures, employeeDocuments, notificationPreferences, offlineSyncLog } from './schema.js'
 import { validateABN, normalizeABN, formatABN, validateEntityType, validateBasFrequency, validateAnzsicCode, validateTaxAgentNumber, ENTITY_TYPES, BAS_FREQUENCIES, COMMON_ANZSIC_CODES } from './utils/abn.js'
 import { desc, eq, and, gte, lte, like, aliasedTable, sql } from 'drizzle-orm'
 
@@ -25,9 +25,40 @@ import type { AgentType } from './services/claude/types.js';
 import { getVertexAIClient, VERTEX_AI_MODELS, FINTECH_MODEL_PRESETS } from './services/vertex-ai.js';
 import agentRoutes from './routes/agents.js';
 import pipelineRoutes from './routes/pipeline.js';
+import invoicingRoutes from './routes/invoicing-routes.js';
+import { orchestrator } from './services/claude/orchestrator.js';
 import { securityHeaders } from './middleware/security.js';
 import { auditMiddleware } from './middleware/audit.js';
 import { validateBody, loginSchema, registerSchema, chatMessageSchema, transactionUpdateSchema, ValidationError } from './validation/index.js';
+import { StreamingService } from './services/claude/streaming.js';
+import { ConfirmationFlowService } from './services/claude/confirmation-flow.js';
+import { AuditService } from './services/claude/audit.js';
+import { SchemaRegistry } from './services/claude/schemas/schema-registry.js';
+import { StreamingRegistry } from './services/streaming-registry.js';
+import { sseStreamMiddleware, streamingRateLimiter } from './services/streaming-middleware.js';
+import { rbaDataFeed } from './services/rba-data-feed.js';
+import { absDataFeed } from './services/abs-data-feed.js';
+import { marketPriceService } from './services/market-prices.js';
+import { sentimentAnalysisService } from './services/sentiment-analysis.js';
+
+// Wave 3: Cognee multi-user imports
+import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
+import { cogneeClient } from './services/cognee_client.js';
+import { cogneeSessionService } from './services/cognee-sessions.js';
+import { ALL_DATAPOINT_MODELS } from './services/cognee/datapoint-models.js';
+
+// Wave 23: Multi-Tenant & Access Control imports
+import { tenantService } from './services/tenant.js';
+import { rbacService } from './services/rbac.js';
+import { subscriptionService } from './services/subscriptions.js';
+import { ForbiddenError } from './services/rbac-errors.js';
+import { adminAuthService } from './services/admin-auth.js';
+
+// Wave 4: Employee & Payroll imports
+import { employeeService } from './services/employee.js';
+import { payStructureService } from './services/pay-structures.js';
+import { validateTFN, validateBSB, isEncryptionConfigured } from './services/encryption.js';
 
 const app = new Hono()
 
@@ -85,6 +116,24 @@ app.use('/*', cors({
     origin: ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:3501'],
     credentials: true,
 }))
+
+// --- Wave 21: Vercel AI SDK Streaming & Schema services ---
+const streamingService = new StreamingService();
+const schemaRegistry = new SchemaRegistry();
+const streamingRegistry = new StreamingRegistry();
+schemaRegistry.initializeDefaults();
+
+// --- Wave 2: Initialize mutation framework for agent orchestrator ---
+orchestrator.initMutationFramework(db);
+const confirmationFlow = new ConfirmationFlowService(db);
+const auditService = new AuditService(db);
+
+// Start stale mutation expiration timer (every 5 minutes)
+setInterval(() => {
+    confirmationFlow.expireStale().catch((err: unknown) =>
+        console.warn('[MutationExpiry] Error:', err)
+    );
+}, 5 * 60 * 1000);
 
 // Apply rate limiting to API routes, but exclude statement upload/processing
 app.use('/api/*', async (c, next) => {
@@ -160,7 +209,7 @@ app.get('/auth/me', async (c) => {
 // Protect all /api routes (except public endpoints)
 app.use('/api/*', async (c, next) => {
     // Public endpoints that don't require auth
-    const publicPaths = ['/api/vertex-ai/models', '/api/vertex-ai/test'];
+    const publicPaths = ['/api/vertex-ai/models', '/api/vertex-ai/test', '/api/subscriptions/plans', '/api/invitations/accept', '/api/auth/login', '/api/auth/register', '/api/auth/refresh'];
     if (publicPaths.includes(c.req.path)) {
         return next();
     }
@@ -911,10 +960,41 @@ app.post('/api/chat', async (c) => {
             if (e instanceof ValidationError) return c.json({ answer: e.errors.map(err => err.message).join('; ') }, 400);
             return c.json({ answer: 'Invalid request body' }, 400);
         }
-        const { query } = chatBody;
+        const { query, sessionId: requestSessionId } = chatBody;
         if (!query.trim()) {
             return c.json({ answer: 'Please enter a question about your finances.' }, 400);
         }
+
+        // Wave 3: Session management — get or create Cognee session for user context
+        let cogneeSessionId = requestSessionId;
+        let datasetPrefix = '';
+        let conversationContext = '';
+
+        if (userId) {
+            // Get user's dataset prefix from cognee_user_accounts
+            const account = await db.select().from(cogneeUserAccounts)
+                .where(eq(cogneeUserAccounts.userId, userId))
+                .limit(1);
+            datasetPrefix = account.length > 0 ? (account[0] as any).datasetPrefix ?? `user_${userId}` : `user_${userId}`;
+
+            // Get or create Cognee session for conversation memory
+            if (!cogneeSessionId) {
+                const session = await cogneeSessionService.getOrCreateCogneeSession(userId, {
+                    sessionType: 'chat',
+                    ttlMinutes: 30,
+                    datasetPrefix,
+                });
+                if (session) {
+                    cogneeSessionId = session.sessionId;
+                }
+            }
+
+            // Retrieve recent conversation history for context
+            if (cogneeSessionId) {
+                conversationContext = await orchestrator.getSessionContext(cogneeSessionId);
+            }
+        }
+
         // Fetch recent context (last 50 transactions for THIS user)
         const context = await db.select().from(transactions)
             .where(eq(transactions.userId, userId))
@@ -935,12 +1015,12 @@ app.post('/api/chat', async (c) => {
             await db.insert(userSettings).values(settings);
         }
 
-        // 1. Multi-type semantic search in Cognee
+        // 1. Multi-type semantic search in Cognee (Wave 3: pass userId for user-scoped results)
         //    CHUNKS: direct transaction matches | GRAPH_SUMMARY_COMPLETION: contextual analysis
         let ragContext = '';
         try {
-            console.log(`[Chat] Searching Cognee for: ${query}`);
-            const multiResults = await ragService.searchMulti(query);
+            console.log(`[Chat] Searching Cognee for: ${query} (user: ${userId ?? 'anonymous'})`);
+            const multiResults = await ragService.searchMulti(query, userId);
             const allResults = [...multiResults.chunks, ...multiResults.summary];
             if (allResults.length > 0) {
                 ragContext = JSON.stringify({
@@ -953,19 +1033,257 @@ app.post('/api/chat', async (c) => {
             console.error("[Chat Cognee Error]", ragErr);
         }
 
-        // 2. Combine with recent transactions context
+        // 2. Combine with recent transactions context + conversation history
         const combinedContext = {
             recentTransactions: context,
-            semanticSearchResults: ragContext
+            semanticSearchResults: ragContext,
+            ...(conversationContext ? { conversationHistory: conversationContext } : {}),
         };
 
         const answer = await aiService.generateInsight(query, combinedContext, settings.modelChat);
-        return c.json({ answer });
+
+        // Wave 3: Record conversation turns in session for future context
+        if (cogneeSessionId && userId) {
+            try {
+                await cogneeSessionService.addConversationTurn(cogneeSessionId, 'user', query);
+                await cogneeSessionService.addConversationTurn(cogneeSessionId, 'assistant', answer);
+            } catch (turnErr) {
+                console.warn('[Chat] Failed to record conversation turn:', turnErr);
+            }
+        }
+
+        return c.json({ answer, sessionId: cogneeSessionId });
     } catch (err) {
         console.error('[Chat Error]', err);
         return c.json({ answer: 'I encountered an error processing your request. Please try again.' }, 500);
     }
 });
+
+// ============================================================================
+// WAVE 2: Mutation & Streaming Endpoints
+// ============================================================================
+
+// 1. POST /api/chat/stream — SSE streaming chat
+app.post('/api/chat/stream', chatLimiter, async (c) => {
+    try {
+        const body = await c.req.json() as { query?: string; sessionId?: string };
+        const query = body?.query;
+        if (!query || typeof query !== 'string') {
+            return c.json({ error: 'Query is required', code: 400 }, 400);
+        }
+
+        const userId = 'default';
+        const sessionId = body.sessionId;
+
+        // Get or create session
+        const session = await confirmationFlow.getOrCreateSession({ userId });
+        const activeSessionId = sessionId ?? session.id;
+
+        // Create SSE stream
+        const writer = streamingService.createStream(c);
+
+        // Increment query count
+        await confirmationFlow.incrementQueryCount(activeSessionId);
+
+        // Step 1: Gather context (mirrors /api/chat pattern)
+        writer.sendProgress(1, 3, 'Gathering context...');
+
+        // Fetch user settings for chat model
+        let settings = await db.select().from(userSettings).where(eq(userSettings.userId, userId)).get();
+        if (!settings) {
+            settings = {
+                userId,
+                modelParsingText: 'google/gemini-3-flash-preview',
+                modelParsingVision: 'google/gemini-3-flash-preview',
+                modelCategorization: 'google/gemini-3-flash-preview',
+                modelChat: 'google/gemini-3-flash-preview',
+                modelEmbedding: 'openai/text-embedding-3-large',
+            };
+        }
+
+        let ragContext = '';
+
+        // Cognee search (non-blocking failure)
+        try {
+            const multiResults = await ragService.searchMulti(query);
+            const allResults = [...multiResults.chunks, ...multiResults.summary];
+            if (allResults.length > 0) {
+                ragContext = JSON.stringify({
+                    directMatches: multiResults.chunks,
+                    contextualAnalysis: multiResults.summary,
+                });
+            }
+        } catch {
+            // Cognee unavailable — continue without it
+        }
+
+        // Recent transactions for context
+        const recentTxns = await db.select().from(transactions)
+            .where(eq(transactions.userId, userId))
+            .orderBy(desc(transactions.date))
+            .limit(50);
+
+        const combinedContext = {
+            recentTransactions: recentTxns,
+            semanticSearchResults: ragContext,
+        };
+
+        // Step 2: Generate AI response
+        writer.sendProgress(2, 3, 'Generating response...');
+
+        const answer = await aiService.generateInsight(query, combinedContext, settings.modelChat);
+
+        // Record agent usage (chat is essentially the "budget_analyzer" or general agent)
+        await confirmationFlow.recordAgentUsage(activeSessionId, 'budget_analyzer' as any);
+
+        // Log query execution (non-blocking)
+        auditService.logQueryExecuted(
+            activeSessionId,
+            'budget_analyzer' as any,
+            query
+        ).catch((err: unknown) => console.warn('[Audit] Log query failed:', err));
+
+        // Step 3: Complete
+        writer.sendProgress(3, 3, 'Done');
+
+        writer.sendComplete({
+            answer,
+            agentType: 'chat',
+            sessionId: activeSessionId,
+        });
+
+        // Return the ReadableStream as the response body
+        const stream = streamingService.getStream(c);
+        if (stream) {
+            return new Response(stream, {
+                headers: {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                    'X-Accel-Buffering': 'no',
+                },
+            });
+        }
+
+        return c.json({ answer, sessionId: activeSessionId });
+    } catch (err) {
+        console.error('[Chat/Stream Error]', err);
+        return c.json({ error: 'Streaming chat failed', code: 500 }, 500);
+    }
+});
+
+// 2. POST /api/chat/confirm/:actionId — Confirm a pending mutation
+app.post('/api/chat/confirm/:actionId', async (c) => {
+    try {
+        const actionId = c.req.param('actionId');
+        const body = await c.req.json().catch(() => ({})) as { reason?: string };
+        const userId = 'default';
+
+        const mutation = await confirmationFlow.confirm(actionId, userId, body.reason);
+
+        // Log audit (args: mutationId, sessionId, agentType, userId)
+        await auditService.logMutationConfirmed(
+            actionId,
+            mutation.sessionId,
+            mutation.agentType as AgentType,
+            userId
+        ).catch((err: unknown) => console.warn('[Audit] Log confirm failed:', err));
+
+        return c.json({ success: true, mutation });
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Confirmation failed';
+        return c.json({ error: message, code: 400 }, 400);
+    }
+});
+
+// 3. POST /api/chat/reject/:actionId — Reject a pending mutation
+app.post('/api/chat/reject/:actionId', async (c) => {
+    try {
+        const actionId = c.req.param('actionId');
+        const body = await c.req.json().catch(() => ({})) as { reason?: string };
+        const userId = 'default';
+
+        const mutation = await confirmationFlow.reject(actionId, userId, body.reason);
+
+        // Log audit (args: mutationId, sessionId, agentType, reason, userId)
+        await auditService.logMutationRejected(
+            actionId,
+            mutation.sessionId,
+            mutation.agentType as AgentType,
+            body.reason,
+            userId
+        ).catch((err: unknown) => console.warn('[Audit] Log reject failed:', err));
+
+        return c.json({ success: true, mutation });
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Rejection failed';
+        return c.json({ error: message, code: 400 }, 400);
+    }
+});
+
+// 4. GET /api/chat/pending — List pending mutations for a session
+app.get('/api/chat/pending', async (c) => {
+    try {
+        const sessionId = c.req.query('sessionId');
+        if (!sessionId) {
+            return c.json({ error: 'sessionId query param required', code: 400 }, 400);
+        }
+
+        const mutations = await confirmationFlow.getPendingMutations(sessionId);
+        return c.json({ mutations });
+    } catch (err) {
+        console.error('[Chat/Pending Error]', err);
+        return c.json({ error: 'Failed to fetch pending mutations', code: 500 }, 500);
+    }
+});
+
+// 5. GET /api/chat/history — Get chat session history
+app.get('/api/chat/history', async (c) => {
+    try {
+        const sessionId = c.req.query('sessionId');
+        const limit = parseInt(c.req.query('limit') ?? '50', 10);
+        const userId = 'default';
+
+        if (sessionId) {
+            const session = await confirmationFlow.getSession(sessionId);
+            return c.json({ sessions: session ? [session] : [], total: session ? 1 : 0 });
+        }
+
+        const result = await confirmationFlow.getSessionHistory({ userId, limit });
+        return c.json(result);
+    } catch (err) {
+        console.error('[Chat/History Error]', err);
+        return c.json({ error: 'Failed to fetch session history', code: 500 }, 500);
+    }
+});
+
+// 6. GET /api/agent-audit — Query audit trail
+app.get('/api/agent-audit', async (c) => {
+    try {
+        const agentType = c.req.query('agentType');
+        const action = c.req.query('action');
+        const from = c.req.query('from');
+        const to = c.req.query('to');
+        const limit = parseInt(c.req.query('limit') ?? '50', 10);
+
+        const result = await auditService.queryAudit({
+            agentType: (agentType || undefined) as AgentType | undefined,
+            action: (action || undefined) as import('./services/claude/audit.js').AuditAction | undefined,
+            from: from || undefined,
+            to: to || undefined,
+            limit,
+        });
+
+        return c.json(result);
+    } catch (err) {
+        console.error('[Agent Audit Error]', err);
+        return c.json({ error: 'Failed to query audit log', code: 500 }, 500);
+    }
+});
+
+// ============================================================================
+// END WAVE 2 ENDPOINTS
+// ============================================================================
 
 app.post('/api/statements/:id/reprocess', async (c) => {
     try {
@@ -4121,6 +4439,2426 @@ app.route('/api/claude-agents', agentRoutes);
 // Mount pipeline integration routes (transfers, enrichment, BAS prefill)
 app.route('/api', pipelineRoutes);
 
+// Mount invoicing routes (customers + invoices — Wave 7)
+app.route('/api', invoicingRoutes);
+
+// ── Vercel AI SDK Streaming Routes ─────────────────────────────────────────
+
+// 1. POST /api/stream/agent/:agentType — Start streaming agent execution
+app.post('/api/stream/agent/:agentType', sseStreamMiddleware(), streamingRateLimiter(), async (c) => {
+    try {
+        const agentType = c.req.param('agentType');
+        const input = await c.req.json();
+        const userId = c.req.query('userId') || 'default';
+
+        const agent = streamingRegistry.getAgent(agentType as AgentType);
+        if (!agent) {
+            return c.json({ error: `Agent ${agentType} not available for streaming` }, 404);
+        }
+
+        // Create a session record
+        const sessionId = crypto.randomUUID();
+        try {
+            await db.run(sql`INSERT INTO agent_stream_sessions (id, agent_type, user_id, session_status, input_payload, model_id, provider, stream_started_at)
+                VALUES (${sessionId}, ${agentType}, ${userId}, 'streaming', ${JSON.stringify(input)}, 'auto', 'anthropic', NOW())`);
+        } catch {
+            // Table may not exist yet — continue without session tracking
+        }
+
+        // Use handleSSE for proper Hono streaming
+        return streamingService.handleSSE(c, async (writer) => {
+            const startMs = Date.now();
+            try {
+                writer.sendAgentSelected(agentType, 1.0);
+
+                let fullText = '';
+                for await (const chunk of agent.stream(input)) {
+                    writer.sendToken(chunk);
+                    fullText += chunk;
+                }
+
+                const latencyMs = Date.now() - startMs;
+                writer.sendComplete({ agentType, status: 'completed', latencyMs });
+
+                // Update session record
+                try {
+                    await db.run(sql`UPDATE agent_stream_sessions
+                        SET session_status = 'completed', output_payload = ${JSON.stringify({ text: fullText })},
+                            latency_ms = ${latencyMs}, stream_completed_at = NOW(), updated_at = NOW()
+                        WHERE id = ${sessionId}`);
+                } catch {
+                    // Session tracking is best-effort
+                }
+            } catch (err: any) {
+                writer.sendError(err.message || 'Stream failed');
+                try {
+                    await db.run(sql`UPDATE agent_stream_sessions
+                        SET session_status = 'failed', error_message = ${err.message || 'Stream failed'}, updated_at = NOW()
+                        WHERE id = ${sessionId}`);
+                } catch {
+                    // Session tracking is best-effort
+                }
+            }
+        });
+    } catch (err) {
+        console.error('Stream agent failed:', err);
+        return c.json({ error: 'Failed to start stream' }, 500);
+    }
+});
+
+// 2. GET /api/stream/session/:sessionId — Get session status
+app.get('/api/stream/session/:sessionId', async (c) => {
+    try {
+        const sessionId = c.req.param('sessionId');
+        const session = await db.get(sql`SELECT id, agent_type as "agentType", user_id as "userId",
+            session_status as "sessionStatus", input_payload as "inputPayload", output_payload as "outputPayload",
+            token_usage as "tokenUsage", stream_started_at as "streamStartedAt", stream_completed_at as "streamCompletedAt",
+            error_message as "errorMessage", model_id as "modelId", provider, latency_ms as "latencyMs",
+            created_at as "createdAt", updated_at as "updatedAt"
+            FROM agent_stream_sessions WHERE id = ${sessionId}`);
+        if (!session) {
+            return c.json({ error: 'Session not found' }, 404);
+        }
+        return c.json(session);
+    } catch (err) {
+        console.error('Get stream session failed:', err);
+        return c.json({ error: 'Failed to get session' }, 500);
+    }
+});
+
+// 3. GET /api/stream/history — Get user's session history
+app.get('/api/stream/history', async (c) => {
+    try {
+        const userId = c.req.query('userId') || 'default';
+        const limit = parseInt(c.req.query('limit') || '20', 10);
+        const offset = parseInt(c.req.query('offset') || '0', 10);
+
+        const sessions = await db.all(sql`SELECT id, agent_type as "agentType", user_id as "userId",
+            session_status as "sessionStatus", model_id as "modelId", provider,
+            latency_ms as "latencyMs", error_message as "errorMessage",
+            stream_started_at as "streamStartedAt", stream_completed_at as "streamCompletedAt",
+            created_at as "createdAt"
+            FROM agent_stream_sessions
+            WHERE user_id = ${userId}
+            ORDER BY created_at DESC
+            LIMIT ${limit} OFFSET ${offset}`);
+        return c.json({ sessions, userId, limit, offset });
+    } catch (err) {
+        console.error('Get stream history failed:', err);
+        return c.json({ sessions: [], userId: 'default', limit: 20, offset: 0 });
+    }
+});
+
+// 4. DELETE /api/stream/session/:sessionId — Cancel active stream
+app.delete('/api/stream/session/:sessionId', async (c) => {
+    try {
+        const sessionId = c.req.param('sessionId');
+        await db.run(sql`UPDATE agent_stream_sessions
+            SET session_status = 'cancelled', updated_at = NOW()
+            WHERE id = ${sessionId} AND session_status = 'streaming'`);
+        return c.json({ success: true, sessionId });
+    } catch (err) {
+        console.error('Cancel stream session failed:', err);
+        return c.json({ error: 'Failed to cancel session' }, 500);
+    }
+});
+
+// ── Schema Routes ──────────────────────────────────────────────────────────
+
+// 5. GET /api/schemas — List all registered schemas
+app.get('/api/schemas', async (c) => {
+    try {
+        const schemas = schemaRegistry.listSchemas();
+        return c.json({ schemas });
+    } catch (err) {
+        console.error('List schemas failed:', err);
+        return c.json({ schemas: [] });
+    }
+});
+
+// 6. GET /api/schemas/:agentType — Get schema for specific agent
+app.get('/api/schemas/:agentType', async (c) => {
+    try {
+        const agentType = c.req.param('agentType') as AgentType;
+        const schema = schemaRegistry.getSchema(agentType);
+        if (!schema) {
+            return c.json({ error: `No schema registered for agent type: ${agentType}` }, 404);
+        }
+        // Return the schema definition (Zod schemas have a .shape for objects)
+        const schemaList = schemaRegistry.listSchemas();
+        const meta = schemaList.find(s => s.agentType === agentType);
+        return c.json({
+            agentType,
+            name: meta?.name ?? agentType,
+            version: meta?.version ?? 1,
+            hasSchema: true,
+        });
+    } catch (err) {
+        console.error('Get schema failed:', err);
+        return c.json({ error: 'Failed to get schema' }, 500);
+    }
+});
+
+// 7. POST /api/schemas/:agentType/validate — Validate output against schema
+app.post('/api/schemas/:agentType/validate', async (c) => {
+    try {
+        const agentType = c.req.param('agentType') as AgentType;
+        const { output } = await c.req.json();
+        if (output === undefined) {
+            return c.json({ error: 'Request body must include "output" field' }, 400);
+        }
+        const result = schemaRegistry.validateOutput(agentType, output);
+        schemaRegistry.updateStats(agentType, result.valid);
+        return c.json({
+            agentType,
+            valid: result.valid,
+            errors: result.errors?.issues ?? null,
+        });
+    } catch (err) {
+        console.error('Schema validation failed:', err);
+        return c.json({ error: 'Failed to validate output' }, 500);
+    }
+});
+
+// 8. GET /api/schemas/:agentType/stats — Get validation stats
+app.get('/api/schemas/:agentType/stats', async (c) => {
+    try {
+        const agentType = c.req.param('agentType');
+        // Try to read stats from structured_output_schemas table
+        const row: any = await db.get(sql`SELECT agent_type as "agentType", schema_name as "schemaName",
+            schema_version as "schemaVersion", validation_stats as "validationStats",
+            is_active as "isActive", created_at as "createdAt", updated_at as "updatedAt"
+            FROM structured_output_schemas WHERE agent_type = ${agentType}`);
+        if (row) {
+            return c.json(row);
+        }
+        // Fallback: return info from in-memory registry
+        const schemaList = schemaRegistry.listSchemas();
+        const meta = schemaList.find(s => s.agentType === agentType);
+        return c.json({
+            agentType,
+            schemaName: meta?.name ?? null,
+            schemaVersion: meta?.version ?? null,
+            validationStats: { total: 0, passed: 0, failed: 0 },
+            isActive: !!meta,
+        });
+    } catch (err) {
+        console.error('Get schema stats failed:', err);
+        return c.json({ agentType: c.req.param('agentType'), validationStats: { total: 0, passed: 0, failed: 0 } });
+    }
+});
+
+// ── Migration Status Routes ────────────────────────────────────────────────
+
+// 9. GET /api/migration/status — List all agent migration statuses
+app.get('/api/migration/status', async (c) => {
+    try {
+        const statuses = await db.all(sql`SELECT id, agent_type as "agentType", legacy_class as "legacyClass",
+            vercel_class as "vercelClass", migration_phase as "migrationPhase",
+            legacy_invocations as "legacyInvocations", vercel_invocations as "vercelInvocations",
+            error_rate_legacy as "errorRateLegacy", error_rate_vercel as "errorRateVercel",
+            avg_latency_legacy_ms as "avgLatencyLegacyMs", avg_latency_vercel_ms as "avgLatencyVercelMs",
+            migrated_at as "migratedAt", rollback_count as "rollbackCount",
+            created_at as "createdAt", updated_at as "updatedAt"
+            FROM agent_migration_status ORDER BY agent_type`);
+        return c.json({ statuses });
+    } catch (err) {
+        console.error('Get migration statuses failed:', err);
+        return c.json({ statuses: [] });
+    }
+});
+
+// 10. GET /api/migration/status/:agentType — Get specific agent status
+app.get('/api/migration/status/:agentType', async (c) => {
+    try {
+        const agentType = c.req.param('agentType');
+        const status = await db.get(sql`SELECT id, agent_type as "agentType", legacy_class as "legacyClass",
+            vercel_class as "vercelClass", migration_phase as "migrationPhase",
+            legacy_invocations as "legacyInvocations", vercel_invocations as "vercelInvocations",
+            error_rate_legacy as "errorRateLegacy", error_rate_vercel as "errorRateVercel",
+            avg_latency_legacy_ms as "avgLatencyLegacyMs", avg_latency_vercel_ms as "avgLatencyVercelMs",
+            migrated_at as "migratedAt", rollback_count as "rollbackCount",
+            created_at as "createdAt", updated_at as "updatedAt"
+            FROM agent_migration_status WHERE agent_type = ${agentType}`);
+        if (!status) {
+            return c.json({ error: `No migration status found for agent: ${agentType}` }, 404);
+        }
+        return c.json(status);
+    } catch (err) {
+        console.error('Get migration status failed:', err);
+        return c.json({ error: 'Failed to get migration status' }, 500);
+    }
+});
+
+// 11. GET /api/migration/benchmarks — Compare legacy vs Vercel metrics
+app.get('/api/migration/benchmarks', async (c) => {
+    try {
+        const statuses: any[] = await db.all(sql`SELECT agent_type as "agentType",
+            migration_phase as "migrationPhase",
+            legacy_invocations as "legacyInvocations", vercel_invocations as "vercelInvocations",
+            error_rate_legacy as "errorRateLegacy", error_rate_vercel as "errorRateVercel",
+            avg_latency_legacy_ms as "avgLatencyLegacyMs", avg_latency_vercel_ms as "avgLatencyVercelMs"
+            FROM agent_migration_status ORDER BY agent_type`);
+
+        const benchmarks = statuses.map((s: any) => {
+            const latencyImprovement = s.avgLatencyLegacyMs && s.avgLatencyVercelMs
+                ? Math.round(((s.avgLatencyLegacyMs - s.avgLatencyVercelMs) / s.avgLatencyLegacyMs) * 100)
+                : null;
+            const errorRateImprovement = s.errorRateLegacy > 0 && s.errorRateVercel >= 0
+                ? Math.round(((s.errorRateLegacy - s.errorRateVercel) / s.errorRateLegacy) * 100)
+                : null;
+            return {
+                agentType: s.agentType,
+                migrationPhase: s.migrationPhase,
+                legacy: {
+                    invocations: s.legacyInvocations,
+                    errorRate: s.errorRateLegacy,
+                    avgLatencyMs: s.avgLatencyLegacyMs,
+                },
+                vercel: {
+                    invocations: s.vercelInvocations,
+                    errorRate: s.errorRateVercel,
+                    avgLatencyMs: s.avgLatencyVercelMs,
+                },
+                improvement: {
+                    latencyPercent: latencyImprovement,
+                    errorRatePercent: errorRateImprovement,
+                },
+            };
+        });
+
+        return c.json({ benchmarks });
+    } catch (err) {
+        console.error('Get migration benchmarks failed:', err);
+        return c.json({ benchmarks: [] });
+    }
+});
+
+// 12. POST /api/migration/rollback/:agentType — Force rollback to legacy
+app.post('/api/migration/rollback/:agentType', async (c) => {
+    try {
+        const agentType = c.req.param('agentType');
+
+        // Verify the agent exists in migration status table
+        const existing = await db.get(sql`SELECT id, migration_phase as "migrationPhase"
+            FROM agent_migration_status WHERE agent_type = ${agentType}`);
+        if (!existing) {
+            return c.json({ error: `No migration status found for agent: ${agentType}` }, 404);
+        }
+
+        await db.run(sql`UPDATE agent_migration_status
+            SET migration_phase = 'legacy',
+                rollback_count = rollback_count + 1,
+                updated_at = NOW()
+            WHERE agent_type = ${agentType}`);
+
+        return c.json({
+            success: true,
+            agentType,
+            migrationPhase: 'legacy',
+            message: `Agent ${agentType} rolled back to legacy implementation`,
+        });
+    } catch (err) {
+        console.error('Migration rollback failed:', err);
+        return c.json({ error: 'Failed to rollback agent' }, 500);
+    }
+});
+
+// ============================================================================
+// DASHBOARD & CHART ROUTES (Wave 22)
+// ============================================================================
+
+import { DashboardService } from './services/dashboard.js';
+const dashboardService = new DashboardService();
+
+// 1. GET /api/dashboards — list all dashboards for a user
+app.get('/api/dashboards', async (c) => {
+    try {
+        const userId = c.req.query('userId') || 'default';
+        const dashboards = await dashboardService.getDashboards(userId);
+        return c.json(dashboards);
+    } catch (err) {
+        console.error('Error listing dashboards:', err);
+        return c.json({ error: 'Failed to list dashboards' }, 500);
+    }
+});
+
+// 2. GET /api/dashboards/:id — get a single dashboard
+app.get('/api/dashboards/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const dashboard = await dashboardService.getDashboard(id);
+        if (!dashboard) return c.json({ error: 'Dashboard not found' }, 404);
+        return c.json(dashboard);
+    } catch (err) {
+        console.error('Error getting dashboard:', err);
+        return c.json({ error: 'Failed to get dashboard' }, 500);
+    }
+});
+
+// 3. POST /api/dashboards — create a new dashboard
+app.post('/api/dashboards', async (c) => {
+    try {
+        const body = await c.req.json();
+        const userId = body.userId || 'default';
+        const dashboard = await dashboardService.createDashboard(
+            userId, body.name, body.description, body.layoutJson, body.widgets
+        );
+        return c.json(dashboard, 201);
+    } catch (err) {
+        console.error('Error creating dashboard:', err);
+        return c.json({ error: 'Failed to create dashboard' }, 500);
+    }
+});
+
+// 4. PUT /api/dashboards/:id — update a dashboard
+app.put('/api/dashboards/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const updates = await c.req.json();
+        const dashboard = await dashboardService.updateDashboard(id, updates);
+        return c.json(dashboard);
+    } catch (err) {
+        console.error('Error updating dashboard:', err);
+        return c.json({ error: 'Failed to update dashboard' }, 500);
+    }
+});
+
+// 5. DELETE /api/dashboards/:id — delete a dashboard
+app.delete('/api/dashboards/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        await dashboardService.deleteDashboard(id);
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting dashboard:', err);
+        return c.json({ error: 'Failed to delete dashboard' }, 500);
+    }
+});
+
+// 6. GET /api/charts — list saved charts
+app.get('/api/charts', async (c) => {
+    try {
+        const userId = c.req.query('userId') || 'default';
+        const dashboardId = c.req.query('dashboardId') || undefined;
+        const charts = await dashboardService.getCharts(userId, dashboardId);
+        return c.json(charts);
+    } catch (err) {
+        console.error('Error listing charts:', err);
+        return c.json({ error: 'Failed to list charts' }, 500);
+    }
+});
+
+// 7. POST /api/charts — save a chart
+app.post('/api/charts', async (c) => {
+    try {
+        const body = await c.req.json();
+        const userId = body.userId || 'default';
+        const chart = await dashboardService.saveChart(userId, body);
+        return c.json(chart, 201);
+    } catch (err) {
+        console.error('Error saving chart:', err);
+        return c.json({ error: 'Failed to save chart' }, 500);
+    }
+});
+
+// 8. DELETE /api/charts/:id — delete a chart
+app.delete('/api/charts/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        await dashboardService.deleteChart(id);
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting chart:', err);
+        return c.json({ error: 'Failed to delete chart' }, 500);
+    }
+});
+
+// =============================================================================
+// MARKET INTELLIGENCE & ECONOMIC DATA ENDPOINTS — Wave 19
+// =============================================================================
+
+// --- Data Feed Management (4 routes) ---
+
+// 1. GET /api/market/feeds — List all configured data feeds
+app.get('/api/market/feeds', async (c) => {
+    try {
+        const feeds = await db.select().from(marketDataFeeds).all();
+        return c.json(feeds);
+    } catch (err: any) {
+        console.error('[Market] Failed to list feeds:', err);
+        return c.json({ error: 'Failed to list feeds' }, 500);
+    }
+});
+
+// 2. POST /api/market/feeds/refresh — Refresh all feeds
+app.post('/api/market/feeds/refresh', async (c) => {
+    try {
+        const results: any = {};
+        try { results.rba = await rbaDataFeed.fetchAllTables(); } catch (e: any) { results.rba = { error: e.message }; }
+        try { results.abs = await absDataFeed.fetchAllIndicators(); } catch (e: any) { results.abs = { error: e.message }; }
+        try { results.prices = await marketPriceService.refreshPrices(); } catch (e: any) { results.prices = { error: e.message }; }
+        return c.json(results);
+    } catch (err: any) {
+        console.error('[Market] Feed refresh failed:', err);
+        return c.json({ error: 'Feed refresh failed' }, 500);
+    }
+});
+
+// 3. POST /api/market/feeds/:feedId/refresh — Refresh specific feed
+app.post('/api/market/feeds/:feedId/refresh', async (c) => {
+    try {
+        const feedId = c.req.param('feedId');
+        let result: any;
+
+        if (feedId.startsWith('rba-')) {
+            const tableKey = feedId.replace('rba-', '').toUpperCase();
+            const csv = await rbaDataFeed.fetchTable(tableKey);
+            const indicators = await rbaDataFeed.parseTable(tableKey, csv);
+            result = { indicators: indicators.length, tableKey };
+        } else if (feedId.startsWith('abs-')) {
+            result = await absDataFeed.fetchAllIndicators();
+        } else if (feedId.startsWith('feed-alpha') || feedId.startsWith('feed-coingecko')) {
+            result = await marketPriceService.refreshPrices();
+        } else {
+            return c.json({ error: `Unknown feed: ${feedId}` }, 404);
+        }
+
+        return c.json(result);
+    } catch (err: any) {
+        console.error('[Market] Feed refresh failed:', err);
+        return c.json({ error: err.message || 'Feed refresh failed' }, 500);
+    }
+});
+
+// 4. GET /api/market/feeds/:feedId/status — Feed status
+app.get('/api/market/feeds/:feedId/status', async (c) => {
+    try {
+        const feedId = c.req.param('feedId');
+        const rows = await db.select().from(marketDataFeeds).where(eq(marketDataFeeds.id, feedId)).all();
+        if (rows.length === 0) {
+            return c.json({ error: 'Feed not found' }, 404);
+        }
+        return c.json(rows[0]);
+    } catch (err: any) {
+        console.error('[Market] Feed status failed:', err);
+        return c.json({ error: 'Failed to get feed status' }, 500);
+    }
+});
+
+// --- Economic Indicators (5 routes) ---
+
+// 5. GET /api/market/indicators/snapshot — Economic snapshot (combined key indicators)
+app.get('/api/market/indicators/snapshot', async (c) => {
+    try {
+        const indicators = await db.select().from(economicIndicators).all();
+        const latestMap = new Map<string, any>();
+        for (const ind of indicators as any[]) {
+            const existing = latestMap.get(ind.indicatorCode);
+            if (!existing || ind.observationDate > existing.observationDate) {
+                latestMap.set(ind.indicatorCode, ind);
+            }
+        }
+        return c.json({ indicators: Array.from(latestMap.values()), count: latestMap.size, lastUpdated: new Date().toISOString() });
+    } catch (err: any) {
+        console.error('[Market] Snapshot failed:', err);
+        return c.json({ error: 'Failed to get snapshot' }, 500);
+    }
+});
+
+// 8. GET /api/market/indicators/cash-rate — RBA cash rate (MUST be before :code)
+app.get('/api/market/indicators/cash-rate', async (c) => {
+    try {
+        const cashRate = await rbaDataFeed.getCashRate();
+        return c.json(cashRate);
+    } catch (err: any) {
+        console.error('[Market] Cash rate failed:', err);
+        return c.json({ error: 'Failed to get cash rate' }, 500);
+    }
+});
+
+// 9. GET /api/market/indicators/cpi — CPI convenience endpoint (MUST be before :code)
+app.get('/api/market/indicators/cpi', async (c) => {
+    try {
+        const cpi = await absDataFeed.getLatestIndicator('ABS_CPI_ALL_GROUPS');
+        const cpiPct = await absDataFeed.getLatestIndicator('ABS_CPI_ALL_GROUPS_PCT');
+        const rbaCpiQ = await rbaDataFeed.getRateHistory('RBA_CPI_QUARTERLY', 12);
+        const rbaCpiA = await rbaDataFeed.getRateHistory('RBA_CPI_ANNUAL', 12);
+        return c.json({
+            abs: { allGroups: cpi, allGroupsPct: cpiPct },
+            rba: { quarterly: rbaCpiQ, annual: rbaCpiA },
+            lastUpdated: new Date().toISOString(),
+        });
+    } catch (err: any) {
+        console.error('[Market] CPI failed:', err);
+        return c.json({ error: 'Failed to get CPI data' }, 500);
+    }
+});
+
+// 6. GET /api/market/indicators — Filtered indicators (query params: category, source, limit)
+app.get('/api/market/indicators', async (c) => {
+    try {
+        const category = c.req.query('category');
+        const source = c.req.query('source');
+        const limitParam = parseInt(c.req.query('limit') ?? '100', 10);
+
+        const conditions: any[] = [];
+        if (category) conditions.push(eq(economicIndicators.category, category));
+        if (source) conditions.push(like(economicIndicators.source, `%${source}%`));
+
+        let query = db.select().from(economicIndicators);
+        if (conditions.length > 0) {
+            query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions)) as any;
+        }
+        const rows = await (query as any).orderBy(desc(economicIndicators.observationDate)).limit(limitParam).all();
+        return c.json({ indicators: rows, count: rows.length });
+    } catch (err: any) {
+        console.error('[Market] Indicators list failed:', err);
+        return c.json({ error: 'Failed to list indicators' }, 500);
+    }
+});
+
+// 7. GET /api/market/indicators/:code/history — Indicator history
+app.get('/api/market/indicators/:code/history', async (c) => {
+    try {
+        const code = c.req.param('code');
+        const months = parseInt(c.req.query('months') ?? '24', 10);
+        const history = await rbaDataFeed.getRateHistory(code, months);
+        const absHistory = await absDataFeed.getIndicatorHistory(code, months);
+
+        const combined = [
+            ...history.map(h => ({ ...h, source: 'rba' })),
+            ...absHistory.map(h => ({ date: h.observationDate, value: h.value, source: 'abs' })),
+        ].sort((a, b) => b.date.localeCompare(a.date));
+
+        return c.json({ code, history: combined, count: combined.length });
+    } catch (err: any) {
+        console.error('[Market] Indicator history failed:', err);
+        return c.json({ error: 'Failed to get indicator history' }, 500);
+    }
+});
+
+// --- Market Prices (5 routes) ---
+
+// 11. GET /api/market/prices/search/:query — Symbol search (MUST be before :symbol)
+app.get('/api/market/prices/search/:query', async (c) => {
+    try {
+        const query = c.req.param('query');
+        const results = await marketPriceService.searchSymbol(query);
+        return c.json({ results, count: results.length });
+    } catch (err: any) {
+        console.error('[Market] Symbol search failed:', err);
+        return c.json({ error: 'Symbol search failed' }, 500);
+    }
+});
+
+// 13. POST /api/market/prices/refresh — Refresh prices
+app.post('/api/market/prices/refresh', async (c) => {
+    try {
+        const result = await marketPriceService.refreshPrices();
+        return c.json(result);
+    } catch (err: any) {
+        console.error('[Market] Price refresh failed:', err);
+        return c.json({ error: 'Price refresh failed' }, 500);
+    }
+});
+
+// 10. GET /api/market/prices — All tracked prices
+app.get('/api/market/prices', async (c) => {
+    try {
+        const assetType = c.req.query('assetType');
+        const prices = await marketPriceService.getLatestPrices(assetType ?? undefined);
+        return c.json({ prices, count: prices.length });
+    } catch (err: any) {
+        console.error('[Market] Prices list failed:', err);
+        return c.json({ error: 'Failed to list prices' }, 500);
+    }
+});
+
+// 14. GET /api/market/prices/:symbol — Specific symbol price
+app.get('/api/market/prices/:symbol', async (c) => {
+    try {
+        const symbol = c.req.param('symbol');
+        const rows = await db.select().from(marketPrices)
+            .where(eq(marketPrices.symbol, symbol))
+            .orderBy(desc(marketPrices.observationDate))
+            .limit(1)
+            .all();
+
+        if (rows.length === 0) {
+            return c.json({ error: `No price data for symbol: ${symbol}` }, 404);
+        }
+        return c.json(rows[0]);
+    } catch (err: any) {
+        console.error('[Market] Symbol price failed:', err);
+        return c.json({ error: 'Failed to get symbol price' }, 500);
+    }
+});
+
+// 15. GET /api/market/prices/:symbol/history — Price history
+app.get('/api/market/prices/:symbol/history', async (c) => {
+    try {
+        const symbol = c.req.param('symbol');
+        const days = parseInt(c.req.query('days') ?? '30', 10);
+        const history = await marketPriceService.getPriceHistory(symbol, days);
+        return c.json({ symbol, history, count: history.length });
+    } catch (err: any) {
+        console.error('[Market] Price history failed:', err);
+        return c.json({ error: 'Failed to get price history' }, 500);
+    }
+});
+
+// --- Sentiment (4 routes) ---
+
+// 16. GET /api/market/sentiment/:topic — Topic sentiment
+app.get('/api/market/sentiment/:topic', async (c) => {
+    try {
+        const topic = decodeURIComponent(c.req.param('topic'));
+        const snapshot = await sentimentAnalysisService.getSentimentSnapshot(topic);
+        return c.json(snapshot);
+    } catch (err: any) {
+        console.error('[Market] Sentiment failed:', err);
+        return c.json({ error: 'Sentiment analysis failed' }, 500);
+    }
+});
+
+// 17. POST /api/market/sentiment/batch — Batch sentiment
+app.post('/api/market/sentiment/batch', async (c) => {
+    try {
+        const body = await c.req.json() as { topics?: string[] };
+        const topics = body.topics;
+        const snapshots = await sentimentAnalysisService.getMultiTopicSentiment(topics);
+        return c.json({ snapshots, count: snapshots.length });
+    } catch (err: any) {
+        console.error('[Market] Batch sentiment failed:', err);
+        return c.json({ error: 'Batch sentiment analysis failed' }, 500);
+    }
+});
+
+// 18. GET /api/market/sentiment/:topic/history — Sentiment history
+app.get('/api/market/sentiment/:topic/history', async (c) => {
+    try {
+        const topic = decodeURIComponent(c.req.param('topic'));
+        const days = parseInt(c.req.query('days') ?? '30', 10);
+        const history = await sentimentAnalysisService.getSentimentHistory(topic, days);
+        return c.json({ topic, history, count: history.length });
+    } catch (err: any) {
+        console.error('[Market] Sentiment history failed:', err);
+        return c.json({ error: 'Sentiment history failed' }, 500);
+    }
+});
+
+// 19. POST /api/market/sentiment/impact — Impact analysis
+app.post('/api/market/sentiment/impact', async (c) => {
+    try {
+        const body = await c.req.json() as { event: string; context: string };
+        if (!body.event) {
+            return c.json({ error: 'event is required' }, 400);
+        }
+        const analysis = await sentimentAnalysisService.analyzeMarketImpact(body.event, body.context || '');
+        return c.json(analysis);
+    } catch (err: any) {
+        console.error('[Market] Impact analysis failed:', err);
+        return c.json({ error: 'Impact analysis failed' }, 500);
+    }
+});
+
+// --- Economic Calendar (2 routes) ---
+
+// 20. GET /api/market/calendar — Get events with date range and importance filter
+app.get('/api/market/calendar', async (c) => {
+    try {
+        const startDate = c.req.query('startDate');
+        const endDate = c.req.query('endDate');
+        const importance = c.req.query('importance');
+
+        const conditions: any[] = [];
+        if (startDate) conditions.push(gte(economicCalendar.scheduledDate, startDate));
+        if (endDate) conditions.push(lte(economicCalendar.scheduledDate, endDate));
+        if (importance) conditions.push(eq(economicCalendar.importance, importance));
+
+        let query = db.select().from(economicCalendar);
+        if (conditions.length > 0) {
+            query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions)) as any;
+        }
+        const events = await (query as any).orderBy(economicCalendar.scheduledDate).all();
+        return c.json({ events, count: events.length });
+    } catch (err: any) {
+        console.error('[Market] Calendar query failed:', err);
+        return c.json({ error: 'Failed to query calendar' }, 500);
+    }
+});
+
+// 21. POST /api/market/calendar — Add calendar event
+app.post('/api/market/calendar', async (c) => {
+    try {
+        const body = await c.req.json() as {
+            eventName: string;
+            eventType: string;
+            source: string;
+            scheduledDate: string;
+            scheduledTime?: string;
+            country?: string;
+            importance?: string;
+            previousValue?: string;
+            forecastValue?: string;
+            impactDescription?: string;
+        };
+
+        if (!body.eventName || !body.eventType || !body.source || !body.scheduledDate) {
+            return c.json({ error: 'eventName, eventType, source, and scheduledDate are required' }, 400);
+        }
+
+        const id = crypto.randomUUID();
+        const now = new Date().toISOString();
+        await db.insert(economicCalendar).values({
+            id,
+            eventName: body.eventName,
+            eventType: body.eventType,
+            source: body.source,
+            scheduledDate: body.scheduledDate,
+            scheduledTime: body.scheduledTime ?? null,
+            country: body.country ?? 'AU',
+            importance: body.importance ?? 'medium',
+            previousValue: body.previousValue ?? null,
+            forecastValue: body.forecastValue ?? null,
+            impactDescription: body.impactDescription ?? null,
+            createdAt: now,
+            updatedAt: now,
+        }).run();
+
+        return c.json({ id, message: 'Calendar event created' }, 201);
+    } catch (err: any) {
+        console.error('[Market] Calendar event creation failed:', err);
+        return c.json({ error: 'Failed to create calendar event' }, 500);
+    }
+});
+
+// --- Market Alerts (2 routes) ---
+
+// 22. POST /api/market/alerts — Create alert
+app.post('/api/market/alerts', async (c) => {
+    try {
+        const body = await c.req.json() as {
+            alertType: string;
+            targetType: string;
+            targetSymbol?: string;
+            targetIndicator?: string;
+            condition: string;
+            thresholdValue: number;
+            notificationMethod?: string;
+        };
+
+        if (!body.alertType || !body.targetType || !body.condition || body.thresholdValue == null) {
+            return c.json({ error: 'alertType, targetType, condition, and thresholdValue are required' }, 400);
+        }
+
+        const id = crypto.randomUUID();
+        const now = new Date().toISOString();
+        await db.insert(marketAlerts).values({
+            id,
+            userId: 'default',
+            alertType: body.alertType,
+            targetType: body.targetType,
+            targetSymbol: body.targetSymbol ?? null,
+            targetIndicator: body.targetIndicator ?? null,
+            condition: body.condition,
+            thresholdValue: body.thresholdValue,
+            notificationMethod: body.notificationMethod ?? 'in_app',
+            createdAt: now,
+            updatedAt: now,
+        }).run();
+
+        return c.json({ id, message: 'Alert created' }, 201);
+    } catch (err: any) {
+        console.error('[Market] Alert creation failed:', err);
+        return c.json({ error: 'Failed to create alert' }, 500);
+    }
+});
+
+// 23. GET /api/market/alerts — List alerts
+app.get('/api/market/alerts', async (c) => {
+    try {
+        const activeOnly = c.req.query('activeOnly') === 'true';
+        let query = db.select().from(marketAlerts);
+        if (activeOnly) {
+            query = query.where(eq(marketAlerts.isActive, true)) as any;
+        }
+        const alerts = await (query as any).orderBy(desc(marketAlerts.createdAt)).all();
+        return c.json({ alerts, count: alerts.length });
+    } catch (err: any) {
+        console.error('[Market] Alerts list failed:', err);
+        return c.json({ error: 'Failed to list alerts' }, 500);
+    }
+});
+
+// ============================================================================
+// COGNEE MULTI-USER (Wave 3)
+// ============================================================================
+
+// Wave 3: Zod schemas for Cognee endpoint validation
+const initCogneeUserSchema = z.object({
+  userId: z.string().min(1),
+  email: z.string().email().optional(),
+});
+
+const reindexSchema = z.object({
+  userId: z.string().min(1),
+  datasets: z.array(z.string()).optional(),
+});
+
+/**
+ * POST /api/cognee/init-user
+ * Initialize a Cognee account for a GoldLedger user.
+ * Creates cognee_user_accounts record + Cognee-side user + registers DataPoints.
+ */
+app.post('/api/cognee/init-user', zValidator('json', initCogneeUserSchema), async (c) => {
+  try {
+    const { userId, email } = c.req.valid('json');
+
+    // Check if user already has a Cognee account
+    const existing = await (db.select().from(cogneeUserAccounts)
+      .where(eq(cogneeUserAccounts.userId, userId))
+      .limit(1) as any).all();
+
+    if (existing.length > 0) {
+      return c.json({ message: 'User already initialized', account: existing[0] });
+    }
+
+    // Generate Cognee credentials
+    const cogneeEmail = email ?? `user_${userId}@goldledger.app`;
+    const cogneePassword = crypto.randomUUID(); // Temporary — discarded after token exchange
+    const datasetPrefix = `user_${userId}`;
+
+    // Create Cognee-side user account and get refresh token
+    let cogneeUserId: string | null = null;
+    let refreshToken: string | null = null;
+    try {
+      const result = await cogneeClient.createCogneeUser(cogneeEmail, cogneePassword);
+      cogneeUserId = result.userId;
+      refreshToken = result.refreshToken;
+    } catch (err) {
+      console.warn('Cognee user creation failed (may already exist):', err);
+      // Continue — we can still use admin token with prefix isolation
+    }
+
+    // Store in our DB — store REFRESH TOKEN, not password (D02 CRIT-03)
+    const accountId = crypto.randomUUID();
+    await (db.insert(cogneeUserAccounts).values({
+      id: accountId,
+      userId,
+      cogneeEmail,
+      cogneeRefreshToken: refreshToken,
+      cogneeUserId,
+      datasetPrefix,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }) as any).run();
+
+    // Set up user auth token cache if we got a refresh token
+    if (cogneeUserId && refreshToken) {
+      await cogneeClient.setupUserAuth(userId, refreshToken);
+    }
+
+    // Register all 8 DataPoint models for this user
+    try {
+      const { CogneeDataPointService } = await import('./services/cognee-datapoints.js');
+      const dpService = new CogneeDataPointService();
+      await dpService.registerWave3DataPoints(userId, datasetPrefix);
+    } catch (err) {
+      console.warn('DataPoint registration failed:', err);
+    }
+
+    return c.json({
+      message: 'Cognee user initialized',
+      accountId,
+      datasetPrefix,
+      cogneeUserId,
+      dataPointsRegistered: ALL_DATAPOINT_MODELS.length,
+    }, 201);
+  } catch (error: any) {
+    console.error('Init Cognee user error:', error);
+    return c.json({ error: error.message ?? 'Failed to initialize Cognee user' }, 500);
+  }
+});
+
+/**
+ * POST /api/cognee/reindex
+ * Re-index all (or specified) datasets for a user.
+ */
+app.post('/api/cognee/reindex', zValidator('json', reindexSchema), async (c) => {
+  try {
+    const { userId, datasets } = c.req.valid('json');
+
+    // Get user's Cognee account
+    const account = await (db.select().from(cogneeUserAccounts)
+      .where(eq(cogneeUserAccounts.userId, userId))
+      .limit(1) as any).all();
+
+    if (account.length === 0) {
+      return c.json({ error: 'User not initialized. Call POST /api/cognee/init-user first.' }, 404);
+    }
+
+    const prefix = account[0].datasetPrefix;
+    const targetDatasets = datasets?.map((d: string) => `${prefix}_${d}`) ?? [];
+
+    // Trigger cognify on the datasets
+    if (targetDatasets.length > 0) {
+      await cogneeClient.cognify(targetDatasets, true, undefined, userId);
+    } else {
+      // Reindex all user datasets — list and filter by prefix
+      const allDatasets = await cogneeClient.listDatasets(userId);
+      const userDatasets = Array.isArray(allDatasets)
+        ? allDatasets.filter((d: any) => (d.name ?? d).toString().startsWith(prefix))
+        : [];
+      for (const ds of userDatasets) {
+        await cogneeClient.cognify([ds.name ?? ds], true, undefined, userId);
+      }
+    }
+
+    // Update last sync timestamp
+    await (db.update(cogneeUserAccounts)
+      .set({ lastSyncAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
+      .where(eq(cogneeUserAccounts.userId, userId)) as any).run();
+
+    return c.json({ message: 'Reindex triggered', userId, prefix });
+  } catch (error: any) {
+    console.error('Cognee reindex error:', error);
+    return c.json({ error: error.message ?? 'Reindex failed' }, 500);
+  }
+});
+
+/**
+ * GET /api/cognee/session
+ * Get or create an active Cognee session for the current user.
+ */
+app.get('/api/cognee/session', async (c) => {
+  try {
+    const userId = c.req.query('userId');
+    if (!userId) {
+      return c.json({ error: 'userId query parameter required' }, 400);
+    }
+
+    // Get user's dataset prefix
+    const account = await (db.select().from(cogneeUserAccounts)
+      .where(eq(cogneeUserAccounts.userId, userId))
+      .limit(1) as any).all();
+
+    const datasetPrefix = account.length > 0 ? account[0].datasetPrefix : `user_${userId}`;
+
+    // Get or create session via CogneeSessionService
+    const session = await cogneeSessionService.getOrCreateCogneeSession(userId, {
+      sessionType: 'chat',
+      ttlMinutes: 30,
+      datasetPrefix,
+    });
+
+    if (!session) {
+      return c.json({ error: 'Failed to create session (Redis may be unavailable)' }, 503);
+    }
+
+    return c.json({
+      sessionId: session.sessionId,
+      isNew: session.isNew,
+      context: session.context,
+    });
+  } catch (error: any) {
+    console.error('Cognee session error:', error);
+    return c.json({ error: error.message ?? 'Session creation failed' }, 500);
+  }
+});
+
+/**
+ * GET /api/cognee/graph/:userId
+ * Get user-scoped knowledge graph (delegates to Cognee API).
+ */
+app.get('/api/cognee/graph/:userId', async (c) => {
+  try {
+    const userId = c.req.param('userId');
+
+    // Get user's dataset prefix
+    const account = await (db.select().from(cogneeUserAccounts)
+      .where(eq(cogneeUserAccounts.userId, userId))
+      .limit(1) as any).all();
+
+    if (account.length === 0) {
+      return c.json({ error: 'User not initialized' }, 404);
+    }
+
+    const prefix = account[0].datasetPrefix;
+
+    // Get user's datasets and their graphs
+    const allDatasets = await cogneeClient.listDatasets(userId);
+    const userDatasets = Array.isArray(allDatasets)
+      ? allDatasets.filter((d: any) => (d.name ?? d).toString().startsWith(prefix))
+      : [];
+
+    // Fetch graph for each user dataset (limit to 10 to avoid timeout)
+    const graphs: Array<{ dataset: string; graph: any }> = [];
+    for (const ds of userDatasets.slice(0, 10)) {
+      try {
+        const graph = await cogneeClient.getDatasetGraph(ds.id ?? ds.name ?? ds, userId);
+        graphs.push({ dataset: ds.name ?? ds, graph });
+      } catch (_err) {
+        // Skip datasets without graphs
+      }
+    }
+
+    return c.json({
+      userId,
+      datasetPrefix: prefix,
+      datasetCount: userDatasets.length,
+      graphs,
+    });
+  } catch (error: any) {
+    console.error('Cognee graph error:', error);
+    return c.json({ error: error.message ?? 'Graph retrieval failed' }, 500);
+  }
+});
+
+// =========================================================================
+// WAVE 23 — Multi-Tenant & Access Control Routes (26 endpoints)
+// =========================================================================
+
+function getUserId(c: any): string {
+    const userId = c.get('userId');
+    if (userId) return userId;
+    const payload = c.get('jwtPayload');
+    if (payload?.sub) return payload.sub;
+    if (payload?.userId) return payload.userId;
+    throw new Error('No authenticated user found');
+}
+
+// --- TENANT ROUTES (6) ---
+
+app.post('/api/tenants', async (c) => {
+    try {
+        const userId = getUserId(c);
+        const body = await c.req.json() as { name: string; slug: string; abn?: string; entityType?: string; industry?: string; financialYearEnd?: string; timezone?: string; primaryContactEmail?: string };
+        if (!body.name || !body.slug) return c.json({ error: 'name and slug are required' }, 400);
+        const tenant = await tenantService.createTenant(body.name, body.slug, userId, { abn: body.abn, entityType: body.entityType, industry: body.industry, financialYearEnd: body.financialYearEnd, timezone: body.timezone, primaryContactEmail: body.primaryContactEmail });
+        return c.json(tenant, 201);
+    } catch (err: any) {
+        console.error('[Tenant] Create failed:', err);
+        return c.json({ error: err.message || 'Failed to create tenant' }, 400);
+    }
+});
+
+app.get('/api/tenants', async (c) => {
+    try {
+        const userId = getUserId(c);
+        const list = await tenantService.getMemberTenants(userId);
+        return c.json({ tenants: list, count: list.length });
+    } catch (err: any) {
+        console.error('[Tenant] List failed:', err);
+        return c.json({ error: err.message || 'Failed to list tenants' }, 500);
+    }
+});
+
+app.get('/api/tenants/:id', async (c) => {
+    try {
+        const tenant = await tenantService.getTenant(c.req.param('id'));
+        if (!tenant) return c.json({ error: 'Tenant not found' }, 404);
+        return c.json(tenant);
+    } catch (err: any) {
+        console.error('[Tenant] Get failed:', err);
+        return c.json({ error: err.message || 'Failed to get tenant' }, 500);
+    }
+});
+
+app.put('/api/tenants/:id', async (c) => {
+    try {
+        const tenantId = c.req.param('id');
+        const userId = getUserId(c);
+        await rbacService.requirePermission(tenantId, userId, 'settings.manage');
+        const body = await c.req.json();
+        return c.json(await tenantService.updateTenant(tenantId, body));
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Tenant] Update failed:', err);
+        return c.json({ error: err.message || 'Failed to update tenant' }, 400);
+    }
+});
+
+app.post('/api/tenants/:id/switch', async (c) => {
+    try {
+        const tenantId = c.req.param('id');
+        const userId = getUserId(c);
+        const context = await tenantService.switchTenant(userId, tenantId);
+        const token = await adminAuthService.generateTenantToken(userId, tenantId);
+        return c.json({ ...context, token });
+    } catch (err: any) {
+        console.error('[Tenant] Switch failed:', err);
+        return c.json({ error: err.message || 'Failed to switch tenant' }, 400);
+    }
+});
+
+app.delete('/api/tenants/:id', async (c) => {
+    try {
+        const tenantId = c.req.param('id');
+        const userId = getUserId(c);
+        const role = await rbacService.getRoleForUser(tenantId, userId);
+        if (role !== 'owner') return c.json({ error: 'Only the tenant owner can deactivate a tenant' }, 403);
+        await tenantService.deactivateTenant(tenantId);
+        return c.json({ message: 'Tenant deactivated successfully' });
+    } catch (err: any) {
+        console.error('[Tenant] Deactivate failed:', err);
+        return c.json({ error: err.message || 'Failed to deactivate tenant' }, 500);
+    }
+});
+
+// --- MEMBER ROUTES (6) ---
+
+app.get('/api/tenants/:tenantId/members', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        await rbacService.requirePermission(tenantId, userId, 'members.read');
+        const members = await tenantService.getMembers(tenantId);
+        const invitations = await tenantService.getPendingInvitations(tenantId);
+        return c.json({ members, invitations, memberCount: members.length, pendingCount: invitations.length });
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Members] List failed:', err);
+        return c.json({ error: err.message || 'Failed to list members' }, 500);
+    }
+});
+
+app.post('/api/tenants/:tenantId/members', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        await rbacService.requirePermission(tenantId, userId, 'members.manage');
+        const body = await c.req.json() as { userId: string; role: string };
+        if (!body.userId || !body.role) return c.json({ error: 'userId and role are required' }, 400);
+        const member = await tenantService.addMember(tenantId, body.userId, body.role as any, userId);
+        return c.json(member, 201);
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Members] Add failed:', err);
+        return c.json({ error: err.message || 'Failed to add member' }, 400);
+    }
+});
+
+app.put('/api/tenants/:tenantId/members/:userId/role', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const targetUserId = c.req.param('userId');
+        const currentUserId = getUserId(c);
+        await rbacService.requirePermission(tenantId, currentUserId, 'members.manage');
+        const body = await c.req.json() as { role: string };
+        if (!body.role) return c.json({ error: 'role is required' }, 400);
+        return c.json(await tenantService.updateMemberRole(tenantId, targetUserId, body.role as any));
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Members] Update role failed:', err);
+        return c.json({ error: err.message || 'Failed to update member role' }, 400);
+    }
+});
+
+app.delete('/api/tenants/:tenantId/members/:userId', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const targetUserId = c.req.param('userId');
+        const currentUserId = getUserId(c);
+        await rbacService.requirePermission(tenantId, currentUserId, 'members.manage');
+        await tenantService.removeMember(tenantId, targetUserId);
+        return c.json({ message: 'Member removed successfully' });
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Members] Remove failed:', err);
+        return c.json({ error: err.message || 'Failed to remove member' }, 400);
+    }
+});
+
+app.post('/api/tenants/:tenantId/invitations', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        await rbacService.requirePermission(tenantId, userId, 'members.manage');
+        const body = await c.req.json() as { email: string; role: string };
+        if (!body.email || !body.role) return c.json({ error: 'email and role are required' }, 400);
+        const invitation = await tenantService.inviteMember(tenantId, body.email, body.role as any, userId);
+        return c.json(invitation, 201);
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Invitations] Send failed:', err);
+        return c.json({ error: err.message || 'Failed to send invitation' }, 400);
+    }
+});
+
+app.post('/api/invitations/accept', async (c) => {
+    try {
+        const body = await c.req.json() as { token: string; userId: string };
+        if (!body.token) return c.json({ error: 'Invitation token is required' }, 400);
+        let userId: string;
+        try { userId = getUserId(c); } catch { userId = body.userId; }
+        if (!userId) return c.json({ error: 'userId is required (via auth or body)' }, 400);
+        return c.json(await tenantService.acceptInvitation(body.token, userId));
+    } catch (err: any) {
+        console.error('[Invitations] Accept failed:', err);
+        return c.json({ error: err.message || 'Failed to accept invitation' }, 400);
+    }
+});
+
+// --- PERMISSION ROUTES (4) ---
+
+app.get('/api/tenants/:tenantId/permissions', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        return c.json({ permissions: await rbacService.getUserPermissions(tenantId, userId) });
+    } catch (err: any) {
+        console.error('[Permissions] List failed:', err);
+        return c.json({ error: err.message || 'Failed to list permissions' }, 500);
+    }
+});
+
+app.get('/api/tenants/:tenantId/permissions/matrix', async (c) => {
+    try {
+        return c.json({ matrix: await rbacService.getPermissionMatrix(c.req.param('tenantId')) });
+    } catch (err: any) {
+        console.error('[Permissions] Matrix failed:', err);
+        return c.json({ error: err.message || 'Failed to get permission matrix' }, 500);
+    }
+});
+
+app.put('/api/tenants/:tenantId/permissions/:role', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const role = c.req.param('role');
+        const userId = getUserId(c);
+        const body = await c.req.json() as { permissions: string[] };
+        if (!Array.isArray(body.permissions)) return c.json({ error: 'permissions array is required' }, 400);
+        await rbacService.updateRolePermissions(tenantId, role as any, body.permissions, userId);
+        return c.json({ message: `Permissions updated for role '${role}'` });
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Permissions] Update role failed:', err);
+        return c.json({ error: err.message || 'Failed to update permissions' }, 400);
+    }
+});
+
+app.post('/api/tenants/:tenantId/permissions/reset', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        const role = await rbacService.getRoleForUser(tenantId, userId);
+        if (role !== 'owner') return c.json({ error: 'Only tenant owners can reset permissions' }, 403);
+        await rbacService.resetToDefaults(tenantId);
+        return c.json({ message: 'Permissions reset to defaults' });
+    } catch (err: any) {
+        console.error('[Permissions] Reset failed:', err);
+        return c.json({ error: err.message || 'Failed to reset permissions' }, 500);
+    }
+});
+
+// --- SUBSCRIPTION ROUTES (6) ---
+
+app.get('/api/subscriptions/plans', async (c) => {
+    try {
+        const plans = await subscriptionService.getPlans();
+        return c.json({ plans, count: plans.length });
+    } catch (err: any) {
+        console.error('[Subscriptions] List plans failed:', err);
+        return c.json({ error: err.message || 'Failed to list plans' }, 500);
+    }
+});
+
+app.get('/api/tenants/:tenantId/subscription', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const subscription = await subscriptionService.getCurrentSubscription(tenantId);
+        const usage = await subscriptionService.getUsage(tenantId);
+        return c.json({ subscription, usage });
+    } catch (err: any) {
+        console.error('[Subscriptions] Get current failed:', err);
+        return c.json({ error: err.message || 'Failed to get subscription' }, 500);
+    }
+});
+
+app.post('/api/tenants/:tenantId/subscription', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        await rbacService.requirePermission(tenantId, userId, 'settings.manage');
+        const body = await c.req.json() as { planName: string; billingCycle?: 'monthly' | 'annual' };
+        if (!body.planName) return c.json({ error: 'planName is required' }, 400);
+        return c.json(await subscriptionService.subscribe(tenantId, body.planName, body.billingCycle), 201);
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Subscriptions] Subscribe failed:', err);
+        return c.json({ error: err.message || 'Failed to subscribe' }, 400);
+    }
+});
+
+app.put('/api/tenants/:tenantId/subscription/upgrade', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        await rbacService.requirePermission(tenantId, userId, 'settings.manage');
+        const body = await c.req.json() as { newPlanName: string };
+        if (!body.newPlanName) return c.json({ error: 'newPlanName is required' }, 400);
+        return c.json(await subscriptionService.upgrade(tenantId, body.newPlanName));
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Subscriptions] Upgrade failed:', err);
+        return c.json({ error: err.message || 'Failed to upgrade' }, 400);
+    }
+});
+
+app.put('/api/tenants/:tenantId/subscription/downgrade', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        await rbacService.requirePermission(tenantId, userId, 'settings.manage');
+        const body = await c.req.json() as { newPlanName: string };
+        if (!body.newPlanName) return c.json({ error: 'newPlanName is required' }, 400);
+        return c.json(await subscriptionService.downgrade(tenantId, body.newPlanName));
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Subscriptions] Downgrade failed:', err);
+        return c.json({ error: err.message || 'Failed to downgrade' }, 400);
+    }
+});
+
+app.delete('/api/tenants/:tenantId/subscription', async (c) => {
+    try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        await rbacService.requirePermission(tenantId, userId, 'settings.manage');
+        return c.json(await subscriptionService.cancel(tenantId));
+    } catch (err: any) {
+        if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+        console.error('[Subscriptions] Cancel failed:', err);
+        return c.json({ error: err.message || 'Failed to cancel subscription' }, 400);
+    }
+});
+
+// --- AUTH ROUTES — Tenant-Aware (4) ---
+
+app.post('/api/auth/login', async (c) => {
+    try {
+        const body = await c.req.json() as { username: string; password: string; tenantId?: string };
+        if (!body.username || !body.password) return c.json({ error: 'username and password are required' }, 400);
+        const user = await db.select().from(users).where(eq(users.username, body.username)).get();
+        if (!user || !(await comparePassword(body.password, user.passwordHash))) return c.json({ error: 'Invalid credentials' }, 401);
+        const memberTenants = await tenantService.getMemberTenants(user.id);
+        if (memberTenants.length === 0) {
+            const token = await generateToken(user.id);
+            return c.json({ token, user: { id: user.id, username: user.username }, tenants: [], activeTenant: null });
+        }
+        const targetTenantId = body.tenantId ?? memberTenants[0].tenant.id;
+        const match = memberTenants.find(mt => mt.tenant.id === targetTenantId);
+        if (!match) return c.json({ error: 'User is not a member of the specified tenant' }, 403);
+        const token = await adminAuthService.generateTenantToken(user.id, targetTenantId);
+        const context = await tenantService.getTenantContext(user.id, targetTenantId);
+        return c.json({ token, user: { id: user.id, username: user.username }, tenants: memberTenants, activeTenant: context });
+    } catch (err: any) {
+        console.error('[Auth] Login failed:', err);
+        return c.json({ error: err.message || 'Login failed' }, 500);
+    }
+});
+
+app.post('/api/auth/register', async (c) => {
+    try {
+        const body = await c.req.json() as { username: string; password: string; tenantName?: string; tenantSlug?: string };
+        if (!body.username || !body.password) return c.json({ error: 'username and password are required' }, 400);
+        const passwordHash = await hashPassword(body.password);
+        const userId = crypto.randomUUID();
+        try { await db.insert(users).values({ id: userId, username: body.username, passwordHash }); } catch { return c.json({ error: 'Username already exists' }, 400); }
+        let tenant = null;
+        let token: string;
+        if (body.tenantName && body.tenantSlug) {
+            tenant = await tenantService.createTenant(body.tenantName, body.tenantSlug, userId);
+            token = await adminAuthService.generateTenantToken(userId, tenant.id);
+        } else {
+            token = await generateToken(userId);
+        }
+        return c.json({ token, user: { id: userId, username: body.username }, tenant }, 201);
+    } catch (err: any) {
+        console.error('[Auth] Register failed:', err);
+        return c.json({ error: err.message || 'Registration failed' }, 400);
+    }
+});
+
+app.post('/api/auth/refresh', async (c) => {
+    try {
+        const authHeader = c.req.header('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) return c.json({ error: 'Authorization token required' }, 401);
+        const currentToken = authHeader.slice(7);
+        const body = await c.req.json().catch(() => ({})) as { tenantId?: string };
+        const result = await adminAuthService.refreshTenantToken(currentToken, body.tenantId);
+        if (!result) return c.json({ error: 'Token refresh failed' }, 401);
+        return c.json({ token: result.token, payload: result.payload });
+    } catch (err: any) {
+        console.error('[Auth] Refresh failed:', err);
+        return c.json({ error: err.message || 'Token refresh failed' }, 500);
+    }
+});
+
+app.get('/api/auth/me', async (c) => {
+    try {
+        const authHeader = c.req.header('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) return c.json({ error: 'No token provided' }, 401);
+        const token = authHeader.slice(7);
+        const tenantPayload = await adminAuthService.verifyTenantToken(token);
+        if (tenantPayload) {
+            const user = await db.select().from(users).where(eq(users.id, tenantPayload.userId)).get();
+            if (!user) return c.json({ error: 'User not found' }, 404);
+            const memberTenants = await tenantService.getMemberTenants(tenantPayload.userId);
+            let activeTenantContext = null;
+            try { activeTenantContext = await tenantService.getTenantContext(tenantPayload.userId, tenantPayload.tenantId); } catch { /* tenant may be deactivated */ }
+            return c.json({ user: { id: user.id, username: user.username }, tenants: memberTenants, activeTenant: activeTenantContext, role: tenantPayload.role, permissions: tenantPayload.permissions });
+        }
+        const legacyPayload = await verifyToken(token);
+        if (!legacyPayload) return c.json({ error: 'Invalid token' }, 401);
+        const user = await db.select().from(users).where(eq(users.id, legacyPayload.userId as string)).get();
+        if (!user) return c.json({ error: 'User not found' }, 404);
+        const memberTenants = await tenantService.getMemberTenants(user.id);
+        return c.json({ user: { id: user.id, username: user.username }, tenants: memberTenants, activeTenant: null, role: null, permissions: [] });
+    } catch (err: any) {
+        console.error('[Auth] Me failed:', err);
+        return c.json({ error: 'Verification failed' }, 401);
+    }
+});
+
+// ============================================================================
+// ACCOUNTS PAYABLE & PURCHASE ORDERS (Wave 10) — 22 endpoints
+// ============================================================================
+
+import { SupplierService } from './services/suppliers.js';
+import { BillService } from './services/bills.js';
+import { PurchaseOrderService } from './services/purchase-orders.js';
+
+const supplierService = new SupplierService();
+const billService = new BillService();
+const purchaseOrderService = new PurchaseOrderService();
+
+// --- Zod schemas for AP/PO validation ---
+
+const createSupplierSchema = z.object({
+    businessName: z.string().min(1).max(200),
+    contactName: z.string().max(200).optional(),
+    email: z.string().email().optional(),
+    phone: z.string().max(30).optional(),
+    address: z.string().max(500).optional(),
+    abn: z.string().regex(/^\d{11}$/, 'ABN must be 11 digits').optional(),
+    paymentTermsDays: z.number().int().min(0).max(365).optional(),
+    bankBsb: z.string().regex(/^\d{6}$/, 'BSB must be 6 digits').optional(),
+    bankAccountNumber: z.string().min(4).max(12).optional(),
+    bankAccountName: z.string().max(200).optional(),
+    notes: z.string().max(2000).optional(),
+});
+
+const updateSupplierSchema = createSupplierSchema.partial();
+
+const createBillSchema = z.object({
+    supplierId: z.string().min(1),
+    billNumber: z.string().max(50).optional(),
+    issueDate: z.string().min(1),
+    dueDate: z.string().min(1),
+    currency: z.string().max(3).optional(),
+    notes: z.string().max(2000).optional(),
+    lineItems: z.array(z.object({
+        description: z.string().min(1),
+        quantity: z.number().min(0),
+        unitPriceCents: z.number().int(),
+        gstRate: z.number().min(0).max(1).optional(),
+        accountCode: z.string().optional(),
+        taxCode: z.string().optional(),
+    })).min(1),
+});
+
+const updateBillSchema = z.object({
+    billNumber: z.string().max(50).optional(),
+    issueDate: z.string().optional(),
+    dueDate: z.string().optional(),
+    notes: z.string().max(2000).optional(),
+    lineItems: z.array(z.object({
+        id: z.string().optional(),
+        description: z.string().min(1),
+        quantity: z.number().min(0),
+        unitPriceCents: z.number().int(),
+        gstRate: z.number().min(0).max(1).optional(),
+        accountCode: z.string().optional(),
+        taxCode: z.string().optional(),
+    })).optional(),
+});
+
+const billPaymentSchema = z.object({
+    paymentDate: z.string().min(1),
+    amountCents: z.number().int().min(1),
+    paymentMethod: z.string().max(50).optional(),
+    reference: z.string().max(100).optional(),
+    transactionId: z.string().optional(),
+    notes: z.string().max(2000).optional(),
+});
+
+const createPOSchema = z.object({
+    supplierId: z.string().min(1),
+    expectedDate: z.string().optional(),
+    notes: z.string().max(2000).optional(),
+    lineItems: z.array(z.object({
+        description: z.string().min(1),
+        quantity: z.number().min(0),
+        unitPriceCents: z.number().int(),
+    })).min(1),
+});
+
+const updatePOSchema = z.object({
+    expectedDate: z.string().optional(),
+    notes: z.string().max(2000).optional(),
+    lineItems: z.array(z.object({
+        id: z.string().optional(),
+        description: z.string().min(1),
+        quantity: z.number().min(0),
+        unitPriceCents: z.number().int(),
+    })).optional(),
+});
+
+const receiveGoodsSchema = z.object({
+    receiptDate: z.string().min(1),
+    receivedBy: z.string().max(200).optional(),
+    notes: z.string().max(2000).optional(),
+    lines: z.array(z.object({
+        poLineId: z.string().min(1),
+        quantityReceived: z.number().min(0),
+    })).min(1),
+});
+
+const createPaymentRunSchema = z.object({
+    paymentDate: z.string().min(1),
+    billIds: z.array(z.string().min(1)).min(1),
+    bankReference: z.string().max(100).optional(),
+});
+
+// --- Supplier Endpoints (5) ---
+
+app.get('/api/suppliers', async (c) => {
+    try {
+        const userId = getUserId(c);
+        const page = parseInt(c.req.query('page') ?? '1', 10);
+        const limit = parseInt(c.req.query('limit') ?? '50', 10);
+        const isActiveStr = c.req.query('isActive');
+        const isActive = isActiveStr === 'false' ? false : isActiveStr === 'true' ? true : undefined;
+        const search = c.req.query('search') || undefined;
+        const result = await supplierService.listSuppliers(userId, { page, limit, isActive, search });
+        return c.json({ data: result.data, total: result.total });
+    } catch (err: any) {
+        console.error('[Suppliers] List failed:', err);
+        return c.json({ error: err.message ?? 'Failed to list suppliers' }, 500);
+    }
+});
+
+app.post('/api/suppliers', zValidator('json', createSupplierSchema), async (c) => {
+    try {
+        const userId = getUserId(c);
+        const body = c.req.valid('json');
+        const supplier = await supplierService.createSupplier(userId, body);
+        return c.json({ data: supplier }, 201);
+    } catch (err: any) {
+        console.error('[Suppliers] Create failed:', err);
+        return c.json({ error: err.message ?? 'Failed to create supplier' }, 400);
+    }
+});
+
+app.get('/api/suppliers/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const supplier = await supplierService.getSupplier(id);
+        if (!supplier) return c.json({ error: 'Supplier not found' }, 404);
+        return c.json({ data: supplier });
+    } catch (err: any) {
+        console.error('[Suppliers] Get failed:', err);
+        return c.json({ error: err.message ?? 'Failed to get supplier' }, 500);
+    }
+});
+
+app.patch('/api/suppliers/:id', zValidator('json', updateSupplierSchema), async (c) => {
+    try {
+        const id = c.req.param('id');
+        const body = c.req.valid('json');
+        const supplier = await supplierService.updateSupplier(id, body);
+        return c.json({ data: supplier });
+    } catch (err: any) {
+        console.error('[Suppliers] Update failed:', err);
+        return c.json({ error: err.message ?? 'Failed to update supplier' }, 400);
+    }
+});
+
+app.delete('/api/suppliers/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const result = await supplierService.archiveSupplier(id);
+        return c.json({ success: true, warning: result.warning });
+    } catch (err: any) {
+        console.error('[Suppliers] Archive failed:', err);
+        return c.json({ error: err.message ?? 'Failed to archive supplier' }, 500);
+    }
+});
+
+// --- Bill Endpoints (7) ---
+
+app.get('/api/bills', async (c) => {
+    try {
+        const userId = getUserId(c);
+        const page = parseInt(c.req.query('page') ?? '1', 10);
+        const limit = parseInt(c.req.query('limit') ?? '50', 10);
+        const status = c.req.query('status') || undefined;
+        const supplierId = c.req.query('supplierId') || undefined;
+        const dateFrom = c.req.query('dateFrom') || undefined;
+        const dateTo = c.req.query('dateTo') || undefined;
+        const result = await billService.listBills(userId, { page, limit, status, supplierId, dateFrom, dateTo });
+        return c.json({ data: result.data, total: result.total });
+    } catch (err: any) {
+        console.error('[Bills] List failed:', err);
+        return c.json({ error: err.message ?? 'Failed to list bills' }, 500);
+    }
+});
+
+app.post('/api/bills', zValidator('json', createBillSchema), async (c) => {
+    try {
+        const userId = getUserId(c);
+        const body = c.req.valid('json');
+        const bill = await billService.createBill(userId, body);
+        return c.json({ data: bill }, 201);
+    } catch (err: any) {
+        console.error('[Bills] Create failed:', err);
+        return c.json({ error: err.message ?? 'Failed to create bill' }, 400);
+    }
+});
+
+app.get('/api/bills/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const bill = await billService.getBill(id);
+        return c.json({ data: bill });
+    } catch (err: any) {
+        console.error('[Bills] Get failed:', err);
+        if (err.message?.includes('not found')) return c.json({ error: err.message }, 404);
+        return c.json({ error: err.message ?? 'Failed to get bill' }, 500);
+    }
+});
+
+app.patch('/api/bills/:id', zValidator('json', updateBillSchema), async (c) => {
+    try {
+        const id = c.req.param('id');
+        const body = c.req.valid('json');
+        const bill = await billService.updateBill(id, body);
+        return c.json({ data: bill });
+    } catch (err: any) {
+        console.error('[Bills] Update failed:', err);
+        return c.json({ error: err.message ?? 'Failed to update bill' }, 400);
+    }
+});
+
+app.post('/api/bills/:id/approve', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const userId = getUserId(c);
+        const bill = await billService.approveBill(id, userId);
+        return c.json({ data: bill });
+    } catch (err: any) {
+        console.error('[Bills] Approve failed:', err);
+        return c.json({ error: err.message ?? 'Failed to approve bill' }, 400);
+    }
+});
+
+app.post('/api/bills/:id/pay', zValidator('json', billPaymentSchema), async (c) => {
+    try {
+        const id = c.req.param('id');
+        const body = c.req.valid('json');
+        const payment = await billService.recordPayment(id, body);
+        return c.json({ data: payment });
+    } catch (err: any) {
+        console.error('[Bills] Payment failed:', err);
+        return c.json({ error: err.message ?? 'Failed to record payment' }, 400);
+    }
+});
+
+app.post('/api/bills/:id/void', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const bill = await billService.voidBill(id);
+        return c.json({ data: bill });
+    } catch (err: any) {
+        console.error('[Bills] Void failed:', err);
+        return c.json({ error: err.message ?? 'Failed to void bill' }, 400);
+    }
+});
+
+// --- Purchase Order Endpoints (7) ---
+
+app.get('/api/purchase-orders', async (c) => {
+    try {
+        const userId = getUserId(c);
+        const page = parseInt(c.req.query('page') ?? '1', 10);
+        const limit = parseInt(c.req.query('limit') ?? '50', 10);
+        const status = c.req.query('status') || undefined;
+        const supplierId = c.req.query('supplierId') || undefined;
+        const dateFrom = c.req.query('dateFrom') || undefined;
+        const dateTo = c.req.query('dateTo') || undefined;
+        const result = await purchaseOrderService.listPurchaseOrders(userId, { page, limit, status, supplierId, dateFrom, dateTo });
+        return c.json({ data: result.data, total: result.total });
+    } catch (err: any) {
+        console.error('[PurchaseOrders] List failed:', err);
+        return c.json({ error: err.message ?? 'Failed to list purchase orders' }, 500);
+    }
+});
+
+app.post('/api/purchase-orders', zValidator('json', createPOSchema), async (c) => {
+    try {
+        const userId = getUserId(c);
+        const body = c.req.valid('json');
+        const po = await purchaseOrderService.createPurchaseOrder(userId, body);
+        return c.json({ data: po }, 201);
+    } catch (err: any) {
+        console.error('[PurchaseOrders] Create failed:', err);
+        return c.json({ error: err.message ?? 'Failed to create purchase order' }, 400);
+    }
+});
+
+app.get('/api/purchase-orders/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const po = await purchaseOrderService.getPurchaseOrder(id);
+        return c.json({ data: po });
+    } catch (err: any) {
+        console.error('[PurchaseOrders] Get failed:', err);
+        if (err.message?.includes('not found')) return c.json({ error: err.message }, 404);
+        return c.json({ error: err.message ?? 'Failed to get purchase order' }, 500);
+    }
+});
+
+app.patch('/api/purchase-orders/:id', zValidator('json', updatePOSchema), async (c) => {
+    try {
+        const id = c.req.param('id');
+        const body = c.req.valid('json');
+        const po = await purchaseOrderService.updatePurchaseOrder(id, body);
+        return c.json({ data: po });
+    } catch (err: any) {
+        console.error('[PurchaseOrders] Update failed:', err);
+        return c.json({ error: err.message ?? 'Failed to update purchase order' }, 400);
+    }
+});
+
+app.post('/api/purchase-orders/:id/send', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const po = await purchaseOrderService.sendPurchaseOrder(id);
+        return c.json({ data: po });
+    } catch (err: any) {
+        console.error('[PurchaseOrders] Send failed:', err);
+        return c.json({ error: err.message ?? 'Failed to send purchase order' }, 400);
+    }
+});
+
+app.post('/api/purchase-orders/:id/receive', zValidator('json', receiveGoodsSchema), async (c) => {
+    try {
+        const id = c.req.param('id');
+        const body = c.req.valid('json');
+        const receipt = await purchaseOrderService.receiveGoods(id, body);
+        return c.json({ data: receipt });
+    } catch (err: any) {
+        console.error('[PurchaseOrders] Receive failed:', err);
+        return c.json({ error: err.message ?? 'Failed to record receipt' }, 400);
+    }
+});
+
+app.post('/api/purchase-orders/:id/cancel', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const po = await purchaseOrderService.cancelPurchaseOrder(id);
+        return c.json({ data: po });
+    } catch (err: any) {
+        console.error('[PurchaseOrders] Cancel failed:', err);
+        return c.json({ error: err.message ?? 'Failed to cancel purchase order' }, 400);
+    }
+});
+
+// --- Supplier Payment Run Endpoints (2) ---
+
+app.post('/api/supplier-payments', zValidator('json', createPaymentRunSchema), async (c) => {
+    try {
+        const userId = getUserId(c);
+        const body = c.req.valid('json');
+        const run = await purchaseOrderService.createPaymentRun(userId, body);
+        return c.json({ data: run }, 201);
+    } catch (err: any) {
+        console.error('[PaymentRun] Create failed:', err);
+        return c.json({ error: err.message ?? 'Failed to create payment run' }, 400);
+    }
+});
+
+app.get('/api/supplier-payments/:id', async (c) => {
+    try {
+        const id = c.req.param('id');
+        const run = await purchaseOrderService.getPaymentRun(id);
+        return c.json({ data: run });
+    } catch (err: any) {
+        console.error('[PaymentRun] Get failed:', err);
+        if (err.message?.includes('not found')) return c.json({ error: err.message }, 404);
+        return c.json({ error: err.message ?? 'Failed to get payment run' }, 500);
+    }
+});
+
+// --- AP Aging Report (1) ---
+
+app.get('/api/ap/aging', async (c) => {
+    try {
+        const userId = getUserId(c);
+        const asOfDate = c.req.query('asOfDate') || undefined;
+        const report = await billService.getAPAging(userId, asOfDate);
+        return c.json({ data: report });
+    } catch (err: any) {
+        console.error('[APAging] Report failed:', err);
+        return c.json({ error: err.message ?? 'Failed to generate AP aging report' }, 500);
+    }
+});
+
+// ============================================================================
+// EMPLOYEE MANAGEMENT (Wave 4)
+// TODO(Wave 1): Replace userId extraction with JWT auth on all /api/payroll/* endpoints
+// ============================================================================
+
+const createEmployeeSchema = z.object({
+  userId: z.string().min(1),
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  email: z.string().email().optional(),
+  phone: z.string().max(20).optional(),
+  dateOfBirth: z.string().optional(),
+  address: z.string().optional(),
+  taxFileNumber: z.string().regex(/^\d{8,9}$/, 'TFN must be 8-9 digits').optional(),
+  startDate: z.string().min(1),
+  employmentType: z.enum(['full_time', 'part_time', 'casual', 'contractor']),
+});
+
+const updateEmployeeSchema = z.object({
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().max(20).optional(),
+  dateOfBirth: z.string().optional(),
+  address: z.string().optional(),
+  taxFileNumber: z.string().regex(/^\d{8,9}$/).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  status: z.enum(['active', 'terminated', 'on_leave']).optional(),
+  employmentType: z.enum(['full_time', 'part_time', 'casual', 'contractor']).optional(),
+});
+
+const bankDetailsSchema = z.object({
+  bsb: z.string().regex(/^\d{6}$/, 'BSB must be 6 digits'),
+  accountNumber: z.string().min(4).max(12),
+  accountName: z.string().min(1).max(200),
+  splitPercentage: z.number().min(0).max(100).optional(),
+  isPrimary: z.boolean().optional(),
+});
+
+const superFundSchema = z.object({
+  fundName: z.string().min(1).max(200),
+  fundABN: z.string().regex(/^\d{11}$/, 'ABN must be 11 digits').optional(),
+  usi: z.string().optional(),
+  memberNumber: z.string().optional(),
+  contributionRate: z.number().min(0).max(100).optional(),
+});
+
+const taxDeclarationSchema = z.object({
+  taxFreeThreshold: z.boolean().optional(),
+  helpDebt: z.boolean().optional(),
+  sfssDebt: z.boolean().optional(),
+  claimDependents: z.number().int().min(0).optional(),
+  taxOffsetEstimated: z.number().int().min(0).optional(),
+  effectiveDate: z.string().min(1),
+});
+
+const payCategorySchema = z.object({
+  userId: z.string().min(1),
+  name: z.string().min(1).max(100),
+  type: z.enum(['ordinary', 'overtime', 'allowance', 'deduction', 'super', 'leave']),
+  rateType: z.enum(['hourly', 'annual', 'fixed']),
+  defaultRate: z.number().int().min(0).optional(),
+  multiplier: z.number().min(0).optional(),
+  isTaxable: z.boolean().optional(),
+  isSuperBearing: z.boolean().optional(),
+});
+
+const payStructureSchema = z.object({
+  payCategoryId: z.string().min(1),
+  rate: z.number().int().min(0),
+  hoursPerWeek: z.number().min(0).optional(),
+  annualSalary: z.number().int().min(0).optional(),
+  effectiveDate: z.string().min(1),
+});
+
+// --- Employee CRUD ---
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.get('/api/payroll/employees', async (c) => {
+  try {
+    const userId = c.req.query('userId');
+    if (!userId) return c.json({ error: 'userId required' }, 400);
+
+    const offset = Math.max(0, parseInt(c.req.query('offset') ?? '0'));
+    const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit') ?? '50')));
+    const status = c.req.query('status') ?? undefined;
+    const search = c.req.query('search') ?? undefined;
+
+    // Convert offset-based to page-based for service layer
+    const page = Math.floor(offset / limit) + 1;
+    const result = await employeeService.listEmployees(userId, { page, limit, status, search });
+    return c.json(result);
+  } catch (error: any) {
+    return c.json({ error: error.message ?? 'Failed to list employees' }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.post('/api/payroll/employees', zValidator('json', createEmployeeSchema), async (c) => {
+  try {
+    const data = c.req.valid('json');
+
+    if (data.taxFileNumber && !validateTFN(data.taxFileNumber)) {
+      return c.json({ error: 'Invalid TFN format' }, 400);
+    }
+
+    // REVISION (D05 H-05): 503 in production if encryption unavailable
+    if (data.taxFileNumber && !isEncryptionConfigured()) {
+      if (process.env.NODE_ENV === 'production') {
+        return c.json({ error: 'Encryption service unavailable — cannot store TFN' }, 503);
+      }
+      console.warn('WARNING: TFN_ENCRYPTION_KEY not set — TFN will be stored unencrypted');
+    }
+
+    const employee = await employeeService.createEmployee(data);
+    return c.json(employee, 201);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.get('/api/payroll/employees/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    const employee = await employeeService.getEmployee(id);
+    if (!employee) return c.json({ error: 'Employee not found' }, 404);
+    return c.json(employee);
+  } catch (error: any) {
+    return c.json({ error: error.message ?? 'Failed to get employee' }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.patch('/api/payroll/employees/:id', zValidator('json', updateEmployeeSchema), async (c) => {
+  try {
+    const id = c.req.param('id');
+    const data = c.req.valid('json');
+
+    if (data.taxFileNumber && !validateTFN(data.taxFileNumber)) {
+      return c.json({ error: 'Invalid TFN format' }, 400);
+    }
+
+    const employee = await employeeService.updateEmployee(id, data);
+    if (!employee) return c.json({ error: 'Employee not found' }, 404);
+    return c.json(employee);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.delete('/api/payroll/employees/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    const employee = await employeeService.terminateEmployee(id);
+    if (!employee) return c.json({ error: 'Employee not found' }, 404);
+    return c.json(employee);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// --- Bank Details ---
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.get('/api/payroll/employees/:id/bank-details', async (c) => {
+  try {
+    const employeeId = c.req.param('id');
+    const details = await employeeService.getBankDetails(employeeId);
+    return c.json({ data: details });
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.post('/api/payroll/employees/:id/bank-details', zValidator('json', bankDetailsSchema), async (c) => {
+  try {
+    const employeeId = c.req.param('id');
+    const data = c.req.valid('json');
+
+    if (!validateBSB(data.bsb)) {
+      return c.json({ error: 'Invalid BSB format — must be 6 digits' }, 400);
+    }
+
+    // REVISION (D05 H-05): 503 in production if encryption unavailable
+    if (!isEncryptionConfigured()) {
+      if (process.env.NODE_ENV === 'production') {
+        return c.json({ error: 'Encryption service unavailable — cannot store bank details' }, 503);
+      }
+    }
+
+    const details = await employeeService.addBankDetails(employeeId, data);
+    return c.json({ data: details }, 201);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// --- Super Funds ---
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.get('/api/payroll/employees/:id/super', async (c) => {
+  try {
+    const employeeId = c.req.param('id');
+    const funds = await employeeService.getSuperFund(employeeId);
+    return c.json({ data: funds });
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.post('/api/payroll/employees/:id/super', zValidator('json', superFundSchema), async (c) => {
+  try {
+    const employeeId = c.req.param('id');
+    const data = c.req.valid('json');
+    const funds = await employeeService.addSuperFund(employeeId, data);
+    return c.json({ data: funds }, 201);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// --- Tax Declaration ---
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.get('/api/payroll/employees/:id/tax-declaration', async (c) => {
+  try {
+    const employeeId = c.req.param('id');
+    const decl = await employeeService.getTaxDeclaration(employeeId);
+    return c.json(decl ?? { message: 'No tax declaration on file' });
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.post('/api/payroll/employees/:id/tax-declaration', zValidator('json', taxDeclarationSchema), async (c) => {
+  try {
+    const employeeId = c.req.param('id');
+    const data = c.req.valid('json');
+    const decl = await employeeService.submitTaxDeclaration(employeeId, data);
+    return c.json(decl, 201);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// --- Pay Categories ---
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.get('/api/payroll/pay-categories', async (c) => {
+  try {
+    const userId = c.req.query('userId');
+    if (!userId) return c.json({ error: 'userId required' }, 400);
+
+    const offset = Math.max(0, parseInt(c.req.query('offset') ?? '0'));
+    const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit') ?? '50')));
+
+    // Convert offset-based to page-based for service layer
+    const page = Math.floor(offset / limit) + 1;
+    const result = await payStructureService.listPayCategories(userId, { page, limit });
+    return c.json(result);
+  } catch (error: any) {
+    return c.json({ error: error.message ?? 'Failed to list pay categories' }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.post('/api/payroll/pay-categories', zValidator('json', payCategorySchema), async (c) => {
+  try {
+    const data = c.req.valid('json');
+    const category = await payStructureService.createPayCategory(data);
+    return c.json(category, 201);
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// --- Pay Structure ---
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.get('/api/payroll/employees/:id/pay-structure', async (c) => {
+  try {
+    const employeeId = c.req.param('id');
+    const structure = await payStructureService.getPayStructure(employeeId);
+    return c.json({ data: structure });
+  } catch (error: any) {
+    return c.json({ error: error.message ?? 'Failed to get pay structure' }, 500);
+  }
+});
+
+// TODO(Wave 1): Replace userId extraction with JWT auth
+app.post('/api/payroll/employees/:id/pay-structure', zValidator('json', payStructureSchema), async (c) => {
+  try {
+    const employeeId = c.req.param('id');
+    const data = c.req.valid('json');
+    const structure = await payStructureService.setPayStructure({
+      employeeId,
+      ...data,
+    });
+    return c.json({ data: structure }, 201);
+  } catch (error: any) {
+    return c.json({ error: error.message ?? 'Failed to set pay structure' }, 500);
+  }
+});
+
+// =========================================================================
+// WAVE 24 — PWA: Push Notifications, Sync, and Health Routes (12 endpoints)
+// =========================================================================
+
+import { pushNotificationService } from './services/push-notifications.js';
+import { syncService } from './services/sync.js';
+import type { ClientPushSubscription } from './services/push-notification-types.js';
+
+// --- PUSH NOTIFICATION ROUTES (4) ---
+
+app.post('/api/push/subscribe', async (c) => {
+    try {
+        const body = await c.req.json() as { subscription: ClientPushSubscription; deviceName?: string; userId?: string; tenantId?: string };
+        const userId = body.userId ?? c.req.query('userId') ?? 'default';
+        const tenantId = body.tenantId ?? c.req.query('tenantId') ?? 'default';
+        if (!body.subscription?.endpoint || !body.subscription?.keys) {
+            return c.json({ error: 'subscription with endpoint and keys is required' }, 400);
+        }
+        await pushNotificationService.subscribe(userId, tenantId, body.subscription, body.deviceName);
+        return c.json({ success: true });
+    } catch (err: any) {
+        console.error('[Push] Subscribe failed:', err);
+        return c.json({ error: err.message ?? 'Subscribe failed' }, 500);
+    }
+});
+
+app.delete('/api/push/subscribe', async (c) => {
+    try {
+        const body = await c.req.json() as { endpoint: string; userId?: string };
+        const userId = body.userId ?? c.req.query('userId') ?? 'default';
+        if (!body.endpoint) {
+            return c.json({ error: 'endpoint is required' }, 400);
+        }
+        await pushNotificationService.unsubscribe(userId, body.endpoint);
+        return c.json({ success: true });
+    } catch (err: any) {
+        console.error('[Push] Unsubscribe failed:', err);
+        return c.json({ error: err.message ?? 'Unsubscribe failed' }, 500);
+    }
+});
+
+app.get('/api/push/vapid-key', (c) => {
+    return c.json({
+        publicKey: pushNotificationService.getVapidPublicKey(),
+        configured: pushNotificationService.isConfigured(),
+    });
+});
+
+app.get('/api/push/subscriptions', async (c) => {
+    try {
+        const userId = c.req.query('userId') ?? 'default';
+        const tenantId = c.req.query('tenantId') ?? 'default';
+        const subscriptions = await pushNotificationService.getSubscriptions(userId, tenantId);
+        return c.json({ subscriptions, count: subscriptions.length });
+    } catch (err: any) {
+        console.error('[Push] List subscriptions failed:', err);
+        return c.json({ error: err.message ?? 'Failed to list subscriptions' }, 500);
+    }
+});
+
+// --- NOTIFICATION PREFERENCES ROUTES (2) ---
+
+app.get('/api/notifications/preferences', async (c) => {
+    try {
+        const userId = c.req.query('userId') ?? 'default';
+        const tenantId = c.req.query('tenantId') ?? 'default';
+        const prefs = await db.select().from(notificationPreferences)
+            .where(and(
+                eq(notificationPreferences.userId, userId),
+                eq(notificationPreferences.tenantId, tenantId)
+            )).get();
+        if (!prefs) {
+            return c.json({
+                transactionAlerts: true, basReminders: true, budgetAlerts: true,
+                taxReminders: true, billReminders: true, syncNotifications: false,
+                teamNotifications: true, systemNotifications: true,
+                largeTransactionThresholdCents: 100000, budgetAlertThresholdPercent: 80,
+                pushEnabled: true, emailEnabled: false,
+                quietHoursStart: null, quietHoursEnd: null, timezone: 'Australia/Sydney',
+            });
+        }
+        return c.json(prefs);
+    } catch (err: any) {
+        console.error('[Notifications] Get preferences failed:', err);
+        return c.json({ error: err.message ?? 'Failed to get preferences' }, 500);
+    }
+});
+
+app.put('/api/notifications/preferences', async (c) => {
+    try {
+        const body = await c.req.json() as Record<string, unknown>;
+        const userId = (body.userId as string) ?? c.req.query('userId') ?? 'default';
+        const tenantId = (body.tenantId as string) ?? c.req.query('tenantId') ?? 'default';
+        const existing = await db.select().from(notificationPreferences)
+            .where(and(
+                eq(notificationPreferences.userId, userId),
+                eq(notificationPreferences.tenantId, tenantId)
+            )).get();
+        const now = new Date().toISOString();
+        if (existing) {
+            const setValues: Record<string, unknown> = { updatedAt: now };
+            const allowedFields = [
+                'transactionAlerts', 'basReminders', 'budgetAlerts', 'taxReminders',
+                'billReminders', 'syncNotifications', 'teamNotifications', 'systemNotifications',
+                'largeTransactionThresholdCents', 'budgetAlertThresholdPercent',
+                'pushEnabled', 'emailEnabled', 'quietHoursStart', 'quietHoursEnd', 'timezone',
+            ];
+            for (const field of allowedFields) {
+                if (body[field] !== undefined) setValues[field] = body[field];
+            }
+            await db.update(notificationPreferences).set(setValues as any)
+                .where(and(eq(notificationPreferences.userId, userId), eq(notificationPreferences.tenantId, tenantId))).run();
+        } else {
+            await db.insert(notificationPreferences).values({
+                id: crypto.randomUUID(), userId, tenantId,
+                transactionAlerts: body.transactionAlerts as boolean ?? true,
+                basReminders: body.basReminders as boolean ?? true,
+                budgetAlerts: body.budgetAlerts as boolean ?? true,
+                taxReminders: body.taxReminders as boolean ?? true,
+                billReminders: body.billReminders as boolean ?? true,
+                syncNotifications: body.syncNotifications as boolean ?? false,
+                teamNotifications: body.teamNotifications as boolean ?? true,
+                systemNotifications: body.systemNotifications as boolean ?? true,
+                largeTransactionThresholdCents: body.largeTransactionThresholdCents as number ?? 100000,
+                budgetAlertThresholdPercent: body.budgetAlertThresholdPercent as number ?? 80,
+                pushEnabled: body.pushEnabled as boolean ?? true,
+                emailEnabled: body.emailEnabled as boolean ?? false,
+                quietHoursStart: (body.quietHoursStart as string) ?? null,
+                quietHoursEnd: (body.quietHoursEnd as string) ?? null,
+                timezone: (body.timezone as string) ?? 'Australia/Sydney',
+                createdAt: now, updatedAt: now,
+            }).run();
+        }
+        return c.json({ success: true });
+    } catch (err: any) {
+        console.error('[Notifications] Update preferences failed:', err);
+        return c.json({ error: err.message ?? 'Failed to update preferences' }, 500);
+    }
+});
+
+// --- SYNC ROUTES (4) ---
+
+app.post('/api/sync', async (c) => {
+    try {
+        const body = await c.req.json() as { operations: any[]; userId?: string; tenantId?: string };
+        const userId = body.userId ?? c.req.query('userId') ?? 'default';
+        const tenantId = body.tenantId ?? c.req.query('tenantId') ?? 'default';
+        if (!Array.isArray(body.operations)) {
+            return c.json({ error: 'operations array is required' }, 400);
+        }
+        const result = await syncService.processSync(userId, tenantId, body.operations);
+        return c.json(result);
+    } catch (err: any) {
+        console.error('[Sync] Process failed:', err);
+        return c.json({ error: err.message ?? 'Sync processing failed' }, 500);
+    }
+});
+
+app.get('/api/sync/conflicts', async (c) => {
+    try {
+        const userId = c.req.query('userId') ?? 'default';
+        const tenantId = c.req.query('tenantId') ?? 'default';
+        const conflicts = await syncService.getConflicts(userId, tenantId);
+        return c.json({ conflicts, count: conflicts.length });
+    } catch (err: any) {
+        console.error('[Sync] Get conflicts failed:', err);
+        return c.json({ error: err.message ?? 'Failed to get conflicts' }, 500);
+    }
+});
+
+app.post('/api/sync/resolve/:conflictId', async (c) => {
+    try {
+        const conflictId = c.req.param('conflictId');
+        const body = await c.req.json() as { resolution: 'client_wins' | 'server_wins' };
+        if (!body.resolution || !['client_wins', 'server_wins'].includes(body.resolution)) {
+            return c.json({ error: "resolution must be 'client_wins' or 'server_wins'" }, 400);
+        }
+        await syncService.resolveConflict(conflictId, body.resolution);
+        return c.json({ success: true, conflictId, resolution: body.resolution });
+    } catch (err: any) {
+        console.error('[Sync] Resolve conflict failed:', err);
+        return c.json({ error: err.message ?? 'Failed to resolve conflict' }, 500);
+    }
+});
+
+app.get('/api/sync/log', async (c) => {
+    try {
+        const userId = c.req.query('userId') ?? 'default';
+        const tenantId = c.req.query('tenantId') ?? 'default';
+        const limit = parseInt(c.req.query('limit') ?? '20', 10);
+        const offset = parseInt(c.req.query('offset') ?? '0', 10);
+        const log = await syncService.getSyncLog(userId, tenantId, limit, offset);
+        return c.json({ log, count: log.length });
+    } catch (err: any) {
+        console.error('[Sync] Get log failed:', err);
+        return c.json({ error: err.message ?? 'Failed to get sync log' }, 500);
+    }
+});
+
+// --- PWA ROUTES (2) ---
+
+app.get('/api/manifest', (c) => {
+    return c.json({
+        name: 'GoldLedger — AI Accountant',
+        short_name: 'GoldLedger',
+        description: 'AI-powered accounting for Australian businesses',
+        start_url: '/',
+        display: 'standalone',
+        orientation: 'any',
+        background_color: '#111827',
+        theme_color: '#FFCC00',
+        icons: [
+            { src: '/icons/icon-72.png', sizes: '72x72', type: 'image/png' },
+            { src: '/icons/icon-96.png', sizes: '96x96', type: 'image/png' },
+            { src: '/icons/icon-128.png', sizes: '128x128', type: 'image/png' },
+            { src: '/icons/icon-144.png', sizes: '144x144', type: 'image/png' },
+            { src: '/icons/icon-152.png', sizes: '152x152', type: 'image/png' },
+            { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+            { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png' },
+            { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+        ],
+        categories: ['business', 'finance', 'productivity'],
+        lang: 'en-AU',
+        scope: '/',
+    });
+});
+
+app.get('/api/health/ping', (c) => {
+    return c.json({ status: 'ok', timestamp: Date.now() });
+});
+
 const port = parseInt(process.env.PORT || '3501', 10);
 console.log(`Server is running on port ${port}`);
 
@@ -4128,4 +6866,3 @@ serve({
     fetch: app.fetch,
     port
 })
-

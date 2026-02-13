@@ -1,0 +1,20 @@
+Agent 9 (ui-recon) completed at 2026-02-12
+
+## Created Files
+1. client/src/features/reconciliation/components/ReconDashboard.tsx
+2. client/src/features/reconciliation/components/ReconMatchingWorkspace.tsx
+3. client/src/features/reconciliation/components/ReconMatchSuggestions.tsx
+4. client/src/features/reconciliation/components/ReconRulesManager.tsx
+5. client/src/features/reconciliation/components/ReconSummaryCard.tsx
+
+## Modified Files
+- client/src/api.ts — added reconApi (10 methods)
+- client/src/App.tsx — added ReconDashboard import, recon tab, desktop nav item, mobile menu item
+- client/src/components/layout/BottomNavigation.tsx — TabId already had 'recon' (Agent 8 did it)
+
+## Verification
+- `npx tsc --noEmit` passes clean (0 errors)
+- All 5 component files exist and export correctly
+- reconApi has all 10 methods (listSessions, createSession, getSession, autoMatch, completeSession, confirmMatch, undoMatch, createManualMatch, getRules, createRule)
+- App.tsx includes 'recon' in activeTab union
+- BottomNavigation.tsx TabId includes 'inventory' and 'recon'

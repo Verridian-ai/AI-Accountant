@@ -36,7 +36,7 @@ export function LedgerFilters({
   onReset,
 }: LedgerFiltersProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 p-6 neu-inset rounded-3xl animate-in zoom-in-95 duration-300">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6 p-3 sm:p-6 neu-inset rounded-3xl animate-in zoom-in-95 duration-300">
       {/* Start Date */}
       <div className="space-y-3">
         <label className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
@@ -138,7 +138,7 @@ export function LedgerFilters({
       <div className="flex items-end">
         <button
           onClick={onReset}
-          className="w-full py-3 text-xs font-black uppercase tracking-widest text-red-400 neu-raised-sm hover:glow-danger rounded-xl btn-press border border-red-500/10"
+          className="w-full py-3 min-h-[44px] text-xs font-black uppercase tracking-widest text-red-400 neu-raised-sm hover:glow-danger rounded-xl btn-press border border-red-500/10"
         >
           Clear Filters
         </button>

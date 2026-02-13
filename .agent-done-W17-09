@@ -1,0 +1,20 @@
+W17-09 Agent Temporal Upgrader - COMPLETE 2026-02-12T13:29:52Z
+
+Modified 6 existing agents:
+1. transaction-categorizer.ts — +1 tool: temporal_categorization_search
+2. gst-calculator.ts — +1 tool: temporal_gst_search
+3. merchant-intelligence.ts — +1 tool: merchant_timeline
+4. tax-strategy.ts — +2 tools: temporal_tax_search, cross_module_tax_impact
+5. financial-planner.ts — +2 tools: temporal_financial_search, cross_module_planning_context
+6. cross-account-tracer.ts — +1 tool: temporal_transfer_search
+
+Created 2 new agents:
+7. forecasting-agent.ts — 6 tools including temporal_forecast_search, cross_module_forecast_context
+8. compliance-monitoring-agent.ts — 5 tools including temporal_compliance_search, compliance_timeline
+
+Supporting changes:
+- types.ts — Added AgentType entries + I/O interfaces for forecasting and compliance_monitoring
+- config.ts — Added token budgets + model selection for new agents
+
+Total new temporal tools added: 12
+TypeScript: Clean (0 new errors)

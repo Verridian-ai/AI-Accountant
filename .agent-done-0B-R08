@@ -1,0 +1,12 @@
+Agent R08 (Cognee Integration Planner) completed at 2026-02-13
+Output: wave0b-research/R08-cognee-integration.md
+
+Summary:
+- Documented all 24 CogneeClient methods + 27 existing datasets
+- Mapped Wave 3 multi-user plan: prefix-based isolation, 4 Docker env vars, per-user token cache
+- Created dataset manifest: 15 new datasets across Waves 3-10 (42 total)
+- Verified Wave 16 compatibility: DataPoint/Ontology services already user-scoped, need prefix updates
+- Planned ~30 new CogneeTools methods for Waves 4-10
+- Identified 6 new ontologies and 6 new DataPoint types
+- Designed session-aware search architecture
+- Risk assessment: Wave 3 auth migration is highest risk

@@ -1,0 +1,404 @@
+{
+  "date_range": {
+    "min": "2022-12-31",
+    "max": "2025-12-30"
+  },
+  "total_transactions": 10320,
+  "quarters_covered": [
+    "FY2023-Q2",
+    "FY2023-Q3",
+    "FY2023-Q4",
+    "FY2024-Q1",
+    "FY2024-Q2",
+    "FY2024-Q3",
+    "FY2024-Q4",
+    "FY2025-Q1",
+    "FY2025-Q2",
+    "FY2025-Q3",
+    "FY2025-Q4",
+    "FY2026-Q2"
+  ],
+  "per_quarter_labels": {
+    "FY2023-Q2": {
+      "period": "2022-10-01 to 2022-12-31",
+      "tx_count": 2,
+      "G1": 0.0,
+      "G2": 0.0,
+      "G3": 0.0,
+      "G10": 0.0,
+      "G11": 203.01,
+      "1A": 0.0,
+      "1B": 18.45,
+      "net_gst": -18.45
+    },
+    "FY2023-Q3": {
+      "period": "2023-01-01 to 2023-03-31",
+      "tx_count": 278,
+      "G1": 26895.89,
+      "G2": 0.0,
+      "G3": 1530.89,
+      "G10": 0.0,
+      "G11": 11227.89,
+      "1A": 2445.08,
+      "1B": 1020.8,
+      "net_gst": 1424.28
+    },
+    "FY2023-Q4": {
+      "period": "2023-04-01 to 2023-06-30",
+      "tx_count": 763,
+      "G1": 65789.63,
+      "G2": 0.0,
+      "G3": 0.0,
+      "G10": 0.0,
+      "G11": 29723.34,
+      "1A": 5980.91,
+      "1B": 2702.3,
+      "net_gst": 3278.61
+    },
+    "FY2024-Q1": {
+      "period": "2023-07-01 to 2023-09-30",
+      "tx_count": 841,
+      "G1": 65145.34,
+      "G2": 0.0,
+      "G3": 3800.0,
+      "G10": 0.0,
+      "G11": 29269.47,
+      "1A": 5922.3,
+      "1B": 2660.92,
+      "net_gst": 3261.38
+    },
+    "FY2024-Q2": {
+      "period": "2023-10-01 to 2023-12-31",
+      "tx_count": 1600,
+      "G1": 125087.64,
+      "G2": 0.0,
+      "G3": 19792.76,
+      "G10": 0.0,
+      "G11": 56017.0,
+      "1A": 11371.64,
+      "1B": 5092.46,
+      "net_gst": 6279.18
+    },
+    "FY2024-Q3": {
+      "period": "2024-01-01 to 2024-03-31",
+      "tx_count": 1370,
+      "G1": 99266.7,
+      "G2": 0.0,
+      "G3": 58316.9,
+      "G10": 0.0,
+      "G11": 67055.76,
+      "1A": 9024.28,
+      "1B": 6096.22,
+      "net_gst": 2928.06
+    },
+    "FY2024-Q4": {
+      "period": "2024-04-01 to 2024-06-30",
+      "tx_count": 1042,
+      "G1": 114383.58,
+      "G2": 0.0,
+      "G3": 8000.0,
+      "G10": 0.0,
+      "G11": 50318.74,
+      "1A": 10398.58,
+      "1B": 4574.64,
+      "net_gst": 5823.94
+    },
+    "FY2025-Q1": {
+      "period": "2024-07-01 to 2024-09-30",
+      "tx_count": 1392,
+      "G1": 136713.26,
+      "G2": 0.0,
+      "G3": 11385.5,
+      "G10": 0.0,
+      "G11": 67592.82,
+      "1A": 12428.44,
+      "1B": 6144.86,
+      "net_gst": 6283.58
+    },
+    "FY2025-Q2": {
+      "period": "2024-10-01 to 2024-12-31",
+      "tx_count": 661,
+      "G1": 76500.29,
+      "G2": 0.0,
+      "G3": 3900.0,
+      "G10": 0.0,
+      "G11": 29764.04,
+      "1A": 6954.52,
+      "1B": 2705.88,
+      "net_gst": 4248.64
+    },
+    "FY2025-Q3": {
+      "period": "2025-01-01 to 2025-03-31",
+      "tx_count": 1258,
+      "G1": 121420.74,
+      "G2": 0.0,
+      "G3": 1337.0,
+      "G10": 0.0,
+      "G11": 39942.12,
+      "1A": 11038.28,
+      "1B": 3631.26,
+      "net_gst": 7407.02
+    },
+    "FY2025-Q4": {
+      "period": "2025-04-01 to 2025-06-30",
+      "tx_count": 1040,
+      "G1": 106431.22,
+      "G2": 0.0,
+      "G3": 25499.0,
+      "G10": 0.0,
+      "G11": 46974.14,
+      "1A": 9675.46,
+      "1B": 4270.46,
+      "net_gst": 5405.0
+    },
+    "FY2026-Q2": {
+      "period": "2025-10-01 to 2025-12-31",
+      "tx_count": 73,
+      "G1": 585.34,
+      "G2": 0.0,
+      "G3": 0.0,
+      "G10": 0.0,
+      "G11": 880.08,
+      "1A": 53.21,
+      "1B": 80.02,
+      "net_gst": -26.81
+    }
+  },
+  "annual_summaries": {
+    "FY2023": {
+      "G1": 92685.52,
+      "G3": 1530.89,
+      "G10": 0.0,
+      "G11": 41154.24,
+      "1A": 8425.99,
+      "1B": 3741.55,
+      "net_gst": 4684.44
+    },
+    "FY2024": {
+      "G1": 403883.26,
+      "G3": 89909.66,
+      "G10": 0.0,
+      "G11": 202660.97,
+      "1A": 36716.8,
+      "1B": 18424.24,
+      "net_gst": 18292.56
+    },
+    "FY2025": {
+      "G1": 441065.51,
+      "G3": 42121.5,
+      "G10": 0.0,
+      "G11": 184273.12,
+      "1A": 40096.7,
+      "1B": 16752.46,
+      "net_gst": 23344.24
+    },
+    "FY2026": {
+      "G1": 585.34,
+      "G3": 0.0,
+      "G10": 0.0,
+      "G11": 880.08,
+      "1A": 53.21,
+      "1B": 80.02,
+      "net_gst": -26.81
+    }
+  },
+  "cross_validation": {
+    "FY2023-Q2": {
+      "1A_expected": 0.0,
+      "1A_actual": 0.0,
+      "1A_diff": 0.0,
+      "1A_pass": true,
+      "1B_expected": 18.46,
+      "1B_actual": 18.45,
+      "1B_diff": 0.01,
+      "1B_pass": true
+    },
+    "FY2023-Q3": {
+      "1A_expected": 2445.08,
+      "1A_actual": 2445.08,
+      "1A_diff": 0.0,
+      "1A_pass": true,
+      "1B_expected": 1020.72,
+      "1B_actual": 1020.8,
+      "1B_diff": 0.08,
+      "1B_pass": true
+    },
+    "FY2023-Q4": {
+      "1A_expected": 5980.88,
+      "1A_actual": 5980.91,
+      "1A_diff": 0.03,
+      "1A_pass": true,
+      "1B_expected": 2702.12,
+      "1B_actual": 2702.3,
+      "1B_diff": 0.18,
+      "1B_pass": true
+    },
+    "FY2024-Q1": {
+      "1A_expected": 5922.3,
+      "1A_actual": 5922.3,
+      "1A_diff": 0.0,
+      "1A_pass": true,
+      "1B_expected": 2660.86,
+      "1B_actual": 2660.92,
+      "1B_diff": 0.06,
+      "1B_pass": true
+    },
+    "FY2024-Q2": {
+      "1A_expected": 11371.6,
+      "1A_actual": 11371.64,
+      "1A_diff": 0.04,
+      "1A_pass": true,
+      "1B_expected": 5092.45,
+      "1B_actual": 5092.46,
+      "1B_diff": 0.01,
+      "1B_pass": true
+    },
+    "FY2024-Q3": {
+      "1A_expected": 9024.25,
+      "1A_actual": 9024.28,
+      "1A_diff": 0.03,
+      "1A_pass": true,
+      "1B_expected": 6095.98,
+      "1B_actual": 6096.22,
+      "1B_diff": 0.24,
+      "1B_pass": true
+    },
+    "FY2024-Q4": {
+      "1A_expected": 10398.51,
+      "1A_actual": 10398.58,
+      "1A_diff": 0.07,
+      "1A_pass": true,
+      "1B_expected": 4574.43,
+      "1B_actual": 4574.64,
+      "1B_diff": 0.21,
+      "1B_pass": true
+    },
+    "FY2025-Q1": {
+      "1A_expected": 12428.48,
+      "1A_actual": 12428.44,
+      "1A_diff": 0.04,
+      "1A_pass": true,
+      "1B_expected": 6144.8,
+      "1B_actual": 6144.86,
+      "1B_diff": 0.06,
+      "1B_pass": true
+    },
+    "FY2025-Q2": {
+      "1A_expected": 6954.57,
+      "1A_actual": 6954.52,
+      "1A_diff": 0.05,
+      "1A_pass": true,
+      "1B_expected": 2705.82,
+      "1B_actual": 2705.88,
+      "1B_diff": 0.06,
+      "1B_pass": true
+    },
+    "FY2025-Q3": {
+      "1A_expected": 11038.25,
+      "1A_actual": 11038.28,
+      "1A_diff": 0.03,
+      "1A_pass": true,
+      "1B_expected": 3631.1,
+      "1B_actual": 3631.26,
+      "1B_diff": 0.16,
+      "1B_pass": true
+    },
+    "FY2025-Q4": {
+      "1A_expected": 9675.57,
+      "1A_actual": 9675.46,
+      "1A_diff": 0.11,
+      "1A_pass": true,
+      "1B_expected": 4270.38,
+      "1B_actual": 4270.46,
+      "1B_diff": 0.08,
+      "1B_pass": true
+    },
+    "FY2026-Q2": {
+      "1A_expected": 53.21,
+      "1A_actual": 53.21,
+      "1A_diff": 0.0,
+      "1A_pass": true,
+      "1B_expected": 80.01,
+      "1B_actual": 80.02,
+      "1B_diff": 0.01,
+      "1B_pass": true
+    }
+  },
+  "cross_validation_summary": {
+    "all_1A_pass": true,
+    "all_1B_pass": true,
+    "max_1A_diff": 0.11,
+    "max_1B_diff": 0.24,
+    "tolerance": "$1.00"
+  },
+  "gst_integrity_checks": {
+    "null_gst_category": 0,
+    "bank_fees_mismatch": 0,
+    "transfer_mismatch": 0,
+    "loan_repayment_mismatch": 0,
+    "interest_expense_mismatch": 0,
+    "interest_income_mismatch": 0,
+    "wages_mismatch": 0,
+    "cash_withdrawal_mismatch": 0,
+    "business_income_mismatch": 0,
+    "business_income_transfer_note": "9 BizCap loan proceeds flagged is_transfer=1 with gst=private (correct - loan proceeds are not taxable income)",
+    "bnpl_mismatch": 0,
+    "owner_contribution_mismatch": 0,
+    "superannuation_mismatch": 0,
+    "tax_payment_mismatch": 0,
+    "transfers_in_bas": 0
+  },
+  "corrections_made": [
+    {
+      "fix": "Transfer category -> gst_category=private",
+      "count": 1848
+    },
+    {
+      "fix": "is_transfer=1 (Business Income) -> gst_category=private",
+      "count": 9
+    },
+    {
+      "fix": "Interest Expense -> gst_category=input_taxed",
+      "count": 42
+    },
+    {
+      "fix": "Interest Income -> gst_category=input_taxed",
+      "count": 1
+    },
+    {
+      "fix": "Cash Withdrawal -> gst_category=private",
+      "count": 35
+    },
+    {
+      "fix": "Insurance gst_free -> gst_category=input_taxed",
+      "count": 7
+    }
+  ],
+  "total_corrections": 1942,
+  "gst_distribution": {
+    "taxable_10": {
+      "count": 5577,
+      "total_amount": 509251.22,
+      "total_gst": 124290.97
+    },
+    "private": {
+      "count": 3054,
+      "total_amount": -358591.48,
+      "total_gst": 0.0
+    },
+    "input_taxed": {
+      "count": 859,
+      "total_amount": 20012.28,
+      "total_gst": 0.0
+    },
+    "gst_free": {
+      "count": 830,
+      "total_amount": -170982.94,
+      "total_gst": 0.0
+    }
+  },
+  "overall_status": "PASS",
+  "issues": [
+    "None - all validations passed"
+  ]
+}

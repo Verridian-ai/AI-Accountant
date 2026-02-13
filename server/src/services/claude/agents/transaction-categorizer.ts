@@ -164,7 +164,7 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
           amount: number;
         }>;
 
-        return transactions.map((tx) => {
+        const suggestions = transactions.map((tx) => {
           const desc = tx.description.toLowerCase();
           // Quick pattern matching for obvious categories
           if (desc.includes('salary') || desc.includes('wages') || desc.includes('payroll'))
@@ -186,8 +186,35 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
               confidence: 0.85,
             };
 
-          return { id: tx.id, suggestedCategory: null, confidence: 0 };
+          return { id: tx.id, suggestedCategory: null as string | null, confidence: 0 };
         });
+
+        // Propose mutations for categorized transactions
+        if (this.mutationTools) {
+          const categorizedSuggestions = suggestions.filter(
+            (s) => s.suggestedCategory != null && s.confidence > 0
+          );
+          if (categorizedSuggestions.length > 0) {
+            try {
+              const proposals = categorizedSuggestions.map((s) => ({
+                agentType: 'transaction_categorizer' as const,
+                mutationType: 'update' as const,
+                targetTable: 'transactions',
+                targetId: String(s.id),
+                beforeState: { category: 'Uncategorized' },
+                afterState: { category: s.suggestedCategory },
+                description: `Batch categorize transaction ${s.id} as '${s.suggestedCategory}'`,
+                confidence: s.confidence,
+                requiresConfirmation: s.confidence < 0.9,
+              }));
+              await this.mutationTools.batchProposeMutations(proposals);
+            } catch (err) {
+              console.warn('[TransactionCategorizer] Batch mutation proposal failed:', err);
+            }
+          }
+        }
+
+        return suggestions;
       },
     ],
   ]);
@@ -228,6 +255,33 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
           );
         } catch {
           // Non-fatal: don't break categorization if Cognee store fails
+        }
+      }
+    }
+
+    // Propose category update mutations for all categorized results
+    if (this.mutationTools) {
+      const categorizedResults = output.results.filter(r => r.category && r.category !== 'Uncategorized');
+      if (categorizedResults.length > 0) {
+        try {
+          const proposals = categorizedResults.map((r) => ({
+            agentType: 'transaction_categorizer' as const,
+            mutationType: 'update' as const,
+            targetTable: 'transactions',
+            targetId: String(r.transactionId),
+            beforeState: { category: 'Uncategorized' },
+            afterState: {
+              category: r.category,
+              gst_category: r.gstCategory,
+              ...(r.gstAmount != null ? { gst_amount: r.gstAmount } : {}),
+            },
+            description: `Categorize transaction ${r.transactionId} as '${r.category}' (${r.gstCategory})`,
+            confidence: r.confidence,
+            requiresConfirmation: r.confidence < 0.9,
+          }));
+          await this.mutationTools.batchProposeMutations(proposals);
+        } catch (err) {
+          console.warn('[TransactionCategorizer] Mutation proposal for results failed:', err);
         }
       }
     }

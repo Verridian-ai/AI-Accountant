@@ -1,0 +1,25 @@
+Agent 5 — Dataset Prefix Wiring — COMPLETE
+
+Files modified:
+1. server/src/services/claude/cognee-tools.ts
+   - Added userId to CogneeToolConfig interface
+   - Added SHARED_DATASETS set (6 datasets: gst_rules, ato_rulings, award_rates, stp_compliance, tax_tables, deduction_patterns)
+   - Added ROW_FILTERED_DATASETS set (2 datasets: merchant_data, matching_patterns)
+   - Modified prefixDataset() to implement 3-tier pooling strategy (shared/row-filtered/private)
+   - Added static CogneeTools.forUser(userId) factory method
+   - Added private addWithUserMetadata() for row-filtered datasets
+   - Wired this.config.userId through ALL CogneeClient calls (search, add, cognify)
+   - Added client field for CogneeClient dependency injection
+   - Exported COGNEE_DATASETS constant (39 named datasets) for backward compat with other agents
+
+2. server/src/services/rag.ts
+   - Added optional userId parameter to indexTransactions(), addDocuments(), search(), searchMulti()
+   - When userId provided, uses CogneeTools.forUser(userId) for per-user scoping
+   - Without userId, preserves existing admin-token behavior (full backward compat)
+   - Imported CogneeTools from claude/cognee-tools.js
+
+Verification:
+- cognee-tools.ts: 0 TypeScript errors
+- rag.ts: 0 TypeScript errors
+- All pre-existing errors (132) are from other agents' code, not introduced by this change
+- COGNEE_DATASETS export fixed 6 pre-existing import errors across cdr-cognee-indexer, market-cognee-indexer, and 4 agent files

@@ -1,45 +1,40 @@
 {
-  "name": "GoldLedger",
+  "name": "GoldLedger - AI Accounting",
   "short_name": "GoldLedger",
-  "description": "AI-powered financial intelligence platform with bank statement parsing, tax compliance, GST tracking, and analytics",
+  "description": "AI-powered Australian accounting and bookkeeping platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0f",
-  "theme_color": "#FFCC00",
   "orientation": "portrait-primary",
+  "background_color": "#111827",
+  "theme_color": "#FFCC00",
   "scope": "/",
   "lang": "en-AU",
-  "categories": ["finance", "productivity", "business"],
+  "categories": ["finance", "business", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
       "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icons/icon-96x96.png",
       "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icons/icon-128x128.png",
       "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icons/icon-144x144.png",
       "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icons/icon-152x152.png",
       "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icons/icon-192x192.png",
@@ -50,8 +45,7 @@
     {
       "src": "/icons/icon-384x384.png",
       "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "/icons/icon-512x512.png",
@@ -82,36 +76,21 @@
       "short_name": "Upload",
       "description": "Upload a new bank statement",
       "url": "/?action=upload",
-      "icons": [
-        {
-          "src": "/icons/shortcut-upload.png",
-          "sizes": "96x96"
-        }
-      ]
+      "icons": [{ "src": "/icons/shortcut-upload.png", "sizes": "96x96" }]
     },
     {
       "name": "View BAS",
       "short_name": "BAS",
       "description": "View BAS calculations",
       "url": "/?tab=bas",
-      "icons": [
-        {
-          "src": "/icons/shortcut-bas.png",
-          "sizes": "96x96"
-        }
-      ]
+      "icons": [{ "src": "/icons/shortcut-bas.png", "sizes": "96x96" }]
     },
     {
       "name": "Tax Summary",
       "short_name": "Tax",
       "description": "View tax summary",
       "url": "/?tab=tax",
-      "icons": [
-        {
-          "src": "/icons/shortcut-tax.png",
-          "sizes": "96x96"
-        }
-      ]
+      "icons": [{ "src": "/icons/shortcut-tax.png", "sizes": "96x96" }]
     }
   ],
   "related_applications": [],
@@ -129,12 +108,6 @@
       ]
     }
   },
-  "protocol_handlers": [
-    {
-      "protocol": "web+goldledger",
-      "url": "/handle-protocol?url=%s"
-    }
-  ],
   "file_handlers": [
     {
       "action": "/",

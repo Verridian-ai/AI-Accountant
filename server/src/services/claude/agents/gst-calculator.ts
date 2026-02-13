@@ -279,7 +279,7 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
           isPersonalAccount?: boolean;
         }>;
 
-        return transactions.map((tx) => {
+        const classifications = transactions.map((tx) => {
           // Personal account transactions are always out of scope
           if (tx.isPersonalAccount) {
             return { id: tx.id, gstCategory: 'private', gstAmount: 0, claimable: false, basLabel: 'none' };
@@ -354,6 +354,33 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
             basLabel: tx.amount > 0 ? 'G1' : 'G11',
           };
         });
+
+        // Propose GST mutations for classified transactions
+        if (this.mutationTools) {
+          const classifiedWithGst = classifications.filter(
+            (c) => c.gstCategory !== 'private' && c.gstAmount !== 0
+          );
+          if (classifiedWithGst.length > 0) {
+            try {
+              const proposals = classifiedWithGst.map((c) => ({
+                agentType: 'gst_calculator' as const,
+                mutationType: 'update' as const,
+                targetTable: 'transactions',
+                targetId: String(c.id),
+                beforeState: { gst_amount: 0, gst_category: null },
+                afterState: { gst_amount: c.gstAmount, gst_category: c.gstCategory },
+                description: `Set GST for transaction ${c.id}: ${(c.gstAmount / 100).toFixed(2)} (${c.gstCategory})`,
+                confidence: 0.85,
+                requiresConfirmation: true, // GST ALWAYS requires confirmation
+              }));
+              await this.mutationTools.batchProposeMutations(proposals);
+            } catch (err) {
+              console.warn('[GSTCalculator] GST mutation proposal failed:', err);
+            }
+          }
+        }
+
+        return classifications;
       },
     ],
     [
@@ -481,6 +508,27 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
                 // Non-capital purchases
                 labels.G11 += abs;
                 labels['1B'] += gst;
+            }
+          }
+        }
+
+        // Propose BAS calculation mutation
+        if (this.mutationTools) {
+          const quarter = input.quarter as { year: number; quarter: number } | undefined;
+          if (quarter) {
+            try {
+              const period = `Q${quarter.quarter}-${quarter.year}`;
+              await this.mutationTools.proposeMutation({
+                agentType: 'gst_calculator',
+                mutationType: 'create',
+                targetTable: 'bas_calculations',
+                afterState: { ...labels, period, status: 'draft' },
+                description: `Generate BAS calculation for ${period}`,
+                confidence: 0.9,
+                requiresConfirmation: true, // BAS is always financial = always confirm
+              });
+            } catch (err) {
+              console.warn('[GSTCalculator] BAS mutation proposal failed:', err);
             }
           }
         }

@@ -1,0 +1,49 @@
+Agent 4 (response-formatter-builder) completed Task #5 — Chat Endpoint Rewriter.
+
+## Created Files
+1. `server/src/middleware/auth.ts` — JWT auth middleware (dev mode fallback, Bearer validation)
+
+## Modified Files
+1. `server/src/index.ts` — Chat endpoint rewrite + service initialization + error handler
+
+## Changes Summary
+
+### Imports Added (lines 41-49)
+- authMiddleware from middleware/auth.js
+- AgentOrchestrator from orchestrator.js
+- IntentRouter from intent-router.js
+- AgentDispatcher from agent-dispatcher.js
+- ResponseFormatter from response-formatter.js
+- BaseError from errors.js
+
+### Service Initialization (lines 113-116)
+- `agentOrchestrator = new AgentOrchestrator()`
+- `intentRouter = new IntentRouter(agentOrchestrator)`
+- `agentDispatcher = new AgentDispatcher(agentOrchestrator)`
+- `responseFormatter = new ResponseFormatter()`
+
+### POST /api/chat — New Pipeline
+1. Validates body via chatMessageSchema (field: `query`)
+2. Classifies intent via `intentRouter.classify()`
+3. Dispatches to agent(s) via `agentDispatcher.dispatchIntent()`
+4. Formats response via `responseFormatter.formatPipeline()`
+5. Falls back to `legacyChatHandler()` if intent routing or dispatch fails
+6. ALWAYS returns `{ answer: string }` — never `{ error: string }`
+
+### Legacy Fallback
+- `legacyChatHandler()` preserves the original Cognee + OpenRouter behavior
+- Triggered on IntentRouter or AgentDispatcher failure for graceful degradation
+
+### Global Error Handler
+- `app.onError()` catches unhandled errors
+- Returns `{ error: string, code: number }`
+- Handles BaseError subclasses with proper status codes
+
+### Existing Errors.ts
+- Already comprehensive (BaseError, NotFoundError, AuthenticationError, etc.)
+- No changes needed
+
+## Verification
+- `cd server && npx tsc --noEmit` passes clean (0 errors)
+- Backward compatible: response always includes `answer` field
+- Client code reading `response.answer` continues to work unchanged

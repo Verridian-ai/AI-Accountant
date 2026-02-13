@@ -14,6 +14,7 @@ import {
     Briefcase,
     Wallet,
 } from 'lucide-react';
+import { Sparkline, CHART_COLORS } from '../../../components/charts';
 import { GSTSummary } from './GSTSummary';
 import { GSTReviewQueue } from './GSTReviewQueue';
 import { InputTaxCredits } from './InputTaxCredits';
@@ -174,25 +175,25 @@ export function GSTPage() {
     // ---------- render ----------
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {/* ---- Header row ---- */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
+                    <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gradient-gold">
                         GST Dashboard
                     </h2>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-xs sm:text-sm text-zinc-500">
                         Classify transactions, review GST, and track input tax credits
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     {/* Business Only toggle */}
                     <div className="neu-inset rounded-full p-0.5 flex items-center">
                         <button
                             onClick={() => setBusinessOnly(true)}
                             className={cn(
-                                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
+                                'flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
                                 businessOnly
                                     ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-md'
                                     : 'text-zinc-400 hover:text-zinc-200',
@@ -204,7 +205,7 @@ export function GSTPage() {
                         <button
                             onClick={() => setBusinessOnly(false)}
                             className={cn(
-                                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
+                                'flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
                                 !businessOnly
                                     ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-md'
                                     : 'text-zinc-400 hover:text-zinc-200',
@@ -220,7 +221,7 @@ export function GSTPage() {
                         <select
                             value={period}
                             onChange={(e) => setPeriod(e.target.value)}
-                            className="bg-transparent text-zinc-200 text-xs font-medium px-3 py-2 pr-8 rounded-xl border-none outline-none appearance-none cursor-pointer"
+                            className="bg-transparent text-zinc-200 text-xs font-medium px-3 py-2.5 min-h-[44px] pr-8 rounded-xl border-none outline-none appearance-none cursor-pointer"
                             style={{
                                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23FFCC00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
                                 backgroundRepeat: 'no-repeat',
@@ -234,6 +235,38 @@ export function GSTPage() {
                             ))}
                         </select>
                     </div>
+                </div>
+            </div>
+
+            {/* ---- GST Category Summary Cards with Sparklines ---- */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                <div className="neu-raised rounded-2xl border border-white/5 p-3 sm:p-4 flex items-center justify-between">
+                    <div>
+                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">GST Collected</p>
+                        <p className="text-lg font-black text-[#FFCC00] tabular-nums">10%</p>
+                    </div>
+                    <Sparkline data={[820, 950, 870, 1100, 1050, 1200]} width={80} height={24} color={CHART_COLORS.primary} showArea trend="up" />
+                </div>
+                <div className="neu-raised rounded-2xl border border-white/5 p-4 flex items-center justify-between">
+                    <div>
+                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">GST Free</p>
+                        <p className="text-lg font-black text-zinc-200 tabular-nums">0%</p>
+                    </div>
+                    <Sparkline data={[300, 280, 350, 310, 290, 320]} width={80} height={24} color={CHART_COLORS.axis} trend="flat" />
+                </div>
+                <div className="neu-raised rounded-2xl border border-white/5 p-4 flex items-center justify-between">
+                    <div>
+                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Input Taxed</p>
+                        <p className="text-lg font-black text-zinc-200 tabular-nums">N/A</p>
+                    </div>
+                    <Sparkline data={[50, 60, 45, 70, 55, 65]} width={80} height={24} color={CHART_COLORS.primaryDark} trend="flat" />
+                </div>
+                <div className="neu-raised rounded-2xl border border-white/5 p-4 flex items-center justify-between">
+                    <div>
+                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">BAS Ready</p>
+                        <p className="text-lg font-black text-emerald-400 tabular-nums">Q1</p>
+                    </div>
+                    <Sparkline data={[1, 2, 3, 3, 4, 4]} width={80} height={24} color={CHART_COLORS.revenue} showArea trend="up" />
                 </div>
             </div>
 
@@ -272,7 +305,7 @@ export function GSTPage() {
                         onClick={runEnrichment}
                         disabled={enrichmentRunning}
                         className={cn(
-                            'neu-raised flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
+                            'neu-raised flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
                             enrichmentRunning
                                 ? 'text-zinc-500 cursor-not-allowed opacity-60'
                                 : 'text-[#FFCC00] hover:bg-[#FFCC00]/10 border border-[#FFCC00]/20 hover:border-[#FFCC00]/40',
@@ -291,20 +324,21 @@ export function GSTPage() {
             {/* ---- Tabs ---- */}
             <div className="space-y-4">
                 {/* Tab pills */}
-                <div className="neu-inset rounded-xl p-1 inline-flex gap-1">
+                <div className="neu-inset rounded-xl p-1 flex gap-1 overflow-x-auto w-full sm:w-fit sm:inline-flex">
                     {TABS.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={cn(
-                                'flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
+                                'flex items-center gap-1.5 px-3 sm:px-4 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 whitespace-nowrap',
                                 activeTab === tab.id
                                     ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-md'
                                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]',
                             )}
                         >
                             {tab.icon}
-                            {tab.label}
+                            <span className="hidden sm:inline">{tab.label}</span>
+                            <span className="sm:hidden">{tab.id === 'overview' ? 'Overview' : tab.id === 'review' ? 'Review' : tab.id === 'credits' ? 'Credits' : 'Merch.'}</span>
                         </button>
                     ))}
                 </div>

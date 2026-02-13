@@ -1,0 +1,6 @@
+Agent 2 (tenant-service-builder) completed at 2026-02-12T22:27:03Z
+Files created:
+  - server/src/services/tenant-types.ts (types: Tenant, TenantMember, TenantInvitation, TenantContext, TenantRole, SubscriptionInfo, CreateTenantOptions)
+  - server/src/services/tenant-defaults.ts (16 permissions, 5 role mappings, seedDefaultPermissions())
+  - server/src/services/tenant.ts (TenantService class with 17 public methods + 4 private helpers + singleton export)
+TypeScript: 0 new errors (141 pre-existing from other waves)

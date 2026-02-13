@@ -1,0 +1,10 @@
+D02 Security & Compliance Review complete.
+Reviewed all 10 wave orchestration prompts + 3 security-critical agent task files.
+Output: wave0b-reviews/D02-security-review.md
+
+Findings:
+- 5 CRITICAL vulnerabilities (no auth, mutation user binding, Cognee passwords, plaintext TFNs in STP, plaintext payment keys)
+- 6 HIGH compliance gaps (STP Phase 2 incomplete, hardcoded super rate, PAYG tables, no ABN validation, pay run mutability, invoice numbering)
+- 10 MEDIUM security improvements (encryption fallback, SSE auth, CSRF, file uploads, key reuse, rate limiting, audit disclosure, three-way match tolerance, dataset enumeration, prompt injection)
+
+Per-wave verdicts: 6 NEEDS HARDENING, 3 PARTIALLY SECURE, 0 SECURE

@@ -1,0 +1,22 @@
+Agent 01 — Mutation Schema Builder — COMPLETE
+Wave 2, Sub-Wave 1
+
+Deliverables:
+1. docker/migrations/0014_agent_mutations.sql — PostgreSQL migration with 3 tables + 15 indexes
+2. server/src/schema.ts — 3 new sqliteTable() definitions (agentSessions, agentMutations, agentAuditLog) + 6 type exports
+3. server/src/db/postgres-schema.ts — 3 new pgTable() definitions (pgAgentSessions, pgAgentMutations, pgAgentAuditLog) + 6 type exports
+4. docker-compose.yml — New migration mount: 0014_agent_mutations.sql → 10-agent-mutations.sql
+
+Verification:
+- Migration starts with BEGIN; and ends with COMMIT;
+- agent_sessions created before agent_mutations (FK dependency)
+- user_id is NOT NULL on agent_sessions (D02-CRIT-02 security requirement)
+- SQLite uses integer({ mode: 'boolean' }) for booleans, integer({ mode: 'timestamp' }) for timestamps
+- PostgreSQL uses boolean() for booleans, timestamp({ withTimezone: true }) for timestamps
+- real() used for confidence in both schemas
+- Server tsc --noEmit: 3 pre-existing errors (confirmation-flow.ts, tool-adapter.ts) — ZERO new errors
+- Client tsc --noEmit: ZERO errors
+- No existing tables modified
+- No existing migrations modified
+
+Completed: 2026-02-13

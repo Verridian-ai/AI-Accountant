@@ -1,0 +1,24 @@
+Wave 11 - Agent 6 (Cognee Datasets Builder) - COMPLETE
+
+Changes made:
+1. server/src/services/claude/cognee-tools.ts:
+   - Renamed inventoryMovements → stockMovements in COGNEE_DATASETS
+   - Added reconPatterns to COGNEE_DATASETS
+   - Added 6 new convenience methods:
+     * indexInventoryItems() - indexes product catalog data for semantic search
+     * searchInventoryCatalog() - CHUNKS search on inventory catalog
+     * indexStockMovements() - indexes movement summaries for pattern recognition
+     * searchStockPatterns() - GRAPH_COMPLETION search on stock movements
+     * indexReconPatterns() - indexes reconciliation match patterns
+     * searchReconPatterns() - GRAPH_COMPLETION search on recon patterns
+
+2. server/src/services/cognee_client.ts:
+   - Verified compatibility - add() and search() accept any string dataset name
+   - No changes needed (datasets created on-demand by Cognee)
+
+Verification:
+- npx tsc --noEmit passes clean
+- No references to old COGNEE_DATASETS.inventoryMovements found
+- Database table inventoryMovements (Drizzle ORM) is separate from Cognee dataset naming
+
+Completed: 2026-02-12

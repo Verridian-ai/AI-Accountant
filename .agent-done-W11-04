@@ -1,0 +1,23 @@
+Agent 4 (Inventory Agent Builder) — COMPLETE
+
+## Created
+- `server/src/services/claude/agents/inventory-agent.ts` — InventoryAgent class
+
+## Modified
+- `server/src/services/claude/types.ts` — Added 'inventory_agent' to AgentType union + InventoryAgentInput/Output interfaces
+- `server/src/services/claude/config.ts` — Added inventory_agent token budget (50K/8K/10 tools) + model (haiku-4.5)
+- `server/src/services/claude/cognee-tools.ts` — Added inventoryCatalog + inventoryMovements datasets
+- `server/src/services/claude/orchestrator.ts` — Registered InventoryAgent + added to I/O maps
+
+## InventoryAgent Tools (4)
+1. check_stock_levels — Queries inventoryService.getStockLevels() with warehouse/reorder filters
+2. calculate_cogs — Calls inventoryService.calculateCOGS() for weighted average COGS
+3. suggest_reorder — Gets items below reorder point with quantities and cost estimates
+4. search_inventory_context — Cognee CHUNKS search on inventoryCatalog dataset
+
+## Verification
+- TypeScript: passes clean (npx tsc --noEmit)
+- AgentType includes 'inventory_agent': YES
+- AGENT_TOKEN_BUDGETS.inventory_agent: { 50K input, 8K output, 10 tools }
+- AGENT_MODELS.inventory_agent: 'claude-haiku-4-5-20251001'
+- Orchestrator registers InventoryAgent with typed I/O maps

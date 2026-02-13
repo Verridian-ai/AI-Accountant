@@ -1,7 +1,14 @@
-import { Activity, BarChart3, FileText, Wallet, LayoutDashboard } from 'lucide-react';
+/**
+ * @deprecated Use `MobileNavigation.tsx` + `AppShell.tsx` instead.
+ * This component is kept for backward compatibility during migration.
+ * The new responsive layout uses AppShell which automatically switches
+ * between SidebarNavigation (desktop/tablet) and MobileNavigation (mobile).
+ */
+import { BarChart3, FileText, Wallet, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type TabId = 'dashboard' | 'transactions' | 'accounts' | 'analytics' | 'bas' | 'tax' | 'gst' | 'transfers';
+/** @deprecated Use the navigation system in AppShell instead */
+export type TabId = 'dashboard' | 'transactions' | 'accounts' | 'analytics' | 'bas' | 'tax' | 'gst' | 'transfers' | 'dashboards' | 'streaming' | 'market' | 'settings' | 'subscription' | 'payroll' | 'ap' | 'invoicing';
 
 interface BottomNavigationProps {
     activeTab: TabId;

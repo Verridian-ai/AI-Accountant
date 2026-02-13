@@ -1,0 +1,21 @@
+Agent 3 (Bill Service Builder) — COMPLETE
+
+Created: server/src/services/bills.ts
+- BillService class with 9 methods
+- listBills: paginated, filterable by status/supplier/date, sorted by dueDate ASC
+- getBill: full detail with line items, payments, linked PO
+- createBill: atomic insert (bill + lines), GST calc Math.round(amount * gstRate)
+- updateBill: draft/awaiting_approval only, recalculates totals on line change
+- submitForApproval: draft → awaiting_approval with validation
+- approveBill: separation of duties enforced (creator != approver), single-user exception
+- recordPayment: updates amountPaid/amountDue, auto-sets 'paid' when fully paid
+- voidBill: draft/awaiting_approval only, rejects if payments exist
+- getAPAging: 5 buckets (current, 1-30, 31-60, 61-90, 90+), supplier count
+- checkOverdueBills: finds approved bills past due, marks 'overdue'
+
+Invariants enforced:
+- totalAmount === subtotal + gstAmount
+- amountDue === totalAmount - amountPaid
+- All amounts in cents (INTEGER)
+
+TypeScript: 0 new errors (pre-existing errors from other waves only)

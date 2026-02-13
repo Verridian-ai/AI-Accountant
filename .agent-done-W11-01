@@ -1,0 +1,22 @@
+Agent 1 (schema-builder) — Wave 11 COMPLETE
+============================================
+Date: 2026-02-12
+
+Files CREATED:
+- docker/migrations/0023_inventory_bank_recon.sql (7 tables + indexes)
+
+Files MODIFIED:
+- server/src/schema.ts (7 sqliteTable definitions + 14 type exports)
+- server/src/db/postgres-schema.ts (7 pgTable definitions + 14 type exports)
+- server/src/index.ts (import line updated with 7 new table names)
+
+Tables added:
+1. inventory_items — product catalog with costing methods
+2. warehouses — storage locations
+3. inventory_stock — current stock levels (item × warehouse)
+4. inventory_movements — stock change audit trail
+5. bank_recon_rules — configurable matching rules
+6. bank_recon_sessions — reconciliation session tracking
+7. bank_recon_matches — individual match results
+
+Verification: `npx tsc --noEmit` passes clean (0 errors)

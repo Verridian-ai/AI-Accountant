@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
-import { LedgerPage } from './features/transactions/components/LedgerPage';
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useSSE } from './hooks/useSSE';
 import { Toaster } from 'sonner';
 import { FloatingChat } from './features/chat/components/FloatingChat';
@@ -13,7 +13,7 @@ import { PendingCategorizationReview } from './features/transactions/components/
 import { MerchantMemoryManager } from './features/transactions/components/MerchantMemoryManager';
 import { AccountsOverview } from './features/accounts/components/AccountsOverview';
 import { DebtReductionPlanner } from './features/analytics/components/DebtReductionPlanner';
-import { BottomNavigation } from './components/layout/BottomNavigation';
+import { AppShell } from './components/layout/AppShell';
 import { BASPage } from './features/bas/components/BASPage';
 import { TaxDashboard } from './features/tax/components/TaxDashboard';
 import { GSTPage } from './features/gst/components/GSTPage';
@@ -22,6 +22,28 @@ import { AnalyticsDashboard } from './features/analytics/components/AnalyticsDas
 import { AccountManager } from './features/accounts/components/AccountManager';
 import { AccountSummaryCards } from './features/accounts/components/AccountSummaryCards';
 import { AccountBalanceTimeline } from './features/accounts/components/AccountBalanceTimeline';
+import { LedgerPage } from './features/transactions/components/LedgerPage';
+import { DashboardGrid } from './features/dashboards/components/DashboardGrid';
+import { MigrationDashboard } from './features/streaming/components/MigrationDashboard';
+import { SessionHistory } from './features/streaming/components/SessionHistory';
+import { SchemaExplorer } from './features/streaming/components/SchemaExplorer';
+import { StreamingChat } from './features/streaming/components/StreamingChat';
+import { MarketDashboard } from './features/market';
+import { TenantSwitcher } from './features/tenant/components/TenantSwitcher';
+import { TenantSettings } from './features/tenant/components/TenantSettings';
+import { MemberManager } from './features/tenant/components/MemberManager';
+import { PermissionMatrix } from './features/tenant/components/PermissionMatrix';
+import { TenantCreate } from './features/tenant/components/TenantCreate';
+import { PlanComparison } from './features/subscription/components/PlanComparison';
+import { UsageDashboard } from './features/subscription/components/UsageDashboard';
+import { BillingHistory } from './features/subscription/components/BillingHistory';
+import { PayrollDashboard } from './features/payroll/components/PayrollDashboard';
+import { APDashboard } from './features/ap/components/APDashboard';
+import { InvoicingDashboard } from './features/invoicing/components/InvoicingDashboard';
+import { InstallPrompt } from './components/pwa/InstallPrompt';
+import { UpdatePrompt } from './components/pwa/UpdatePrompt';
+import { PushPermissionPrompt, NotificationPreferences } from './features/notifications';
+import { SyncStatus, ConflictResolver } from './features/offline';
 import { api, getToken } from './api';
 import type { Transaction, TransactionStats, Account } from './api';
 import {
@@ -29,20 +51,17 @@ import {
   TrendingDown,
   Wallet,
   Receipt,
-  RefreshCw,
-  LogOut,
-  Settings as SettingsIcon,
-  Brain,
-  Calculator,
-  LayoutDashboard,
-  FileText,
-  GitCompareArrows,
-  ShieldCheck,
-  LineChart,
 } from 'lucide-react';
-import { cn } from './lib/utils';
 
-function App() {
+function PageSpinner() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="w-8 h-8 border-2 border-[#FFCC00]/30 border-t-[#FFCC00] rounded-full animate-spin" />
+    </div>
+  );
+}
+
+function AppContent() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [stats, setStats] = useState<TransactionStats | null>(null);
@@ -50,11 +69,10 @@ function App() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMerchantMemoryOpen, setIsMerchantMemoryOpen] = useState(false);
-  const [isAgentsPanelOpen, setIsAgentsPanelOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(!!getToken());
   const [user, setUser] = useState<{ id: string; username: string } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions' | 'accounts' | 'analytics' | 'bas' | 'tax' | 'gst' | 'transfers'>('dashboard');
+  const [totalTransactions, setTotalTransactions] = useState(0);
 
   const handleLogin = (token: string, userData: { id: string; username: string }) => {
     localStorage.setItem('token', token);
@@ -69,8 +87,6 @@ function App() {
     setTransactions([]);
     setStats(null);
   };
-
-  const [totalTransactions, setTotalTransactions] = useState(0);
 
   const refreshData = async () => {
     try {
@@ -122,7 +138,6 @@ function App() {
     refreshData();
   }, [isAuthenticated]);
 
-  // SSE-driven refresh replaces polling
   useSSE(stableRefreshData);
 
   useEffect(() => {
@@ -141,350 +156,251 @@ function App() {
     return <Auth onLogin={handleLogin} />;
   }
 
-  return (
-    <div className="min-h-screen font-sans pb-24 md:pb-0 bg-(--dark-base)">
-      {/* Header - Glass Morphism */}
-      <header className="glass sticky top-0 z-40 border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-4">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <img src="/cba-logo.svg" alt="GoldLedger" className="h-[48px] w-[48px] sm:h-[52px] sm:w-[52px] drop-shadow-[0_0_8px_rgba(255,204,0,0.3)]" />
-            <div>
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight leading-tight text-gradient-gold">
-                GoldLedger
-              </h1>
-              <p className="hidden sm:block text-[10px] text-zinc-500 uppercase tracking-[0.2em] font-semibold">
-                Financial Intelligence
-              </p>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {user && (
-              <span className="hidden xl:flex items-center gap-2 text-sm text-zinc-400 font-medium mr-2 neu-raised-sm px-3 py-1.5 rounded-xl">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                {user.username}
-              </span>
-            )}
-
-            {/* Sync Status Pill */}
-            <div className="hidden lg:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest neu-inset px-4 py-2 rounded-full text-zinc-500">
-              <span className="w-1.5 h-1.5 rounded-full cba-gold-bg animate-pulse" />
-              Sync: {lastUpdated?.toLocaleTimeString() || 'Never'}
-            </div>
-
-            {/* Action Buttons */}
-            <button
-              type="button"
-              title="Merchant Memory"
-              aria-label="Open merchant memory"
-              onClick={() => setIsMerchantMemoryOpen(true)}
-              className="neu-raised-sm p-2.5 sm:px-3 sm:py-2.5 text-zinc-400 hover:text-[#FFCC00] hover:cba-gold-glow rounded-xl btn-press"
-            >
-              <Brain className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              title="Settings"
-              aria-label="Open settings"
-              onClick={() => setIsSettingsOpen(true)}
-              className="neu-raised-sm p-2.5 sm:px-3 sm:py-2.5 text-zinc-400 hover:text-[#FFCC00] hover:cba-gold-glow rounded-xl btn-press"
-            >
-              <SettingsIcon className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              title="Refresh data"
-              aria-label="Refresh data"
-              onClick={refreshData}
-              className="neu-raised-sm p-2.5 sm:px-3 sm:py-2.5 text-zinc-400 hover:text-emerald-400 hover:glow-success rounded-xl btn-press"
-            >
-              <RefreshCw className={cn("h-5 w-5", loading && "animate-spin")} />
-            </button>
-            <button
-              type="button"
-              title="Logout"
-              aria-label="Logout"
-              onClick={handleLogout}
-              className="neu-raised-sm p-2.5 text-zinc-400 hover:text-red-400 hover:glow-danger rounded-xl btn-press"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-          </div>
+  // Page elements for routes
+  const dashboardPage = (
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
+      <section>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {loading ? (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          ) : (
+            <>
+              <StatCard
+                title="Income"
+                value={stats ? formatCurrency(stats.totalIncome) : '$0.00'}
+                subtitle="Credits"
+                icon={TrendingUp}
+                trend="up"
+              />
+              <StatCard
+                title="Expenses"
+                value={stats ? formatCurrency(stats.totalExpenses) : '$0.00'}
+                subtitle="Debits"
+                icon={TrendingDown}
+                trend="down"
+              />
+              <StatCard
+                title="Net Flow"
+                value={stats ? formatCurrency(stats.netFlow) : '$0.00'}
+                subtitle="Balance"
+                icon={Wallet}
+                trend={stats && stats.netFlow >= 0 ? 'up' : 'down'}
+              />
+              <StatCard
+                title="Activity"
+                value={stats?.transactionCount.toString() || '0'}
+                subtitle="Processed"
+                icon={Receipt}
+              />
+            </>
+          )}
         </div>
+      </section>
+      <PendingCategorizationReview onUpdate={refreshData} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MonthlyTrendChart transactions={transactions} loading={loading} />
+        <div className="hidden lg:block">
+          <CategoryChart data={stats?.categoryBreakdown || {}} loading={loading} />
+        </div>
+      </div>
+    </div>
+  );
 
-        {/* Desktop Navigation - Dedicated Row */}
-        <nav className="hidden md:block border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center gap-1 py-2">
-              {([
-                { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
-                { id: 'transactions', label: 'Ledger', icon: FileText },
-                { id: 'accounts', label: 'Vaults', icon: Wallet },
-                { id: 'analytics', label: 'Insights', icon: LineChart },
-                { id: 'gst', label: 'GST', icon: ShieldCheck },
-                { id: 'bas', label: 'BAS', icon: Calculator },
-                { id: 'transfers', label: 'Transfers', icon: GitCompareArrows },
-                { id: 'tax', label: 'Tax', icon: Receipt },
-              ] as const).map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 whitespace-nowrap",
-                    activeTab === item.id
-                      ? "bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]"
-                      : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
-                  )}
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </nav>
-      </header>
+  const streamingPage = (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="neu-raised rounded-2xl p-6">
+          <MigrationDashboard />
+        </div>
+        <div className="neu-raised rounded-2xl p-6">
+          <StreamingChat agentType="budget_analyzer" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="neu-raised rounded-2xl p-6">
+          <SessionHistory />
+        </div>
+        <div className="neu-raised rounded-2xl p-6">
+          <SchemaExplorer />
+        </div>
+      </div>
+    </div>
+  );
 
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
-            <section>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-                {loading ? (
-                  <>
-                    <StatCardSkeleton />
-                    <StatCardSkeleton />
-                    <StatCardSkeleton />
-                    <StatCardSkeleton />
-                  </>
-                ) : (
-                  <>
-                    <StatCard
-                      title="Income"
-                      value={stats ? formatCurrency(stats.totalIncome) : '$0.00'}
-                      subtitle="Credits"
-                      icon={TrendingUp}
-                      trend="up"
-                    />
-                    <StatCard
-                      title="Expenses"
-                      value={stats ? formatCurrency(stats.totalExpenses) : '$0.00'}
-                      subtitle="Debits"
-                      icon={TrendingDown}
-                      trend="down"
-                    />
-                    <StatCard
-                      title="Net Flow"
-                      value={stats ? formatCurrency(stats.netFlow) : '$0.00'}
-                      subtitle="Balance"
-                      icon={Wallet}
-                      trend={stats && stats.netFlow >= 0 ? 'up' : 'down'}
-                    />
-                    <StatCard
-                      title="Activity"
-                      value={stats?.transactionCount.toString() || '0'}
-                      subtitle="Processed"
-                      icon={Receipt}
-                    />
-                  </>
-                )}
+  const accountsPage = (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AccountsOverview />
+        <StatementList />
+      </div>
+      <AccountSummaryCards />
+      <AccountBalanceTimeline />
+      <AccountManager />
+      <DebtReductionPlanner />
+    </div>
+  );
+
+  const settingsPage = (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+      <TenantSettings />
+      <MemberManager />
+      <PermissionMatrix />
+      <div className="border-t border-white/5 pt-8">
+        <TenantCreate />
+      </div>
+    </div>
+  );
+
+  const subscriptionPage = (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+      <UsageDashboard />
+      <PlanComparison currentPlan={localStorage.getItem('currentPlan') ?? 'starter'} />
+      <BillingHistory />
+    </div>
+  );
+
+  return (
+    <AppShell
+      username={user?.username}
+      lastSynced={lastUpdated}
+      loading={loading}
+      onRefresh={refreshData}
+      onLogout={handleLogout}
+      onOpenSettings={() => setIsSettingsOpen(true)}
+      onOpenMerchantMemory={() => setIsMerchantMemoryOpen(true)}
+      tenantSwitcher={<TenantSwitcher />}
+    >
+      <Suspense fallback={<PageSpinner />}>
+        <Routes>
+          <Route path="/" element={dashboardPage} />
+          <Route
+            path="/transactions"
+            element={
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <LedgerPage
+                  transactions={transactions}
+                  accounts={accounts}
+                  loading={loading}
+                  onDataChange={refreshData}
+                  totalTransactions={totalTransactions}
+                  onLoadMore={loadMoreTransactions}
+                />
               </div>
-            </section>
-
-            <PendingCategorizationReview onUpdate={refreshData} />
-
-            {/* Dashboard Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <MonthlyTrendChart transactions={transactions} loading={loading} />
-              <div className="hidden lg:block">
-                <CategoryChart data={stats?.categoryBreakdown || {}} loading={loading} />
+            }
+          />
+          <Route path="/accounts" element={accountsPage} />
+          <Route
+            path="/analytics"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <AnalyticsDashboard />
               </div>
-            </div>
-          </div>
-        )}
+            }
+          />
+          <Route
+            path="/gst"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <GSTPage />
+              </div>
+            }
+          />
+          <Route
+            path="/bas"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <BASPage />
+              </div>
+            }
+          />
+          <Route
+            path="/transfers"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <TransfersPage />
+              </div>
+            }
+          />
+          <Route
+            path="/tax"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <TaxDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/dashboards"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <DashboardGrid />
+              </div>
+            }
+          />
+          <Route path="/streaming" element={streamingPage} />
+          <Route
+            path="/market"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <MarketDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/payroll"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <PayrollDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/ap"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <APDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/invoicing"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <InvoicingDashboard />
+              </div>
+            }
+          />
+          <Route path="/settings" element={settingsPage} />
+          <Route path="/subscription" element={subscriptionPage} />
+          <Route
+            path="/settings/notifications"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <NotificationPreferences />
+              </div>
+            }
+          />
+          <Route
+            path="/settings/sync"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                <SyncStatus />
+                <ConflictResolver />
+              </div>
+            }
+          />
 
-        {activeTab === 'transactions' && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <LedgerPage
-              transactions={transactions}
-              accounts={accounts}
-              loading={loading}
-              onDataChange={refreshData}
-              totalTransactions={totalTransactions}
-              onLoadMore={loadMoreTransactions}
-            />
-          </div>
-        )}
+          {/* Catch-all: redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
 
-        {activeTab === 'accounts' && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <AccountsOverview />
-              <StatementList />
-            </div>
-            <AccountSummaryCards />
-            <AccountBalanceTimeline />
-            <AccountManager />
-            <DebtReductionPlanner />
-          </div>
-        )}
-
-        {activeTab === 'analytics' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <AnalyticsDashboard />
-          </div>
-        )}
-
-        {activeTab === 'gst' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <GSTPage />
-          </div>
-        )}
-
-        {activeTab === 'bas' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <BASPage />
-          </div>
-        )}
-
-        {activeTab === 'transfers' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <TransfersPage />
-          </div>
-        )}
-
-        {activeTab === 'tax' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <TaxDashboard />
-          </div>
-        )}
-      </main>
-
-      {/* Floating Chat */}
       <FloatingChat />
-
-      {/* Bottom Navigation - Mobile Only */}
-      <BottomNavigation
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        onShowAgents={() => setIsAgentsPanelOpen(true)}
-      />
-
-      {/* AI Agents Panel */}
-      {
-        isAgentsPanelOpen && (
-          <div className="fixed inset-0 z-50 md:hidden">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsAgentsPanelOpen(false)} />
-            <div className="absolute bottom-0 left-0 right-0 max-h-[80vh] overflow-y-auto neu-raised rounded-t-3xl animate-slide-up">
-              <div className="p-4 border-b border-white/5 flex items-center justify-between sticky top-0 glass">
-                <h2 className="text-lg font-bold text-gradient-gold">Menu</h2>
-                <button
-                  type="button"
-                  onClick={() => setIsAgentsPanelOpen(false)}
-                  className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-white"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <button
-                  type="button"
-                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
-                  onClick={() => {
-                    setIsAgentsPanelOpen(false);
-                    setActiveTab('gst');
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2 rounded-xl text-emerald-400">
-                      <ShieldCheck className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-zinc-100">GST Dashboard</h3>
-                      <p className="text-xs text-zinc-500">Classify, review & track GST</p>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
-                  onClick={() => {
-                    setIsAgentsPanelOpen(false);
-                    setActiveTab('bas');
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2 rounded-xl text-[#FFCC00]">
-                      <Calculator className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-zinc-100">BAS Reporting</h3>
-                      <p className="text-xs text-zinc-500">Calculate, pre-fill & compare BAS</p>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
-                  onClick={() => {
-                    setIsAgentsPanelOpen(false);
-                    setActiveTab('transfers');
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2 rounded-xl text-blue-400">
-                      <GitCompareArrows className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-zinc-100">Cross-Account</h3>
-                      <p className="text-xs text-zinc-500">Transfers, money flow & net positions</p>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
-                  onClick={() => {
-                    setIsAgentsPanelOpen(false);
-                    setActiveTab('analytics');
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2 rounded-xl text-purple-400">
-                      <LineChart className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-zinc-100">Analytics & Insights</h3>
-                      <p className="text-xs text-zinc-500">Spending patterns, budgets & forecasts</p>
-                    </div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className="w-full neu-raised p-4 rounded-2xl text-left hover:border-[#FFCC00]/30 border border-transparent transition-colors"
-                  onClick={() => {
-                    setIsAgentsPanelOpen(false);
-                    setActiveTab('tax');
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2 rounded-xl text-amber-400">
-                      <Receipt className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-zinc-100">Tax Dashboard</h3>
-                      <p className="text-xs text-zinc-500">Income tax, CGT & deductions</p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
 
       <SettingsModal
         isOpen={isSettingsOpen}
@@ -496,22 +412,19 @@ function App() {
         onClose={() => setIsMerchantMemoryOpen(false)}
       />
 
-      {/* Footer - Only show on desktop or if scrolled to bottom on mobile views that support it */}
-      <footer className="hidden md:block mt-16 py-8 border-t border-white/5 mb-16 md:mb-0">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-sm text-zinc-600 font-medium">
-            GoldLedger • <span className="text-gradient-gold">AI-Powered Financial Intelligence</span>
-          </p>
-          <div className="mt-3 flex justify-center gap-1">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className="w-1 h-1 rounded-full cba-gold-bg opacity-40" />
-            ))}
-          </div>
-        </div>
-      </footer>
-
+      <InstallPrompt />
+      <UpdatePrompt />
+      <PushPermissionPrompt />
       <Toaster theme="dark" position="bottom-right" />
-    </div >
+    </AppShell>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 

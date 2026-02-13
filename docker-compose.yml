@@ -4,6 +4,7 @@
 # Services:
 #   - postgres:  PostgreSQL 17 + pgvector (shared by CBA app + Cognee)
 #   - cognee:    Cognee AI knowledge graph (built from cloned repo)
+#   - redis:     Redis 7 (caching for Cognee + session management)
 #   - server:    Hono API server (Node.js + Python)
 #   - client:    React frontend (nginx with API proxy)
 #
@@ -92,6 +93,14 @@ services:
       - ACCEPT_LOCAL_FILE_PATH=true
       - ALLOW_HTTP_REQUESTS=true
       - TELEMETRY_DISABLED=1
+      # Wave 3: Redis caching for Cognee
+      - CACHING=true
+      - CACHE_BACKEND=redis
+      - CACHE_HOST=redis
+      - CACHE_PORT=6379
+      # Wave 3: Admin credentials (used by CogneeClient for admin operations)
+      - COGNEE_ADMIN_EMAIL=${COGNEE_ADMIN_EMAIL:-admin@cognee-cba.dev}
+      - COGNEE_ADMIN_PASSWORD=${COGNEE_ADMIN_PASSWORD:-CbaAdmin2026}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/settings"]
       interval: 30s
@@ -107,11 +116,38 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           cpus: '2.0'
           memory: 4G
+
+  # ---------------------------------------------------------------------------
+  # Redis — Caching layer for Cognee + session management
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: cba-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - cba-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # ---------------------------------------------------------------------------
   # CBA Server — Hono API (Node.js + Python for agents)
@@ -150,6 +186,8 @@ services:
       - DB_USER=${POSTGRES_USER:-app_user}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_SSL=false
+      # Wave 4: TFN encryption key (AES-256-GCM for TFN + bank account numbers)
+      - TFN_ENCRYPTION_KEY=${TFN_ENCRYPTION_KEY}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3501/health"]
       interval: 30s
@@ -195,6 +233,8 @@ volumes:
   postgres-data:
     driver: local
   cognee-data:
+    driver: local
+  redis-data:
     driver: local
 
 # =============================================================================

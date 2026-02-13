@@ -10,11 +10,31 @@ import { getClient } from './client.js';
 import { AGENT_TOKEN_BUDGETS, AGENT_MODELS } from './config.js';
 import { retryWithBackoff } from './retry.js';
 import type { AgentType, TokenUsage } from './types.js';
+import type { MutationTools } from './mutation-tools.js';
 
 export abstract class ClaudeAgent<TInput, TOutput> {
   protected client: Anthropic;
   protected model: string;
   protected agentType: AgentType;
+
+  /** Optional mutation tools — injected by orchestrator when mutation framework is active. */
+  protected mutationTools?: MutationTools;
+
+  /**
+   * Set the MutationTools instance for this agent invocation.
+   * Called by the orchestrator before invoke() when mutation support is needed.
+   * Agents that don't use mutations are unaffected — this is backward-compatible.
+   */
+  setMutationTools(tools: MutationTools): void {
+    this.mutationTools = tools;
+  }
+
+  /**
+   * Check if mutation tools are available for this invocation.
+   */
+  protected hasMutationTools(): boolean {
+    return this.mutationTools != null;
+  }
 
   /** System prompt instructing the agent's role and output format. */
   protected abstract systemPrompt: string;

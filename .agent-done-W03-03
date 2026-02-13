@@ -1,0 +1,18 @@
+Agent 3 complete — Wave 3 Cognee Session Extension
+
+Modified: server/src/services/cognee-sessions.ts
+
+Changes:
+1. Added exported types: CogneeSessionContext, CogneeUserSessionOptions
+2. Added 7 new methods to CogneeSessionService class:
+   - createCogneeSession(userId, options) → { sessionId, context } | null
+   - getCogneeSession(sessionId) → CogneeSessionContext | null
+   - addConversationTurn(sessionId, role, content, query?, datasets?) → void
+   - getOrCreateCogneeSession(userId, options) → { sessionId, context, isNew } | null
+   - cacheUserQueryResult(userId, queryHash, result, ttl?) → boolean
+   - getCachedUserQueryResult(userId, queryHash) → any | null
+   - destroyUserCogneeSessions(userId) → number
+
+All existing Wave 17 methods preserved unchanged.
+Redis key namespace: cognee:csession: (sessions), cognee:csessions:user: (sets), cognee:cache:user_: (cache)
+tsc --noEmit: 0 errors in cognee-sessions.ts (150 pre-existing errors from other files)

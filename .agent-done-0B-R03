@@ -1,0 +1,22 @@
+R03 Compatibility Analysis Complete
+Date: 2026-02-13
+Output: wave0b-research/R03-compatibility-analysis.md
+
+Sections delivered:
+1. Per-Wave Assumptions (14 waves analyzed)
+2. Required Services (4 phases, 20+ services)
+3. Required Tables (58 tables across migrations 0013-0022)
+4. Required Endpoints (~128 from Waves 1-10)
+5. Required Cognee Config (4 critical requirements)
+6. Conflict Risks (8 identified risks with resolutions)
+7. Backward Compatibility Rules (10 rules)
+8. Dependency Chain Summary
+9. Critical Path for Wave 1-10 Planning
+10. Pre-Wave-11 Infrastructure Requirements
+
+Key findings:
+- Existing codebase already has Wave 11-17 artifacts (21 agents, 89+ tables)
+- Wave 16 CRITICAL dependency on Wave 3 (multi-user Cognee)
+- 8 conflict risks identified with resolutions
+- 10 backward compatibility rules for Wave 1-10 plans
+- Safe route namespaces mapped for all 10 waves

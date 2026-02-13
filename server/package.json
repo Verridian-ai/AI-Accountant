@@ -13,10 +13,14 @@
         "test": "vitest run"
     },
     "dependencies": {
+        "@ai-sdk/anthropic": "^3.0.43",
+        "@ai-sdk/openai": "^3.0.28",
         "@anthropic-ai/sdk": "^0.74.0",
         "@hono/node-server": "^1.2.0",
         "@libsql/client": "^0.17.0",
         "@types/bcryptjs": "^2.4.6",
+        "@types/ioredis": "^4.28.10",
+        "ai": "^6.0.85",
         "bcryptjs": "^3.0.3",
         "chokidar": "^3.6.0",
         "csv-parse": "^5.5.0",
@@ -26,15 +30,18 @@
         "google-auth-library": "^9.0.0",
         "hono": "^4.0.0",
         "hono-rate-limiter": "^0.5.3",
+        "ioredis": "^5.9.3",
         "magika": "^0.2.0",
         "openai": "^4.28.0",
+        "pdf-lib": "^1.17.1",
         "pdf-parse": "^1.1.1",
         "pdf-to-img": "^5.0.0",
         "pdfjs-dist": "^5.4.530",
         "pg": "^8.17.2",
         "resend": "^6.9.1",
         "sharp": "^0.33.0",
-        "stripe": "^20.2.0"
+        "stripe": "^20.2.0",
+        "web-push": "^3.6.7"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",
@@ -42,6 +49,7 @@
         "@types/node": "^20.19.29",
         "@types/pdf-parse": "^1.1.4",
         "@types/pg": "^8.10.0",
+        "@types/web-push": "^3.6.4",
         "drizzle-kit": "^0.20.0",
         "globals": "^17.0.0",
         "tsx": "^4.7.0",

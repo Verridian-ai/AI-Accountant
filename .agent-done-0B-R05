@@ -1,0 +1,14 @@
+R05 Agent Architecture Analyzer — COMPLETE
+Timestamp: 2026-02-13
+Output: wave0b-research/R05-agent-architecture.md
+
+Sections completed:
+1. Current Agent Inventory (21 agents, all tools/models/budgets documented)
+2. New Agents (invoice_agent Wave 7, accounts_payable_agent Wave 10)
+3. Agent Modifications (Waves 1-10 per-wave changes)
+4. Intent Router Design (IntentClassification, routeAndDispatch, category mapping)
+5. Route Gap Analysis (4 existing routes, 17 missing, 2 new for new agents)
+6. Type System Changes (AgentType union, I/O interfaces, config updates)
+7. Architecture Strengths (6 items)
+8. Architecture Weaknesses (9 items)
+9. Recommended Wave 1 Priorities (4 items)

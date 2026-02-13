@@ -1,0 +1,260 @@
+import { useState, useEffect } from 'react';
+import { Save, AlertTriangle, Building2 } from 'lucide-react';
+import { tenantApi } from '@/api';
+
+interface TenantData {
+  id: string;
+  name: string;
+  slug: string;
+  abn?: string;
+  entityType?: string;
+  industry?: string;
+  financialYearEnd?: string;
+  timezone?: string;
+}
+
+const ENTITY_TYPES = ['sole_trader', 'company', 'trust', 'partnership', 'smsf'];
+const TIMEZONES = [
+  'Australia/Sydney',
+  'Australia/Melbourne',
+  'Australia/Brisbane',
+  'Australia/Perth',
+  'Australia/Adelaide',
+  'Australia/Darwin',
+  'Australia/Hobart',
+];
+const FY_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+export function TenantSettings() {
+  const [tenant, setTenant] = useState<TenantData | null>(null);
+  const [form, setForm] = useState({
+    name: '',
+    abn: '',
+    entityType: 'sole_trader',
+    industry: '',
+    financialYearEnd: 'June',
+    timezone: 'Australia/Sydney',
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showDeactivate, setShowDeactivate] = useState(false);
+  const [deactivateConfirm, setDeactivateConfirm] = useState('');
+  const [hasPermission, setHasPermission] = useState(true);
+
+  const tenantId = localStorage.getItem('tenantId');
+
+  useEffect(() => {
+    if (!tenantId) return;
+    tenantApi
+      .getTenant(tenantId)
+      .then((data: TenantData) => {
+        setTenant(data);
+        setForm({
+          name: data.name ?? '',
+          abn: data.abn ?? '',
+          entityType: data.entityType ?? 'sole_trader',
+          industry: data.industry ?? '',
+          financialYearEnd: data.financialYearEnd ?? 'June',
+          timezone: data.timezone ?? 'Australia/Sydney',
+        });
+      })
+      .catch((err: Error) => {
+        if (err.message.includes('403') || err.message.includes('permission')) {
+          setHasPermission(false);
+        }
+        setError(err.message);
+      });
+  }, [tenantId]);
+
+  const handleSave = async () => {
+    if (!tenantId) return;
+    setSaving(true);
+    setError(null);
+    setSaved(false);
+    try {
+      await tenantApi.updateTenant(tenantId, form);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeactivate = async () => {
+    if (!tenantId || deactivateConfirm !== tenant?.name) return;
+    try {
+      await tenantApi.deactivateTenant(tenantId);
+      localStorage.removeItem('tenantId');
+      window.location.reload();
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to deactivate');
+    }
+  };
+
+  if (!hasPermission) {
+    return (
+      <div className="neu-raised rounded-2xl p-8 text-center">
+        <AlertTriangle className="w-12 h-12 text-[#FFCC00] mx-auto mb-4" />
+        <h3 className="text-lg font-bold text-zinc-200">No Permission</h3>
+        <p className="text-sm text-zinc-500 mt-2">You don't have permission to edit settings. Contact your workspace owner.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Workspace Settings</h2>
+        <p className="text-sm text-zinc-500">Configure your workspace details and preferences</p>
+      </div>
+
+      <div className="neu-raised rounded-2xl border border-white/5 p-6 space-y-5">
+        <div className="flex items-center gap-3 pb-4 border-b border-white/5">
+          <div className="neu-inset p-2 rounded-xl">
+            <Building2 className="w-5 h-5 text-[#FFCC00]" />
+          </div>
+          <h3 className="text-lg font-bold text-zinc-100">Business Details</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Name</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Slug</label>
+            <input
+              type="text"
+              value={tenant?.slug ?? ''}
+              readOnly
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-500 bg-transparent outline-none cursor-not-allowed"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">ABN</label>
+            <input
+              type="text"
+              value={form.abn}
+              onChange={(e) => setForm({ ...form, abn: e.target.value })}
+              placeholder="XX XXX XXX XXX"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Entity Type</label>
+            <select
+              value={form.entityType}
+              onChange={(e) => setForm({ ...form, entityType: e.target.value })}
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            >
+              {ENTITY_TYPES.map((t) => (
+                <option key={t} value={t} className="bg-[#16213e]">{t.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Industry</label>
+            <input
+              type="text"
+              value={form.industry}
+              onChange={(e) => setForm({ ...form, industry: e.target.value })}
+              placeholder="e.g. Retail, Construction"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Financial Year End</label>
+            <select
+              value={form.financialYearEnd}
+              onChange={(e) => setForm({ ...form, financialYearEnd: e.target.value })}
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            >
+              {FY_MONTHS.map((m) => (
+                <option key={m} value={m} className="bg-[#16213e]">{m}</option>
+              ))}
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Timezone</label>
+            <select
+              value={form.timezone}
+              onChange={(e) => setForm({ ...form, timezone: e.target.value })}
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            >
+              {TIMEZONES.map((tz) => (
+                <option key={tz} value={tz} className="bg-[#16213e]">{tz}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {error && <p className="text-sm text-red-400 font-medium">{error}</p>}
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+
+      {/* Danger Zone */}
+      <div className="neu-raised rounded-2xl border border-red-500/20 p-6 space-y-4">
+        <h3 className="text-lg font-bold text-red-400">Danger Zone</h3>
+        <p className="text-sm text-zinc-400">Deactivating your workspace will remove access for all members. This action can be reversed by contacting support.</p>
+
+        {!showDeactivate ? (
+          <button
+            type="button"
+            onClick={() => setShowDeactivate(true)}
+            className="px-4 py-2 rounded-xl text-sm font-bold border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+          >
+            Deactivate Workspace
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-zinc-400">
+              Type <span className="font-bold text-red-400">{tenant?.name}</span> to confirm:
+            </p>
+            <input
+              type="text"
+              value={deactivateConfirm}
+              onChange={(e) => setDeactivateConfirm(e.target.value)}
+              className="w-full max-w-sm neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-red-500/30"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleDeactivate}
+                disabled={deactivateConfirm !== tenant?.name}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                Confirm Deactivate
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowDeactivate(false); setDeactivateConfirm(''); }}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

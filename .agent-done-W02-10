@@ -1,0 +1,105 @@
+Agent 10 (Testing & Validation) — Wave 2 Complete
+===================================================
+
+Date: 2026-02-13
+Agent: 10 — Testing & Validation
+Wave: 2 — Transaction Mutation & Streaming
+
+VERIFICATION RESULTS
+====================
+
+Phase 1: TypeScript Compilation
+  - Server: 0 Wave 2 errors in index.ts (zero new regressions)
+  - Client: 0 errors (clean)
+  - Pre-existing: ~196 errors from Waves 13-22 services (not Wave 2)
+  Result: PASS
+
+Phase 2: Migration Validation (0014_agent_mutations.sql)
+  - BEGIN/COMMIT wrapping: YES
+  - 3 tables: agent_sessions, agent_mutations, agent_audit_log
+  - FK ordering correct (sessions → mutations → audit_log)
+  - All IF NOT EXISTS: YES
+  - PG types (BOOLEAN, TIMESTAMP WITH TIME ZONE, REAL): YES
+  - All indexes with IF NOT EXISTS: YES
+  Result: PASS
+
+Phase 3: Dual Schema Definitions
+  - FIXED: Added 3 sqliteTable definitions to schema.ts
+  - FIXED: Added 3 pgTable definitions to postgres-schema.ts
+  - Type exports added for both
+  Result: PASS (after fix)
+
+Phase 4: Service Files (5/5)
+  - mutation-tools.ts: 5 exports ✓
+  - mutation-auth.ts: 2 exports ✓
+  - confirmation-flow.ts: 3 exports ✓
+  - streaming.ts: 4+ exports ✓
+  - audit.ts: 4 exports ✓
+  Result: PASS
+
+Phase 5: API Endpoints (6/6)
+  - POST /api/chat/stream: FIXED (replaced non-existent classifyIntent with aiService pattern)
+  - POST /api/chat/confirm/:actionId: ✓ (fixed audit arg order)
+  - POST /api/chat/reject/:actionId: ✓ (fixed audit arg order)
+  - GET /api/chat/pending: ✓
+  - GET /api/chat/history: ✓
+  - GET /api/agent-audit: ✓ (fixed property names from/to)
+  Result: PASS (after fixes)
+
+Phase 6: Agent Integration
+  - base-agent.ts: mutationTools property, setMutationTools(), hasMutationTools() ✓
+  - orchestrator.ts: initMutationFramework(), getSessionMutations(), MutationTools injection ✓
+  - transaction-categorizer.ts: proposeMutation with confidence-based confirmation ✓
+  - gst-calculator.ts: proposeMutation with requiresConfirmation: true ✓
+  Result: PASS
+
+Phase 7: MutationAuth Permission Matrix
+  - Auto-execute threshold 0.9 for transaction_categorizer: ✓
+  - Financial tables always require confirmation: ✓
+  - Delete operations always require confirmation: ✓
+  - 22 agents in permission matrix: ✓
+  - Haiku agents have no auto-execute rules: ✓
+  Result: PASS
+
+Phase 8: UI Components
+  - FIXED: Added mutationApi to client/src/api.ts (5 functions)
+  - FIXED: Added streaming/mutation state to FloatingChat.tsx
+  - StreamingMessage.tsx exists: ✓
+  - ConfirmationCard.tsx exists: ✓
+  - AgentProgressBar.tsx exists: ✓
+  - AuditTrailViewer.tsx exists: ✓
+  Result: PASS (after fixes)
+
+Phase 9: Backward Compatibility
+  - BC-01: POST /api/chat unchanged: ✓
+  - BC-02: GET /api/events SSE unchanged: ✓
+  - BC-03: base-agent invoke() unchanged: ✓
+  - BC-04: No dropped schema columns: ✓
+  - BC-09: Migration additive only: ✓
+  Result: PASS
+
+Phase 10: SSE/Streaming
+  - Headers: Content-Type, Cache-Control, X-Accel-Buffering: ✓
+  - Wire format: event: {type}\ndata: {json}\n\n: ✓
+  - Heartbeat: : heartbeat\n\n every 30s: ✓
+  - GET /api/events unchanged: ✓
+  Result: PASS
+
+Phase 11: Marker Files
+  - W02-01 through W02-09: All 9 exist ✓
+  - W02-10 (this file): Created ✓
+
+FIXES APPLIED
+=============
+1. schema.ts: Added agentSessions, agentMutations, agentAuditLog sqliteTable definitions
+2. postgres-schema.ts: Added pgAgentSessions, pgAgentMutations, pgAgentAuditLog pgTable definitions
+3. index.ts: Added ConfirmationFlowService + AuditService imports and initialization
+4. index.ts: Added stale mutation expiry timer (5-minute interval)
+5. index.ts: Rewrote POST /api/chat/stream (replaced non-existent classifyIntent with aiService)
+6. index.ts: Fixed audit log arg order in confirm/reject endpoints
+7. index.ts: Fixed AuditQueryOptions property names (dateFrom→from, dateTo→to)
+8. index.ts: Fixed AgentType cast on audit query endpoint
+9. api.ts: Added mutationApi with 5 functions (fetchStreamChat, confirmMutation, rejectMutation, fetchPendingMutations, fetchAuditLog)
+10. FloatingChat.tsx: Added streaming state, mutation state, confirm/reject handlers, pending mutations UI
+
+FINAL STATUS: ALL 11 PHASES PASS

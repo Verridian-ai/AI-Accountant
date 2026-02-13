@@ -1,0 +1,52 @@
+{
+  "jobs": [
+    {
+      "id": "e065e0a9-27e7-4a16-8874-3f2ad92e2667",
+      "userId": "29110d3f-958e-4a96-8711-67caf328020d",
+      "files": [
+        {
+          "id": "81ce2109-5ec5-459e-b06e-a05fa0f3d7e8",
+          "filename": "81ce2109-5ec5-459e-b06e-a05fa0f3d7e8_E7966FDF-25CA-49BF-AC10-AE2FC877C256.pdf",
+          "originalName": "E7966FDF-25CA-49BF-AC10-AE2FC877C256.pdf",
+          "size": 1904437,
+          "mimeType": "application/pdf",
+          "filePath": "C:\\Users\\Danie\\Desktop\\CBA Statements Parse\\server\\uploads\\queue\\files\\e065e0a9-27e7-4a16-8874-3f2ad92e2667\\81ce2109-5ec5-459e-b06e-a05fa0f3d7e8_E7966FDF-25CA-49BF-AC10-AE2FC877C256.pdf",
+          "state": "completed",
+          "retryCount": 0,
+          "statementId": "347ec596-20c9-486c-9ef9-05f6bf0d1f09",
+          "error": "Duplicate: already parsed as E7966FDF-25CA-49BF-AC10-AE2FC877C256.pdf",
+          "processedAt": "2026-02-11T05:43:10.341Z"
+        },
+        {
+          "id": "a0634770-96ff-4cde-a421-0158be3781f5",
+          "filename": "a0634770-96ff-4cde-a421-0158be3781f5_096B4C33-4F7F-41B2-8B03-EA50CA97803F.pdf",
+          "originalName": "096B4C33-4F7F-41B2-8B03-EA50CA97803F.pdf",
+          "size": 536390,
+          "mimeType": "application/pdf",
+          "filePath": "C:\\Users\\Danie\\Desktop\\CBA Statements Parse\\server\\uploads\\queue\\files\\e065e0a9-27e7-4a16-8874-3f2ad92e2667\\a0634770-96ff-4cde-a421-0158be3781f5_096B4C33-4F7F-41B2-8B03-EA50CA97803F.pdf",
+          "state": "completed",
+          "retryCount": 0,
+          "statementId": "c0aea9d5-739a-4daf-b39b-b75afcf12259",
+          "error": "Duplicate: already parsed as 096B4C33-4F7F-41B2-8B03-EA50CA97803F.pdf",
+          "processedAt": "2026-02-11T05:43:10.311Z"
+        }
+      ],
+      "priority": "high",
+      "state": "completed",
+      "progress": {
+        "total": 2,
+        "completed": 2,
+        "failed": 0,
+        "processing": 0
+      },
+      "createdAt": "2026-02-11T05:43:10.179Z",
+      "retryCount": 0,
+      "metadata": {
+        "source": "batch_upload",
+        "fileCount": 2
+      },
+      "startedAt": "2026-02-11T05:43:10.294Z",
+      "completedAt": "2026-02-11T05:43:10.341Z"
+    }
+  ]
+}

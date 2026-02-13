@@ -1,0 +1,25 @@
+Wave 23 - Agent 01 (tenant-schema-builder) COMPLETE
+Timestamp: 2026-02-13
+Task: Create 8 multi-tenant DB tables + migration 0035 + schema definitions
+
+Files CREATED:
+- docker/migrations/0035_multi_tenant.sql (8 tables, 11 indexes, 16 permissions, 4 subscription plans)
+
+Files MODIFIED:
+- server/src/schema.ts (8 new sqliteTable definitions + 16 type exports)
+- server/src/db/postgres-schema.ts (8 new pgTable definitions + 16 type exports)
+
+Tables created:
+1. tenants - Organization/workspace entities with slug, ABN, entity_type
+2. tenant_members - Users belonging to tenants with roles (owner/admin/accountant/bookkeeper/viewer)
+3. tenant_invitations - Pending invitations with secure tokens
+4. permissions - 16 system permissions (resource.action pattern)
+5. role_permissions - Per-tenant role-to-permission mapping (RBAC)
+6. subscription_plans - 4 tiers (free/starter/professional/enterprise)
+7. subscription_history - Tenant subscription records with usage tracking
+8. api_rate_limits - Per-tenant, per-endpoint rate limiting
+
+Verification:
+- schema.ts and postgres-schema.ts compile with zero errors
+- 142 pre-existing TS errors in other service files (not caused by this agent)
+- Migration SQL ready for PostgreSQL execution

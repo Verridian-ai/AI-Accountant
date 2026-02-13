@@ -1,0 +1,28 @@
+Agent 5 (Bank Reconciler Agent Builder) — COMPLETE
+
+## Created
+- `server/src/services/claude/agents/bank-reconciler-agent.ts` — BankReconcilerAgent class
+
+## Modified
+- `server/src/services/claude/types.ts` — Added 'bank_reconciler_agent' to AgentType union + BankReconAgentInput/Output interfaces
+- `server/src/services/claude/config.ts` — Added bank_reconciler_agent token budget (80K/8K/15 tools) + model (Sonnet)
+- `server/src/services/claude/orchestrator.ts` — Registered BankReconcilerAgent + added to I/O maps
+
+## BankReconcilerAgent Tools (4)
+1. find_matches — Auto-match or suggest matches for specific bank transactions
+2. score_match_confidence — Score amount/date/description match components
+3. apply_matching_rules — Confirm/reject/undo matches via BankReconciliationService
+4. search_recon_patterns — Cognee GRAPH_COMPLETION search on reconPatterns dataset
+
+## Scoring Algorithm
+- Amount: exact=1.0, <1%=0.8, <5%=0.5
+- Date: same day=1.0, ±1d=0.9, ±3d=0.7, ±7d=0.4
+- Description: Jaccard keyword overlap
+- Combined: 50% amount + 30% date + 20% description
+
+## Verification
+- TypeScript: passes clean (npx tsc --noEmit)
+- AgentType includes 'bank_reconciler_agent': YES
+- AGENT_TOKEN_BUDGETS.bank_reconciler_agent: { 80K input, 8K output, 15 tools }
+- AGENT_MODELS.bank_reconciler_agent: Sonnet (higher reasoning for match accuracy)
+- Orchestrator registers BankReconcilerAgent with typed I/O maps
