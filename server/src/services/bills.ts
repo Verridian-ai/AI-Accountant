@@ -12,7 +12,7 @@
  */
 
 import { db, bills, billLines, billPayments, suppliers, purchaseOrders, users } from '../schema.js';
-import { eq, and, gte, lte, sql, desc, asc } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, asc } from 'drizzle-orm';
 import crypto from 'crypto';
 
 // ============================================================================
@@ -196,16 +196,6 @@ function daysBetween(dateA: string, dateB: string): number {
   return Math.floor((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-// Valid status transitions
-const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
-  draft: ['awaiting_approval', 'void'],
-  awaiting_approval: ['approved', 'draft', 'void'],
-  approved: ['paid', 'overdue'],
-  paid: [],
-  void: [],
-  overdue: ['paid'],
-};
-
 // ============================================================================
 // SERVICE CLASS
 // ============================================================================
@@ -375,7 +365,7 @@ export class BillService {
       quantity: Number(l.quantity) || 0,
       unitPrice: Number(l.unitPrice) || 0,
       amount: Number(l.amount) || 0,
-      gstRate: Number(l.gstRate) ?? 0.1,
+      gstRate: l.gstRate != null ? Number(l.gstRate) : 0.1,
       gstAmount: Number(l.gstAmount) || 0,
       accountCode: l.accountCode,
       taxCode: l.taxCode,

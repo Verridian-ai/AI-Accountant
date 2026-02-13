@@ -5,8 +5,8 @@
  * entries with confidence scoring, session management, and configurable rules.
  */
 
-import { db, transactions, journalEntries, journalEntryLines } from '../schema.js';
-import { eq, and, desc, gte, lte, sql, inArray } from 'drizzle-orm';
+import { db, transactions } from '../schema.js';
+import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
 // ============================================================================
