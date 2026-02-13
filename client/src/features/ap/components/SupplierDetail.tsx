@@ -61,7 +61,10 @@ export function SupplierDetail({ supplierId, onBack, onEdit }: SupplierDetailPro
   if (loading) {
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
-        <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to suppliers
         </button>
         <div className="neu-raised rounded-2xl p-6 animate-pulse">
@@ -75,7 +78,10 @@ export function SupplierDetail({ supplierId, onBack, onEdit }: SupplierDetailPro
   if (!supplier) {
     return (
       <div className="space-y-6">
-        <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to suppliers
         </button>
         <div className="neu-raised rounded-2xl p-8 text-center">
@@ -149,16 +155,14 @@ export function SupplierDetail({ supplierId, onBack, onEdit }: SupplierDetailPro
           {supplier.contactName && (
             <InfoRow icon={Building2} label="Contact" value={supplier.contactName} />
           )}
-          {supplier.email && (
-            <InfoRow icon={Mail} label="Email" value={supplier.email} />
-          )}
-          {supplier.phone && (
-            <InfoRow icon={Phone} label="Phone" value={supplier.phone} />
-          )}
-          {supplier.address && (
-            <InfoRow icon={MapPin} label="Address" value={supplier.address} />
-          )}
-          <InfoRow icon={Calendar} label="Payment Terms" value={`${supplier.paymentTermsDays} days`} />
+          {supplier.email && <InfoRow icon={Mail} label="Email" value={supplier.email} />}
+          {supplier.phone && <InfoRow icon={Phone} label="Phone" value={supplier.phone} />}
+          {supplier.address && <InfoRow icon={MapPin} label="Address" value={supplier.address} />}
+          <InfoRow
+            icon={Calendar}
+            label="Payment Terms"
+            value={`${supplier.paymentTermsDays} days`}
+          />
         </div>
       </div>
 
@@ -196,7 +200,9 @@ export function SupplierDetail({ supplierId, onBack, onEdit }: SupplierDetailPro
         </div>
         <div className="neu-raised rounded-2xl p-5 text-center">
           <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Outstanding</p>
-          <p className="text-xl font-bold text-white">{formatCurrency(supplier.outstandingAmount)}</p>
+          <p className="text-xl font-bold text-white">
+            {formatCurrency(supplier.outstandingAmount)}
+          </p>
         </div>
         <div className="neu-raised rounded-2xl p-5 text-center">
           <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Total Bills</p>
@@ -246,8 +252,8 @@ export function SupplierDetail({ supplierId, onBack, onEdit }: SupplierDetailPro
           <div className="neu-raised rounded-2xl p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-bold text-white mb-2">Archive Supplier?</h3>
             <p className="text-sm text-zinc-400 mb-6">
-              This will mark <strong className="text-white">{supplier.businessName}</strong> as archived.
-              Existing bills will not be affected.
+              This will mark <strong className="text-white">{supplier.businessName}</strong> as
+              archived. Existing bills will not be affected.
             </p>
             <div className="flex gap-3 justify-end">
               <button
@@ -271,7 +277,15 @@ export function SupplierDetail({ supplierId, onBack, onEdit }: SupplierDetailPro
   );
 }
 
-function InfoRow({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: string }) {
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Building2;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="flex items-start gap-2">
       <Icon className="h-4 w-4 text-zinc-500 mt-0.5 shrink-0" />
@@ -301,7 +315,9 @@ function StatusBadge({ status }: { status: string }) {
     void: 'Void',
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] ?? styles.draft}`}>
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] ?? styles.draft}`}
+    >
       {labels[status] ?? status}
     </span>
   );

@@ -167,7 +167,10 @@ export class CogneeSessionService {
     }
   }
 
-  async updateSession(sessionId: string, updates: Partial<Pick<CogneeSession, 'state' | 'data'>>): Promise<CogneeSession | null> {
+  async updateSession(
+    sessionId: string,
+    updates: Partial<Pick<CogneeSession, 'state' | 'data'>>,
+  ): Promise<CogneeSession | null> {
     if (!this._ensureConnected()) return null;
 
     try {
@@ -231,7 +234,11 @@ export class CogneeSessionService {
   // QUERY CACHING
   // ==========================================================================
 
-  async cacheQueryResult(cacheKey: string, result: unknown, ttlSeconds: number = 300): Promise<boolean> {
+  async cacheQueryResult(
+    cacheKey: string,
+    result: unknown,
+    ttlSeconds: number = 300,
+  ): Promise<boolean> {
     if (!this._ensureConnected()) return false;
 
     try {
@@ -297,7 +304,11 @@ export class CogneeSessionService {
   // RATE LIMITING (sliding window via sorted sets)
   // ==========================================================================
 
-  async checkRateLimit(operation: string, limit: number, windowSeconds: number): Promise<RateLimitResult> {
+  async checkRateLimit(
+    operation: string,
+    limit: number,
+    windowSeconds: number,
+  ): Promise<RateLimitResult> {
     const defaultAllowed: RateLimitResult = {
       allowed: true,
       remaining: limit,
@@ -379,7 +390,7 @@ export class CogneeSessionService {
    */
   async createCogneeSession(
     userId: string,
-    options: CogneeUserSessionOptions
+    options: CogneeUserSessionOptions,
   ): Promise<{ sessionId: string; context: CogneeSessionContext } | null> {
     if (!this._ensureConnected()) return null;
 
@@ -397,9 +408,14 @@ export class CogneeSessionService {
       const key = `${KEY_PREFIX}csession:${sessionId}`;
       await this.redis!.set(
         key,
-        JSON.stringify({ userId, sessionType: options.sessionType, context, createdAt: new Date().toISOString() }),
+        JSON.stringify({
+          userId,
+          sessionType: options.sessionType,
+          context,
+          createdAt: new Date().toISOString(),
+        }),
         'EX',
-        ttl
+        ttl,
       );
 
       // Add to user's Cognee session set
@@ -440,7 +456,7 @@ export class CogneeSessionService {
     role: 'user' | 'assistant',
     content: string,
     query?: string,
-    datasets?: string[]
+    datasets?: string[],
   ): Promise<void> {
     if (!this._ensureConnected()) return;
 
@@ -481,7 +497,7 @@ export class CogneeSessionService {
    */
   async getOrCreateCogneeSession(
     userId: string,
-    options: CogneeUserSessionOptions
+    options: CogneeUserSessionOptions,
   ): Promise<{ sessionId: string; context: CogneeSessionContext; isNew: boolean } | null> {
     if (!this._ensureConnected()) return null;
 
@@ -514,7 +530,7 @@ export class CogneeSessionService {
     userId: string,
     queryHash: string,
     result: any,
-    ttlSeconds: number = 300
+    ttlSeconds: number = 300,
   ): Promise<boolean> {
     if (!this._ensureConnected()) return false;
 
@@ -651,15 +667,19 @@ export class CogneeSessionService {
         console.log('[CogneeSession] Connected to Redis');
         return;
       } catch (err: any) {
-        console.warn(`[CogneeSession] Connection attempt ${attempt}/${CONNECT_MAX_RETRIES} failed: ${err.message}`);
+        console.warn(
+          `[CogneeSession] Connection attempt ${attempt}/${CONNECT_MAX_RETRIES} failed: ${err.message}`,
+        );
         if (attempt < CONNECT_MAX_RETRIES) {
           const delay = CONNECT_RETRY_BASE_MS * Math.pow(2, attempt - 1);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
 
-    console.warn('[CogneeSession] Could not connect to Redis — operating in degraded mode (no caching/sessions)');
+    console.warn(
+      '[CogneeSession] Could not connect to Redis — operating in degraded mode (no caching/sessions)',
+    );
   }
 
   private _ensureConnected(): boolean {

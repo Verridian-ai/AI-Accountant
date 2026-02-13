@@ -6,15 +6,34 @@ import { analyticsApi } from '@/api';
 import type { SpendingTrend } from '../types';
 
 function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(cents / 100);
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 }
 
 const COLOR_HEX: Record<string, string> = {
-  'red-500': '#ef4444', 'rose-500': '#f43f5e', 'pink-500': '#ec4899', 'fuchsia-500': '#d946ef',
-  'purple-500': '#a855f7', 'violet-500': '#8b5cf6', 'indigo-500': '#6366f1', 'blue-500': '#3b82f6',
-  'sky-500': '#0ea5e9', 'cyan-500': '#06b6d4', 'teal-500': '#14b8a6', 'emerald-500': '#10b981',
-  'green-500': '#22c55e', 'lime-500': '#84cc16', 'yellow-500': '#eab308', 'amber-500': '#f59e0b',
-  'orange-500': '#f97316', 'slate-500': '#64748b', 'zinc-500': '#71717a', 'stone-500': '#78716c',
+  'red-500': '#ef4444',
+  'rose-500': '#f43f5e',
+  'pink-500': '#ec4899',
+  'fuchsia-500': '#d946ef',
+  'purple-500': '#a855f7',
+  'violet-500': '#8b5cf6',
+  'indigo-500': '#6366f1',
+  'blue-500': '#3b82f6',
+  'sky-500': '#0ea5e9',
+  'cyan-500': '#06b6d4',
+  'teal-500': '#14b8a6',
+  'emerald-500': '#10b981',
+  'green-500': '#22c55e',
+  'lime-500': '#84cc16',
+  'yellow-500': '#eab308',
+  'amber-500': '#f59e0b',
+  'orange-500': '#f97316',
+  'slate-500': '#64748b',
+  'zinc-500': '#71717a',
+  'stone-500': '#78716c',
 };
 
 function getHexColor(category: string): string {
@@ -42,12 +61,15 @@ export function SpendingTrends() {
       setTrends(data);
       // Auto-select top 5 categories
       const totals = new Map<string, number>();
-      data.forEach(t => {
+      data.forEach((t) => {
         Object.entries(t.categories).forEach(([cat, amt]) => {
           totals.set(cat, (totals.get(cat) || 0) + amt);
         });
       });
-      const top5 = [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([c]) => c);
+      const top5 = [...totals.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([c]) => c);
       setSelectedCategories(new Set(top5));
     } catch (err) {
       console.error('Failed to fetch spending trends:', err);
@@ -58,12 +80,12 @@ export function SpendingTrends() {
 
   const allCategories = useMemo(() => {
     const cats = new Set<string>();
-    trends.forEach(t => Object.keys(t.categories).forEach(c => cats.add(c)));
+    trends.forEach((t) => Object.keys(t.categories).forEach((c) => cats.add(c)));
     return Array.from(cats).sort();
   }, [trends]);
 
   const toggleCategory = (cat: string) => {
-    setSelectedCategories(prev => {
+    setSelectedCategories((prev) => {
       const n = new Set(prev);
       if (n.has(cat)) n.delete(cat);
       else n.add(cat);
@@ -72,8 +94,12 @@ export function SpendingTrends() {
   };
 
   // Chart dimensions
-  const CHART_W = 600, CHART_H = 300;
-  const PAD_L = 60, PAD_R = 20, PAD_T = 20, PAD_B = 40;
+  const CHART_W = 600,
+    CHART_H = 300;
+  const PAD_L = 60,
+    PAD_R = 20,
+    PAD_T = 20,
+    PAD_B = 40;
   const PLOT_W = CHART_W - PAD_L - PAD_R;
   const PLOT_H = CHART_H - PAD_T - PAD_B;
 
@@ -81,8 +107,8 @@ export function SpendingTrends() {
     if (trends.length === 0) return { maxValue: 0, yTicks: [], lines: [] };
 
     let max = 0;
-    trends.forEach(t => {
-      selectedCategories.forEach(cat => {
+    trends.forEach((t) => {
+      selectedCategories.forEach((cat) => {
         const v = t.categories[cat] || 0;
         if (v > max) max = v;
       });
@@ -91,7 +117,7 @@ export function SpendingTrends() {
 
     const ticks = Array.from({ length: 5 }, (_, i) => (max / 4) * i);
 
-    const lineData = Array.from(selectedCategories).map(cat => {
+    const lineData = Array.from(selectedCategories).map((cat) => {
       const color = getHexColor(cat);
       const points = trends.map((t, i) => {
         const x = PAD_L + (i / Math.max(trends.length - 1, 1)) * PLOT_W;
@@ -111,7 +137,7 @@ export function SpendingTrends() {
     const prev = trends[trends.length - 2];
     if (!last || !prev) return [];
 
-    return Array.from(selectedCategories).map(cat => {
+    return Array.from(selectedCategories).map((cat) => {
       const current = last.categories[cat] || 0;
       const previous = prev.categories[cat] || 0;
       const change = previous > 0 ? ((current - previous) / previous) * 100 : 0;
@@ -133,17 +159,19 @@ export function SpendingTrends() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <LineChart className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Spending Trends</span>
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            Spending Trends
+          </span>
         </div>
         <div className="flex gap-1 neu-inset rounded-xl p-1">
-          {[6, 12].map(m => (
+          {[6, 12].map((m) => (
             <button
               key={m}
               type="button"
               onClick={() => setMonths(m)}
               className={cn(
-                "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
-                months === m ? "bg-[#FFCC00] text-[#0a0a0f]" : "text-zinc-500 hover:text-zinc-300"
+                'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
+                months === m ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'text-zinc-500 hover:text-zinc-300',
               )}
             >
               {m}m
@@ -154,14 +182,30 @@ export function SpendingTrends() {
 
       {/* Chart */}
       <div className="neu-raised rounded-2xl border border-white/5 p-4">
-        <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} className="w-full h-auto" style={{ maxHeight: 400 }}>
+        <svg
+          viewBox={`0 0 ${CHART_W} ${CHART_H}`}
+          className="w-full h-auto"
+          style={{ maxHeight: 400 }}
+        >
           {/* Y-axis grid lines + labels */}
           {yTicks.map((tick, i) => {
             const y = PAD_T + PLOT_H - (tick / maxValue) * PLOT_H;
             return (
               <g key={i}>
-                <line x1={PAD_L} y1={y} x2={CHART_W - PAD_R} y2={y} stroke="rgba(255,255,255,0.05)" />
-                <text x={PAD_L - 8} y={y + 3} textAnchor="end" fill="#71717a" className="text-[8px]">
+                <line
+                  x1={PAD_L}
+                  y1={y}
+                  x2={CHART_W - PAD_R}
+                  y2={y}
+                  stroke="rgba(255,255,255,0.05)"
+                />
+                <text
+                  x={PAD_L - 8}
+                  y={y + 3}
+                  textAnchor="end"
+                  fill="#71717a"
+                  className="text-[8px]"
+                >
                   {formatCurrency(tick)}
                 </text>
               </g>
@@ -172,17 +216,24 @@ export function SpendingTrends() {
           {trends.map((t, i) => {
             const x = PAD_L + (i / Math.max(trends.length - 1, 1)) * PLOT_W;
             return (
-              <text key={i} x={x} y={CHART_H - 8} textAnchor="middle" fill="#71717a" className="text-[8px]">
+              <text
+                key={i}
+                x={x}
+                y={CHART_H - 8}
+                textAnchor="middle"
+                fill="#71717a"
+                className="text-[8px]"
+              >
                 {t.month}
               </text>
             );
           })}
 
           {/* Lines */}
-          {lines.map(line => (
+          {lines.map((line) => (
             <g key={line.category}>
               <polyline
-                points={line.points.map(p => `${p.x},${p.y}`).join(' ')}
+                points={line.points.map((p) => `${p.x},${p.y}`).join(' ')}
                 fill="none"
                 stroke={line.color}
                 strokeWidth={2}
@@ -225,11 +276,16 @@ export function SpendingTrends() {
         {/* Hover detail */}
         {hoveredMonth !== null && trends[hoveredMonth] && (
           <div className="mt-3 p-3 neu-inset rounded-xl border border-white/5">
-            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">{trends[hoveredMonth]?.month}</p>
+            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">
+              {trends[hoveredMonth]?.month}
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {Array.from(selectedCategories).map(cat => (
+              {Array.from(selectedCategories).map((cat) => (
                 <div key={cat} className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getHexColor(cat) }} />
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: getHexColor(cat) }}
+                  />
                   <span className="text-[9px] text-zinc-400 truncate">{cat}</span>
                   <span className="text-[9px] font-bold text-zinc-200 ml-auto tabular-nums">
                     {formatCurrency(trends[hoveredMonth]?.categories[cat] || 0)}
@@ -243,7 +299,7 @@ export function SpendingTrends() {
 
       {/* Category checkboxes */}
       <div className="flex flex-wrap gap-2">
-        {allCategories.map(cat => {
+        {allCategories.map((cat) => {
           const active = selectedCategories.has(cat);
           return (
             <button
@@ -251,12 +307,17 @@ export function SpendingTrends() {
               type="button"
               onClick={() => toggleCategory(cat)}
               className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border",
-                active ? "border-white/20 bg-white/5 text-zinc-200" : "border-transparent text-zinc-600 hover:text-zinc-400"
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border',
+                active
+                  ? 'border-white/20 bg-white/5 text-zinc-200'
+                  : 'border-transparent text-zinc-600 hover:text-zinc-400',
               )}
             >
               <div
-                className={cn("w-2.5 h-2.5 rounded-full transition-opacity", active ? "opacity-100" : "opacity-30")}
+                className={cn(
+                  'w-2.5 h-2.5 rounded-full transition-opacity',
+                  active ? 'opacity-100' : 'opacity-30',
+                )}
                 style={{ backgroundColor: getHexColor(cat) }}
               />
               {cat}
@@ -268,21 +329,34 @@ export function SpendingTrends() {
       {/* MoM Changes */}
       {momChanges.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {momChanges.map(mc => (
+          {momChanges.map((mc) => (
             <div key={mc.category} className="neu-inset rounded-xl p-3 border border-white/5">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: mc.color }} />
-                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tight truncate">{mc.category}</span>
+                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tight truncate">
+                  {mc.category}
+                </span>
               </div>
               <div className="flex items-center gap-1">
-                {mc.change > 5 ? <TrendingUp className="w-3 h-3 text-red-400" /> :
-                  mc.change < -5 ? <TrendingDown className="w-3 h-3 text-emerald-400" /> :
-                    <Minus className="w-3 h-3 text-zinc-500" />}
-                <span className={cn(
-                  "text-xs font-black tabular-nums",
-                  mc.change > 5 ? "text-red-400" : mc.change < -5 ? "text-emerald-400" : "text-zinc-500"
-                )}>
-                  {mc.change > 0 ? '+' : ''}{mc.change.toFixed(1)}%
+                {mc.change > 5 ? (
+                  <TrendingUp className="w-3 h-3 text-red-400" />
+                ) : mc.change < -5 ? (
+                  <TrendingDown className="w-3 h-3 text-emerald-400" />
+                ) : (
+                  <Minus className="w-3 h-3 text-zinc-500" />
+                )}
+                <span
+                  className={cn(
+                    'text-xs font-black tabular-nums',
+                    mc.change > 5
+                      ? 'text-red-400'
+                      : mc.change < -5
+                        ? 'text-emerald-400'
+                        : 'text-zinc-500',
+                  )}
+                >
+                  {mc.change > 0 ? '+' : ''}
+                  {mc.change.toFixed(1)}%
                 </span>
               </div>
             </div>

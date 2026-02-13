@@ -14,8 +14,7 @@
  * All existing calls without userId continue to use admin token (backward compatible).
  */
 
-const COGNEE_API_URL =
-  process.env.COGNEE_API_URL || 'http://localhost:8000';
+const COGNEE_API_URL = process.env.COGNEE_API_URL || 'http://localhost:8000';
 
 const REQUEST_TIMEOUT_MS = 30000;
 const COGNIFY_TIMEOUT_MS = 300000; // 5 minutes for cognify operations
@@ -102,7 +101,7 @@ export class CogneeClient {
    */
   private applyTenantPrefixToAll(datasets: string[], tenantId?: string): string[] {
     if (!tenantId) return datasets;
-    return datasets.map(ds => this.getTenantDatasetName(tenantId, ds));
+    return datasets.map((ds) => this.getTenantDatasetName(tenantId, ds));
   }
 
   /**
@@ -133,13 +132,18 @@ export class CogneeClient {
     },
     userId?: string,
   ): Promise<CogneeSearchResult[]> {
-    const allDatasets = tenantIds.flatMap(tid =>
-      datasets.map(ds => this.getTenantDatasetName(tid, ds))
+    const allDatasets = tenantIds.flatMap((tid) =>
+      datasets.map((ds) => this.getTenantDatasetName(tid, ds)),
     );
-    return this.crossDatasetSearch(query, allDatasets, {
-      searchType: options?.searchType ?? 'CHUNKS',
-      topK: options?.topK ?? 5,
-    }, userId);
+    return this.crossDatasetSearch(
+      query,
+      allDatasets,
+      {
+        searchType: options?.searchType ?? 'CHUNKS',
+        topK: options?.topK ?? 5,
+      },
+      userId,
+    );
   }
 
   // ============================================================================
@@ -198,7 +202,7 @@ export class CogneeClient {
   private async authHeaders(userId?: string): Promise<Record<string, string>> {
     const token = await this.getAuthToken(userId);
     if (token) {
-      return { 'Authorization': `Bearer ${token}` };
+      return { Authorization: `Bearer ${token}` };
     }
     return {};
   }
@@ -241,7 +245,10 @@ export class CogneeClient {
    * SECURITY: The password is used ONLY for initial account creation and immediate
    * token retrieval. It is NOT stored — only the resulting refresh token is kept.
    */
-  async createCogneeUser(email: string, password: string): Promise<{ userId: string; refreshToken: string }> {
+  async createCogneeUser(
+    email: string,
+    password: string,
+  ): Promise<{ userId: string; refreshToken: string }> {
     const adminHeaders = await this.authHeaders();
     const response = await fetch(`${this.baseUrl}/api/v1/users`, {
       method: 'POST',
@@ -266,7 +273,10 @@ export class CogneeClient {
    * Get Cognee auth tokens for a specific user (Wave 3 multi-user).
    * Returns BOTH access_token (short-lived, < 15 min) and refresh_token.
    */
-  async getCogneeUserTokens(email: string, password: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  async getCogneeUserTokens(
+    email: string,
+    password: string,
+  ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
     const response = await fetch(`${this.baseUrl}/api/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -288,7 +298,9 @@ export class CogneeClient {
    * Refresh a Cognee access token using a stored refresh token (Wave 3).
    * This replaces password-based re-auth per D02 CRIT-03.
    */
-  async refreshCogneeToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  async refreshCogneeToken(
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
     const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -353,13 +365,17 @@ export class CogneeClient {
   /**
    * Add statement data to Cognee for knowledge graph building.
    */
-  async addStatementData(statement: {
-    id: string;
-    filename: string;
-    bankName?: string;
-    periodStart?: string;
-    periodEnd?: string;
-  }, userId?: string, tenantId?: string): Promise<void> {
+  async addStatementData(
+    statement: {
+      id: string;
+      filename: string;
+      bankName?: string;
+      periodStart?: string;
+      periodEnd?: string;
+    },
+    userId?: string,
+    tenantId?: string,
+  ): Promise<void> {
     const text = `Statement: ${statement.filename}, Bank: ${statement.bankName || 'Unknown'}, Period: ${statement.periodStart || 'N/A'} to ${statement.periodEnd || 'N/A'}`;
     await this.add([text], 'bank_formats', userId, tenantId);
   }
@@ -367,13 +383,17 @@ export class CogneeClient {
   /**
    * Add a transaction to Cognee for merchant memory and pattern learning.
    */
-  async addTransaction(transaction: {
-    date: string;
-    description: string;
-    amount: number;
-    category?: string;
-    gstApplicable?: boolean;
-  }, userId?: string, tenantId?: string): Promise<void> {
+  async addTransaction(
+    transaction: {
+      date: string;
+      description: string;
+      amount: number;
+      category?: string;
+      gstApplicable?: boolean;
+    },
+    userId?: string,
+    tenantId?: string,
+  ): Promise<void> {
     const text = `Date: ${transaction.date}, Description: ${transaction.description}, Amount: ${transaction.amount / 100}, Category: ${transaction.category || 'Uncategorized'}, GST: ${transaction.gstApplicable ? 'Yes' : 'No'}`;
     await this.add([text], 'bank_transactions', userId, tenantId);
   }
@@ -394,7 +414,11 @@ export class CogneeClient {
    * Get category patterns from knowledge graph.
    * Uses GRAPH_COMPLETION for reasoning about patterns.
    */
-  async getCategoryPatterns(category: string, userId?: string, tenantId?: string): Promise<string[]> {
+  async getCategoryPatterns(
+    category: string,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<string[]> {
     return this.search(
       `category patterns for ${category}`,
       'bank_transactions',
@@ -409,7 +433,11 @@ export class CogneeClient {
    * Trace account flows via knowledge graph.
    * Uses GRAPH_COMPLETION_COT for chain-of-thought reasoning over flows.
    */
-  async traceAccountFlows(accountId: string, userId?: string, tenantId?: string): Promise<string[]> {
+  async traceAccountFlows(
+    accountId: string,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<string[]> {
     return this.search(
       `money flows for account ${accountId}`,
       'transfer_patterns',
@@ -424,7 +452,11 @@ export class CogneeClient {
    * Search for GST ruling guidance.
    * Uses RAG_COMPLETION for retrieval-augmented generation.
    */
-  async getGSTRuling(transactionType: string, userId?: string, tenantId?: string): Promise<string[]> {
+  async getGSTRuling(
+    transactionType: string,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<string[]> {
     return this.search(
       `GST treatment for ${transactionType}`,
       'gst_rules',
@@ -484,7 +516,11 @@ export class CogneeClient {
    * Look up a previously mapped merchant.
    * Uses CHUNKS_LEXICAL for fast keyword-based matching (no embeddings).
    */
-  async lookupMerchant(abbreviated: string, userId?: string, tenantId?: string): Promise<{
+  async lookupMerchant(
+    abbreviated: string,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<{
     found: boolean;
     canonical?: string;
     abn?: string;
@@ -521,7 +557,10 @@ export class CogneeClient {
         }
       } catch {
         // If not JSON, extract from text format
-        if (result.text.includes(abbreviated) || result.text.toLowerCase().includes(abbreviated.toLowerCase())) {
+        if (
+          result.text.includes(abbreviated) ||
+          result.text.toLowerCase().includes(abbreviated.toLowerCase())
+        ) {
           return { found: true };
         }
       }
@@ -565,13 +604,15 @@ export class CogneeClient {
     descriptions: string[],
     userId?: string,
     tenantId?: string,
-  ): Promise<Array<{
-    description: string;
-    found: boolean;
-    canonical?: string;
-    category?: string;
-    gstRegistered?: boolean;
-  }>> {
+  ): Promise<
+    Array<{
+      description: string;
+      found: boolean;
+      canonical?: string;
+      category?: string;
+      gstRegistered?: boolean;
+    }>
+  > {
     const results: Array<{
       description: string;
       found: boolean;
@@ -620,7 +661,7 @@ export class CogneeClient {
       let datasetNames = datasets;
       if (!datasetNames || datasetNames.length === 0) {
         const allDatasets = await this.listDatasets(userId, tenantId);
-        datasetNames = allDatasets.map(d => d.name);
+        datasetNames = allDatasets.map((d) => d.name);
         if (datasetNames.length === 0) {
           console.warn('[CogneeClient] No datasets found to cognify');
           return;
@@ -645,7 +686,9 @@ export class CogneeClient {
         const body = await res.text().catch(() => '');
         console.warn(`[CogneeClient] Cognify failed: ${res.status} ${body}`);
       } else {
-        console.log(`[CogneeClient] Cognify triggered for datasets: ${datasetNames.join(', ')} (background: ${background})`);
+        console.log(
+          `[CogneeClient] Cognify triggered for datasets: ${datasetNames.join(', ')} (background: ${background})`,
+        );
       }
     } catch (err) {
       console.warn('[CogneeClient] Cognify error:', err);
@@ -680,7 +723,10 @@ export class CogneeClient {
    *
    * @param tenantId - Optional tenant ID to filter datasets (Wave 23).
    */
-  async listDatasets(userId?: string, tenantId?: string): Promise<Array<{ id: string; name: string }>> {
+  async listDatasets(
+    userId?: string,
+    tenantId?: string,
+  ): Promise<Array<{ id: string; name: string }>> {
     try {
       const auth = await this.authHeaders(userId);
       const res = await fetch(`${this.baseUrl}/api/v1/datasets`, {
@@ -702,7 +748,7 @@ export class CogneeClient {
         // Wave 23: Filter by tenant prefix if tenantId provided
         if (tenantId) {
           const prefix = `tenant_${tenantId}_`;
-          datasets = datasets.filter(d => d.name.startsWith(prefix));
+          datasets = datasets.filter((d) => d.name.startsWith(prefix));
         }
 
         return datasets;
@@ -732,7 +778,7 @@ export class CogneeClient {
         console.warn(`[CogneeClient] Dataset status failed: ${res.status}`);
         return {};
       }
-      const statusMap = await res.json() as Record<string, string>;
+      const statusMap = (await res.json()) as Record<string, string>;
 
       // Wave 23: Filter by tenant prefix if tenantId provided
       if (tenantId) {
@@ -758,15 +804,22 @@ export class CogneeClient {
    *
    * @param tenantId - Optional tenant ID for dataset prefixing (Wave 23).
    */
-  async getDatasetGraph(datasetId: string, userId?: string, tenantId?: string): Promise<{ nodes: unknown[]; edges: unknown[] }> {
+  async getDatasetGraph(
+    datasetId: string,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<{ nodes: unknown[]; edges: unknown[] }> {
     try {
       const prefixedId = this.applyTenantPrefix(datasetId, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedId)}/graph`, {
-        method: 'GET',
-        headers: { ...auth },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedId)}/graph`,
+        {
+          method: 'GET',
+          headers: { ...auth },
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Dataset graph failed: ${res.status}`);
         return { nodes: [], edges: [] };
@@ -827,13 +880,16 @@ export class CogneeClient {
   /**
    * Submit feedback to Cognee API for entity corrections.
    */
-  async submitFeedback(data: {
-    entity_id: string;
-    feedback_type: string;
-    original_value?: string;
-    corrected_value?: string;
-    context?: Record<string, string>;
-  }, userId?: string): Promise<void> {
+  async submitFeedback(
+    data: {
+      entity_id: string;
+      feedback_type: string;
+      original_value?: string;
+      corrected_value?: string;
+      context?: Record<string, string>;
+    },
+    userId?: string,
+  ): Promise<void> {
     try {
       const auth = await this.authHeaders(userId);
       const res = await fetch(`${this.baseUrl}/api/v1/feedback`, {
@@ -853,16 +909,20 @@ export class CogneeClient {
   /**
    * Trigger memify (memory consolidation) in Cognee for feedback learning.
    */
-  async triggerMemify(data: {
-    datasets: string[];
-    feedback_data?: Array<{
-      entity_id: string;
-      feedback_type: string;
-      original_value?: string;
-      corrected_value?: string;
-    }>;
-    run_in_background?: boolean;
-  }, userId?: string, tenantId?: string): Promise<void> {
+  async triggerMemify(
+    data: {
+      datasets: string[];
+      feedback_data?: Array<{
+        entity_id: string;
+        feedback_type: string;
+        original_value?: string;
+        corrected_value?: string;
+      }>;
+      run_in_background?: boolean;
+    },
+    userId?: string,
+    tenantId?: string,
+  ): Promise<void> {
     try {
       const prefixedData = {
         ...data,
@@ -989,16 +1049,24 @@ export class CogneeClient {
   /**
    * Create a DataPoint extraction schema on a dataset.
    */
-  async createDataPoint(datasetName: string, schema: Record<string, unknown>, userId?: string, tenantId?: string): Promise<unknown> {
+  async createDataPoint(
+    datasetName: string,
+    schema: Record<string, unknown>,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<unknown> {
     try {
       const prefixedName = this.applyTenantPrefix(datasetName, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/datapoints`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify(schema),
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/datapoints`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...auth },
+          body: JSON.stringify(schema),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Create datapoint failed: ${res.status}`);
         return null;
@@ -1017,11 +1085,14 @@ export class CogneeClient {
     try {
       const prefixedName = this.applyTenantPrefix(datasetName, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/datapoints`, {
-        method: 'GET',
-        headers: { ...auth },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/datapoints`,
+        {
+          method: 'GET',
+          headers: { ...auth },
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Get datapoints failed: ${res.status}`);
         return [];
@@ -1037,15 +1108,23 @@ export class CogneeClient {
   /**
    * Delete a DataPoint schema from a dataset.
    */
-  async deleteDataPoint(datasetName: string, dpId: string, userId?: string, tenantId?: string): Promise<void> {
+  async deleteDataPoint(
+    datasetName: string,
+    dpId: string,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<void> {
     try {
       const prefixedName = this.applyTenantPrefix(datasetName, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/datapoints/${encodeURIComponent(dpId)}`, {
-        method: 'DELETE',
-        headers: { ...auth },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/datapoints/${encodeURIComponent(dpId)}`,
+        {
+          method: 'DELETE',
+          headers: { ...auth },
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Delete datapoint failed: ${res.status}`);
       }
@@ -1057,16 +1136,24 @@ export class CogneeClient {
   /**
    * Apply an ontology to a dataset for typed graph building.
    */
-  async applyOntology(datasetName: string, ontology: Record<string, unknown>, userId?: string, tenantId?: string): Promise<void> {
+  async applyOntology(
+    datasetName: string,
+    ontology: Record<string, unknown>,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<void> {
     try {
       const prefixedName = this.applyTenantPrefix(datasetName, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/ontology`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify(ontology),
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/ontology`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...auth },
+          body: JSON.stringify(ontology),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Apply ontology failed: ${res.status}`);
       }
@@ -1082,11 +1169,14 @@ export class CogneeClient {
     try {
       const prefixedName = this.applyTenantPrefix(datasetName, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/ontology`, {
-        method: 'GET',
-        headers: { ...auth },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/ontology`,
+        {
+          method: 'GET',
+          headers: { ...auth },
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Get ontology failed: ${res.status}`);
         return null;
@@ -1105,11 +1195,14 @@ export class CogneeClient {
     try {
       const prefixedName = this.applyTenantPrefix(datasetName, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/nodesets`, {
-        method: 'GET',
-        headers: { ...auth },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/nodesets`,
+        {
+          method: 'GET',
+          headers: { ...auth },
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Get nodesets failed: ${res.status}`);
         return [];
@@ -1125,16 +1218,24 @@ export class CogneeClient {
   /**
    * Create a NodeSet in a dataset's graph.
    */
-  async createNodeSet(datasetName: string, nodeSet: Record<string, unknown>, userId?: string, tenantId?: string): Promise<unknown> {
+  async createNodeSet(
+    datasetName: string,
+    nodeSet: Record<string, unknown>,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<unknown> {
     try {
       const prefixedName = this.applyTenantPrefix(datasetName, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/nodesets`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify(nodeSet),
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/nodesets`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...auth },
+          body: JSON.stringify(nodeSet),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Create nodeset failed: ${res.status}`);
         return null;
@@ -1149,15 +1250,23 @@ export class CogneeClient {
   /**
    * Delete a NodeSet from a dataset's graph.
    */
-  async deleteNodeSet(datasetName: string, nodeSetId: string, userId?: string, tenantId?: string): Promise<void> {
+  async deleteNodeSet(
+    datasetName: string,
+    nodeSetId: string,
+    userId?: string,
+    tenantId?: string,
+  ): Promise<void> {
     try {
       const prefixedName = this.applyTenantPrefix(datasetName, tenantId);
       const auth = await this.authHeaders(userId);
-      const res = await fetch(`${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/nodesets/${encodeURIComponent(nodeSetId)}`, {
-        method: 'DELETE',
-        headers: { ...auth },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+      const res = await fetch(
+        `${this.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}/nodesets/${encodeURIComponent(nodeSetId)}`,
+        {
+          method: 'DELETE',
+          headers: { ...auth },
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        },
+      );
       if (!res.ok) {
         console.warn(`[CogneeClient] Delete nodeset failed: ${res.status}`);
       }
@@ -1185,9 +1294,10 @@ export class CogneeClient {
     userId?: string,
     tenantId?: string,
   ): Promise<CogneeSearchResult[]> {
-    const augmentedQuery = options.timeStart && options.timeEnd
-      ? `${query} [period: ${options.timeStart} to ${options.timeEnd}]`
-      : query;
+    const augmentedQuery =
+      options.timeStart && options.timeEnd
+        ? `${query} [period: ${options.timeStart} to ${options.timeEnd}]`
+        : query;
 
     return this.searchRich(
       augmentedQuery,
@@ -1211,7 +1321,8 @@ export class CogneeClient {
     userId?: string,
     tenantId?: string,
   ): Promise<void> {
-    const prompt = options?.customPrompt ??
+    const prompt =
+      options?.customPrompt ??
       `${FINANCIAL_COGNIFY_PROMPT} Also extract temporal entities: dates, periods, financial years, BAS quarters.`;
     await this.cognify([dataset], options?.background ?? true, prompt, userId, tenantId);
   }
@@ -1225,7 +1336,11 @@ export class CogneeClient {
       const prefixedDataset = this.applyTenantPrefix(dataset, tenantId);
       const content = data.join('\n\n');
       const formData = new FormData();
-      formData.append('data', new Blob([content], { type: 'text/plain' }), `${prefixedDataset}.txt`);
+      formData.append(
+        'data',
+        new Blob([content], { type: 'text/plain' }),
+        `${prefixedDataset}.txt`,
+      );
       formData.append('datasetName', prefixedDataset);
 
       const auth = await this.authHeaders(userId);
@@ -1258,7 +1373,7 @@ export class CogneeClient {
     tenantId?: string,
   ): Promise<string[]> {
     const results = await this.searchRich(query, dataset, topK, searchType, userId, tenantId);
-    return results.map(r => r.text);
+    return results.map((r) => r.text);
   }
 
   /**

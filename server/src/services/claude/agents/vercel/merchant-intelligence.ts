@@ -13,34 +13,167 @@ import type { MerchantIntelligenceInput, MerchantIntelligenceOutput } from '../.
 import type { ToolSet } from 'ai';
 
 /** Common merchant abbreviation patterns */
-const KNOWN_MERCHANTS: Record<string, { canonical: string; industry: string; gst: boolean; category: string }> = {
-  'woolworths': { canonical: 'Woolworths Group Ltd', industry: 'Retail - Grocery', gst: true, category: 'Groceries & Supermarkets' },
-  'coles': { canonical: 'Coles Group Ltd', industry: 'Retail - Grocery', gst: true, category: 'Groceries & Supermarkets' },
-  'aldi': { canonical: 'ALDI Stores Australia', industry: 'Retail - Grocery', gst: true, category: 'Groceries & Supermarkets' },
-  'bunnings': { canonical: 'Bunnings Group Ltd', industry: 'Retail - Hardware', gst: true, category: 'Home & Garden' },
-  'kmart': { canonical: 'Kmart Australia Ltd', industry: 'Retail - Department Store', gst: true, category: 'Shopping & Retail' },
-  'target': { canonical: 'Target Australia Pty Ltd', industry: 'Retail - Department Store', gst: true, category: 'Shopping & Retail' },
-  'officeworks': { canonical: 'Officeworks Superstores Pty Ltd', industry: 'Retail - Office Supplies', gst: true, category: 'Office Supplies' },
-  'jb hi-fi': { canonical: 'JB Hi-Fi Group Pty Ltd', industry: 'Retail - Electronics', gst: true, category: 'Electronics & Technology' },
-  'telstra': { canonical: 'Telstra Corporation Ltd', industry: 'Telecommunications', gst: true, category: 'Phone & Internet' },
-  'optus': { canonical: 'Singtel Optus Pty Ltd', industry: 'Telecommunications', gst: true, category: 'Phone & Internet' },
-  'netflix': { canonical: 'Netflix International B.V.', industry: 'Digital Entertainment', gst: true, category: 'Subscriptions & Streaming' },
-  'spotify': { canonical: 'Spotify AB', industry: 'Digital Entertainment', gst: true, category: 'Subscriptions & Streaming' },
-  'uber': { canonical: 'Uber Australia Pty Ltd', industry: 'Transport/Food Delivery', gst: true, category: 'Transport & Rideshare' },
-  'mcdonald': { canonical: "McDonald's Australia Ltd", industry: 'Food & Beverage', gst: true, category: 'Dining & Restaurants' },
-  'shell': { canonical: 'Shell Company of Australia', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
-  'bp ': { canonical: 'BP Australia Pty Ltd', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
-  'caltex': { canonical: 'Ampol Ltd (formerly Caltex)', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
-  'ampol': { canonical: 'Ampol Ltd', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
-  'bizloan': { canonical: 'BizLoan Pty Ltd', industry: 'Financial Services - Lending', gst: false, category: 'Business Income' },
-  'bizlend': { canonical: 'BizLend Finance', industry: 'Financial Services - Lending', gst: false, category: 'Business Income' },
-  '7-eleven': { canonical: '7-Eleven Stores Pty Ltd', industry: 'Retail - Convenience', gst: true, category: 'Groceries' },
-  'harvey norman': { canonical: 'Harvey Norman Holdings Ltd', industry: 'Retail - Electronics', gst: true, category: 'Computer & IT' },
-  'the reject shop': { canonical: 'The Reject Shop Ltd', industry: 'Retail - Discount', gst: true, category: 'Miscellaneous' },
-  'big w': { canonical: 'Big W (Woolworths Group)', industry: 'Retail - Department Store', gst: true, category: 'Miscellaneous' },
-  'kfc': { canonical: 'KFC Australia Pty Ltd', industry: 'Food & Beverage', gst: true, category: 'Dining & Takeaway' },
-  'hungry jacks': { canonical: "Hungry Jack's Pty Ltd", industry: 'Food & Beverage', gst: true, category: 'Dining & Takeaway' },
-  'nando': { canonical: "Nando's Australia Pty Ltd", industry: 'Food & Beverage', gst: true, category: 'Dining & Takeaway' },
+const KNOWN_MERCHANTS: Record<
+  string,
+  { canonical: string; industry: string; gst: boolean; category: string }
+> = {
+  woolworths: {
+    canonical: 'Woolworths Group Ltd',
+    industry: 'Retail - Grocery',
+    gst: true,
+    category: 'Groceries & Supermarkets',
+  },
+  coles: {
+    canonical: 'Coles Group Ltd',
+    industry: 'Retail - Grocery',
+    gst: true,
+    category: 'Groceries & Supermarkets',
+  },
+  aldi: {
+    canonical: 'ALDI Stores Australia',
+    industry: 'Retail - Grocery',
+    gst: true,
+    category: 'Groceries & Supermarkets',
+  },
+  bunnings: {
+    canonical: 'Bunnings Group Ltd',
+    industry: 'Retail - Hardware',
+    gst: true,
+    category: 'Home & Garden',
+  },
+  kmart: {
+    canonical: 'Kmart Australia Ltd',
+    industry: 'Retail - Department Store',
+    gst: true,
+    category: 'Shopping & Retail',
+  },
+  target: {
+    canonical: 'Target Australia Pty Ltd',
+    industry: 'Retail - Department Store',
+    gst: true,
+    category: 'Shopping & Retail',
+  },
+  officeworks: {
+    canonical: 'Officeworks Superstores Pty Ltd',
+    industry: 'Retail - Office Supplies',
+    gst: true,
+    category: 'Office Supplies',
+  },
+  'jb hi-fi': {
+    canonical: 'JB Hi-Fi Group Pty Ltd',
+    industry: 'Retail - Electronics',
+    gst: true,
+    category: 'Electronics & Technology',
+  },
+  telstra: {
+    canonical: 'Telstra Corporation Ltd',
+    industry: 'Telecommunications',
+    gst: true,
+    category: 'Phone & Internet',
+  },
+  optus: {
+    canonical: 'Singtel Optus Pty Ltd',
+    industry: 'Telecommunications',
+    gst: true,
+    category: 'Phone & Internet',
+  },
+  netflix: {
+    canonical: 'Netflix International B.V.',
+    industry: 'Digital Entertainment',
+    gst: true,
+    category: 'Subscriptions & Streaming',
+  },
+  spotify: {
+    canonical: 'Spotify AB',
+    industry: 'Digital Entertainment',
+    gst: true,
+    category: 'Subscriptions & Streaming',
+  },
+  uber: {
+    canonical: 'Uber Australia Pty Ltd',
+    industry: 'Transport/Food Delivery',
+    gst: true,
+    category: 'Transport & Rideshare',
+  },
+  mcdonald: {
+    canonical: "McDonald's Australia Ltd",
+    industry: 'Food & Beverage',
+    gst: true,
+    category: 'Dining & Restaurants',
+  },
+  shell: {
+    canonical: 'Shell Company of Australia',
+    industry: 'Fuel & Energy',
+    gst: true,
+    category: 'Fuel & Auto',
+  },
+  'bp ': {
+    canonical: 'BP Australia Pty Ltd',
+    industry: 'Fuel & Energy',
+    gst: true,
+    category: 'Fuel & Auto',
+  },
+  caltex: {
+    canonical: 'Ampol Ltd (formerly Caltex)',
+    industry: 'Fuel & Energy',
+    gst: true,
+    category: 'Fuel & Auto',
+  },
+  ampol: { canonical: 'Ampol Ltd', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
+  bizloan: {
+    canonical: 'BizLoan Pty Ltd',
+    industry: 'Financial Services - Lending',
+    gst: false,
+    category: 'Business Income',
+  },
+  bizlend: {
+    canonical: 'BizLend Finance',
+    industry: 'Financial Services - Lending',
+    gst: false,
+    category: 'Business Income',
+  },
+  '7-eleven': {
+    canonical: '7-Eleven Stores Pty Ltd',
+    industry: 'Retail - Convenience',
+    gst: true,
+    category: 'Groceries',
+  },
+  'harvey norman': {
+    canonical: 'Harvey Norman Holdings Ltd',
+    industry: 'Retail - Electronics',
+    gst: true,
+    category: 'Computer & IT',
+  },
+  'the reject shop': {
+    canonical: 'The Reject Shop Ltd',
+    industry: 'Retail - Discount',
+    gst: true,
+    category: 'Miscellaneous',
+  },
+  'big w': {
+    canonical: 'Big W (Woolworths Group)',
+    industry: 'Retail - Department Store',
+    gst: true,
+    category: 'Miscellaneous',
+  },
+  kfc: {
+    canonical: 'KFC Australia Pty Ltd',
+    industry: 'Food & Beverage',
+    gst: true,
+    category: 'Dining & Takeaway',
+  },
+  'hungry jacks': {
+    canonical: "Hungry Jack's Pty Ltd",
+    industry: 'Food & Beverage',
+    gst: true,
+    category: 'Dining & Takeaway',
+  },
+  nando: {
+    canonical: "Nando's Australia Pty Ltd",
+    industry: 'Food & Beverage',
+    gst: true,
+    category: 'Dining & Takeaway',
+  },
 };
 
 /** Square POS prefix patterns */
@@ -70,7 +203,10 @@ For each merchant, determine:
 
 Return a JSON object matching the MerchantIntelligenceOutput schema.`;
 
-export class VercelMerchantIntelligence extends VercelAgent<MerchantIntelligenceInput, MerchantIntelligenceOutput> {
+export class VercelMerchantIntelligence extends VercelAgent<
+  MerchantIntelligenceInput,
+  MerchantIntelligenceOutput
+> {
   constructor() {
     super('merchant_intelligence', SYSTEM_PROMPT, MerchantIntelligenceOutputSchema);
   }
@@ -108,8 +244,14 @@ export class VercelMerchantIntelligence extends VercelAgent<MerchantIntelligence
       {
         type: 'object',
         properties: {
-          abbreviatedName: { type: 'string', description: 'Abbreviated merchant name from bank statement' },
-          amount: { type: 'number', description: 'Transaction amount in cents (helps infer merchant type)' },
+          abbreviatedName: {
+            type: 'string',
+            description: 'Abbreviated merchant name from bank statement',
+          },
+          amount: {
+            type: 'number',
+            description: 'Transaction amount in cents (helps infer merchant type)',
+          },
         },
         required: ['abbreviatedName'],
       },
@@ -214,20 +356,45 @@ export class VercelMerchantIntelligence extends VercelAgent<MerchantIntelligence
         required: ['merchantName'],
       },
       async (input) => {
-        const name = (input.merchantName as string || '').toLowerCase();
-        const industry = (input.industry as string || '').toLowerCase();
-        const amount = input.amount as number || 0;
+        const name = ((input.merchantName as string) || '').toLowerCase();
+        const industry = ((input.industry as string) || '').toLowerCase();
+        const amount = (input.amount as number) || 0;
 
-        if (industry.includes('fuel') || name.includes('petrol') || name.includes('fuel') || name.includes('bp ') || name.includes('shell') || name.includes('caltex') || name.includes('ampol')) {
+        if (
+          industry.includes('fuel') ||
+          name.includes('petrol') ||
+          name.includes('fuel') ||
+          name.includes('bp ') ||
+          name.includes('shell') ||
+          name.includes('caltex') ||
+          name.includes('ampol')
+        ) {
           return { category: 'Fuel & Auto', confidence: 0.9 };
         }
-        if (industry.includes('grocery') || name.includes('woolworths') || name.includes('coles') || name.includes('aldi') || name.includes('iga')) {
+        if (
+          industry.includes('grocery') ||
+          name.includes('woolworths') ||
+          name.includes('coles') ||
+          name.includes('aldi') ||
+          name.includes('iga')
+        ) {
           return { category: 'Groceries & Supermarkets', confidence: 0.9 };
         }
-        if (industry.includes('telecom') || name.includes('telstra') || name.includes('optus') || name.includes('vodafone')) {
+        if (
+          industry.includes('telecom') ||
+          name.includes('telstra') ||
+          name.includes('optus') ||
+          name.includes('vodafone')
+        ) {
           return { category: 'Phone & Internet', confidence: 0.9 };
         }
-        if (industry.includes('food') || name.includes('cafe') || name.includes('restaurant') || name.includes('pizza') || name.includes('sushi')) {
+        if (
+          industry.includes('food') ||
+          name.includes('cafe') ||
+          name.includes('restaurant') ||
+          name.includes('pizza') ||
+          name.includes('sushi')
+        ) {
           return { category: 'Dining & Restaurants', confidence: 0.8 };
         }
         if (name.includes('uber eats') || name.includes('doordash') || name.includes('menulog')) {
@@ -236,7 +403,12 @@ export class VercelMerchantIntelligence extends VercelAgent<MerchantIntelligence
         if (name.includes('uber') || name.includes('didi') || name.includes('ola')) {
           return { category: 'Transport & Rideshare', confidence: 0.85 };
         }
-        if (industry.includes('insurance') || name.includes('insurance') || name.includes('nrma') || name.includes('allianz')) {
+        if (
+          industry.includes('insurance') ||
+          name.includes('insurance') ||
+          name.includes('nrma') ||
+          name.includes('allianz')
+        ) {
           return { category: 'Insurance', confidence: 0.85 };
         }
         if (Math.abs(amount) > 500000) {
@@ -284,7 +456,10 @@ export class VercelMerchantIntelligence extends VercelAgent<MerchantIntelligence
       {
         type: 'object',
         properties: {
-          merchantName: { type: 'string', description: 'Merchant name to explore in the knowledge graph' },
+          merchantName: {
+            type: 'string',
+            description: 'Merchant name to explore in the knowledge graph',
+          },
         },
         required: ['merchantName'],
       },

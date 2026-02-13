@@ -18,7 +18,7 @@ export function ConflictResolver() {
         setResolving(null);
       }
     },
-    [resolveConflict]
+    [resolveConflict],
   );
 
   const handleResolveAll = useCallback(
@@ -27,7 +27,7 @@ export function ConflictResolver() {
         await handleResolve(conflict, strategy);
       }
     },
-    [conflicts] // eslint-disable-line react-hooks/exhaustive-deps
+    [conflicts], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const activeConflicts = conflicts.filter((c) => !resolved.has(c.syncOperationId));
@@ -73,7 +73,10 @@ export function ConflictResolver() {
       </div>
 
       {activeConflicts.map((conflict) => (
-        <div key={conflict.syncOperationId} className="neu-raised rounded-2xl border border-amber-500/20 overflow-hidden">
+        <div
+          key={conflict.syncOperationId}
+          className="neu-raised rounded-2xl border border-amber-500/20 overflow-hidden"
+        >
           {/* Header */}
           <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
             <div>
@@ -85,7 +88,9 @@ export function ConflictResolver() {
               )}
             </div>
             <span className="text-[10px] text-zinc-600">
-              {conflict.clientTimestamp ? new Date(conflict.clientTimestamp).toLocaleString('en-AU') : ''}
+              {conflict.clientTimestamp
+                ? new Date(conflict.clientTimestamp).toLocaleString('en-AU')
+                : ''}
             </span>
           </div>
 

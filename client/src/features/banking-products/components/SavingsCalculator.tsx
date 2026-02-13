@@ -42,7 +42,11 @@ export function SavingsCalculator() {
   };
 
   const formatCurrency = (v: number) =>
-    new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(v);
+    new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+      maximumFractionDigits: 0,
+    }).format(v);
 
   const formatRate = (rate: number) => `${(rate * 100).toFixed(2)}%`;
 
@@ -57,7 +61,9 @@ export function SavingsCalculator() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">Current Rate (%)</label>
+            <label className="text-xs text-zinc-500 font-semibold block mb-1">
+              Current Rate (%)
+            </label>
             <input
               type="number"
               step="0.01"
@@ -76,7 +82,9 @@ export function SavingsCalculator() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">Monthly Repayment</label>
+            <label className="text-xs text-zinc-500 font-semibold block mb-1">
+              Monthly Repayment
+            </label>
             <input
               type="number"
               value={monthlyRepayment}
@@ -85,7 +93,9 @@ export function SavingsCalculator() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">Remaining Term (yrs)</label>
+            <label className="text-xs text-zinc-500 font-semibold block mb-1">
+              Remaining Term (yrs)
+            </label>
             <input
               type="number"
               value={remainingTerm}
@@ -120,8 +130,9 @@ export function SavingsCalculator() {
                 <div
                   key={r.productId || idx}
                   className={cn(
-                    "neu-raised rounded-2xl p-5 space-y-3",
-                    idx === 0 && "border border-[#FFCC00]/30 shadow-[0_0_20px_rgba(255,204,0,0.05)]"
+                    'neu-raised rounded-2xl p-5 space-y-3',
+                    idx === 0 &&
+                      'border border-[#FFCC00]/30 shadow-[0_0_20px_rgba(255,204,0,0.05)]',
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -131,7 +142,9 @@ export function SavingsCalculator() {
                     </div>
                     <div className="text-right">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-zinc-500 line-through">{currentRate.toFixed(2)}%</span>
+                        <span className="text-zinc-500 line-through">
+                          {currentRate.toFixed(2)}%
+                        </span>
                         <ArrowRight className="h-3 w-3 text-zinc-600" />
                         <span className="text-[#FFCC00] font-bold">{formatRate(r.newRate)}</span>
                       </div>
@@ -144,26 +157,35 @@ export function SavingsCalculator() {
                         <DollarSign className="h-3 w-3 text-emerald-400" />
                         <span className="text-[10px] text-zinc-500 uppercase">Monthly Saving</span>
                       </div>
-                      <p className="text-lg font-black text-emerald-400">{formatCurrency(r.monthlySaving)}</p>
+                      <p className="text-lg font-black text-emerald-400">
+                        {formatCurrency(r.monthlySaving)}
+                      </p>
                     </div>
                     <div>
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingDown className="h-3 w-3 text-cyan-400" />
                         <span className="text-[10px] text-zinc-500 uppercase">Annual Saving</span>
                       </div>
-                      <p className="text-lg font-black text-cyan-400">{formatCurrency(r.annualSaving)}</p>
+                      <p className="text-lg font-black text-cyan-400">
+                        {formatCurrency(r.annualSaving)}
+                      </p>
                     </div>
                     <div>
                       <div className="flex items-center gap-1 mb-1">
                         <Calculator className="h-3 w-3 text-[#FFCC00]" />
                         <span className="text-[10px] text-zinc-500 uppercase">Lifetime Saving</span>
                       </div>
-                      <p className="text-lg font-black text-[#FFCC00]">{formatCurrency(r.lifetimeSaving)}</p>
+                      <p className="text-lg font-black text-[#FFCC00]">
+                        {formatCurrency(r.lifetimeSaving)}
+                      </p>
                     </div>
                   </div>
 
                   <div className="text-xs text-zinc-500">
-                    New monthly repayment: <span className="text-zinc-300 font-semibold">{formatCurrency(r.newMonthlyRepayment)}</span>
+                    New monthly repayment:{' '}
+                    <span className="text-zinc-300 font-semibold">
+                      {formatCurrency(r.newMonthlyRepayment)}
+                    </span>
                   </div>
                 </div>
               ))}

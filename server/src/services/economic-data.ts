@@ -25,8 +25,8 @@ import type { EconomicSnapshot as EnhancedEconomicSnapshot } from './economic-da
 // ============================================================================
 
 export interface CashRateData {
-  currentRate: number;       // decimal, e.g. 0.0435 for 4.35%
-  effectiveDate: string;     // ISO date
+  currentRate: number; // decimal, e.g. 0.0435 for 4.35%
+  effectiveDate: string; // ISO date
   previousRate: number;
   previousDate: string;
   source: string;
@@ -34,28 +34,28 @@ export interface CashRateData {
 }
 
 export interface LendingRateData {
-  averageHomeLoanRate: number;     // decimal
-  averageFixedRate: number;        // decimal
-  averageVariableRate: number;     // decimal
-  averageInvestorRate: number;     // decimal
+  averageHomeLoanRate: number; // decimal
+  averageFixedRate: number; // decimal
+  averageVariableRate: number; // decimal
+  averageInvestorRate: number; // decimal
   source: string;
   fetchedAt: string;
 }
 
 export interface CPIData {
   currentIndex: number;
-  annualChange: number;       // percentage, e.g. 3.4
-  quarterlyChange: number;    // percentage
-  period: string;             // e.g. "Dec 2025"
+  annualChange: number; // percentage, e.g. 3.4
+  quarterlyChange: number; // percentage
+  period: string; // e.g. "Dec 2025"
   source: string;
   fetchedAt: string;
 }
 
 export interface UnemploymentData {
-  rate: number;               // percentage, e.g. 4.1
-  participationRate: number;  // percentage
-  employedPersons: number;    // thousands
-  period: string;             // e.g. "Jan 2026"
+  rate: number; // percentage, e.g. 4.1
+  participationRate: number; // percentage
+  employedPersons: number; // thousands
+  period: string; // e.g. "Jan 2026"
   source: string;
   fetchedAt: string;
 }
@@ -70,11 +70,10 @@ export interface EconomicSnapshot {
 
 interface CacheEntry {
   key: string;
-  data: string;           // JSON
-  fetchedAt: string;      // ISO datetime
-  expiresAt: string;      // ISO datetime
+  data: string; // JSON
+  fetchedAt: string; // ISO datetime
+  expiresAt: string; // ISO datetime
 }
-
 
 // ============================================================================
 // CONSTANTS
@@ -84,7 +83,7 @@ const FETCH_TIMEOUT_MS = 15_000;
 
 /** TTL in milliseconds */
 const TTL = {
-  RBA: 24 * 60 * 60 * 1000,   // 24 hours
+  RBA: 24 * 60 * 60 * 1000, // 24 hours
   ABS: 7 * 24 * 60 * 60 * 1000, // 7 days
 } as const;
 
@@ -92,10 +91,11 @@ const TTL = {
 const URLS = {
   RBA_CASH_RATE: 'https://www.rba.gov.au/statistics/cash-rate/',
   RBA_INDICATOR_LENDING: 'https://www.rba.gov.au/statistics/tables/csv/f5-data.csv',
-  ABS_CPI: 'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release',
-  ABS_LABOUR_FORCE: 'https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/latest-release',
+  ABS_CPI:
+    'https://www.abs.gov.au/statistics/economy/price-indexes-and-inflation/consumer-price-index-australia/latest-release',
+  ABS_LABOUR_FORCE:
+    'https://www.abs.gov.au/statistics/labour/employment-and-unemployment/labour-force-australia/latest-release',
 } as const;
-
 
 // ============================================================================
 // IN-MEMORY CACHE (fallback until economic_data_cache table exists)
@@ -103,13 +103,11 @@ const URLS = {
 
 const memoryCache = new Map<string, CacheEntry>();
 
-
 // ============================================================================
 // SERVICE CLASS
 // ============================================================================
 
 export class EconomicDataService {
-
   // ---------- Public API ----------
 
   /**
@@ -147,9 +145,9 @@ export class EconomicDataService {
       }
 
       // If parsing fails, return cached data
-      return await this.getFromCache(cacheKey, true) as CashRateData | null;
+      return (await this.getFromCache(cacheKey, true)) as CashRateData | null;
     } catch {
-      return await this.getFromCache(cacheKey, true) as CashRateData | null;
+      return (await this.getFromCache(cacheKey, true)) as CashRateData | null;
     }
   }
 
@@ -168,11 +166,11 @@ export class EconomicDataService {
       // Format: date, variable rate, fixed rate, investor rate...
       const lines = csv.trim().split('\n');
       // Find the last data row (skip headers)
-      const dataLines = lines.filter(l => /^\d{4}-\d{2}/.test(l.trim()));
+      const dataLines = lines.filter((l) => /^\d{4}-\d{2}/.test(l.trim()));
       const lastLine = dataLines[dataLines.length - 1];
 
       if (lastLine) {
-        const parts = lastLine.split(',').map(p => p.trim());
+        const parts = lastLine.split(',').map((p) => p.trim());
         // Typical RBA F5 columns: date, owner-occupier variable, fixed, investor
         const variableRate = parseFloat(parts[1] || '0') / 100;
         const fixedRate = parseFloat(parts[2] || '0') / 100;
@@ -192,9 +190,9 @@ export class EconomicDataService {
         return data;
       }
 
-      return await this.getFromCache(cacheKey, true) as LendingRateData | null;
+      return (await this.getFromCache(cacheKey, true)) as LendingRateData | null;
     } catch {
-      return await this.getFromCache(cacheKey, true) as LendingRateData | null;
+      return (await this.getFromCache(cacheKey, true)) as LendingRateData | null;
     }
   }
 
@@ -229,9 +227,9 @@ export class EconomicDataService {
         return data;
       }
 
-      return await this.getFromCache(cacheKey, true) as CPIData | null;
+      return (await this.getFromCache(cacheKey, true)) as CPIData | null;
     } catch {
-      return await this.getFromCache(cacheKey, true) as CPIData | null;
+      return (await this.getFromCache(cacheKey, true)) as CPIData | null;
     }
   }
 
@@ -249,8 +247,12 @@ export class EconomicDataService {
       // Parse ABS labour force page
       const rateMatch = html.match(/unemployment\s*rate[:\s]*(\d+\.\d+)\s*%/i);
       const participationMatch = html.match(/participation\s*rate[:\s]*(\d+\.\d+)\s*%/i);
-      const employedMatch = html.match(/employed\s*persons?[:\s]*([\d,]+(?:\.\d+)?)\s*(?:thousand|million)/i);
-      const periodMatch = html.match(/((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})/i);
+      const employedMatch = html.match(
+        /employed\s*persons?[:\s]*([\d,]+(?:\.\d+)?)\s*(?:thousand|million)/i,
+      );
+      const periodMatch = html.match(
+        /((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})/i,
+      );
 
       const data: UnemploymentData = {
         rate: rateMatch ? parseFloat(rateMatch[1]) : 0,
@@ -266,9 +268,9 @@ export class EconomicDataService {
         return data;
       }
 
-      return await this.getFromCache(cacheKey, true) as UnemploymentData | null;
+      return (await this.getFromCache(cacheKey, true)) as UnemploymentData | null;
     } catch {
-      return await this.getFromCache(cacheKey, true) as UnemploymentData | null;
+      return (await this.getFromCache(cacheKey, true)) as UnemploymentData | null;
     }
   }
 
@@ -292,14 +294,17 @@ export class EconomicDataService {
     };
   }
 
-
   // ---------- Enhanced API (via RBA/ABS feed services) ----------
 
   /** Access to the RBA data feed service */
-  get rba(): RbaDataFeed { return rbaDataFeed; }
+  get rba(): RbaDataFeed {
+    return rbaDataFeed;
+  }
 
   /** Access to the ABS data feed service */
-  get abs(): AbsDataFeed { return absDataFeed; }
+  get abs(): AbsDataFeed {
+    return absDataFeed;
+  }
 
   /**
    * Enhanced economic snapshot combining structured RBA CSV data + ABS SDMX data.
@@ -326,7 +331,7 @@ export class EconomicDataService {
     // Build snapshot from RBA indicators
     if (rbaResult.status === 'fulfilled') {
       const rbaInds = rbaResult.value.indicators;
-      const find = (code: string) => rbaInds.find(i => i.indicatorCode === code);
+      const find = (code: string) => rbaInds.find((i) => i.indicatorCode === code);
 
       const cashRate = find('RBA_CASH_RATE');
       if (cashRate) {
@@ -378,7 +383,7 @@ export class EconomicDataService {
     // Build snapshot from ABS indicators
     if (absResult.status === 'fulfilled') {
       const absInds = absResult.value.indicators;
-      const find = (code: string) => absInds.find(i => i.indicatorCode === code);
+      const find = (code: string) => absInds.find((i) => i.indicatorCode === code);
 
       const unemp = find('ABS_UNEMPLOYMENT_RATE');
       const partic = find('ABS_PARTICIPATION_RATE');
@@ -415,7 +420,11 @@ export class EconomicDataService {
       const dwell = find('ABS_DWELLING_APPROVALS');
       if (dwell) {
         if (!snapshot.housing) {
-          snapshot.housing = { sydneyQuarterly: null, australiaQuarterly: null, dwellingApprovals: null };
+          snapshot.housing = {
+            sydneyQuarterly: null,
+            australiaQuarterly: null,
+            dwellingApprovals: null,
+          };
         }
         snapshot.housing.dwellingApprovals = dwell.value;
       }
@@ -437,12 +446,33 @@ export class EconomicDataService {
     ]);
 
     return {
-      rba: rbaResult.status === 'fulfilled'
-        ? { tablesProcessed: rbaResult.value.tablesProcessed, errors: rbaResult.value.errors }
-        : { tablesProcessed: 0, errors: [{ table: '*', error: (rbaResult as PromiseRejectedResult).reason?.message ?? 'Unknown error' }] },
-      abs: absResult.status === 'fulfilled'
-        ? { dataflowsProcessed: absResult.value.dataflowsProcessed, errors: absResult.value.errors }
-        : { dataflowsProcessed: 0, errors: [{ dataflow: '*', error: (absResult as PromiseRejectedResult).reason?.message ?? 'Unknown error' }] },
+      rba:
+        rbaResult.status === 'fulfilled'
+          ? { tablesProcessed: rbaResult.value.tablesProcessed, errors: rbaResult.value.errors }
+          : {
+              tablesProcessed: 0,
+              errors: [
+                {
+                  table: '*',
+                  error: (rbaResult as PromiseRejectedResult).reason?.message ?? 'Unknown error',
+                },
+              ],
+            },
+      abs:
+        absResult.status === 'fulfilled'
+          ? {
+              dataflowsProcessed: absResult.value.dataflowsProcessed,
+              errors: absResult.value.errors,
+            }
+          : {
+              dataflowsProcessed: 0,
+              errors: [
+                {
+                  dataflow: '*',
+                  error: (absResult as PromiseRejectedResult).reason?.message ?? 'Unknown error',
+                },
+              ],
+            },
     };
   }
 
@@ -503,14 +533,17 @@ export class EconomicDataService {
       // Delete existing entry for this key
       await db.delete(economicDataCache).where(eq(economicDataCache.dataKey, key)).run();
       // Insert new entry
-      await db.insert(economicDataCache).values({
-        id: crypto.randomUUID(),
-        dataSource: key.startsWith('rba') ? 'rba' : 'abs',
-        dataKey: key,
-        dataValue: jsonData,
-        fetchedAt: now.toISOString(),
-        expiresAt: expiresAt.toISOString(),
-      }).run();
+      await db
+        .insert(economicDataCache)
+        .values({
+          id: crypto.randomUUID(),
+          dataSource: key.startsWith('rba') ? 'rba' : 'abs',
+          dataKey: key,
+          dataValue: jsonData,
+          fetchedAt: now.toISOString(),
+          expiresAt: expiresAt.toISOString(),
+        })
+        .run();
     } catch {
       // Table may not exist yet — memory cache only
     }
@@ -518,7 +551,6 @@ export class EconomicDataService {
     // Always update memory cache as fallback
     memoryCache.set(key, entry);
   }
-
 
   // ---------- HTTP Helper ----------
 
@@ -534,7 +566,7 @@ export class EconomicDataService {
         signal: controller.signal,
         headers: {
           'User-Agent': 'GoldLedger/1.0 (Financial Data Aggregator)',
-          'Accept': 'text/html,text/csv,application/json',
+          Accept: 'text/html,text/csv,application/json',
         },
       });
 

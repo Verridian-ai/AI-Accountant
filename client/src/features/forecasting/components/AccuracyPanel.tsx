@@ -43,7 +43,11 @@ function ratingBg(metric: string, value: number): string {
 }
 
 const formatDollar = (cents: number) =>
-  new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(cents / 100);
+  new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 
 export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
   const [metrics, setMetrics] = useState<AccuracyMetrics | null>(null);
@@ -92,10 +96,7 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
       <div className="neu-inset rounded-2xl p-8 text-center">
         <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
         <p className="text-zinc-400 text-sm">{error}</p>
-        <button
-          onClick={loadAccuracy}
-          className="mt-3 text-xs text-[#FFCC00] hover:underline"
-        >
+        <button onClick={loadAccuracy} className="mt-3 text-xs text-[#FFCC00] hover:underline">
           Retry
         </button>
       </div>
@@ -104,10 +105,38 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
 
   const cards = metrics
     ? [
-        { label: 'MAE', value: formatDollar(metrics.mae), raw: metrics.mae, metric: 'mae', icon: Target, desc: 'Mean Absolute Error' },
-        { label: 'RMSE', value: formatDollar(metrics.rmse), raw: metrics.rmse, metric: 'rmse', icon: TrendingUp, desc: 'Root Mean Square Error' },
-        { label: 'MAPE', value: `${metrics.mape.toFixed(1)}%`, raw: metrics.mape, metric: 'mape', icon: AlertTriangle, desc: 'Mean Abs % Error' },
-        { label: 'Direction', value: `${metrics.directionAccuracy.toFixed(1)}%`, raw: metrics.directionAccuracy, metric: 'directionAccuracy', icon: Compass, desc: 'Direction Accuracy' },
+        {
+          label: 'MAE',
+          value: formatDollar(metrics.mae),
+          raw: metrics.mae,
+          metric: 'mae',
+          icon: Target,
+          desc: 'Mean Absolute Error',
+        },
+        {
+          label: 'RMSE',
+          value: formatDollar(metrics.rmse),
+          raw: metrics.rmse,
+          metric: 'rmse',
+          icon: TrendingUp,
+          desc: 'Root Mean Square Error',
+        },
+        {
+          label: 'MAPE',
+          value: `${metrics.mape.toFixed(1)}%`,
+          raw: metrics.mape,
+          metric: 'mape',
+          icon: AlertTriangle,
+          desc: 'Mean Abs % Error',
+        },
+        {
+          label: 'Direction',
+          value: `${metrics.directionAccuracy.toFixed(1)}%`,
+          raw: metrics.directionAccuracy,
+          metric: 'directionAccuracy',
+          icon: Compass,
+          desc: 'Direction Accuracy',
+        },
       ]
     : [];
 
@@ -127,7 +156,7 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
 
       {loading && !metrics ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="neu-raised rounded-2xl p-5 animate-pulse">
               <div className="h-4 w-16 bg-white/10 rounded mb-3" />
               <div className="h-8 w-24 bg-white/10 rounded mb-2" />
@@ -137,7 +166,7 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {cards.map(card => {
+          {cards.map((card) => {
             const Icon = card.icon;
             return (
               <div
@@ -148,9 +177,13 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
                   <div className="neu-inset p-1.5 rounded-lg">
                     <Icon className={`w-4 h-4 ${ratingColor(card.metric, card.raw)}`} />
                   </div>
-                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{card.label}</span>
+                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                    {card.label}
+                  </span>
                 </div>
-                <p className={`text-2xl font-bold ${ratingColor(card.metric, card.raw)}`}>{card.value}</p>
+                <p className={`text-2xl font-bold ${ratingColor(card.metric, card.raw)}`}>
+                  {card.value}
+                </p>
                 <p className="text-[11px] text-zinc-500 mt-1">{card.desc}</p>
               </div>
             );

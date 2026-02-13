@@ -15,10 +15,7 @@ import {
 } from '../../transfers/index.js';
 import type { ReconcilerInput, ReconcilerOutput } from '../types.js';
 
-export class AccountReconcilerAgent extends ClaudeAgent<
-  ReconcilerInput,
-  ReconcilerOutput
-> {
+export class AccountReconcilerAgent extends ClaudeAgent<ReconcilerInput, ReconcilerOutput> {
   protected systemPrompt = `You are a bank account reconciliation specialist. Verify that transactions across statements are consistent, detect duplicates, check opening/closing balance continuity, identify missing transactions, and flag discrepancies. You understand that statements may overlap in date ranges and that transfers between accounts should be matched.
 
 Your workflow:
@@ -145,10 +142,7 @@ Return a JSON object matching the ReconcilerOutput schema.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'find_duplicates',
       async (input) => {
@@ -171,21 +165,14 @@ Return a JSON object matching the ReconcilerOutput schema.`;
             const a = transactions[i];
             const b = transactions[j];
 
-            if (
-              a.amount === b.amount &&
-              a.date === b.date &&
-              a.description === b.description
-            ) {
+            if (a.amount === b.amount && a.date === b.date && a.description === b.description) {
               duplicates.push({
                 transaction1Id: a.id,
                 transaction2Id: b.id,
                 confidence: 1.0,
                 reason: 'Exact match on date, amount, and description',
               });
-            } else if (
-              a.amount === b.amount &&
-              a.date === b.date
-            ) {
+            } else if (a.amount === b.amount && a.date === b.date) {
               const confidence = 0.7;
               if (confidence >= threshold) {
                 duplicates.push({
@@ -213,9 +200,7 @@ Return a JSON object matching the ReconcilerOutput schema.`;
           periodEnd: string;
         }>;
 
-        const sorted = [...stmts].sort((a, b) =>
-          a.periodStart.localeCompare(b.periodStart)
-        );
+        const sorted = [...stmts].sort((a, b) => a.periodStart.localeCompare(b.periodStart));
 
         const gaps: Array<{
           afterStatement: number;
@@ -252,13 +237,9 @@ Return a JSON object matching the ReconcilerOutput schema.`;
           amount: number;
         }>;
 
-        const bankSet = new Set(
-          bankTxs.map((t) => `${t.date}-${t.amount}`)
-        );
+        const bankSet = new Set(bankTxs.map((t) => `${t.date}-${t.amount}`));
 
-        return txs.filter(
-          (t) => !bankSet.has(`${t.date}-${t.amount}`)
-        );
+        return txs.filter((t) => !bankSet.has(`${t.date}-${t.amount}`));
       },
     ],
     [
@@ -288,10 +269,7 @@ Return a JSON object matching the ReconcilerOutput schema.`;
         let runningBalance = openingBalance;
         for (const tx of txs) {
           runningBalance += tx.amount;
-          if (
-            tx.balance !== undefined &&
-            Math.abs(runningBalance - tx.balance) > 1
-          ) {
+          if (tx.balance !== undefined && Math.abs(runningBalance - tx.balance) > 1) {
             discrepancies.push({
               transactionId: tx.id,
               expected: runningBalance,

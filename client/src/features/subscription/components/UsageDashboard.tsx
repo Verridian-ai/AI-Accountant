@@ -26,11 +26,44 @@ export function UsageDashboard() {
         const usage = data.usage ?? {};
         const limits = data.limits ?? {};
         setMetrics([
-          { key: 'members', label: 'Members', icon: Users, current: usage.members ?? 0, limit: limits.members ?? 1 },
-          { key: 'accounts', label: 'Accounts', icon: Wallet, current: usage.accounts ?? 0, limit: limits.accounts ?? 2 },
-          { key: 'transactions', label: 'Transactions', icon: FileText, current: usage.transactions ?? 0, limit: limits.transactionsPerMonth ?? 100, unit: 'this month' },
-          { key: 'aiQueries', label: 'AI Queries', icon: Brain, current: usage.aiQueries ?? 0, limit: limits.aiQueries ?? 10, unit: 'this month' },
-          { key: 'storage', label: 'Storage', icon: HardDrive, current: usage.storageMB ?? 0, limit: limits.storageMB ?? 50, unit: 'MB' },
+          {
+            key: 'members',
+            label: 'Members',
+            icon: Users,
+            current: usage.members ?? 0,
+            limit: limits.members ?? 1,
+          },
+          {
+            key: 'accounts',
+            label: 'Accounts',
+            icon: Wallet,
+            current: usage.accounts ?? 0,
+            limit: limits.accounts ?? 2,
+          },
+          {
+            key: 'transactions',
+            label: 'Transactions',
+            icon: FileText,
+            current: usage.transactions ?? 0,
+            limit: limits.transactionsPerMonth ?? 100,
+            unit: 'this month',
+          },
+          {
+            key: 'aiQueries',
+            label: 'AI Queries',
+            icon: Brain,
+            current: usage.aiQueries ?? 0,
+            limit: limits.aiQueries ?? 10,
+            unit: 'this month',
+          },
+          {
+            key: 'storage',
+            label: 'Storage',
+            icon: HardDrive,
+            current: usage.storageMB ?? 0,
+            limit: limits.storageMB ?? 50,
+            unit: 'MB',
+          },
         ]);
       })
       .catch(console.error)
@@ -83,7 +116,8 @@ export function UsageDashboard() {
           <div>
             <p className="text-sm font-bold text-[#FFCC00]">Approaching Limits</p>
             <p className="text-xs text-zinc-400 mt-0.5">
-              You're close to your {warningMetrics.map((m) => m.label.toLowerCase()).join(', ')} limit{warningMetrics.length > 1 ? 's' : ''}. Upgrade your plan for more capacity.
+              You're close to your {warningMetrics.map((m) => m.label.toLowerCase()).join(', ')}{' '}
+              limit{warningMetrics.length > 1 ? 's' : ''}. Upgrade your plan for more capacity.
             </p>
           </div>
         </div>
@@ -103,13 +137,17 @@ export function UsageDashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Icon className="w-4 h-4 text-zinc-500" />
-                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{metric.label}</span>
+                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                    {metric.label}
+                  </span>
                 </div>
                 <span className="text-xs font-bold text-zinc-500">{percent}%</span>
               </div>
 
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-black text-zinc-100 tabular-nums">{metric.current.toLocaleString()}</span>
+                <span className="text-2xl font-black text-zinc-100 tabular-nums">
+                  {metric.current.toLocaleString()}
+                </span>
                 <span className="text-sm text-zinc-500">of {limitDisplay}</span>
                 {metric.unit && <span className="text-xs text-zinc-600">{metric.unit}</span>}
               </div>

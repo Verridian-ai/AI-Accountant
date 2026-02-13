@@ -26,14 +26,18 @@ const parseSchema = z.object({
 
 const categorizeSchema = z.object({
   transactionIds: z.array(z.number()).optional(),
-  transactions: z.array(z.object({
-    id: z.number(),
-    date: z.string(),
-    description: z.string(),
-    amount: z.number(),
-    accountId: z.number().optional(),
-    bankId: z.string().optional(),
-  })).optional(),
+  transactions: z
+    .array(
+      z.object({
+        id: z.number(),
+        date: z.string(),
+        description: z.string(),
+        amount: z.number(),
+        accountId: z.number().optional(),
+        bankId: z.string().optional(),
+      }),
+    )
+    .optional(),
   userId: z.string().optional(),
   limit: z.number().optional().default(50),
 });
@@ -41,24 +45,32 @@ const categorizeSchema = z.object({
 const merchantIntelSchema = z.object({
   merchantName: z.string(),
   transactionId: z.number().optional(),
-  merchants: z.array(z.object({
-    transactionId: z.number(),
-    description: z.string(),
-    amount: z.number(),
-    category: z.string().optional(),
-  })).optional(),
+  merchants: z
+    .array(
+      z.object({
+        transactionId: z.number(),
+        description: z.string(),
+        amount: z.number(),
+        category: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 const payrollSchema = z.object({
   action: z.enum(['detect_wages', 'calculate_payg', 'analyze_payroll']),
   transactionIds: z.array(z.string()).optional(),
-  transactions: z.array(z.object({
-    id: z.string(),
-    date: z.string(),
-    description: z.string(),
-    amount: z.number(),
-    category: z.string().optional(),
-  })).optional(),
+  transactions: z
+    .array(
+      z.object({
+        id: z.string(),
+        date: z.string(),
+        description: z.string(),
+        amount: z.number(),
+        category: z.string().optional(),
+      }),
+    )
+    .optional(),
   userId: z.string().optional(),
   period: z.string().optional(),
   financialYear: z.string().optional(),
@@ -70,14 +82,18 @@ const taxStrategySchema = z.object({
   taxYear: z.string().optional(),
   financialYear: z.string().optional(),
   entityType: z.enum(['sole_trader', 'personal', 'company', 'trust', 'smsf']).optional(),
-  transactions: z.array(z.object({
-    id: z.string(),
-    date: z.string(),
-    description: z.string(),
-    amount: z.number(),
-    category: z.string().optional(),
-    gstCategory: z.string().optional(),
-  })).optional(),
+  transactions: z
+    .array(
+      z.object({
+        id: z.string(),
+        date: z.string(),
+        description: z.string(),
+        amount: z.number(),
+        category: z.string().optional(),
+        gstCategory: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 const taxClaimsSchema = z.object({
@@ -85,13 +101,17 @@ const taxClaimsSchema = z.object({
   taxYear: z.string().optional(),
   financialYear: z.string().optional(),
   claimTypes: z.array(z.string()).optional(),
-  transactions: z.array(z.object({
-    id: z.string(),
-    date: z.string(),
-    description: z.string(),
-    amount: z.number(),
-    category: z.string().optional(),
-  })).optional(),
+  transactions: z
+    .array(
+      z.object({
+        id: z.string(),
+        date: z.string(),
+        description: z.string(),
+        amount: z.number(),
+        category: z.string().optional(),
+      }),
+    )
+    .optional(),
   occupation: z.string().optional(),
   hasHomeOffice: z.boolean().optional(),
   motorVehicleKm: z.number().optional(),
@@ -102,13 +122,17 @@ const financialPlanSchema = z.object({
   goal: z.string().optional(),
   timeframeMonths: z.number().optional(),
   financialYear: z.string().optional(),
-  transactions: z.array(z.object({
-    id: z.string(),
-    date: z.string(),
-    description: z.string(),
-    amount: z.number(),
-    category: z.string().optional(),
-  })).optional(),
+  transactions: z
+    .array(
+      z.object({
+        id: z.string(),
+        date: z.string(),
+        description: z.string(),
+        amount: z.number(),
+        category: z.string().optional(),
+      }),
+    )
+    .optional(),
   riskProfile: z.enum(['conservative', 'balanced', 'growth', 'aggressive']).optional(),
   goals: z.array(z.string()).optional(),
 });
@@ -117,7 +141,9 @@ const financialPlanSchema = z.object({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function ensureEnabled(agentType: AgentType): { ok: true } | { ok: false; status: number; body: { error: string } } {
+function ensureEnabled(
+  agentType: AgentType,
+): { ok: true } | { ok: false; status: number; body: { error: string } } {
   if (!isClaudeAgentsEnabled()) {
     return { ok: false, status: 503, body: { error: 'Claude agents are not enabled' } };
   }
@@ -129,8 +155,10 @@ function ensureEnabled(agentType: AgentType): { ok: true } | { ok: false; status
 
 function parseBody<T extends z.ZodType>(
   schema: T,
-  data: unknown
-): { ok: true; data: z.infer<T> } | { ok: false; status: number; body: { error: string; details?: unknown } } {
+  data: unknown,
+):
+  | { ok: true; data: z.infer<T> }
+  | { ok: false; status: number; body: { error: string; details?: unknown } } {
   const result = schema.safeParse(data);
   if (!result.success) {
     return {
@@ -138,7 +166,7 @@ function parseBody<T extends z.ZodType>(
       status: 400,
       body: {
         error: 'Validation failed',
-        details: result.error.issues.map(i => ({
+        details: result.error.issues.map((i) => ({
           path: i.path.join('.'),
           message: i.message,
         })),
@@ -176,12 +204,15 @@ agentRoutes.post('/agents/parse', async (c) => {
     });
   } catch (err) {
     console.error('[Agent Route] statement_parser error:', err);
-    return c.json({
-      success: false,
-      agentType: 'statement_parser',
-      error: err instanceof Error ? err.message : String(err),
-      durationMs: Date.now() - startTime,
-    }, 500);
+    return c.json(
+      {
+        success: false,
+        agentType: 'statement_parser',
+        error: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - startTime,
+      },
+      500,
+    );
   }
 });
 
@@ -217,12 +248,15 @@ agentRoutes.post('/agents/categorize', async (c) => {
     });
   } catch (err) {
     console.error('[Agent Route] transaction_categorizer error:', err);
-    return c.json({
-      success: false,
-      agentType: 'transaction_categorizer',
-      error: err instanceof Error ? err.message : String(err),
-      durationMs: Date.now() - startTime,
-    }, 500);
+    return c.json(
+      {
+        success: false,
+        agentType: 'transaction_categorizer',
+        error: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - startTime,
+      },
+      500,
+    );
   }
 });
 
@@ -260,12 +294,15 @@ agentRoutes.post('/agents/merchant-intel', async (c) => {
     });
   } catch (err) {
     console.error('[Agent Route] merchant_intelligence error:', err);
-    return c.json({
-      success: false,
-      agentType: 'merchant_intelligence',
-      error: err instanceof Error ? err.message : String(err),
-      durationMs: Date.now() - startTime,
-    }, 500);
+    return c.json(
+      {
+        success: false,
+        agentType: 'merchant_intelligence',
+        error: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - startTime,
+      },
+      500,
+    );
   }
 });
 
@@ -298,12 +335,15 @@ agentRoutes.post('/agents/payroll/calculate', async (c) => {
     });
   } catch (err) {
     console.error('[Agent Route] payroll_agent error:', err);
-    return c.json({
-      success: false,
-      agentType: 'payroll_agent',
-      error: err instanceof Error ? err.message : String(err),
-      durationMs: Date.now() - startTime,
-    }, 500);
+    return c.json(
+      {
+        success: false,
+        agentType: 'payroll_agent',
+        error: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - startTime,
+      },
+      500,
+    );
   }
 });
 
@@ -336,12 +376,15 @@ agentRoutes.post('/agents/tax/strategy', async (c) => {
     });
   } catch (err) {
     console.error('[Agent Route] tax_strategy error:', err);
-    return c.json({
-      success: false,
-      agentType: 'tax_strategy',
-      error: err instanceof Error ? err.message : String(err),
-      durationMs: Date.now() - startTime,
-    }, 500);
+    return c.json(
+      {
+        success: false,
+        agentType: 'tax_strategy',
+        error: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - startTime,
+      },
+      500,
+    );
   }
 });
 
@@ -376,12 +419,15 @@ agentRoutes.post('/agents/tax/claims', async (c) => {
     });
   } catch (err) {
     console.error('[Agent Route] personal_tax_claims error:', err);
-    return c.json({
-      success: false,
-      agentType: 'personal_tax_claims',
-      error: err instanceof Error ? err.message : String(err),
-      durationMs: Date.now() - startTime,
-    }, 500);
+    return c.json(
+      {
+        success: false,
+        agentType: 'personal_tax_claims',
+        error: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - startTime,
+      },
+      500,
+    );
   }
 });
 
@@ -415,12 +461,15 @@ agentRoutes.post('/agents/financial-plan', async (c) => {
     });
   } catch (err) {
     console.error('[Agent Route] financial_planner error:', err);
-    return c.json({
-      success: false,
-      agentType: 'financial_planner',
-      error: err instanceof Error ? err.message : String(err),
-      durationMs: Date.now() - startTime,
-    }, 500);
+    return c.json(
+      {
+        success: false,
+        agentType: 'financial_planner',
+        error: err instanceof Error ? err.message : String(err),
+        durationMs: Date.now() - startTime,
+      },
+      500,
+    );
   }
 });
 
@@ -428,13 +477,27 @@ agentRoutes.post('/agents/financial-plan', async (c) => {
 // 8. GET /agents/status — Health/status for all agents
 // ---------------------------------------------------------------------------
 const ALL_AGENT_TYPES: AgentType[] = [
-  'statement_parser', 'transaction_categorizer', 'gst_calculator',
-  'account_reconciler', 'budget_analyzer', 'cross_account_tracer',
-  'merchant_intelligence', 'payroll_agent', 'tax_strategy',
-  'personal_tax_claims', 'financial_planner', 'inventory_agent',
-  'bank_reconciler_agent', 'ocr_processing', 'payment_matching',
-  'asset_management', 'multi_entity', 'financial_reporting',
-  'budgeting', 'forecasting', 'compliance_monitoring',
+  'statement_parser',
+  'transaction_categorizer',
+  'gst_calculator',
+  'account_reconciler',
+  'budget_analyzer',
+  'cross_account_tracer',
+  'merchant_intelligence',
+  'payroll_agent',
+  'tax_strategy',
+  'personal_tax_claims',
+  'financial_planner',
+  'inventory_agent',
+  'bank_reconciler_agent',
+  'ocr_processing',
+  'payment_matching',
+  'asset_management',
+  'multi_entity',
+  'financial_reporting',
+  'budgeting',
+  'forecasting',
+  'compliance_monitoring',
 ];
 
 agentRoutes.get('/agents/status', async (c) => {

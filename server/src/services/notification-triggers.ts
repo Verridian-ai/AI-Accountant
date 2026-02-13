@@ -13,11 +13,7 @@
  */
 
 import { pushNotificationService } from './push-notifications.js';
-import {
-  db,
-  notificationPreferences,
-  tenantMembers,
-} from '../schema.js';
+import { db, notificationPreferences, tenantMembers } from '../schema.js';
 import { eq, and } from 'drizzle-orm';
 import { rbacService } from './rbac.js';
 import type { NotificationPayload } from './push-notification-types.js';
@@ -51,8 +47,8 @@ async function getLargeTransactionThreshold(userId: string, tenantId: string): P
     .where(
       and(
         eq(notificationPreferences.userId, userId),
-        eq(notificationPreferences.tenantId, tenantId)
-      )
+        eq(notificationPreferences.tenantId, tenantId),
+      ),
     )
     .get();
 
@@ -60,9 +56,7 @@ async function getLargeTransactionThreshold(userId: string, tenantId: string): P
 
   const row = prefs as any;
   return Number(
-    row.largeTransactionThresholdCents ??
-    row.large_transaction_threshold_cents ??
-    100_000
+    row.largeTransactionThresholdCents ?? row.large_transaction_threshold_cents ?? 100_000,
   );
 }
 
@@ -74,19 +68,15 @@ async function getBudgetAlertThreshold(userId: string, tenantId: string): Promis
     .where(
       and(
         eq(notificationPreferences.userId, userId),
-        eq(notificationPreferences.tenantId, tenantId)
-      )
+        eq(notificationPreferences.tenantId, tenantId),
+      ),
     )
     .get();
 
   if (!prefs) return 80; // Default 80%
 
   const row = prefs as any;
-  return Number(
-    row.budgetAlertThresholdPercent ??
-    row.budget_alert_threshold_percent ??
-    80
-  );
+  return Number(row.budgetAlertThresholdPercent ?? row.budget_alert_threshold_percent ?? 80);
 }
 
 // ============================================================================
@@ -103,7 +93,7 @@ async function getBudgetAlertThreshold(userId: string, tenantId: string): Promis
 export async function triggerLargeTransactionAlert(
   transaction: { amount: number; description?: string; merchant?: string },
   userId: string,
-  tenantId: string
+  tenantId: string,
 ): Promise<void> {
   const threshold = await getLargeTransactionThreshold(userId, tenantId);
   const absAmount = Math.abs(transaction.amount);
@@ -119,12 +109,7 @@ export async function triggerLargeTransactionAlert(
     data: { type: 'large_transaction', amount: transaction.amount },
   };
 
-  await pushNotificationService.sendNotification(
-    userId,
-    tenantId,
-    payload,
-    'transaction_alerts'
-  );
+  await pushNotificationService.sendNotification(userId, tenantId, payload, 'transaction_alerts');
 }
 
 /**
@@ -137,7 +122,7 @@ export async function triggerLargeTransactionAlert(
 export async function triggerBASReminder(
   tenantId: string,
   dueDate: string | Date,
-  daysUntilDue: number
+  daysUntilDue: number,
 ): Promise<void> {
   const members = await db
     .select()
@@ -170,7 +155,7 @@ export async function triggerBASReminder(
       memberUserId,
       tenantId,
       payload,
-      'bas_reminders'
+      'bas_reminders',
     );
   }
 }
@@ -187,7 +172,7 @@ export async function triggerBudgetAlert(
   userId: string,
   tenantId: string,
   categoryName: string,
-  percentUsed: number
+  percentUsed: number,
 ): Promise<void> {
   const threshold = await getBudgetAlertThreshold(userId, tenantId);
 
@@ -205,12 +190,7 @@ export async function triggerBudgetAlert(
     data: { type: 'budget_alert', categoryName, percentUsed: rounded },
   };
 
-  await pushNotificationService.sendNotification(
-    userId,
-    tenantId,
-    payload,
-    'budget_alerts'
-  );
+  await pushNotificationService.sendNotification(userId, tenantId, payload, 'budget_alerts');
 }
 
 /**
@@ -225,7 +205,7 @@ export async function triggerBillReminder(
   userId: string,
   tenantId: string,
   billName: string,
-  dueDate: string | Date
+  dueDate: string | Date,
 ): Promise<void> {
   const payload: NotificationPayload = {
     title: 'Bill Reminder',
@@ -235,12 +215,7 @@ export async function triggerBillReminder(
     data: { type: 'bill_reminder', billName, dueDate: String(dueDate) },
   };
 
-  await pushNotificationService.sendNotification(
-    userId,
-    tenantId,
-    payload,
-    'bill_reminders'
-  );
+  await pushNotificationService.sendNotification(userId, tenantId, payload, 'bill_reminders');
 }
 
 /**
@@ -255,7 +230,7 @@ export async function triggerTeamNotification(
   tenantId: string,
   action: string,
   actorName: string,
-  targetName: string
+  targetName: string,
 ): Promise<void> {
   const payload: NotificationPayload = {
     title: 'Team Update',
@@ -266,10 +241,8 @@ export async function triggerTeamNotification(
   };
 
   // Send to admins and owners only
-  await pushNotificationService.sendToTenant(
-    tenantId,
-    payload,
-    'team_notifications',
-    ['owner', 'admin']
-  );
+  await pushNotificationService.sendToTenant(tenantId, payload, 'team_notifications', [
+    'owner',
+    'admin',
+  ]);
 }

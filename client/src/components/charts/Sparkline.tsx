@@ -1,10 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-  LineChart,
-  Line,
-  Area,
-  YAxis,
-} from 'recharts';
+import { LineChart, Line, Area, YAxis } from 'recharts';
 import { CHART_COLORS } from './ChartColorPalette';
 
 interface SparklineProps {
@@ -24,22 +19,19 @@ function SparklineInner({
   showArea = false,
   trend,
 }: SparklineProps) {
-  const chartData = useMemo(
-    () => data.map((value, i) => ({ i, value })),
-    [data],
-  );
+  const chartData = useMemo(() => data.map((value, i) => ({ i, value })), [data]);
 
   if (data.length === 0) {
-    return (
-      <div style={{ width, height }} className="bg-gray-800/30 rounded" />
-    );
+    return <div style={{ width, height }} className="bg-gray-800/30 rounded" />;
   }
 
-  const resolvedColor = color ?? (
-    trend === 'up' ? CHART_COLORS.revenue :
-    trend === 'down' ? CHART_COLORS.expense :
-    CHART_COLORS.primary
-  );
+  const resolvedColor =
+    color ??
+    (trend === 'up'
+      ? CHART_COLORS.revenue
+      : trend === 'down'
+        ? CHART_COLORS.expense
+        : CHART_COLORS.primary);
 
   const gradientId = `sparkline-${Math.random().toString(36).slice(2, 8)}`;
 

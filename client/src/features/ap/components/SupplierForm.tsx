@@ -53,22 +53,25 @@ export function SupplierForm({ supplierId, onSave, onCancel }: SupplierFormProps
 
   useEffect(() => {
     if (isEdit && supplierId) {
-      apApi.fetchSupplier(supplierId).then((s) => {
-        setForm({
-          businessName: s.businessName,
-          contactName: s.contactName ?? '',
-          email: s.email ?? '',
-          phone: s.phone ?? '',
-          address: s.address ?? '',
-          abn: s.abn ?? '',
-          paymentTermsDays: s.paymentTermsDays,
-          bankBsb: s.bankBsb ?? '',
-          bankAccountNumber: s.bankAccountNumber ?? '',
-          bankAccountName: s.bankAccountName ?? '',
-          notes: s.notes ?? '',
-        });
-        setLoading(false);
-      }).catch(() => setLoading(false));
+      apApi
+        .fetchSupplier(supplierId)
+        .then((s) => {
+          setForm({
+            businessName: s.businessName,
+            contactName: s.contactName ?? '',
+            email: s.email ?? '',
+            phone: s.phone ?? '',
+            address: s.address ?? '',
+            abn: s.abn ?? '',
+            paymentTermsDays: s.paymentTermsDays,
+            bankBsb: s.bankBsb ?? '',
+            bankAccountNumber: s.bankAccountNumber ?? '',
+            bankAccountName: s.bankAccountName ?? '',
+            notes: s.notes ?? '',
+          });
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
     }
   }, [isEdit, supplierId]);
 
@@ -144,7 +147,10 @@ export function SupplierForm({ supplierId, onSave, onCancel }: SupplierFormProps
   if (loading) {
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
-        <button onClick={onCancel} className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors">
+        <button
+          onClick={onCancel}
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
         <div className="neu-raised rounded-2xl p-6 animate-pulse">

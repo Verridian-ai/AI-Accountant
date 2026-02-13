@@ -15,10 +15,7 @@ import type { OCRProcessingInput, OCRProcessingOutput } from '../types.js';
 
 const ocrService = new OCRProcessingService();
 
-export class OCRProcessingAgent extends ClaudeAgent<
-  OCRProcessingInput,
-  OCRProcessingOutput
-> {
+export class OCRProcessingAgent extends ClaudeAgent<OCRProcessingInput, OCRProcessingOutput> {
   protected systemPrompt = `You are an expert document processing agent for an Australian small business accounting platform.
 You extract, classify, and validate financial documents including invoices, receipts, bills, and credit notes.
 
@@ -42,18 +39,23 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
   protected tools: Anthropic.Tool[] = [
     {
       name: 'extract_document_data',
-      description: 'Extract all financial data from an uploaded document using Vision API. Returns full extraction result with document metadata, amounts, vendor info, and line items.',
+      description:
+        'Extract all financial data from an uploaded document using Vision API. Returns full extraction result with document metadata, amounts, vendor info, and line items.',
       input_schema: {
         type: 'object' as const,
         properties: {
-          documentId: { type: 'string', description: 'The UUID of the document to extract data from' },
+          documentId: {
+            type: 'string',
+            description: 'The UUID of the document to extract data from',
+          },
         },
         required: ['documentId'],
       },
     },
     {
       name: 'classify_document',
-      description: 'Classify a document into a specific financial document type (invoice, receipt, bill, credit_note, statement, quote, purchase_order).',
+      description:
+        'Classify a document into a specific financial document type (invoice, receipt, bill, credit_note, statement, quote, purchase_order).',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -64,18 +66,23 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
     },
     {
       name: 'extract_line_items',
-      description: 'Extract and categorize individual line items from a document. Returns array of line items with descriptions, amounts, GST, and category mappings.',
+      description:
+        'Extract and categorize individual line items from a document. Returns array of line items with descriptions, amounts, GST, and category mappings.',
       input_schema: {
         type: 'object' as const,
         properties: {
-          documentId: { type: 'string', description: 'The UUID of the document to extract line items from' },
+          documentId: {
+            type: 'string',
+            description: 'The UUID of the document to extract line items from',
+          },
         },
         required: ['documentId'],
       },
     },
     {
       name: 'validate_extraction',
-      description: 'Validate extracted data for mathematical consistency and completeness. Checks line item sums, GST calculations, totals, date validity, ABN format, and required fields.',
+      description:
+        'Validate extracted data for mathematical consistency and completeness. Checks line item sums, GST calculations, totals, date validity, ABN format, and required fields.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -86,10 +93,7 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'extract_document_data',
       async (input) => {
@@ -136,23 +140,42 @@ async function validateExtraction(documentId: string): Promise<{
   warnings: string[];
   suggestedFixes: Array<{ field: string; currentValue: any; suggestedValue: any; reason: string }>;
 }> {
-  const checks: Array<{ name: string; passed: boolean; expected?: any; actual?: any; message?: string }> = [];
+  const checks: Array<{
+    name: string;
+    passed: boolean;
+    expected?: any;
+    actual?: any;
+    message?: string;
+  }> = [];
   const warnings: string[] = [];
-  const suggestedFixes: Array<{ field: string; currentValue: any; suggestedValue: any; reason: string }> = [];
+  const suggestedFixes: Array<{
+    field: string;
+    currentValue: any;
+    suggestedValue: any;
+    reason: string;
+  }> = [];
 
   // Fetch document
-  const doc: any = await db.select().from(ocrDocuments).where(eq(ocrDocuments.id, documentId)).get();
+  const doc: any = await db
+    .select()
+    .from(ocrDocuments)
+    .where(eq(ocrDocuments.id, documentId))
+    .get();
   if (!doc) {
     return {
       isValid: false,
-      checks: [{ name: 'documentExists', passed: false, message: `Document not found: ${documentId}` }],
+      checks: [
+        { name: 'documentExists', passed: false, message: `Document not found: ${documentId}` },
+      ],
       warnings: [],
       suggestedFixes: [],
     };
   }
 
   // Fetch line items
-  const lineItems: any[] = await db.select().from(ocrLineItems)
+  const lineItems: any[] = await db
+    .select()
+    .from(ocrLineItems)
     .where(eq(ocrLineItems.documentId, documentId))
     .orderBy(asc(ocrLineItems.lineNumber))
     .all();

@@ -119,7 +119,6 @@ type TimeRange = { start: string; end: string };
 // ============================================================================
 
 export class CrossModuleIntelligenceService {
-
   // --------------------------------------------------------------------------
   // PUBLIC: Scan & Discover
   // --------------------------------------------------------------------------
@@ -131,13 +130,7 @@ export class CrossModuleIntelligenceService {
     userId: string,
     options: InsightScanOptions = {},
   ): Promise<CrossModuleInsight[]> {
-    const {
-      modules,
-      timeRange,
-      minConfidence = 0.5,
-      severityFilter,
-      maxInsights = 50,
-    } = options;
+    const { modules, timeRange, minConfidence = 0.5, severityFilter, maxInsights = 50 } = options;
 
     const range: TimeRange = timeRange ?? {
       start: new Date(Date.now() - 90 * 86_400_000).toISOString().slice(0, 10),
@@ -163,9 +156,7 @@ export class CrossModuleIntelligenceService {
 
     // Filter by requested modules
     if (modules?.length) {
-      allInsights = allInsights.filter((i) =>
-        i.sourceModules.some((m) => modules.includes(m)),
-      );
+      allInsights = allInsights.filter((i) => i.sourceModules.some((m) => modules.includes(m)));
     }
 
     // Filter by confidence
@@ -173,9 +164,7 @@ export class CrossModuleIntelligenceService {
 
     // Filter by severity
     if (severityFilter?.length) {
-      allInsights = allInsights.filter((i) =>
-        severityFilter.includes(i.severity),
-      );
+      allInsights = allInsights.filter((i) => severityFilter.includes(i.severity));
     }
 
     // De-duplicate
@@ -189,8 +178,7 @@ export class CrossModuleIntelligenceService {
       info: 1,
     };
     allInsights.sort((a, b) => {
-      const sevDiff =
-        (severityOrder[b.severity] ?? 0) - (severityOrder[a.severity] ?? 0);
+      const sevDiff = (severityOrder[b.severity] ?? 0) - (severityOrder[a.severity] ?? 0);
       if (sevDiff !== 0) return sevDiff;
       return b.confidence - a.confidence;
     });
@@ -234,11 +222,7 @@ export class CrossModuleIntelligenceService {
    * Find statistical correlations between two modules' metrics.
    * Returns significant correlations where |r| > 0.6.
    */
-  async findCorrelations(
-    userId: string,
-    moduleA: string,
-    moduleB: string,
-  ): Promise<Correlation[]> {
+  async findCorrelations(userId: string, moduleA: string, moduleB: string): Promise<Correlation[]> {
     const now = new Date();
     const range: TimeRange = {
       start: new Date(now.getTime() - 365 * 86_400_000).toISOString().slice(0, 10),
@@ -283,18 +267,14 @@ export class CrossModuleIntelligenceService {
       }
     }
 
-    return correlations.sort(
-      (a, b) => Math.abs(b.coefficient) - Math.abs(a.coefficient),
-    );
+    return correlations.sort((a, b) => Math.abs(b.coefficient) - Math.abs(a.coefficient));
   }
 
   // --------------------------------------------------------------------------
   // PUBLIC: Module Connections
   // --------------------------------------------------------------------------
 
-  async getModuleConnections(
-    filters: ConnectionFilters = {},
-  ): Promise<ModuleConnection[]> {
+  async getModuleConnections(filters: ConnectionFilters = {}): Promise<ModuleConnection[]> {
     const conditions: any[] = [];
 
     if (filters.sourceModule) {
@@ -312,9 +292,7 @@ export class CrossModuleIntelligenceService {
 
     const query = (db as any).select().from(moduleConnections);
     const rows: any[] =
-      conditions.length > 0
-        ? await query.where(and(...conditions)).all()
-        : await query.all();
+      conditions.length > 0 ? await query.where(and(...conditions)).all() : await query.all();
 
     return rows.map((r: any) => ({
       id: r.id,
@@ -354,10 +332,7 @@ export class CrossModuleIntelligenceService {
   // PUBLIC: Unified Timeline
   // --------------------------------------------------------------------------
 
-  async generateTimeline(
-    userId: string,
-    timeRange: TimeRange,
-  ): Promise<TimelineEntry[]> {
+  async generateTimeline(userId: string, timeRange: TimeRange): Promise<TimelineEntry[]> {
     const entries: TimelineEntry[] = [];
 
     // 1. Significant transactions (|amount| > $500)
@@ -390,7 +365,9 @@ export class CrossModuleIntelligenceService {
           });
         }
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
 
     // 2. BAS events
     try {
@@ -418,7 +395,9 @@ export class CrossModuleIntelligenceService {
           metadata: { periodType: bp.periodType ?? bp.period_type, status },
         });
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
 
     // 3. Tax year summaries
     try {
@@ -440,7 +419,9 @@ export class CrossModuleIntelligenceService {
           metadata: { taxYear: ts.taxYear ?? ts.tax_year },
         });
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
 
     // 4. Reconciliation alerts
     try {
@@ -464,10 +445,15 @@ export class CrossModuleIntelligenceService {
           description: al.description,
           severity: 'warning',
           amount: al.difference,
-          metadata: { accountId: al.accountId ?? al.account_id, isResolved: Boolean(al.isResolved ?? al.is_resolved) },
+          metadata: {
+            accountId: al.accountId ?? al.account_id,
+            isResolved: Boolean(al.isResolved ?? al.is_resolved),
+          },
         });
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
 
     // 5. KPI deviations
     try {
@@ -499,7 +485,9 @@ export class CrossModuleIntelligenceService {
           });
         }
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
 
     entries.sort((a, b) => a.date.localeCompare(b.date));
     return entries;
@@ -556,9 +544,7 @@ export class CrossModuleIntelligenceService {
     let items = rows.map((r: any) => this._rowToInsight(r));
 
     if (filters.sourceModules?.length) {
-      items = items.filter((i) =>
-        i.sourceModules.some((m) => filters.sourceModules!.includes(m)),
-      );
+      items = items.filter((i) => i.sourceModules.some((m) => filters.sourceModules!.includes(m)));
       return { items, total: items.length };
     }
 
@@ -672,7 +658,9 @@ export class CrossModuleIntelligenceService {
           ),
         );
       }
-    } catch { /* scanner failure */ }
+    } catch {
+      /* scanner failure */
+    }
 
     return insights;
   }
@@ -724,7 +712,11 @@ export class CrossModuleIntelligenceService {
             'trend_alignment',
             'Revenue growth trend detected',
             `Income trending upward for ${growthMonths} of ${incomes.length - 1} months (${growthRate.toFixed(1)}% overall growth).`,
-            { growthMonths, totalMonths: incomes.length, growthRate: Math.round(growthRate * 100) / 100 },
+            {
+              growthMonths,
+              totalMonths: incomes.length,
+              growthRate: Math.round(growthRate * 100) / 100,
+            },
             ['transactions', 'analytics'],
             Math.min(0.6 + growthMonths * 0.05, 0.95),
             'info',
@@ -737,8 +729,10 @@ export class CrossModuleIntelligenceService {
       // Expense outpacing income
       const expenses = monthlyTx.map((m: any) => Number(m.totalExpense ?? m.total_expense ?? 0));
       if (incomes.length >= 3 && expenses.length >= 3) {
-        const incomeGrowth = incomes[0] > 0 ? (incomes[incomes.length - 1] - incomes[0]) / incomes[0] : 0;
-        const expenseGrowth = expenses[0] > 0 ? (expenses[expenses.length - 1] - expenses[0]) / expenses[0] : 0;
+        const incomeGrowth =
+          incomes[0] > 0 ? (incomes[incomes.length - 1] - incomes[0]) / incomes[0] : 0;
+        const expenseGrowth =
+          expenses[0] > 0 ? (expenses[expenses.length - 1] - expenses[0]) / expenses[0] : 0;
 
         if (expenseGrowth > incomeGrowth + 0.1 && expenseGrowth > 0.1) {
           insights.push(
@@ -746,7 +740,10 @@ export class CrossModuleIntelligenceService {
               'trend_alignment',
               'Expenses growing faster than income',
               `Expense growth (${(expenseGrowth * 100).toFixed(1)}%) outpacing income growth (${(incomeGrowth * 100).toFixed(1)}%).`,
-              { incomeGrowth: Math.round(incomeGrowth * 10000) / 100, expenseGrowth: Math.round(expenseGrowth * 10000) / 100 },
+              {
+                incomeGrowth: Math.round(incomeGrowth * 10000) / 100,
+                expenseGrowth: Math.round(expenseGrowth * 10000) / 100,
+              },
               ['transactions', 'analytics', 'forecasting'],
               0.75,
               'warning',
@@ -756,7 +753,9 @@ export class CrossModuleIntelligenceService {
           );
         }
       }
-    } catch { /* scanner failure */ }
+    } catch {
+      /* scanner failure */
+    }
 
     return insights;
   }
@@ -829,17 +828,26 @@ export class CrossModuleIntelligenceService {
             'compliance_risk',
             `Compliance risk: ${riskFactors.length} factors identified`,
             `Risk factors: ${riskFactors.join('; ')}. Addressing these reduces ATO audit risk.`,
-            { overdueBasCount: overdueBasRows.length, uncategorizedTxCount: uncategorizedCount, missingGstCount, riskFactors },
+            {
+              overdueBasCount: overdueBasRows.length,
+              uncategorizedTxCount: uncategorizedCount,
+              missingGstCount,
+              riskFactors,
+            },
             modules,
             Math.min(0.6 + riskFactors.length * 0.1, 0.95),
-            overdueBasRows.length > 0 && (uncategorizedCount > 20 || missingGstCount > 10) ? 'critical' : 'warning',
+            overdueBasRows.length > 0 && (uncategorizedCount > 20 || missingGstCount > 10)
+              ? 'critical'
+              : 'warning',
             userId,
             timeRange,
             'Review and address each compliance risk factor: categorize transactions, calculate GST amounts, and lodge overdue BAS.',
           ),
         );
       }
-    } catch { /* scanner failure */ }
+    } catch {
+      /* scanner failure */
+    }
 
     return insights;
   }
@@ -910,7 +918,12 @@ export class CrossModuleIntelligenceService {
               'forecast_deviation',
               `Forecast "${scenario.name}" diverging from reality`,
               `${deviations} periods show >25% deviation (avg ${(avgDeviation * 100).toFixed(1)}% off). Consider updating assumptions.`,
-              { scenarioId: scenario.id, scenarioName: scenario.name, deviationCount: deviations, averageDeviation: Math.round(avgDeviation * 10000) / 100 },
+              {
+                scenarioId: scenario.id,
+                scenarioName: scenario.name,
+                deviationCount: deviations,
+                averageDeviation: Math.round(avgDeviation * 10000) / 100,
+              },
               ['forecasting', 'transactions'],
               Math.min(0.6 + deviations * 0.08, 0.95),
               avgDeviation > 0.5 ? 'warning' : 'suggestion',
@@ -921,7 +934,9 @@ export class CrossModuleIntelligenceService {
           );
         }
       }
-    } catch { /* scanner failure */ }
+    } catch {
+      /* scanner failure */
+    }
 
     return insights;
   }
@@ -973,7 +988,12 @@ export class CrossModuleIntelligenceService {
               'tax_opportunity',
               'Potential unclaimed deductions detected',
               `Deduction ratio (${(deductionRatio * 100).toFixed(1)}%) is below typical benchmarks. Expenses ($${(expenseTotal / 100).toFixed(2)}) exceed claimed deductions ($${(totalDeductions / 100).toFixed(2)}).`,
-              { deductionRatio: Math.round(deductionRatio * 10000) / 100, grossIncome, totalDeductions, totalExpenses: expenseTotal },
+              {
+                deductionRatio: Math.round(deductionRatio * 10000) / 100,
+                grossIncome,
+                totalDeductions,
+                totalExpenses: expenseTotal,
+              },
               ['tax', 'transactions'],
               0.7,
               'suggestion',
@@ -994,7 +1014,12 @@ export class CrossModuleIntelligenceService {
             'tax_opportunity',
             'EOFY approaching — time for tax planning',
             'The Australian financial year ends June 30. Review deductions, prepay expenses, and manage capital gains/losses.',
-            { daysUntilEofy: Math.ceil((new Date(now.getFullYear(), 5, 30).getTime() - now.getTime()) / 86_400_000), currentMonth },
+            {
+              daysUntilEofy: Math.ceil(
+                (new Date(now.getFullYear(), 5, 30).getTime() - now.getTime()) / 86_400_000,
+              ),
+              currentMonth,
+            },
             ['tax', 'compliance', 'transactions'],
             0.85,
             'suggestion',
@@ -1004,7 +1029,9 @@ export class CrossModuleIntelligenceService {
           ),
         );
       }
-    } catch { /* scanner failure */ }
+    } catch {
+      /* scanner failure */
+    }
 
     return insights;
   }
@@ -1056,7 +1083,8 @@ export class CrossModuleIntelligenceService {
         const recent = totals.slice(-2);
         const earlier = totals.slice(0, -2);
         const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
-        const earlierAvg = earlier.length > 0 ? earlier.reduce((a, b) => a + b, 0) / earlier.length : 0;
+        const earlierAvg =
+          earlier.length > 0 ? earlier.reduce((a, b) => a + b, 0) / earlier.length : 0;
 
         if (earlierAvg > 0 && recentAvg > earlierAvg * 1.5 && recentAvg > 10000) {
           const increasePercent = ((recentAvg - earlierAvg) / earlierAvg) * 100;
@@ -1065,7 +1093,12 @@ export class CrossModuleIntelligenceService {
               'spending_pattern',
               `Spending spike in "${category}"`,
               `Recent spending ($${(recentAvg / 100).toFixed(2)}/month avg) is ${increasePercent.toFixed(0)}% above earlier average ($${(earlierAvg / 100).toFixed(2)}/month).`,
-              { category, recentAvg: Math.round(recentAvg), earlierAvg: Math.round(earlierAvg), increasePercent: Math.round(increasePercent) },
+              {
+                category,
+                recentAvg: Math.round(recentAvg),
+                earlierAvg: Math.round(earlierAvg),
+                increasePercent: Math.round(increasePercent),
+              },
               ['transactions', 'analytics'],
               0.7,
               increasePercent > 200 ? 'warning' : 'suggestion',
@@ -1106,7 +1139,12 @@ export class CrossModuleIntelligenceService {
               'spending_pattern',
               'High account concentration in spending',
               `Over ${((maxSpend / grandTotal) * 100).toFixed(0)}% of spending flows through a single account. Consider diversifying for better tracking.`,
-              { accountBreakdown: accountSpend.map((a: any) => ({ accountId: a.accountId ?? a.account_id, total: Number(a.total ?? 0) })) },
+              {
+                accountBreakdown: accountSpend.map((a: any) => ({
+                  accountId: a.accountId ?? a.account_id,
+                  total: Number(a.total ?? 0),
+                })),
+              },
               ['accounts', 'transactions'],
               0.6,
               'info',
@@ -1116,7 +1154,9 @@ export class CrossModuleIntelligenceService {
           );
         }
       }
-    } catch { /* scanner failure */ }
+    } catch {
+      /* scanner failure */
+    }
 
     return insights;
   }
@@ -1130,10 +1170,7 @@ export class CrossModuleIntelligenceService {
    * Formula: r = Σ((xi-x̄)(yi-ȳ)) / √(Σ(xi-x̄)² × Σ(yi-ȳ)²)
    * P-value from t = r√(n-2)/√(1-r²), using t-distribution CDF.
    */
-  _calculatePearsonCorrelation(
-    x: number[],
-    y: number[],
-  ): { coefficient: number; pValue: number } {
+  _calculatePearsonCorrelation(x: number[], y: number[]): { coefficient: number; pValue: number } {
     const n = Math.min(x.length, y.length);
     if (n < 3) return { coefficient: 0, pValue: 1 };
 
@@ -1181,7 +1218,9 @@ export class CrossModuleIntelligenceService {
       const ax = Math.abs(x);
       const tVal = 1 / (1 + 0.3275911 * ax);
       const poly =
-        ((((1.061405429 * tVal - 1.453152027) * tVal + 1.421413741) * tVal - 0.284496736) * tVal + 0.254829592) * tVal;
+        ((((1.061405429 * tVal - 1.453152027) * tVal + 1.421413741) * tVal - 0.284496736) * tVal +
+          0.254829592) *
+        tVal;
       const erf = 1 - poly * Math.exp(-ax * ax);
       const normalCdf = 0.5 * (1 + (x >= 0 ? erf : -erf));
       return 2 * (1 - normalCdf);
@@ -1210,9 +1249,9 @@ export class CrossModuleIntelligenceService {
   private _lnGamma(z: number): number {
     if (z <= 0) return 0;
     const c = [
-      0.99999999999980993, 676.5203681218851, -1259.1392167224028,
-      771.32342877765313, -176.61502916214059, 12.507343278686905,
-      -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+      0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+      -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
+      1.5056327351493116e-7,
     ];
 
     if (z < 0.5) {
@@ -1316,7 +1355,9 @@ export class CrossModuleIntelligenceService {
             .all();
 
           metrics['income'] = monthly.map((m: any) => Number(m.totalIncome ?? m.total_income ?? 0));
-          metrics['expense'] = monthly.map((m: any) => Number(m.totalExpense ?? m.total_expense ?? 0));
+          metrics['expense'] = monthly.map((m: any) =>
+            Number(m.totalExpense ?? m.total_expense ?? 0),
+          );
           metrics['net_flow'] = monthly.map((m: any) => Number(m.netFlow ?? m.net_flow ?? 0));
           metrics['tx_count'] = monthly.map((m: any) => Number(m.txCount ?? m.tx_count ?? 0));
           metrics['avg_amount'] = monthly.map((m: any) => Number(m.avgAmount ?? m.avg_amount ?? 0));
@@ -1331,22 +1372,27 @@ export class CrossModuleIntelligenceService {
             .orderBy(taxYearSummary.taxYear)
             .all();
 
-          metrics['gross_income'] = summaries.map((s: any) => Number(s.grossIncome ?? s.gross_income ?? 0));
-          metrics['total_deductions'] = summaries.map((s: any) => Number(s.totalDeductions ?? s.total_deductions ?? 0));
+          metrics['gross_income'] = summaries.map((s: any) =>
+            Number(s.grossIncome ?? s.gross_income ?? 0),
+          );
+          metrics['total_deductions'] = summaries.map((s: any) =>
+            Number(s.totalDeductions ?? s.total_deductions ?? 0),
+          );
           metrics['net_tax'] = summaries.map((s: any) => Number(s.netTax ?? s.net_tax ?? 0));
-          metrics['taxable_income'] = summaries.map((s: any) => Number(s.taxableIncome ?? s.taxable_income ?? 0));
+          metrics['taxable_income'] = summaries.map((s: any) =>
+            Number(s.taxableIncome ?? s.taxable_income ?? 0),
+          );
           break;
         }
 
         case 'bas': {
-          const basRows: any[] = await (db as any)
-            .select()
-            .from(basCalculations)
-            .all();
+          const basRows: any[] = await (db as any).select().from(basCalculations).all();
 
           metrics['gst_collected'] = basRows.map((b: any) => Number(b.labelG1 ?? b.label_g1 ?? 0));
           metrics['gst_paid'] = basRows.map((b: any) => Number(b.labelG11 ?? b.label_g11 ?? 0));
-          metrics['amount_owing'] = basRows.map((b: any) => Number(b.amountOwing ?? b.amount_owing ?? 0));
+          metrics['amount_owing'] = basRows.map((b: any) =>
+            Number(b.amountOwing ?? b.amount_owing ?? 0),
+          );
           break;
         }
 
@@ -1390,8 +1436,8 @@ export class CrossModuleIntelligenceService {
               .where(eq(forecastPeriods.scenarioId, sc.id))
               .all();
 
-            metrics[`forecast_${sc.name ?? 'unnamed'}`] = periods.map(
-              (p: any) => Number(p.forecastAmount ?? p.forecast_amount ?? 0),
+            metrics[`forecast_${sc.name ?? 'unnamed'}`] = periods.map((p: any) =>
+              Number(p.forecastAmount ?? p.forecast_amount ?? 0),
             );
           }
           break;
@@ -1400,7 +1446,9 @@ export class CrossModuleIntelligenceService {
         default:
           break;
       }
-    } catch { /* module metrics unavailable */ }
+    } catch {
+      /* module metrics unavailable */
+    }
 
     return metrics;
   }

@@ -230,7 +230,7 @@ export class MarketPriceService {
         return null;
       }
 
-      const data = await resp.json() as Record<string, any>;
+      const data = (await resp.json()) as Record<string, any>;
       const gq = data['Global Quote'];
       if (!gq || !gq['05. price']) {
         console.warn(`[MarketPriceService] No quote data for ${symbol}`, data);
@@ -289,7 +289,7 @@ export class MarketPriceService {
 
       if (!resp.ok) return [];
 
-      const data = await resp.json() as Record<string, any>;
+      const data = (await resp.json()) as Record<string, any>;
       const timeSeries = data['Time Series (Daily)'];
       if (!timeSeries) return [];
 
@@ -365,7 +365,7 @@ export class MarketPriceService {
         return null;
       }
 
-      const data = await resp.json() as Record<string, any>;
+      const data = (await resp.json()) as Record<string, any>;
       const coinData = data[coinId];
       if (!coinData) return null;
 
@@ -415,7 +415,7 @@ export class MarketPriceService {
       const resp = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       if (!resp.ok) return [];
 
-      const data = await resp.json() as Record<string, any>;
+      const data = (await resp.json()) as Record<string, any>;
       const now = new Date();
       const results: MarketPrice[] = [];
 
@@ -464,7 +464,7 @@ export class MarketPriceService {
       const resp = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       if (!resp.ok) return [];
 
-      const data = await resp.json() as {
+      const data = (await resp.json()) as {
         prices: [number, number][];
         market_caps: [number, number][];
         total_volumes: [number, number][];
@@ -585,10 +585,7 @@ export class MarketPriceService {
         .select()
         .from(marketPrices)
         .where(
-          and(
-            eq(marketPrices.symbol, symbol),
-            sql`${marketPrices.observationDate} >= ${cutoff}`,
-          ),
+          and(eq(marketPrices.symbol, symbol), sql`${marketPrices.observationDate} >= ${cutoff}`),
         )
         .orderBy(desc(marketPrices.observationDate))
         .all();
@@ -631,7 +628,7 @@ export class MarketPriceService {
         this.recordAlphaVantageCall();
 
         if (resp.ok) {
-          const data = await resp.json() as Record<string, any>;
+          const data = (await resp.json()) as Record<string, any>;
           const matches = data.bestMatches ?? [];
           for (const m of matches as Record<string, string>[]) {
             results.push({
@@ -653,7 +650,7 @@ export class MarketPriceService {
       const resp = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
 
       if (resp.ok) {
-        const data = await resp.json() as Record<string, any>;
+        const data = (await resp.json()) as Record<string, any>;
         const coins = (data.coins ?? []) as Record<string, string>[];
         for (const c of coins.slice(0, 10)) {
           results.push({
@@ -725,11 +722,7 @@ export class MarketPriceService {
           .orderBy(desc(marketPrices.observationDate))
           .all();
       }
-      return await db
-        .select()
-        .from(marketPrices)
-        .orderBy(desc(marketPrices.observationDate))
-        .all();
+      return await db.select().from(marketPrices).orderBy(desc(marketPrices.observationDate)).all();
     } catch {
       return [];
     }

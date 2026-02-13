@@ -25,12 +25,28 @@ const CLAIM_PATTERNS: Array<{
   },
   {
     claimType: 'motor_vehicle',
-    patterns: [/\bFUEL\b/i, /\bPETROL\b/i, /\bSHELL\b/i, /\bBP\b/i, /\bCALTEX\b/i, /\bAMPOL\b/i, /\bREGO\b/i, /\bINSURANCE.*CAR\b/i],
+    patterns: [
+      /\bFUEL\b/i,
+      /\bPETROL\b/i,
+      /\bSHELL\b/i,
+      /\bBP\b/i,
+      /\bCALTEX\b/i,
+      /\bAMPOL\b/i,
+      /\bREGO\b/i,
+      /\bINSURANCE.*CAR\b/i,
+    ],
     categories: ['Motor Vehicle Expenses'],
   },
   {
     claimType: 'tools',
-    patterns: [/\bBUNNINGS\b/i, /\bTOOL\b/i, /\bSOFTWARE\b/i, /\bADOBE\b/i, /\bMICROSOFT\b/i, /\bAPPLE\b/i],
+    patterns: [
+      /\bBUNNINGS\b/i,
+      /\bTOOL\b/i,
+      /\bSOFTWARE\b/i,
+      /\bADOBE\b/i,
+      /\bMICROSOFT\b/i,
+      /\bAPPLE\b/i,
+    ],
     categories: ['Equipment & Tools', 'Subscriptions'],
   },
   {
@@ -40,17 +56,40 @@ const CLAIM_PATTERNS: Array<{
   },
   {
     claimType: 'self_education',
-    patterns: [/\bCOURSE\b/i, /\bTRAINING\b/i, /\bUDEMY\b/i, /\bCOURSERA\b/i, /\bTEXTBOOK\b/i, /\bCONFERENCE\b/i],
+    patterns: [
+      /\bCOURSE\b/i,
+      /\bTRAINING\b/i,
+      /\bUDEMY\b/i,
+      /\bCOURSERA\b/i,
+      /\bTEXTBOOK\b/i,
+      /\bCONFERENCE\b/i,
+    ],
     categories: ['Education & Training'],
   },
   {
     claimType: 'travel',
-    patterns: [/\bFLIGHT\b/i, /\bQANTAS\b/i, /\bVIRGIN\b/i, /\bJETSTAR\b/i, /\bHOTEL\b/i, /\bACCOM\b/i, /\bAIRBNB\b/i],
+    patterns: [
+      /\bFLIGHT\b/i,
+      /\bQANTAS\b/i,
+      /\bVIRGIN\b/i,
+      /\bJETSTAR\b/i,
+      /\bHOTEL\b/i,
+      /\bACCOM\b/i,
+      /\bAIRBNB\b/i,
+    ],
     categories: ['Travel & Accommodation'],
   },
   {
     claimType: 'phone_internet',
-    patterns: [/\bTELSTRA\b/i, /\bOPTUS\b/i, /\bVODAFONE\b/i, /\bTPG\b/i, /\bNBN\b/i, /\bPHONE\b/i, /\bMOBILE\b/i],
+    patterns: [
+      /\bTELSTRA\b/i,
+      /\bOPTUS\b/i,
+      /\bVODAFONE\b/i,
+      /\bTPG\b/i,
+      /\bNBN\b/i,
+      /\bPHONE\b/i,
+      /\bMOBILE\b/i,
+    ],
     categories: ['Communication & Internet'],
   },
 ];
@@ -115,7 +154,19 @@ All amounts are in CENTS (integer). Return a JSON object matching the PersonalTa
       input_schema: {
         type: 'object' as const,
         properties: {
-          claimType: { type: 'string', enum: ['wfh', 'motor_vehicle', 'tools', 'uniforms', 'self_education', 'travel', 'phone_internet', 'other'] },
+          claimType: {
+            type: 'string',
+            enum: [
+              'wfh',
+              'motor_vehicle',
+              'tools',
+              'uniforms',
+              'self_education',
+              'travel',
+              'phone_internet',
+              'other',
+            ],
+          },
           totalAmountCents: { type: 'number' },
         },
         required: ['claimType', 'totalAmountCents'],
@@ -129,7 +180,10 @@ All amounts are in CENTS (integer). Return a JSON object matching the PersonalTa
         properties: {
           claimType: { type: 'string' },
           amountCents: { type: 'number' },
-          method: { type: 'string', description: 'Calculation method (e.g., fixed_rate, actual_cost, cents_per_km)' },
+          method: {
+            type: 'string',
+            description: 'Calculation method (e.g., fixed_rate, actual_cost, cents_per_km)',
+          },
           parameters: {
             type: 'object',
             properties: {
@@ -156,10 +210,7 @@ All amounts are in CENTS (integer). Return a JSON object matching the PersonalTa
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'scan_transactions_for_claims',
       async (input) => {
@@ -197,7 +248,7 @@ All amounts are in CENTS (integer). Return a JSON object matching the PersonalTa
             }
 
             // Match by description pattern
-            const matched = claimDef.patterns.some(p => p.test(tx.description));
+            const matched = claimDef.patterns.some((p) => p.test(tx.description));
             if (matched) {
               claims.push({
                 transactionId: tx.id,
@@ -225,10 +276,13 @@ All amounts are in CENTS (integer). Return a JSON object matching the PersonalTa
         const totalCents = input.totalAmountCents as number;
         const totalDollars = totalCents / 100;
 
-        const requirements: Record<string, {
-          status: string;
-          requirements: string[];
-        }> = {
+        const requirements: Record<
+          string,
+          {
+            status: string;
+            requirements: string[];
+          }
+        > = {
           wfh: {
             status: 'needs_log',
             requirements: [
@@ -247,15 +301,21 @@ All amounts are in CENTS (integer). Return a JSON object matching the PersonalTa
           },
           tools: {
             status: totalDollars > 300 ? 'needs_receipt' : 'substantiated',
-            requirements: totalDollars > 300
-              ? ['Receipt or invoice for each item over $300', 'Items over $300 must be depreciated']
-              : ['No receipt needed for items under $300 each'],
+            requirements:
+              totalDollars > 300
+                ? [
+                    'Receipt or invoice for each item over $300',
+                    'Items over $300 must be depreciated',
+                  ]
+                : ['No receipt needed for items under $300 each'],
           },
           uniforms: {
             status: totalDollars > 150 ? 'needs_receipt' : 'substantiated',
             requirements: [
               'Must be occupation-specific, protective, or compulsory employer uniform',
-              totalDollars > 150 ? 'Receipts required for laundry claims over $150' : 'Can claim $1/load without receipts up to $150',
+              totalDollars > 150
+                ? 'Receipts required for laundry claims over $150'
+                : 'Can claim $1/load without receipts up to $150',
             ],
           },
           self_education: {
@@ -284,10 +344,12 @@ All amounts are in CENTS (integer). Return a JSON object matching the PersonalTa
           },
         };
 
-        return requirements[claimType] ?? {
-          status: totalDollars > 300 ? 'needs_receipt' : 'substantiated',
-          requirements: ['Keep receipts for claims over $300'],
-        };
+        return (
+          requirements[claimType] ?? {
+            status: totalDollars > 300 ? 'needs_receipt' : 'substantiated',
+            requirements: ['Keep receipts for claims over $300'],
+          }
+        );
       },
     ],
     [

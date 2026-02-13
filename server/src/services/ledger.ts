@@ -5,7 +5,16 @@
  * Handles journal entries, chart of accounts, and transaction-to-journal mapping.
  */
 
-import { db, chartOfAccounts, journalEntries, journalEntryLines, accountingPeriods, accountBalances, transactions, accounts } from '../schema.js';
+import {
+  db,
+  chartOfAccounts,
+  journalEntries,
+  journalEntryLines,
+  accountingPeriods,
+  accountBalances,
+  transactions,
+  accounts,
+} from '../schema.js';
 import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
@@ -80,69 +89,221 @@ export const STANDARD_CHART_OF_ACCOUNTS = [
   // Assets (1-xxxx)
   { code: '1-0000', name: 'Assets', type: 'asset', normalBalance: 'debit' },
   { code: '1-0100', name: 'Cash at Bank', type: 'asset', normalBalance: 'debit' },
-  { code: '1-0110', name: 'Main Transaction Account', type: 'asset', normalBalance: 'debit', parent: '1-0100' },
-  { code: '1-0120', name: 'Savings Account', type: 'asset', normalBalance: 'debit', parent: '1-0100' },
+  {
+    code: '1-0110',
+    name: 'Main Transaction Account',
+    type: 'asset',
+    normalBalance: 'debit',
+    parent: '1-0100',
+  },
+  {
+    code: '1-0120',
+    name: 'Savings Account',
+    type: 'asset',
+    normalBalance: 'debit',
+    parent: '1-0100',
+  },
   { code: '1-0200', name: 'Accounts Receivable', type: 'asset', normalBalance: 'debit' },
   { code: '1-0300', name: 'Prepaid Expenses', type: 'asset', normalBalance: 'debit' },
   { code: '1-0400', name: 'Inventory', type: 'asset', normalBalance: 'debit' },
   { code: '1-0500', name: 'Fixed Assets', type: 'asset', normalBalance: 'debit' },
-  { code: '1-0510', name: 'Office Equipment', type: 'asset', normalBalance: 'debit', parent: '1-0500' },
-  { code: '1-0520', name: 'Motor Vehicles', type: 'asset', normalBalance: 'debit', parent: '1-0500' },
-  { code: '1-0530', name: 'Computer Equipment', type: 'asset', normalBalance: 'debit', parent: '1-0500' },
+  {
+    code: '1-0510',
+    name: 'Office Equipment',
+    type: 'asset',
+    normalBalance: 'debit',
+    parent: '1-0500',
+  },
+  {
+    code: '1-0520',
+    name: 'Motor Vehicles',
+    type: 'asset',
+    normalBalance: 'debit',
+    parent: '1-0500',
+  },
+  {
+    code: '1-0530',
+    name: 'Computer Equipment',
+    type: 'asset',
+    normalBalance: 'debit',
+    parent: '1-0500',
+  },
   { code: '1-0600', name: 'Accumulated Depreciation', type: 'asset', normalBalance: 'credit' },
 
   // Liabilities (2-xxxx)
   { code: '2-0000', name: 'Liabilities', type: 'liability', normalBalance: 'credit' },
   { code: '2-0100', name: 'Accounts Payable', type: 'liability', normalBalance: 'credit' },
   { code: '2-0200', name: 'Credit Card', type: 'liability', normalBalance: 'credit' },
-  { code: '2-0300', name: 'GST Collected', type: 'liability', normalBalance: 'credit', basLabel: '1A' },
+  {
+    code: '2-0300',
+    name: 'GST Collected',
+    type: 'liability',
+    normalBalance: 'credit',
+    basLabel: '1A',
+  },
   { code: '2-0310', name: 'GST Paid', type: 'liability', normalBalance: 'debit', basLabel: '1B' },
-  { code: '2-0400', name: 'PAYG Withholding', type: 'liability', normalBalance: 'credit', basLabel: 'W2' },
+  {
+    code: '2-0400',
+    name: 'PAYG Withholding',
+    type: 'liability',
+    normalBalance: 'credit',
+    basLabel: 'W2',
+  },
   { code: '2-0500', name: 'Superannuation Payable', type: 'liability', normalBalance: 'credit' },
   { code: '2-0600', name: 'Loans Payable', type: 'liability', normalBalance: 'credit' },
 
   // Equity (3-xxxx)
   { code: '3-0000', name: 'Equity', type: 'equity', normalBalance: 'credit' },
-  { code: '3-0100', name: 'Owner\'s Capital', type: 'equity', normalBalance: 'credit' },
-  { code: '3-0200', name: 'Owner\'s Drawings', type: 'equity', normalBalance: 'debit' },
+  { code: '3-0100', name: "Owner's Capital", type: 'equity', normalBalance: 'credit' },
+  { code: '3-0200', name: "Owner's Drawings", type: 'equity', normalBalance: 'debit' },
   { code: '3-0300', name: 'Retained Earnings', type: 'equity', normalBalance: 'credit' },
   { code: '3-0400', name: 'Current Year Earnings', type: 'equity', normalBalance: 'credit' },
 
   // Revenue (4-xxxx)
   { code: '4-0000', name: 'Revenue', type: 'revenue', normalBalance: 'credit', basLabel: 'G1' },
-  { code: '4-0100', name: 'Sales Revenue', type: 'revenue', normalBalance: 'credit', taxCode: 'GST' },
-  { code: '4-0200', name: 'Service Revenue', type: 'revenue', normalBalance: 'credit', taxCode: 'GST' },
-  { code: '4-0300', name: 'Interest Income', type: 'revenue', normalBalance: 'credit', taxCode: 'FRE' },
+  {
+    code: '4-0100',
+    name: 'Sales Revenue',
+    type: 'revenue',
+    normalBalance: 'credit',
+    taxCode: 'GST',
+  },
+  {
+    code: '4-0200',
+    name: 'Service Revenue',
+    type: 'revenue',
+    normalBalance: 'credit',
+    taxCode: 'GST',
+  },
+  {
+    code: '4-0300',
+    name: 'Interest Income',
+    type: 'revenue',
+    normalBalance: 'credit',
+    taxCode: 'FRE',
+  },
   { code: '4-0400', name: 'Other Income', type: 'revenue', normalBalance: 'credit' },
-  { code: '4-0500', name: 'Export Revenue', type: 'revenue', normalBalance: 'credit', taxCode: 'EXP', basLabel: 'G2' },
+  {
+    code: '4-0500',
+    name: 'Export Revenue',
+    type: 'revenue',
+    normalBalance: 'credit',
+    taxCode: 'EXP',
+    basLabel: 'G2',
+  },
 
   // Cost of Sales (5-xxxx)
   { code: '5-0000', name: 'Cost of Sales', type: 'cogs', normalBalance: 'debit' },
-  { code: '5-0100', name: 'Cost of Goods Sold', type: 'cogs', normalBalance: 'debit', taxCode: 'GST' },
+  {
+    code: '5-0100',
+    name: 'Cost of Goods Sold',
+    type: 'cogs',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
   { code: '5-0200', name: 'Direct Labour', type: 'cogs', normalBalance: 'debit' },
   { code: '5-0300', name: 'Freight Costs', type: 'cogs', normalBalance: 'debit', taxCode: 'GST' },
 
   // Expenses (6-xxxx)
   { code: '6-0000', name: 'Expenses', type: 'expense', normalBalance: 'debit', basLabel: 'G11' },
-  { code: '6-0100', name: 'Advertising & Marketing', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
+  {
+    code: '6-0100',
+    name: 'Advertising & Marketing',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
   { code: '6-0200', name: 'Bank Fees', type: 'expense', normalBalance: 'debit', taxCode: 'FRE' },
-  { code: '6-0300', name: 'Computer & IT', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
+  {
+    code: '6-0300',
+    name: 'Computer & IT',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
   { code: '6-0400', name: 'Depreciation', type: 'expense', normalBalance: 'debit', taxCode: 'N-T' },
-  { code: '6-0500', name: 'Entertainment', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
+  {
+    code: '6-0500',
+    name: 'Entertainment',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
   { code: '6-0600', name: 'Insurance', type: 'expense', normalBalance: 'debit', taxCode: 'FRE' },
-  { code: '6-0700', name: 'Interest Expense', type: 'expense', normalBalance: 'debit', taxCode: 'FRE' },
-  { code: '6-0800', name: 'Motor Vehicle Expenses', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
-  { code: '6-0900', name: 'Office Supplies', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
-  { code: '6-1000', name: 'Professional Fees', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
+  {
+    code: '6-0700',
+    name: 'Interest Expense',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'FRE',
+  },
+  {
+    code: '6-0800',
+    name: 'Motor Vehicle Expenses',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
+  {
+    code: '6-0900',
+    name: 'Office Supplies',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
+  {
+    code: '6-1000',
+    name: 'Professional Fees',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
   { code: '6-1100', name: 'Rent', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
-  { code: '6-1200', name: 'Repairs & Maintenance', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
-  { code: '6-1300', name: 'Subscriptions', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
-  { code: '6-1400', name: 'Telephone & Internet', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
+  {
+    code: '6-1200',
+    name: 'Repairs & Maintenance',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
+  {
+    code: '6-1300',
+    name: 'Subscriptions',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
+  {
+    code: '6-1400',
+    name: 'Telephone & Internet',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'GST',
+  },
   { code: '6-1500', name: 'Travel', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
   { code: '6-1600', name: 'Utilities', type: 'expense', normalBalance: 'debit', taxCode: 'GST' },
-  { code: '6-1700', name: 'Wages & Salaries', type: 'expense', normalBalance: 'debit', taxCode: 'N-T', basLabel: 'W1' },
-  { code: '6-1800', name: 'Superannuation', type: 'expense', normalBalance: 'debit', taxCode: 'N-T' },
-  { code: '6-1900', name: 'Work from Home Expenses', type: 'expense', normalBalance: 'debit', taxCode: 'N-T' },
+  {
+    code: '6-1700',
+    name: 'Wages & Salaries',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'N-T',
+    basLabel: 'W1',
+  },
+  {
+    code: '6-1800',
+    name: 'Superannuation',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'N-T',
+  },
+  {
+    code: '6-1900',
+    name: 'Work from Home Expenses',
+    type: 'expense',
+    normalBalance: 'debit',
+    taxCode: 'N-T',
+  },
   { code: '6-2000', name: 'Miscellaneous', type: 'expense', normalBalance: 'debit' },
 ];
 
@@ -164,10 +325,12 @@ export class LedgerService {
         const parent = await db
           .select()
           .from(chartOfAccounts)
-          .where(and(
-            eq(chartOfAccounts.userId, userId),
-            eq(chartOfAccounts.accountCode, account.parent)
-          ))
+          .where(
+            and(
+              eq(chartOfAccounts.userId, userId),
+              eq(chartOfAccounts.accountCode, account.parent),
+            ),
+          )
           .limit(1);
 
         if (parent.length > 0) {
@@ -175,28 +338,31 @@ export class LedgerService {
         }
       }
 
-      await db.insert(chartOfAccounts).values({
-        id: crypto.randomUUID(),
-        userId,
-        accountCode: account.code,
-        accountName: account.name,
-        accountType: account.type,
-        normalBalance: account.normalBalance as 'debit' | 'credit',
-        parentAccountId,
-        taxCode: account.taxCode,
-        basLabel: account.basLabel,
-        isSystemAccount: true,
-        isActive: true,
-        createdAt: now,
-        updatedAt: now,
-      }).onConflictDoNothing();
+      await db
+        .insert(chartOfAccounts)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          accountCode: account.code,
+          accountName: account.name,
+          accountType: account.type,
+          normalBalance: account.normalBalance as 'debit' | 'credit',
+          parentAccountId,
+          taxCode: account.taxCode,
+          basLabel: account.basLabel,
+          isSystemAccount: true,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .onConflictDoNothing();
     }
   }
 
   /**
    * Get chart of accounts for a user
    */
-  async getChartOfAccounts(userId: string): Promise<typeof chartOfAccounts.$inferSelect[]> {
+  async getChartOfAccounts(userId: string): Promise<(typeof chartOfAccounts.$inferSelect)[]> {
     return db
       .select()
       .from(chartOfAccounts)
@@ -209,15 +375,12 @@ export class LedgerService {
    */
   async findAccountByCode(
     userId: string,
-    accountCode: string
+    accountCode: string,
   ): Promise<typeof chartOfAccounts.$inferSelect | null> {
     const result = await db
       .select()
       .from(chartOfAccounts)
-      .where(and(
-        eq(chartOfAccounts.userId, userId),
-        eq(chartOfAccounts.accountCode, accountCode)
-      ))
+      .where(and(eq(chartOfAccounts.userId, userId), eq(chartOfAccounts.accountCode, accountCode)))
       .limit(1);
 
     return result[0] || null;
@@ -227,7 +390,17 @@ export class LedgerService {
    * Create a new journal entry
    */
   async createJournalEntry(params: CreateJournalEntryParams): Promise<JournalEntry> {
-    const { userId, entryDate, description, reference, sourceType, sourceId, lines, isAdjusting, isClosing } = params;
+    const {
+      userId,
+      entryDate,
+      description,
+      reference,
+      sourceType,
+      sourceId,
+      lines,
+      isAdjusting,
+      isClosing,
+    } = params;
 
     // Validate that debits equal credits
     // Use integer arithmetic for cents to avoid floating-point precision issues
@@ -236,7 +409,9 @@ export class LedgerService {
 
     // Compare as integers (cents) to avoid floating-point comparison issues
     if (totalDebits !== totalCredits) {
-      throw new Error(`Journal entry is not balanced: Debits (${totalDebits}) ≠ Credits (${totalCredits})`);
+      throw new Error(
+        `Journal entry is not balanced: Debits (${totalDebits}) ≠ Credits (${totalCredits})`,
+      );
     }
 
     // Generate entry number
@@ -344,7 +519,7 @@ export class LedgerService {
     originalEntryId: string,
     userId: string,
     reversalDate: string,
-    reason: string
+    reason: string,
   ): Promise<JournalEntry> {
     // Get original entry with lines
     const original = await db
@@ -381,7 +556,7 @@ export class LedgerService {
           bankAccountId: line.bankAccountId || undefined,
           transactionId: line.transactionId || undefined,
         };
-      })
+      }),
     );
 
     const reversalEntry = await this.createJournalEntry({
@@ -409,10 +584,7 @@ export class LedgerService {
   /**
    * Map a bank transaction to journal entries
    */
-  async mapTransactionToJournal(
-    userId: string,
-    transactionId: string
-  ): Promise<JournalEntry> {
+  async mapTransactionToJournal(userId: string, transactionId: string): Promise<JournalEntry> {
     // Get transaction details
     const txn = await db
       .select()
@@ -437,11 +609,12 @@ export class LedgerService {
     // Calculate GST if applicable
     // GST calculation: For GST-inclusive amounts, GST = amount * 1/11
     // Use banker's rounding (round half to even) for financial calculations
-    const gstAmount = transaction.gstApplicable && transaction.gstAmount
-      ? transaction.gstAmount
-      : transaction.gstApplicable
-        ? Math.round((amount * 100) / 1100) // Calculate in sub-cents then round to cents
-        : 0;
+    const gstAmount =
+      transaction.gstApplicable && transaction.gstAmount
+        ? transaction.gstAmount
+        : transaction.gstApplicable
+          ? Math.round((amount * 100) / 1100) // Calculate in sub-cents then round to cents
+          : 0;
 
     const netAmount = amount - gstAmount;
 
@@ -539,7 +712,7 @@ export class LedgerService {
     sourceTransactionId: string,
     destinationTransactionId: string,
     amount: number,
-    transferDate: string
+    transferDate: string,
   ): Promise<JournalEntry> {
     // For transfers: Debit destination bank, Credit source bank
     const lines: JournalEntryLine[] = [
@@ -574,7 +747,7 @@ export class LedgerService {
   async calculateAccountBalances(
     userId: string,
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<AccountBalance[]> {
     const balances: AccountBalance[] = [];
 
@@ -590,13 +763,15 @@ export class LedgerService {
         })
         .from(journalEntryLines)
         .innerJoin(journalEntries, eq(journalEntryLines.journalEntryId, journalEntries.id))
-        .where(and(
-          eq(journalEntryLines.accountId, account.id),
-          eq(journalEntries.userId, userId),
-          eq(journalEntries.status, 'posted'),
-          gte(journalEntries.entryDate, startDate),
-          lte(journalEntries.entryDate, endDate)
-        ));
+        .where(
+          and(
+            eq(journalEntryLines.accountId, account.id),
+            eq(journalEntries.userId, userId),
+            eq(journalEntries.status, 'posted'),
+            gte(journalEntries.entryDate, startDate),
+            lte(journalEntries.entryDate, endDate),
+          ),
+        );
 
       const totalDebits = totals[0]?.totalDebits || 0;
       const totalCredits = totals[0]?.totalCredits || 0;
@@ -621,7 +796,7 @@ export class LedgerService {
       });
     }
 
-    return balances.filter(b => b.totalDebits !== 0 || b.totalCredits !== 0);
+    return balances.filter((b) => b.totalDebits !== 0 || b.totalCredits !== 0);
   }
 
   /**
@@ -629,7 +804,7 @@ export class LedgerService {
    */
   async generateTrialBalance(
     userId: string,
-    asOfDate: string
+    asOfDate: string,
   ): Promise<{
     accounts: AccountBalance[];
     totalDebits: number;
@@ -695,22 +870,59 @@ export class LedgerService {
     }
 
     // Expense mapping
-    if (categoryLower.includes('advertising') || categoryLower.includes('marketing')) return '6-0100';
+    if (categoryLower.includes('advertising') || categoryLower.includes('marketing'))
+      return '6-0100';
     if (categoryLower.includes('bank') || categoryLower.includes('fee')) return '6-0200';
-    if (categoryLower.includes('computer') || categoryLower.includes('software') || categoryLower.includes('it')) return '6-0300';
+    if (
+      categoryLower.includes('computer') ||
+      categoryLower.includes('software') ||
+      categoryLower.includes('it')
+    )
+      return '6-0300';
     if (categoryLower.includes('entertainment') || categoryLower.includes('meal')) return '6-0500';
     if (categoryLower.includes('insurance')) return '6-0600';
     if (categoryLower.includes('interest')) return '6-0700';
-    if (categoryLower.includes('vehicle') || categoryLower.includes('fuel') || categoryLower.includes('car')) return '6-0800';
+    if (
+      categoryLower.includes('vehicle') ||
+      categoryLower.includes('fuel') ||
+      categoryLower.includes('car')
+    )
+      return '6-0800';
     if (categoryLower.includes('office') || categoryLower.includes('stationery')) return '6-0900';
-    if (categoryLower.includes('professional') || categoryLower.includes('legal') || categoryLower.includes('accounting')) return '6-1000';
+    if (
+      categoryLower.includes('professional') ||
+      categoryLower.includes('legal') ||
+      categoryLower.includes('accounting')
+    )
+      return '6-1000';
     if (categoryLower.includes('rent') || categoryLower.includes('lease')) return '6-1100';
     if (categoryLower.includes('repair') || categoryLower.includes('maintenance')) return '6-1200';
     if (categoryLower.includes('subscription')) return '6-1300';
-    if (categoryLower.includes('phone') || categoryLower.includes('internet') || categoryLower.includes('telecom')) return '6-1400';
-    if (categoryLower.includes('travel') || categoryLower.includes('flight') || categoryLower.includes('accommodation')) return '6-1500';
-    if (categoryLower.includes('utility') || categoryLower.includes('electric') || categoryLower.includes('gas') || categoryLower.includes('water')) return '6-1600';
-    if (categoryLower.includes('wage') || categoryLower.includes('salary') || categoryLower.includes('payroll')) return '6-1700';
+    if (
+      categoryLower.includes('phone') ||
+      categoryLower.includes('internet') ||
+      categoryLower.includes('telecom')
+    )
+      return '6-1400';
+    if (
+      categoryLower.includes('travel') ||
+      categoryLower.includes('flight') ||
+      categoryLower.includes('accommodation')
+    )
+      return '6-1500';
+    if (
+      categoryLower.includes('utility') ||
+      categoryLower.includes('electric') ||
+      categoryLower.includes('gas') ||
+      categoryLower.includes('water')
+    )
+      return '6-1600';
+    if (
+      categoryLower.includes('wage') ||
+      categoryLower.includes('salary') ||
+      categoryLower.includes('payroll')
+    )
+      return '6-1700';
     if (categoryLower.includes('super')) return '6-1800';
     if (categoryLower.includes('wfh') || categoryLower.includes('home office')) return '6-1900';
 

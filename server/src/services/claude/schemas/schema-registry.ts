@@ -82,10 +82,25 @@ export class SchemaRegistry {
     this.registerSchema('budget_analyzer', BudgetAnalyzerOutputSchema, 'BudgetAnalyzerOutput', 1);
     this.registerSchema('gst_calculator', GSTCalculatorOutputSchema, 'GSTCalculatorOutput', 1);
     this.registerSchema('tax_strategy', TaxStrategyOutputSchema, 'TaxStrategyOutput', 1);
-    this.registerSchema('merchant_intelligence', MerchantIntelligenceOutputSchema, 'MerchantIntelligenceOutput', 1);
+    this.registerSchema(
+      'merchant_intelligence',
+      MerchantIntelligenceOutputSchema,
+      'MerchantIntelligenceOutput',
+      1,
+    );
     this.registerSchema('account_reconciler', ReconcilerOutputSchema, 'ReconcilerOutput', 1);
-    this.registerSchema('statement_parser', StatementParserOutputSchema, 'StatementParserOutput', 1);
-    this.registerSchema('financial_planner', FinancialPlannerOutputSchema, 'FinancialPlannerOutput', 1);
+    this.registerSchema(
+      'statement_parser',
+      StatementParserOutputSchema,
+      'StatementParserOutput',
+      1,
+    );
+    this.registerSchema(
+      'financial_planner',
+      FinancialPlannerOutputSchema,
+      'FinancialPlannerOutput',
+      1,
+    );
   }
 }
 

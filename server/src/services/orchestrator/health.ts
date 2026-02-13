@@ -7,12 +7,7 @@
 
 import { spawn } from 'child_process';
 import { agentRegistry, AGENT_CONFIGS } from './registry.js';
-import {
-  AgentType,
-  AgentHealth,
-  HealthState,
-  HEALTH_THRESHOLDS,
-} from './types.js';
+import { AgentType, AgentHealth, HealthState, HEALTH_THRESHOLDS } from './types.js';
 
 // ============================================================================
 // HEALTH CHECK CONFIGURATION
@@ -224,9 +219,7 @@ export class HealthMonitor {
   async runHealthChecks(): Promise<void> {
     const agentTypes = Object.keys(AGENT_CONFIGS) as AgentType[];
 
-    await Promise.all(
-      agentTypes.map(agentType => this.checkAgent(agentType))
-    );
+    await Promise.all(agentTypes.map((agentType) => this.checkAgent(agentType)));
   }
 
   /**
@@ -248,15 +241,18 @@ export class HealthMonitor {
         agentRegistry.recordSuccess(agentType, result.responseTimeMs);
       } else {
         this.circuitBreaker.recordFailure(agentType);
-        agentRegistry.recordError(agentType, 'PROCESS_CRASHED', result.error || 'Health check failed');
+        agentRegistry.recordError(
+          agentType,
+          'PROCESS_CRASHED',
+          result.error || 'Health check failed',
+        );
       }
-
     } catch (error) {
       this.circuitBreaker.recordFailure(agentType);
       agentRegistry.recordError(
         agentType,
         'PROCESS_CRASHED',
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : 'Unknown error',
       );
     }
 
@@ -275,7 +271,7 @@ export class HealthMonitor {
    */
   private async runHealthCheck(
     scriptPath: string,
-    agentType: AgentType
+    agentType: AgentType,
   ): Promise<HealthCheckResult> {
     const startTime = Date.now();
 
@@ -413,12 +409,15 @@ export class HealthMonitor {
       unhealthy: 0,
       unknown: 0,
       overallState: 'healthy',
-      agents: {} as Record<AgentType, {
-        state: HealthState;
-        successRate: number;
-        avgResponseTimeMs: number;
-        activeRequests: number;
-      }>,
+      agents: {} as Record<
+        AgentType,
+        {
+          state: HealthState;
+          successRate: number;
+          avgResponseTimeMs: number;
+          activeRequests: number;
+        }
+      >,
     };
 
     for (const health of allHealth) {
@@ -446,7 +445,7 @@ export class HealthMonitor {
   private notifyListeners(
     agentType: AgentType,
     previousState: HealthState,
-    currentState: HealthState
+    currentState: HealthState,
   ): void {
     for (const listener of this.listeners) {
       try {
@@ -473,7 +472,7 @@ interface HealthCheckResult {
 export type HealthChangeListener = (
   agentType: AgentType,
   previousState: HealthState,
-  currentState: HealthState
+  currentState: HealthState,
 ) => void;
 
 export interface HealthSummary {
@@ -483,12 +482,15 @@ export interface HealthSummary {
   unhealthy: number;
   unknown: number;
   overallState: HealthState;
-  agents: Record<AgentType, {
-    state: HealthState;
-    successRate: number;
-    avgResponseTimeMs: number;
-    activeRequests: number;
-  }>;
+  agents: Record<
+    AgentType,
+    {
+      state: HealthState;
+      successRate: number;
+      avgResponseTimeMs: number;
+      activeRequests: number;
+    }
+  >;
 }
 
 // ============================================================================

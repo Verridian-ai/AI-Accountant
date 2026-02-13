@@ -40,7 +40,11 @@ const DIV7A_BENCHMARK_RATES: Record<number, number> = {
 /**
  * Match a transaction description against known inter-entity patterns.
  */
-function detectInterEntityPattern(description: string): { isMatch: boolean; type: string; confidence: number } {
+function detectInterEntityPattern(description: string): {
+  isMatch: boolean;
+  type: string;
+  confidence: number;
+} {
   const desc = description.toLowerCase();
   for (const { pattern, type } of INTER_ENTITY_PATTERNS) {
     if (pattern.test(desc)) {
@@ -50,10 +54,7 @@ function detectInterEntityPattern(description: string): { isMatch: boolean; type
   return { isMatch: false, type: 'none', confidence: 0 };
 }
 
-export class MultiEntityAgent extends ClaudeAgent<
-  MultiEntityInput,
-  MultiEntityOutput
-> {
+export class MultiEntityAgent extends ClaudeAgent<MultiEntityInput, MultiEntityOutput> {
   protected systemPrompt = `You are an Australian multi-entity financial management specialist. You help businesses that operate through multiple legal entities (companies, trusts, partnerships, sole traders, SMSFs). Your expertise includes:
 
 1. Identifying which entity a transaction belongs to based on account linkages and transaction patterns
@@ -74,13 +75,17 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
   protected tools: Anthropic.Tool[] = [
     {
       name: 'identify_entity_context',
-      description: 'Determine which entity a transaction or set of transactions belongs to based on account linkages and transaction patterns',
+      description:
+        'Determine which entity a transaction or set of transactions belongs to based on account linkages and transaction patterns',
       input_schema: {
         type: 'object' as const,
         properties: {
           userId: { type: 'string' },
           accountId: { type: 'string', description: 'The bank account the transaction is in' },
-          transactionDescription: { type: 'string', description: 'Transaction description to analyze' },
+          transactionDescription: {
+            type: 'string',
+            description: 'Transaction description to analyze',
+          },
           amount: { type: 'number', description: 'Transaction amount in cents' },
         },
         required: ['userId', 'accountId'],
@@ -88,7 +93,8 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
     },
     {
       name: 'find_inter_entity_transactions',
-      description: 'Scan transactions to find potential inter-entity transfers, loans, and related-party dealings',
+      description:
+        'Scan transactions to find potential inter-entity transfers, loans, and related-party dealings',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -112,31 +118,35 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           userId: { type: 'string' },
           parentEntityId: { type: 'string', description: 'The consolidated parent entity' },
           financialYear: { type: 'string' },
-          includeUnconfirmed: { type: 'boolean', description: 'Include pending transactions in elimination calc' },
+          includeUnconfirmed: {
+            type: 'boolean',
+            description: 'Include pending transactions in elimination calc',
+          },
         },
         required: ['userId', 'parentEntityId', 'financialYear'],
       },
     },
     {
       name: 'generate_consolidation',
-      description: 'Generate a full consolidated financial report for a parent entity and all subsidiaries',
+      description:
+        'Generate a full consolidated financial report for a parent entity and all subsidiaries',
       input_schema: {
         type: 'object' as const,
         properties: {
           userId: { type: 'string' },
           parentEntityId: { type: 'string' },
           financialYear: { type: 'string' },
-          snapshotNotes: { type: 'string', description: 'Notes to attach to the consolidation snapshot' },
+          snapshotNotes: {
+            type: 'string',
+            description: 'Notes to attach to the consolidation snapshot',
+          },
         },
         required: ['userId', 'parentEntityId', 'financialYear'],
       },
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'identify_entity_context',
       async (input) => {
@@ -147,11 +157,12 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
 
         // 1. Look up entity accounts for the given accountId to find linked entity
         const hierarchy = await multiEntityService.getEntityHierarchy(userId);
-        let matchedEntity: { entityId: string; entityName: string; entityType: string } | null = null;
+        let matchedEntity: { entityId: string; entityName: string; entityType: string } | null =
+          null;
         let confidence = 0;
 
         for (const entity of hierarchy.entities) {
-          const linkedAccount = entity.accounts.find(a => a.accountId === accountId);
+          const linkedAccount = entity.accounts.find((a) => a.accountId === accountId);
           if (linkedAccount) {
             matchedEntity = {
               entityId: entity.id,
@@ -167,7 +178,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         if (!matchedEntity) {
           try {
             const cogneeResults = await cogneeTools.searchEntityHierarchy(
-              `entity for account ${accountId}`
+              `entity for account ${accountId}`,
             );
             if (cogneeResults.length > 0) {
               // Try to match Cognee result to a known entity
@@ -214,11 +225,12 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
             entityType: matchedEntity.entityType,
             confidence,
             accountId,
-            reasoning: confidence === 1.0
-              ? `Account ${accountId} is directly linked to entity "${matchedEntity.entityName}".`
-              : confidence === 0.7
-                ? `Cognee knowledge graph matched account ${accountId} to entity "${matchedEntity.entityName}".`
-                : `Transaction description keyword matched entity "${matchedEntity.entityName}".`,
+            reasoning:
+              confidence === 1.0
+                ? `Account ${accountId} is directly linked to entity "${matchedEntity.entityName}".`
+                : confidence === 0.7
+                  ? `Cognee knowledge graph matched account ${accountId} to entity "${matchedEntity.entityName}".`
+                  : `Transaction description keyword matched entity "${matchedEntity.entityName}".`,
           };
         }
 
@@ -226,7 +238,8 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           found: false,
           confidence: 0,
           accountId,
-          reasoning: 'No entity match found for this account. Consider linking the account to an entity.',
+          reasoning:
+            'No entity match found for this account. Consider linking the account to an entity.',
         };
       },
     ],
@@ -240,7 +253,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         // 1. Fetch entity hierarchy for user
         const hierarchy = await multiEntityService.getEntityHierarchy(userId);
         const targetEntities = entityIds
-          ? hierarchy.entities.filter(e => entityIds.includes(e.id))
+          ? hierarchy.entities.filter((e) => entityIds.includes(e.id))
           : hierarchy.entities;
 
         if (targetEntities.length < 2) {
@@ -251,7 +264,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         }
 
         // Build entity name lookup and account-to-entity map
-        const entityNameMap = new Map(targetEntities.map(e => [e.id, e.name]));
+        const entityNameMap = new Map(targetEntities.map((e) => [e.id, e.name]));
         const accountToEntity = new Map<string, string>();
         for (const entity of targetEntities) {
           for (const account of entity.accounts) {
@@ -296,7 +309,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         for (const entity of targetEntities) {
           try {
             const patterns = await cogneeTools.searchConsolidationPatterns(
-              `inter-entity ${entity.name}`
+              `inter-entity ${entity.name}`,
             );
             if (patterns.length > 0) {
               // Cognee results are informational context, not new matches
@@ -312,9 +325,10 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           entityCount: targetEntities.length,
           financialYear,
           existingRecordCount: existingIETs.length,
-          summary: matches.length > 0
-            ? `Found ${matches.length} inter-entity transactions across ${targetEntities.length} entities for FY ${financialYear}.`
-            : `No inter-entity transactions found for FY ${financialYear}. Consider scanning transaction descriptions for patterns like MANAGEMENT FEE, DIVIDEND, LOAN, etc.`,
+          summary:
+            matches.length > 0
+              ? `Found ${matches.length} inter-entity transactions across ${targetEntities.length} entities for FY ${financialYear}.`
+              : `No inter-entity transactions found for FY ${financialYear}. Consider scanning transaction descriptions for patterns like MANAGEMENT FEE, DIVIDEND, LOAN, etc.`,
         };
       },
     ],
@@ -343,12 +357,15 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         const allTxns = [...confirmedTxns, ...pendingTxns];
 
         // 2. Group by transaction type
-        const managementFees = allTxns.filter(t =>
-          t.transactionType === 'management_fee' || t.transactionType === 'service_fee' || t.transactionType === 'rent'
+        const managementFees = allTxns.filter(
+          (t) =>
+            t.transactionType === 'management_fee' ||
+            t.transactionType === 'service_fee' ||
+            t.transactionType === 'rent',
         );
-        const loans = allTxns.filter(t => t.transactionType === 'loan');
-        const dividends = allTxns.filter(t =>
-          t.transactionType === 'dividend' || t.transactionType === 'distribution'
+        const loans = allTxns.filter((t) => t.transactionType === 'loan');
+        const dividends = allTxns.filter(
+          (t) => t.transactionType === 'dividend' || t.transactionType === 'distribution',
         );
 
         // 3. Calculate elimination amounts
@@ -388,8 +405,8 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           // Division 7A flag: loans from companies to shareholders/associates
           div7aWarnings.push(
             `Loan of $${(Math.abs(txn.amount) / 100).toFixed(2)} may be subject to Division 7A. ` +
-            `Ensure compliant loan agreement exists with benchmark rate >= ${(benchmarkRate * 100).toFixed(2)}%, ` +
-            `max term 7 years unsecured / 25 years secured.`
+              `Ensure compliant loan agreement exists with benchmark rate >= ${(benchmarkRate * 100).toFixed(2)}%, ` +
+              `max term 7 years unsecured / 25 years secured.`,
           );
         }
 
@@ -414,8 +431,11 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           confirmedCount: confirmedTxns.length,
           pendingCount: pendingTxns.length,
           div7aWarnings,
-          summary: `Calculated ${eliminations.length} elimination entries totalling $${(totalEliminations / 100).toFixed(2)} for FY ${financialYear}. ` +
-            (div7aWarnings.length > 0 ? `${div7aWarnings.length} Division 7A warning(s) raised.` : ''),
+          summary:
+            `Calculated ${eliminations.length} elimination entries totalling $${(totalEliminations / 100).toFixed(2)} for FY ${financialYear}. ` +
+            (div7aWarnings.length > 0
+              ? `${div7aWarnings.length} Division 7A warning(s) raised.`
+              : ''),
         };
       },
     ],
@@ -435,10 +455,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         });
 
         // 2. Get snapshot detail for formatted breakdown
-        const detail = await consolidationService.getSnapshotDetail(
-          result.snapshot.id,
-          userId
-        );
+        const detail = await consolidationService.getSnapshotDetail(result.snapshot.id, userId);
 
         // 3. Format per-entity P&L breakdown
         const entityBreakdown = Object.entries(detail.byEntity).map(([entityId, data]) => ({
@@ -456,7 +473,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         let historicalContext: string[] = [];
         try {
           historicalContext = await cogneeTools.searchConsolidationPatterns(
-            `consolidation ${financialYear}`
+            `consolidation ${financialYear}`,
           );
         } catch {
           // Cognee unavailable — continue without historical context
@@ -468,7 +485,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           parentEntityId,
           status: result.snapshot.status,
           entityBreakdown,
-          eliminationSummary: result.eliminations.map(e => ({
+          eliminationSummary: result.eliminations.map((e) => ({
             ruleName: e.ruleName,
             amount: e.amount,
             description: e.description,
@@ -484,7 +501,8 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           eliminationsTotal: result.eliminations.reduce((sum, e) => sum + e.amount, 0),
           notes: snapshotNotes ?? null,
           historicalContextAvailable: historicalContext.length > 0,
-          summary: `Consolidation snapshot created for FY ${financialYear}. ` +
+          summary:
+            `Consolidation snapshot created for FY ${financialYear}. ` +
             `${entityBreakdown.length} entities consolidated. ` +
             `${result.eliminations.length} elimination rule(s) applied. ` +
             `Consolidated net profit: $${(detail.consolidatedTotals.netProfit / 100).toFixed(2)}.`,

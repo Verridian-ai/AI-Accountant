@@ -10,29 +10,69 @@ import { adaptLegacyTool } from '../../tool-adapter.js';
 import { CategorizerOutputSchema } from '../../schemas/categorizer-output.js';
 import { cogneeTools } from '../../cognee-tools.js';
 import { cogneeClient } from '../../../cognee_client.js';
-import type { CategorizerInput, CategorizerOutput, VercelAgentExecutionResult } from '../../types.js';
+import type {
+  CategorizerInput,
+  CategorizerOutput,
+  VercelAgentExecutionResult,
+} from '../../types.js';
 import type { ToolSet } from 'ai';
 
 // Category taxonomy — kept in sync with client/src/features/transactions/constants/categories.ts
 const CATEGORY_TAXONOMY = [
   // Revenue (4-xxxx)
-  'Sales Revenue', 'Service Revenue', 'Interest Income', 'Other Income',
-  'Export Revenue', 'Business Income', 'Rental Income',
+  'Sales Revenue',
+  'Service Revenue',
+  'Interest Income',
+  'Other Income',
+  'Export Revenue',
+  'Business Income',
+  'Rental Income',
   // Cost of Sales (5-xxxx)
-  'Cost of Goods Sold', 'Direct Labour', 'Freight Costs', 'Materials',
+  'Cost of Goods Sold',
+  'Direct Labour',
+  'Freight Costs',
+  'Materials',
   // Expenses (6-xxxx)
-  'Advertising & Marketing', 'Bank Fees', 'Computer & IT', 'Depreciation',
-  'Entertainment', 'Insurance', 'Interest Expense', 'Motor Vehicle Expenses',
-  'Office Supplies', 'Professional Fees', 'Rent', 'Repairs & Maintenance',
-  'Subscriptions', 'Software & Subscriptions', 'Telephone & Internet',
-  'Travel', 'Travel & Accommodation', 'Utilities',
-  'Wages & Salaries', 'Superannuation', 'Work from Home Expenses',
-  'General Expenses', 'Miscellaneous',
-  'Charity & Donations', 'Clothing & Personal', 'Dining & Takeaway', 'Education',
-  'Fuel', 'Groceries', 'Home & Garden', 'Medical & Health', 'Pet Care',
-  'Tax', 'Tax Payments',
+  'Advertising & Marketing',
+  'Bank Fees',
+  'Computer & IT',
+  'Depreciation',
+  'Entertainment',
+  'Insurance',
+  'Interest Expense',
+  'Motor Vehicle Expenses',
+  'Office Supplies',
+  'Professional Fees',
+  'Rent',
+  'Repairs & Maintenance',
+  'Subscriptions',
+  'Software & Subscriptions',
+  'Telephone & Internet',
+  'Travel',
+  'Travel & Accommodation',
+  'Utilities',
+  'Wages & Salaries',
+  'Superannuation',
+  'Work from Home Expenses',
+  'General Expenses',
+  'Miscellaneous',
+  'Charity & Donations',
+  'Clothing & Personal',
+  'Dining & Takeaway',
+  'Education',
+  'Fuel',
+  'Groceries',
+  'Home & Garden',
+  'Medical & Health',
+  'Pet Care',
+  'Tax',
+  'Tax Payments',
   // System
-  'Cash Withdrawal', 'Loan Repayment', 'Mortgage', 'Refund', 'Transfer',
+  'Cash Withdrawal',
+  'Loan Repayment',
+  'Mortgage',
+  'Refund',
+  'Transfer',
   'Uncategorized',
 ];
 
@@ -253,9 +293,18 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
             return { id: tx.id, suggestedCategory: 'Sales Revenue', confidence: 0.95 };
 
           // --- Loan-related patterns (Bizcap/BizLend = loan drawdowns, NOT income) ---
-          if (desc.includes('bizloan') || desc.includes('biz loan') || desc.includes('bizlend') || desc.includes('bizcap'))
+          if (
+            desc.includes('bizloan') ||
+            desc.includes('biz loan') ||
+            desc.includes('bizlend') ||
+            desc.includes('bizcap')
+          )
             return { id: tx.id, suggestedCategory: 'Loan Repayment', confidence: 0.95 };
-          if (desc.includes('loan repay') || desc.includes('principal') || (desc.includes('loan') && tx.amount < 0))
+          if (
+            desc.includes('loan repay') ||
+            desc.includes('principal') ||
+            (desc.includes('loan') && tx.amount < 0)
+          )
             return { id: tx.id, suggestedCategory: 'Loan Repayment', confidence: 0.9 };
           if (desc.includes('mortgage') || desc.includes('home loan'))
             return { id: tx.id, suggestedCategory: 'Mortgage', confidence: 0.9 };
@@ -267,9 +316,21 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
             return { id: tx.id, suggestedCategory: 'Interest Expense', confidence: 0.85 };
 
           // --- POS merchant patterns ---
-          if (desc.includes('woolworths') || desc.includes('coles') || desc.includes('aldi') || desc.includes('iga'))
+          if (
+            desc.includes('woolworths') ||
+            desc.includes('coles') ||
+            desc.includes('aldi') ||
+            desc.includes('iga')
+          )
             return { id: tx.id, suggestedCategory: 'Groceries', confidence: 0.9 };
-          if (desc.includes('shell') || desc.includes('bp ') || desc.includes('caltex') || desc.includes('ampol') || desc.includes('7-eleven') || desc.includes('united petrol'))
+          if (
+            desc.includes('shell') ||
+            desc.includes('bp ') ||
+            desc.includes('caltex') ||
+            desc.includes('ampol') ||
+            desc.includes('7-eleven') ||
+            desc.includes('united petrol')
+          )
             return { id: tx.id, suggestedCategory: 'Fuel', confidence: 0.9 };
           if (desc.includes('bunnings'))
             return { id: tx.id, suggestedCategory: 'Home & Garden', confidence: 0.85 };
@@ -279,11 +340,20 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
             return { id: tx.id, suggestedCategory: 'Computer & IT', confidence: 0.8 };
 
           // --- Bank & fees ---
-          if (desc.includes('monthly fee') || desc.includes('account fee') || desc.includes('overdrawn fee'))
+          if (
+            desc.includes('monthly fee') ||
+            desc.includes('account fee') ||
+            desc.includes('overdrawn fee')
+          )
             return { id: tx.id, suggestedCategory: 'Bank Fees', confidence: 0.95 };
 
           // --- ATM/Cash -> Cost of Goods Sold (stock purchases for Amica Beauty) ---
-          if (desc.includes('atm') || desc.includes('cash withdrawal') || desc.includes('cwl') || desc.includes('wdl atm'))
+          if (
+            desc.includes('atm') ||
+            desc.includes('cash withdrawal') ||
+            desc.includes('cwl') ||
+            desc.includes('wdl atm')
+          )
             return { id: tx.id, suggestedCategory: 'Cost of Goods Sold', confidence: 0.9 };
 
           // --- Afterpay -> Cost of Goods Sold (shop supplies) ---
@@ -291,7 +361,11 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
             return { id: tx.id, suggestedCategory: 'Cost of Goods Sold', confidence: 0.85 };
 
           // --- Beauty/Salon supplies -> Cost of Goods Sold ---
-          if (desc.includes('inskin cosmedics') || desc.includes('hair & beauty') || desc.includes('beauty collect'))
+          if (
+            desc.includes('inskin cosmedics') ||
+            desc.includes('hair & beauty') ||
+            desc.includes('beauty collect')
+          )
             return { id: tx.id, suggestedCategory: 'Cost of Goods Sold', confidence: 0.9 };
 
           // --- Refunds ---
@@ -354,9 +428,9 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
     const result = await this.execute(input);
 
     // Feedback loop: submit search feedback for low-confidence categorizations
-    const lowConfidenceResults = result.output.results.filter(r => r.confidence < 0.7);
+    const lowConfidenceResults = result.output.results.filter((r) => r.confidence < 0.7);
     for (const res of lowConfidenceResults) {
-      const tx = input.transactions.find(t => t.id === res.transactionId);
+      const tx = input.transactions.find((t) => t.id === res.transactionId);
       if (!tx) continue;
       try {
         await cogneeTools.submitSearchFeedback(
@@ -371,9 +445,11 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
     }
 
     // Learning loop: store high-confidence categorizations back to Cognee
-    const highConfidenceResults = result.output.results.filter(r => r.confidence >= 0.8 && r.merchantKey);
+    const highConfidenceResults = result.output.results.filter(
+      (r) => r.confidence >= 0.8 && r.merchantKey,
+    );
     if (highConfidenceResults.length > 0) {
-      const txMap = new Map(input.transactions.map(tx => [tx.id, tx]));
+      const txMap = new Map(input.transactions.map((tx) => [tx.id, tx]));
       for (const res of highConfidenceResults) {
         const tx = txMap.get(res.transactionId);
         if (!tx) continue;

@@ -129,7 +129,9 @@ export class IntelligenceSubscriptionService {
       subscriptionType: input.subscriptionType,
       filterCriteria: JSON.stringify(input.filterCriteria),
       notificationChannel: input.notificationChannel,
-      notificationConfig: input.notificationConfig ? JSON.stringify(input.notificationConfig) : null,
+      notificationConfig: input.notificationConfig
+        ? JSON.stringify(input.notificationConfig)
+        : null,
       isActive: true,
       triggerCount: 0,
       lastTriggeredAt: null,
@@ -176,7 +178,10 @@ export class IntelligenceSubscriptionService {
     return row ? this._mapDbRow(row) : null;
   }
 
-  async listSubscriptions(userId: string, filters?: SubscriptionFilters): Promise<IntelligenceSubscription[]> {
+  async listSubscriptions(
+    userId: string,
+    filters?: SubscriptionFilters,
+  ): Promise<IntelligenceSubscription[]> {
     const conditions: any[] = [eq(intelligenceSubscriptions.userId, userId)];
 
     if (filters?.subscriptionType) {
@@ -186,7 +191,9 @@ export class IntelligenceSubscriptionService {
       conditions.push(eq(intelligenceSubscriptions.isActive, filters.isActive));
     }
     if (filters?.notificationChannel) {
-      conditions.push(eq(intelligenceSubscriptions.notificationChannel, filters.notificationChannel));
+      conditions.push(
+        eq(intelligenceSubscriptions.notificationChannel, filters.notificationChannel),
+      );
     }
 
     const rows = await db
@@ -201,15 +208,19 @@ export class IntelligenceSubscriptionService {
 
   async updateSubscription(
     subscriptionId: string,
-    updates: Partial<SubscriptionInput>
+    updates: Partial<SubscriptionInput>,
   ): Promise<IntelligenceSubscription | null> {
     const setFields: Record<string, any> = { updatedAt: new Date().toISOString() };
 
     if (updates.name !== undefined) setFields.name = updates.name;
-    if (updates.subscriptionType !== undefined) setFields.subscriptionType = updates.subscriptionType;
-    if (updates.filterCriteria !== undefined) setFields.filterCriteria = JSON.stringify(updates.filterCriteria);
-    if (updates.notificationChannel !== undefined) setFields.notificationChannel = updates.notificationChannel;
-    if (updates.notificationConfig !== undefined) setFields.notificationConfig = JSON.stringify(updates.notificationConfig);
+    if (updates.subscriptionType !== undefined)
+      setFields.subscriptionType = updates.subscriptionType;
+    if (updates.filterCriteria !== undefined)
+      setFields.filterCriteria = JSON.stringify(updates.filterCriteria);
+    if (updates.notificationChannel !== undefined)
+      setFields.notificationChannel = updates.notificationChannel;
+    if (updates.notificationConfig !== undefined)
+      setFields.notificationConfig = JSON.stringify(updates.notificationConfig);
     if (updates.cooldownMinutes !== undefined) setFields.cooldownMinutes = updates.cooldownMinutes;
 
     await db
@@ -225,7 +236,10 @@ export class IntelligenceSubscriptionService {
   // Trigger evaluation
   // --------------------------------------------------------------------------
 
-  async checkTriggers(userId: string, newInsights: CrossModuleInsight[]): Promise<TriggeredNotification[]> {
+  async checkTriggers(
+    userId: string,
+    newInsights: CrossModuleInsight[],
+  ): Promise<TriggeredNotification[]> {
     const subs = await this.listSubscriptions(userId, { isActive: true });
     const triggered: TriggeredNotification[] = [];
 
@@ -261,15 +275,18 @@ export class IntelligenceSubscriptionService {
       try {
         switch (notif.channel) {
           case 'in_app':
-            console.log(`[IntelSub] In-app notification for subscription ${notif.subscriptionId}: "${notif.insight.title}"`);
+            console.log(
+              `[IntelSub] In-app notification for subscription ${notif.subscriptionId}: "${notif.insight.title}"`,
+            );
             success = true;
             break;
 
           case 'sse':
-            await this._sendSSE(
-              (notif.config as any)?.sseChannel ?? 'intelligence',
-              { type: 'intelligence_insight', insight: notif.insight, subscriptionId: notif.subscriptionId }
-            );
+            await this._sendSSE((notif.config as any)?.sseChannel ?? 'intelligence', {
+              type: 'intelligence_insight',
+              insight: notif.insight,
+              subscriptionId: notif.subscriptionId,
+            });
             success = true;
             break;
 
@@ -277,22 +294,19 @@ export class IntelligenceSubscriptionService {
             await this._sendEmail(
               (notif.config as any)?.emailAddress ?? '',
               `Intelligence Alert: ${notif.insight.title}`,
-              `${notif.insight.description}\n\nSeverity: ${notif.insight.severity}\nConfidence: ${(notif.insight.confidence * 100).toFixed(0)}%${notif.insight.recommendedAction ? `\nRecommended action: ${notif.insight.recommendedAction}` : ''}`
+              `${notif.insight.description}\n\nSeverity: ${notif.insight.severity}\nConfidence: ${(notif.insight.confidence * 100).toFixed(0)}%${notif.insight.recommendedAction ? `\nRecommended action: ${notif.insight.recommendedAction}` : ''}`,
             );
             success = true;
             break;
 
           case 'webhook':
-            success = await this._sendWebhook(
-              (notif.config as any)?.webhookUrl ?? '',
-              {
-                event: 'intelligence_insight',
-                subscriptionId: notif.subscriptionId,
-                subscriptionName: notif.subscriptionName,
-                insight: notif.insight,
-                timestamp: new Date().toISOString(),
-              }
-            );
+            success = await this._sendWebhook((notif.config as any)?.webhookUrl ?? '', {
+              event: 'intelligence_insight',
+              subscriptionId: notif.subscriptionId,
+              subscriptionName: notif.subscriptionName,
+              insight: notif.insight,
+              timestamp: new Date().toISOString(),
+            });
             break;
 
           default:
@@ -348,7 +362,12 @@ export class IntelligenceSubscriptionService {
   async testSubscription(subscriptionId: string): Promise<NotificationResult> {
     const sub = await this.getSubscription(subscriptionId);
     if (!sub) {
-      return { subscriptionId, channel: 'unknown', success: false, error: 'Subscription not found' };
+      return {
+        subscriptionId,
+        channel: 'unknown',
+        success: false,
+        error: 'Subscription not found',
+      };
     }
 
     const testInsight: CrossModuleInsight = {
@@ -356,7 +375,8 @@ export class IntelligenceSubscriptionService {
       userId: sub.userId,
       insightType: 'test',
       title: 'Test Notification',
-      description: 'This is a test notification to verify your subscription is configured correctly.',
+      description:
+        'This is a test notification to verify your subscription is configured correctly.',
       severity: 'info',
       sourceModules: ['test'],
       confidence: 1.0,
@@ -366,18 +386,23 @@ export class IntelligenceSubscriptionService {
       createdAt: new Date().toISOString(),
     };
 
-    const results = await this.notifySubscribers([{
-      subscriptionId: sub.id,
-      subscriptionName: sub.name,
-      insight: testInsight,
-      channel: sub.notificationChannel,
-      config: sub.notificationConfig ?? {},
-    }]);
+    const results = await this.notifySubscribers([
+      {
+        subscriptionId: sub.id,
+        subscriptionName: sub.name,
+        insight: testInsight,
+        channel: sub.notificationChannel,
+        config: sub.notificationConfig ?? {},
+      },
+    ]);
 
     return results[0];
   }
 
-  async getNotificationHistory(_userId: string, limit: number = 50): Promise<NotificationHistoryEntry[]> {
+  async getNotificationHistory(
+    _userId: string,
+    limit: number = 50,
+  ): Promise<NotificationHistoryEntry[]> {
     return this.notificationHistory.slice(-limit);
   }
 
@@ -403,10 +428,10 @@ export class IntelligenceSubscriptionService {
     }
 
     const topTriggered = subs
-      .filter(s => s.triggerCount > 0)
+      .filter((s) => s.triggerCount > 0)
       .sort((a, b) => b.triggerCount - a.triggerCount)
       .slice(0, 10)
-      .map(s => ({ name: s.name, triggerCount: s.triggerCount }));
+      .map((s) => ({ name: s.name, triggerCount: s.triggerCount }));
 
     return {
       totalSubscriptions: subs.length,
@@ -429,7 +454,7 @@ export class IntelligenceSubscriptionService {
     }
 
     if (criteria.modules?.length) {
-      const hasOverlap = criteria.modules.some(m => insight.sourceModules.includes(m));
+      const hasOverlap = criteria.modules.some((m) => insight.sourceModules.includes(m));
       if (!hasOverlap) return false;
     }
 
@@ -445,7 +470,7 @@ export class IntelligenceSubscriptionService {
 
     if (criteria.entityIds?.length) {
       const evidenceStr = JSON.stringify(insight.evidence);
-      const hasEntity = criteria.entityIds.some(eid => evidenceStr.includes(eid));
+      const hasEntity = criteria.entityIds.some((eid) => evidenceStr.includes(eid));
       if (!hasEntity) return false;
     }
 
@@ -461,7 +486,10 @@ export class IntelligenceSubscriptionService {
   }
 
   private async _sendSSE(channel: string, data: unknown): Promise<void> {
-    console.log(`[IntelSub] SSE event on channel "${channel}":`, JSON.stringify(data).slice(0, 200));
+    console.log(
+      `[IntelSub] SSE event on channel "${channel}":`,
+      JSON.stringify(data).slice(0, 200),
+    );
   }
 
   private async _sendWebhook(url: string, payload: unknown): Promise<boolean> {
@@ -482,13 +510,15 @@ export class IntelligenceSubscriptionService {
 
         if (res.ok) return true;
 
-        console.warn(`[IntelSub] Webhook attempt ${attempt}/${maxRetries} failed: HTTP ${res.status}`);
+        console.warn(
+          `[IntelSub] Webhook attempt ${attempt}/${maxRetries} failed: HTTP ${res.status}`,
+        );
       } catch (err: any) {
         console.warn(`[IntelSub] Webhook attempt ${attempt}/${maxRetries} error:`, err.message);
       }
 
       if (attempt < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
     }
 
@@ -510,15 +540,22 @@ export class IntelligenceSubscriptionService {
       userId: row.userId ?? row.user_id,
       name: row.name,
       subscriptionType: row.subscriptionType ?? row.subscription_type,
-      filterCriteria: typeof row.filterCriteria === 'string'
-        ? JSON.parse(row.filterCriteria)
-        : (typeof row.filter_criteria === 'string' ? JSON.parse(row.filter_criteria) : row.filterCriteria ?? {}),
+      filterCriteria:
+        typeof row.filterCriteria === 'string'
+          ? JSON.parse(row.filterCriteria)
+          : typeof row.filter_criteria === 'string'
+            ? JSON.parse(row.filter_criteria)
+            : (row.filterCriteria ?? {}),
       notificationChannel: row.notificationChannel ?? row.notification_channel,
       notificationConfig: row.notificationConfig
-        ? (typeof row.notificationConfig === 'string' ? JSON.parse(row.notificationConfig) : row.notificationConfig)
-        : (row.notification_config
-          ? (typeof row.notification_config === 'string' ? JSON.parse(row.notification_config) : row.notification_config)
-          : undefined),
+        ? typeof row.notificationConfig === 'string'
+          ? JSON.parse(row.notificationConfig)
+          : row.notificationConfig
+        : row.notification_config
+          ? typeof row.notification_config === 'string'
+            ? JSON.parse(row.notification_config)
+            : row.notification_config
+          : undefined,
       isActive: typeof row.isActive === 'boolean' ? row.isActive : (row.is_active ?? true),
       triggerCount: row.triggerCount ?? row.trigger_count ?? 0,
       lastTriggeredAt: row.lastTriggeredAt ?? row.last_triggered_at ?? undefined,

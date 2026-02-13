@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  Star,
-  Pencil,
-  Trash2,
-  LayoutGrid,
-  Clock,
-  X,
-  Loader2,
-} from 'lucide-react';
+import { Plus, Star, Pencil, Trash2, LayoutGrid, Clock, X, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { BASE_URL, getAuthHeaders } from '../../../api';
 import { CustomDashboard } from './CustomDashboard';
@@ -78,7 +69,7 @@ export function DashboardGrid() {
         headers: getAuthHeaders(),
       });
       if (!res.ok) throw new Error('Failed to delete dashboard');
-      setDashboards(prev => prev.filter(d => d.id !== id));
+      setDashboards((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete dashboard');
     }
@@ -86,7 +77,7 @@ export function DashboardGrid() {
 
   const handleSetDefault = async (id: string) => {
     try {
-      const target = dashboards.find(d => d.id === id);
+      const target = dashboards.find((d) => d.id === id);
       if (!target) return;
       const res = await fetch(`${API_URL}/dashboards/${id}`, {
         method: 'PUT',
@@ -144,10 +135,7 @@ export function DashboardGrid() {
       {error && (
         <div className="neu-raised p-4 rounded-xl border border-red-500/30 text-red-400 text-sm">
           {error}
-          <button
-            onClick={() => setError(null)}
-            className="ml-2 text-red-300 hover:text-red-100"
-          >
+          <button onClick={() => setError(null)} className="ml-2 text-red-300 hover:text-red-100">
             Dismiss
           </button>
         </div>
@@ -163,7 +151,7 @@ export function DashboardGrid() {
       {/* Dashboard Grid */}
       {!loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {dashboards.map(dash => (
+          {dashboards.map((dash) => (
             <div
               key={dash.id}
               className="neu-raised rounded-2xl p-5 border border-white/5 hover:border-[#FFCC00]/20 transition-all duration-300 group cursor-pointer"
@@ -183,9 +171,7 @@ export function DashboardGrid() {
               </div>
 
               {dash.description && (
-                <p className="text-sm text-zinc-400 mb-3 line-clamp-2">
-                  {dash.description}
-                </p>
+                <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{dash.description}</p>
               )}
 
               <div className="flex items-center justify-between text-xs text-zinc-500">
@@ -310,7 +296,7 @@ export function DashboardGrid() {
                   'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-colors btn-press',
                   createName.trim()
                     ? 'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFE066]'
-                    : 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
+                    : 'bg-zinc-700 text-zinc-500 cursor-not-allowed',
                 )}
               >
                 {creating && <Loader2 className="w-4 h-4 animate-spin" />}

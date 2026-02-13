@@ -345,10 +345,7 @@ export class TemporalCognifyService {
     userId: string,
     filters?: { queryType?: string; targetEntity?: string },
   ): Promise<TemporalQueryRow[]> {
-    const conditions = [
-      eq(temporalQueries.userId, userId),
-      eq(temporalQueries.isSaved, true),
-    ];
+    const conditions = [eq(temporalQueries.userId, userId), eq(temporalQueries.isSaved, true)];
 
     if (filters?.queryType) {
       conditions.push(eq(temporalQueries.queryType, filters.queryType));
@@ -386,10 +383,7 @@ export class TemporalCognifyService {
   // --------------------------------------------------------------------------
 
   async deleteQuery(queryId: string): Promise<void> {
-    await db
-      .delete(temporalQueries)
-      .where(eq(temporalQueries.id, queryId))
-      .run();
+    await db.delete(temporalQueries).where(eq(temporalQueries.id, queryId)).run();
   }
 
   // --------------------------------------------------------------------------
@@ -452,13 +446,13 @@ export class TemporalCognifyService {
     if (options.addBusinessCycleContext) {
       parts.push(
         'Add Australian business cycle markers: BAS quarters (Q1=Jul-Sep, Q2=Oct-Dec, Q3=Jan-Mar, Q4=Apr-Jun), ' +
-        'financial year boundaries, lodgement due dates.',
+          'financial year boundaries, lodgement due dates.',
       );
     }
 
     parts.push(
       'For each entity, extract temporal relationships: when it occurred, what period it belongs to, ' +
-      'seasonal patterns, and recurring schedule if applicable.',
+        'seasonal patterns, and recurring schedule if applicable.',
     );
 
     if (options.customPrompt) {
@@ -602,16 +596,24 @@ export class TemporalCognifyService {
         parts.push(`${query.targetEntity} at ${query.timeStart}`);
         break;
       case 'time_range':
-        parts.push(`${query.targetEntity} from ${query.timeStart} to ${query.timeEnd ?? query.timeStart}`);
+        parts.push(
+          `${query.targetEntity} from ${query.timeStart} to ${query.timeEnd ?? query.timeStart}`,
+        );
         break;
       case 'trend_over_time':
-        parts.push(`trend of ${query.targetEntity} from ${query.timeStart} to ${query.timeEnd ?? 'now'}`);
+        parts.push(
+          `trend of ${query.targetEntity} from ${query.timeStart} to ${query.timeEnd ?? 'now'}`,
+        );
         break;
       case 'comparison':
-        parts.push(`compare ${query.targetEntity} between ${query.timeStart} and ${query.timeEnd ?? 'previous period'}`);
+        parts.push(
+          `compare ${query.targetEntity} between ${query.timeStart} and ${query.timeEnd ?? 'previous period'}`,
+        );
         break;
       case 'evolution':
-        parts.push(`evolution of ${query.targetEntity} from ${query.timeStart} to ${query.timeEnd ?? 'now'}`);
+        parts.push(
+          `evolution of ${query.targetEntity} from ${query.timeStart} to ${query.timeEnd ?? 'now'}`,
+        );
         break;
     }
 

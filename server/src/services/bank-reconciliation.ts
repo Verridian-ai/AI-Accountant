@@ -103,7 +103,10 @@ const rawQuery = {
     WHERE id = ${sessionId} AND user_id = ${userId}`);
   },
 
-  async listSessions(userId: string, filters?: { accountId?: string; status?: string }): Promise<BankReconSession[]> {
+  async listSessions(
+    userId: string,
+    filters?: { accountId?: string; status?: string },
+  ): Promise<BankReconSession[]> {
     let query = sql`SELECT
       id, user_id as "userId", account_id as "accountId",
       period_start as "periodStart", period_end as "periodEnd", status,
@@ -129,26 +132,40 @@ const rawQuery = {
     return db.all(query) as Promise<BankReconSession[]>;
   },
 
-  async updateSession(sessionId: string, userId: string, updates: Partial<BankReconSession>): Promise<void> {
+  async updateSession(
+    sessionId: string,
+    userId: string,
+    updates: Partial<BankReconSession>,
+  ): Promise<void> {
     const now = new Date().toISOString();
     // Build SET clause dynamically
     const setClauses: any[] = [];
     if (updates.status !== undefined) setClauses.push(sql`status = ${updates.status}`);
-    if (updates.totalMatched !== undefined) setClauses.push(sql`total_matched = ${updates.totalMatched}`);
-    if (updates.autoMatched !== undefined) setClauses.push(sql`auto_matched = ${updates.autoMatched}`);
-    if (updates.manualMatched !== undefined) setClauses.push(sql`manual_matched = ${updates.manualMatched}`);
-    if (updates.totalUnmatched !== undefined) setClauses.push(sql`total_unmatched = ${updates.totalUnmatched}`);
-    if (updates.totalSuggested !== undefined) setClauses.push(sql`total_suggested = ${updates.totalSuggested}`);
-    if (updates.completedAt !== undefined) setClauses.push(sql`completed_at = ${updates.completedAt}`);
-    if (updates.ledgerBalanceCents !== undefined) setClauses.push(sql`ledger_balance_cents = ${updates.ledgerBalanceCents}`);
-    if (updates.differenceCents !== undefined) setClauses.push(sql`difference_cents = ${updates.differenceCents}`);
+    if (updates.totalMatched !== undefined)
+      setClauses.push(sql`total_matched = ${updates.totalMatched}`);
+    if (updates.autoMatched !== undefined)
+      setClauses.push(sql`auto_matched = ${updates.autoMatched}`);
+    if (updates.manualMatched !== undefined)
+      setClauses.push(sql`manual_matched = ${updates.manualMatched}`);
+    if (updates.totalUnmatched !== undefined)
+      setClauses.push(sql`total_unmatched = ${updates.totalUnmatched}`);
+    if (updates.totalSuggested !== undefined)
+      setClauses.push(sql`total_suggested = ${updates.totalSuggested}`);
+    if (updates.completedAt !== undefined)
+      setClauses.push(sql`completed_at = ${updates.completedAt}`);
+    if (updates.ledgerBalanceCents !== undefined)
+      setClauses.push(sql`ledger_balance_cents = ${updates.ledgerBalanceCents}`);
+    if (updates.differenceCents !== undefined)
+      setClauses.push(sql`difference_cents = ${updates.differenceCents}`);
     setClauses.push(sql`updated_at = ${now}`);
 
     if (setClauses.length === 0) return;
 
     // Join SET clauses with commas using sql.join
     const setFragment = sql.join(setClauses, sql`, `);
-    await db.run(sql`UPDATE bank_recon_sessions SET ${setFragment} WHERE id = ${sessionId} AND user_id = ${userId}`);
+    await db.run(
+      sql`UPDATE bank_recon_sessions SET ${setFragment} WHERE id = ${sessionId} AND user_id = ${userId}`,
+    );
   },
 
   async insertMatch(match: BankReconMatch): Promise<void> {
@@ -190,24 +207,26 @@ const rawQuery = {
   async updateMatch(matchId: string, updates: Partial<BankReconMatch>): Promise<void> {
     const setClauses: any[] = [];
     if (updates.status !== undefined) setClauses.push(sql`status = ${updates.status}`);
-    if (updates.confirmedBy !== undefined) setClauses.push(sql`confirmed_by = ${updates.confirmedBy}`);
-    if (updates.confirmedAt !== undefined) setClauses.push(sql`confirmed_at = ${updates.confirmedAt}`);
+    if (updates.confirmedBy !== undefined)
+      setClauses.push(sql`confirmed_by = ${updates.confirmedBy}`);
+    if (updates.confirmedAt !== undefined)
+      setClauses.push(sql`confirmed_at = ${updates.confirmedAt}`);
     if (setClauses.length === 0) return;
     const setFragment = sql.join(setClauses, sql`, `);
     await db.run(sql`UPDATE bank_recon_matches SET ${setFragment} WHERE id = ${matchId}`);
   },
 
   async getMatchedBankTxIds(sessionId: string): Promise<string[]> {
-    const rows: any[] = await db.all(sql`SELECT bank_transaction_id as "bankTransactionId"
+    const rows: any[] = (await db.all(sql`SELECT bank_transaction_id as "bankTransactionId"
       FROM bank_recon_matches
-      WHERE session_id = ${sessionId} AND status IN ('confirmed', 'pending')`) as any[];
+      WHERE session_id = ${sessionId} AND status IN ('confirmed', 'pending')`)) as any[];
     return rows.map((r: any) => r.bankTransactionId);
   },
 
   async getMatchedLedgerIds(sessionId: string): Promise<string[]> {
-    const rows: any[] = await db.all(sql`SELECT ledger_entry_id as "ledgerEntryId"
+    const rows: any[] = (await db.all(sql`SELECT ledger_entry_id as "ledgerEntryId"
       FROM bank_recon_matches
-      WHERE session_id = ${sessionId} AND status IN ('confirmed', 'pending')`) as any[];
+      WHERE session_id = ${sessionId} AND status IN ('confirmed', 'pending')`)) as any[];
     return rows.map((r: any) => r.ledgerEntryId);
   },
 
@@ -248,19 +267,26 @@ const rawQuery = {
     const setClauses: any[] = [];
     const now = new Date().toISOString();
     if (updates.name !== undefined) setClauses.push(sql`name = ${updates.name}`);
-    if (updates.description !== undefined) setClauses.push(sql`description = ${updates.description}`);
+    if (updates.description !== undefined)
+      setClauses.push(sql`description = ${updates.description}`);
     if (updates.matchType !== undefined) setClauses.push(sql`match_type = ${updates.matchType}`);
-    if (updates.matchConfig !== undefined) setClauses.push(sql`match_config = ${updates.matchConfig}`);
-    if (updates.autoConfirm !== undefined) setClauses.push(sql`auto_confirm = ${updates.autoConfirm}`);
+    if (updates.matchConfig !== undefined)
+      setClauses.push(sql`match_config = ${updates.matchConfig}`);
+    if (updates.autoConfirm !== undefined)
+      setClauses.push(sql`auto_confirm = ${updates.autoConfirm}`);
     if (updates.priority !== undefined) setClauses.push(sql`priority = ${updates.priority}`);
     if (updates.isActive !== undefined) setClauses.push(sql`is_active = ${updates.isActive}`);
     setClauses.push(sql`updated_at = ${now}`);
     const setFragment = sql.join(setClauses, sql`, `);
-    await db.run(sql`UPDATE bank_recon_rules SET ${setFragment} WHERE id = ${ruleId} AND user_id = ${userId}`);
+    await db.run(
+      sql`UPDATE bank_recon_rules SET ${setFragment} WHERE id = ${ruleId} AND user_id = ${userId}`,
+    );
   },
 
   async countRules(userId: string): Promise<number> {
-    const row: any = await db.get(sql`SELECT COUNT(*) as count FROM bank_recon_rules WHERE user_id = ${userId}`);
+    const row: any = await db.get(
+      sql`SELECT COUNT(*) as count FROM bank_recon_rules WHERE user_id = ${userId}`,
+    );
     return row?.count ?? 0;
   },
 };
@@ -269,8 +295,14 @@ const rawQuery = {
 // VALID MATCH TYPES
 // ============================================================================
 
-const VALID_MATCH_TYPES = ['amount_exact', 'amount_date', 'reference_number', 'description_pattern', 'combined'] as const;
-type MatchType = typeof VALID_MATCH_TYPES[number];
+const VALID_MATCH_TYPES = [
+  'amount_exact',
+  'amount_date',
+  'reference_number',
+  'description_pattern',
+  'combined',
+] as const;
+type MatchType = (typeof VALID_MATCH_TYPES)[number];
 
 // ReDoS prevention: max regex pattern length
 const MAX_REGEX_LENGTH = 256;
@@ -282,7 +314,6 @@ const NESTED_QUANTIFIER_PATTERN = /(\+|\*|\?|\{)\s*(\+|\*|\?|\{)/;
 // ============================================================================
 
 export class BankReconciliationService {
-
   // --------------------------------------------------------------------------
   // SESSION MANAGEMENT
   // --------------------------------------------------------------------------
@@ -292,19 +323,22 @@ export class BankReconciliationService {
     accountId: string,
     periodStart: string,
     periodEnd: string,
-    statementBalanceCents?: number
+    statementBalanceCents?: number,
   ): Promise<BankReconSession> {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
     // Count unmatched transactions for the account in date range
-    const txRows: any[] = await db.select({ id: transactions.id })
+    const txRows: any[] = await db
+      .select({ id: transactions.id })
       .from(transactions)
-      .where(and(
-        eq(transactions.accountId, accountId),
-        gte(transactions.date, periodStart),
-        lte(transactions.date, periodEnd)
-      ))
+      .where(
+        and(
+          eq(transactions.accountId, accountId),
+          gte(transactions.date, periodStart),
+          lte(transactions.date, periodEnd),
+        ),
+      )
       .all();
     const totalTransactions = txRows.length;
 
@@ -326,9 +360,10 @@ export class BankReconciliationService {
       ledgerBalanceCents = 0;
     }
 
-    const differenceCents = statementBalanceCents != null && ledgerBalanceCents != null
-      ? statementBalanceCents - ledgerBalanceCents
-      : null;
+    const differenceCents =
+      statementBalanceCents != null && ledgerBalanceCents != null
+        ? statementBalanceCents - ledgerBalanceCents
+        : null;
 
     const session: BankReconSession = {
       id,
@@ -357,7 +392,7 @@ export class BankReconciliationService {
 
   async getSession(
     sessionId: string,
-    userId: string
+    userId: string,
   ): Promise<(BankReconSession & { matches: BankReconMatch[] }) | null> {
     const session = await rawQuery.getSession(sessionId, userId);
     if (!session) return null;
@@ -367,7 +402,7 @@ export class BankReconciliationService {
 
   async listSessions(
     userId: string,
-    filters?: { accountId?: string; status?: string }
+    filters?: { accountId?: string; status?: string },
   ): Promise<BankReconSession[]> {
     return rawQuery.listSessions(userId, filters);
   }
@@ -377,12 +412,12 @@ export class BankReconciliationService {
     if (!session) return null;
 
     const matches = await rawQuery.getMatchesBySession(sessionId);
-    const confirmed = matches.filter(m => m.status === 'confirmed');
-    const pending = matches.filter(m => m.status === 'pending');
+    const confirmed = matches.filter((m) => m.status === 'confirmed');
+    const pending = matches.filter((m) => m.status === 'pending');
 
     const totalMatched = confirmed.length;
-    const autoCount = confirmed.filter(m => m.matchType === 'auto').length;
-    const manualCount = confirmed.filter(m => m.matchType === 'manual').length;
+    const autoCount = confirmed.filter((m) => m.matchType === 'auto').length;
+    const manualCount = confirmed.filter((m) => m.matchType === 'manual').length;
     const now = new Date().toISOString();
 
     await rawQuery.updateSession(sessionId, userId, {
@@ -421,30 +456,31 @@ export class BankReconciliationService {
 
   async autoMatch(
     sessionId: string,
-    userId: string
+    userId: string,
   ): Promise<{ matched: number; suggested: number; unmatched: number }> {
     const session = await rawQuery.getSession(sessionId, userId);
     if (!session) throw new Error(`Session not found: ${sessionId}`);
 
     // 1. Load unmatched bank transactions for the session's account and date range
     const alreadyMatchedBankTxIds = await rawQuery.getMatchedBankTxIds(sessionId);
-    const allBankTx: any[] = await db.select()
+    const allBankTx: any[] = await db
+      .select()
       .from(transactions)
-      .where(and(
-        eq(transactions.accountId, session.accountId),
-        gte(transactions.date, session.periodStart),
-        lte(transactions.date, session.periodEnd)
-      ))
+      .where(
+        and(
+          eq(transactions.accountId, session.accountId),
+          gte(transactions.date, session.periodStart),
+          lte(transactions.date, session.periodEnd),
+        ),
+      )
       .all();
-    const unmatchedBankTx = allBankTx.filter(
-      (tx: any) => !alreadyMatchedBankTxIds.includes(tx.id)
-    );
+    const unmatchedBankTx = allBankTx.filter((tx: any) => !alreadyMatchedBankTxIds.includes(tx.id));
 
     // 2. Load unmatched ledger entries (journal_entry_lines with journal_entries)
     const alreadyMatchedLedgerIds = await rawQuery.getMatchedLedgerIds(sessionId);
     let allLedgerEntries: any[] = [];
     try {
-      allLedgerEntries = await db.all(sql`
+      allLedgerEntries = (await db.all(sql`
         SELECT
           jel.id,
           jel.entry_id as "entryId",
@@ -460,13 +496,13 @@ export class BankReconciliationService {
           AND je.entry_date >= ${session.periodStart}
           AND je.entry_date <= ${session.periodEnd}
           AND je.status = 'posted'
-      `) as any[];
+      `)) as any[];
     } catch {
       // If journal tables don't exist or are empty, no ledger entries to match
       allLedgerEntries = [];
     }
     const unmatchedLedger = allLedgerEntries.filter(
-      (le: any) => !alreadyMatchedLedgerIds.includes(le.id)
+      (le: any) => !alreadyMatchedLedgerIds.includes(le.id),
     );
 
     // 3. Load active match rules
@@ -489,14 +525,24 @@ export class BankReconciliationService {
 
     // 4. For each bank transaction, run rules in priority order
     for (const bankTx of unmatchedBankTx) {
-      let bestMatch: { ledgerEntry: any; confidence: number; reasons: string[]; ruleId: string | null } | null = null;
+      let bestMatch: {
+        ledgerEntry: any;
+        confidence: number;
+        reasons: string[];
+        ruleId: string | null;
+      } | null = null;
 
       for (const rule of rules) {
         const config = this.parseConfig(rule.matchConfig);
-        const candidates = unmatchedLedger.filter(le => !usedLedgerIds.has(le.id));
+        const candidates = unmatchedLedger.filter((le) => !usedLedgerIds.has(le.id));
 
         for (const ledgerEntry of candidates) {
-          const result = this.evaluateRule(rule.matchType as MatchType, bankTx, ledgerEntry, config);
+          const result = this.evaluateRule(
+            rule.matchType as MatchType,
+            bankTx,
+            ledgerEntry,
+            config,
+          );
           if (result.confidence > 0 && (!bestMatch || result.confidence > bestMatch.confidence)) {
             bestMatch = {
               ledgerEntry,
@@ -515,7 +561,7 @@ export class BankReconciliationService {
 
       // 5. Apply confidence thresholds
       const isAutoConfirm = bestMatch.confidence >= 0.95;
-      const isSuggestion = bestMatch.confidence >= 0.70;
+      const isSuggestion = bestMatch.confidence >= 0.7;
 
       if (!isSuggestion) continue; // Skip low-confidence matches
 
@@ -563,13 +609,14 @@ export class BankReconciliationService {
 
   async suggestMatches(
     sessionId: string,
-    bankTransactionId: string
+    bankTransactionId: string,
   ): Promise<Array<{ ledgerEntryId: string; confidence: number; matchReasons: string[] }>> {
     const session = await rawQuery.getSession(sessionId, '');
     // We pass '' for userId since we look up by sessionId; the session was already validated
     if (!session) return [];
 
-    const bankTxRows = await db.select()
+    const bankTxRows = await db
+      .select()
       .from(transactions)
       .where(eq(transactions.id, bankTransactionId))
       .all();
@@ -580,7 +627,7 @@ export class BankReconciliationService {
 
     let ledgerEntries: any[] = [];
     try {
-      ledgerEntries = await db.all(sql`
+      ledgerEntries = (await db.all(sql`
         SELECT
           jel.id,
           jel.entry_id as "entryId",
@@ -596,12 +643,12 @@ export class BankReconciliationService {
           AND je.entry_date >= ${session.periodStart}
           AND je.entry_date <= ${session.periodEnd}
           AND je.status = 'posted'
-      `) as any[];
+      `)) as any[];
     } catch {
       return [];
     }
 
-    const unmatched = ledgerEntries.filter(le => !alreadyMatchedLedgerIds.includes(le.id));
+    const unmatched = ledgerEntries.filter((le) => !alreadyMatchedLedgerIds.includes(le.id));
 
     // Score all unmatched ledger entries using combined scoring
     const defaultWeights = { amount: 0.4, date: 0.3, description: 0.3 };
@@ -613,7 +660,7 @@ export class BankReconciliationService {
       const dateScore = this.scoreDateMatch(bankTx.date, le.entryDate, 7);
       const descScore = this.scoreDescriptionMatch(
         bankTx.description ?? '',
-        le.reference ?? le.description ?? le.journalDescription ?? ''
+        le.reference ?? le.description ?? le.journalDescription ?? '',
       );
       const combined = this.scoreCombined(amountScore, dateScore, descScore, defaultWeights);
 
@@ -643,7 +690,7 @@ export class BankReconciliationService {
   private scoreAmountMatch(
     bankAmountCents: number,
     ledgerAmountCents: number,
-    toleranceCents: number
+    toleranceCents: number,
   ): number {
     const diff = Math.abs(bankAmountCents - ledgerAmountCents);
     if (diff === 0) return 1.0;
@@ -685,7 +732,7 @@ export class BankReconciliationService {
     amountScore: number,
     dateScore: number,
     descriptionScore: number,
-    weights: { amount: number; date: number; description: number }
+    weights: { amount: number; date: number; description: number },
   ): number {
     return (
       amountScore * weights.amount +
@@ -702,7 +749,7 @@ export class BankReconciliationService {
     matchType: MatchType,
     bankTx: any,
     ledgerEntry: any,
-    config: Record<string, any>
+    config: Record<string, any>,
   ): { confidence: number; reasons: string[] } {
     const ledgerAmountCents = (ledgerEntry.debit ?? 0) - (ledgerEntry.credit ?? 0);
     const reasons: string[] = [];
@@ -774,7 +821,7 @@ export class BankReconciliationService {
         const dateScore = this.scoreDateMatch(bankTx.date, ledgerEntry.entryDate, windowDays);
         const descScore = this.scoreDescriptionMatch(
           bankTx.description ?? '',
-          ledgerEntry.reference ?? ledgerEntry.description ?? ledgerEntry.journalDescription ?? ''
+          ledgerEntry.reference ?? ledgerEntry.description ?? ledgerEntry.journalDescription ?? '',
         );
 
         const combined = this.scoreCombined(amtScore, dateScore, descScore, weights);
@@ -872,7 +919,7 @@ export class BankReconciliationService {
     sessionId: string,
     bankTransactionId: string,
     ledgerEntryId: string,
-    userId: string
+    userId: string,
   ): Promise<BankReconMatch> {
     const now = new Date().toISOString();
 
@@ -923,11 +970,13 @@ export class BankReconciliationService {
       matchConfig: object;
       autoConfirm?: boolean;
       priority?: number;
-    }
+    },
   ): Promise<BankReconRule> {
     // Validate matchType
     if (!VALID_MATCH_TYPES.includes(data.matchType as MatchType)) {
-      throw new Error(`Invalid matchType: ${data.matchType}. Must be one of: ${VALID_MATCH_TYPES.join(', ')}`);
+      throw new Error(
+        `Invalid matchType: ${data.matchType}. Must be one of: ${VALID_MATCH_TYPES.join(', ')}`,
+      );
     }
 
     // ReDoS prevention for description_pattern rules
@@ -939,7 +988,9 @@ export class BankReconciliationService {
           throw new Error(`Regex pattern exceeds maximum length of ${MAX_REGEX_LENGTH} characters`);
         }
         if (NESTED_QUANTIFIER_PATTERN.test(pattern)) {
-          throw new Error('Regex pattern contains nested quantifiers which may cause catastrophic backtracking');
+          throw new Error(
+            'Regex pattern contains nested quantifiers which may cause catastrophic backtracking',
+          );
         }
         // Validate that the regex compiles
         try {
@@ -979,7 +1030,7 @@ export class BankReconciliationService {
       matchConfig: object;
       autoConfirm: boolean;
       priority: number;
-    }>
+    }>,
   ): Promise<BankReconRule | null> {
     const existing = await rawQuery.getRule(ruleId, userId);
     if (!existing) return null;
@@ -992,7 +1043,8 @@ export class BankReconciliationService {
     if (updates.name !== undefined) dbUpdates.name = updates.name;
     if (updates.description !== undefined) dbUpdates.description = updates.description;
     if (updates.matchType !== undefined) dbUpdates.matchType = updates.matchType;
-    if (updates.matchConfig !== undefined) dbUpdates.matchConfig = JSON.stringify(updates.matchConfig);
+    if (updates.matchConfig !== undefined)
+      dbUpdates.matchConfig = JSON.stringify(updates.matchConfig);
     if (updates.autoConfirm !== undefined) dbUpdates.autoConfirm = updates.autoConfirm;
     if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
 
@@ -1084,9 +1136,9 @@ export class BankReconciliationService {
       for (let j = 1; j <= n; j++) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
         curr[j] = Math.min(
-          curr[j - 1] + 1,      // insertion
-          prev[j] + 1,          // deletion
-          prev[j - 1] + cost    // substitution
+          curr[j - 1] + 1, // insertion
+          prev[j] + 1, // deletion
+          prev[j - 1] + cost, // substitution
         );
       }
       [prev, curr] = [curr, prev];
@@ -1099,7 +1151,10 @@ export class BankReconciliationService {
     if (!desc) return '';
     return desc
       .toLowerCase()
-      .replace(/\b(eftpos|direct debit|direct credit|bpay|osko|pay anyone|transfer|int'l|international)\b/gi, '')
+      .replace(
+        /\b(eftpos|direct debit|direct credit|bpay|osko|pay anyone|transfer|int'l|international)\b/gi,
+        '',
+      )
       .replace(/\s+/g, ' ')
       .trim();
   }

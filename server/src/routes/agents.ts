@@ -21,10 +21,7 @@ agents.post('/analyze', async (c) => {
     const { query, accountIds, dateRange } = await c.req.json();
 
     if (!orchestrator.isEnabled()) {
-      return c.json(
-        { error: 'Claude agents are not enabled' },
-        503
-      );
+      return c.json({ error: 'Claude agents are not enabled' }, 503);
     }
 
     const result = await orchestrator.analyze(query, {
@@ -35,10 +32,7 @@ agents.post('/analyze', async (c) => {
     return c.json(result);
   } catch (err) {
     console.error('[Agents] Analyze error:', err);
-    return c.json(
-      { error: err instanceof Error ? err.message : 'Analysis failed' },
-      500
-    );
+    return c.json({ error: err instanceof Error ? err.message : 'Analysis failed' }, 500);
   }
 });
 
@@ -51,10 +45,7 @@ agents.post('/bas/calculate', async (c) => {
     const { quarter, accountId, userId } = await c.req.json();
 
     if (!orchestrator.isEnabled()) {
-      return c.json(
-        { error: 'Claude agents are not enabled' },
-        503
-      );
+      return c.json({ error: 'Claude agents are not enabled' }, 503);
     }
 
     if (!quarter?.year || !quarter?.quarter) {
@@ -98,10 +89,7 @@ agents.post('/bas/calculate', async (c) => {
     return c.json(result);
   } catch (err) {
     console.error('[Agents] BAS calculate error:', err);
-    return c.json(
-      { error: err instanceof Error ? err.message : 'BAS calculation failed' },
-      500
-    );
+    return c.json({ error: err instanceof Error ? err.message : 'BAS calculation failed' }, 500);
   }
 });
 
@@ -114,10 +102,7 @@ agents.post('/reconcile', async (c) => {
     const { accountId, statementIds } = await c.req.json();
 
     if (!orchestrator.isEnabled()) {
-      return c.json(
-        { error: 'Claude agents are not enabled' },
-        503
-      );
+      return c.json({ error: 'Claude agents are not enabled' }, 503);
     }
 
     if (!accountId) {
@@ -133,10 +118,7 @@ agents.post('/reconcile', async (c) => {
     return c.json(result);
   } catch (err) {
     console.error('[Agents] Reconcile error:', err);
-    return c.json(
-      { error: err instanceof Error ? err.message : 'Reconciliation failed' },
-      500
-    );
+    return c.json({ error: err instanceof Error ? err.message : 'Reconciliation failed' }, 500);
   }
 });
 
@@ -149,10 +131,7 @@ agents.post('/transfers/analyze', async (c) => {
     const { accountIds, dateRange } = await c.req.json();
 
     if (!orchestrator.isEnabled()) {
-      return c.json(
-        { error: 'Claude agents are not enabled' },
-        503
-      );
+      return c.json({ error: 'Claude agents are not enabled' }, 503);
     }
 
     if (!accountIds || !Array.isArray(accountIds)) {
@@ -168,10 +147,7 @@ agents.post('/transfers/analyze', async (c) => {
     return c.json(result);
   } catch (err) {
     console.error('[Agents] Transfer analysis error:', err);
-    return c.json(
-      { error: err instanceof Error ? err.message : 'Transfer analysis failed' },
-      500
-    );
+    return c.json({ error: err instanceof Error ? err.message : 'Transfer analysis failed' }, 500);
   }
 });
 

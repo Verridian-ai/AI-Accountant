@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, TrendingUp, TrendingDown, Minus, Zap, Loader2, RefreshCw } from 'lucide-react';
+import {
+  MessageSquare,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Zap,
+  Loader2,
+  RefreshCw,
+} from 'lucide-react';
 import { knowledgeApi } from '../../../api';
 
 interface FeedbackPanelProps {
@@ -38,19 +46,25 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
   const loadStats = () => {
     setLoading(true);
     setError(null);
-    knowledgeApi.feedbackStats(userId)
+    knowledgeApi
+      .feedbackStats(userId)
       .then(setStats)
-      .catch((e) => setError(e.message))
+      .catch((e: any) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadStats(); }, [userId]);
+  useEffect(() => {
+    loadStats();
+  }, [userId]);
 
   const handleMemify = async () => {
     setMemifying(true);
     setMemifyResult(null);
     try {
-      const result = await knowledgeApi.triggerMemify(userId, { minFeedbackCount: 3, forceRun: false });
+      const result = await knowledgeApi.triggerMemify(userId, {
+        minFeedbackCount: 3,
+        forceRun: false,
+      });
       setMemifyResult(result.message || 'Memify triggered successfully');
       loadStats();
     } catch (e: any) {
@@ -72,15 +86,25 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
     return (
       <div className="neu-inset rounded-xl p-6 text-center">
         <p className="text-sm text-red-400">Failed to load feedback: {error}</p>
-        <button type="button" onClick={loadStats} className="mt-3 text-xs text-[#FFCC00] hover:underline">
+        <button
+          type="button"
+          onClick={loadStats}
+          className="mt-3 text-xs text-[#FFCC00] hover:underline"
+        >
           Retry
         </button>
       </div>
     );
   }
 
-  const TrendIcon = stats?.trend === 'up' ? TrendingUp : stats?.trend === 'down' ? TrendingDown : Minus;
-  const trendColor = stats?.trend === 'up' ? 'text-emerald-400' : stats?.trend === 'down' ? 'text-red-400' : 'text-zinc-400';
+  const TrendIcon =
+    stats?.trend === 'up' ? TrendingUp : stats?.trend === 'down' ? TrendingDown : Minus;
+  const trendColor =
+    stats?.trend === 'up'
+      ? 'text-emerald-400'
+      : stats?.trend === 'down'
+        ? 'text-red-400'
+        : 'text-zinc-400';
 
   return (
     <div className="space-y-6">
@@ -89,12 +113,18 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
         <div className="neu-raised rounded-xl p-4 text-center">
           <MessageSquare className="w-5 h-5 mx-auto mb-2 text-[#FFCC00]" />
           <p className="text-2xl font-bold text-zinc-100">{stats?.totalCount ?? 0}</p>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Total Feedback</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+            Total Feedback
+          </p>
         </div>
         <div className="neu-raised rounded-xl p-4 text-center">
           <div className="w-5 h-5 mx-auto mb-2 text-emerald-400 font-bold text-lg">%</div>
-          <p className="text-2xl font-bold text-zinc-100">{((stats?.accuracyRate ?? 0) * 100).toFixed(1)}%</p>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Accuracy Rate</p>
+          <p className="text-2xl font-bold text-zinc-100">
+            {((stats?.accuracyRate ?? 0) * 100).toFixed(1)}%
+          </p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+            Accuracy Rate
+          </p>
         </div>
         <div className="neu-raised rounded-xl p-4 text-center">
           <TrendIcon className={`w-5 h-5 mx-auto mb-2 ${trendColor}`} />
@@ -125,7 +155,9 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
           </button>
         </div>
         {memifyResult && (
-          <p className={`mt-3 text-xs ${memifyResult.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}>
+          <p
+            className={`mt-3 text-xs ${memifyResult.startsWith('Error') ? 'text-red-400' : 'text-emerald-400'}`}
+          >
             {memifyResult}
           </p>
         )}
@@ -137,11 +169,16 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
           <h4 className="text-sm font-bold text-zinc-200 mb-3">By Type</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Object.entries(stats.byType).map(([type, count]) => {
-              const colors = FEEDBACK_TYPE_COLORS[type] ?? { bg: 'bg-white/5', text: 'text-zinc-400' };
+              const colors = FEEDBACK_TYPE_COLORS[type] ?? {
+                bg: 'bg-white/5',
+                text: 'text-zinc-400',
+              };
               return (
                 <div key={type} className={`${colors.bg} rounded-lg p-3 text-center`}>
                   <p className={`text-lg font-bold ${colors.text}`}>{count}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{type}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                    {type}
+                  </p>
                 </div>
               );
             })}
@@ -167,15 +204,27 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
             <p className="text-xs text-zinc-500 text-center py-4">No feedback yet</p>
           ) : (
             stats!.recent.map((item) => {
-              const colors = FEEDBACK_TYPE_COLORS[item.feedbackType] ?? { bg: 'bg-white/5', text: 'text-zinc-400' };
+              const colors = FEEDBACK_TYPE_COLORS[item.feedbackType] ?? {
+                bg: 'bg-white/5',
+                text: 'text-zinc-400',
+              };
               return (
-                <div key={item.id} className="flex items-start gap-3 py-2 border-b border-white/5 last:border-0">
-                  <span className={`shrink-0 mt-0.5 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}>
+                <div
+                  key={item.id}
+                  className="flex items-start gap-3 py-2 border-b border-white/5 last:border-0"
+                >
+                  <span
+                    className={`shrink-0 mt-0.5 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}
+                  >
                     {item.feedbackType}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-zinc-300 truncate">{item.details || `Feedback on ${item.entityType}`}</p>
-                    <p className="text-[10px] text-zinc-600 mt-0.5">{new Date(item.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-zinc-300 truncate">
+                      {item.details || `Feedback on ${item.entityType}`}
+                    </p>
+                    <p className="text-[10px] text-zinc-600 mt-0.5">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               );

@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  Sankey as RechartsSankey,
-  Tooltip,
-  Layer,
-  Rectangle,
-} from 'recharts';
+import { Sankey as RechartsSankey, Tooltip, Layer, Rectangle } from 'recharts';
 import { CHART_COLORS, CHART_THEME, getCategoryColor } from './ChartColorPalette';
 import { ChartContainer } from './ChartContainer';
 
@@ -50,7 +45,15 @@ interface SankeyLinkPayload {
 }
 
 function SankeyNodeComponent(props: { nodeColors: string[] } & Record<string, unknown>) {
-  const { x, y, width, height: h, index, payload, nodeColors } = props as SankeyNodePayload & { nodeColors: string[] };
+  const {
+    x,
+    y,
+    width,
+    height: h,
+    index,
+    payload,
+    nodeColors,
+  } = props as unknown as SankeyNodePayload & { nodeColors: string[] };
   const name = payload?.name ?? '';
   const fill = nodeColors[index % nodeColors.length] ?? CHART_COLORS.primary;
 
@@ -74,7 +77,8 @@ function SankeyNodeComponent(props: { nodeColors: string[] } & Record<string, un
 }
 
 function SankeyLinkComponent(props: Record<string, unknown>) {
-  const { sourceX, sourceY, sourceControlX, targetX, targetY, targetControlX, linkWidth, index } = props as SankeyLinkPayload;
+  const { sourceX, sourceY, sourceControlX, targetX, targetY, targetControlX, linkWidth, index } =
+    props as unknown as SankeyLinkPayload;
 
   return (
     <Layer key={`link-${index.toString()}`}>
@@ -105,8 +109,19 @@ function SankeyInner({
   if (!loading && !error && (nodes.length === 0 || links.length === 0)) {
     return (
       <ChartContainer title={title} subtitle={subtitle} height={height}>
-        <RechartsSankey data={{ nodes: [{ name: '' }], links: [] }} node={() => null} link={() => null}>
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize={14}>
+        <RechartsSankey
+          data={{ nodes: [{ name: '' }], links: [] }}
+          node={(() => null) as any}
+          link={(() => null) as any}
+        >
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#9CA3AF"
+            fontSize={14}
+          >
             No data available
           </text>
         </RechartsSankey>
@@ -117,19 +132,29 @@ function SankeyInner({
   const nodeColors = colors ?? CHART_COLORS.categories.map((_, i) => getCategoryColor(i));
 
   return (
-    <ChartContainer title={title} subtitle={subtitle} height={height} loading={loading} error={error}>
+    <ChartContainer
+      title={title}
+      subtitle={subtitle}
+      height={height}
+      loading={loading}
+      error={error}
+    >
       <RechartsSankey
         data={{ nodes, links }}
         nodeWidth={12}
         nodePadding={24}
-        node={<SankeyNodeComponent nodeColors={nodeColors} />}
-        link={<SankeyLinkComponent />}
+        node={(<SankeyNodeComponent nodeColors={nodeColors} />) as any}
+        link={(<SankeyLinkComponent />) as any}
         margin={{ top: 10, right: 120, bottom: 10, left: 10 }}
       >
         <Tooltip
           contentStyle={CHART_THEME.tooltipStyle}
           formatter={(value: number) => [
-            value.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }),
+            value.toLocaleString('en-AU', {
+              style: 'currency',
+              currency: 'AUD',
+              maximumFractionDigits: 0,
+            }),
             'Amount',
           ]}
         />

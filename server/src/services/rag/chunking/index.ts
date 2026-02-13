@@ -233,9 +233,10 @@ export class TransactionChunker {
     }
 
     if (this.config.includeGstDetails && transaction.gstApplicable) {
-      const gstInfo = transaction.gstAmount != null
-        ? `GST: ${formatAmount(transaction.gstAmount)}`
-        : 'GST applicable';
+      const gstInfo =
+        transaction.gstAmount != null
+          ? `GST: ${formatAmount(transaction.gstAmount)}`
+          : 'GST applicable';
       lines.push(gstInfo);
     }
 
@@ -258,7 +259,8 @@ export class TransactionChunker {
         dateStart: transaction.date,
         dateEnd: transaction.date,
         category: transaction.category,
-        merchantNormalized: transaction.merchantNormalized || normalizeMerchant(transaction.description),
+        merchantNormalized:
+          transaction.merchantNormalized || normalizeMerchant(transaction.description),
         totalAmount: transaction.amount,
         transactionCount: 1,
         transactionIds: [transaction.id],
@@ -272,7 +274,7 @@ export class TransactionChunker {
    * Create single transaction chunks for all transactions
    */
   createAllSingleTransactionChunks(transactions: TransactionInput[]): GeneratedChunk[] {
-    return transactions.map(tx => this.createSingleTransactionChunk(tx));
+    return transactions.map((tx) => this.createSingleTransactionChunk(tx));
   }
 
   // ========================================================================
@@ -318,16 +320,14 @@ export class TransactionChunker {
   createTransactionGroupChunk(
     transactions: TransactionInput[],
     groupKey: string,
-    groupType: 'merchant' | 'category'
+    groupType: 'merchant' | 'category',
   ): GeneratedChunk {
     if (transactions.length === 0) {
       throw new Error('Cannot create group chunk from empty transaction list');
     }
 
     // Sort by date
-    const sorted = [...transactions].sort((a, b) =>
-      a.date.localeCompare(b.date)
-    );
+    const sorted = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
 
     const lines: string[] = [];
     const totalAmount = transactions.reduce((sum, tx) => sum + tx.amount, 0);
@@ -360,7 +360,7 @@ export class TransactionChunker {
 
     // Category breakdown for merchant groups
     if (groupType === 'merchant') {
-      const categories = new Set(transactions.map(tx => tx.category).filter(Boolean));
+      const categories = new Set(transactions.map((tx) => tx.category).filter(Boolean));
       if (categories.size > 0) {
         lines.push('');
         lines.push(`Categories: ${Array.from(categories).join(', ')}`);
@@ -386,7 +386,7 @@ export class TransactionChunker {
         merchantNormalized: groupType === 'merchant' ? groupKey : undefined,
         totalAmount,
         transactionCount: transactions.length,
-        transactionIds: transactions.map(tx => tx.id),
+        transactionIds: transactions.map((tx) => tx.id),
         chunkHash: generateChunkHash(content),
       },
       tokenEstimate: estimateTokens(content),
@@ -446,9 +446,7 @@ export class TransactionChunker {
   groupByTimeWindow(transactions: TransactionInput[], windowDays: number): TransactionInput[][] {
     if (transactions.length === 0) return [];
 
-    const sorted = [...transactions].sort((a, b) =>
-      a.date.localeCompare(b.date)
-    );
+    const sorted = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
 
     const windows: TransactionInput[][] = [];
     let currentWindow: TransactionInput[] = [sorted[0]];
@@ -456,7 +454,9 @@ export class TransactionChunker {
 
     for (let i = 1; i < sorted.length; i++) {
       const txDate = new Date(sorted[i].date);
-      const daysDiff = Math.floor((txDate.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24));
+      const daysDiff = Math.floor(
+        (txDate.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24),
+      );
 
       if (daysDiff <= windowDays) {
         currentWindow.push(sorted[i]);
@@ -483,16 +483,18 @@ export class TransactionChunker {
       throw new Error('Cannot create temporal chunk from empty transaction list');
     }
 
-    const sorted = [...transactions].sort((a, b) =>
-      a.date.localeCompare(b.date)
-    );
+    const sorted = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
 
     const dateStart = sorted[0].date;
     const dateEnd = sorted[sorted.length - 1].date;
 
     // Calculate summaries
-    const income = transactions.filter(tx => tx.amount > 0).reduce((sum, tx) => sum + tx.amount, 0);
-    const expenses = transactions.filter(tx => tx.amount < 0).reduce((sum, tx) => sum + tx.amount, 0);
+    const income = transactions
+      .filter((tx) => tx.amount > 0)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+    const expenses = transactions
+      .filter((tx) => tx.amount < 0)
+      .reduce((sum, tx) => sum + tx.amount, 0);
     const netFlow = income + expenses;
 
     // Category breakdown
@@ -506,8 +508,9 @@ export class TransactionChunker {
     }
 
     // Sort categories by absolute amount
-    const sortedCategories = Array.from(categoryTotals.entries())
-      .sort((a, b) => Math.abs(b[1].amount) - Math.abs(a[1].amount));
+    const sortedCategories = Array.from(categoryTotals.entries()).sort(
+      (a, b) => Math.abs(b[1].amount) - Math.abs(a[1].amount),
+    );
 
     const lines: string[] = [];
 
@@ -541,7 +544,7 @@ export class TransactionChunker {
 
     // Top transactions
     const topExpenses = [...transactions]
-      .filter(tx => tx.amount < 0)
+      .filter((tx) => tx.amount < 0)
       .sort((a, b) => a.amount - b.amount)
       .slice(0, 5);
 
@@ -549,7 +552,9 @@ export class TransactionChunker {
       lines.push('');
       lines.push('Largest expenses:');
       for (const tx of topExpenses) {
-        lines.push(`- ${formatDate(tx.date)}: ${formatAmount(tx.amount)} - ${tx.description.substring(0, 40)}`);
+        lines.push(
+          `- ${formatDate(tx.date)}: ${formatAmount(tx.amount)} - ${tx.description.substring(0, 40)}`,
+        );
       }
     }
 
@@ -565,7 +570,7 @@ export class TransactionChunker {
         dateEnd,
         totalAmount: netFlow,
         transactionCount: transactions.length,
-        transactionIds: transactions.map(tx => tx.id),
+        transactionIds: transactions.map((tx) => tx.id),
         chunkHash: generateChunkHash(content),
       },
       tokenEstimate: estimateTokens(content),
@@ -577,14 +582,14 @@ export class TransactionChunker {
    */
   createTemporalWindowChunks(
     transactions: TransactionInput[],
-    windowDays?: number
+    windowDays?: number,
   ): GeneratedChunk[] {
     const windows = this.groupByTimeWindow(
       transactions,
-      windowDays || this.config.temporalWindowDays
+      windowDays || this.config.temporalWindowDays,
     );
 
-    return windows.map(window => this.createTemporalWindowChunk(window));
+    return windows.map((window) => this.createTemporalWindowChunk(window));
   }
 
   // ========================================================================
@@ -598,10 +603,10 @@ export class TransactionChunker {
   createCategorySummaryChunk(
     transactions: TransactionInput[],
     category: string,
-    month: string // YYYY-MM format
+    month: string, // YYYY-MM format
   ): GeneratedChunk {
-    const monthTxs = transactions.filter(tx =>
-      tx.category === category && getMonthKey(tx.date) === month
+    const monthTxs = transactions.filter(
+      (tx) => tx.category === category && getMonthKey(tx.date) === month,
     );
 
     if (monthTxs.length === 0) {
@@ -614,8 +619,10 @@ export class TransactionChunker {
 
     // Parse month for display
     const [year, monthNum] = month.split('-');
-    const monthName = new Date(parseInt(year), parseInt(monthNum) - 1, 1)
-      .toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+    const monthName = new Date(parseInt(year), parseInt(monthNum) - 1, 1).toLocaleDateString(
+      'en-AU',
+      { month: 'long', year: 'numeric' },
+    );
 
     const lines: string[] = [];
 
@@ -626,7 +633,9 @@ export class TransactionChunker {
     lines.push(`Average: ${formatAmount(avg)}`);
 
     // Date range
-    lines.push(`Period: ${formatDate(sorted[0].date)} to ${formatDate(sorted[sorted.length - 1].date)}`);
+    lines.push(
+      `Period: ${formatDate(sorted[0].date)} to ${formatDate(sorted[sorted.length - 1].date)}`,
+    );
 
     // Top merchants for this category
     const merchantTotals = new Map<string, number>();
@@ -648,7 +657,7 @@ export class TransactionChunker {
     }
 
     // GST summary if applicable
-    const gstTxs = monthTxs.filter(tx => tx.gstApplicable);
+    const gstTxs = monthTxs.filter((tx) => tx.gstApplicable);
     if (gstTxs.length > 0 && this.config.includeGstDetails) {
       const totalGst = gstTxs.reduce((sum, tx) => sum + (tx.gstAmount || 0), 0);
       lines.push('');
@@ -668,7 +677,7 @@ export class TransactionChunker {
         category,
         totalAmount: total,
         transactionCount: monthTxs.length,
-        transactionIds: monthTxs.map(tx => tx.id),
+        transactionIds: monthTxs.map((tx) => tx.id),
         chunkHash: generateChunkHash(content),
       },
       tokenEstimate: estimateTokens(content),
@@ -725,10 +734,10 @@ export class TransactionChunker {
    */
   createAccountContextChunk(
     account: AccountInput,
-    transactions: TransactionInput[]
+    transactions: TransactionInput[],
   ): GeneratedChunk {
     // Filter transactions for this account
-    const accountTxs = transactions.filter(tx => tx.accountId === account.id);
+    const accountTxs = transactions.filter((tx) => tx.accountId === account.id);
     const sorted = [...accountTxs].sort((a, b) => b.date.localeCompare(a.date));
 
     const lines: string[] = [];
@@ -748,8 +757,12 @@ export class TransactionChunker {
 
     // Transaction summary
     if (accountTxs.length > 0) {
-      const totalIncome = accountTxs.filter(tx => tx.amount > 0).reduce((sum, tx) => sum + tx.amount, 0);
-      const totalExpenses = accountTxs.filter(tx => tx.amount < 0).reduce((sum, tx) => sum + tx.amount, 0);
+      const totalIncome = accountTxs
+        .filter((tx) => tx.amount > 0)
+        .reduce((sum, tx) => sum + tx.amount, 0);
+      const totalExpenses = accountTxs
+        .filter((tx) => tx.amount < 0)
+        .reduce((sum, tx) => sum + tx.amount, 0);
 
       lines.push('');
       lines.push('Activity Summary:');
@@ -786,12 +799,14 @@ export class TransactionChunker {
         lines.push('');
         lines.push('Recent transactions:');
         for (const tx of recentTxs) {
-          lines.push(`- ${formatDate(tx.date)}: ${formatAmount(tx.amount)} - ${tx.description.substring(0, 35)}`);
+          lines.push(
+            `- ${formatDate(tx.date)}: ${formatAmount(tx.amount)} - ${tx.description.substring(0, 35)}`,
+          );
         }
       }
 
       // Transfers
-      const transfers = accountTxs.filter(tx => tx.isTransfer);
+      const transfers = accountTxs.filter((tx) => tx.isTransfer);
       if (transfers.length > 0) {
         lines.push('');
         lines.push(`Internal transfers: ${transfers.length} transactions`);
@@ -813,7 +828,7 @@ export class TransactionChunker {
         dateEnd: sorted.length > 0 ? sorted[0].date : undefined,
         totalAmount: accountTxs.reduce((sum, tx) => sum + tx.amount, 0),
         transactionCount: accountTxs.length,
-        transactionIds: accountTxs.map(tx => tx.id),
+        transactionIds: accountTxs.map((tx) => tx.id),
         chunkHash: generateChunkHash(content),
       },
       tokenEstimate: estimateTokens(content),
@@ -830,7 +845,7 @@ export class TransactionChunker {
    */
   chunkTransactions(
     transactions: TransactionInput[],
-    accounts: AccountInput[] = []
+    accounts: AccountInput[] = [],
   ): GeneratedChunk[] {
     const allChunks: GeneratedChunk[] = [];
 
@@ -889,10 +904,10 @@ export class TransactionChunker {
   chunkNewTransactions(
     newTransactions: TransactionInput[],
     existingTransactionIds: Set<string>,
-    accounts: AccountInput[] = []
+    accounts: AccountInput[] = [],
   ): GeneratedChunk[] {
     // Filter to only truly new transactions
-    const filteredNew = newTransactions.filter(tx => !existingTransactionIds.has(tx.id));
+    const filteredNew = newTransactions.filter((tx) => !existingTransactionIds.has(tx.id));
 
     if (filteredNew.length === 0) {
       return [];
@@ -953,7 +968,7 @@ export class TransactionChunker {
  */
 export function createTransactionChunker(
   userId: string,
-  config?: Partial<ChunkingConfig>
+  config?: Partial<ChunkingConfig>,
 ): TransactionChunker {
   return new TransactionChunker(userId, config);
 }
@@ -962,6 +977,4 @@ export function createTransactionChunker(
 // EXPORTS
 // ============================================================================
 
-export {
-  TransactionChunker as default,
-};
+export { TransactionChunker as default };

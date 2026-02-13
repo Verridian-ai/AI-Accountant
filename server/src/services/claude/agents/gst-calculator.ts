@@ -16,42 +16,90 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
-import {
-  calculateGstFromInclusive,
-  getQuarterDates,
-} from '../../bas.js';
+import { calculateGstFromInclusive, getQuarterDates } from '../../bas.js';
 import type { GSTCalculatorInput, GSTCalculatorOutput } from '../types.js';
 
 /** ATO GST category classification rules */
 const GST_FREE_KEYWORDS = new Set([
-  'medical', 'health', 'doctor', 'hospital', 'pharmacy', 'pathology',
-  'education', 'school', 'university', 'tafe', 'childcare', 'daycare',
-  'medicare', 'centrelink', 'government', 'ato', 'council rates',
-  'water', 'sewerage', 'charity', 'donation', 'dgr',
+  'medical',
+  'health',
+  'doctor',
+  'hospital',
+  'pharmacy',
+  'pathology',
+  'education',
+  'school',
+  'university',
+  'tafe',
+  'childcare',
+  'daycare',
+  'medicare',
+  'centrelink',
+  'government',
+  'ato',
+  'council rates',
+  'water',
+  'sewerage',
+  'charity',
+  'donation',
+  'dgr',
 ]);
 
 const INPUT_TAXED_KEYWORDS = new Set([
-  'interest', 'bank fee', 'bank charge', 'loan', 'credit card fee',
-  'annual fee', 'account fee', 'brokerage', 'financial advice',
-  'residential rent', 'superannuation fee', 'life insurance',
-  'health insurance', 'income protection',
+  'interest',
+  'bank fee',
+  'bank charge',
+  'loan',
+  'credit card fee',
+  'annual fee',
+  'account fee',
+  'brokerage',
+  'financial advice',
+  'residential rent',
+  'superannuation fee',
+  'life insurance',
+  'health insurance',
+  'income protection',
 ]);
 
 const PRIVATE_KEYWORDS = new Set([
-  'atm', 'cash withdrawal', 'transfer', 'internal transfer',
-  'bpay', 'direct debit', 'pay anyone', 'osko',
-  'superannuation', 'super contribution', 'salary', 'wages',
-  'dividend', 'depreciation',
+  'atm',
+  'cash withdrawal',
+  'transfer',
+  'internal transfer',
+  'bpay',
+  'direct debit',
+  'pay anyone',
+  'osko',
+  'superannuation',
+  'super contribution',
+  'salary',
+  'wages',
+  'dividend',
+  'depreciation',
 ]);
 
 const CAPITAL_KEYWORDS = new Set([
-  'equipment', 'vehicle', 'machinery', 'computer', 'laptop',
-  'furniture', 'fit-out', 'fitout', 'plant', 'motor vehicle',
-  'office equipment', 'server', 'printer',
+  'equipment',
+  'vehicle',
+  'machinery',
+  'computer',
+  'laptop',
+  'furniture',
+  'fit-out',
+  'fitout',
+  'plant',
+  'motor vehicle',
+  'office equipment',
+  'server',
+  'printer',
 ]);
 
 /** Category-based GST classification mapping per ATO rules */
-const CATEGORY_GST_MAP: Record<string, { gstCategory: string; claimable: boolean; basLabel: string }> = {
+const CATEGORY_GST_MAP: Record<
+  string,
+  { gstCategory: string; claimable: boolean; basLabel: string }
+> = {
   'Sales Revenue': { gstCategory: 'taxable_10', claimable: false, basLabel: 'G1' },
   'Service Revenue': { gstCategory: 'taxable_10', claimable: false, basLabel: 'G1' },
   'Interest & Dividends': { gstCategory: 'input_taxed', claimable: false, basLabel: 'none' },
@@ -62,24 +110,24 @@ const CATEGORY_GST_MAP: Record<string, { gstCategory: string; claimable: boolean
   'Bank Fees': { gstCategory: 'input_taxed', claimable: false, basLabel: 'none' },
   'Financial Services': { gstCategory: 'input_taxed', claimable: false, basLabel: 'none' },
   'Computer & IT': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G10_or_G11' },
-  'Entertainment': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
-  'Insurance': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Entertainment: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Insurance: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
   'Motor Vehicle Expenses': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
   'Fuel & Auto': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
   'Office Supplies': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
   'Professional Fees': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
-  'Rent': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Rent: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
   'Repairs & Maintenance': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
   'Subscriptions & Streaming': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
   'Phone & Internet': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
-  'Travel': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
-  'Utilities': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Travel: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Utilities: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
   'Wages & Salaries': { gstCategory: 'private', claimable: false, basLabel: 'W1' },
   'Employment Income': { gstCategory: 'private', claimable: false, basLabel: 'W1' },
-  'Superannuation': { gstCategory: 'private', claimable: false, basLabel: 'none' },
+  Superannuation: { gstCategory: 'private', claimable: false, basLabel: 'none' },
   'Government & Tax': { gstCategory: 'gst_free', claimable: false, basLabel: 'none' },
   'Internal Transfer': { gstCategory: 'private', claimable: false, basLabel: 'none' },
-  'Transfer': { gstCategory: 'private', claimable: false, basLabel: 'none' },
+  Transfer: { gstCategory: 'private', claimable: false, basLabel: 'none' },
   'Medical & Health': { gstCategory: 'gst_free', claimable: false, basLabel: 'G3' },
   'Education & Childcare': { gstCategory: 'gst_free', claimable: false, basLabel: 'G3' },
   'Donations & Charity': { gstCategory: 'gst_free', claimable: false, basLabel: 'G3' },
@@ -90,10 +138,7 @@ const CATEGORY_GST_MAP: Record<string, { gstCategory: string; claimable: boolean
 /** Motor vehicle GST credit cap (2024-25) */
 const CAR_COST_LIMIT_CENTS = 6810800; // $68,108
 
-export class GSTCalculatorAgent extends ClaudeAgent<
-  GSTCalculatorInput,
-  GSTCalculatorOutput
-> {
+export class GSTCalculatorAgent extends ClaudeAgent<GSTCalculatorInput, GSTCalculatorOutput> {
   protected systemPrompt = `You are an Australian GST and BAS specialist. Calculate GST amounts from inclusive prices, categorize transactions by GST treatment (GST-free, input-taxed, capital acquisitions, private/non-business), and populate BAS labels (G1-G11, 1A, 1B, W1-W2, 5A, 7C-7D) according to ATO rules.
 
 You understand the Australian financial year (July-June) and quarterly BAS periods.
@@ -126,7 +171,8 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
   protected tools: Anthropic.Tool[] = [
     {
       name: 'classify_gst_supply',
-      description: 'Classify transactions by GST treatment per ATO rules. Handles taxable (10%), GST-free, input-taxed, capital, export, and private categories.',
+      description:
+        'Classify transactions by GST treatment per ATO rules. Handles taxable (10%), GST-free, input-taxed, capital, export, and private categories.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -149,13 +195,17 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
     },
     {
       name: 'calculate_input_tax_credit',
-      description: 'Calculate the claimable GST input tax credit (1/11th) for eligible business purchases. Handles mixed-use apportionment, motor vehicle limits, and entertainment 50% rule.',
+      description:
+        'Calculate the claimable GST input tax credit (1/11th) for eligible business purchases. Handles mixed-use apportionment, motor vehicle limits, and entertainment 50% rule.',
       input_schema: {
         type: 'object' as const,
         properties: {
           amount: { type: 'number', description: 'GST-inclusive amount in cents' },
           gstCategory: { type: 'string', description: 'GST category of the supply' },
-          businessUsePercent: { type: 'number', description: 'Business use percentage (0-100). Default 100.' },
+          businessUsePercent: {
+            type: 'number',
+            description: 'Business use percentage (0-100). Default 100.',
+          },
           isMotorVehicle: { type: 'boolean', description: 'Is this a motor vehicle purchase?' },
           isEntertainment: { type: 'boolean', description: 'Is this an entertainment expense?' },
         },
@@ -176,7 +226,8 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
     },
     {
       name: 'generate_bas_labels',
-      description: 'Compile BAS label amounts from classified transactions. Generates G1-G11, 1A, 1B, W1-W2, 5A, 7C-7D.',
+      description:
+        'Compile BAS label amounts from classified transactions. Generates G1-G11, 1A, 1B, W1-W2, 5A, 7C-7D.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -207,7 +258,8 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
     },
     {
       name: 'identify_capital_purchases',
-      description: 'Identify capital acquisitions — business assets over $1,000 GST-exclusive or asset-type transactions. These go to G10 instead of G11.',
+      description:
+        'Identify capital acquisitions — business assets over $1,000 GST-exclusive or asset-type transactions. These go to G10 instead of G11.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -264,10 +316,7 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'classify_gst_supply',
       async (input) => {
@@ -282,7 +331,13 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
         const classifications = transactions.map((tx) => {
           // Personal account transactions are always out of scope
           if (tx.isPersonalAccount) {
-            return { id: tx.id, gstCategory: 'private', gstAmount: 0, claimable: false, basLabel: 'none' };
+            return {
+              id: tx.id,
+              gstCategory: 'private',
+              gstAmount: 0,
+              claimable: false,
+              basLabel: 'none',
+            };
           }
 
           const desc = tx.description.toLowerCase();
@@ -292,41 +347,78 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
           if (cat && CATEGORY_GST_MAP[cat]) {
             const mapping = CATEGORY_GST_MAP[cat];
             if (mapping.gstCategory === 'private' || mapping.gstCategory === 'input_taxed') {
-              return { id: tx.id, gstCategory: mapping.gstCategory, gstAmount: 0, claimable: false, basLabel: mapping.basLabel };
+              return {
+                id: tx.id,
+                gstCategory: mapping.gstCategory,
+                gstAmount: 0,
+                claimable: false,
+                basLabel: mapping.basLabel,
+              };
             }
             if (mapping.gstCategory === 'gst_free') {
-              return { id: tx.id, gstCategory: 'gst_free', gstAmount: 0, claimable: false, basLabel: mapping.basLabel };
+              return {
+                id: tx.id,
+                gstCategory: 'gst_free',
+                gstAmount: 0,
+                claimable: false,
+                basLabel: mapping.basLabel,
+              };
             }
             if (mapping.gstCategory === 'export') {
-              return { id: tx.id, gstCategory: 'export', gstAmount: 0, claimable: false, basLabel: 'G2' };
+              return {
+                id: tx.id,
+                gstCategory: 'export',
+                gstAmount: 0,
+                claimable: false,
+                basLabel: 'G2',
+              };
             }
           }
 
           // 2. Keyword-based classification
           for (const kw of PRIVATE_KEYWORDS) {
             if (desc.includes(kw)) {
-              return { id: tx.id, gstCategory: 'private', gstAmount: 0, claimable: false, basLabel: 'none' };
+              return {
+                id: tx.id,
+                gstCategory: 'private',
+                gstAmount: 0,
+                claimable: false,
+                basLabel: 'none',
+              };
             }
           }
 
           for (const kw of INPUT_TAXED_KEYWORDS) {
             if (desc.includes(kw)) {
-              return { id: tx.id, gstCategory: 'input_taxed', gstAmount: 0, claimable: false, basLabel: 'none' };
+              return {
+                id: tx.id,
+                gstCategory: 'input_taxed',
+                gstAmount: 0,
+                claimable: false,
+                basLabel: 'none',
+              };
             }
           }
 
           for (const kw of GST_FREE_KEYWORDS) {
             if (desc.includes(kw)) {
-              return { id: tx.id, gstCategory: 'gst_free', gstAmount: 0, claimable: false, basLabel: tx.amount > 0 ? 'G3' : 'none' };
+              return {
+                id: tx.id,
+                gstCategory: 'gst_free',
+                gstAmount: 0,
+                claimable: false,
+                basLabel: tx.amount > 0 ? 'G3' : 'none',
+              };
             }
           }
 
           // 3. Capital acquisition check
           const absAmount = Math.abs(tx.amount);
-          const gstExclusive = Math.round(absAmount * 10 / 11);
+          const gstExclusive = Math.round((absAmount * 10) / 11);
           let isCapital = false;
 
-          if (gstExclusive >= 100000) { // > $1,000 GST-exclusive
+          if (gstExclusive >= 100000) {
+            // > $1,000 GST-exclusive
             for (const kw of CAPITAL_KEYWORDS) {
               if (desc.includes(kw)) {
                 isCapital = true;
@@ -341,7 +433,14 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
 
           if (isCapital && tx.amount < 0) {
             const gst = calculateGstFromInclusive(tx.amount);
-            return { id: tx.id, gstCategory: 'capital', gstAmount: gst, claimable: true, basLabel: 'G10', isCapital: true };
+            return {
+              id: tx.id,
+              gstCategory: 'capital',
+              gstAmount: gst,
+              claimable: true,
+              basLabel: 'G10',
+              isCapital: true,
+            };
           }
 
           // 4. Default: taxable at 10%
@@ -358,7 +457,7 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
         // Propose GST mutations for classified transactions
         if (this.mutationTools) {
           const classifiedWithGst = classifications.filter(
-            (c) => c.gstCategory !== 'private' && c.gstAmount !== 0
+            (c) => c.gstCategory !== 'private' && c.gstAmount !== 0,
           );
           if (classifiedWithGst.length > 0) {
             try {
@@ -412,7 +511,7 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
 
         // Apply business use apportionment
         if (businessUsePercent < 100) {
-          gstCredit = Math.round(gstCredit * businessUsePercent / 100);
+          gstCredit = Math.round((gstCredit * businessUsePercent) / 100);
         }
 
         return {
@@ -449,9 +548,18 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
         }>;
 
         const labels = {
-          G1: 0, G2: 0, G3: 0, G10: 0, G11: 0,
-          '1A': 0, '1B': 0,
-          W1: 0, W2: 0, '5A': 0, '7C': 0, '7D': 0,
+          G1: 0,
+          G2: 0,
+          G3: 0,
+          G10: 0,
+          G11: 0,
+          '1A': 0,
+          '1B': 0,
+          W1: 0,
+          W2: 0,
+          '5A': 0,
+          '7C': 0,
+          '7D': 0,
         };
 
         for (const tx of transactions) {
@@ -548,12 +656,13 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
 
         return transactions.filter((tx) => {
           const abs = Math.abs(tx.amount);
-          const gstExclusive = Math.round(abs * 10 / 11);
+          const gstExclusive = Math.round((abs * 10) / 11);
           const desc = tx.description.toLowerCase();
           const cat = (tx.category || '').toLowerCase();
 
           // Capital threshold: > $1,000 GST-exclusive with asset keywords
-          if (gstExclusive >= 100000) { // $1,000 in cents
+          if (gstExclusive >= 100000) {
+            // $1,000 in cents
             for (const kw of CAPITAL_KEYWORDS) {
               if (desc.includes(kw) || cat.includes(kw)) return true;
             }

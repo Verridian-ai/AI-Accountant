@@ -51,13 +51,19 @@ export function SupplierList({ onSelect, onNew }: SupplierListProps) {
             type="text"
             placeholder="Search name, contact, or ABN..."
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
           />
         </div>
 
         <button
-          onClick={() => { setShowArchived(!showArchived); setPage(1); }}
+          onClick={() => {
+            setShowArchived(!showArchived);
+            setPage(1);
+          }}
           className={`px-3 py-2.5 rounded-xl text-xs font-medium border transition-all ${
             showArchived
               ? 'bg-[#FFCC00]/10 text-[#FFCC00] border-[#FFCC00]/30'
@@ -102,62 +108,62 @@ export function SupplierList({ onSelect, onNew }: SupplierListProps) {
             </tr>
           </thead>
           <tbody>
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-white/5">
-                    <td colSpan={6} className="px-4 py-4">
-                      <div className="h-4 w-48 bg-white/5 rounded animate-pulse" />
-                    </td>
-                  </tr>
-                ))
-              : suppliers.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center">
-                      <Building2 className="h-10 w-10 text-zinc-600 mx-auto mb-2" />
-                      <p className="text-zinc-400 text-sm">No suppliers found</p>
-                    </td>
-                  </tr>
-                ) : (
-                  suppliers.map((s) => (
-                    <tr
-                      key={s.id}
-                      onClick={() => onSelect(s.id)}
-                      className="border-b border-white/5 hover:bg-white/[0.02] cursor-pointer transition-colors"
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="border-b border-white/5">
+                  <td colSpan={6} className="px-4 py-4">
+                    <div className="h-4 w-48 bg-white/5 rounded animate-pulse" />
+                  </td>
+                </tr>
+              ))
+            ) : suppliers.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-12 text-center">
+                  <Building2 className="h-10 w-10 text-zinc-600 mx-auto mb-2" />
+                  <p className="text-zinc-400 text-sm">No suppliers found</p>
+                </td>
+              </tr>
+            ) : (
+              suppliers.map((s) => (
+                <tr
+                  key={s.id}
+                  onClick={() => onSelect(s.id)}
+                  className="border-b border-white/5 hover:bg-white/[0.02] cursor-pointer transition-colors"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-[#FFCC00]/10 flex items-center justify-center">
+                        <Building2 className="h-4 w-4 text-[#FFCC00]" />
+                      </div>
+                      <span className="text-sm font-medium text-white">{s.businessName}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
+                    {s.contactName ?? '—'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-zinc-400 font-mono hidden lg:table-cell">
+                    {s.abn ? formatABN(s.abn) : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
+                    {s.paymentTermsDays} days
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        s.isActive
+                          ? 'bg-emerald-400/10 text-emerald-400'
+                          : 'bg-zinc-400/10 text-zinc-400'
+                      }`}
                     >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-lg bg-[#FFCC00]/10 flex items-center justify-center">
-                            <Building2 className="h-4 w-4 text-[#FFCC00]" />
-                          </div>
-                          <span className="text-sm font-medium text-white">{s.businessName}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
-                        {s.contactName ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-zinc-400 font-mono hidden lg:table-cell">
-                        {s.abn ? formatABN(s.abn) : '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
-                        {s.paymentTermsDays} days
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            s.isActive
-                              ? 'bg-emerald-400/10 text-emerald-400'
-                              : 'bg-zinc-400/10 text-zinc-400'
-                          }`}
-                        >
-                          {s.isActive ? 'Active' : 'Archived'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm font-medium text-white">
-                        {formatCurrency(s.outstandingAmount)}
-                      </td>
-                    </tr>
-                  ))
-                )}
+                      {s.isActive ? 'Active' : 'Archived'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-sm font-medium text-white">
+                    {formatCurrency(s.outstandingAmount)}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

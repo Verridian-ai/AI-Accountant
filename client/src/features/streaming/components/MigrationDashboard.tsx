@@ -7,8 +7,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BASE_URL, getAuthHeaders } from '../../../api';
 import {
-  ArrowDownRight, ArrowUpRight, RotateCcw, RefreshCw,
-  AlertCircle, CheckCircle2, Clock, Zap, Shield,
+  ArrowDownRight,
+  ArrowUpRight,
+  RotateCcw,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Zap,
+  Shield,
 } from 'lucide-react';
 
 const API_URL = `${BASE_URL}/api`;
@@ -59,11 +66,11 @@ export function MigrationDashboard() {
       ]);
       if (statusRes.ok) {
         const data = await statusRes.json();
-        setStatuses(Array.isArray(data) ? data : data.statuses ?? []);
+        setStatuses(Array.isArray(data) ? data : (data.statuses ?? []));
       }
       if (benchRes.ok) {
         const data = await benchRes.json();
-        setBenchmarks(Array.isArray(data) ? data : data.agents ?? []);
+        setBenchmarks(Array.isArray(data) ? data : (data.agents ?? []));
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load migration data');
@@ -72,7 +79,9 @@ export function MigrationDashboard() {
     }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleRollback = async (agentType: string) => {
     setRollingBack(agentType);
@@ -91,7 +100,7 @@ export function MigrationDashboard() {
 
   const totalAgents = statuses.length || 5;
   const migratedCount = statuses.filter((s) =>
-    ['pilot', 'parallel', 'migrated'].includes(s.migration_phase)
+    ['pilot', 'parallel', 'migrated'].includes(s.migration_phase),
   ).length;
 
   const formatAgent = (type: string) =>
@@ -115,7 +124,10 @@ export function MigrationDashboard() {
             {migratedCount} of {totalAgents} agents migrated
           </p>
         </div>
-        <button onClick={fetchData} className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]">
+        <button
+          onClick={fetchData}
+          className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]"
+        >
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -146,7 +158,9 @@ export function MigrationDashboard() {
                   <span className="text-sm font-medium text-zinc-200">
                     {formatAgent(agent.agent_type)}
                   </span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${PHASE_COLORS[agent.migration_phase] ?? PHASE_COLORS.legacy}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${PHASE_COLORS[agent.migration_phase] ?? PHASE_COLORS.legacy}`}
+                  >
                     {agent.migration_phase}
                   </span>
                 </div>
@@ -156,7 +170,9 @@ export function MigrationDashboard() {
                     disabled={rollingBack === agent.agent_type}
                     className="flex items-center gap-1 text-xs text-zinc-500 hover:text-red-400 transition-colors"
                   >
-                    <RotateCcw className={`w-3 h-3 ${rollingBack === agent.agent_type ? 'animate-spin' : ''}`} />
+                    <RotateCcw
+                      className={`w-3 h-3 ${rollingBack === agent.agent_type ? 'animate-spin' : ''}`}
+                    />
                     Rollback
                   </button>
                 )}

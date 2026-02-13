@@ -105,7 +105,6 @@ async function ensureTables() {
 // ---------------------------------------------------------------------------
 
 export class InventoryService {
-
   // =========================================================================
   // ITEM MANAGEMENT
   // =========================================================================
@@ -413,10 +412,7 @@ export class InventoryService {
         .select()
         .from(_inventoryStock)
         .where(
-          and(
-            eq(_inventoryStock.itemId, itemId),
-            eq(_inventoryStock.warehouseId, warehouseId),
-          ),
+          and(eq(_inventoryStock.itemId, itemId), eq(_inventoryStock.warehouseId, warehouseId)),
         )
         .get();
 
@@ -428,10 +424,7 @@ export class InventoryService {
           .update(_inventoryStock)
           .set({ quantityOnHand: newQty, lastMovementAt: now })
           .where(
-            and(
-              eq(_inventoryStock.itemId, itemId),
-              eq(_inventoryStock.warehouseId, warehouseId),
-            ),
+            and(eq(_inventoryStock.itemId, itemId), eq(_inventoryStock.warehouseId, warehouseId)),
           )
           .run();
       } else {
@@ -834,11 +827,7 @@ export class InventoryService {
   // =========================================================================
 
   /** Determine the new quantity based on movement type. */
-  private _adjustQuantity(
-    currentQty: number,
-    movementQty: number,
-    movementType: string,
-  ): number {
+  private _adjustQuantity(currentQty: number, movementQty: number, movementType: string): number {
     switch (movementType) {
       case 'purchase':
       case 'transfer_in':

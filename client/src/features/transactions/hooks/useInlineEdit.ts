@@ -90,32 +90,35 @@ export function useInlineEdit({
    * Save changes to the transaction being edited.
    * Validates that the transaction exists before saving.
    */
-  const handleSave = useCallback(async (id: string) => {
-    // Find original transaction data for validation
-    const originalTx = transactions.find((t) => t.id === id);
-    if (!originalTx) {
-      console.error('[useInlineEdit] Transaction not found:', id);
-      return;
-    }
+  const handleSave = useCallback(
+    async (id: string) => {
+      // Find original transaction data for validation
+      const originalTx = transactions.find((t) => t.id === id);
+      if (!originalTx) {
+        console.error('[useInlineEdit] Transaction not found:', id);
+        return;
+      }
 
-    // Optimistic: close edit form immediately
-    const savedForm = { ...editForm };
-    setEditingId(null);
-    setEditForm({});
-    setIsSaving(true);
+      // Optimistic: close edit form immediately
+      const savedForm = { ...editForm };
+      setEditingId(null);
+      setEditForm({});
+      setIsSaving(true);
 
-    try {
-      await api.updateTransaction(id, savedForm);
-      onDataChange?.();
-    } catch (err) {
-      console.error('[useInlineEdit] Failed to save changes:', err);
-      // Revert: reopen edit form with original values on error
-      setEditingId(id);
-      setEditForm(savedForm);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [editForm, transactions, onDataChange]);
+      try {
+        await api.updateTransaction(id, savedForm);
+        onDataChange?.();
+      } catch (err) {
+        console.error('[useInlineEdit] Failed to save changes:', err);
+        // Revert: reopen edit form with original values on error
+        setEditingId(id);
+        setEditForm(savedForm);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [editForm, transactions, onDataChange],
+  );
 
   /**
    * Cancel the current edit operation and clear the form.
@@ -128,24 +131,27 @@ export function useInlineEdit({
   /**
    * Delete a transaction after user confirmation.
    */
-  const handleDelete = useCallback(async (id: string) => {
-    // Using native confirm for now - can be replaced with a modal
-    if (!confirm('Delete this transaction?')) {
-      return;
-    }
+  const handleDelete = useCallback(
+    async (id: string) => {
+      // Using native confirm for now - can be replaced with a modal
+      if (!confirm('Delete this transaction?')) {
+        return;
+      }
 
-    setIsDeleting(true);
-    try {
-      await api.deleteTransaction(id);
-      onDataChange?.();
-    } catch (err) {
-      console.error('[useInlineEdit] Failed to delete transaction:', err);
-      // TODO: Replace with toast notification when available
-      // toast.error('Failed to delete transaction');
-    } finally {
-      setIsDeleting(false);
-    }
-  }, [onDataChange]);
+      setIsDeleting(true);
+      try {
+        await api.deleteTransaction(id);
+        onDataChange?.();
+      } catch (err) {
+        console.error('[useInlineEdit] Failed to delete transaction:', err);
+        // TODO: Replace with toast notification when available
+        // toast.error('Failed to delete transaction');
+      } finally {
+        setIsDeleting(false);
+      }
+    },
+    [onDataChange],
+  );
 
   return {
     editingId,

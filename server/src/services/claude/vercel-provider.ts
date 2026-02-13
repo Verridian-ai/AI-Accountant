@@ -40,9 +40,7 @@ export function getAnthropicProvider() {
   if (!_anthropicProvider) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      throw new Error(
-        'ANTHROPIC_API_KEY is not set — cannot create Anthropic provider',
-      );
+      throw new Error('ANTHROPIC_API_KEY is not set — cannot create Anthropic provider');
     }
     _anthropicProvider = createAnthropic({ apiKey });
   }
@@ -57,9 +55,7 @@ export function getOpenRouterProvider() {
   if (!_openRouterProvider) {
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-      throw new Error(
-        'OPENROUTER_API_KEY is not set — cannot create OpenRouter provider',
-      );
+      throw new Error('OPENROUTER_API_KEY is not set — cannot create OpenRouter provider');
     }
     _openRouterProvider = createOpenAI({
       apiKey,
@@ -89,9 +85,7 @@ export function resolveModel(agentType: AgentType): LanguageModel {
   // Fallback: route through OpenRouter
   if (process.env.OPENROUTER_API_KEY) {
     // OpenRouter uses "anthropic/" prefix for Anthropic models
-    const openRouterModelId = modelId.startsWith('anthropic/')
-      ? modelId
-      : `anthropic/${modelId}`;
+    const openRouterModelId = modelId.startsWith('anthropic/') ? modelId : `anthropic/${modelId}`;
     return getOpenRouterProvider()(openRouterModelId);
   }
 

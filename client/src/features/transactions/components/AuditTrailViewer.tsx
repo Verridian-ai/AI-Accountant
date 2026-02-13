@@ -132,7 +132,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
               'neu-raised-sm p-1.5 rounded-lg transition-colors',
-              showFilters ? 'text-[#FFCC00]' : 'text-zinc-500 hover:text-zinc-300'
+              showFilters ? 'text-[#FFCC00]' : 'text-zinc-500 hover:text-zinc-300',
             )}
             aria-label="Toggle filters"
           >
@@ -155,7 +155,9 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
         <div className="neu-inset rounded-xl p-3 space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">Agent Type</label>
+              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                Agent Type
+              </label>
               <input
                 className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-zinc-300 placeholder-zinc-700 font-bold bg-transparent outline-none focus-gold"
                 placeholder="e.g. transaction_categorizer"
@@ -164,7 +166,9 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
               />
             </div>
             <div>
-              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">Action</label>
+              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                Action
+              </label>
               <select
                 className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-zinc-300 font-bold bg-transparent outline-none"
                 value={filterAction}
@@ -172,12 +176,16 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
               >
                 <option value="">All actions</option>
                 {ACTION_OPTIONS.map((a) => (
-                  <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>
+                  <option key={a} value={a}>
+                    {a.replace(/_/g, ' ')}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">From</label>
+              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                From
+              </label>
               <input
                 type="date"
                 className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-zinc-300 font-bold bg-transparent outline-none"
@@ -186,7 +194,9 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
               />
             </div>
             <div>
-              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">To</label>
+              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                To
+              </label>
               <input
                 type="date"
                 className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-zinc-300 font-bold bg-transparent outline-none"
@@ -217,7 +227,9 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
       {/* Empty state */}
       {!loading && entries.length === 0 && (
         <div className="neu-inset rounded-xl p-6 text-center">
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">No audit entries found</p>
+          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+            No audit entries found
+          </p>
           {hasActiveFilters && (
             <button
               type="button"
@@ -261,7 +273,12 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                   <span className="text-[8px] font-bold text-[#FFCC00]/70 truncate">
                     {entry.agent_type.replace(/_/g, ' ')}
                   </span>
-                  <span className={cn('text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md inline-block truncate', actionStyle)}>
+                  <span
+                    className={cn(
+                      'text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md inline-block truncate',
+                      actionStyle,
+                    )}
+                  >
                     {entry.action.replace(/_/g, ' ')}
                   </span>
                   <span className="text-[8px] font-bold text-zinc-500 truncate">
@@ -274,7 +291,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                       <ChevronRight className="h-3 w-3 text-zinc-500 shrink-0" />
                     )}
                     <span className="text-[8px] font-medium text-zinc-400 truncate">
-                      {meta?.description ?? entry.target_id ?? 'View details'}
+                      {(meta?.description ?? entry.target_id ?? 'View details') as React.ReactNode}
                     </span>
                   </div>
                 </button>
@@ -285,7 +302,9 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                     <div className="grid grid-cols-2 gap-2 pt-2">
                       {entry.before_state && (
                         <div>
-                          <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">Before</span>
+                          <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                            Before
+                          </span>
                           <pre className="neu-inset rounded-lg p-2 text-[8px] text-red-400/70 font-mono overflow-x-auto max-h-32 overflow-y-auto">
                             {formatJSON(entry.before_state)}
                           </pre>
@@ -293,7 +312,9 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                       )}
                       {entry.after_state && (
                         <div>
-                          <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">After</span>
+                          <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                            After
+                          </span>
                           <pre className="neu-inset rounded-lg p-2 text-[8px] text-emerald-400/70 font-mono overflow-x-auto max-h-32 overflow-y-auto">
                             {formatJSON(entry.after_state)}
                           </pre>
@@ -302,7 +323,9 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                     </div>
                     {meta && (
                       <div>
-                        <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">Metadata</span>
+                        <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                          Metadata
+                        </span>
                         <pre className="neu-inset rounded-lg p-2 text-[8px] text-zinc-400 font-mono overflow-x-auto max-h-24 overflow-y-auto">
                           {JSON.stringify(meta, null, 2)}
                         </pre>
@@ -311,7 +334,9 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                     <div className="flex items-center gap-3 text-[7px] text-zinc-600">
                       <span>ID: {entry.id.slice(0, 8)}...</span>
                       {entry.session_id && <span>Session: {entry.session_id.slice(0, 8)}...</span>}
-                      {entry.mutation_id && <span>Mutation: {entry.mutation_id.slice(0, 8)}...</span>}
+                      {entry.mutation_id && (
+                        <span>Mutation: {entry.mutation_id.slice(0, 8)}...</span>
+                      )}
                     </div>
                   </div>
                 )}

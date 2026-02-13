@@ -43,12 +43,7 @@ export interface ResearchResult {
 
 export interface SentimentResult {
   sentimentScore: number;
-  sentimentLabel:
-    | 'very_positive'
-    | 'positive'
-    | 'neutral'
-    | 'negative'
-    | 'very_negative';
+  sentimentLabel: 'very_positive' | 'positive' | 'neutral' | 'negative' | 'very_negative';
   confidence: number;
   positiveCount: number;
   negativeCount: number;
@@ -150,9 +145,7 @@ function recordFailure(): void {
   circuitBreaker.lastFailure = Date.now();
   if (circuitBreaker.failures >= CIRCUIT_BREAKER_THRESHOLD) {
     circuitBreaker.isOpen = true;
-    console.warn(
-      '[Sentiment] Circuit breaker OPEN — falling back to OpenRouter',
-    );
+    console.warn('[Sentiment] Circuit breaker OPEN — falling back to OpenRouter');
   }
 }
 
@@ -171,10 +164,7 @@ function isCircuitOpen(): boolean {
 // IN-MEMORY CACHE (supplements DB cache for speed)
 // ============================================================================
 
-const memoryCache = new Map<
-  string,
-  { data: SentimentSnapshot; expiresAt: number }
->();
+const memoryCache = new Map<string, { data: SentimentSnapshot; expiresAt: number }>();
 
 // ============================================================================
 // SERVICE CLASS
@@ -205,18 +195,13 @@ export class SentimentAnalysisService {
     }
 
     if (!this.anthropicClient && !this.openRouterClient) {
-      console.warn(
-        '[Sentiment] No AI API keys found — sentiment analysis will not work',
-      );
+      console.warn('[Sentiment] No AI API keys found — sentiment analysis will not work');
     }
   }
 
   // ---------- Core Research Method ----------
 
-  async researchTopic(
-    topic: string,
-    context?: string,
-  ): Promise<ResearchResult> {
+  async researchTopic(topic: string, context?: string): Promise<ResearchResult> {
     const query = `Australian ${topic} market outlook 2026${context ? ` ${context}` : ''}`;
     const now = new Date().toISOString();
 
@@ -295,10 +280,7 @@ Focus on Australian market context and provide actionable insights.`;
 
   // ---------- Sentiment Scoring ----------
 
-  async analyzeSentiment(
-    articles: ArticleInfo[],
-    topic: string,
-  ): Promise<SentimentResult> {
+  async analyzeSentiment(articles: ArticleInfo[], topic: string): Promise<SentimentResult> {
     if (articles.length === 0) {
       return {
         sentimentScore: 0,
@@ -381,10 +363,7 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
         summary: parsed.summary || '',
       };
     } catch (err: any) {
-      console.error(
-        `[Sentiment] Analysis failed for "${topic}":`,
-        err.message,
-      );
+      console.error(`[Sentiment] Analysis failed for "${topic}":`, err.message);
       return {
         sentimentScore: 0,
         sentimentLabel: 'neutral',
@@ -466,9 +445,7 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
 
   // ---------- Batch Sentiment ----------
 
-  async getMultiTopicSentiment(
-    topics?: string[],
-  ): Promise<SentimentSnapshot[]> {
+  async getMultiTopicSentiment(topics?: string[]): Promise<SentimentSnapshot[]> {
     const topicList = topics?.length ? topics : DEFAULT_FINANCIAL_TOPICS;
     const results: SentimentSnapshot[] = [];
 
@@ -477,9 +454,7 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
         const snapshot = await this.getSentimentSnapshot(topic);
         results.push(snapshot);
       } catch (err: any) {
-        console.error(
-          `[Sentiment] Batch: skipping "${topic}" — ${err.message}`,
-        );
+        console.error(`[Sentiment] Batch: skipping "${topic}" — ${err.message}`);
       }
       // Small delay between topics to respect rate limits
       await this.sleep(500);
@@ -490,10 +465,7 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
 
   // ---------- Sentiment History ----------
 
-  async getSentimentHistory(
-    topic: string,
-    days = 30,
-  ): Promise<SentimentSnapshot[]> {
+  async getSentimentHistory(topic: string, days = 30): Promise<SentimentSnapshot[]> {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     const cutoffStr = cutoff.toISOString();
@@ -503,30 +475,21 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
         .select()
         .from(sentimentSnapshots)
         .where(
-          and(
-            eq(sentimentSnapshots.topic, topic),
-            gte(sentimentSnapshots.createdAt, cutoffStr),
-          ),
+          and(eq(sentimentSnapshots.topic, topic), gte(sentimentSnapshots.createdAt, cutoffStr)),
         )
         .orderBy(desc(sentimentSnapshots.createdAt))
         .all();
 
       return rows.map((r) => this.rowToSnapshot(r));
     } catch (err: any) {
-      console.error(
-        `[Sentiment] History query failed for "${topic}":`,
-        err.message,
-      );
+      console.error(`[Sentiment] History query failed for "${topic}":`, err.message);
       return [];
     }
   }
 
   // ---------- Market Impact Analysis ----------
 
-  async analyzeMarketImpact(
-    event: string,
-    context: string,
-  ): Promise<ImpactAnalysis> {
+  async analyzeMarketImpact(event: string, context: string): Promise<ImpactAnalysis> {
     const systemPrompt = `You are an expert Australian economic analyst.
 Analyze the market impact of economic events on various sectors of the Australian economy.
 
@@ -573,9 +536,7 @@ Provide:
         impactSummary: parsed.impactSummary || '',
         affectedSectors: (parsed.affectedSectors || []).map((s: any) => ({
           sector: s.sector || 'Unknown',
-          impact: ['positive', 'negative', 'neutral'].includes(s.impact)
-            ? s.impact
-            : 'neutral',
+          impact: ['positive', 'negative', 'neutral'].includes(s.impact) ? s.impact : 'neutral',
           reason: s.reason || '',
         })),
         shortTermOutlook: parsed.shortTermOutlook || '',
@@ -625,13 +586,11 @@ inflation, employment, government policy, international trade impacts on Austral
       const response = await this.callAI(systemPrompt, userPrompt);
       const parsed = this.safeParseJSON(response, { topics: [] });
 
-      return (parsed.topics || [])
-        .slice(0, 10)
-        .map((t: any) => ({
-          topic: t.topic || 'Unknown',
-          trendScore: Math.max(0, Math.min(1, t.trendScore ?? 0.5)),
-          recentArticles: Math.max(0, Math.round(t.recentArticles ?? 0)),
-        }));
+      return (parsed.topics || []).slice(0, 10).map((t: any) => ({
+        topic: t.topic || 'Unknown',
+        trendScore: Math.max(0, Math.min(1, t.trendScore ?? 0.5)),
+        recentArticles: Math.max(0, Math.round(t.recentArticles ?? 0)),
+      }));
     } catch (err: any) {
       console.error(`[Sentiment] Trending topics failed:`, err.message);
       return DEFAULT_FINANCIAL_TOPICS.map((topic, i) => ({
@@ -644,10 +603,7 @@ inflation, employment, government policy, international trade impacts on Austral
 
   // ---------- AI Integration Helper ----------
 
-  private async callAI(
-    systemPrompt: string,
-    userPrompt: string,
-  ): Promise<string> {
+  private async callAI(systemPrompt: string, userPrompt: string): Promise<string> {
     // Try Anthropic Claude first (unless circuit breaker is open)
     if (this.anthropicClient && !isCircuitOpen()) {
       try {
@@ -658,18 +614,14 @@ inflation, employment, government policy, international trade impacts on Austral
           messages: [{ role: 'user', content: userPrompt }],
         });
 
-        const textBlock = response.content.find(
-          (b): b is Anthropic.TextBlock => b.type === 'text',
-        );
+        const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text');
         if (textBlock?.text) {
           recordSuccess();
           return textBlock.text;
         }
         throw new Error('Empty response from Anthropic');
       } catch (err: any) {
-        console.warn(
-          `[Sentiment] Anthropic call failed: ${err.message} — trying OpenRouter`,
-        );
+        console.warn(`[Sentiment] Anthropic call failed: ${err.message} — trying OpenRouter`);
         recordFailure();
       }
     }
@@ -696,9 +648,7 @@ inflation, employment, government policy, international trade impacts on Austral
       }
     }
 
-    throw new Error(
-      'No AI provider available — set ANTHROPIC_API_KEY or VITE_OPENROUTER_API_KEY',
-    );
+    throw new Error('No AI provider available — set ANTHROPIC_API_KEY or VITE_OPENROUTER_API_KEY');
   }
 
   // ---------- DB Helpers ----------
@@ -779,12 +729,7 @@ inflation, employment, government policy, international trade impacts on Austral
 
   private scoreToLabel(
     score: number,
-  ):
-    | 'very_positive'
-    | 'positive'
-    | 'neutral'
-    | 'negative'
-    | 'very_negative' {
+  ): 'very_positive' | 'positive' | 'neutral' | 'negative' | 'very_negative' {
     if (score >= 0.5) return 'very_positive';
     if (score >= 0.1) return 'positive';
     if (score > -0.1) return 'neutral';

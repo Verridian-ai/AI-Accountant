@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, Search, Loader2, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import {
+  MessageSquare,
+  Search,
+  Loader2,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertTriangle,
+} from 'lucide-react';
 import { fetchSentiment, fetchBatchSentiment, analyzeMarketImpact } from '../../../api';
 
 interface SentimentResult {
@@ -60,7 +68,9 @@ export function SentimentDashboard() {
       setError(null);
       setLoading(true);
       const data = await fetchBatchSentiment(DEFAULT_TOPICS);
-      const results = Array.isArray(data) ? data : (data as { results: SentimentResult[] }).results || [];
+      const results = Array.isArray(data)
+        ? data
+        : (data as { results: SentimentResult[] }).results || [];
       if (results.length > 0) {
         setSentiments(results);
       } else {
@@ -68,13 +78,15 @@ export function SentimentDashboard() {
       }
     } catch {
       // Fallback data
-      setSentiments(DEFAULT_TOPICS.map((topic, i) => ({
-        topic,
-        sentiment: (['bullish', 'bearish', 'neutral', 'mixed'] as const)[i % 4],
-        score: Number(((Math.random() * 2 - 1)).toFixed(2)),
-        confidence: Number((0.5 + Math.random() * 0.5).toFixed(2)),
-        summary: `Market analysis for ${topic} indicates current conditions.`,
-      })));
+      setSentiments(
+        DEFAULT_TOPICS.map((topic, i) => ({
+          topic,
+          sentiment: (['bullish', 'bearish', 'neutral', 'mixed'] as const)[i % 4],
+          score: Number((Math.random() * 2 - 1).toFixed(2)),
+          confidence: Number((0.5 + Math.random() * 0.5).toFixed(2)),
+          summary: `Market analysis for ${topic} indicates current conditions.`,
+        })),
+      );
       setError('Using cached sentiment data');
     } finally {
       setLoading(false);
@@ -97,7 +109,7 @@ export function SentimentDashboard() {
         confidence: (data as SentimentResult).confidence || 0.5,
         summary: (data as SentimentResult).summary,
       };
-      setSentiments(prev => [result, ...prev.filter(s => s.topic !== customTopic)]);
+      setSentiments((prev) => [result, ...prev.filter((s) => s.topic !== customTopic)]);
       setCustomTopic('');
     } catch {
       setError(`Failed to analyze sentiment for "${customTopic}"`);
@@ -126,10 +138,14 @@ export function SentimentDashboard() {
 
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
-      case 'bullish': return <TrendingUp className="w-5 h-5" />;
-      case 'bearish': return <TrendingDown className="w-5 h-5" />;
-      case 'mixed': return <AlertTriangle className="w-5 h-5" />;
-      default: return <Minus className="w-5 h-5" />;
+      case 'bullish':
+        return <TrendingUp className="w-5 h-5" />;
+      case 'bearish':
+        return <TrendingDown className="w-5 h-5" />;
+      case 'mixed':
+        return <AlertTriangle className="w-5 h-5" />;
+      default:
+        return <Minus className="w-5 h-5" />;
     }
   };
 
@@ -169,7 +185,11 @@ export function SentimentDashboard() {
             disabled={customLoading || !customTopic.trim()}
             className="neu-raised-sm px-4 py-2 rounded-xl text-sm font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 disabled:opacity-50 transition-all flex items-center gap-2"
           >
-            {customLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+            {customLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <MessageSquare className="w-4 h-4" />
+            )}
             Analyze
           </button>
         </div>
@@ -199,7 +219,9 @@ export function SentimentDashboard() {
 
                 {/* Sentiment Badge */}
                 <div className="flex items-center gap-2 mb-3">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ring-1 ${SENTIMENT_BG[item.sentiment]} ${SENTIMENT_COLORS[item.sentiment]}`}>
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ring-1 ${SENTIMENT_BG[item.sentiment]} ${SENTIMENT_COLORS[item.sentiment]}`}
+                  >
                     {getSentimentIcon(item.sentiment)}
                     {item.sentiment.charAt(0).toUpperCase() + item.sentiment.slice(1)}
                   </span>
@@ -217,7 +239,9 @@ export function SentimentDashboard() {
                 {/* Confidence */}
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-zinc-500">Confidence</span>
-                  <span className="text-white font-medium">{(item.confidence * 100).toFixed(0)}%</span>
+                  <span className="text-white font-medium">
+                    {(item.confidence * 100).toFixed(0)}%
+                  </span>
                 </div>
 
                 {item.summary && (
@@ -256,13 +280,15 @@ export function SentimentDashboard() {
           <div className="neu-inset rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold text-white">{impactResult.event}</h4>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                impactResult.severity === 'high'
-                  ? 'bg-red-500/10 text-red-400'
-                  : impactResult.severity === 'medium'
-                  ? 'bg-amber-500/10 text-amber-400'
-                  : 'bg-zinc-500/10 text-zinc-400'
-              }`}>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                  impactResult.severity === 'high'
+                    ? 'bg-red-500/10 text-red-400'
+                    : impactResult.severity === 'medium'
+                      ? 'bg-amber-500/10 text-amber-400'
+                      : 'bg-zinc-500/10 text-zinc-400'
+                }`}
+              >
                 {impactResult.severity} impact
               </span>
             </div>
@@ -272,7 +298,10 @@ export function SentimentDashboard() {
                 <p className="text-xs text-zinc-500 mb-1">Affected Areas:</p>
                 <div className="flex flex-wrap gap-1">
                   {impactResult.affectedAreas.map((area, i) => (
-                    <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-zinc-300">
+                    <span
+                      key={i}
+                      className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-zinc-300"
+                    >
                       {area}
                     </span>
                   ))}

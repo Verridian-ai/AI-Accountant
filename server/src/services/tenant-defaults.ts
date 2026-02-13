@@ -116,14 +116,17 @@ export async function ensurePermissionsExist(): Promise<void> {
     if (existingNames.has(perm)) continue;
 
     const [resource, action] = perm.split('.');
-    await db.insert(permissions).values({
-      id: crypto.randomUUID(),
-      name: perm,
-      description: `${action.charAt(0).toUpperCase() + action.slice(1)} access to ${resource}`,
-      resource,
-      action,
-      isSystem: true,
-    }).run();
+    await db
+      .insert(permissions)
+      .values({
+        id: crypto.randomUUID(),
+        name: perm,
+        description: `${action.charAt(0).toUpperCase() + action.slice(1)} access to ${resource}`,
+        resource,
+        action,
+        isSystem: true,
+      })
+      .run();
   }
 }
 
@@ -134,10 +137,7 @@ export async function ensurePermissionsExist(): Promise<void> {
  * @param tenantId - The tenant to seed permissions for
  * @param grantedBy - The user who triggered the seeding (usually the tenant creator)
  */
-export async function seedDefaultPermissions(
-  tenantId: string,
-  grantedBy?: string
-): Promise<void> {
+export async function seedDefaultPermissions(tenantId: string, grantedBy?: string): Promise<void> {
   // First ensure all system permissions exist
   await ensurePermissionsExist();
 
@@ -156,13 +156,16 @@ export async function seedDefaultPermissions(
       const permId = permByName.get(permName);
       if (!permId) continue;
 
-      await db.insert(rolePermissions).values({
-        id: crypto.randomUUID(),
-        tenantId,
-        role,
-        permissionId: permId,
-        grantedBy: grantedBy ?? null,
-      }).run();
+      await db
+        .insert(rolePermissions)
+        .values({
+          id: crypto.randomUUID(),
+          tenantId,
+          role,
+          permissionId: permId,
+          grantedBy: grantedBy ?? null,
+        })
+        .run();
     }
   }
 }

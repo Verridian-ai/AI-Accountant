@@ -45,7 +45,7 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
         return;
       }
     },
-    [onScan]
+    [onScan],
   );
 
   return (
@@ -114,7 +114,7 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
                 className={({ isActive }) =>
                   cn(
                     'flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all duration-300',
-                    isActive ? 'text-[#FFCC00]' : 'text-zinc-500 hover:text-zinc-300'
+                    isActive ? 'text-[#FFCC00]' : 'text-zinc-500 hover:text-zinc-300',
                   )
                 }
                 aria-label={tab.label}
@@ -126,20 +126,20 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
                       className={cn(
                         'relative p-1.5 rounded-xl transition-all duration-300',
                         isActive &&
-                          'bg-[#FFCC00]/10 ring-1 ring-[#FFCC00]/20 shadow-[0_0_15px_rgba(255,204,0,0.1)]'
+                          'bg-[#FFCC00]/10 ring-1 ring-[#FFCC00]/20 shadow-[0_0_15px_rgba(255,204,0,0.1)]',
                       )}
                     >
                       <tab.icon
                         className={cn(
                           'h-6 w-6 transition-transform duration-300',
-                          isActive && 'scale-110'
+                          isActive && 'scale-110',
                         )}
                       />
                     </div>
                     <span
                       className={cn(
                         'text-[10px] font-bold tracking-wide transition-all duration-300',
-                        isActive ? 'opacity-100' : 'opacity-70'
+                        isActive ? 'opacity-100' : 'opacity-70',
                       )}
                     >
                       {tab.label}
@@ -153,10 +153,7 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
       </div>
 
       {/* Navigation Drawer */}
-      <NavigationDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-      />
+      <NavigationDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
     </>
   );
 }

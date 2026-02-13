@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, Check, X, ArrowUpDown, Building2 } from 'lucide-react';
+import {
+  Search,
+  SlidersHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  X,
+  ArrowUpDown,
+  Building2,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fetchCdrProducts } from '@/api';
 
@@ -22,7 +31,15 @@ interface ProductExplorerProps {
   onCompare?: (productIds: string[]) => void;
 }
 
-const CATEGORIES = ['ALL', 'HOME_LOAN', 'PERSONAL_LOAN', 'SAVINGS', 'TERM_DEPOSIT', 'CREDIT_CARD', 'TRANSACTION'];
+const CATEGORIES = [
+  'ALL',
+  'HOME_LOAN',
+  'PERSONAL_LOAN',
+  'SAVINGS',
+  'TERM_DEPOSIT',
+  'CREDIT_CARD',
+  'TRANSACTION',
+];
 const RATE_TYPES = ['ALL', 'FIXED', 'VARIABLE', 'INTRODUCTORY'];
 const SORT_OPTIONS = [
   { value: 'rate_asc', label: 'Rate: Low to High' },
@@ -67,13 +84,18 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
     }
   }, [category, rateType, search, sort, page]);
 
-  useEffect(() => { loadProducts(); }, [loadProducts]);
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) { next.delete(id); }
-      else if (next.size < 5) { next.add(id); }
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < 5) {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -94,15 +116,18 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
               type="text"
               placeholder="Search products, providers..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="w-full neu-inset rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-100 bg-transparent placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
-              "neu-raised-sm p-2.5 rounded-xl transition-colors",
-              showFilters ? "text-[#FFCC00]" : "text-zinc-400 hover:text-zinc-200"
+              'neu-raised-sm p-2.5 rounded-xl transition-colors',
+              showFilters ? 'text-[#FFCC00]' : 'text-zinc-400 hover:text-zinc-200',
             )}
           >
             <SlidersHorizontal className="h-5 w-5" />
@@ -112,38 +137,56 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
         {showFilters && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-white/5">
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">Category</label>
+              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">
+                Category
+              </label>
               <select
                 value={category}
-                onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
-                {CATEGORIES.map(c => (
-                  <option key={c} value={c} className="bg-[#23272f]">{c.replace(/_/g, ' ')}</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c} className="bg-[#23272f]">
+                    {c.replace(/_/g, ' ')}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">Rate Type</label>
+              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">
+                Rate Type
+              </label>
               <select
                 value={rateType}
-                onChange={(e) => { setRateType(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setRateType(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
-                {RATE_TYPES.map(r => (
-                  <option key={r} value={r} className="bg-[#23272f]">{r}</option>
+                {RATE_TYPES.map((r) => (
+                  <option key={r} value={r} className="bg-[#23272f]">
+                    {r}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">Sort</label>
+              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">
+                Sort
+              </label>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
-                {SORT_OPTIONS.map(s => (
-                  <option key={s.value} value={s.value} className="bg-[#23272f]">{s.label}</option>
+                {SORT_OPTIONS.map((s) => (
+                  <option key={s.value} value={s.value} className="bg-[#23272f]">
+                    {s.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -167,7 +210,9 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
       {error && (
         <div className="neu-raised rounded-2xl p-6 text-center text-red-400">
           <p>{error}</p>
-          <button onClick={loadProducts} className="mt-2 text-sm text-[#FFCC00] hover:underline">Retry</button>
+          <button onClick={loadProducts} className="mt-2 text-sm text-[#FFCC00] hover:underline">
+            Retry
+          </button>
         </div>
       )}
 
@@ -175,8 +220,12 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
       {!loading && !error && (
         <>
           <div className="flex items-center justify-between text-sm text-zinc-500">
-            <span>{total} product{total !== 1 ? 's' : ''} found</span>
-            <span>Page {page} of {totalPages}</span>
+            <span>
+              {total} product{total !== 1 ? 's' : ''} found
+            </span>
+            <span>
+              Page {page} of {totalPages}
+            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -184,8 +233,10 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
               <div
                 key={product.id}
                 className={cn(
-                  "neu-raised rounded-2xl p-5 space-y-3 transition-all duration-200 border",
-                  selectedIds.has(product.id) ? "border-[#FFCC00]/50 shadow-[0_0_20px_rgba(255,204,0,0.1)]" : "border-transparent hover:border-white/10"
+                  'neu-raised rounded-2xl p-5 space-y-3 transition-all duration-200 border',
+                  selectedIds.has(product.id)
+                    ? 'border-[#FFCC00]/50 shadow-[0_0_20px_rgba(255,204,0,0.1)]'
+                    : 'border-transparent hover:border-white/10',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -201,19 +252,27 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                   <button
                     onClick={() => toggleSelect(product.id)}
                     className={cn(
-                      "shrink-0 p-1 rounded-lg transition-colors",
+                      'shrink-0 p-1 rounded-lg transition-colors',
                       selectedIds.has(product.id)
-                        ? "bg-[#FFCC00]/20 text-[#FFCC00]"
-                        : "text-zinc-600 hover:text-zinc-400"
+                        ? 'bg-[#FFCC00]/20 text-[#FFCC00]'
+                        : 'text-zinc-600 hover:text-zinc-400',
                     )}
-                    title={selectedIds.has(product.id) ? "Remove from comparison" : "Add to comparison"}
+                    title={
+                      selectedIds.has(product.id) ? 'Remove from comparison' : 'Add to comparison'
+                    }
                   >
-                    {selectedIds.has(product.id) ? <Check className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+                    {selectedIds.has(product.id) ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <ArrowUpDown className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
 
                 <div>
-                  <span className="text-2xl font-black text-[#FFCC00]">{formatRate(product.baseRate)}</span>
+                  <span className="text-2xl font-black text-[#FFCC00]">
+                    {formatRate(product.baseRate)}
+                  </span>
                   {product.comparisonRate != null && (
                     <span className="text-xs text-zinc-500 ml-2">
                       {formatRate(product.comparisonRate)} comparison
@@ -235,12 +294,17 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                 {product.features && product.features.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {product.features.slice(0, 3).map((f, i) => (
-                      <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium">
+                      <span
+                        key={i}
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium"
+                      >
                         {f}
                       </span>
                     ))}
                     {product.features.length > 3 && (
-                      <span className="text-[10px] text-zinc-600">+{product.features.length - 3}</span>
+                      <span className="text-[10px] text-zinc-600">
+                        +{product.features.length - 3}
+                      </span>
                     )}
                   </div>
                 )}
@@ -258,7 +322,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
               <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
                 className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-zinc-200 disabled:opacity-30"
               >
@@ -273,8 +337,10 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                     key={n}
                     onClick={() => setPage(n)}
                     className={cn(
-                      "w-8 h-8 rounded-lg text-sm font-bold transition-colors",
-                      page === n ? "bg-[#FFCC00] text-[#0a0a0f]" : "neu-raised-sm text-zinc-400 hover:text-zinc-200"
+                      'w-8 h-8 rounded-lg text-sm font-bold transition-colors',
+                      page === n
+                        ? 'bg-[#FFCC00] text-[#0a0a0f]'
+                        : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
                     )}
                   >
                     {n}
@@ -282,7 +348,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                 );
               })}
               <button
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
                 className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-zinc-200 disabled:opacity-30"
               >
@@ -296,9 +362,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
       {/* Sticky Comparison Bar */}
       {selectedIds.size >= 2 && (
         <div className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-40 neu-raised rounded-2xl px-5 py-3 flex items-center gap-4 shadow-[0_0_30px_rgba(255,204,0,0.15)] border border-[#FFCC00]/20">
-          <span className="text-sm font-bold text-zinc-200">
-            {selectedIds.size} selected
-          </span>
+          <span className="text-sm font-bold text-zinc-200">{selectedIds.size} selected</span>
           <button
             onClick={() => onCompare?.(Array.from(selectedIds))}
             className="px-4 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] text-sm font-bold hover:bg-[#FFD633] transition-colors"

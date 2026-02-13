@@ -36,6 +36,33 @@ services:
       - ./server/drizzle/0007_missing_tables.sql:/docker-entrypoint-initdb.d/04-missing-tables.sql:ro
       - ./server/drizzle/0008_account_ownership.sql:/docker-entrypoint-initdb.d/05-account-ownership.sql:ro
       - ./docker/migrations/0009_complete_schema.sql:/docker-entrypoint-initdb.d/06-complete-schema.sql:ro
+      - ./docker/migrations/0010_add_missing_columns.sql:/docker-entrypoint-initdb.d/07-migration-0010.sql:ro
+      - ./docker/migrations/0011_final_schema_sync.sql:/docker-entrypoint-initdb.d/08-migration-0011.sql:ro
+      - ./docker/migrations/0012_tax_return_platform.sql:/docker-entrypoint-initdb.d/09-migration-0012.sql:ro
+      - ./docker/migrations/0013_postgres_schema_sync.sql:/docker-entrypoint-initdb.d/10-migration-0013.sql:ro
+      - ./docker/migrations/0014_agent_mutations.sql:/docker-entrypoint-initdb.d/11-migration-0014.sql:ro
+      - ./docker/migrations/0015_cognee_multi_user.sql:/docker-entrypoint-initdb.d/12-migration-0015.sql:ro
+      - ./docker/migrations/0016_employee_management.sql:/docker-entrypoint-initdb.d/13-migration-0016.sql:ro
+      - ./docker/migrations/0017_pay_runs_leave.sql:/docker-entrypoint-initdb.d/14-migration-0017.sql:ro
+      - ./docker/migrations/0018_stp_payslips_timesheets.sql:/docker-entrypoint-initdb.d/15-migration-0018.sql:ro
+      - ./docker/migrations/0019_customers_invoices.sql:/docker-entrypoint-initdb.d/16-migration-0019.sql:ro
+      - ./docker/migrations/0020_recurring_payments.sql:/docker-entrypoint-initdb.d/17-migration-0020.sql:ro
+      - ./docker/migrations/0021_ar_multicurrency.sql:/docker-entrypoint-initdb.d/18-migration-0021.sql:ro
+      - ./docker/migrations/0022_ap_purchase_orders.sql:/docker-entrypoint-initdb.d/19-migration-0022.sql:ro
+      - ./docker/migrations/0023_inventory_bank_recon.sql:/docker-entrypoint-initdb.d/20-migration-0023.sql:ro
+      - ./docker/migrations/0024_fixed_assets_multi_entity.sql:/docker-entrypoint-initdb.d/21-migration-0024.sql:ro
+      - ./docker/migrations/0025_financial_reporting.sql:/docker-entrypoint-initdb.d/22-migration-0025.sql:ro
+      - ./docker/migrations/0026_ai_ocr_payment_matching.sql:/docker-entrypoint-initdb.d/23-migration-0026.sql:ro
+      - ./docker/migrations/0027_predictive_analytics.sql:/docker-entrypoint-initdb.d/24-migration-0027.sql:ro
+      - ./docker/migrations/0028_cognee_datapoints.sql:/docker-entrypoint-initdb.d/25-migration-0028.sql:ro
+      - ./docker/migrations/0029_temporal_intelligence.sql:/docker-entrypoint-initdb.d/26-migration-0029.sql:ro
+      - ./docker/migrations/0030_cdr_open_banking.sql:/docker-entrypoint-initdb.d/27-migration-0030.sql:ro
+      - ./docker/migrations/0031_market_intelligence.sql:/docker-entrypoint-initdb.d/28-migration-0031.sql:ro
+      - ./docker/migrations/0032_admin_backend.sql:/docker-entrypoint-initdb.d/29-migration-0032.sql:ro
+      - ./docker/migrations/0033_vercel_ai_sdk.sql:/docker-entrypoint-initdb.d/30-migration-0033.sql:ro
+      - ./docker/migrations/0034_custom_dashboards.sql:/docker-entrypoint-initdb.d/31-migration-0034.sql:ro
+      - ./docker/migrations/0035_multi_tenant.sql:/docker-entrypoint-initdb.d/32-migration-0035.sql:ro
+      - ./docker/migrations/0036_pwa_support.sql:/docker-entrypoint-initdb.d/33-migration-0036.sql:ro
     networks:
       - cba-network
     healthcheck:
@@ -186,8 +213,13 @@ services:
       - DB_USER=${POSTGRES_USER:-app_user}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_SSL=false
+      - REDIS_URL=redis://redis:6379
       # Wave 4: TFN encryption key (AES-256-GCM for TFN + bank account numbers)
-      - TFN_ENCRYPTION_KEY=${TFN_ENCRYPTION_KEY}
+      - TFN_ENCRYPTION_KEY=${TFN_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      # Wave 8: Payment gateway key
+      - PAYMENT_ENCRYPTION_KEY=${PAYMENT_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      # Wave 10: Bank encryption key
+      - BANK_ENCRYPTION_KEY=${BANK_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3501/health"]
       interval: 30s

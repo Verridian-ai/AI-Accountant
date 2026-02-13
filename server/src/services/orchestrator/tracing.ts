@@ -176,12 +176,7 @@ export class AgentTracer {
   /**
    * Start a new trace
    */
-  startTrace(
-    requestId: string,
-    agentType: AgentType,
-    query: string,
-    userId?: string
-  ): string {
+  startTrace(requestId: string, agentType: AgentType, query: string, userId?: string): string {
     // Check sample rate
     if (Math.random() > this.config.sampleRate) {
       return requestId;
@@ -223,11 +218,7 @@ export class AgentTracer {
   /**
    * Add an event to the current trace
    */
-  addEvent(
-    traceId: string,
-    name: string,
-    attributes?: Record<string, unknown>
-  ): void {
+  addEvent(traceId: string, name: string, attributes?: Record<string, unknown>): void {
     const trace = this.activeTraces.get(traceId);
     if (!trace) return;
 
@@ -248,11 +239,7 @@ export class AgentTracer {
   /**
    * Start a span within the trace
    */
-  startSpan(
-    traceId: string,
-    name: string,
-    attributes?: Record<string, unknown>
-  ): string {
+  startSpan(traceId: string, name: string, attributes?: Record<string, unknown>): string {
     const spanId = `${traceId}-${name}-${Date.now()}`;
     const trace = this.activeTraces.get(traceId);
     if (!trace) return spanId;
@@ -282,7 +269,7 @@ export class AgentTracer {
 
     if (!this.isLangfuseTrace(trace)) {
       // Find and update local span
-      const span = trace.spans.find(s => !s.endTime);
+      const span = trace.spans.find((s) => !s.endTime);
       if (span) {
         span.endTime = Date.now();
       }
@@ -301,7 +288,7 @@ export class AgentTracer {
       output?: unknown;
       tokenUsage?: TokenUsage;
       durationMs?: number;
-    }
+    },
   ): void {
     const trace = this.activeTraces.get(traceId);
     if (!trace) return;
@@ -312,11 +299,14 @@ export class AgentTracer {
         model: params.model,
         input: this.config.includeContext ? params.input : undefined,
         output: params.output,
-        usage: this.config.includeTokenUsage && params.tokenUsage ? {
-          promptTokens: params.tokenUsage.promptTokens,
-          completionTokens: params.tokenUsage.completionTokens,
-          totalTokens: params.tokenUsage.totalTokens,
-        } : undefined,
+        usage:
+          this.config.includeTokenUsage && params.tokenUsage
+            ? {
+                promptTokens: params.tokenUsage.promptTokens,
+                completionTokens: params.tokenUsage.completionTokens,
+                totalTokens: params.tokenUsage.totalTokens,
+              }
+            : undefined,
         metadata: {
           durationMs: params.durationMs,
         },
@@ -343,7 +333,7 @@ export class AgentTracer {
       result?: unknown;
       durationMs: number;
       error?: string;
-    }
+    },
   ): void {
     if (!this.config.includeToolCalls) return;
 
@@ -358,11 +348,7 @@ export class AgentTracer {
   /**
    * End a trace
    */
-  endTrace(
-    traceId: string,
-    status: 'ok' | 'error',
-    output?: unknown
-  ): void {
+  endTrace(traceId: string, status: 'ok' | 'error', output?: unknown): void {
     const trace = this.activeTraces.get(traceId);
     if (!trace) return;
 
@@ -406,9 +392,7 @@ export class AgentTracer {
    */
   getStats(): TracingStats {
     const activeCount = this.activeTraces.size;
-    const avgDurationMs = this.traceCount > 0
-      ? this.totalDurationMs / this.traceCount
-      : 0;
+    const avgDurationMs = this.traceCount > 0 ? this.totalDurationMs / this.traceCount : 0;
 
     return {
       totalTraces: this.traceCount,
@@ -457,7 +441,7 @@ export class AgentTracer {
 
     for (const [id, trace] of this.localTraces.entries()) {
       // Remove traces older than retention period
-      if (trace.endTime && (now - trace.endTime) > this.TRACE_RETENTION_MS) {
+      if (trace.endTime && now - trace.endTime > this.TRACE_RETENTION_MS) {
         tracesToDelete.push(id);
       }
     }

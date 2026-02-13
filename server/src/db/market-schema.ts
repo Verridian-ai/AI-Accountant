@@ -34,7 +34,9 @@ export const marketDataFeeds = sqliteTable('market_data_feeds', {
 
 export const economicIndicators = sqliteTable('economic_indicators', {
   id: text('id').primaryKey(),
-  feedId: text('feed_id').notNull().references(() => marketDataFeeds.id),
+  feedId: text('feed_id')
+    .notNull()
+    .references(() => marketDataFeeds.id),
   indicatorCode: text('indicator_code').notNull(),
   indicatorName: text('indicator_name').notNull(),
   category: text('category').notNull(),
@@ -56,7 +58,9 @@ export const economicIndicators = sqliteTable('economic_indicators', {
 
 export const marketPrices = sqliteTable('market_prices', {
   id: text('id').primaryKey(),
-  feedId: text('feed_id').notNull().references(() => marketDataFeeds.id),
+  feedId: text('feed_id')
+    .notNull()
+    .references(() => marketDataFeeds.id),
   symbol: text('symbol').notNull(),
   name: text('name').notNull(),
   assetType: text('asset_type').notNull(),

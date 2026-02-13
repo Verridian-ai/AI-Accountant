@@ -102,7 +102,7 @@ export class TransferDetector {
   detectTransfers(
     transactions: TransferCandidate[],
     accounts: AccountContext[],
-    existingLinks: Array<{ sourceId: number; targetId: number }> = []
+    existingLinks: Array<{ sourceId: number; targetId: number }> = [],
   ): TransferMatch[] {
     // Filter out already linked transactions
     const linkedIds = new Set<number>();
@@ -111,9 +111,7 @@ export class TransferDetector {
       linkedIds.add(link.targetId);
     }
 
-    const unlinked = transactions.filter(
-      (tx) => !linkedIds.has(tx.id) && !tx.isLinked
-    );
+    const unlinked = transactions.filter((tx) => !linkedIds.has(tx.id) && !tx.isLinked);
 
     // Separate debits and credits by account
     const debitsByAccount = new Map<number, TransferCandidate[]>();
@@ -174,7 +172,7 @@ export class TransferDetector {
   private evaluateMatch(
     debit: TransferCandidate,
     credit: TransferCandidate,
-    accounts: AccountContext[]
+    accounts: AccountContext[],
   ): TransferMatch | null {
     const matchReasons: string[] = [];
     let score = 0;
@@ -249,7 +247,7 @@ export class TransferDetector {
     // Credit card payment bonus
     if (targetAccount && targetAccount.accountType === 'credit_card') {
       const ccKeywords = ['credit card', 'cc payment', 'card payment', 'visa', 'mastercard'];
-      if (ccKeywords.some(kw => debitDesc.includes(kw))) {
+      if (ccKeywords.some((kw) => debitDesc.includes(kw))) {
         matchReasons.push('Credit card payment');
         score += 0.15;
       }
@@ -276,9 +274,7 @@ export class TransferDetector {
    * Check if description contains transfer keywords
    */
   private hasTransferKeyword(description: string): boolean {
-    return this.config.transferKeywords.some((keyword) =>
-      description.includes(keyword)
-    );
+    return this.config.transferKeywords.some((keyword) => description.includes(keyword));
   }
 
   /**
@@ -294,9 +290,7 @@ export class TransferDetector {
   /**
    * Detect multi-hop transfers (A -> B -> C)
    */
-  detectMultiHopTransfers(
-    matches: TransferMatch[]
-  ): Array<TransferCandidate[]> {
+  detectMultiHopTransfers(matches: TransferMatch[]): Array<TransferCandidate[]> {
     // Build graph of transfers
     const graph = new Map<number, number[]>();
 
@@ -315,7 +309,7 @@ export class TransferDetector {
 
     const findChain = (
       startId: number,
-      transactions: Map<number, TransferCandidate>
+      transactions: Map<number, TransferCandidate>,
     ): TransferCandidate[] => {
       const chain: TransferCandidate[] = [];
       let currentId = startId;
@@ -357,24 +351,24 @@ export class TransferDetector {
    */
   detectCreditCardPayments(
     transactions: TransferCandidate[],
-    accounts: AccountContext[]
+    accounts: AccountContext[],
   ): TransferMatch[] {
     const ccKeywords = ['credit card', 'cc payment', 'card payment', 'visa payment', 'mastercard'];
-    const creditCardAccounts = accounts.filter(a => a.accountType === 'credit_card');
+    const creditCardAccounts = accounts.filter((a) => a.accountType === 'credit_card');
     if (creditCardAccounts.length === 0) return [];
 
-    const ccAccountIds = new Set(creditCardAccounts.map(a => a.id));
+    const ccAccountIds = new Set(creditCardAccounts.map((a) => a.id));
     const matches: TransferMatch[] = [];
     const usedTransactions = new Set<number>();
 
     // Find debits from transaction accounts that match credits on credit card accounts
-    const debits = transactions.filter(tx => tx.amount < 0 && !ccAccountIds.has(tx.accountId));
-    const credits = transactions.filter(tx => tx.amount > 0 && ccAccountIds.has(tx.accountId));
+    const debits = transactions.filter((tx) => tx.amount < 0 && !ccAccountIds.has(tx.accountId));
+    const credits = transactions.filter((tx) => tx.amount > 0 && ccAccountIds.has(tx.accountId));
 
     for (const debit of debits) {
       if (usedTransactions.has(debit.id)) continue;
       const debitDesc = debit.description.toLowerCase();
-      const hasCcKeyword = ccKeywords.some(kw => debitDesc.includes(kw));
+      const hasCcKeyword = ccKeywords.some((kw) => debitDesc.includes(kw));
 
       for (const credit of credits) {
         if (usedTransactions.has(credit.id)) continue;
@@ -406,19 +400,19 @@ export class TransferDetector {
    */
   detectOwnerContributions(
     transactions: TransferCandidate[],
-    accounts: AccountContext[]
+    accounts: AccountContext[],
   ): number[] {
-    const personalAccounts = accounts.filter(a => a.ownershipTag === 'personal');
-    const businessAccounts = accounts.filter(a => a.ownershipTag === 'business');
+    const personalAccounts = accounts.filter((a) => a.ownershipTag === 'personal');
+    const businessAccounts = accounts.filter((a) => a.ownershipTag === 'business');
     if (personalAccounts.length === 0 || businessAccounts.length === 0) return [];
 
-    const personalIds = new Set(personalAccounts.map(a => a.id));
-    const businessIds = new Set(businessAccounts.map(a => a.id));
+    const personalIds = new Set(personalAccounts.map((a) => a.id));
+    const businessIds = new Set(businessAccounts.map((a) => a.id));
     const contributionIds: number[] = [];
 
     // Find debits from personal accounts matching credits to business accounts
-    const debits = transactions.filter(tx => tx.amount < 0 && personalIds.has(tx.accountId));
-    const credits = transactions.filter(tx => tx.amount > 0 && businessIds.has(tx.accountId));
+    const debits = transactions.filter((tx) => tx.amount < 0 && personalIds.has(tx.accountId));
+    const credits = transactions.filter((tx) => tx.amount > 0 && businessIds.has(tx.accountId));
     const usedCredits = new Set<number>();
 
     for (const debit of debits) {
@@ -442,7 +436,7 @@ export class TransferDetector {
    */
   detectSavingsSweeps(
     transactions: TransferCandidate[],
-    accounts: AccountContext[]
+    accounts: AccountContext[],
   ): TransferMatch[] {
     const sweepKeywords = ['sweep', 'auto save', 'automatic', 'scheduled', 'recurring'];
     const matches: TransferMatch[] = [];
@@ -463,7 +457,9 @@ export class TransferDetector {
       if (debits.length < 2) continue;
 
       // Check if the interval is regular
-      const sortedDebits = [...debits].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const sortedDebits = [...debits].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
       const intervals: number[] = [];
       for (let i = 1; i < sortedDebits.length; i++) {
         intervals.push(this.daysBetween(sortedDebits[i - 1].date, sortedDebits[i].date));
@@ -471,7 +467,7 @@ export class TransferDetector {
 
       // Check for regularity: consistent interval (within 3 day tolerance)
       const avgInterval = intervals.reduce((s, v) => s + v, 0) / intervals.length;
-      const isRegular = intervals.every(iv => Math.abs(iv - avgInterval) <= 3);
+      const isRegular = intervals.every((iv) => Math.abs(iv - avgInterval) <= 3);
 
       if (!isRegular) continue;
 
@@ -479,11 +475,11 @@ export class TransferDetector {
       for (const debit of sortedDebits) {
         if (usedTransactions.has(debit.id)) continue;
         const debitDesc = debit.description.toLowerCase();
-        const hasSweepKeyword = sweepKeywords.some(kw => debitDesc.includes(kw));
+        const hasSweepKeyword = sweepKeywords.some((kw) => debitDesc.includes(kw));
 
         // Find matching credit in another account
         const credits = transactions.filter(
-          tx => tx.amount > 0 && tx.accountId !== debit.accountId && !usedTransactions.has(tx.id)
+          (tx) => tx.amount > 0 && tx.accountId !== debit.accountId && !usedTransactions.has(tx.id),
         );
 
         for (const credit of credits) {
@@ -493,7 +489,9 @@ export class TransferDetector {
               match.confidence = Math.min(1, match.confidence + 0.1);
               match.matchReasons.push('Savings sweep pattern');
             }
-            match.matchReasons.push(`Recurring (${intervals.length + 1} occurrences, ~${Math.round(avgInterval)}d interval)`);
+            match.matchReasons.push(
+              `Recurring (${intervals.length + 1} occurrences, ~${Math.round(avgInterval)}d interval)`,
+            );
             if (match.confidence >= this.config.minConfidence) {
               matches.push(match);
               usedTransactions.add(debit.id);
@@ -527,7 +525,7 @@ export class TransferDetector {
 export function detectTransfers(
   transactions: TransferCandidate[],
   accounts: AccountContext[],
-  existingLinks?: Array<{ sourceId: number; targetId: number }>
+  existingLinks?: Array<{ sourceId: number; targetId: number }>,
 ): TransferMatch[] {
   const detector = new TransferDetector();
   return detector.detectTransfers(transactions, accounts, existingLinks);
@@ -538,7 +536,7 @@ export function detectTransfers(
  */
 export function excludeTransfers(
   transactions: TransferCandidate[],
-  transferMatches: TransferMatch[]
+  transferMatches: TransferMatch[],
 ): TransferCandidate[] {
   const transferIds = new Set<number>();
   for (const match of transferMatches) {

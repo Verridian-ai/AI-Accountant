@@ -52,7 +52,7 @@ export class MutationAuthService {
   canPropose(
     agentType: AgentType,
     targetTable: string,
-    mutationType: 'create' | 'update' | 'delete' | 'batch_update'
+    mutationType: 'create' | 'update' | 'delete' | 'batch_update',
   ): MutationAuthDecision {
     const permissions = this.getTablePermissions(agentType, targetTable);
 
@@ -87,7 +87,7 @@ export class MutationAuthService {
     agentType: AgentType,
     mutationType: string,
     targetTable: string,
-    confidence: number
+    confidence: number,
   ): boolean {
     // Rule 1: Delete operations NEVER auto-execute
     if (mutationType === 'delete') return false;
@@ -100,7 +100,7 @@ export class MutationAuthService {
       (r) =>
         r.agentType === agentType &&
         r.mutationType === mutationType &&
-        r.targetTable === targetTable
+        r.targetTable === targetTable,
     );
 
     if (!rule) return false;
@@ -112,9 +112,7 @@ export class MutationAuthService {
   /**
    * Get the full permission matrix for an agent.
    */
-  getAgentPermissions(
-    agentType: AgentType
-  ): Record<string, TablePermission> {
+  getAgentPermissions(agentType: AgentType): Record<string, TablePermission> {
     return this.permissionMatrix[agentType] ?? {};
   }
 
@@ -124,10 +122,7 @@ export class MutationAuthService {
    * Agent → Table permission matrix.
    * Only agents with explicit permissions can propose mutations.
    */
-  private getTablePermissions(
-    agentType: AgentType,
-    targetTable: string
-  ): TablePermission | null {
+  private getTablePermissions(agentType: AgentType, targetTable: string): TablePermission | null {
     const agentPerms = this.permissionMatrix[agentType];
     if (!agentPerms) return null;
 
@@ -137,9 +132,7 @@ export class MutationAuthService {
     return null;
   }
 
-  private readonly permissionMatrix: Record<
-    string, Record<string, TablePermission>
-  > = {
+  private readonly permissionMatrix: Record<string, Record<string, TablePermission>> = {
     // ── Categorization agents ──
     transaction_categorizer: {
       transactions: { read: true, create: false, update: true, delete: false },

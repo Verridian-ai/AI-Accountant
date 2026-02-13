@@ -71,18 +71,12 @@ export function tenantAuthMiddleware() {
     // 2. Extract X-Tenant-Id header
     const headerTenantId = c.req.header('X-Tenant-Id');
     if (!headerTenantId) {
-      return c.json(
-        { error: 'X-Tenant-Id header is required for all API requests' },
-        403
-      );
+      return c.json({ error: 'X-Tenant-Id header is required for all API requests' }, 403);
     }
 
     // 3. Verify X-Tenant-Id matches the JWT's tenantId (prevent spoofing)
     if (headerTenantId !== payload.tenantId) {
-      return c.json(
-        { error: 'X-Tenant-Id header does not match token tenant context' },
-        403
-      );
+      return c.json({ error: 'X-Tenant-Id header does not match token tenant context' }, 403);
     }
 
     // 4. Verify tenant exists and is active
@@ -124,10 +118,7 @@ export function optionalTenantAuth() {
       // If X-Tenant-Id is provided, verify it matches the token
       const headerTenantId = c.req.header('X-Tenant-Id');
       if (headerTenantId && headerTenantId !== payload.tenantId) {
-        return c.json(
-          { error: 'X-Tenant-Id header does not match token tenant context' },
-          403
-        );
+        return c.json({ error: 'X-Tenant-Id header does not match token tenant context' }, 403);
       }
 
       // Verify tenant is still active (if tenantId is in token)
@@ -177,7 +168,7 @@ export function requireRole(minRole: TenantRole) {
           requiredRole: minRole,
           actualRole: userRole,
         },
-        403
+        403,
       );
     }
 

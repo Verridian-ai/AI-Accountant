@@ -158,14 +158,18 @@ function validateChatMessages(messages: ChatMessage[]): void {
     }
 
     if (msg.content.length > AI_CONFIG.maxMessageLength) {
-      throw new Error(`Message at index ${i} exceeds maximum length of ${AI_CONFIG.maxMessageLength} characters`);
+      throw new Error(
+        `Message at index ${i} exceeds maximum length of ${AI_CONFIG.maxMessageLength} characters`,
+      );
     }
 
     totalEstimatedTokens += estimateTokens(msg.content);
   }
 
   if (totalEstimatedTokens > AI_CONFIG.maxEstimatedTokens) {
-    throw new Error(`Request too large. Estimated tokens: ${totalEstimatedTokens}, maximum: ${AI_CONFIG.maxEstimatedTokens}`);
+    throw new Error(
+      `Request too large. Estimated tokens: ${totalEstimatedTokens}, maximum: ${AI_CONFIG.maxEstimatedTokens}`,
+    );
   }
 }
 
@@ -177,7 +181,9 @@ function validateImageUrl(url: string): void {
     const parsed = new URL(url);
 
     if (!AI_CONFIG.allowedImageProtocols.includes(parsed.protocol)) {
-      throw new Error(`Invalid image URL protocol. Allowed: ${AI_CONFIG.allowedImageProtocols.join(', ')}`);
+      throw new Error(
+        `Invalid image URL protocol. Allowed: ${AI_CONFIG.allowedImageProtocols.join(', ')}`,
+      );
     }
 
     // Block localhost and private IPs to prevent SSRF
@@ -206,7 +212,7 @@ function validateImageUrl(url: string): void {
 async function fetchWithTimeout(
   url: string,
   options: RequestInit,
-  timeoutMs: number = AI_CONFIG.requestTimeoutMs
+  timeoutMs: number = AI_CONFIG.requestTimeoutMs,
 ): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -282,7 +288,7 @@ export class AIProxy {
         'openrouter/openai/o3-mini',
         'openrouter/openai/gpt-4o',
         'anthropic/claude-3-opus',
-        'anthropic/claude-3-sonnet'
+        'anthropic/claude-3-sonnet',
       );
     }
 
@@ -292,7 +298,7 @@ export class AIProxy {
         'gpt-4-turbo',
         'gpt-3.5-turbo',
         'text-embedding-3-large',
-        'text-embedding-3-small'
+        'text-embedding-3-small',
       );
     }
 
@@ -316,7 +322,7 @@ export class AIProxy {
       const response = await fetchWithTimeout(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.openrouterKey}`,
+          Authorization: `Bearer ${this.openrouterKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://goldledger.com.au',
           'X-Title': 'GoldLedger',
@@ -332,10 +338,14 @@ export class AIProxy {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const statusMessage = response.status === 429 ? 'Rate limit exceeded' :
-                             response.status === 401 ? 'Authentication failed' :
-                             response.status >= 500 ? 'AI service temporarily unavailable' :
-                             'AI request failed';
+        const statusMessage =
+          response.status === 429
+            ? 'Rate limit exceeded'
+            : response.status === 401
+              ? 'Authentication failed'
+              : response.status >= 500
+                ? 'AI service temporarily unavailable'
+                : 'AI request failed';
         throw new Error(`${statusMessage} (${response.status})`);
       }
 
@@ -345,11 +355,13 @@ export class AIProxy {
         id: data.id,
         content: data.choices?.[0]?.message?.content || '',
         model: data.model,
-        usage: data.usage ? {
-          promptTokens: data.usage.prompt_tokens,
-          completionTokens: data.usage.completion_tokens,
-          totalTokens: data.usage.total_tokens,
-        } : undefined,
+        usage: data.usage
+          ? {
+              promptTokens: data.usage.prompt_tokens,
+              completionTokens: data.usage.completion_tokens,
+              totalTokens: data.usage.total_tokens,
+            }
+          : undefined,
         finishReason: data.choices?.[0]?.finish_reason,
       };
     } catch (error) {
@@ -361,7 +373,7 @@ export class AIProxy {
    * Stream a chat completion response
    */
   async *streamChatCompletion(
-    request: ChatCompletionRequest
+    request: ChatCompletionRequest,
   ): AsyncGenerator<string, void, unknown> {
     if (!this.openrouterKey) {
       throw new Error('AI service not configured');
@@ -380,7 +392,7 @@ export class AIProxy {
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.openrouterKey}`,
+          Authorization: `Bearer ${this.openrouterKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://goldledger.com.au',
           'X-Title': 'GoldLedger',
@@ -396,10 +408,14 @@ export class AIProxy {
       });
 
       if (!response.ok) {
-        const statusMessage = response.status === 429 ? 'Rate limit exceeded' :
-                             response.status === 401 ? 'Authentication failed' :
-                             response.status >= 500 ? 'AI service temporarily unavailable' :
-                             'AI streaming request failed';
+        const statusMessage =
+          response.status === 429
+            ? 'Rate limit exceeded'
+            : response.status === 401
+              ? 'Authentication failed'
+              : response.status >= 500
+                ? 'AI service temporarily unavailable'
+                : 'AI streaming request failed';
         throw new Error(`${statusMessage} (${response.status})`);
       }
 
@@ -482,7 +498,7 @@ export class AIProxy {
       const response = await fetchWithTimeout(`${this.baseUrl}/embeddings`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.openrouterKey}`,
+          Authorization: `Bearer ${this.openrouterKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -492,9 +508,12 @@ export class AIProxy {
       });
 
       if (!response.ok) {
-        const statusMessage = response.status === 429 ? 'Rate limit exceeded' :
-                             response.status === 401 ? 'Authentication failed' :
-                             'Embedding request failed';
+        const statusMessage =
+          response.status === 429
+            ? 'Rate limit exceeded'
+            : response.status === 401
+              ? 'Authentication failed'
+              : 'Embedding request failed';
         throw new Error(`${statusMessage} (${response.status})`);
       }
 
@@ -503,10 +522,12 @@ export class AIProxy {
       return {
         embeddings: data.data.map((d: { embedding: number[] }) => d.embedding),
         model: data.model,
-        usage: data.usage ? {
-          promptTokens: data.usage.prompt_tokens,
-          totalTokens: data.usage.total_tokens,
-        } : undefined,
+        usage: data.usage
+          ? {
+              promptTokens: data.usage.prompt_tokens,
+              totalTokens: data.usage.total_tokens,
+            }
+          : undefined,
       };
     } catch (error) {
       throw new Error(sanitizeErrorMessage(error));
@@ -534,7 +555,7 @@ export class AIProxy {
       const response = await fetchWithTimeout(`${this.openaiBaseUrl}/embeddings`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.openaiKey}`,
+          Authorization: `Bearer ${this.openaiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -544,9 +565,12 @@ export class AIProxy {
       });
 
       if (!response.ok) {
-        const statusMessage = response.status === 429 ? 'Rate limit exceeded' :
-                             response.status === 401 ? 'Authentication failed' :
-                             'OpenAI embedding request failed';
+        const statusMessage =
+          response.status === 429
+            ? 'Rate limit exceeded'
+            : response.status === 401
+              ? 'Authentication failed'
+              : 'OpenAI embedding request failed';
         throw new Error(`${statusMessage} (${response.status})`);
       }
 
@@ -555,10 +579,12 @@ export class AIProxy {
       return {
         embeddings: data.data.map((d: { embedding: number[] }) => d.embedding),
         model: data.model,
-        usage: data.usage ? {
-          promptTokens: data.usage.prompt_tokens,
-          totalTokens: data.usage.total_tokens,
-        } : undefined,
+        usage: data.usage
+          ? {
+              promptTokens: data.usage.prompt_tokens,
+              totalTokens: data.usage.total_tokens,
+            }
+          : undefined,
       };
     } catch (error) {
       throw new Error(sanitizeErrorMessage(error));
@@ -634,7 +660,7 @@ export class AIProxy {
       const response = await fetchWithTimeout(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.openrouterKey}`,
+          Authorization: `Bearer ${this.openrouterKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://goldledger.com.au',
           'X-Title': 'GoldLedger',
@@ -652,9 +678,12 @@ export class AIProxy {
       });
 
       if (!response.ok) {
-        const statusMessage = response.status === 429 ? 'Rate limit exceeded' :
-                             response.status === 401 ? 'Authentication failed' :
-                             'Vision request failed';
+        const statusMessage =
+          response.status === 429
+            ? 'Rate limit exceeded'
+            : response.status === 401
+              ? 'Authentication failed'
+              : 'Vision request failed';
         throw new Error(`${statusMessage} (${response.status})`);
       }
 
@@ -664,11 +693,13 @@ export class AIProxy {
         id: data.id,
         content: data.choices?.[0]?.message?.content || '',
         model: data.model,
-        usage: data.usage ? {
-          promptTokens: data.usage.prompt_tokens,
-          completionTokens: data.usage.completion_tokens,
-          totalTokens: data.usage.total_tokens,
-        } : undefined,
+        usage: data.usage
+          ? {
+              promptTokens: data.usage.prompt_tokens,
+              completionTokens: data.usage.completion_tokens,
+              totalTokens: data.usage.total_tokens,
+            }
+          : undefined,
         finishReason: data.choices?.[0]?.finish_reason,
       };
     } catch (error) {
@@ -686,7 +717,7 @@ export class AIProxy {
       systemPrompt?: string;
       temperature?: number;
       maxTokens?: number;
-    }
+    },
   ): Promise<string> {
     // Validate prompt
     if (!prompt || typeof prompt !== 'string') {
@@ -725,7 +756,7 @@ export class AIProxy {
     options?: {
       model?: string;
       schema?: string;
-    }
+    },
   ): Promise<T> {
     // Validate prompt
     if (!prompt || typeof prompt !== 'string') {
@@ -769,7 +800,7 @@ STRICT RULES:
     const jsonStartBracket = jsonStr.indexOf('[');
     const jsonStart = Math.min(
       jsonStartBrace >= 0 ? jsonStartBrace : Infinity,
-      jsonStartBracket >= 0 ? jsonStartBracket : Infinity
+      jsonStartBracket >= 0 ? jsonStartBracket : Infinity,
     );
     if (jsonStart !== Infinity && jsonStart > 0) {
       jsonStr = jsonStr.slice(jsonStart);

@@ -13,12 +13,18 @@
  * - Internal methods (*Internal) decrypt for pay-run/ATO use only
  */
 
-import { db, employees, employeeBankDetails, employeeSuperFunds, employeeTaxDeclarations, employeeDocuments } from '../schema.js';
+import {
+  db,
+  employees,
+  employeeBankDetails,
+  employeeSuperFunds,
+  employeeTaxDeclarations,
+  employeeDocuments,
+} from '../schema.js';
 import { eq, and, desc, like, sql } from 'drizzle-orm';
 import { encryptField, decryptField, maskTFN, maskAccountNumber, maskBSB } from './encryption.js';
 
 export class EmployeeService {
-
   // ============================
   // EMPLOYEE CRUD
   // ============================
@@ -76,12 +82,15 @@ export class EmployeeService {
    * List employees for a user.
    * Supports pagination (offset-based), status filter, and name search.
    */
-  async listEmployees(userId: string, options?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-    search?: string;
-  }): Promise<{ data: any[]; total: number }> {
+  async listEmployees(
+    userId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      search?: string;
+    },
+  ): Promise<{ data: any[]; total: number }> {
     const page = options?.page ?? 1;
     const limit = options?.limit ?? 50;
     const offset = (page - 1) * limit;
@@ -94,20 +103,23 @@ export class EmployeeService {
     if (options?.search) {
       // Search by first or last name
       conditions.push(
-        sql`(${employees.firstName} LIKE ${'%' + options.search + '%'} OR ${employees.lastName} LIKE ${'%' + options.search + '%'})`
+        sql`(${employees.firstName} LIKE ${'%' + options.search + '%'} OR ${employees.lastName} LIKE ${'%' + options.search + '%'})`,
       );
     }
 
     const whereClause = conditions.length === 1 ? conditions[0] : and(...conditions);
 
     // Count total matching records
-    const countResult = await db.select({ count: sql<number>`COUNT(*)` })
+    const countResult = await db
+      .select({ count: sql<number>`COUNT(*)` })
       .from(employees)
       .where(whereClause);
     const total = Number(countResult[0]?.count ?? 0);
 
     // Fetch paginated results
-    const rows = await db.select().from(employees)
+    const rows = await db
+      .select()
+      .from(employees)
       .where(whereClause)
       .orderBy(desc(employees.createdAt))
       .limit(limit)
@@ -123,19 +135,22 @@ export class EmployeeService {
    * Update an employee record.
    * Re-encrypts TFN if a new value is provided.
    */
-  async updateEmployee(id: string, data: Partial<{
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    dateOfBirth: string;
-    address: string;
-    taxFileNumber: string;
-    startDate: string;
-    endDate: string;
-    status: string;
-    employmentType: string;
-  }>): Promise<any | null> {
+  async updateEmployee(
+    id: string,
+    data: Partial<{
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      dateOfBirth: string;
+      address: string;
+      taxFileNumber: string;
+      startDate: string;
+      endDate: string;
+      status: string;
+      employmentType: string;
+    }>,
+  ): Promise<any | null> {
     const updateData: any = { ...data, updatedAt: new Date().toISOString() };
 
     // Encrypt TFN if provided — plaintext must never reach the DB
@@ -152,11 +167,14 @@ export class EmployeeService {
    * Does NOT delete the record — payroll history must be preserved.
    */
   async terminateEmployee(id: string, endDate?: string): Promise<any | null> {
-    await db.update(employees).set({
-      status: 'terminated',
-      endDate: endDate ?? new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString(),
-    }).where(eq(employees.id, id));
+    await db
+      .update(employees)
+      .set({
+        status: 'terminated',
+        endDate: endDate ?? new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(employees.id, id));
     return this.getEmployee(id);
   }
 
@@ -168,13 +186,16 @@ export class EmployeeService {
    * Add bank details for an employee.
    * REVISION (D02): Encrypts BOTH BSB and account number at rest.
    */
-  async addBankDetails(employeeId: string, data: {
-    bsb: string;
-    accountNumber: string;
-    accountName: string;
-    splitPercentage?: number;
-    isPrimary?: boolean;
-  }): Promise<any> {
+  async addBankDetails(
+    employeeId: string,
+    data: {
+      bsb: string;
+      accountNumber: string;
+      accountName: string;
+      splitPercentage?: number;
+      isPrimary?: boolean;
+    },
+  ): Promise<any> {
     const id = crypto.randomUUID();
     await db.insert(employeeBankDetails).values({
       id,
@@ -194,7 +215,9 @@ export class EmployeeService {
    * REVISION (D02): BSB is also masked (decrypt → mask).
    */
   async getBankDetails(employeeId: string): Promise<any[]> {
-    const rows = await db.select().from(employeeBankDetails)
+    const rows = await db
+      .select()
+      .from(employeeBankDetails)
       .where(eq(employeeBankDetails.employeeId, employeeId));
     return rows.map((r: any) => ({
       ...r,
@@ -208,7 +231,9 @@ export class EmployeeService {
    * Internal use only — for pay run processing. NEVER expose via API.
    */
   async getBankDetailsInternal(employeeId: string): Promise<any[]> {
-    const rows = await db.select().from(employeeBankDetails)
+    const rows = await db
+      .select()
+      .from(employeeBankDetails)
       .where(eq(employeeBankDetails.employeeId, employeeId));
     return rows.map((r: any) => ({
       ...r,
@@ -225,13 +250,16 @@ export class EmployeeService {
    * Add super fund for an employee.
    * Defaults contribution rate to 11.5% (FY2025-26 Superannuation Guarantee).
    */
-  async addSuperFund(employeeId: string, data: {
-    fundName: string;
-    fundABN?: string;
-    usi?: string;
-    memberNumber?: string;
-    contributionRate?: number;
-  }): Promise<any> {
+  async addSuperFund(
+    employeeId: string,
+    data: {
+      fundName: string;
+      fundABN?: string;
+      usi?: string;
+      memberNumber?: string;
+      contributionRate?: number;
+    },
+  ): Promise<any> {
     const id = crypto.randomUUID();
     await db.insert(employeeSuperFunds).values({
       id,
@@ -250,7 +278,9 @@ export class EmployeeService {
    * Get all super funds for an employee.
    */
   async getSuperFund(employeeId: string): Promise<any[]> {
-    return db.select().from(employeeSuperFunds)
+    return db
+      .select()
+      .from(employeeSuperFunds)
       .where(eq(employeeSuperFunds.employeeId, employeeId));
   }
 
@@ -262,14 +292,17 @@ export class EmployeeService {
    * Submit a tax declaration for an employee (ATO TFN Declaration fields).
    * Multiple declarations are allowed — the most recent by effectiveDate is current.
    */
-  async submitTaxDeclaration(employeeId: string, data: {
-    taxFreeThreshold?: boolean;
-    helpDebt?: boolean;
-    sfssDebt?: boolean;
-    claimDependents?: number;
-    taxOffsetEstimated?: number;
-    effectiveDate: string;
-  }): Promise<any> {
+  async submitTaxDeclaration(
+    employeeId: string,
+    data: {
+      taxFreeThreshold?: boolean;
+      helpDebt?: boolean;
+      sfssDebt?: boolean;
+      claimDependents?: number;
+      taxOffsetEstimated?: number;
+      effectiveDate: string;
+    },
+  ): Promise<any> {
     const id = crypto.randomUUID();
     await db.insert(employeeTaxDeclarations).values({
       id,
@@ -290,7 +323,9 @@ export class EmployeeService {
    * Ordered by effectiveDate DESC — returns the current active declaration.
    */
   async getTaxDeclaration(employeeId: string): Promise<any | null> {
-    const rows = await db.select().from(employeeTaxDeclarations)
+    const rows = await db
+      .select()
+      .from(employeeTaxDeclarations)
       .where(eq(employeeTaxDeclarations.employeeId, employeeId))
       .orderBy(desc(employeeTaxDeclarations.effectiveDate))
       .limit(1);

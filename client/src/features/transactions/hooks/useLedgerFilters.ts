@@ -57,14 +57,9 @@ export function useLedgerFilters({
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const categories = useMemo(() => {
-    const transactionCategories = new Set(
-      transactions.map((t) => t.category || 'Uncategorized')
-    );
+    const transactionCategories = new Set(transactions.map((t) => t.category || 'Uncategorized'));
 
-    const allCategories = new Set([
-      ...CATEGORY_NAMES,
-      ...transactionCategories,
-    ]);
+    const allCategories = new Set([...CATEGORY_NAMES, ...transactionCategories]);
 
     const sorted = Array.from(allCategories)
       .filter((c) => c !== 'Uncategorized')
@@ -76,26 +71,37 @@ export function useLedgerFilters({
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const matchesCategory =
-        selectedCategory === 'All' ||
-        (t.category || 'Uncategorized') === selectedCategory;
+        selectedCategory === 'All' || (t.category || 'Uncategorized') === selectedCategory;
 
       const matchesStart = !startDate || t.date >= startDate;
       const matchesEnd = !endDate || t.date <= endDate;
 
-      const matchesAccount =
-        selectedAccount === 'All' || t.accountId === selectedAccount;
+      const matchesAccount = selectedAccount === 'All' || t.accountId === selectedAccount;
 
       const minAmountCents = minAmount ? parseFloat(minAmount) * 100 : null;
       const maxAmountCents = maxAmount ? parseFloat(maxAmount) * 100 : null;
       const matchesMinAmount = minAmountCents === null || t.amount >= minAmountCents;
       const matchesMaxAmount = maxAmountCents === null || t.amount <= maxAmountCents;
 
-      return matchesCategory && matchesStart && matchesEnd && matchesAccount && matchesMinAmount && matchesMaxAmount;
+      return (
+        matchesCategory &&
+        matchesStart &&
+        matchesEnd &&
+        matchesAccount &&
+        matchesMinAmount &&
+        matchesMaxAmount
+      );
     });
   }, [transactions, selectedCategory, startDate, endDate, selectedAccount, minAmount, maxAmount]);
 
   const hasActiveFilters = Boolean(
-    startDate || endDate || selectedCategory !== 'All' || globalFilter || selectedAccount !== 'All' || minAmount || maxAmount
+    startDate ||
+    endDate ||
+    selectedCategory !== 'All' ||
+    globalFilter ||
+    selectedAccount !== 'All' ||
+    minAmount ||
+    maxAmount,
   );
 
   const resetFilters = useCallback(() => {

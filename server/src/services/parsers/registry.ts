@@ -121,17 +121,10 @@ class BankParserRegistry {
   /**
    * Parse a statement with auto-detection or forced parser
    */
-  async parseStatement(
-    pdfText: string,
-    options: ParseOptions = {}
-  ): Promise<StatementParseResult> {
+  async parseStatement(pdfText: string, options: ParseOptions = {}): Promise<StatementParseResult> {
     this.ensureInitialized();
 
-    const {
-      forceBankId,
-      minConfidence = 0.4,
-      fallbackToAI = true,
-    } = options;
+    const { forceBankId, minConfidence = 0.4, fallbackToAI = true } = options;
 
     // If bank ID is forced, use that parser directly
     if (forceBankId) {
@@ -183,7 +176,7 @@ class BankParserRegistry {
         if (parser) {
           const result = await parser.parse(pdfText);
           result.parseWarnings.unshift(
-            `Low confidence detection: ${detections[0].confidence.toFixed(2)}`
+            `Low confidence detection: ${detections[0].confidence.toFixed(2)}`,
           );
           return result;
         }

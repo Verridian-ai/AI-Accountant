@@ -20,18 +20,22 @@
  *   "Value Date: 30/09/20234.39$$524.59CR"
  */
 
-import {
-  BankParserConfig,
-  ParsedTransaction,
-  AccountInfo,
-  AccountType,
-} from '../types';
+import { BankParserConfig, ParsedTransaction, AccountInfo, AccountType } from '../types';
 import { BaseBankParser, parseAmount } from '../base-parser';
 
 const MONTH_MAP: Record<string, string> = {
-  jan: '01', feb: '02', mar: '03', apr: '04',
-  may: '05', jun: '06', jul: '07', aug: '08',
-  sep: '09', oct: '10', nov: '11', dec: '12',
+  jan: '01',
+  feb: '02',
+  mar: '03',
+  apr: '04',
+  may: '05',
+  jun: '06',
+  jul: '07',
+  aug: '08',
+  sep: '09',
+  oct: '10',
+  nov: '11',
+  dec: '12',
 };
 
 const CBA_CONFIG: BankParserConfig = {
@@ -70,14 +74,14 @@ const CBA_CONFIG: BankParserConfig = {
   accountTypes: {
     'Smart Access': 'transaction',
     'Complete Access': 'transaction',
-    'Streamline': 'transaction',
+    Streamline: 'transaction',
     'Goal Saver': 'savings',
     'NetBank Saver': 'savings',
-    'Youthsaver': 'savings',
-    'Mastercard': 'credit',
+    Youthsaver: 'savings',
+    Mastercard: 'credit',
     'Credit Card': 'credit',
-    'Business': 'business',
-    'Offset': 'offset',
+    Business: 'business',
+    Offset: 'offset',
     'Home Loan': 'loan',
   },
 
@@ -87,10 +91,8 @@ const CBA_CONFIG: BankParserConfig = {
     /From[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})\s*To[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})/i,
   ],
 
-  openingBalancePattern:
-    /OPENING\s+BALANCE\s*\$?([\d,]+\.\d{2})/i,
-  closingBalancePattern:
-    /CLOSING\s+BALANCE\s*\$?([\d,]+\.\d{2})/i,
+  openingBalancePattern: /OPENING\s+BALANCE\s*\$?([\d,]+\.\d{2})/i,
+  closingBalancePattern: /CLOSING\s+BALANCE\s*\$?([\d,]+\.\d{2})/i,
 };
 
 const AMT = '(\\d{1,3}(?:,\\d{3}){0,2}\\.\\d{2})';
@@ -99,7 +101,9 @@ const AMT = '(\\d{1,3}(?:,\\d{3}){0,2}\\.\\d{2})';
  *  Parses right-to-left: first extract $$balance, then find amount before $$.
  *  Uses lookbehind to prevent matching amounts concatenated with reference numbers.
  *  If lookbehind fails, falls back to extracting just the raw decimal number. */
-function tryDebitAmountBalance(text: string): { desc: string; amount: number; balance: number } | null {
+function tryDebitAmountBalance(
+  text: string,
+): { desc: string; amount: number; balance: number } | null {
   // Find $$ separator
   const ddIdx = text.lastIndexOf('$$');
   if (ddIdx < 0) return null;
@@ -141,7 +145,9 @@ function tryDebitAmountBalance(text: string): { desc: string; amount: number; ba
 
 /** Try to extract credit amount+balance from a text ending in $amount$balanceCR/DR.
  *  Credit format has $ before amount and $ before balance. */
-function tryCreditAmountBalance(text: string): { desc: string; amount: number; balance: number } | null {
+function tryCreditAmountBalance(
+  text: string,
+): { desc: string; amount: number; balance: number } | null {
   // Match from the right: $balance(CR|DR) at end
   const balRe = new RegExp(`\\$${AMT}(CR|DR)\\s*$`);
   const balMatch = text.match(balRe);
@@ -173,7 +179,12 @@ function tryAmountBalance(text: string): { desc: string; amount: number; balance
 export class CBAParser extends BaseBankParser {
   config = CBA_CONFIG;
 
-  private inferYear(month: string, statementYear: number, periodStartMonth: number, periodEndMonth: number): number {
+  private inferYear(
+    month: string,
+    statementYear: number,
+    periodStartMonth: number,
+    periodEndMonth: number,
+  ): number {
     const monthNum = parseInt(MONTH_MAP[month.toLowerCase()] || '0');
     if (monthNum === 0) return statementYear;
     if (periodEndMonth < periodStartMonth) {
@@ -184,13 +195,16 @@ export class CBAParser extends BaseBankParser {
   }
 
   private extractStatementPeriod(pdfText: string): {
-    startDate: string; endDate: string;
-    startYear: number; startMonth: number;
-    endYear: number; endMonth: number;
+    startDate: string;
+    endDate: string;
+    startYear: number;
+    startMonth: number;
+    endYear: number;
+    endMonth: number;
   } | null {
     // "Period1 Oct 2023 - 30 Dec 2023"
     const periodMatch = pdfText.match(
-      /Period\s*(\d{1,2})\s+(\w{3})\s+(\d{4})\s*[-–]\s*(\d{1,2})\s+(\w{3})\s+(\d{4})/i
+      /Period\s*(\d{1,2})\s+(\w{3})\s+(\d{4})\s*[-–]\s*(\d{1,2})\s+(\w{3})\s+(\d{4})/i,
     );
     if (periodMatch) {
       const [, sd, sm, sy, ed, em, ey] = periodMatch;
@@ -199,21 +213,25 @@ export class CBAParser extends BaseBankParser {
       return {
         startDate: `${sy}-${String(startMonth).padStart(2, '0')}-${sd.padStart(2, '0')}`,
         endDate: `${ey}-${String(endMonth).padStart(2, '0')}-${ed.padStart(2, '0')}`,
-        startYear: parseInt(sy), startMonth,
-        endYear: parseInt(ey), endMonth,
+        startYear: parseInt(sy),
+        startMonth,
+        endYear: parseInt(ey),
+        endMonth,
       };
     }
 
     const slashMatch = pdfText.match(
-      /Period[\s:]*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*[-–]\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+      /Period[\s:]*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*[-–]\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i,
     );
     if (slashMatch) {
       const [, sd, sm, sy, ed, em, ey] = slashMatch;
       return {
         startDate: `${sy}-${sm.padStart(2, '0')}-${sd.padStart(2, '0')}`,
         endDate: `${ey}-${em.padStart(2, '0')}-${ed.padStart(2, '0')}`,
-        startYear: parseInt(sy), startMonth: parseInt(sm),
-        endYear: parseInt(ey), endMonth: parseInt(em),
+        startYear: parseInt(sy),
+        startMonth: parseInt(sm),
+        endYear: parseInt(ey),
+        endMonth: parseInt(em),
       };
     }
 
@@ -233,7 +251,7 @@ export class CBAParser extends BaseBankParser {
     if (/^Statement\s+\d+/i.test(line)) return true;
     if (/^\(Page\s+\d+/i.test(line)) return true;
     if (/^Account\s+Number/i.test(line)) return true;
-    if (/^\d{4}\.\d+\.\d+/i.test(line)) return true;  // barcode
+    if (/^\d{4}\.\d+\.\d+/i.test(line)) return true; // barcode
     if (/^SL\.R3\./i.test(line)) return true;
     if (/^V\d{2}\.\d{2}\.\d{2}/i.test(line)) return true;
     if (/^06\s+\d{4}\s+\d{8}/i.test(line)) return true;
@@ -242,13 +260,13 @@ export class CBAParser extends BaseBankParser {
     if (/OPENING\s+BALANCE/i.test(line)) return true;
     if (/CLOSING\s+BALANCE/i.test(line)) return true;
     if (/^Opening\s+balance.*Total/i.test(line)) return true;
-    if (/^\$[\d,]+\.\d{2}(CR|DR)?\$[\d,]+/i.test(line)) return true;  // summary line
+    if (/^\$[\d,]+\.\d{2}(CR|DR)?\$[\d,]+/i.test(line)) return true; // summary line
     if (/^Fee\s+Summary/i.test(line)) return true;
     if (/^Important\s+Information/i.test(line)) return true;
     if (/^Transaction\s+Summary/i.test(line)) return true;
     if (/^Your\s+Statement/i.test(line)) return true;
     if (/^Enquiries/i.test(line)) return true;
-    if (/^13\s+\d{4}/i.test(line)) return true;  // phone number
+    if (/^13\s+\d{4}/i.test(line)) return true; // phone number
     if (/^Name:/i.test(line)) return true;
     if (/^Note:/i.test(line)) return true;
     if (/^If\s+this\s+account/i.test(line)) return true;
@@ -264,7 +282,9 @@ export class CBAParser extends BaseBankParser {
     const period = this.extractStatementPeriod(pdfText);
     // Derive year from statement period dates — never use new Date() for determinism
     if (!period) {
-      console.warn('[CBAParser] No statement period found in PDF — transactions may have incorrect years');
+      console.warn(
+        '[CBAParser] No statement period found in PDF — transactions may have incorrect years',
+      );
     }
     const statementYear = period?.startYear ?? 2000;
     const periodStartMonth = period?.startMonth ?? 1;
@@ -439,7 +459,7 @@ export class CBAParser extends BaseBankParser {
 
     if (!accountNumber) {
       const bsbMatch = pdfText.match(
-        /BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*(?:Account|Acc)[\s#:]*(\d+)/i
+        /BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*(?:Account|Acc)[\s#:]*(\d+)/i,
       );
       if (bsbMatch) {
         bsb = bsbMatch[1].replace(/\s|-/g, '');
@@ -474,8 +494,7 @@ export class CBAParser extends BaseBankParser {
       bsb: bsb || undefined,
       openingBalance,
       closingBalance,
-      statementPeriod:
-        period ? { start: period.startDate, end: period.endDate } : undefined,
+      statementPeriod: period ? { start: period.startDate, end: period.endDate } : undefined,
     };
   }
 

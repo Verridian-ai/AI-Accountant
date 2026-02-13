@@ -78,10 +78,7 @@ export class CogneeFeedbackService {
    * Submit feedback on a Cognee entity (search result, datapoint, graph node, etc.).
    * Persists to the cogneeFeedback table and forwards to Cognee API.
    */
-  async submitFeedback(
-    userId: string,
-    feedback: FeedbackSubmission
-  ): Promise<any> {
+  async submitFeedback(userId: string, feedback: FeedbackSubmission): Promise<any> {
     const id = randomUUID();
     const now = new Date().toISOString();
 
@@ -102,15 +99,20 @@ export class CogneeFeedbackService {
     await db.insert(cogneeFeedback).values(record).run();
 
     // Fire-and-forget to Cognee API
-    cogneeClient.submitFeedback({
-      entity_id: feedback.entityId,
-      feedback_type: feedback.feedbackType,
-      original_value: feedback.originalValue,
-      corrected_value: feedback.correctedValue,
-      context: feedback.context as Record<string, string> | undefined,
-    }, userId).catch(() => {
-      // Cognee API errors are non-fatal; the local record is the source of truth
-    });
+    cogneeClient
+      .submitFeedback(
+        {
+          entity_id: feedback.entityId,
+          feedback_type: feedback.feedbackType,
+          original_value: feedback.originalValue,
+          corrected_value: feedback.correctedValue,
+          context: feedback.context as Record<string, string> | undefined,
+        },
+        userId,
+      )
+      .catch(() => {
+        // Cognee API errors are non-fatal; the local record is the source of truth
+      });
 
     return record;
   }
@@ -119,10 +121,7 @@ export class CogneeFeedbackService {
    * Aggregate feedback statistics for a user.
    * Calculates accuracy rate, trend, and top corrected fields.
    */
-  async getFeedbackStats(
-    userId: string,
-    filters?: FeedbackFilters
-  ): Promise<FeedbackStats> {
+  async getFeedbackStats(userId: string, filters?: FeedbackFilters): Promise<FeedbackStats> {
     // Build conditions
     const conditions: any[] = [eq(cogneeFeedback.userId, userId)];
     if (filters?.entityType) {
@@ -175,9 +174,7 @@ export class CogneeFeedbackService {
     // Accuracy rate: correct / total (treat partial as 0.5 correct)
     const correctCount = byType['correct'] || 0;
     const partialCount = byType['partial'] || 0;
-    const accuracyRate = total > 0
-      ? (correctCount + partialCount * 0.5) / total
-      : 0;
+    const accuracyRate = total > 0 ? (correctCount + partialCount * 0.5) / total : 0;
 
     // Trend: compare recent half vs older half
     const midpoint = Math.floor(total / 2);
@@ -207,20 +204,12 @@ export class CogneeFeedbackService {
    * Trigger memify (memory consolidation) for unapplied feedback.
    * Groups feedback by dataset, sends to Cognee, and marks as applied.
    */
-  async triggerMemify(
-    userId: string,
-    options?: MemifyOptions
-  ): Promise<MemifyResult> {
+  async triggerMemify(userId: string, options?: MemifyOptions): Promise<MemifyResult> {
     // Get unapplied feedback
     const unapplied = await db
       .select()
       .from(cogneeFeedback)
-      .where(
-        and(
-          eq(cogneeFeedback.userId, userId),
-          eq(cogneeFeedback.appliedToMemify, false)
-        )
-      )
+      .where(and(eq(cogneeFeedback.userId, userId), eq(cogneeFeedback.appliedToMemify, false)))
       .all();
 
     const minCount = options?.minFeedbackCount ?? DEFAULT_AUTO_MEMIFY_THRESHOLD;
@@ -262,7 +251,7 @@ export class CogneeFeedbackService {
     // Filter to requested datasets if specified
     let targetDatasets = Object.keys(datasetGroups);
     if (options?.datasetNames && options.datasetNames.length > 0) {
-      targetDatasets = targetDatasets.filter(d => options.datasetNames!.includes(d));
+      targetDatasets = targetDatasets.filter((d) => options.datasetNames!.includes(d));
     }
 
     // Trigger memify for each dataset group
@@ -274,11 +263,14 @@ export class CogneeFeedbackService {
         corrected_value: fb.correctedValue,
       }));
 
-      await cogneeClient.triggerMemify({
-        datasets: [dataset],
-        feedback_data: feedbackData,
-        run_in_background: true,
-      }, userId);
+      await cogneeClient.triggerMemify(
+        {
+          datasets: [dataset],
+          feedback_data: feedbackData,
+          run_in_background: true,
+        },
+        userId,
+      );
     }
 
     // Mark all as applied
@@ -289,7 +281,9 @@ export class CogneeFeedbackService {
           try {
             const ctx = typeof fb.context === 'string' ? JSON.parse(fb.context) : fb.context;
             dataset = ctx.dataset || dataset;
-          } catch { /* keep default */ }
+          } catch {
+            /* keep default */
+          }
         }
         return targetDatasets.includes(dataset);
       })
@@ -308,7 +302,7 @@ export class CogneeFeedbackService {
     const configIds = new Set(
       unapplied
         .filter((fb: any) => fb.datapointConfigId)
-        .map((fb: any) => fb.datapointConfigId as string)
+        .map((fb: any) => fb.datapointConfigId as string),
     );
 
     for (const configId of configIds) {
@@ -338,7 +332,7 @@ export class CogneeFeedbackService {
     userId: string,
     filters?: FeedbackFilters,
     page: number = 1,
-    pageSize: number = 20
+    pageSize: number = 20,
   ): Promise<{ items: any[]; total: number; page: number; pageSize: number }> {
     const conditions: any[] = [eq(cogneeFeedback.userId, userId)];
     if (filters?.entityType) {
@@ -395,10 +389,7 @@ export class CogneeFeedbackService {
       return { deleted: false, reason: 'Cannot delete feedback already applied to memify' };
     }
 
-    await db
-      .delete(cogneeFeedback)
-      .where(eq(cogneeFeedback.id, feedbackId))
-      .run();
+    await db.delete(cogneeFeedback).where(eq(cogneeFeedback.id, feedbackId)).run();
 
     return { deleted: true };
   }
@@ -425,16 +416,16 @@ export class CogneeFeedbackService {
       else if (fb.feedbackType === 'partial') partialCount++;
     }
 
-    const accuracyScore = totalFeedback > 0
-      ? (correctCount + partialCount * 0.5) / totalFeedback
-      : 0;
+    const accuracyScore =
+      totalFeedback > 0 ? (correctCount + partialCount * 0.5) / totalFeedback : 0;
 
     const midpoint = Math.floor(totalFeedback / 2);
     const trend = this.calculateTrend(feedbackItems, midpoint);
 
-    const lastUpdated = feedbackItems.length > 0
-      ? feedbackItems[0].createdAt || new Date().toISOString()
-      : new Date().toISOString();
+    const lastUpdated =
+      feedbackItems.length > 0
+        ? feedbackItems[0].createdAt || new Date().toISOString()
+        : new Date().toISOString();
 
     return {
       datapointConfigId,
@@ -456,12 +447,7 @@ export class CogneeFeedbackService {
     const unappliedCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(cogneeFeedback)
-      .where(
-        and(
-          eq(cogneeFeedback.userId, userId),
-          eq(cogneeFeedback.appliedToMemify, false)
-        )
-      )
+      .where(and(eq(cogneeFeedback.userId, userId), eq(cogneeFeedback.appliedToMemify, false)))
       .get();
 
     const total = (unappliedCount as any)?.count ?? 0;
@@ -481,7 +467,7 @@ export class CogneeFeedbackService {
    */
   private calculateTrend(
     feedbackItems: any[],
-    midpoint: number
+    midpoint: number,
   ): 'improving' | 'declining' | 'stable' {
     if (feedbackItems.length < 4) return 'stable';
 

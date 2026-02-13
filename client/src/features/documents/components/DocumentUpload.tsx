@@ -62,21 +62,58 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
   }, []);
 
   const uploadFile = async (uploadFile: UploadFile) => {
-    setFiles((prev) => prev.map((f) => f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 30 } : f));
+    setFiles((prev) =>
+      prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 30 } : f)),
+    );
     try {
       const result = await documentsApi.upload(uploadFile.file, 'default', accountId || undefined);
-      setFiles((prev) => prev.map((f) => f.id === uploadFile.id ? { ...f, status: autoProcess ? 'processing' : 'done', progress: autoProcess ? 60 : 100, documentId: result.id } : f));
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === uploadFile.id
+            ? {
+                ...f,
+                status: autoProcess ? 'processing' : 'done',
+                progress: autoProcess ? 60 : 100,
+                documentId: result.id,
+              }
+            : f,
+        ),
+      );
 
       if (autoProcess && result.id) {
         try {
           const processResult = await documentsApi.process(result.id);
-          setFiles((prev) => prev.map((f) => f.id === uploadFile.id ? { ...f, status: 'done', progress: 100, confidenceScore: processResult.confidenceScore } : f));
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === uploadFile.id
+                ? {
+                    ...f,
+                    status: 'done',
+                    progress: 100,
+                    confidenceScore: processResult.confidenceScore,
+                  }
+                : f,
+            ),
+          );
         } catch {
-          setFiles((prev) => prev.map((f) => f.id === uploadFile.id ? { ...f, status: 'done', progress: 100 } : f));
+          setFiles((prev) =>
+            prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'done', progress: 100 } : f)),
+          );
         }
       }
     } catch (err) {
-      setFiles((prev) => prev.map((f) => f.id === uploadFile.id ? { ...f, status: 'error', progress: 0, error: err instanceof Error ? err.message : 'Upload failed' } : f));
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === uploadFile.id
+            ? {
+                ...f,
+                status: 'error',
+                progress: 0,
+                error: err instanceof Error ? err.message : 'Upload failed',
+              }
+            : f,
+        ),
+      );
     }
   };
 
@@ -91,7 +128,11 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
   const retryFile = async (id: string) => {
     const file = files.find((f) => f.id === id);
     if (!file) return;
-    setFiles((prev) => prev.map((f) => f.id === id ? { ...f, status: 'pending', progress: 0, error: undefined } : f));
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.id === id ? { ...f, status: 'pending', progress: 0, error: undefined } : f,
+      ),
+    );
     await uploadFile(file);
     onUploadComplete?.();
   };
@@ -100,11 +141,14 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
     setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    addFiles(e.dataTransfer.files);
-  }, [addFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      addFiles(e.dataTransfer.files);
+    },
+    [addFiles],
+  );
 
   const pendingCount = files.filter((f) => f.status === 'pending').length;
   const doneCount = files.filter((f) => f.status === 'done').length;
@@ -116,7 +160,10 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         className={`neu-inset rounded-xl p-8 border-2 border-dashed transition-all cursor-pointer ${
           isDragging ? 'border-[#FFCC00] bg-[#FFCC00]/5' : 'border-white/10 hover:border-white/20'
         }`}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
@@ -136,7 +183,10 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
           multiple
           accept=".pdf,.png,.jpg,.jpeg,.webp"
           className="hidden"
-          onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ''; }}
+          onChange={(e) => {
+            if (e.target.files) addFiles(e.target.files);
+            e.target.value = '';
+          }}
         />
       </div>
 
@@ -192,8 +242,12 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
               <div className="shrink-0">
                 {f.status === 'done' && <CheckCircle className="h-5 w-5 text-green-400" />}
                 {f.status === 'error' && <XCircle className="h-5 w-5 text-red-400" />}
-                {f.status === 'uploading' && <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />}
-                {f.status === 'processing' && <Loader2 className="h-5 w-5 text-[#FFCC00] animate-spin" />}
+                {f.status === 'uploading' && (
+                  <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />
+                )}
+                {f.status === 'processing' && (
+                  <Loader2 className="h-5 w-5 text-[#FFCC00] animate-spin" />
+                )}
                 {f.status === 'pending' && <FileUp className="h-5 w-5 text-zinc-500" />}
               </div>
               <div className="min-w-0 flex-1">
@@ -215,7 +269,15 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
                 {f.confidenceScore != null && f.status === 'done' && (
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-zinc-500">Confidence:</span>
-                    <Badge variant={f.confidenceScore > 80 ? 'success' : f.confidenceScore > 50 ? 'warning' : 'destructive'}>
+                    <Badge
+                      variant={
+                        f.confidenceScore > 80
+                          ? 'success'
+                          : f.confidenceScore > 50
+                            ? 'warning'
+                            : 'destructive'
+                      }
+                    >
                       {f.confidenceScore}%
                     </Badge>
                   </div>

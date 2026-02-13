@@ -58,7 +58,7 @@ export class DenseSearchEngine {
 
   constructor(
     embeddingModel: string = 'BAAI/bge-small-en-v1.5',
-    embeddingDimensions: number = 384
+    embeddingDimensions: number = 384,
   ) {
     this.embeddingModel = embeddingModel;
     this.embeddingDimensions = embeddingDimensions;
@@ -224,7 +224,7 @@ except Exception as e:
   async search(
     userId: string,
     queryEmbedding: number[],
-    options: DenseSearchOptions = {}
+    options: DenseSearchOptions = {},
   ): Promise<DenseSearchResult[]> {
     const {
       topK = 20,
@@ -349,7 +349,9 @@ except Exception as e:
       result.rank = index + 1;
     });
 
-    console.log(`[DenseSearch] Found ${topResults.length} results from ${allResults.length} candidates`);
+    console.log(
+      `[DenseSearch] Found ${topResults.length} results from ${allResults.length} candidates`,
+    );
     return topResults;
   }
 
@@ -359,10 +361,10 @@ except Exception as e:
   async batchSearch(
     userId: string,
     queryEmbeddings: number[][],
-    options: DenseSearchOptions = {}
+    options: DenseSearchOptions = {},
   ): Promise<DenseSearchResult[][]> {
     const results = await Promise.all(
-      queryEmbeddings.map((embedding) => this.search(userId, embedding, options))
+      queryEmbeddings.map((embedding) => this.search(userId, embedding, options)),
     );
     return results;
   }

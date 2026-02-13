@@ -10,10 +10,7 @@ import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
 import type { BudgetAnalyzerInput, BudgetAnalyzerOutput } from '../types.js';
 
-export class BudgetAnalyzerAgent extends ClaudeAgent<
-  BudgetAnalyzerInput,
-  BudgetAnalyzerOutput
-> {
+export class BudgetAnalyzerAgent extends ClaudeAgent<BudgetAnalyzerInput, BudgetAnalyzerOutput> {
   protected systemPrompt = `You are a personal finance analyst specializing in Australian household and small business budgeting. Analyze transaction history to identify spending patterns, recurring expenses, unusual transactions, and savings opportunities. Provide actionable insights with specific dollar amounts and timeframes. Consider seasonal patterns, inflation, and the Australian cost of living.
 
 Your workflow:
@@ -98,7 +95,10 @@ Return a JSON object matching the BudgetAnalyzerOutput schema.`;
         type: 'object' as const,
         properties: {
           transactions: { type: 'array', items: { type: 'object' } },
-          stdDevThreshold: { type: 'number', description: 'Standard deviation threshold (default 2)' },
+          stdDevThreshold: {
+            type: 'number',
+            description: 'Standard deviation threshold (default 2)',
+          },
         },
         required: ['transactions'],
       },
@@ -128,10 +128,7 @@ Return a JSON object matching the BudgetAnalyzerOutput schema.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'analyze_spending_by_category',
       async (input) => {
@@ -198,23 +195,19 @@ Return a JSON object matching the BudgetAnalyzerOutput schema.`;
         const recurring = Array.from(groups.entries())
           .filter(([, occurrences]) => occurrences.length >= 3)
           .map(([description, occurrences]) => {
-            const avgAmount = occurrences.reduce((s, o) => s + Math.abs(o.amount), 0) / occurrences.length;
+            const avgAmount =
+              occurrences.reduce((s, o) => s + Math.abs(o.amount), 0) / occurrences.length;
             const sorted = occurrences.map((o) => o.date).sort();
             const gaps: number[] = [];
             for (let i = 1; i < sorted.length; i++) {
               const d1 = new Date(sorted[i - 1]);
               const d2 = new Date(sorted[i]);
-              gaps.push(
-                Math.round(
-                  (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)
-                )
-              );
+              gaps.push(Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
             }
-            const avgGap = gaps.length > 0
-              ? gaps.reduce((s, g) => s + g, 0) / gaps.length
-              : 30;
+            const avgGap = gaps.length > 0 ? gaps.reduce((s, g) => s + g, 0) / gaps.length : 30;
 
-            let frequency: 'weekly' | 'fortnightly' | 'monthly' | 'quarterly' | 'annual' = 'monthly';
+            let frequency: 'weekly' | 'fortnightly' | 'monthly' | 'quarterly' | 'annual' =
+              'monthly';
             if (avgGap <= 10) frequency = 'weekly';
             else if (avgGap <= 20) frequency = 'fortnightly';
             else if (avgGap <= 45) frequency = 'monthly';
@@ -293,9 +286,7 @@ Return a JSON object matching the BudgetAnalyzerOutput schema.`;
         }
         const monthlyNets = Array.from(byMonth.values());
         const avgMonthlyNet =
-          monthlyNets.length > 0
-            ? monthlyNets.reduce((s, n) => s + n, 0) / monthlyNets.length
-            : 0;
+          monthlyNets.length > 0 ? monthlyNets.reduce((s, n) => s + n, 0) / monthlyNets.length : 0;
 
         const projections = [];
         let balance = currentBalance;
@@ -328,12 +319,11 @@ Return a JSON object matching the BudgetAnalyzerOutput schema.`;
         const amounts = transactions.map((t) => Math.abs(t.amount));
         const mean = amounts.reduce((s, a) => s + a, 0) / (amounts.length || 1);
         const variance =
-          amounts.reduce((s, a) => s + Math.pow(a - mean, 2), 0) /
-          (amounts.length || 1);
+          amounts.reduce((s, a) => s + Math.pow(a - mean, 2), 0) / (amounts.length || 1);
         const stdDev = Math.sqrt(variance);
 
         return transactions.filter(
-          (tx) => Math.abs(Math.abs(tx.amount) - mean) > threshold * stdDev
+          (tx) => Math.abs(Math.abs(tx.amount) - mean) > threshold * stdDev,
         );
       },
     ],

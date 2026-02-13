@@ -67,9 +67,7 @@ describe('CBA Product Catalog', () => {
   it('should have CBA (or similar) data holder with products', async () => {
     const { data: holders } = await api<any[]>('/api/cdr/data-holders');
     // Look for any holder that has been crawled (productCount > 0)
-    const withProducts = holders.filter(
-      (h: any) => (h.productCount ?? 0) > 0,
-    );
+    const withProducts = holders.filter((h: any) => (h.productCount ?? 0) > 0);
     if (withProducts.length === 0) {
       console.warn('[SKIP] No data holders with products — run a crawl first');
       return;
@@ -78,9 +76,7 @@ describe('CBA Product Catalog', () => {
   });
 
   it('should return paginated product list', async () => {
-    const { status, data } = await api<any>(
-      '/api/cdr/products?limit=5&offset=0',
-    );
+    const { status, data } = await api<any>('/api/cdr/products?limit=5&offset=0');
     expect(status).toBe(200);
     expect(data).toHaveProperty('products');
     expect(data).toHaveProperty('total');
@@ -106,9 +102,7 @@ describe('Product Detail Crawl', () => {
       console.warn('[SKIP] No products in DB');
       return;
     }
-    const { status, data } = await api<any>(
-      `/api/cdr/products/${sampleProductId}`,
-    );
+    const { status, data } = await api<any>(`/api/cdr/products/${sampleProductId}`);
     expect(status).toBe(200);
     expect(data).toHaveProperty('id', sampleProductId);
     expect(data).toHaveProperty('name');
@@ -123,9 +117,7 @@ describe('Product Detail Crawl', () => {
   });
 
   it('should return 404 for non-existent product', async () => {
-    const { status, data } = await api<any>(
-      '/api/cdr/products/non-existent-id-999',
-    );
+    const { status, data } = await api<any>('/api/cdr/products/non-existent-id-999');
     expect(status).toBe(404);
     expect(data).toHaveProperty('error');
   });
@@ -136,7 +128,9 @@ describe('Product Detail Crawl', () => {
 // ============================================================================
 describe('Rate Parsing Accuracy', () => {
   it('should have numeric rate values within valid bounds', async () => {
-    const { data } = await api<any>('/api/cdr/rates/best?category=RESIDENTIAL_MORTGAGES&rateType=lending&limit=20');
+    const { data } = await api<any>(
+      '/api/cdr/rates/best?category=RESIDENTIAL_MORTGAGES&rateType=lending&limit=20',
+    );
     if (!Array.isArray(data) || data.length === 0) {
       console.warn('[SKIP] No lending rates in DB');
       return;
@@ -145,7 +139,7 @@ describe('Rate Parsing Accuracy', () => {
       // Australian home loan rates are typically 0.01–0.15 (1%–15% as decimal)
       expect(typeof entry.rate).toBe('number');
       expect(entry.rate).toBeGreaterThan(0);
-      expect(entry.rate).toBeLessThan(0.20); // 20% upper bound sanity check
+      expect(entry.rate).toBeLessThan(0.2); // 20% upper bound sanity check
       if (entry.comparisonRate != null) {
         expect(typeof entry.comparisonRate).toBe('number');
         expect(entry.comparisonRate).toBeGreaterThan(0);
@@ -155,7 +149,9 @@ describe('Rate Parsing Accuracy', () => {
   });
 
   it('should have deposit rates within valid bounds', async () => {
-    const { data } = await api<any>('/api/cdr/rates/best?category=TRANS_AND_SAVINGS_ACCOUNTS&rateType=deposit&limit=20');
+    const { data } = await api<any>(
+      '/api/cdr/rates/best?category=TRANS_AND_SAVINGS_ACCOUNTS&rateType=deposit&limit=20',
+    );
     if (!Array.isArray(data) || data.length === 0) {
       console.warn('[SKIP] No deposit rates in DB');
       return;
@@ -173,7 +169,9 @@ describe('Rate Parsing Accuracy', () => {
 // ============================================================================
 describe('Product Search Filters', () => {
   it('should filter by productCategory', async () => {
-    const { data } = await api<any>('/api/cdr/products?productCategory=RESIDENTIAL_MORTGAGES&limit=5');
+    const { data } = await api<any>(
+      '/api/cdr/products?productCategory=RESIDENTIAL_MORTGAGES&limit=5',
+    );
     if (data.products?.length > 0) {
       for (const p of data.products) {
         expect(p.productCategory).toBe('RESIDENTIAL_MORTGAGES');
@@ -201,9 +199,7 @@ describe('Product Search Filters', () => {
 
   it('should support sorting by rate', async () => {
     const { data } = await api<any>('/api/cdr/products?sortBy=rate&sortOrder=asc&limit=10');
-    const rates = (data.products ?? [])
-      .map((p: any) => p.bestRate)
-      .filter((r: any) => r != null);
+    const rates = (data.products ?? []).map((p: any) => p.bestRate).filter((r: any) => r != null);
     for (let i = 1; i < rates.length; i++) {
       expect(rates[i]).toBeGreaterThanOrEqual(rates[i - 1]);
     }
@@ -297,9 +293,9 @@ describe('Savings Calculator', () => {
     const { status, data } = await api<any>('/api/cdr/savings/calculate', {
       method: 'POST',
       body: JSON.stringify({
-        currentRate: 0.065,     // 6.5%
-        newRate: 0.059,         // 5.9%
-        loanBalance: 50000000,  // $500k in cents
+        currentRate: 0.065, // 6.5%
+        newRate: 0.059, // 5.9%
+        loanBalance: 50000000, // $500k in cents
         remainingTermMonths: 300, // 25 years
         switchingCosts: 100000, // $1000 in cents
       }),
@@ -372,9 +368,7 @@ describe('Rate Limiter Enforcement', () => {
       body: JSON.stringify({}),
     });
     if (data.errors) {
-      const rateLimitErrors = data.errors.filter(
-        (e: any) => e.statusCode === 429,
-      );
+      const rateLimitErrors = data.errors.filter((e: any) => e.statusCode === 429);
       expect(rateLimitErrors.length).toBe(0); // No 429 errors = rate limiter working
     }
   }, 120_000);
@@ -385,9 +379,7 @@ describe('Rate Limiter Enforcement', () => {
 // ============================================================================
 describe('CDR Loan Calculator', () => {
   it('should return market rates for a category', async () => {
-    const { status, data } = await api<any>(
-      '/api/cdr/rates/market?category=RESIDENTIAL_MORTGAGES',
-    );
+    const { status, data } = await api<any>('/api/cdr/rates/market?category=RESIDENTIAL_MORTGAGES');
     expect(status).toBe(200);
     expect(data).toHaveProperty('averageRate');
     expect(data).toHaveProperty('medianRate');
@@ -400,10 +392,10 @@ describe('CDR Loan Calculator', () => {
     const { status, data } = await api<any>('/api/cdr/loans/refinance', {
       method: 'POST',
       body: JSON.stringify({
-        currentLoanBalance: 50000000,    // $500k in cents
+        currentLoanBalance: 50000000, // $500k in cents
         currentRate: 0.065,
         currentRemainingMonths: 300,
-        switchingCosts: 150000,          // $1500 in cents
+        switchingCosts: 150000, // $1500 in cents
         targetCategory: 'RESIDENTIAL_MORTGAGES',
       }),
     });
@@ -416,8 +408,8 @@ describe('CDR Loan Calculator', () => {
     const { status, data } = await api<any>('/api/cdr/loans/borrowing-capacity', {
       method: 'POST',
       body: JSON.stringify({
-        annualIncome: 12000000,   // $120k in cents
-        monthlyExpenses: 300000,  // $3k in cents
+        annualIncome: 12000000, // $120k in cents
+        monthlyExpenses: 300000, // $3k in cents
         existingDebts: 0,
         dependants: 0,
         category: 'RESIDENTIAL_MORTGAGES',
@@ -432,7 +424,7 @@ describe('CDR Loan Calculator', () => {
     const { status, data } = await api<any>('/api/cdr/loans/rate-scenarios', {
       method: 'POST',
       body: JSON.stringify({
-        loanBalance: 50000000,        // $500k in cents
+        loanBalance: 50000000, // $500k in cents
         currentRate: 0.06,
         remainingTermMonths: 360,
         rateChanges: [0.0025, 0.005, 0.01, -0.005], // +0.25%, +0.5%, +1%, -0.5%

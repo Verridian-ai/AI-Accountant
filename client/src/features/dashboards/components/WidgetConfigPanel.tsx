@@ -47,7 +47,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
   };
 
   const updateConfig = (key: string, value: unknown) => {
-    setChartConfig(prev => ({ ...prev, [key]: value }));
+    setChartConfig((prev) => ({ ...prev, [key]: value }));
   };
 
   const renderChartSpecificFields = () => {
@@ -58,8 +58,20 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
             <FieldGroup label="Data Keys (comma-separated)">
               <input
                 type="text"
-                value={Array.isArray(chartConfig.dataKeys) ? (chartConfig.dataKeys as string[]).join(', ') : ''}
-                onChange={(e) => updateConfig('dataKeys', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                value={
+                  Array.isArray(chartConfig.dataKeys)
+                    ? (chartConfig.dataKeys as string[]).join(', ')
+                    : ''
+                }
+                onChange={(e) =>
+                  updateConfig(
+                    'dataKeys',
+                    e.target.value
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  )
+                }
                 className="config-input"
                 placeholder="value, count"
               />
@@ -92,8 +104,20 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
             <FieldGroup label="Data Keys (comma-separated)">
               <input
                 type="text"
-                value={Array.isArray(chartConfig.dataKeys) ? (chartConfig.dataKeys as string[]).join(', ') : ''}
-                onChange={(e) => updateConfig('dataKeys', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                value={
+                  Array.isArray(chartConfig.dataKeys)
+                    ? (chartConfig.dataKeys as string[]).join(', ')
+                    : ''
+                }
+                onChange={(e) =>
+                  updateConfig(
+                    'dataKeys',
+                    e.target.value
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  )
+                }
                 className="config-input"
                 placeholder="value"
               />
@@ -231,10 +255,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
   return (
     <>
       {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/40 z-40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
 
       {/* Slide-in Panel */}
       <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 neu-raised border-l border-[#FFCC00]/10 flex flex-col animate-in slide-in-from-right duration-300">

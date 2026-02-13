@@ -9,23 +9,35 @@ interface IntentDebugPanelProps {
   visible: boolean;
 }
 
-export function IntentDebugPanel({ intentClassification, agentType, visible }: IntentDebugPanelProps) {
+export function IntentDebugPanel({
+  intentClassification,
+  agentType,
+  visible,
+}: IntentDebugPanelProps) {
   if (!visible || !intentClassification) return null;
 
   const confidence = intentClassification.confidence;
   const pct = Math.round(confidence * 100);
-  const barColor = confidence >= 0.8 ? 'bg-emerald-500' : confidence >= 0.6 ? 'bg-yellow-500' : 'bg-red-500';
+  const barColor =
+    confidence >= 0.8 ? 'bg-emerald-500' : confidence >= 0.6 ? 'bg-yellow-500' : 'bg-red-500';
 
   return (
     <div className="neu-inset rounded-lg px-3 py-2 mt-2 space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Intent Debug</span>
-        <span className="text-[8px] font-bold text-zinc-600 uppercase">{intentClassification.intent}</span>
+        <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">
+          Intent Debug
+        </span>
+        <span className="text-[8px] font-bold text-zinc-600 uppercase">
+          {intentClassification.intent}
+        </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-[8px] font-bold text-zinc-500 w-16 shrink-0">Confidence</span>
         <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-          <div className={cn('h-full rounded-full transition-all', barColor)} style={{ width: `${pct}%` }} />
+          <div
+            className={cn('h-full rounded-full transition-all', barColor)}
+            style={{ width: `${pct}%` }}
+          />
         </div>
         <span className="text-[8px] font-black text-zinc-400 w-8 text-right">{pct}%</span>
       </div>

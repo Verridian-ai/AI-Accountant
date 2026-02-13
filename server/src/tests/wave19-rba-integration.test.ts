@@ -37,7 +37,9 @@ function assertEqual<T>(actual: T, expected: T, message: string): void {
   } else {
     failed++;
     errors.push(`${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
-    console.error(`  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    console.error(
+      `  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+    );
   }
 }
 
@@ -152,7 +154,7 @@ describe('RbaDataFeed — A2 table parsing (interest rates)', async () => {
     assert(cashRate !== undefined, 'RBA_CASH_RATE indicator is extracted');
 
     if (cashRate) {
-      assertEqual(cashRate.value, 3.60, 'Latest cash rate value is 3.60');
+      assertEqual(cashRate.value, 3.6, 'Latest cash rate value is 3.60');
       assertEqual(cashRate.category, 'interest_rates', 'Cash rate category is interest_rates');
       assertEqual(cashRate.unit, 'percent', 'Cash rate unit is percent');
       assert(cashRate.source.includes('RBA'), 'Cash rate source includes RBA');
@@ -188,7 +190,7 @@ describe('RbaDataFeed — F5 table parsing (lending rates)', async () => {
     assert(homeLoan !== undefined, 'RBA_HOME_LOAN_VARIABLE is extracted');
 
     if (homeLoan) {
-      assertEqual(homeLoan.value, 7.10, 'Home loan variable rate is 7.10');
+      assertEqual(homeLoan.value, 7.1, 'Home loan variable rate is 7.10');
       assertEqual(homeLoan.category, 'interest_rates', 'Home loan category is interest_rates');
       assertEqual(homeLoan.frequency, 'monthly', 'F5 frequency is monthly');
     }
@@ -261,17 +263,32 @@ describe('RbaDataFeed — EconomicIndicatorRecord shape validation', async () =>
     const indicators = await feed.parseTable('A2', MOCK_A2_CSV);
 
     for (const ind of indicators) {
-      assert(typeof ind.id === 'string' && ind.id.length > 0, `Indicator ${ind.indicatorCode} has valid id`);
+      assert(
+        typeof ind.id === 'string' && ind.id.length > 0,
+        `Indicator ${ind.indicatorCode} has valid id`,
+      );
       assert(typeof ind.feedId === 'string', `Indicator ${ind.indicatorCode} has feedId`);
-      assert(typeof ind.indicatorCode === 'string', `Indicator ${ind.indicatorCode} has indicatorCode`);
-      assert(typeof ind.indicatorName === 'string', `Indicator ${ind.indicatorCode} has indicatorName`);
+      assert(
+        typeof ind.indicatorCode === 'string',
+        `Indicator ${ind.indicatorCode} has indicatorCode`,
+      );
+      assert(
+        typeof ind.indicatorName === 'string',
+        `Indicator ${ind.indicatorCode} has indicatorName`,
+      );
       assert(typeof ind.category === 'string', `Indicator ${ind.indicatorCode} has category`);
       assert(typeof ind.value === 'number', `Indicator ${ind.indicatorCode} has numeric value`);
       assert(typeof ind.unit === 'string', `Indicator ${ind.indicatorCode} has unit`);
       assert(typeof ind.frequency === 'string', `Indicator ${ind.indicatorCode} has frequency`);
-      assert(typeof ind.referencePeriod === 'string', `Indicator ${ind.indicatorCode} has referencePeriod`);
+      assert(
+        typeof ind.referencePeriod === 'string',
+        `Indicator ${ind.indicatorCode} has referencePeriod`,
+      );
       assert(typeof ind.source === 'string', `Indicator ${ind.indicatorCode} has source`);
-      assert(typeof ind.observationDate === 'string', `Indicator ${ind.indicatorCode} has observationDate`);
+      assert(
+        typeof ind.observationDate === 'string',
+        `Indicator ${ind.indicatorCode} has observationDate`,
+      );
     }
   } catch (err: any) {
     assert(false, `Shape validation should not throw: ${err.message}`);
@@ -284,14 +301,20 @@ describe('RbaDataFeed — Unknown table key throws error', async () => {
     await feed.fetchTable('INVALID_TABLE');
     assert(false, 'fetchTable should throw for unknown table key');
   } catch (err: any) {
-    assert(err.message.includes('Unknown RBA table key'), 'Error message mentions unknown table key');
+    assert(
+      err.message.includes('Unknown RBA table key'),
+      'Error message mentions unknown table key',
+    );
   }
 
   try {
     await feed.parseTable('INVALID_TABLE', 'some,csv');
     assert(false, 'parseTable should throw for unknown table key');
   } catch (err: any) {
-    assert(err.message.includes('Unknown RBA table key'), 'parseTable error mentions unknown table key');
+    assert(
+      err.message.includes('Unknown RBA table key'),
+      'parseTable error mentions unknown table key',
+    );
   }
 });
 
@@ -339,7 +362,10 @@ describe('RbaDataFeed — RBA date parsing (DD-MMM-YYYY)', async () => {
 
     if (cashRate) {
       // The observation date should be in ISO format YYYY-MM-DD
-      assert(/^\d{4}-\d{2}-\d{2}$/.test(cashRate.observationDate), 'Date is in ISO YYYY-MM-DD format');
+      assert(
+        /^\d{4}-\d{2}-\d{2}$/.test(cashRate.observationDate),
+        'Date is in ISO YYYY-MM-DD format',
+      );
       assert(cashRate.observationDate.startsWith('2026-'), 'Date year is 2026 (latest row)');
     }
   } catch (err: any) {

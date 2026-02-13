@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import {
-  Search, RotateCcw, Loader2, AlertTriangle, Database, X, ExternalLink
-} from 'lucide-react';
+import { Search, RotateCcw, Loader2, AlertTriangle, Database, X, ExternalLink } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types (mirror 3D viewer)
@@ -366,7 +364,7 @@ export function CogneeGraph2DFallback({
       }
       setSelectedNode(closest);
     },
-    [pan, zoom]
+    [pan, zoom],
   );
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -374,12 +372,15 @@ export function CogneeGraph2DFallback({
     setZoom((z) => Math.max(0.1, Math.min(5, z - e.deltaY * 0.001)));
   }, []);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button === 0) {
-      setDragging(true);
-      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-    }
-  }, [pan]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.button === 0) {
+        setDragging(true);
+        setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+      }
+    },
+    [pan],
+  );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
@@ -387,7 +388,7 @@ export function CogneeGraph2DFallback({
         setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
       }
     },
-    [dragging, dragStart]
+    [dragging, dragStart],
   );
 
   const handleMouseUp = useCallback(() => setDragging(false), []);
@@ -402,7 +403,10 @@ export function CogneeGraph2DFallback({
   // Render
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10" style={{ height: graphHeight }}>
+      <div
+        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10"
+        style={{ height: graphHeight }}
+      >
         <Loader2 className="w-10 h-10 text-[#FFCC00] animate-spin mb-3" />
         <p className="text-sm text-gray-400">Loading 2D graph…</p>
       </div>
@@ -411,10 +415,16 @@ export function CogneeGraph2DFallback({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10" style={{ height: graphHeight }}>
+      <div
+        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10"
+        style={{ height: graphHeight }}
+      >
         <AlertTriangle className="w-10 h-10 text-red-400 mb-3" />
         <p className="text-sm text-red-300 mb-3">{error}</p>
-        <button onClick={fetchData} className="px-4 py-1.5 bg-[#FFCC00]/10 border border-[#FFCC00]/30 rounded text-sm text-[#FFCC00] hover:bg-[#FFCC00]/20 transition-colors">
+        <button
+          onClick={fetchData}
+          className="px-4 py-1.5 bg-[#FFCC00]/10 border border-[#FFCC00]/30 rounded text-sm text-[#FFCC00] hover:bg-[#FFCC00]/20 transition-colors"
+        >
           Retry
         </button>
       </div>
@@ -423,16 +433,25 @@ export function CogneeGraph2DFallback({
 
   if (nodeCount === 0) {
     return (
-      <div className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10" style={{ height: graphHeight }}>
+      <div
+        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10"
+        style={{ height: graphHeight }}
+      >
         <Database className="w-12 h-12 text-gray-600 mb-3" />
         <h3 className="text-lg font-semibold text-gray-400 mb-1">No Graph Data</h3>
-        <p className="text-sm text-gray-500">Index data to Cognee to visualize the knowledge graph.</p>
+        <p className="text-sm text-gray-500">
+          Index data to Cognee to visualize the knowledge graph.
+        </p>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="relative bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10 overflow-hidden" style={{ height: graphHeight }}>
+    <div
+      ref={containerRef}
+      className="relative bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10 overflow-hidden"
+      style={{ height: graphHeight }}
+    >
       {/* Controls */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-2 p-2 bg-[#1a1a2e]/80 backdrop-blur-sm border-b border-white/5">
         <div className="relative">
@@ -446,8 +465,14 @@ export function CogneeGraph2DFallback({
           />
         </div>
         <div className="flex-1" />
-        <span className="text-[10px] text-gray-500">{nodeCount} nodes &middot; {linkCount} edges</span>
-        <button onClick={handleReset} className="p-1.5 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors" title="Reset view">
+        <span className="text-[10px] text-gray-500">
+          {nodeCount} nodes &middot; {linkCount} edges
+        </span>
+        <button
+          onClick={handleReset}
+          className="p-1.5 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+          title="Reset view"
+        >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -470,26 +495,41 @@ export function CogneeGraph2DFallback({
           <div className="flex justify-between items-start">
             <div>
               <h4 className="text-sm font-semibold text-white truncate">{selectedNode.name}</h4>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: selectedNode.color + '30', color: selectedNode.color }}>
+              <span
+                className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                style={{ backgroundColor: selectedNode.color + '30', color: selectedNode.color }}
+              >
                 {selectedNode.type}
               </span>
             </div>
-            <button onClick={() => setSelectedNode(null)} className="p-0.5 rounded hover:bg-white/10 text-gray-400">
+            <button
+              onClick={() => setSelectedNode(null)}
+              className="p-0.5 rounded hover:bg-white/10 text-gray-400"
+            >
               <X className="w-3 h-3" />
             </button>
           </div>
           <div className="text-[10px] text-gray-400 space-y-0.5">
-            <div>Dataset: <span className="text-gray-300">{selectedNode.dataset}</span></div>
-            <div>Connections: <span className="text-gray-300">{selectedNode.connections}</span></div>
+            <div>
+              Dataset: <span className="text-gray-300">{selectedNode.dataset}</span>
+            </div>
+            <div>
+              Connections: <span className="text-gray-300">{selectedNode.connections}</span>
+            </div>
           </div>
           {Object.keys(selectedNode.properties).length > 0 && (
             <div className="space-y-0.5">
-              {Object.entries(selectedNode.properties).slice(0, 8).map(([k, v]) => (
-                <div key={k} className="text-[10px] flex justify-between bg-white/5 rounded px-1.5 py-0.5">
-                  <span className="text-gray-500 truncate mr-1">{k}</span>
-                  <span className="text-gray-300 truncate">{String(v)}</span>
-                </div>
-              ))}
+              {Object.entries(selectedNode.properties)
+                .slice(0, 8)
+                .map(([k, v]) => (
+                  <div
+                    key={k}
+                    className="text-[10px] flex justify-between bg-white/5 rounded px-1.5 py-0.5"
+                  >
+                    <span className="text-gray-500 truncate mr-1">{k}</span>
+                    <span className="text-gray-300 truncate">{String(v)}</span>
+                  </div>
+                ))}
             </div>
           )}
         </div>

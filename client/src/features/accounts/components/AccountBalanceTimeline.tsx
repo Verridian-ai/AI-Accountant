@@ -7,7 +7,11 @@ const LINE_COLORS = ['#FFCC00', '#10B981', '#3B82F6', '#8B5CF6', '#F43F5E'];
 const MAX_SELECTED = 5;
 
 function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(cents / 100);
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 }
 
 function formatDateLabel(dateStr: string): string {
@@ -15,7 +19,11 @@ function formatDateLabel(dateStr: string): string {
 }
 
 function formatDateFull(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date(dateStr).toLocaleDateString('en-AU', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 // Chart layout constants (following SpendingTrends.tsx pattern)
@@ -66,7 +74,7 @@ export function AccountBalanceTimeline() {
           } catch {
             balMap.set(account.id, []);
           }
-        })
+        }),
       );
       setBalanceData(balMap);
     } catch (err) {
@@ -77,7 +85,7 @@ export function AccountBalanceTimeline() {
   };
 
   const toggleAccount = useCallback((accountId: string) => {
-    setSelectedAccounts(prev => {
+    setSelectedAccounts((prev) => {
       const next = new Set(prev);
       if (next.has(accountId)) {
         next.delete(accountId);
@@ -141,33 +149,43 @@ export function AccountBalanceTimeline() {
       }
     }
 
-    if (min === Infinity) { min = 0; max = 100000; }
+    if (min === Infinity) {
+      min = 0;
+      max = 100000;
+    }
 
     // Add 10% padding
     const range = max - min || 1;
     min = min - range * 0.05;
     max = max + range * 0.05;
 
-    const ticks = Array.from({ length: 5 }, (_, i) => min + (range * 1.1 / 4) * i);
+    const ticks = Array.from({ length: 5 }, (_, i) => min + ((range * 1.1) / 4) * i);
 
     return { yMin: min, yMax: max, yTicks: ticks };
   }, [mergedData]);
 
   // Scale functions
-  const xScale = useCallback((i: number) => {
-    return PAD_L + (i / Math.max(mergedData.length - 1, 1)) * PLOT_W;
-  }, [mergedData.length]);
+  const xScale = useCallback(
+    (i: number) => {
+      return PAD_L + (i / Math.max(mergedData.length - 1, 1)) * PLOT_W;
+    },
+    [mergedData.length],
+  );
 
-  const yScale = useCallback((v: number) => {
-    return PAD_T + PLOT_H - ((v - yMin) / Math.max(yMax - yMin, 1)) * PLOT_H;
-  }, [yMin, yMax]);
+  const yScale = useCallback(
+    (v: number) => {
+      return PAD_T + PLOT_H - ((v - yMin) / Math.max(yMax - yMin, 1)) * PLOT_H;
+    },
+    [yMin, yMax],
+  );
 
   // Build line data per selected account
   const lineData = useMemo(() => {
     const selectedIds = Array.from(selectedAccounts);
-    return selectedIds.map(accountId => {
+    return selectedIds.map((accountId) => {
       const color = colorMap.get(accountId) || '#FFCC00';
-      const points: Array<{ x: number; y: number; value: number; idx: number; source: string }> = [];
+      const points: Array<{ x: number; y: number; value: number; idx: number; source: string }> =
+        [];
 
       for (let i = 0; i < mergedData.length; i++) {
         const entry = mergedData[i];
@@ -192,37 +210,40 @@ export function AccountBalanceTimeline() {
     if (mergedData.length === 0) return [];
     const count = Math.min(7, mergedData.length);
     return Array.from({ length: count }, (_, i) => {
-      const idx = Math.round(i * (mergedData.length - 1) / Math.max(count - 1, 1));
+      const idx = Math.round((i * (mergedData.length - 1)) / Math.max(count - 1, 1));
       const point = mergedData[idx];
       return { idx, label: formatDateLabel(point?.date ?? '') };
     });
   }, [mergedData]);
 
   // Handle mouse move over SVG for hover tracking
-  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    if (mergedData.length === 0 || !svgRef.current) return;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      if (mergedData.length === 0 || !svgRef.current) return;
 
-    const svgRect = svgRef.current.getBoundingClientRect();
-    const mouseX = ((e.clientX - svgRect.left) / svgRect.width) * CHART_W;
+      const svgRect = svgRef.current.getBoundingClientRect();
+      const mouseX = ((e.clientX - svgRect.left) / svgRect.width) * CHART_W;
 
-    if (mouseX < PAD_L || mouseX > CHART_W - PAD_R) {
-      setHoveredIndex(null);
-      return;
-    }
-
-    // Find nearest data index
-    let bestIdx = 0;
-    let bestDist = Infinity;
-    for (let i = 0; i < mergedData.length; i++) {
-      const px = xScale(i);
-      const dist = Math.abs(px - mouseX);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestIdx = i;
+      if (mouseX < PAD_L || mouseX > CHART_W - PAD_R) {
+        setHoveredIndex(null);
+        return;
       }
-    }
-    setHoveredIndex(bestIdx);
-  }, [mergedData, xScale]);
+
+      // Find nearest data index
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < mergedData.length; i++) {
+        const px = xScale(i);
+        const dist = Math.abs(px - mouseX);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIdx = i;
+        }
+      }
+      setHoveredIndex(bestIdx);
+    },
+    [mergedData, xScale],
+  );
 
   const handleMouseLeave = useCallback(() => {
     setHoveredIndex(null);
@@ -244,7 +265,9 @@ export function AccountBalanceTimeline() {
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <TrendingUp className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">No Balance Data</h3>
+        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">
+          No Balance Data
+        </h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight">
           Upload bank statements to see account balances over time.
         </p>
@@ -260,7 +283,9 @@ export function AccountBalanceTimeline() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Balance Timeline</span>
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            Balance Timeline
+          </span>
         </div>
         <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-wider">
           {selectedAccounts.size}/{MAX_SELECTED} accounts
@@ -289,7 +314,13 @@ export function AccountBalanceTimeline() {
                   y2={y}
                   stroke="rgba(255,255,255,0.05)"
                 />
-                <text x={PAD_L - 8} y={y + 3} textAnchor="end" fill="#71717a" className="text-[8px]">
+                <text
+                  x={PAD_L - 8}
+                  y={y + 3}
+                  textAnchor="end"
+                  fill="#71717a"
+                  className="text-[8px]"
+                >
                   {formatCurrency(tick)}
                 </text>
               </g>
@@ -311,11 +342,11 @@ export function AccountBalanceTimeline() {
           ))}
 
           {/* Lines per selected account */}
-          {lineData.map(line => (
+          {lineData.map((line) => (
             <g key={line.accountId}>
               {/* Polyline */}
               <polyline
-                points={line.points.map(p => `${p.x},${p.y}`).join(' ')}
+                points={line.points.map((p) => `${p.x},${p.y}`).join(' ')}
                 fill="none"
                 stroke={line.color}
                 strokeWidth={2}
@@ -382,10 +413,10 @@ export function AccountBalanceTimeline() {
               {formatDateFull(hoveredPoint.date)}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {Array.from(selectedAccounts).map(accountId => {
+              {Array.from(selectedAccounts).map((accountId) => {
                 const balance = hoveredPoint.balances[accountId];
                 if (balance === undefined) return null;
-                const acct = accounts.find(a => a.id === accountId);
+                const acct = accounts.find((a) => a.id === accountId);
                 const color = colorMap.get(accountId) || '#FFCC00';
                 const source = hoveredPoint.sources[accountId];
 
@@ -418,7 +449,7 @@ export function AccountBalanceTimeline() {
 
       {/* Account selection toggles */}
       <div className="flex flex-wrap gap-2">
-        {accounts.map(account => {
+        {accounts.map((account) => {
           const isSelected = selectedAccounts.has(account.id);
           const color = colorMap.get(account.id);
           const canSelect = isSelected || selectedAccounts.size < MAX_SELECTED;
@@ -430,18 +461,18 @@ export function AccountBalanceTimeline() {
               onClick={() => canSelect && toggleAccount(account.id)}
               disabled={!canSelect}
               className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border",
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border',
                 isSelected
-                  ? "border-white/20 bg-white/5 text-zinc-200"
+                  ? 'border-white/20 bg-white/5 text-zinc-200'
                   : canSelect
-                    ? "border-transparent text-zinc-600 hover:text-zinc-400"
-                    : "border-transparent text-zinc-700 opacity-40 cursor-not-allowed"
+                    ? 'border-transparent text-zinc-600 hover:text-zinc-400'
+                    : 'border-transparent text-zinc-700 opacity-40 cursor-not-allowed',
               )}
             >
               <div
                 className={cn(
-                  "w-2.5 h-2.5 rounded-full transition-opacity",
-                  isSelected ? "opacity-100" : "opacity-30"
+                  'w-2.5 h-2.5 rounded-full transition-opacity',
+                  isSelected ? 'opacity-100' : 'opacity-30',
                 )}
                 style={{ backgroundColor: isSelected ? color : '#3f3f46' }}
               />
@@ -458,11 +489,15 @@ export function AccountBalanceTimeline() {
           <svg width="10" height="10" viewBox="0 0 10 10">
             <polygon points="5,1 9,5 5,9 1,5" fill="#FFCC00" stroke="#0a0a0f" strokeWidth="1" />
           </svg>
-          <span className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Statement balance</span>
+          <span className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">
+            Statement balance
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-zinc-500" />
-          <span className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Calculated / Manual</span>
+          <span className="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">
+            Calculated / Manual
+          </span>
         </div>
       </div>
     </div>

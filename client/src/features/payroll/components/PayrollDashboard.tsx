@@ -86,7 +86,9 @@ export function PayrollDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Payroll</h1>
-          <p className="text-sm text-zinc-400 mt-1">Manage employees, pay categories, and pay runs</p>
+          <p className="text-sm text-zinc-400 mt-1">
+            Manage employees, pay categories, and pay runs
+          </p>
         </div>
         {activeTab === 'employees' && view === 'list' && (
           <button
@@ -156,16 +158,10 @@ export function PayrollDashboard() {
             />
           )}
           {view === 'detail' && selectedEmployeeId && (
-            <EmployeeDetail
-              employeeId={selectedEmployeeId}
-              onBack={handleBackToList}
-            />
+            <EmployeeDetail employeeId={selectedEmployeeId} onBack={handleBackToList} />
           )}
           {view === 'onboarding' && (
-            <EmployeeOnboarding
-              onComplete={handleOnboardingComplete}
-              onCancel={handleBackToList}
-            />
+            <EmployeeOnboarding onComplete={handleOnboardingComplete} onCancel={handleBackToList} />
           )}
         </>
       )}

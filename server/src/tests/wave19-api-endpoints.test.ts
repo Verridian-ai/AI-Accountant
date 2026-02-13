@@ -36,7 +36,9 @@ function assertEqual<T>(actual: T | undefined, expected: T, message: string): vo
   } else {
     failed++;
     errors.push(`${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
-    console.error(`  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    console.error(
+      `  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+    );
   }
 }
 
@@ -308,17 +310,14 @@ describe('Wave 19 API Endpoints — All routes start with /api/market/', () => {
   for (const route of WAVE_19_ROUTES) {
     assert(
       route.path.startsWith('/api/market/'),
-      `${route.method} ${route.path} starts with /api/market/`
+      `${route.method} ${route.path} starts with /api/market/`,
     );
   }
 });
 
 describe('Wave 19 API Endpoints — Each route has description', () => {
   for (const route of WAVE_19_ROUTES) {
-    assert(
-      route.description.length > 0,
-      `${route.method} ${route.path} has a description`
-    );
+    assert(route.description.length > 0, `${route.method} ${route.path} has a description`);
   }
 });
 
@@ -326,7 +325,7 @@ describe('Wave 19 API Endpoints — Response shape validation', () => {
   for (const route of WAVE_19_ROUTES) {
     assert(
       route.expectedResponseShape.length > 0,
-      `${route.method} ${route.path} has defined response shape`
+      `${route.method} ${route.path} has defined response shape`,
     );
   }
 });
@@ -357,13 +356,19 @@ describe('Wave 19 API Endpoints — Data Feed Management routes', () => {
   const feedList = feedRoutes.find((r) => r.path === '/api/market/feeds' && r.method === 'GET');
   assert(feedList !== undefined, 'GET /api/market/feeds exists');
 
-  const feedRefreshAll = feedRoutes.find((r) => r.path === '/api/market/feeds/refresh' && r.method === 'POST');
+  const feedRefreshAll = feedRoutes.find(
+    (r) => r.path === '/api/market/feeds/refresh' && r.method === 'POST',
+  );
   assert(feedRefreshAll !== undefined, 'POST /api/market/feeds/refresh exists');
 
-  const feedRefreshOne = feedRoutes.find((r) => r.path.includes(':feedId/refresh') && r.method === 'POST');
+  const feedRefreshOne = feedRoutes.find(
+    (r) => r.path.includes(':feedId/refresh') && r.method === 'POST',
+  );
   assert(feedRefreshOne !== undefined, 'POST /api/market/feeds/:feedId/refresh exists');
 
-  const feedStatus = feedRoutes.find((r) => r.path.includes(':feedId/status') && r.method === 'GET');
+  const feedStatus = feedRoutes.find(
+    (r) => r.path.includes(':feedId/status') && r.method === 'GET',
+  );
   assert(feedStatus !== undefined, 'GET /api/market/feeds/:feedId/status exists');
 });
 
@@ -405,7 +410,9 @@ describe('Wave 19 API Endpoints — Sentiment routes', () => {
 
   assertEqual(sentimentRoutes.length, 4, '4 sentiment routes');
 
-  const topicSentiment = sentimentRoutes.find((r) => r.path === '/api/market/sentiment/:topic' && r.method === 'GET');
+  const topicSentiment = sentimentRoutes.find(
+    (r) => r.path === '/api/market/sentiment/:topic' && r.method === 'GET',
+  );
   assert(topicSentiment !== undefined, 'GET /api/market/sentiment/:topic exists');
 
   const batch = sentimentRoutes.find((r) => r.path.includes('batch'));
@@ -458,21 +465,18 @@ describe('Wave 19 API Endpoints — POST endpoints with required body params', (
   }
 
   const impactRoute = postRoutes.find((r) => r.path.includes('impact'));
-  assert(
-    impactRoute?.bodyParams?.includes('event'),
-    'Impact analysis requires event in body'
-  );
+  assert(impactRoute?.bodyParams?.includes('event'), 'Impact analysis requires event in body');
 
   const calendarRoute = postRoutes.find((r) => r.path === '/api/market/calendar');
   assert(
     calendarRoute?.bodyParams?.includes('eventName'),
-    'Calendar creation requires eventName in body'
+    'Calendar creation requires eventName in body',
   );
 
   const alertRoute = postRoutes.find((r) => r.path === '/api/market/alerts');
   assert(
     alertRoute?.bodyParams?.includes('alertType'),
-    'Alert creation requires alertType in body'
+    'Alert creation requires alertType in body',
   );
 });
 

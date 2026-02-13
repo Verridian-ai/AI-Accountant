@@ -14,10 +14,7 @@ import { tenantRateLimiter } from '../../rate-limiter.js';
 import type { TenantRoutingInput, TenantRoutingOutput } from './tenant-routing-types.js';
 import type { TenantContext } from '../../tenant-types.js';
 
-export class TenantRoutingAgent extends ClaudeAgent<
-  TenantRoutingInput,
-  TenantRoutingOutput
-> {
+export class TenantRoutingAgent extends ClaudeAgent<TenantRoutingInput, TenantRoutingOutput> {
   protected systemPrompt = `You are a tenant isolation and access control agent. Your job is to resolve tenant context, enforce data isolation boundaries, check permissions, and enforce rate limits. You must never allow cross-tenant data access unless the user has explicit admin privileges across tenants.
 
 Your workflow:
@@ -33,7 +30,8 @@ Return a JSON object matching the TenantRoutingOutput schema.`;
   protected tools: Anthropic.Tool[] = [
     {
       name: 'resolve_tenant',
-      description: 'Resolve the active tenant for a user. Validates membership and returns full TenantContext including role, permissions, and subscription info.',
+      description:
+        'Resolve the active tenant for a user. Validates membership and returns full TenantContext including role, permissions, and subscription info.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -46,12 +44,16 @@ Return a JSON object matching the TenantRoutingOutput schema.`;
     },
     {
       name: 'enforce_isolation',
-      description: 'Verify all requested resources belong to the specified tenant. Flags any cross-tenant access violations.',
+      description:
+        'Verify all requested resources belong to the specified tenant. Flags any cross-tenant access violations.',
       input_schema: {
         type: 'object' as const,
         properties: {
           tenantId: { type: 'string', description: 'Tenant ID to check resources against' },
-          resourceType: { type: 'string', description: 'Type of resource (transactions, accounts, statements)' },
+          resourceType: {
+            type: 'string',
+            description: 'Type of resource (transactions, accounts, statements)',
+          },
           resourceIds: {
             type: 'array',
             items: { type: 'string' },
@@ -63,7 +65,8 @@ Return a JSON object matching the TenantRoutingOutput schema.`;
     },
     {
       name: 'check_permissions',
-      description: 'Batch check permissions for a user in a tenant. Returns granted/denied for each permission.',
+      description:
+        'Batch check permissions for a user in a tenant. Returns granted/denied for each permission.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -80,7 +83,8 @@ Return a JSON object matching the TenantRoutingOutput schema.`;
     },
     {
       name: 'check_rate_limit',
-      description: 'Check if a tenant has exceeded their rate limit for an endpoint. Returns current count, limit, and whether the request should be allowed.',
+      description:
+        'Check if a tenant has exceeded their rate limit for an endpoint. Returns current count, limit, and whether the request should be allowed.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -96,23 +100,19 @@ Return a JSON object matching the TenantRoutingOutput schema.`;
     super('tenant_routing');
   }
 
-  protected toolHandlers: Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  > = new Map([
-    ['resolve_tenant', this._handleResolveTenant.bind(this)],
-    ['enforce_isolation', this._handleEnforceIsolation.bind(this)],
-    ['check_permissions', this._handleCheckPermissions.bind(this)],
-    ['check_rate_limit', this._handleCheckRateLimit.bind(this)],
-  ]);
+  protected toolHandlers: Map<string, (input: Record<string, unknown>) => Promise<unknown>> =
+    new Map([
+      ['resolve_tenant', this._handleResolveTenant.bind(this)],
+      ['enforce_isolation', this._handleEnforceIsolation.bind(this)],
+      ['check_permissions', this._handleCheckPermissions.bind(this)],
+      ['check_rate_limit', this._handleCheckRateLimit.bind(this)],
+    ]);
 
   // --------------------------------------------------------------------------
   // TOOL HANDLERS
   // --------------------------------------------------------------------------
 
-  private async _handleResolveTenant(
-    input: Record<string, unknown>
-  ): Promise<unknown> {
+  private async _handleResolveTenant(input: Record<string, unknown>): Promise<unknown> {
     const userId = input.userId as string;
     let tenantId = input.tenantId as string | undefined;
     const slug = input.slug as string | undefined;
@@ -144,9 +144,7 @@ Return a JSON object matching the TenantRoutingOutput schema.`;
     }
   }
 
-  private async _handleEnforceIsolation(
-    input: Record<string, unknown>
-  ): Promise<unknown> {
+  private async _handleEnforceIsolation(input: Record<string, unknown>): Promise<unknown> {
     const tenantId = input.tenantId as string;
     const resourceType = input.resourceType as string;
     const resourceIds = input.resourceIds as string[];
@@ -187,28 +185,20 @@ Return a JSON object matching the TenantRoutingOutput schema.`;
     }
   }
 
-  private async _handleCheckPermissions(
-    input: Record<string, unknown>
-  ): Promise<unknown> {
+  private async _handleCheckPermissions(input: Record<string, unknown>): Promise<unknown> {
     const tenantId = input.tenantId as string;
     const userId = input.userId as string;
     const permissionNames = input.permissions as string[];
 
     try {
-      const results = await rbacService.checkPermissions(
-        tenantId,
-        userId,
-        permissionNames
-      );
+      const results = await rbacService.checkPermissions(tenantId, userId, permissionNames);
       return { success: true, permissions: results };
     } catch (err) {
       return { error: err instanceof Error ? err.message : String(err) };
     }
   }
 
-  private async _handleCheckRateLimit(
-    input: Record<string, unknown>
-  ): Promise<unknown> {
+  private async _handleCheckRateLimit(input: Record<string, unknown>): Promise<unknown> {
     const tenantId = input.tenantId as string;
     const endpoint = input.endpoint as string;
 

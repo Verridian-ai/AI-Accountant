@@ -76,11 +76,11 @@ export class TenantRateLimiter {
 
     // Clean old timestamps (keep last 24 hours)
     const dayAgo = now - 24 * 60 * 60 * 1000;
-    counter.timestamps = counter.timestamps.filter(ts => ts > dayAgo);
+    counter.timestamps = counter.timestamps.filter((ts) => ts > dayAgo);
 
     // Check burst limit (requests in last 1 second)
     const oneSecAgo = now - 1000;
-    const burstCount = counter.timestamps.filter(ts => ts > oneSecAgo).length;
+    const burstCount = counter.timestamps.filter((ts) => ts > oneSecAgo).length;
     if (burstCount >= config.burstLimit) {
       return {
         allowed: false,
@@ -93,9 +93,9 @@ export class TenantRateLimiter {
 
     // Check per-minute limit
     const oneMinAgo = now - 60 * 1000;
-    const minuteCount = counter.timestamps.filter(ts => ts > oneMinAgo).length;
+    const minuteCount = counter.timestamps.filter((ts) => ts > oneMinAgo).length;
     if (minuteCount >= config.requestsPerMinute) {
-      const oldestInWindow = counter.timestamps.find(ts => ts > oneMinAgo) ?? now;
+      const oldestInWindow = counter.timestamps.find((ts) => ts > oneMinAgo) ?? now;
       const resetAt = oldestInWindow + 60 * 1000;
       return {
         allowed: false,
@@ -108,9 +108,9 @@ export class TenantRateLimiter {
 
     // Check per-hour limit
     const oneHourAgo = now - 60 * 60 * 1000;
-    const hourCount = counter.timestamps.filter(ts => ts > oneHourAgo).length;
+    const hourCount = counter.timestamps.filter((ts) => ts > oneHourAgo).length;
     if (hourCount >= config.requestsPerHour) {
-      const oldestInWindow = counter.timestamps.find(ts => ts > oneHourAgo) ?? now;
+      const oldestInWindow = counter.timestamps.find((ts) => ts > oneHourAgo) ?? now;
       const resetAt = oldestInWindow + 60 * 60 * 1000;
       return {
         allowed: false,
@@ -166,11 +166,16 @@ export class TenantRateLimiter {
    * Fetch rate limit configuration from the DB for a tenant.
    * Falls back to defaults if no config exists.
    */
-  async getRateLimits(tenantId: string): Promise<Array<RateLimitConfig & { endpointPattern: string }>> {
-    const rows = await db.select().from(apiRateLimits)
-      .where(eq(apiRateLimits.tenantId, tenantId)).all();
+  async getRateLimits(
+    tenantId: string,
+  ): Promise<Array<RateLimitConfig & { endpointPattern: string }>> {
+    const rows = await db
+      .select()
+      .from(apiRateLimits)
+      .where(eq(apiRateLimits.tenantId, tenantId))
+      .all();
 
-    return (rows as any[]).map(row => ({
+    return (rows as any[]).map((row) => ({
       endpointPattern: row.endpointPattern ?? row.endpoint_pattern,
       requestsPerMinute: row.requestsPerMinute ?? row.requests_per_minute ?? 60,
       requestsPerHour: row.requestsPerHour ?? row.requests_per_hour ?? 1000,
@@ -186,7 +191,7 @@ export class TenantRateLimiter {
   resetCounters(): void {
     const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
     for (const [key, counter] of this.counters.entries()) {
-      counter.timestamps = counter.timestamps.filter(ts => ts > dayAgo);
+      counter.timestamps = counter.timestamps.filter((ts) => ts > dayAgo);
       if (counter.timestamps.length === 0) {
         this.counters.delete(key);
       }

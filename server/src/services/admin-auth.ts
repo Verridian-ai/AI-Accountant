@@ -82,7 +82,9 @@ function getAdminJwtSecret(): string {
 }
 
 function getTenantJwtSecret(): string {
-  return process.env.TENANT_JWT_SECRET || process.env.ADMIN_JWT_SECRET || 'tenant-jwt-secret-change-me';
+  return (
+    process.env.TENANT_JWT_SECRET || process.env.ADMIN_JWT_SECRET || 'tenant-jwt-secret-change-me'
+  );
 }
 
 // ============================================================================
@@ -117,10 +119,11 @@ export class AdminAuthService {
   // JWT Management
   // --------------------------------------------------------------------------
 
-  async generateToken(admin: Pick<AdminUser, 'id' | 'username' | 'role' | 'permissions'>): Promise<string> {
-    const permissions = typeof admin.permissions === 'string'
-      ? JSON.parse(admin.permissions)
-      : admin.permissions;
+  async generateToken(
+    admin: Pick<AdminUser, 'id' | 'username' | 'role' | 'permissions'>,
+  ): Promise<string> {
+    const permissions =
+      typeof admin.permissions === 'string' ? JSON.parse(admin.permissions) : admin.permissions;
 
     const now = Math.floor(Date.now() / 1000);
     const payload = {
@@ -135,10 +138,11 @@ export class AdminAuthService {
     return sign(payload, getAdminJwtSecret());
   }
 
-  async generateRefreshToken(admin: Pick<AdminUser, 'id' | 'username' | 'role' | 'permissions'>): Promise<string> {
-    const permissions = typeof admin.permissions === 'string'
-      ? JSON.parse(admin.permissions)
-      : admin.permissions;
+  async generateRefreshToken(
+    admin: Pick<AdminUser, 'id' | 'username' | 'role' | 'permissions'>,
+  ): Promise<string> {
+    const permissions =
+      typeof admin.permissions === 'string' ? JSON.parse(admin.permissions) : admin.permissions;
 
     const now = Math.floor(Date.now() / 1000);
     const payload = {
@@ -155,7 +159,7 @@ export class AdminAuthService {
 
   async verifyToken(token: string): Promise<AdminTokenPayload | null> {
     try {
-      const payload = await verify(token, getAdminJwtSecret()) as unknown as AdminTokenPayload;
+      const payload = (await verify(token, getAdminJwtSecret())) as unknown as AdminTokenPayload;
       if (!payload || !payload.adminId) return null;
       return payload;
     } catch {
@@ -163,12 +167,16 @@ export class AdminAuthService {
     }
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<{ token: string; admin: AdminTokenPayload } | null> {
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<{ token: string; admin: AdminTokenPayload } | null> {
     const payload = await this.verifyToken(refreshToken);
     if (!payload || payload.type !== 'refresh') return null;
 
     // Verify admin still exists and is active
-    const admin = await db.select().from(adminUsers)
+    const admin = await db
+      .select()
+      .from(adminUsers)
       .where(eq(adminUsers.id, payload.adminId))
       .get();
     if (!admin || !admin.isActive) return null;
@@ -189,11 +197,11 @@ export class AdminAuthService {
    */
   async generateTenantToken(userId: string, tenantId: string): Promise<string> {
     // Look up the user's membership in this tenant
-    const member = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.userId, userId)
-      )).get();
+    const member = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .get();
 
     if (!member) {
       throw new Error('User is not a member of this tenant');
@@ -223,7 +231,7 @@ export class AdminAuthService {
    */
   async verifyTenantToken(token: string): Promise<JWTPayload | null> {
     try {
-      const payload = await verify(token, getTenantJwtSecret()) as unknown as JWTPayload;
+      const payload = (await verify(token, getTenantJwtSecret())) as unknown as JWTPayload;
       if (!payload || !payload.userId || !payload.tenantId) return null;
       return payload;
     } catch {
@@ -238,7 +246,7 @@ export class AdminAuthService {
    */
   async refreshTenantToken(
     token: string,
-    newTenantId?: string
+    newTenantId?: string,
   ): Promise<{ token: string; payload: JWTPayload } | null> {
     const existing = await this.verifyTenantToken(token);
     if (!existing) return null;
@@ -246,19 +254,20 @@ export class AdminAuthService {
     const targetTenantId = newTenantId ?? existing.tenantId;
 
     // Verify the target tenant exists and is active
-    const tenant = await db.select().from(tenants)
-      .where(eq(tenants.id, targetTenantId)).get();
+    const tenant = await db.select().from(tenants).where(eq(tenants.id, targetTenantId)).get();
     if (!tenant) return null;
     const tenantRow = tenant as any;
     const isActive = tenantRow.isActive ?? tenantRow.is_active ?? true;
     if (!isActive) return null;
 
     // Verify user is a member of the target tenant
-    const member = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, targetTenantId),
-        eq(tenantMembers.userId, existing.userId)
-      )).get();
+    const member = await db
+      .select()
+      .from(tenantMembers)
+      .where(
+        and(eq(tenantMembers.tenantId, targetTenantId), eq(tenantMembers.userId, existing.userId)),
+      )
+      .get();
     if (!member) return null;
 
     // Generate fresh token for the (possibly new) tenant
@@ -273,13 +282,13 @@ export class AdminAuthService {
    * Used internally by generateTenantToken.
    */
   private async _getTenantPermissions(tenantId: string, role: TenantRole): Promise<string[]> {
-    const rps = await db.select().from(rolePermissions)
-      .where(and(
-        eq(rolePermissions.tenantId, tenantId),
-        eq(rolePermissions.role, role)
-      )).all();
+    const rps = await db
+      .select()
+      .from(rolePermissions)
+      .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
+      .all();
 
-    const permIds = (rps as any[]).map(rp => rp.permissionId ?? rp.permission_id);
+    const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
     if (permIds.length === 0) return [];
 
     const allPerms = await db.select().from(permissions).all();
@@ -288,7 +297,7 @@ export class AdminAuthService {
       permMap.set(p.id, p.name);
     }
 
-    return permIds.map(id => permMap.get(id)).filter((name): name is string => !!name);
+    return permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
   }
 
   // --------------------------------------------------------------------------
@@ -296,9 +305,7 @@ export class AdminAuthService {
   // --------------------------------------------------------------------------
 
   async login(username: string, password: string, ipAddress?: string): Promise<LoginResult> {
-    const admin = await db.select().from(adminUsers)
-      .where(eq(adminUsers.username, username))
-      .get();
+    const admin = await db.select().from(adminUsers).where(eq(adminUsers.username, username)).get();
 
     if (!admin) {
       return { success: false, error: 'Invalid credentials' };
@@ -321,7 +328,8 @@ export class AdminAuthService {
         };
       }
       // Lock expired, reset
-      await db.update(adminUsers)
+      await db
+        .update(adminUsers)
         .set({ lockedUntil: null, failedLoginCount: 0 })
         .where(eq(adminUsers.id, admin.id))
         .run();
@@ -350,22 +358,21 @@ export class AdminAuthService {
         updateData.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS).toISOString();
       }
 
-      await db.update(adminUsers)
-        .set(updateData)
-        .where(eq(adminUsers.id, admin.id))
-        .run();
+      await db.update(adminUsers).set(updateData).where(eq(adminUsers.id, admin.id)).run();
 
       return {
         success: false,
-        error: remaining > 0
-          ? `Invalid credentials. ${remaining} attempt(s) remaining.`
-          : 'Account locked due to too many failed attempts.',
+        error:
+          remaining > 0
+            ? `Invalid credentials. ${remaining} attempt(s) remaining.`
+            : 'Account locked due to too many failed attempts.',
         remainingAttempts: Math.max(0, remaining),
       };
     }
 
     // Success — reset counters and update login info
-    await db.update(adminUsers)
+    await db
+      .update(adminUsers)
       .set({
         failedLoginCount: 0,
         lockedUntil: null,
@@ -388,9 +395,8 @@ export class AdminAuthService {
       ipAddress,
     });
 
-    const permissions = typeof admin.permissions === 'string'
-      ? JSON.parse(admin.permissions)
-      : admin.permissions;
+    const permissions =
+      typeof admin.permissions === 'string' ? JSON.parse(admin.permissions) : admin.permissions;
 
     return {
       success: true,
@@ -428,37 +434,39 @@ export class AdminAuthService {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    await db.insert(adminUsers).values({
-      id,
-      username: data.username,
-      email: data.email,
-      passwordHash,
-      displayName: data.displayName ?? null,
-      role: data.role ?? 'admin',
-      permissions: JSON.stringify(data.permissions ?? []),
-      isActive: true,
-      loginCount: 0,
-      failedLoginCount: 0,
-      mfaEnabled: false,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await db
+      .insert(adminUsers)
+      .values({
+        id,
+        username: data.username,
+        email: data.email,
+        passwordHash,
+        displayName: data.displayName ?? null,
+        role: data.role ?? 'admin',
+        permissions: JSON.stringify(data.permissions ?? []),
+        isActive: true,
+        loginCount: 0,
+        failedLoginCount: 0,
+        mfaEnabled: false,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
-    const created = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const created = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     return created!;
   }
 
-  async updateAdmin(id: string, data: {
-    displayName?: string;
-    email?: string;
-    role?: string;
-    permissions?: string[];
-  }): Promise<AdminUser | null> {
-    const existing = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+  async updateAdmin(
+    id: string,
+    data: {
+      displayName?: string;
+      email?: string;
+      role?: string;
+      permissions?: string[];
+    },
+  ): Promise<AdminUser | null> {
+    const existing = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     if (!existing) return null;
 
     const updateData: Record<string, any> = { updatedAt: new Date().toISOString() };
@@ -467,23 +475,17 @@ export class AdminAuthService {
     if (data.role !== undefined) updateData.role = data.role;
     if (data.permissions !== undefined) updateData.permissions = JSON.stringify(data.permissions);
 
-    await db.update(adminUsers)
-      .set(updateData)
-      .where(eq(adminUsers.id, id))
-      .run();
+    await db.update(adminUsers).set(updateData).where(eq(adminUsers.id, id)).run();
 
-    return db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    return db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
   }
 
   async deactivateAdmin(id: string): Promise<boolean> {
-    const existing = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const existing = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     if (!existing) return false;
 
-    await db.update(adminUsers)
+    await db
+      .update(adminUsers)
       .set({ isActive: false, updatedAt: new Date().toISOString() })
       .where(eq(adminUsers.id, id))
       .run();
@@ -496,23 +498,24 @@ export class AdminAuthService {
       throw new Error(`Invalid password: ${validation.errors.join(', ')}`);
     }
 
-    const existing = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const existing = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     if (!existing) return false;
 
     const passwordHash = await this.hashPassword(newPassword);
-    await db.update(adminUsers)
+    await db
+      .update(adminUsers)
       .set({ passwordHash, updatedAt: new Date().toISOString() })
       .where(eq(adminUsers.id, id))
       .run();
     return true;
   }
 
-  async changePassword(id: string, currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
-    const admin = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+  async changePassword(
+    id: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const admin = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     if (!admin || !admin.passwordHash) {
       return { success: false, error: 'Admin not found' };
     }
@@ -528,7 +531,8 @@ export class AdminAuthService {
     }
 
     const passwordHash = await this.hashPassword(newPassword);
-    await db.update(adminUsers)
+    await db
+      .update(adminUsers)
       .set({ passwordHash, updatedAt: new Date().toISOString() })
       .where(eq(adminUsers.id, id))
       .run();
@@ -537,12 +541,11 @@ export class AdminAuthService {
   }
 
   async unlockAccount(id: string): Promise<boolean> {
-    const existing = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const existing = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     if (!existing) return false;
 
-    await db.update(adminUsers)
+    await db
+      .update(adminUsers)
       .set({
         lockedUntil: null,
         failedLoginCount: 0,
@@ -562,9 +565,7 @@ export class AdminAuthService {
   }
 
   async getAdminById(id: string): Promise<Omit<AdminUser, 'passwordHash' | 'mfaSecret'> | null> {
-    const admin = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const admin = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     if (!admin) return null;
     const { passwordHash, mfaSecret, ...rest } = admin;
     return rest;
@@ -574,13 +575,16 @@ export class AdminAuthService {
   // Session Tracking (In-Memory)
   // --------------------------------------------------------------------------
 
-  trackSession(sessionId: string, data: {
-    adminId: string;
-    username: string;
-    role: string;
-    ipAddress?: string;
-    userAgent?: string;
-  }): void {
+  trackSession(
+    sessionId: string,
+    data: {
+      adminId: string;
+      username: string;
+      role: string;
+      ipAddress?: string;
+      userAgent?: string;
+    },
+  ): void {
     const now = new Date();
     this.sessions.set(sessionId, {
       ...data,
@@ -630,40 +634,50 @@ export class AdminAuthService {
         return;
       }
 
-      const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || crypto.randomBytes(16).toString('hex');
+      const defaultPassword =
+        process.env.ADMIN_DEFAULT_PASSWORD || crypto.randomBytes(16).toString('hex');
       const passwordHash = await this.hashPassword(defaultPassword);
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
 
-      await db.insert(adminUsers).values({
-        id,
-        username: 'admin',
-        email: 'admin@goldledger.local',
-        passwordHash,
-        displayName: 'Super Admin',
-        role: 'super_admin',
-        permissions: JSON.stringify([
-          'admin.users.manage',
-          'admin.agents.manage',
-          'admin.system.manage',
-          'admin.cognee.manage',
-          'admin.features.manage',
-          'admin.metrics.view',
-          'admin.logs.view',
-        ]),
-        isActive: true,
-        loginCount: 0,
-        failedLoginCount: 0,
-        mfaEnabled: false,
-        createdAt: now,
-        updatedAt: now,
-      }).run();
+      await db
+        .insert(adminUsers)
+        .values({
+          id,
+          username: 'admin',
+          email: 'admin@goldledger.local',
+          passwordHash,
+          displayName: 'Super Admin',
+          role: 'super_admin',
+          permissions: JSON.stringify([
+            'admin.users.manage',
+            'admin.agents.manage',
+            'admin.system.manage',
+            'admin.cognee.manage',
+            'admin.features.manage',
+            'admin.metrics.view',
+            'admin.logs.view',
+          ]),
+          isActive: true,
+          loginCount: 0,
+          failedLoginCount: 0,
+          mfaEnabled: false,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .run();
 
       if (process.env.ADMIN_DEFAULT_PASSWORD) {
-        console.log('[AdminAuth] Default admin seeded (username: admin, password from ADMIN_DEFAULT_PASSWORD env)');
+        console.log(
+          '[AdminAuth] Default admin seeded (username: admin, password from ADMIN_DEFAULT_PASSWORD env)',
+        );
       } else {
-        console.log(`[AdminAuth] Default admin seeded (username: admin, password: ${defaultPassword})`);
-        console.log('[AdminAuth] IMPORTANT: Save this password! Set ADMIN_DEFAULT_PASSWORD env var for production.');
+        console.log(
+          `[AdminAuth] Default admin seeded (username: admin, password: ${defaultPassword})`,
+        );
+        console.log(
+          '[AdminAuth] IMPORTANT: Save this password! Set ADMIN_DEFAULT_PASSWORD env var for production.',
+        );
       }
     } catch (err: any) {
       // Table might not exist yet — don't crash the server
@@ -700,8 +714,7 @@ export function adminAuthMiddleware(requiredPermission?: string) {
     // Check required permission
     if (requiredPermission) {
       const hasPermission =
-        payload.role === 'super_admin' ||
-        payload.permissions.includes(requiredPermission);
+        payload.role === 'super_admin' || payload.permissions.includes(requiredPermission);
       if (!hasPermission) {
         return c.json({ error: 'Insufficient permissions' }, 403);
       }

@@ -9,16 +9,10 @@ import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
 import { parserRegistry } from '../../parsers/registry.js';
-import type {
-  StatementParserInput,
-  StatementParserOutput,
-} from '../types.js';
+import type { StatementParserInput, StatementParserOutput } from '../types.js';
 import type { BankId } from '../../parsers/types.js';
 
-export class StatementParserAgent extends ClaudeAgent<
-  StatementParserInput,
-  StatementParserOutput
-> {
+export class StatementParserAgent extends ClaudeAgent<StatementParserInput, StatementParserOutput> {
   protected systemPrompt = `You are a specialist in parsing Australian bank statements. Given extracted text or images from a PDF bank statement, identify and extract all transactions with their dates, descriptions, amounts, and running balances. You understand the formats of all major Australian banks (CBA, ANZ, Westpac, NAB, St George, Bendigo, ING, Macquarie).
 
 Your workflow:
@@ -33,8 +27,7 @@ Return your final result as a JSON object matching the StatementParserOutput sch
   protected tools: Anthropic.Tool[] = [
     {
       name: 'detect_bank',
-      description:
-        'Identify which Australian bank issued this statement from the text content.',
+      description: 'Identify which Australian bank issued this statement from the text content.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -48,8 +41,7 @@ Return your final result as a JSON object matching the StatementParserOutput sch
     },
     {
       name: 'parse_with_bank_parser',
-      description:
-        'Parse transactions from statement text using the bank-specific parser.',
+      description: 'Parse transactions from statement text using the bank-specific parser.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -68,8 +60,7 @@ Return your final result as a JSON object matching the StatementParserOutput sch
     },
     {
       name: 'extract_account_info',
-      description:
-        'Extract account details (BSB, account number, name, type) from statement text.',
+      description: 'Extract account details (BSB, account number, name, type) from statement text.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -83,8 +74,7 @@ Return your final result as a JSON object matching the StatementParserOutput sch
     },
     {
       name: 'validate_transactions',
-      description:
-        'Cross-check extracted transactions against the source text for accuracy.',
+      description: 'Cross-check extracted transactions against the source text for accuracy.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -103,8 +93,7 @@ Return your final result as a JSON object matching the StatementParserOutput sch
     },
     {
       name: 'search_cognee',
-      description:
-        'Search Cognee knowledge graph for historical parsing patterns.',
+      description: 'Search Cognee knowledge graph for historical parsing patterns.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -119,10 +108,7 @@ Return your final result as a JSON object matching the StatementParserOutput sch
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'detect_bank',
       async (input) => {
@@ -185,19 +171,13 @@ Return your final result as a JSON object matching the StatementParserOutput sch
         }
 
         // Check for reasonable date ranges
-        const dates = transactions
-          .map((t) => t.date as string)
-          .filter(Boolean);
+        const dates = transactions.map((t) => t.date as string).filter(Boolean);
         if (dates.length > 0) {
           const sorted = [...dates].sort();
           const start = sorted[0];
           const end = sorted[sorted.length - 1];
           // Basic sanity: check dates exist in text
-          if (
-            !text.includes(
-              (start || '').replace(/-/g, '/').substring(5)
-            )
-          ) {
+          if (!text.includes((start || '').replace(/-/g, '/').substring(5))) {
             issues.push(`Start date ${start} not found in source text`);
           }
         }

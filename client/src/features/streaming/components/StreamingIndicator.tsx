@@ -60,7 +60,10 @@ export function StreamingIndicator({ sessionId, compact = false }: StreamingIndi
     return () => clearInterval(interval);
   }, [session.status]);
 
-  const statusConfig: Record<SessionStatus, { color: string; label: string; icon: React.ReactNode }> = {
+  const statusConfig: Record<
+    SessionStatus,
+    { color: string; label: string; icon: React.ReactNode }
+  > = {
     pending: {
       color: 'text-zinc-400',
       label: 'Pending',
@@ -89,9 +92,7 @@ export function StreamingIndicator({ sessionId, compact = false }: StreamingIndi
     return (
       <span className={`inline-flex items-center gap-1.5 text-xs ${cfg.color}`}>
         {cfg.icon}
-        {session.status === 'streaming' && (
-          <span>{(elapsed / 1000).toFixed(1)}s</span>
-        )}
+        {session.status === 'streaming' && <span>{(elapsed / 1000).toFixed(1)}s</span>}
       </span>
     );
   }

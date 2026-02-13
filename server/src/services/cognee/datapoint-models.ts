@@ -60,7 +60,11 @@ export const AccountNodeDataPoint: DataPointModel = {
   description: 'A bank or business account',
   fields: [
     { name: 'account_number', type: 'string', description: 'Account number (masked)' },
-    { name: 'account_type', type: 'string', description: 'Account type (savings, business, credit)' },
+    {
+      name: 'account_type',
+      type: 'string',
+      description: 'Account type (savings, business, credit)',
+    },
     { name: 'balance', type: 'number', description: 'Current balance in cents' },
     { name: 'bank_name', type: 'string', description: 'Bank name' },
     { name: 'bsb', type: 'string', description: 'BSB number' },
@@ -78,8 +82,16 @@ export const CategoryNodeDataPoint: DataPointModel = {
   fields: [
     { name: 'name', type: 'string', description: 'Category name' },
     { name: 'parent', type: 'string', description: 'Parent category' },
-    { name: 'tax_deductible', type: 'boolean', description: 'Whether expenses in this category are tax deductible' },
-    { name: 'gst_applicable', type: 'boolean', description: 'Whether GST applies to this category' },
+    {
+      name: 'tax_deductible',
+      type: 'boolean',
+      description: 'Whether expenses in this category are tax deductible',
+    },
+    {
+      name: 'gst_applicable',
+      type: 'boolean',
+      description: 'Whether GST applies to this category',
+    },
     { name: 'category_type', type: 'string', description: 'income, expense, or transfer' },
   ],
   target_dataset: 'financial_insights',
@@ -93,11 +105,19 @@ export const GSTRuleNodeDataPoint: DataPointModel = {
   name: 'GSTRuleNode',
   description: 'An Australian GST rule or ATO ruling',
   fields: [
-    { name: 'rule_type', type: 'string', description: 'Rule type (input_taxed, gst_free, standard, export)' },
+    {
+      name: 'rule_type',
+      type: 'string',
+      description: 'Rule type (input_taxed, gst_free, standard, export)',
+    },
     { name: 'rate', type: 'number', description: 'GST rate (0.0 or 0.1)' },
     { name: 'description', type: 'string', description: 'Rule description' },
     { name: 'ato_reference', type: 'string', description: 'ATO ruling reference number' },
-    { name: 'applies_to', type: 'string', description: 'Category or transaction types this rule applies to' },
+    {
+      name: 'applies_to',
+      type: 'string',
+      description: 'Category or transaction types this rule applies to',
+    },
   ],
   target_dataset: 'tax_rulings',
 };
@@ -110,11 +130,23 @@ export const PatternNodeDataPoint: DataPointModel = {
   name: 'PatternNode',
   description: 'A detected financial pattern or trend',
   fields: [
-    { name: 'pattern_type', type: 'string', description: 'Type: recurring, seasonal, anomaly, trend' },
-    { name: 'frequency', type: 'string', description: 'Frequency: daily, weekly, monthly, quarterly, annual' },
+    {
+      name: 'pattern_type',
+      type: 'string',
+      description: 'Type: recurring, seasonal, anomaly, trend',
+    },
+    {
+      name: 'frequency',
+      type: 'string',
+      description: 'Frequency: daily, weekly, monthly, quarterly, annual',
+    },
     { name: 'amount_range_min', type: 'number', description: 'Minimum amount in cents' },
     { name: 'amount_range_max', type: 'number', description: 'Maximum amount in cents' },
-    { name: 'entities', type: 'string', description: 'Related merchants/categories (comma-separated)' },
+    {
+      name: 'entities',
+      type: 'string',
+      description: 'Related merchants/categories (comma-separated)',
+    },
     { name: 'confidence', type: 'number', description: 'Detection confidence 0.0-1.0' },
   ],
   target_dataset: 'transaction_patterns',
@@ -150,7 +182,11 @@ export const MerchantNodeDataPoint: DataPointModel = {
     { name: 'abn', type: 'string', description: 'Australian Business Number' },
     { name: 'category', type: 'string', description: 'Primary category' },
     { name: 'avg_amount', type: 'number', description: 'Average transaction amount in cents' },
-    { name: 'frequency', type: 'string', description: 'Transaction frequency (weekly, monthly, etc.)' },
+    {
+      name: 'frequency',
+      type: 'string',
+      description: 'Transaction frequency (weekly, monthly, etc.)',
+    },
     { name: 'total_spend', type: 'number', description: 'Total lifetime spend in cents' },
   ],
   target_dataset: 'merchant_data',
@@ -164,12 +200,20 @@ export const DeductionNodeDataPoint: DataPointModel = {
   name: 'DeductionNode',
   description: 'A tax deduction claim',
   fields: [
-    { name: 'type', type: 'string', description: 'Deduction type (work-related, self-education, home-office, etc.)' },
+    {
+      name: 'type',
+      type: 'string',
+      description: 'Deduction type (work-related, self-education, home-office, etc.)',
+    },
     { name: 'category', type: 'string', description: 'ATO deduction category (D1-D15)' },
     { name: 'amount', type: 'number', description: 'Deduction amount in cents' },
     { name: 'tax_year', type: 'string', description: 'Financial year' },
     { name: 'ato_ruling', type: 'string', description: 'Relevant ATO ruling' },
-    { name: 'substantiation', type: 'string', description: 'Evidence type (receipt, logbook, etc.)' },
+    {
+      name: 'substantiation',
+      type: 'string',
+      description: 'Evidence type (receipt, logbook, etc.)',
+    },
   ],
   target_dataset: 'deduction_patterns',
 };
@@ -200,15 +244,17 @@ export const ALL_DATAPOINT_MODELS: DataPointModel[] = [
  * Uses createOrUpdateDataPoint for idempotent upsert — safe to call multiple times.
  */
 export async function registerAllDataPoints(
-  dataPointService: { createOrUpdateDataPoint: (config: {
-    userId: string;
-    name: string;
-    description: string;
-    fields: string;
-    targetDataset: string;
-  }) => Promise<void> },
+  dataPointService: {
+    createOrUpdateDataPoint: (config: {
+      userId: string;
+      name: string;
+      description: string;
+      fields: string;
+      targetDataset: string;
+    }) => Promise<void>;
+  },
   userId: string,
-  datasetPrefix: string
+  datasetPrefix: string,
 ): Promise<void> {
   for (const model of ALL_DATAPOINT_MODELS) {
     const prefixedDataset = datasetPrefix

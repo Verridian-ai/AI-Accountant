@@ -64,10 +64,7 @@ export class StreamingService {
   // Create a new streaming session
   // --------------------------------------------------------------------------
 
-  async createStreamSession(
-    agentType: AgentType,
-    userId: string,
-  ): Promise<StreamSession> {
+  async createStreamSession(agentType: AgentType, userId: string): Promise<StreamSession> {
     const id = crypto.randomUUID();
 
     const session: InternalSession = {
@@ -83,12 +80,11 @@ export class StreamingService {
 
     // Best-effort DB persistence
     try {
-      await (db as any)
-        .run(
-          `INSERT INTO agent_stream_sessions (id, agent_type, user_id, session_status, model_id, provider, created_at, updated_at)
+      await (db as any).run(
+        `INSERT INTO agent_stream_sessions (id, agent_type, user_id, session_status, model_id, provider, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
-          [id, agentType, userId, 'pending', 'default', 'anthropic'],
-        );
+        [id, agentType, userId, 'pending', 'default', 'anthropic'],
+      );
     } catch {
       // DB write is best-effort; in-memory map is the source of truth
     }
@@ -185,8 +181,7 @@ export class StreamingService {
       });
     } catch (err) {
       const latencyMs = Date.now() - startMs;
-      const errorMessage =
-        err instanceof Error ? err.message : 'Unknown streaming error';
+      const errorMessage = err instanceof Error ? err.message : 'Unknown streaming error';
 
       session.status = 'errored';
       session.latencyMs = latencyMs;
@@ -239,9 +234,7 @@ export class StreamingService {
       if (row.token_usage) {
         try {
           tokenUsage =
-            typeof row.token_usage === 'string'
-              ? JSON.parse(row.token_usage)
-              : row.token_usage;
+            typeof row.token_usage === 'string' ? JSON.parse(row.token_usage) : row.token_usage;
         } catch {
           // ignore parse errors
         }
@@ -313,10 +306,7 @@ export class StreamingService {
 
     // Clean in-memory sessions
     for (const [id, session] of this.sessions.entries()) {
-      if (
-        session.status === 'streaming' &&
-        now - session.createdAt > staleThresholdMs
-      ) {
+      if (session.status === 'streaming' && now - session.createdAt > staleThresholdMs) {
         session.status = 'errored';
         session.abortController.abort();
         this.sessions.delete(id);

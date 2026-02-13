@@ -42,7 +42,9 @@ export function RateAlertManager() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const handleCreate = async () => {
     setCreating(true);
@@ -65,7 +67,7 @@ export function RateAlertManager() {
     setDeleting(id);
     try {
       await deleteCdrAlert(id);
-      setAlerts(prev => prev.filter(a => a.id !== id));
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
     } catch (e) {
       console.error('Failed to delete alert', e);
     } finally {
@@ -78,11 +80,16 @@ export function RateAlertManager() {
 
   const typeLabel = (type: string) => {
     switch (type) {
-      case 'rate_change': return 'Rate Change';
-      case 'rate_below': return 'Rate Below';
-      case 'rate_above': return 'Rate Above';
-      case 'new_product': return 'New Product';
-      default: return type;
+      case 'rate_change':
+        return 'Rate Change';
+      case 'rate_below':
+        return 'Rate Below';
+      case 'rate_above':
+        return 'Rate Above';
+      case 'new_product':
+        return 'New Product';
+      default:
+        return type;
     }
   };
 
@@ -92,16 +99,17 @@ export function RateAlertManager() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-zinc-500">
-            {alerts.filter(a => a.isActive).length} active alert{alerts.filter(a => a.isActive).length !== 1 ? 's' : ''}
+            {alerts.filter((a) => a.isActive).length} active alert
+            {alerts.filter((a) => a.isActive).length !== 1 ? 's' : ''}
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all",
+            'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all',
             showForm
-              ? "neu-raised-sm text-zinc-400"
-              : "bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]"
+              ? 'neu-raised-sm text-zinc-400'
+              : 'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]',
           )}
         >
           <Plus className="h-4 w-4" />
@@ -121,8 +129,10 @@ export function RateAlertManager() {
                 onChange={(e) => setAlertType(e.target.value)}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
-                {ALERT_TYPES.map(t => (
-                  <option key={t} value={t} className="bg-[#23272f]">{typeLabel(t)}</option>
+                {ALERT_TYPES.map((t) => (
+                  <option key={t} value={t} className="bg-[#23272f]">
+                    {typeLabel(t)}
+                  </option>
                 ))}
               </select>
             </div>
@@ -133,13 +143,17 @@ export function RateAlertManager() {
                 onChange={(e) => setAlertCategory(e.target.value)}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
-                {CATEGORIES.map(c => (
-                  <option key={c} value={c} className="bg-[#23272f]">{c.replace(/_/g, ' ')}</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c} className="bg-[#23272f]">
+                    {c.replace(/_/g, ' ')}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold block mb-1">Threshold Rate (%)</label>
+              <label className="text-xs text-zinc-500 font-semibold block mb-1">
+                Threshold Rate (%)
+              </label>
               <input
                 type="number"
                 step="0.01"
@@ -170,22 +184,26 @@ export function RateAlertManager() {
         <div className="neu-raised rounded-2xl p-12 text-center">
           <BellOff className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
           <p className="text-zinc-500">No alerts configured</p>
-          <p className="text-xs text-zinc-600 mt-1">Create an alert to be notified of rate changes</p>
+          <p className="text-xs text-zinc-600 mt-1">
+            Create an alert to be notified of rate changes
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
-          {alerts.map(alert => (
+          {alerts.map((alert) => (
             <div
               key={alert.id}
               className={cn(
-                "neu-raised rounded-2xl p-4 flex items-center gap-4 transition-opacity",
-                !alert.isActive && "opacity-50"
+                'neu-raised rounded-2xl p-4 flex items-center gap-4 transition-opacity',
+                !alert.isActive && 'opacity-50',
               )}
             >
-              <div className={cn(
-                "neu-inset p-2 rounded-xl",
-                alert.isActive ? "text-[#FFCC00]" : "text-zinc-600"
-              )}>
+              <div
+                className={cn(
+                  'neu-inset p-2 rounded-xl',
+                  alert.isActive ? 'text-[#FFCC00]' : 'text-zinc-600',
+                )}
+              >
                 <Bell className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
@@ -214,7 +232,7 @@ export function RateAlertManager() {
                 disabled={deleting === alert.id}
                 className="shrink-0 p-2 rounded-lg text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50"
               >
-                <Trash2 className={cn("h-4 w-4", deleting === alert.id && "animate-pulse")} />
+                <Trash2 className={cn('h-4 w-4', deleting === alert.id && 'animate-pulse')} />
               </button>
             </div>
           ))}

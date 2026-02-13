@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { anomalyApi } from '../../../api';
-import { AlertTriangle, CheckCircle, XCircle, Eye, Loader2, Search, AlertOctagon, Info } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Loader2,
+  Search,
+  AlertOctagon,
+  Info,
+} from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
 interface AnomalyAlert {
@@ -25,16 +34,39 @@ interface AnomalyAlertPanelProps {
   userId: string;
 }
 
-const severityConfig: Record<string, { icon: typeof AlertTriangle; color: string; bg: string; order: number }> = {
-  critical: { icon: AlertOctagon, color: 'text-red-400', bg: 'bg-red-400/10 border-red-500/30', order: 0 },
-  high: { icon: AlertTriangle, color: 'text-orange-400', bg: 'bg-orange-400/10 border-orange-500/30', order: 1 },
-  medium: { icon: Info, color: 'text-yellow-400', bg: 'bg-yellow-400/10 border-yellow-500/30', order: 2 },
+const severityConfig: Record<
+  string,
+  { icon: typeof AlertTriangle; color: string; bg: string; order: number }
+> = {
+  critical: {
+    icon: AlertOctagon,
+    color: 'text-red-400',
+    bg: 'bg-red-400/10 border-red-500/30',
+    order: 0,
+  },
+  high: {
+    icon: AlertTriangle,
+    color: 'text-orange-400',
+    bg: 'bg-orange-400/10 border-orange-500/30',
+    order: 1,
+  },
+  medium: {
+    icon: Info,
+    color: 'text-yellow-400',
+    bg: 'bg-yellow-400/10 border-yellow-500/30',
+    order: 2,
+  },
   low: { icon: Info, color: 'text-zinc-400', bg: 'bg-zinc-400/10 border-zinc-500/30', order: 3 },
 };
 
 export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
   const [alerts, setAlerts] = useState<AnomalyAlert[]>([]);
-  const [stats, setStats] = useState<AnomalyStats>({ open: 0, acknowledged: 0, resolved: 0, total: 0 });
+  const [stats, setStats] = useState<AnomalyStats>({
+    open: 0,
+    acknowledged: 0,
+    resolved: 0,
+    total: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
 
@@ -50,9 +82,12 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
         anomalyApi.stats(userId),
       ]);
       const list = alertData.alerts ?? alertData ?? [];
-      setAlerts(list.sort((a: AnomalyAlert, b: AnomalyAlert) =>
-        (severityConfig[a.severity]?.order ?? 9) - (severityConfig[b.severity]?.order ?? 9)
-      ));
+      setAlerts(
+        list.sort(
+          (a: AnomalyAlert, b: AnomalyAlert) =>
+            (severityConfig[a.severity]?.order ?? 9) - (severityConfig[b.severity]?.order ?? 9),
+        ),
+      );
       setStats(statsData);
     } catch (e) {
       console.error('Failed to load anomaly alerts', e);
@@ -121,22 +156,25 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
             <p className="text-zinc-500 text-sm mt-1">Run a scan to check for issues</p>
           </div>
         ) : (
-          alerts.map(alert => {
+          alerts.map((alert) => {
             const sc = severityConfig[alert.severity] ?? severityConfig.low;
             const Icon = sc.icon;
             return (
-              <div
-                key={alert.id}
-                className={cn("neu-raised rounded-2xl p-4 border", sc.bg)}
-              >
+              <div key={alert.id} className={cn('neu-raised rounded-2xl p-4 border', sc.bg)}>
                 <div className="flex items-start gap-3">
-                  <div className={cn("p-2 rounded-xl neu-inset", sc.color)}>
+                  <div className={cn('p-2 rounded-xl neu-inset', sc.color)}>
                     <Icon className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-zinc-200 font-bold text-sm">{alert.title}</h4>
-                      <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase", sc.color, sc.bg)}>
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded text-[10px] font-bold uppercase',
+                          sc.color,
+                          sc.bg,
+                        )}
+                      >
                         {alert.severity}
                       </span>
                       {alert.status !== 'open' && (

@@ -2,8 +2,17 @@ import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import ForceGraph3D, { type ForceGraph3DInstance } from '3d-force-graph';
 import type { NodeObject, LinkObject } from 'three-forcegraph';
 import {
-  Search, Filter, RotateCcw, Maximize2, X, ExternalLink,
-  ChevronDown, Loader2, AlertTriangle, Database, GitBranch
+  Search,
+  Filter,
+  RotateCcw,
+  Maximize2,
+  X,
+  ExternalLink,
+  ChevronDown,
+  Loader2,
+  AlertTriangle,
+  Database,
+  GitBranch,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -141,9 +150,7 @@ function transformToGraphData(raw: any): { nodes: GraphNode[]; links: GraphLink[
 function detectWebGL(): boolean {
   try {
     const canvas = document.createElement('canvas');
-    return !!(
-      canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
-    );
+    return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
   } catch {
     return false;
   }
@@ -173,10 +180,18 @@ function StatsOverlay({
 }) {
   return (
     <div className="absolute bottom-4 left-4 bg-[#1a1a2e]/90 border border-[#FFCC00]/20 rounded-lg px-3 py-2 text-xs font-mono text-gray-400 space-y-0.5 pointer-events-none select-none">
-      <div>Nodes: <span className="text-[#FFCC00]">{nodeCount}</span></div>
-      <div>Edges: <span className="text-[#FFCC00]">{linkCount}</span></div>
-      <div>Datasets: <span className="text-[#FFCC00]">{datasetCount}</span></div>
-      <div>Types: <span className="text-[#FFCC00]">{typeCount}</span></div>
+      <div>
+        Nodes: <span className="text-[#FFCC00]">{nodeCount}</span>
+      </div>
+      <div>
+        Edges: <span className="text-[#FFCC00]">{linkCount}</span>
+      </div>
+      <div>
+        Datasets: <span className="text-[#FFCC00]">{datasetCount}</span>
+      </div>
+      <div>
+        Types: <span className="text-[#FFCC00]">{typeCount}</span>
+      </div>
     </div>
   );
 }
@@ -194,9 +209,7 @@ function DetailPanel({
   onClose: () => void;
   onNavigate: (id: string) => void;
 }) {
-  const connectedLinks = links.filter(
-    (l) => sourceId(l) === node.id || targetId(l) === node.id
-  );
+  const connectedLinks = links.filter((l) => sourceId(l) === node.id || targetId(l) === node.id);
   const connectedNodes = connectedLinks.map((l) => {
     const otherId = sourceId(l) === node.id ? targetId(l) : sourceId(l);
     const other = allNodes.find((n) => n.id === otherId);
@@ -245,14 +258,21 @@ function DetailPanel({
         {/* Properties */}
         {Object.keys(node.properties).length > 0 && (
           <div>
-            <h4 className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">Properties</h4>
+            <h4 className="text-xs font-medium text-gray-400 mb-2 uppercase tracking-wider">
+              Properties
+            </h4>
             <div className="space-y-1">
-              {Object.entries(node.properties).slice(0, 12).map(([key, value]) => (
-                <div key={key} className="flex justify-between text-xs bg-white/5 rounded px-2 py-1">
-                  <span className="text-gray-400 truncate mr-2">{key}</span>
-                  <span className="text-gray-200 truncate">{String(value)}</span>
-                </div>
-              ))}
+              {Object.entries(node.properties)
+                .slice(0, 12)
+                .map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="flex justify-between text-xs bg-white/5 rounded px-2 py-1"
+                  >
+                    <span className="text-gray-400 truncate mr-2">{key}</span>
+                    <span className="text-gray-200 truncate">{String(value)}</span>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -306,11 +326,7 @@ function MultiSelect({
   }, []);
 
   const toggle = (val: string) => {
-    onChange(
-      selected.includes(val)
-        ? selected.filter((v) => v !== val)
-        : [...selected, val]
-    );
+    onChange(selected.includes(val) ? selected.filter((v) => v !== val) : [...selected, val]);
   };
 
   return (
@@ -363,7 +379,7 @@ export function CogneeGraphViewer({
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
   const graphContainerRef = useRef<HTMLDivElement>(null);
-  const graphRef = useRef<ForceGraph3DInstance<GraphNode, GraphLink> | null>(null);
+  const graphRef = useRef<ForceGraph3DInstance | null>(null);
 
   // Raw data
   const [allNodes, setAllNodes] = useState<GraphNode[]>([]);
@@ -384,8 +400,14 @@ export function CogneeGraphViewer({
   const [minConnections, setMinConnections] = useState(1);
 
   // Derived lists
-  const allEntityTypes = useMemo(() => [...new Set(allNodes.map((n) => n.type))].sort(), [allNodes]);
-  const allDatasets = useMemo(() => [...new Set(allNodes.map((n) => n.dataset))].sort(), [allNodes]);
+  const allEntityTypes = useMemo(
+    () => [...new Set(allNodes.map((n) => n.type))].sort(),
+    [allNodes],
+  );
+  const allDatasets = useMemo(
+    () => [...new Set(allNodes.map((n) => n.dataset))].sort(),
+    [allNodes],
+  );
   const allEdgeTypes = useMemo(() => [...new Set(allLinks.map((l) => l.type))].sort(), [allLinks]);
 
   // Dimension calc
@@ -428,9 +450,7 @@ export function CogneeGraphViewer({
     }
 
     const nodeIds = new Set(nodes.map((n) => n.id));
-    links = links.filter(
-      (l) => nodeIds.has(sourceId(l)) && nodeIds.has(targetId(l))
-    );
+    links = links.filter((l) => nodeIds.has(sourceId(l)) && nodeIds.has(targetId(l)));
 
     if (selectedEdgeTypes.length > 0) {
       links = links.filter((l) => selectedEdgeTypes.includes(l.type));
@@ -441,14 +461,20 @@ export function CogneeGraphViewer({
       const q = searchQuery.toLowerCase();
       nodes = nodes.map((n) => ({
         ...n,
-        color: n.name.toLowerCase().includes(q)
-          ? '#FFFFFF'
-          : nodeColor(n.type) + '40',
+        color: n.name.toLowerCase().includes(q) ? '#FFFFFF' : nodeColor(n.type) + '40',
       }));
     }
 
     return { nodes, links };
-  }, [allNodes, allLinks, selectedTypes, selectedDataset, selectedEdgeTypes, minConnections, searchQuery]);
+  }, [
+    allNodes,
+    allLinks,
+    selectedTypes,
+    selectedDataset,
+    selectedEdgeTypes,
+    minConnections,
+    searchQuery,
+  ]);
 
   // ---------------------------------------------------------------------------
   // Data fetching
@@ -495,7 +521,7 @@ export function CogneeGraphViewer({
     // Clear container safely (no innerHTML)
     clearChildren(graphContainerRef.current);
 
-    const graph = new ForceGraph3D<GraphNode, GraphLink>(graphContainerRef.current)
+    const graph = new ForceGraph3D(graphContainerRef.current)
       .graphData({ nodes: [...filteredData.nodes], links: [...filteredData.links] })
       .nodeLabel((node: GraphNode) => `${node.name} (${node.type})`)
       .nodeColor((node: GraphNode) => node.color)
@@ -547,17 +573,18 @@ export function CogneeGraphViewer({
   // Camera helpers
   // ---------------------------------------------------------------------------
 
-  function zoomToNode(graph: ForceGraph3DInstance<GraphNode, GraphLink>, node: GraphNode) {
+  function zoomToNode(graph: ForceGraph3DInstance, node: GraphNode) {
     const distance = 100;
-    const x = node.x ?? 0;
-    const y = node.y ?? 0;
-    const z = node.z ?? 0;
+    const n = node as any;
+    const x = n.x ?? 0;
+    const y = n.y ?? 0;
+    const z = n.z ?? 0;
     const hypot = Math.hypot(x, y, z) || 1;
     const distRatio = 1 + distance / hypot;
     graph.cameraPosition(
       { x: x * distRatio, y: y * distRatio, z: z * distRatio },
       { x, y, z },
-      1000
+      1000,
     );
   }
 
@@ -579,7 +606,7 @@ export function CogneeGraphViewer({
         zoomToNode(graphRef.current, node);
       }
     },
-    [allNodes]
+    [allNodes],
   );
 
   const handleToggleFullscreen = useCallback(() => {
@@ -627,8 +654,8 @@ export function CogneeGraphViewer({
         <AlertTriangle className="w-12 h-12 text-yellow-500 mb-4" />
         <h3 className="text-lg font-semibold text-white mb-2">WebGL Not Available</h3>
         <p className="text-sm max-w-md">
-          Your browser does not support WebGL, which is required for the 3D graph viewer.
-          Please try a modern browser or use the 2D fallback view.
+          Your browser does not support WebGL, which is required for the 3D graph viewer. Please try
+          a modern browser or use the 2D fallback view.
         </p>
       </div>
     );
@@ -670,7 +697,9 @@ export function CogneeGraphViewer({
         >
           <option value="">All datasets</option>
           {allDatasets.map((ds) => (
-            <option key={ds} value={ds}>{ds}</option>
+            <option key={ds} value={ds}>
+              {ds}
+            </option>
           ))}
         </select>
 

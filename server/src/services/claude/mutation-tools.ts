@@ -264,26 +264,14 @@ export class MutationTools {
           );
           break;
         case 'create':
-          affectedRows = await this.executeCreate(
-            mutation.targetTable,
-            afterState,
-          );
+          affectedRows = await this.executeCreate(mutation.targetTable, afterState);
           break;
         case 'delete':
-          affectedRows = await this.executeDelete(
-            mutation.targetTable,
-            mutation.targetId!,
-          );
+          affectedRows = await this.executeDelete(mutation.targetTable, mutation.targetId!);
           break;
         case 'batch_update': {
-          const targetIds: string[] = mutation.targetIds
-            ? JSON.parse(mutation.targetIds)
-            : [];
-          affectedRows = await this.executeBatchUpdate(
-            mutation.targetTable,
-            targetIds,
-            afterState,
-          );
+          const targetIds: string[] = mutation.targetIds ? JSON.parse(mutation.targetIds) : [];
+          affectedRows = await this.executeBatchUpdate(mutation.targetTable, targetIds, afterState);
           break;
         }
         default:
@@ -318,10 +306,7 @@ export class MutationTools {
    */
   async getMutation(mutationId: string): Promise<AgentMutation | null> {
     try {
-      const rows = await this.db.all(
-        'SELECT * FROM agent_mutations WHERE id = ?',
-        [mutationId],
-      );
+      const rows = await this.db.all('SELECT * FROM agent_mutations WHERE id = ?', [mutationId]);
       return rows.length > 0 ? this.rowToMutation(rows[0]) : null;
     } catch (error) {
       console.error('[MutationTools] Failed to fetch mutation:', error);
@@ -447,9 +432,7 @@ export class MutationTools {
       );
     }
     if (!MUTABLE_TABLES.has(table)) {
-      throw new Error(
-        `Table '${table}' is not in the mutation whitelist — mutation denied`,
-      );
+      throw new Error(`Table '${table}' is not in the mutation whitelist — mutation denied`);
     }
   }
 
@@ -481,17 +464,14 @@ export class MutationTools {
     const setClause = columns.map((col) => `${col} = ?`).join(', ');
     const values = columns.map((col) => afterState[col]);
 
-    const result = await this.db.run(
-      `UPDATE ${table} SET ${setClause} WHERE id = ?`,
-      [...values, targetId],
-    );
+    const result = await this.db.run(`UPDATE ${table} SET ${setClause} WHERE id = ?`, [
+      ...values,
+      targetId,
+    ]);
     return result?.changes ?? 1;
   }
 
-  private async executeCreate(
-    table: string,
-    afterState: Record<string, unknown>,
-  ): Promise<number> {
+  private async executeCreate(table: string, afterState: Record<string, unknown>): Promise<number> {
     this.validateTableName(table);
     const columns = Object.keys(afterState);
     this.validateColumnNames(columns);
@@ -506,16 +486,10 @@ export class MutationTools {
     return 1;
   }
 
-  private async executeDelete(
-    table: string,
-    targetId: string,
-  ): Promise<number> {
+  private async executeDelete(table: string, targetId: string): Promise<number> {
     this.validateTableName(table);
 
-    const result = await this.db.run(
-      `DELETE FROM ${table} WHERE id = ?`,
-      [targetId],
-    );
+    const result = await this.db.run(`DELETE FROM ${table} WHERE id = ?`, [targetId]);
     return result?.changes ?? 1;
   }
 

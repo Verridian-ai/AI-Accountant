@@ -13,7 +13,13 @@ interface AgentProgressBarProps {
  * Real-time agent execution progress bar.
  * Shows step/total with gold fill, description text, and a spinner or checkmark.
  */
-export function AgentProgressBar({ step, total, description, agentType, isComplete }: AgentProgressBarProps) {
+export function AgentProgressBar({
+  step,
+  total,
+  description,
+  agentType,
+  isComplete,
+}: AgentProgressBarProps) {
   const pct = total > 0 ? Math.round((step / total) * 100) : 0;
 
   return (
@@ -42,7 +48,7 @@ export function AgentProgressBar({ step, total, description, agentType, isComple
         <div
           className={cn(
             'h-full rounded-full transition-all duration-300 ease-out',
-            isComplete ? 'bg-emerald-500' : 'bg-[#FFCC00]'
+            isComplete ? 'bg-emerald-500' : 'bg-[#FFCC00]',
           )}
           style={{ width: `${pct}%` }}
         />

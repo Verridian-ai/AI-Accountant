@@ -83,9 +83,11 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
   const [hoursPerWeek, setHoursPerWeek] = useState<number | undefined>(38);
 
   useEffect(() => {
-    fetchPayCategories('default').then((result) => {
-      setPayCategories(result.data ?? []);
-    }).catch(() => {});
+    fetchPayCategories('default')
+      .then((result) => {
+        setPayCategories(result.data ?? []);
+      })
+      .catch(() => {});
   }, []);
 
   const canProceed = (): boolean => {
@@ -173,18 +175,44 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="First Name *" value={firstName} onChange={setFirstName} placeholder="Jane" />
-              <Field label="Last Name *" value={lastName} onChange={setLastName} placeholder="Smith" />
+              <Field
+                label="First Name *"
+                value={firstName}
+                onChange={setFirstName}
+                placeholder="Jane"
+              />
+              <Field
+                label="Last Name *"
+                value={lastName}
+                onChange={setLastName}
+                placeholder="Smith"
+              />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Email" value={email} onChange={setEmail} type="email" placeholder="jane@example.com" />
+              <Field
+                label="Email"
+                value={email}
+                onChange={setEmail}
+                type="email"
+                placeholder="jane@example.com"
+              />
               <Field label="Phone" value={phone} onChange={setPhone} placeholder="0412 345 678" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Date of Birth" value={dateOfBirth} onChange={setDateOfBirth} type="date" />
+              <Field
+                label="Date of Birth"
+                value={dateOfBirth}
+                onChange={setDateOfBirth}
+                type="date"
+              />
               <Field label="Start Date *" value={startDate} onChange={setStartDate} type="date" />
             </div>
-            <Field label="Address" value={address} onChange={setAddress} placeholder="123 Main St, Sydney NSW 2000" />
+            <Field
+              label="Address"
+              value={address}
+              onChange={setAddress}
+              placeholder="123 Main St, Sydney NSW 2000"
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field
                 label="Tax File Number"
@@ -192,10 +220,16 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
                 onChange={(v) => setTaxFileNumber(v.replace(/\D/g, '').slice(0, 9))}
                 type="password"
                 placeholder="8-9 digits"
-                hint={taxFileNumber && (taxFileNumber.length < 8 || taxFileNumber.length > 9) ? 'TFN must be 8-9 digits' : undefined}
+                hint={
+                  taxFileNumber && (taxFileNumber.length < 8 || taxFileNumber.length > 9)
+                    ? 'TFN must be 8-9 digits'
+                    : undefined
+                }
               />
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Employment Type *</label>
+                <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                  Employment Type *
+                </label>
                 <select
                   value={employmentType}
                   onChange={(e) => setEmploymentType(e.target.value)}
@@ -227,14 +261,24 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
               onChange={(v) => setAccountNumber(v.replace(/\D/g, '').slice(0, 12))}
               placeholder="12345678"
             />
-            <Field label="Account Name *" value={accountName} onChange={setAccountName} placeholder="Jane Smith" />
+            <Field
+              label="Account Name *"
+              value={accountName}
+              onChange={setAccountName}
+              placeholder="Jane Smith"
+            />
           </div>
         );
 
       case 2:
         return (
           <div className="space-y-4">
-            <Field label="Fund Name *" value={fundName} onChange={setFundName} placeholder="AustralianSuper" />
+            <Field
+              label="Fund Name *"
+              value={fundName}
+              onChange={setFundName}
+              placeholder="AustralianSuper"
+            />
             <Field
               label="Fund ABN"
               value={fundABN}
@@ -242,10 +286,22 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
               placeholder="11 digits"
               hint={fundABN && fundABN.length !== 11 ? 'ABN must be 11 digits' : undefined}
             />
-            <Field label="USI" value={usi} onChange={setUsi} placeholder="Unique Superannuation Identifier" />
-            <Field label="Member Number" value={memberNumber} onChange={setMemberNumber} placeholder="MEM123456" />
+            <Field
+              label="USI"
+              value={usi}
+              onChange={setUsi}
+              placeholder="Unique Superannuation Identifier"
+            />
+            <Field
+              label="Member Number"
+              value={memberNumber}
+              onChange={setMemberNumber}
+              placeholder="MEM123456"
+            />
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Contribution Rate (%)</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                Contribution Rate (%)
+              </label>
               <div className="relative">
                 <input
                   type="number"
@@ -276,7 +332,11 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
       case 3:
         return (
           <div className="space-y-5">
-            <Toggle label="Claim tax-free threshold" checked={taxFreeThreshold} onChange={setTaxFreeThreshold} />
+            <Toggle
+              label="Claim tax-free threshold"
+              checked={taxFreeThreshold}
+              onChange={setTaxFreeThreshold}
+            />
             <Toggle label="HELP / HECS debt" checked={helpDebt} onChange={setHelpDebt} />
             <Toggle label="SFSS debt" checked={sfssDebt} onChange={setSfssDebt} />
             <div>
@@ -296,7 +356,9 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Pay Category *</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                Pay Category *
+              </label>
               <select
                 value={selectedCategoryId}
                 onChange={(e) => {
@@ -317,7 +379,9 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
                 ))}
               </select>
               {payCategories.length === 0 && (
-                <p className="text-xs text-zinc-500 mt-1">No pay categories found. Create one first in the Pay Categories tab.</p>
+                <p className="text-xs text-zinc-500 mt-1">
+                  No pay categories found. Create one first in the Pay Categories tab.
+                </p>
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -379,7 +443,9 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
               <span className="sm:hidden">{i + 1}</span>
             </button>
             {i < STEPS.length - 1 && (
-              <ChevronRight className={`h-4 w-4 flex-shrink-0 ${i < step ? 'text-emerald-400' : 'text-zinc-600'}`} />
+              <ChevronRight
+                className={`h-4 w-4 flex-shrink-0 ${i < step ? 'text-emerald-400' : 'text-zinc-600'}`}
+              />
             )}
           </div>
         ))}

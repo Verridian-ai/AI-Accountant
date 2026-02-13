@@ -1,50 +1,50 @@
-import { db, users, subscriptions, basPeriods, teamInvitations, teams } from '../schema.js';
-import { eq, and } from 'drizzle-orm';
+import { db, users } from '../schema.js';
+import { eq } from 'drizzle-orm';
 
 // ============================================================================
 // TYPES & INTERFACES
 // ============================================================================
 
 export type NotificationType =
-    | 'welcome'
-    | 'password_reset'
-    | 'team_invitation'
-    | 'bas_reminder'
-    | 'statement_processed'
-    | 'weekly_summary'
-    | 'payment_failed'
-    | 'subscription_confirmation'
-    | 'marketing';
+  | 'welcome'
+  | 'password_reset'
+  | 'team_invitation'
+  | 'bas_reminder'
+  | 'statement_processed'
+  | 'weekly_summary'
+  | 'payment_failed'
+  | 'subscription_confirmation'
+  | 'marketing';
 
 export interface EmailOptions {
-    to: string | string[];
-    subject: string;
-    html: string;
-    text?: string;
-    replyTo?: string;
-    tags?: Array<{ name: string; value: string }>;
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  replyTo?: string;
+  tags?: Array<{ name: string; value: string }>;
 }
 
 export interface WeeklySummaryData {
-    totalIncome: number;
-    totalExpenses: number;
-    netCashFlow: number;
-    topCategories: Array<{ name: string; amount: number }>;
-    transactionCount: number;
-    accountBalances: Array<{ name: string; balance: number }>;
-    alertCount: number;
-    upcomingBAS?: { period: string; dueDate: string } | null;
+  totalIncome: number;
+  totalExpenses: number;
+  netCashFlow: number;
+  topCategories: Array<{ name: string; amount: number }>;
+  transactionCount: number;
+  accountBalances: Array<{ name: string; balance: number }>;
+  alertCount: number;
+  upcomingBAS?: { period: string; dueDate: string } | null;
 }
 
 export interface BatchEmailJob {
-    id: string;
-    to: string;
-    template: NotificationType;
-    data: Record<string, unknown>;
-    scheduledFor?: Date;
-    status: 'pending' | 'sent' | 'failed';
-    attempts: number;
-    lastError?: string;
+  id: string;
+  to: string;
+  template: NotificationType;
+  data: Record<string, unknown>;
+  scheduledFor?: Date;
+  status: 'pending' | 'sent' | 'failed';
+  attempts: number;
+  lastError?: string;
 }
 
 // ============================================================================
@@ -52,13 +52,13 @@ export interface BatchEmailJob {
 // ============================================================================
 
 const config = {
-    apiKey: process.env.RESEND_API_KEY || '',
-    from: process.env.EMAIL_FROM || 'GoldLedger <noreply@goldledger.com.au>',
-    baseUrl: process.env.APP_URL || 'https://goldledger.com.au',
-    rateLimitPerSecond: 10,
-    maxBatchSize: 100,
-    retryAttempts: 3,
-    retryDelayMs: 1000,
+  apiKey: process.env.RESEND_API_KEY || '',
+  from: process.env.EMAIL_FROM || 'GoldLedger <noreply@goldledger.com.au>',
+  baseUrl: process.env.APP_URL || 'https://goldledger.com.au',
+  rateLimitPerSecond: 10,
+  maxBatchSize: 100,
+  retryAttempts: 3,
+  retryDelayMs: 1000,
 };
 
 // ============================================================================
@@ -66,15 +66,15 @@ const config = {
 // ============================================================================
 
 const BRAND = {
-    primaryColor: '#FFCC00',
-    secondaryColor: '#000000',
-    backgroundColor: '#F5F5F5',
-    cardBackground: '#FFFFFF',
-    textColor: '#333333',
-    mutedColor: '#666666',
-    logoUrl: `${config.baseUrl}/logo.png`,
-    appName: 'GoldLedger',
-    supportEmail: 'support@goldledger.com.au',
+  primaryColor: '#FFCC00',
+  secondaryColor: '#000000',
+  backgroundColor: '#F5F5F5',
+  cardBackground: '#FFFFFF',
+  textColor: '#333333',
+  mutedColor: '#666666',
+  logoUrl: `${config.baseUrl}/logo.png`,
+  appName: 'GoldLedger',
+  supportEmail: 'support@goldledger.com.au',
 };
 
 // ============================================================================
@@ -82,7 +82,7 @@ const BRAND = {
 // ============================================================================
 
 function baseTemplate(content: string, preheader: string = ''): string {
-    return `
+  return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -175,11 +175,11 @@ function baseTemplate(content: string, preheader: string = ''): string {
 }
 
 function buttonTemplate(text: string, url: string, primary: boolean = true): string {
-    const bgColor = primary ? BRAND.primaryColor : BRAND.cardBackground;
-    const textColor = primary ? BRAND.secondaryColor : BRAND.textColor;
-    const border = primary ? 'none' : `2px solid ${BRAND.textColor}`;
+  const bgColor = primary ? BRAND.primaryColor : BRAND.cardBackground;
+  const textColor = primary ? BRAND.secondaryColor : BRAND.textColor;
+  const border = primary ? 'none' : `2px solid ${BRAND.textColor}`;
 
-    return `
+  return `
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
         <tr>
             <td align="center" style="border-radius: 6px; background-color: ${bgColor}; border: ${border};">
@@ -192,7 +192,7 @@ function buttonTemplate(text: string, url: string, primary: boolean = true): str
 }
 
 function statBoxTemplate(label: string, value: string, color: string = BRAND.textColor): string {
-    return `
+  return `
     <td class="stack" style="padding: 15px; text-align: center; background-color: ${BRAND.backgroundColor}; border-radius: 8px; width: 33%;">
         <p style="margin: 0; font-size: 24px; font-weight: 700; color: ${color};">${value}</p>
         <p style="margin: 5px 0 0; font-size: 12px; color: ${BRAND.mutedColor}; text-transform: uppercase;">${label}</p>
@@ -204,28 +204,28 @@ function statBoxTemplate(label: string, value: string, color: string = BRAND.tex
 // ============================================================================
 
 class RateLimiter {
-    private timestamps: number[] = [];
-    private readonly windowMs: number = 1000;
-    private readonly maxRequests: number;
+  private timestamps: number[] = [];
+  private readonly windowMs: number = 1000;
+  private readonly maxRequests: number;
 
-    constructor(maxRequestsPerSecond: number) {
-        this.maxRequests = maxRequestsPerSecond;
+  constructor(maxRequestsPerSecond: number) {
+    this.maxRequests = maxRequestsPerSecond;
+  }
+
+  async waitForSlot(): Promise<void> {
+    const now = Date.now();
+    this.timestamps = this.timestamps.filter((t) => now - t < this.windowMs);
+
+    if (this.timestamps.length >= this.maxRequests) {
+      const oldestTimestamp = this.timestamps[0];
+      const waitTime = this.windowMs - (now - oldestTimestamp);
+      if (waitTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
     }
 
-    async waitForSlot(): Promise<void> {
-        const now = Date.now();
-        this.timestamps = this.timestamps.filter(t => now - t < this.windowMs);
-
-        if (this.timestamps.length >= this.maxRequests) {
-            const oldestTimestamp = this.timestamps[0];
-            const waitTime = this.windowMs - (now - oldestTimestamp);
-            if (waitTime > 0) {
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-            }
-        }
-
-        this.timestamps.push(Date.now());
-    }
+    this.timestamps.push(Date.now());
+  }
 }
 
 // ============================================================================
@@ -236,12 +236,12 @@ class RateLimiter {
  * Escape HTML special characters to prevent XSS attacks
  */
 function escapeHtml(unsafe: string): string {
-    return unsafe
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // ============================================================================
@@ -249,107 +249,106 @@ function escapeHtml(unsafe: string): string {
 // ============================================================================
 
 export class EmailService {
-    private rateLimiter: RateLimiter;
-    private batchQueue: BatchEmailJob[] = [];
-    private isBatchProcessing: boolean = false;
+  private rateLimiter: RateLimiter;
+  private batchQueue: BatchEmailJob[] = [];
+  private isBatchProcessing: boolean = false;
 
-    constructor() {
-        this.rateLimiter = new RateLimiter(config.rateLimitPerSecond);
+  constructor() {
+    this.rateLimiter = new RateLimiter(config.rateLimitPerSecond);
+  }
+
+  // -------------------------------------------------------------------------
+  // CORE SEND METHOD
+  // -------------------------------------------------------------------------
+
+  private async send(
+    options: EmailOptions,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    if (!config.apiKey) {
+      console.warn('[EmailService] RESEND_API_KEY not configured, skipping email send');
+      return { success: false, error: 'Email service not configured' };
     }
 
-    // -------------------------------------------------------------------------
-    // CORE SEND METHOD
-    // -------------------------------------------------------------------------
+    await this.rateLimiter.waitForSlot();
 
-    private async send(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
-        if (!config.apiKey) {
-            console.warn('[EmailService] RESEND_API_KEY not configured, skipping email send');
-            return { success: false, error: 'Email service not configured' };
-        }
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: config.from,
+          to: Array.isArray(options.to) ? options.to : [options.to],
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+          reply_to: options.replyTo,
+          tags: options.tags,
+        }),
+      });
 
-        await this.rateLimiter.waitForSlot();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
 
-        try {
-            const response = await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${config.apiKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    from: config.from,
-                    to: Array.isArray(options.to) ? options.to : [options.to],
-                    subject: options.subject,
-                    html: options.html,
-                    text: options.text,
-                    reply_to: options.replyTo,
-                    tags: options.tags,
-                }),
-            });
+      const data = await response.json();
+      return { success: true, messageId: data.id };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[EmailService] Send failed:', errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  }
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `HTTP ${response.status}`);
-            }
+  // -------------------------------------------------------------------------
+  // USER PREFERENCE CHECK
+  // -------------------------------------------------------------------------
 
-            const data = await response.json();
-            return { success: true, messageId: data.id };
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            console.error('[EmailService] Send failed:', errorMessage);
-            return { success: false, error: errorMessage };
-        }
+  async checkUserPreferences(userId: string, notificationType: NotificationType): Promise<boolean> {
+    // Marketing emails require explicit opt-in
+    if (notificationType === 'marketing') {
+      // For now, assume users have not opted in to marketing
+      // In a full implementation, check a user_preferences table
+      return false;
     }
 
-    // -------------------------------------------------------------------------
-    // USER PREFERENCE CHECK
-    // -------------------------------------------------------------------------
+    // Transactional emails (password reset, welcome, etc.) are always allowed
+    const transactionalTypes: NotificationType[] = [
+      'welcome',
+      'password_reset',
+      'team_invitation',
+      'payment_failed',
+    ];
 
-    async checkUserPreferences(userId: string, notificationType: NotificationType): Promise<boolean> {
-        // Marketing emails require explicit opt-in
-        if (notificationType === 'marketing') {
-            // For now, assume users have not opted in to marketing
-            // In a full implementation, check a user_preferences table
-            return false;
-        }
-
-        // Transactional emails (password reset, welcome, etc.) are always allowed
-        const transactionalTypes: NotificationType[] = [
-            'welcome',
-            'password_reset',
-            'team_invitation',
-            'payment_failed',
-        ];
-
-        if (transactionalTypes.includes(notificationType)) {
-            return true;
-        }
-
-        // For other notification types, check user preferences
-        // This would query a notification_preferences table in production
-        // For now, default to allowing notifications
-        try {
-            const user = await db.select()
-                .from(users)
-                .where(eq(users.id, userId))
-                .get();
-
-            return !!user; // Allow if user exists
-        } catch {
-            return false;
-        }
+    if (transactionalTypes.includes(notificationType)) {
+      return true;
     }
 
-    // -------------------------------------------------------------------------
-    // EMAIL METHODS
-    // -------------------------------------------------------------------------
+    // For other notification types, check user preferences
+    // This would query a notification_preferences table in production
+    // For now, default to allowing notifications
+    try {
+      const user = await db.select().from(users).where(eq(users.id, userId)).get();
 
-    /**
-     * Send welcome email to new users
-     */
-    async sendWelcomeEmail(to: string, name: string): Promise<{ success: boolean; error?: string }> {
-        const safeName = escapeHtml(name);
-        const content = `
+      return !!user; // Allow if user exists
+    } catch {
+      return false;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // EMAIL METHODS
+  // -------------------------------------------------------------------------
+
+  /**
+   * Send welcome email to new users
+   */
+  async sendWelcomeEmail(to: string, name: string): Promise<{ success: boolean; error?: string }> {
+    const safeName = escapeHtml(name);
+    const content = `
             <h2 style="margin: 0 0 20px; color: ${BRAND.textColor}; font-size: 22px;">
                 Welcome to ${BRAND.appName}, ${safeName}!
             </h2>
@@ -377,22 +376,25 @@ export class EmailService {
             </p>
         `;
 
-        return this.send({
-            to,
-            subject: `Welcome to ${BRAND.appName}!`,
-            html: baseTemplate(content, `Welcome ${name}! Start managing your bank statements today.`),
-            tags: [{ name: 'type', value: 'welcome' }],
-        });
-    }
+    return this.send({
+      to,
+      subject: `Welcome to ${BRAND.appName}!`,
+      html: baseTemplate(content, `Welcome ${name}! Start managing your bank statements today.`),
+      tags: [{ name: 'type', value: 'welcome' }],
+    });
+  }
 
-    /**
-     * Send password reset email
-     */
-    async sendPasswordReset(to: string, resetToken: string): Promise<{ success: boolean; error?: string }> {
-        const safeToken = encodeURIComponent(resetToken);
-        const resetUrl = `${config.baseUrl}/reset-password?token=${safeToken}`;
+  /**
+   * Send password reset email
+   */
+  async sendPasswordReset(
+    to: string,
+    resetToken: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const safeToken = encodeURIComponent(resetToken);
+    const resetUrl = `${config.baseUrl}/reset-password?token=${safeToken}`;
 
-        const content = `
+    const content = `
             <h2 style="margin: 0 0 20px; color: ${BRAND.textColor}; font-size: 22px;">
                 Reset Your Password
             </h2>
@@ -418,26 +420,26 @@ export class EmailService {
             </div>
         `;
 
-        return this.send({
-            to,
-            subject: `Reset your ${BRAND.appName} password`,
-            html: baseTemplate(content, 'Reset your password to regain access to your account.'),
-            tags: [{ name: 'type', value: 'password_reset' }],
-        });
-    }
+    return this.send({
+      to,
+      subject: `Reset your ${BRAND.appName} password`,
+      html: baseTemplate(content, 'Reset your password to regain access to your account.'),
+      tags: [{ name: 'type', value: 'password_reset' }],
+    });
+  }
 
-    /**
-     * Send team invitation email
-     */
-    async sendTeamInvitation(
-        to: string,
-        teamName: string,
-        inviterName: string,
-        inviteLink: string
-    ): Promise<{ success: boolean; error?: string }> {
-        const safeTeamName = escapeHtml(teamName);
-        const safeInviterName = escapeHtml(inviterName);
-        const content = `
+  /**
+   * Send team invitation email
+   */
+  async sendTeamInvitation(
+    to: string,
+    teamName: string,
+    inviterName: string,
+    inviteLink: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const safeTeamName = escapeHtml(teamName);
+    const safeInviterName = escapeHtml(inviterName);
+    const content = `
             <h2 style="margin: 0 0 20px; color: ${BRAND.textColor}; font-size: 22px;">
                 You've Been Invited to Join a Team
             </h2>
@@ -463,36 +465,38 @@ export class EmailService {
             </p>
         `;
 
-        return this.send({
-            to,
-            subject: `${safeInviterName} invited you to join ${safeTeamName}`,
-            html: baseTemplate(content, `Join ${safeTeamName} on ${BRAND.appName}`),
-            tags: [
-                { name: 'type', value: 'team_invitation' },
-                { name: 'team', value: teamName },
-            ],
-        });
-    }
+    return this.send({
+      to,
+      subject: `${safeInviterName} invited you to join ${safeTeamName}`,
+      html: baseTemplate(content, `Join ${safeTeamName} on ${BRAND.appName}`),
+      tags: [
+        { name: 'type', value: 'team_invitation' },
+        { name: 'team', value: teamName },
+      ],
+    });
+  }
 
-    /**
-     * Send BAS lodgement reminder
-     */
-    async sendBASReminder(
-        to: string,
-        period: string,
-        dueDate: string
-    ): Promise<{ success: boolean; error?: string }> {
-        const formattedDueDate = new Date(dueDate).toLocaleDateString('en-AU', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
+  /**
+   * Send BAS lodgement reminder
+   */
+  async sendBASReminder(
+    to: string,
+    period: string,
+    dueDate: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const formattedDueDate = new Date(dueDate).toLocaleDateString('en-AU', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
 
-        const daysUntilDue = Math.ceil((new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-        const urgencyColor = daysUntilDue <= 3 ? '#DC3545' : daysUntilDue <= 7 ? '#FFC107' : '#28A745';
+    const daysUntilDue = Math.ceil(
+      (new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    );
+    const urgencyColor = daysUntilDue <= 3 ? '#DC3545' : daysUntilDue <= 7 ? '#FFC107' : '#28A745';
 
-        const content = `
+    const content = `
             <h2 style="margin: 0 0 20px; color: ${BRAND.textColor}; font-size: 22px;">
                 BAS Lodgement Reminder
             </h2>
@@ -522,26 +526,26 @@ export class EmailService {
             </div>
         `;
 
-        return this.send({
-            to,
-            subject: `BAS Reminder: ${period} due in ${daysUntilDue} days`,
-            html: baseTemplate(content, `Your BAS for ${period} is due on ${formattedDueDate}`),
-            tags: [
-                { name: 'type', value: 'bas_reminder' },
-                { name: 'period', value: period },
-            ],
-        });
-    }
+    return this.send({
+      to,
+      subject: `BAS Reminder: ${period} due in ${daysUntilDue} days`,
+      html: baseTemplate(content, `Your BAS for ${period} is due on ${formattedDueDate}`),
+      tags: [
+        { name: 'type', value: 'bas_reminder' },
+        { name: 'period', value: period },
+      ],
+    });
+  }
 
-    /**
-     * Send statement processed notification
-     */
-    async sendStatementProcessed(
-        to: string,
-        statementCount: number,
-        newTransactions: number
-    ): Promise<{ success: boolean; error?: string }> {
-        const content = `
+  /**
+   * Send statement processed notification
+   */
+  async sendStatementProcessed(
+    to: string,
+    statementCount: number,
+    newTransactions: number,
+  ): Promise<{ success: boolean; error?: string }> {
+    const content = `
             <h2 style="margin: 0 0 20px; color: ${BRAND.textColor}; font-size: 22px;">
                 Statements Processed Successfully
             </h2>
@@ -569,32 +573,39 @@ export class EmailService {
             </p>
         `;
 
-        return this.send({
-            to,
-            subject: `${statementCount} statement${statementCount > 1 ? 's' : ''} processed - ${newTransactions} new transactions`,
-            html: baseTemplate(content, `${newTransactions} new transactions have been imported from your bank statements.`),
-            tags: [{ name: 'type', value: 'statement_processed' }],
-        });
-    }
+    return this.send({
+      to,
+      subject: `${statementCount} statement${statementCount > 1 ? 's' : ''} processed - ${newTransactions} new transactions`,
+      html: baseTemplate(
+        content,
+        `${newTransactions} new transactions have been imported from your bank statements.`,
+      ),
+      tags: [{ name: 'type', value: 'statement_processed' }],
+    });
+  }
 
-    /**
-     * Send weekly financial summary
-     */
-    async sendWeeklySummary(
-        to: string,
-        summaryData: WeeklySummaryData
-    ): Promise<{ success: boolean; error?: string }> {
-        const formatCurrency = (cents: number): string => {
-            const dollars = Math.abs(cents) / 100;
-            const formatted = dollars.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            return cents < 0 ? `-$${formatted}` : `$${formatted}`;
-        };
+  /**
+   * Send weekly financial summary
+   */
+  async sendWeeklySummary(
+    to: string,
+    summaryData: WeeklySummaryData,
+  ): Promise<{ success: boolean; error?: string }> {
+    const formatCurrency = (cents: number): string => {
+      const dollars = Math.abs(cents) / 100;
+      const formatted = dollars.toLocaleString('en-AU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      return cents < 0 ? `-$${formatted}` : `$${formatted}`;
+    };
 
-        const cashFlowColor = summaryData.netCashFlow >= 0 ? '#28A745' : '#DC3545';
+    const cashFlowColor = summaryData.netCashFlow >= 0 ? '#28A745' : '#DC3545';
 
-        const categoriesHtml = summaryData.topCategories
-            .slice(0, 5)
-            .map(cat => `
+    const categoriesHtml = summaryData.topCategories
+      .slice(0, 5)
+      .map(
+        (cat) => `
                 <tr>
                     <td style="padding: 8px 0; border-bottom: 1px solid #EEEEEE; color: ${BRAND.textColor};">
                         ${cat.name}
@@ -603,11 +614,13 @@ export class EmailService {
                         ${formatCurrency(cat.amount)}
                     </td>
                 </tr>
-            `)
-            .join('');
+            `,
+      )
+      .join('');
 
-        const accountsHtml = summaryData.accountBalances
-            .map(acc => `
+    const accountsHtml = summaryData.accountBalances
+      .map(
+        (acc) => `
                 <tr>
                     <td style="padding: 8px 0; border-bottom: 1px solid #EEEEEE; color: ${BRAND.textColor};">
                         ${acc.name}
@@ -616,10 +629,11 @@ export class EmailService {
                         ${formatCurrency(acc.balance)}
                     </td>
                 </tr>
-            `)
-            .join('');
+            `,
+      )
+      .join('');
 
-        const content = `
+    const content = `
             <h2 style="margin: 0 0 20px; color: ${BRAND.textColor}; font-size: 22px;">
                 Your Weekly Financial Summary
             </h2>
@@ -655,23 +669,31 @@ export class EmailService {
                 ${accountsHtml || '<tr><td style="padding: 15px; color: ' + BRAND.mutedColor + '; text-align: center;">No accounts linked</td></tr>'}
             </table>
 
-            ${summaryData.upcomingBAS ? `
+            ${
+              summaryData.upcomingBAS
+                ? `
             <!-- BAS Alert -->
             <div style="margin-bottom: 25px; padding: 15px; background-color: #FFF3CD; border-radius: 6px; border-left: 4px solid ${BRAND.primaryColor};">
                 <p style="margin: 0; color: #856404; font-size: 14px;">
                     <strong>Upcoming BAS:</strong> ${summaryData.upcomingBAS.period} is due on ${summaryData.upcomingBAS.dueDate}
                 </p>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
 
-            ${summaryData.alertCount > 0 ? `
+            ${
+              summaryData.alertCount > 0
+                ? `
             <!-- Alerts Notice -->
             <div style="margin-bottom: 25px; padding: 15px; background-color: #F8D7DA; border-radius: 6px; border-left: 4px solid #DC3545;">
                 <p style="margin: 0; color: #721C24; font-size: 14px;">
                     <strong>Attention:</strong> You have ${summaryData.alertCount} reconciliation alert${summaryData.alertCount > 1 ? 's' : ''} requiring review.
                 </p>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
 
             ${buttonTemplate('View Full Report', `${config.baseUrl}/reports`)}
 
@@ -680,22 +702,25 @@ export class EmailService {
             </p>
         `;
 
-        return this.send({
-            to,
-            subject: `Weekly Summary: ${formatCurrency(summaryData.netCashFlow)} net cash flow`,
-            html: baseTemplate(content, `Your weekly financial summary is ready. Net cash flow: ${formatCurrency(summaryData.netCashFlow)}`),
-            tags: [{ name: 'type', value: 'weekly_summary' }],
-        });
-    }
+    return this.send({
+      to,
+      subject: `Weekly Summary: ${formatCurrency(summaryData.netCashFlow)} net cash flow`,
+      html: baseTemplate(
+        content,
+        `Your weekly financial summary is ready. Net cash flow: ${formatCurrency(summaryData.netCashFlow)}`,
+      ),
+      tags: [{ name: 'type', value: 'weekly_summary' }],
+    });
+  }
 
-    /**
-     * Send payment failed notification
-     */
-    async sendPaymentFailed(
-        to: string,
-        planName: string
-    ): Promise<{ success: boolean; error?: string }> {
-        const content = `
+  /**
+   * Send payment failed notification
+   */
+  async sendPaymentFailed(
+    to: string,
+    planName: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const content = `
             <h2 style="margin: 0 0 20px; color: #DC3545; font-size: 22px;">
                 Payment Failed
             </h2>
@@ -728,32 +753,35 @@ export class EmailService {
             </p>
         `;
 
-        return this.send({
-            to,
-            subject: `Action Required: Payment failed for ${planName}`,
-            html: baseTemplate(content, 'Your subscription payment could not be processed. Please update your payment method.'),
-            tags: [
-                { name: 'type', value: 'payment_failed' },
-                { name: 'plan', value: planName },
-            ],
-        });
-    }
+    return this.send({
+      to,
+      subject: `Action Required: Payment failed for ${planName}`,
+      html: baseTemplate(
+        content,
+        'Your subscription payment could not be processed. Please update your payment method.',
+      ),
+      tags: [
+        { name: 'type', value: 'payment_failed' },
+        { name: 'plan', value: planName },
+      ],
+    });
+  }
 
-    /**
-     * Send subscription confirmation
-     */
-    async sendSubscriptionConfirmation(
-        to: string,
-        planName: string,
-        nextBillingDate: string
-    ): Promise<{ success: boolean; error?: string }> {
-        const formattedDate = new Date(nextBillingDate).toLocaleDateString('en-AU', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
+  /**
+   * Send subscription confirmation
+   */
+  async sendSubscriptionConfirmation(
+    to: string,
+    planName: string,
+    nextBillingDate: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const formattedDate = new Date(nextBillingDate).toLocaleDateString('en-AU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
 
-        const content = `
+    const content = `
             <h2 style="margin: 0 0 20px; color: ${BRAND.textColor}; font-size: 22px;">
                 Subscription Confirmed
             </h2>
@@ -795,162 +823,170 @@ export class EmailService {
             </p>
         `;
 
-        return this.send({
-            to,
-            subject: `Welcome to ${BRAND.appName} ${planName}!`,
-            html: baseTemplate(content, `Your ${planName} subscription is now active.`),
-            tags: [
-                { name: 'type', value: 'subscription_confirmation' },
-                { name: 'plan', value: planName },
-            ],
-        });
+    return this.send({
+      to,
+      subject: `Welcome to ${BRAND.appName} ${planName}!`,
+      html: baseTemplate(content, `Your ${planName} subscription is now active.`),
+      tags: [
+        { name: 'type', value: 'subscription_confirmation' },
+        { name: 'plan', value: planName },
+      ],
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // BATCH SENDING
+  // -------------------------------------------------------------------------
+
+  /**
+   * Add emails to batch queue
+   */
+  addToBatch(job: Omit<BatchEmailJob, 'id' | 'status' | 'attempts'>): void {
+    this.batchQueue.push({
+      ...job,
+      id: crypto.randomUUID(),
+      status: 'pending',
+      attempts: 0,
+    });
+  }
+
+  /**
+   * Process batch email queue
+   */
+  async processBatch(): Promise<{ sent: number; failed: number; errors: string[] }> {
+    if (this.isBatchProcessing) {
+      return { sent: 0, failed: 0, errors: ['Batch processing already in progress'] };
     }
 
-    // -------------------------------------------------------------------------
-    // BATCH SENDING
-    // -------------------------------------------------------------------------
+    this.isBatchProcessing = true;
+    const results = { sent: 0, failed: 0, errors: [] as string[] };
 
-    /**
-     * Add emails to batch queue
-     */
-    addToBatch(job: Omit<BatchEmailJob, 'id' | 'status' | 'attempts'>): void {
-        this.batchQueue.push({
-            ...job,
-            id: crypto.randomUUID(),
-            status: 'pending',
-            attempts: 0,
-        });
-    }
+    try {
+      const pendingJobs = this.batchQueue
+        .filter((job) => job.status === 'pending' && job.attempts < config.retryAttempts)
+        .slice(0, config.maxBatchSize);
 
-    /**
-     * Process batch email queue
-     */
-    async processBatch(): Promise<{ sent: number; failed: number; errors: string[] }> {
-        if (this.isBatchProcessing) {
-            return { sent: 0, failed: 0, errors: ['Batch processing already in progress'] };
+      for (const job of pendingJobs) {
+        job.attempts++;
+
+        // Check if scheduled for later
+        if (job.scheduledFor && job.scheduledFor > new Date()) {
+          continue;
         }
 
-        this.isBatchProcessing = true;
-        const results = { sent: 0, failed: 0, errors: [] as string[] };
+        // Check user preferences
+        const canSend = await this.checkUserPreferences(
+          (job.data.userId as string) || '',
+          job.template,
+        );
 
-        try {
-            const pendingJobs = this.batchQueue
-                .filter(job => job.status === 'pending' && job.attempts < config.retryAttempts)
-                .slice(0, config.maxBatchSize);
+        if (!canSend) {
+          job.status = 'failed';
+          job.lastError = 'User has opted out of this notification type';
+          results.failed++;
+          continue;
+        }
 
-            for (const job of pendingJobs) {
-                job.attempts++;
+        // Send based on template type
+        let result: { success: boolean; error?: string };
 
-                // Check if scheduled for later
-                if (job.scheduledFor && job.scheduledFor > new Date()) {
-                    continue;
-                }
-
-                // Check user preferences
-                const canSend = await this.checkUserPreferences(
-                    job.data.userId as string || '',
-                    job.template
-                );
-
-                if (!canSend) {
-                    job.status = 'failed';
-                    job.lastError = 'User has opted out of this notification type';
-                    results.failed++;
-                    continue;
-                }
-
-                // Send based on template type
-                let result: { success: boolean; error?: string };
-
-                switch (job.template) {
-                    case 'welcome':
-                        result = await this.sendWelcomeEmail(job.to, job.data.name as string);
-                        break;
-                    case 'password_reset':
-                        result = await this.sendPasswordReset(job.to, job.data.resetToken as string);
-                        break;
-                    case 'team_invitation':
-                        result = await this.sendTeamInvitation(
-                            job.to,
-                            job.data.teamName as string,
-                            job.data.inviterName as string,
-                            job.data.inviteLink as string
-                        );
-                        break;
-                    case 'bas_reminder':
-                        result = await this.sendBASReminder(job.to, job.data.period as string, job.data.dueDate as string);
-                        break;
-                    case 'statement_processed':
-                        result = await this.sendStatementProcessed(
-                            job.to,
-                            job.data.statementCount as number,
-                            job.data.newTransactions as number
-                        );
-                        break;
-                    case 'weekly_summary':
-                        result = await this.sendWeeklySummary(job.to, job.data.summaryData as WeeklySummaryData);
-                        break;
-                    case 'payment_failed':
-                        result = await this.sendPaymentFailed(job.to, job.data.planName as string);
-                        break;
-                    case 'subscription_confirmation':
-                        result = await this.sendSubscriptionConfirmation(
-                            job.to,
-                            job.data.planName as string,
-                            job.data.nextBillingDate as string
-                        );
-                        break;
-                    default:
-                        result = { success: false, error: `Unknown template: ${job.template}` };
-                }
-
-                if (result.success) {
-                    job.status = 'sent';
-                    results.sent++;
-                } else {
-                    job.lastError = result.error;
-                    if (job.attempts >= config.retryAttempts) {
-                        job.status = 'failed';
-                        results.failed++;
-                        results.errors.push(`${job.to}: ${result.error}`);
-                    }
-                }
-
-                // Add delay between sends
-                await new Promise(resolve => setTimeout(resolve, config.retryDelayMs));
-            }
-
-            // Clean up completed jobs
-            this.batchQueue = this.batchQueue.filter(
-                job => job.status === 'pending' || (job.status === 'failed' && job.attempts < config.retryAttempts)
+        switch (job.template) {
+          case 'welcome':
+            result = await this.sendWelcomeEmail(job.to, job.data.name as string);
+            break;
+          case 'password_reset':
+            result = await this.sendPasswordReset(job.to, job.data.resetToken as string);
+            break;
+          case 'team_invitation':
+            result = await this.sendTeamInvitation(
+              job.to,
+              job.data.teamName as string,
+              job.data.inviterName as string,
+              job.data.inviteLink as string,
             );
-
-        } finally {
-            this.isBatchProcessing = false;
+            break;
+          case 'bas_reminder':
+            result = await this.sendBASReminder(
+              job.to,
+              job.data.period as string,
+              job.data.dueDate as string,
+            );
+            break;
+          case 'statement_processed':
+            result = await this.sendStatementProcessed(
+              job.to,
+              job.data.statementCount as number,
+              job.data.newTransactions as number,
+            );
+            break;
+          case 'weekly_summary':
+            result = await this.sendWeeklySummary(
+              job.to,
+              job.data.summaryData as WeeklySummaryData,
+            );
+            break;
+          case 'payment_failed':
+            result = await this.sendPaymentFailed(job.to, job.data.planName as string);
+            break;
+          case 'subscription_confirmation':
+            result = await this.sendSubscriptionConfirmation(
+              job.to,
+              job.data.planName as string,
+              job.data.nextBillingDate as string,
+            );
+            break;
+          default:
+            result = { success: false, error: `Unknown template: ${job.template}` };
         }
 
-        return results;
+        if (result.success) {
+          job.status = 'sent';
+          results.sent++;
+        } else {
+          job.lastError = result.error;
+          if (job.attempts >= config.retryAttempts) {
+            job.status = 'failed';
+            results.failed++;
+            results.errors.push(`${job.to}: ${result.error}`);
+          }
+        }
+
+        // Add delay between sends
+        await new Promise((resolve) => setTimeout(resolve, config.retryDelayMs));
+      }
+
+      // Clean up completed jobs
+      this.batchQueue = this.batchQueue.filter(
+        (job) =>
+          job.status === 'pending' ||
+          (job.status === 'failed' && job.attempts < config.retryAttempts),
+      );
+    } finally {
+      this.isBatchProcessing = false;
     }
 
-    /**
-     * Get batch queue status
-     */
-    getBatchStatus(): { pending: number; processing: boolean; failed: number } {
-        return {
-            pending: this.batchQueue.filter(j => j.status === 'pending').length,
-            processing: this.isBatchProcessing,
-            failed: this.batchQueue.filter(j => j.status === 'failed').length,
-        };
-    }
+    return results;
+  }
 
-    /**
-     * Clear failed jobs from batch queue
-     */
-    clearFailedJobs(): number {
-        const beforeCount = this.batchQueue.length;
-        this.batchQueue = this.batchQueue.filter(j => j.status !== 'failed');
-        return beforeCount - this.batchQueue.length;
-    }
+  /**
+   * Get batch queue status
+   */
+  getBatchStatus(): { pending: number; processing: boolean; failed: number } {
+    return {
+      pending: this.batchQueue.filter((j) => j.status === 'pending').length,
+      processing: this.isBatchProcessing,
+      failed: this.batchQueue.filter((j) => j.status === 'failed').length,
+    };
+  }
+
+  /**
+   * Clear failed jobs from batch queue
+   */
+  clearFailedJobs(): number {
+    const beforeCount = this.batchQueue.length;
+    this.batchQueue = this.batchQueue.filter((j) => j.status !== 'failed');
+    return beforeCount - this.batchQueue.length;
+  }
 }
 
 // ============================================================================

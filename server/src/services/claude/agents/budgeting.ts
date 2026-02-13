@@ -17,10 +17,7 @@ import type { BudgetingInput, BudgetingOutput } from '../types.js';
 const budgetService = new BudgetService();
 const forecastingService = new ForecastingService();
 
-export class BudgetingAgent extends ClaudeAgent<
-  BudgetingInput,
-  BudgetingOutput
-> {
+export class BudgetingAgent extends ClaudeAgent<BudgetingInput, BudgetingOutput> {
   protected systemPrompt = `You are an expert budget analyst and financial planner for an Australian small business accounting platform.
 You help users create realistic budgets from their transaction history, monitor actual vs budgeted spending,
 generate forward-looking forecasts under multiple scenarios, and suggest actionable adjustments.
@@ -93,7 +90,10 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
             enum: ['optimistic', 'realistic', 'pessimistic', 'custom'],
             description: 'Forecast scenario type',
           },
-          basePeriodStart: { type: 'string', description: 'Historical base period start (YYYY-MM-DD)' },
+          basePeriodStart: {
+            type: 'string',
+            description: 'Historical base period start (YYYY-MM-DD)',
+          },
           basePeriodEnd: { type: 'string', description: 'Historical base period end (YYYY-MM-DD)' },
           forecastMonths: { type: 'number', description: 'Number of months to forecast' },
           assumptions: {
@@ -102,11 +102,21 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
             properties: {
               growthRate: { type: 'number', description: 'Monthly growth rate (e.g. 0.03 = 3%)' },
               inflationAdjust: { type: 'boolean', description: 'Whether to adjust for inflation' },
-              seasonalWeight: { type: 'number', description: 'Seasonal weighting factor (1.0 = normal)' },
+              seasonalWeight: {
+                type: 'number',
+                description: 'Seasonal weighting factor (1.0 = normal)',
+              },
             },
           },
         },
-        required: ['userId', 'name', 'scenarioType', 'basePeriodStart', 'basePeriodEnd', 'forecastMonths'],
+        required: [
+          'userId',
+          'name',
+          'scenarioType',
+          'basePeriodStart',
+          'basePeriodEnd',
+          'forecastMonths',
+        ],
       },
     },
     {
@@ -116,7 +126,10 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
       input_schema: {
         type: 'object' as const,
         properties: {
-          budgetId: { type: 'string', description: 'Budget ID to analyse for adjustment suggestions' },
+          budgetId: {
+            type: 'string',
+            description: 'Budget ID to analyse for adjustment suggestions',
+          },
         },
         required: ['budgetId'],
       },
@@ -160,10 +173,7 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'create_budget_from_history',
       async (input) => {
@@ -218,15 +228,21 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
       async (input) => {
         const userId = input.userId as string;
         const name = input.name as string;
-        const scenarioType = input.scenarioType as 'optimistic' | 'realistic' | 'pessimistic' | 'custom';
+        const scenarioType = input.scenarioType as
+          | 'optimistic'
+          | 'realistic'
+          | 'pessimistic'
+          | 'custom';
         const basePeriodStart = input.basePeriodStart as string;
         const basePeriodEnd = input.basePeriodEnd as string;
         const forecastMonths = input.forecastMonths as number;
-        const assumptions = input.assumptions as {
-          growthRate?: number;
-          inflationAdjust?: boolean;
-          seasonalWeight?: number;
-        } | undefined;
+        const assumptions = input.assumptions as
+          | {
+              growthRate?: number;
+              inflationAdjust?: boolean;
+              seasonalWeight?: number;
+            }
+          | undefined;
 
         const scenario = await forecastingService.createScenario(userId, {
           name,
@@ -285,7 +301,7 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
               currentBudgeted: actual.budgeted,
               suggestedAmount: Math.round(actual.actual * 0.9),
               reason: `Under budget by ${Math.abs(cat.percent).toFixed(1)}% (utilisation below 70%). Suggest reducing to 90% of actual to free up budget capacity.`,
-              confidenceScore: Math.min(0.90, 0.5 + Math.abs(cat.percent) / 200),
+              confidenceScore: Math.min(0.9, 0.5 + Math.abs(cat.percent) / 200),
             });
           }
         }
@@ -320,7 +336,11 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
         const financialYear = input.financialYear as string;
         const match = financialYear.match(/^(\d{4})-(\d{2})$/);
         if (!match) {
-          return { found: false, results: [], error: `Invalid financial year format: ${financialYear}. Expected "2024-25".` };
+          return {
+            found: false,
+            results: [],
+            error: `Invalid financial year format: ${financialYear}. Expected "2024-25".`,
+          };
         }
         const startYear = parseInt(match[1], 10);
         const timeRange = { start: `${startYear}-07-01`, end: `${startYear + 1}-06-30` };
@@ -337,7 +357,12 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
       async (input) => {
         const query = input.query as string;
         try {
-          const results = await cogneeTools.crossModuleSearch(query, ['transactions', 'tax', 'compliance', 'forecasting']);
+          const results = await cogneeTools.crossModuleSearch(query, [
+            'transactions',
+            'tax',
+            'compliance',
+            'forecasting',
+          ]);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cross-module search unavailable' };

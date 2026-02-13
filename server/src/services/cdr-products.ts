@@ -94,12 +94,12 @@ export interface BestRateResult {
 }
 
 export interface SavingsCalculation {
-  currentRate: number;           // decimal (e.g. 0.065)
-  currentBalance: number;        // cents
+  currentRate: number; // decimal (e.g. 0.065)
+  currentBalance: number; // cents
   remainingTermMonths: number;
-  switchingCosts?: number;       // cents (default 0)
-  topN?: number;                 // how many alternatives to return (default 5)
-  productCategory?: string;      // filter (default RESIDENTIAL_MORTGAGES)
+  switchingCosts?: number; // cents (default 0)
+  topN?: number; // how many alternatives to return (default 5)
+  productCategory?: string; // filter (default RESIDENTIAL_MORTGAGES)
 }
 
 export interface SavingsAlternative {
@@ -107,17 +107,17 @@ export interface SavingsAlternative {
   productName: string;
   dataHolderName: string;
   newRate: number;
-  newMonthlyPayment: number;     // cents
+  newMonthlyPayment: number; // cents
   currentMonthlyPayment: number; // cents
-  monthlySaving: number;         // cents
-  totalLifetimeSaving: number;   // cents (net of switching costs)
-  breakEvenMonths: number;       // months until switching costs are recouped
+  monthlySaving: number; // cents
+  totalLifetimeSaving: number; // cents (net of switching costs)
+  breakEvenMonths: number; // months until switching costs are recouped
 }
 
 export interface SavingsResult {
   currentRate: number;
   currentMonthlyPayment: number; // cents
-  currentTotalCost: number;      // cents
+  currentTotalCost: number; // cents
   alternatives: SavingsAlternative[];
   bestSaving: SavingsAlternative | null;
 }
@@ -150,7 +150,7 @@ export interface DataHolderSummary {
 function pmt(principalCents: number, periodicRate: number, periods: number): number {
   if (periodicRate === 0) return Math.round(principalCents / periods);
   const factor = Math.pow(1 + periodicRate, periods);
-  return Math.round(principalCents * periodicRate * factor / (factor - 1));
+  return Math.round((principalCents * periodicRate * factor) / (factor - 1));
 }
 
 // ============================================================================
@@ -158,7 +158,6 @@ function pmt(principalCents: number, periodicRate: number, periods: number): num
 // ============================================================================
 
 export class CdrProductService {
-
   // --------------------------------------------------------------------------
   // 1. searchProducts — paginated, filtered product search
   // --------------------------------------------------------------------------
@@ -242,8 +241,12 @@ export class CdrProductService {
 
       // Apply rate type filter
       if (filters.rateType) {
-        const matchesLending = lendingRates.some((r: any) => r.lendingRateType === filters.rateType);
-        const matchesDeposit = depositRates.some((r: any) => r.depositRateType === filters.rateType);
+        const matchesLending = lendingRates.some(
+          (r: any) => r.lendingRateType === filters.rateType,
+        );
+        const matchesDeposit = depositRates.some(
+          (r: any) => r.depositRateType === filters.rateType,
+        );
         if (!matchesLending && !matchesDeposit) continue;
       }
 
@@ -255,14 +258,16 @@ export class CdrProductService {
 
       // Apply repayment type filter
       if (filters.repaymentType) {
-        const matchesRepayment = lendingRates.some((r: any) => r.repaymentType === filters.repaymentType);
+        const matchesRepayment = lendingRates.some(
+          (r: any) => r.repaymentType === filters.repaymentType,
+        );
         if (!matchesRepayment) continue;
       }
 
       // Apply feature filter
       if (filters.features && filters.features.length > 0) {
         const productFeatureTypes = featureRows.map((f: any) => f.featureType);
-        const hasAll = filters.features.every(f => productFeatureTypes.includes(f));
+        const hasAll = filters.features.every((f) => productFeatureTypes.includes(f));
         if (!hasAll) continue;
       }
 
@@ -330,7 +335,12 @@ export class CdrProductService {
   async compareProducts(productIds: string[]): Promise<ProductComparison> {
     const ids = productIds.slice(0, 5); // max 5
     if (ids.length === 0) {
-      return { products: [], categories: [], annualFees: {}, recommendation: 'No products selected.' };
+      return {
+        products: [],
+        categories: [],
+        annualFees: {},
+        recommendation: 'No products selected.',
+      };
     }
 
     // Fetch full details for each product
@@ -412,15 +422,25 @@ export class CdrProductService {
     const rateItems: ComparisonCategory['items'] = [];
     rateItems.push({
       label: 'Best Rate',
-      values: Object.fromEntries(products.map(p => [p.id, p.bestRate != null ? `${(p.bestRate * 100).toFixed(2)}%` : 'N/A'])),
+      values: Object.fromEntries(
+        products.map((p) => [
+          p.id,
+          p.bestRate != null ? `${(p.bestRate * 100).toFixed(2)}%` : 'N/A',
+        ]),
+      ),
     });
     rateItems.push({
       label: 'Comparison Rate',
-      values: Object.fromEntries(products.map(p => [p.id, p.comparisonRate != null ? `${(p.comparisonRate * 100).toFixed(2)}%` : 'N/A'])),
+      values: Object.fromEntries(
+        products.map((p) => [
+          p.id,
+          p.comparisonRate != null ? `${(p.comparisonRate * 100).toFixed(2)}%` : 'N/A',
+        ]),
+      ),
     });
     rateItems.push({
       label: 'Rate Type',
-      values: Object.fromEntries(products.map(p => [p.id, p.rateType ?? 'N/A'])),
+      values: Object.fromEntries(products.map((p) => [p.id, p.rateType ?? 'N/A'])),
     });
     categories.push({ name: 'Rates', items: rateItems });
 
@@ -431,24 +451,26 @@ export class CdrProductService {
     // Collect all unique fee types across products
     const allFeeTypes = new Set<string>();
     for (const id of ids) {
-      for (const fee of (feesMap[id] ?? [])) {
+      for (const fee of feesMap[id] ?? []) {
         allFeeTypes.add(fee.feeType);
       }
     }
     for (const feeType of allFeeTypes) {
       feeItems.push({
         label: feeType,
-        values: Object.fromEntries(products.map(p => {
-          const fee = (feesMap[p.id] ?? []).find((f: any) => f.feeType === feeType);
-          return [p.id, fee ? (fee.amount ?? 'See details') : 'N/A'];
-        })),
+        values: Object.fromEntries(
+          products.map((p) => {
+            const fee = (feesMap[p.id] ?? []).find((f: any) => f.feeType === feeType);
+            return [p.id, fee ? (fee.amount ?? 'See details') : 'N/A'];
+          }),
+        ),
       });
     }
 
     // Calculate total annual fees per product
     for (const p of products) {
       let totalAnnual = 0;
-      for (const fee of (feesMap[p.id] ?? [])) {
+      for (const fee of feesMap[p.id] ?? []) {
         const amount = parseFloat(fee.amount ?? '0');
         if (!isNaN(amount)) {
           // Rough heuristic: monthly fees × 12, annual fees × 1
@@ -463,14 +485,16 @@ export class CdrProductService {
     }
     feeItems.push({
       label: 'Est. Annual Fees',
-      values: Object.fromEntries(products.map(p => [p.id, `$${annualFees[p.id]?.toFixed(2) ?? '0.00'}`])),
+      values: Object.fromEntries(
+        products.map((p) => [p.id, `$${annualFees[p.id]?.toFixed(2) ?? '0.00'}`]),
+      ),
     });
     categories.push({ name: 'Fees', items: feeItems });
 
     // --- Features ---
     const allFeatureTypes = new Set<string>();
     for (const id of ids) {
-      for (const feat of (featuresMap[id] ?? [])) {
+      for (const feat of featuresMap[id] ?? []) {
         allFeatureTypes.add(feat.featureType);
       }
     }
@@ -478,10 +502,12 @@ export class CdrProductService {
     for (const ft of allFeatureTypes) {
       featureItems.push({
         label: ft,
-        values: Object.fromEntries(products.map(p => {
-          const has = (featuresMap[p.id] ?? []).some((f: any) => f.featureType === ft);
-          return [p.id, has];
-        })),
+        values: Object.fromEntries(
+          products.map((p) => {
+            const has = (featuresMap[p.id] ?? []).some((f: any) => f.featureType === ft);
+            return [p.id, has];
+          }),
+        ),
       });
     }
     categories.push({ name: 'Features', items: featureItems });
@@ -489,7 +515,7 @@ export class CdrProductService {
     // --- Eligibility ---
     const allEligTypes = new Set<string>();
     for (const id of ids) {
-      for (const elig of (eligibilityMap[id] ?? [])) {
+      for (const elig of eligibilityMap[id] ?? []) {
         allEligTypes.add(elig.eligibilityType);
       }
     }
@@ -497,10 +523,15 @@ export class CdrProductService {
     for (const et of allEligTypes) {
       eligItems.push({
         label: et,
-        values: Object.fromEntries(products.map(p => {
-          const elig = (eligibilityMap[p.id] ?? []).find((e: any) => e.eligibilityType === et);
-          return [p.id, elig ? (elig.additionalInfo ?? elig.additionalValue ?? 'Required') : 'N/A'];
-        })),
+        values: Object.fromEntries(
+          products.map((p) => {
+            const elig = (eligibilityMap[p.id] ?? []).find((e: any) => e.eligibilityType === et);
+            return [
+              p.id,
+              elig ? (elig.additionalInfo ?? elig.additionalValue ?? 'Required') : 'N/A',
+            ];
+          }),
+        ),
       });
     }
     categories.push({ name: 'Eligibility', items: eligItems });
@@ -509,16 +540,25 @@ export class CdrProductService {
     let recommendation = 'No clear winner — review details above.';
     if (products.length >= 2) {
       // For lending: lowest rate wins. For deposit: highest rate wins.
-      const isDeposit = products.some(p => p.productCategory === 'TRANS_AND_SAVINGS_ACCOUNTS' || p.productCategory === 'TERM_DEPOSITS');
-      const sorted = [...products].filter(p => p.bestRate != null).sort((a, b) => {
-        if (isDeposit) return (b.bestRate ?? 0) - (a.bestRate ?? 0);
-        return (a.bestRate ?? Infinity) - (b.bestRate ?? Infinity);
-      });
+      const isDeposit = products.some(
+        (p) =>
+          p.productCategory === 'TRANS_AND_SAVINGS_ACCOUNTS' ||
+          p.productCategory === 'TERM_DEPOSITS',
+      );
+      const sorted = [...products]
+        .filter((p) => p.bestRate != null)
+        .sort((a, b) => {
+          if (isDeposit) return (b.bestRate ?? 0) - (a.bestRate ?? 0);
+          return (a.bestRate ?? Infinity) - (b.bestRate ?? Infinity);
+        });
       if (sorted.length > 0) {
         const best = sorted[0];
         const bestAnnualFees = annualFees[best.id] ?? 0;
-        recommendation = `${best.dataHolderName} — ${best.name} offers the best ${isDeposit ? 'highest' : 'lowest'} rate at ${((best.bestRate ?? 0) * 100).toFixed(2)}%` +
-          (bestAnnualFees > 0 ? ` (est. annual fees: $${bestAnnualFees.toFixed(2)})` : ' with no annual fees') +
+        recommendation =
+          `${best.dataHolderName} — ${best.name} offers the best ${isDeposit ? 'highest' : 'lowest'} rate at ${((best.bestRate ?? 0) * 100).toFixed(2)}%` +
+          (bestAnnualFees > 0
+            ? ` (est. annual fees: $${bestAnnualFees.toFixed(2)})`
+            : ' with no annual fees') +
           `. Features: ${best.featureCount}.`;
       }
     }
@@ -533,7 +573,7 @@ export class CdrProductService {
   async getBestRates(
     category: string,
     rateType: 'lending' | 'deposit',
-    limit: number = 10
+    limit: number = 10,
   ): Promise<BestRateResult[]> {
     if (rateType === 'lending') {
       const rows = await db
@@ -629,13 +669,11 @@ export class CdrProductService {
     }
 
     // Calculate savings for each candidate
-    const alternatives: SavingsAlternative[] = candidates.map(candidate => {
+    const alternatives: SavingsAlternative[] = candidates.map((candidate) => {
       const newMonthlyPayment = pmt(currentBalance, candidate.rate / 12, remainingTermMonths);
       const monthlySaving = currentMonthlyPayment - newMonthlyPayment;
-      const totalLifetimeSaving = (monthlySaving * remainingTermMonths) - switchingCosts;
-      const breakEvenMonths = monthlySaving > 0
-        ? Math.ceil(switchingCosts / monthlySaving)
-        : -1;
+      const totalLifetimeSaving = monthlySaving * remainingTermMonths - switchingCosts;
+      const breakEvenMonths = monthlySaving > 0 ? Math.ceil(switchingCosts / monthlySaving) : -1;
 
       return {
         productId: candidate.productId,
@@ -726,10 +764,7 @@ export class CdrProductService {
   // --------------------------------------------------------------------------
 
   async getDataHolderSummary(): Promise<DataHolderSummary[]> {
-    const holders = await db
-      .select()
-      .from(cdrDataHolders)
-      .orderBy(cdrDataHolders.brandName);
+    const holders = await db.select().from(cdrDataHolders).orderBy(cdrDataHolders.brandName);
 
     const summaries: DataHolderSummary[] = [];
 

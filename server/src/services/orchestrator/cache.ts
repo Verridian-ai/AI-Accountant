@@ -25,7 +25,7 @@ import {
 export function generateCacheKey(
   agentType: AgentType,
   query: string,
-  contextHash?: string
+  contextHash?: string,
 ): string {
   const data = JSON.stringify({
     agentType,
@@ -106,11 +106,7 @@ export class AgentResponseCache {
   /**
    * Store a response in cache
    */
-  set(
-    key: string,
-    response: AgentResponse,
-    ttlMs?: number
-  ): void {
+  set(key: string, response: AgentResponse, ttlMs?: number): void {
     if (!this.config.enabled) {
       return;
     }
@@ -227,9 +223,9 @@ export class AgentResponseCache {
   getStats(): CacheStats {
     const entriesByAgent: Record<AgentType, number> = {
       'financial-analyst': 0,
-      'bas': 0,
-      'tax': 0,
-      'reconciliation': 0,
+      bas: 0,
+      tax: 0,
+      reconciliation: 0,
     };
 
     let oldestEntry: string | undefined;
@@ -348,9 +344,12 @@ let cleanupInterval: NodeJS.Timeout | null = null;
 
 export function startCacheCleanup(): void {
   if (cleanupInterval) return;
-  cleanupInterval = setInterval(() => {
-    agentCache.cleanup();
-  }, 5 * 60 * 1000); // 5 minutes
+  cleanupInterval = setInterval(
+    () => {
+      agentCache.cleanup();
+    },
+    5 * 60 * 1000,
+  ); // 5 minutes
 }
 
 export function stopCacheCleanup(): void {

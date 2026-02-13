@@ -39,11 +39,7 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
 
 type EntityType = 'sole_trader' | 'personal' | 'company' | 'trust' | 'smsf';
 
-async function calculateForEntity(
-  userId: string,
-  financialYear: string,
-  entityType: EntityType,
-) {
+async function calculateForEntity(userId: string, financialYear: string, entityType: EntityType) {
   switch (entityType) {
     case 'sole_trader':
       return taxReturnService.calculateSoleTraderReturn(userId, financialYear);
@@ -73,7 +69,10 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
         type: 'object',
         properties: {
           userId: { type: 'string', description: 'User ID' },
-          entityType: { type: 'string', description: 'Entity type: sole_trader, personal, company, trust, or smsf' },
+          entityType: {
+            type: 'string',
+            description: 'Entity type: sole_trader, personal, company, trust, or smsf',
+          },
           financialYear: { type: 'string', description: 'Financial year (e.g., "2024-25")' },
         },
         required: ['userId', 'entityType', 'financialYear'],
@@ -96,7 +95,8 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
           financialYear: { type: 'string', description: 'Financial year (e.g., "2024-25")' },
           entityTypes: {
             type: 'array',
-            description: 'Array of entity types to compare: sole_trader, personal, company, trust, smsf',
+            description:
+              'Array of entity types to compare: sole_trader, personal, company, trust, smsf',
           },
         },
         required: ['userId', 'financialYear', 'entityTypes'],
@@ -143,7 +143,10 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
         properties: {
           userId: { type: 'string', description: 'User ID' },
           financialYear: { type: 'string', description: 'Financial year (e.g., "2024-25")' },
-          entityType: { type: 'string', description: 'Entity type: sole_trader, personal, company, trust, or smsf' },
+          entityType: {
+            type: 'string',
+            description: 'Entity type: sole_trader, personal, company, trust, or smsf',
+          },
         },
         required: ['userId', 'financialYear', 'entityType'],
       },
@@ -152,7 +155,11 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
         const financialYear = input.financialYear as string;
         const entityType = input.entityType as EntityType;
 
-        const strategies = await taxOptimizerService.generateStrategies(userId, financialYear, entityType);
+        const strategies = await taxOptimizerService.generateStrategies(
+          userId,
+          financialYear,
+          entityType,
+        );
         return { strategies, count: strategies.length };
       },
     );
@@ -163,7 +170,10 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
       {
         type: 'object',
         properties: {
-          query: { type: 'string', description: 'Tax concept or question to explore in the ontology' },
+          query: {
+            type: 'string',
+            description: 'Tax concept or question to explore in the ontology',
+          },
         },
         required: ['query'],
       },
@@ -184,8 +194,14 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
       {
         type: 'object',
         properties: {
-          deductionType: { type: 'string', description: 'Type of deduction (e.g., "home office", "motor vehicle", "travel")' },
-          entityType: { type: 'string', description: 'Entity type (e.g., "sole_trader", "company", "trust")' },
+          deductionType: {
+            type: 'string',
+            description: 'Type of deduction (e.g., "home office", "motor vehicle", "travel")',
+          },
+          entityType: {
+            type: 'string',
+            description: 'Entity type (e.g., "sole_trader", "company", "trust")',
+          },
         },
         required: ['deductionType', 'entityType'],
       },
@@ -220,7 +236,11 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
         const financialYear = input.financialYear as string;
         const match = financialYear.match(/^(\d{4})-(\d{2})$/);
         if (!match) {
-          return { found: false, results: [], error: `Invalid financial year format: ${financialYear}. Expected "2024-25".` };
+          return {
+            found: false,
+            results: [],
+            error: `Invalid financial year format: ${financialYear}. Expected "2024-25".`,
+          };
         }
         const startYear = parseInt(match[1], 10);
         const timeRange = { start: `${startYear}-07-01`, end: `${startYear + 1}-06-30` };
@@ -246,7 +266,12 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
       async (input) => {
         const query = input.query as string;
         try {
-          const results = await cogneeTools.crossModuleSearch(query, ['tax', 'transactions', 'compliance', 'forecasting']);
+          const results = await cogneeTools.crossModuleSearch(query, [
+            'tax',
+            'transactions',
+            'compliance',
+            'forecasting',
+          ]);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cross-module search unavailable' };
@@ -284,15 +309,11 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
   buildPrompt(input: TaxStrategyInput): string {
     const parts = [
       `Analyze tax strategy for user ${input.userId}, financial year ${input.financialYear}, entity type: ${input.entityType}.`,
-      input.businessIncome !== undefined
-        ? `Business income: ${input.businessIncome} cents.`
-        : '',
+      input.businessIncome !== undefined ? `Business income: ${input.businessIncome} cents.` : '',
       input.businessExpenses !== undefined
         ? `Business expenses: ${input.businessExpenses} cents.`
         : '',
-      input.personalIncome !== undefined
-        ? `Personal income: ${input.personalIncome} cents.`
-        : '',
+      input.personalIncome !== undefined ? `Personal income: ${input.personalIncome} cents.` : '',
       `Transactions (${input.transactions.length} total):`,
       JSON.stringify(input.transactions.slice(0, 200), null, 2),
     ].filter(Boolean);

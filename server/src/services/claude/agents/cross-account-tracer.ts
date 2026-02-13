@@ -15,10 +15,7 @@ import {
   type AccountContext,
   type TransferMatch,
 } from '../../transfers/index.js';
-import type {
-  CrossAccountTracerInput,
-  CrossAccountTracerOutput,
-} from '../types.js';
+import type { CrossAccountTracerInput, CrossAccountTracerOutput } from '../types.js';
 
 export class CrossAccountTracerAgent extends ClaudeAgent<
   CrossAccountTracerInput,
@@ -116,20 +113,19 @@ Return a JSON object matching the CrossAccountTracerOutput schema.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'match_transfers',
       async (input) => {
         const transactions = input.transactions as TransferCandidate[];
         const accounts = input.accounts as AccountContext[];
-        const config = input.config as {
-          matchWindowDays?: number;
-          amountToleranceCents?: number;
-          minConfidence?: number;
-        } | undefined;
+        const config = input.config as
+          | {
+              matchWindowDays?: number;
+              amountToleranceCents?: number;
+              minConfidence?: number;
+            }
+          | undefined;
 
         const detector = new TransferDetector(config);
         const matches = detector.detectTransfers(transactions, accounts);
@@ -165,7 +161,7 @@ Return a JSON object matching the CrossAccountTracerOutput schema.`;
         }> = [];
 
         // Simple chain detection: for each transfer, see if target account has outgoing transfer
-        const outgoing = new Map<number, typeof matches[0][]>();
+        const outgoing = new Map<number, (typeof matches)[0][]>();
         for (const m of matches) {
           const existing = outgoing.get(m.sourceAccountId) || [];
           existing.push(m);
@@ -183,18 +179,14 @@ Return a JSON object matching the CrossAccountTracerOutput schema.`;
           visited.add(m.sourceTransactionId);
 
           // Follow chain
-          let next = outgoing.get(currentAccount)?.find(
-            (n) => !visited.has(n.sourceTransactionId)
-          );
+          let next = outgoing.get(currentAccount)?.find((n) => !visited.has(n.sourceTransactionId));
           while (next) {
             path.push(currentAccount);
             txIds.push(next.sourceTransactionId, next.targetTransactionId);
             totalAmount += next.amount;
             visited.add(next.sourceTransactionId);
             currentAccount = next.targetAccountId;
-            next = outgoing.get(currentAccount)?.find(
-              (n) => !visited.has(n.sourceTransactionId)
-            );
+            next = outgoing.get(currentAccount)?.find((n) => !visited.has(n.sourceTransactionId));
           }
           path.push(currentAccount);
 
@@ -266,7 +258,7 @@ Return a JSON object matching the CrossAccountTracerOutput schema.`;
           const from = flow.netAmount >= 0 ? flow.fromAccountId : flow.toAccountId;
           const to = flow.netAmount >= 0 ? flow.toAccountId : flow.fromAccountId;
           lines.push(
-            `    A${from}[Account ${from}] -->|$${amount} (${flow.transactionCount}x)| A${to}[Account ${to}]`
+            `    A${from}[Account ${from}] -->|$${amount} (${flow.transactionCount}x)| A${to}[Account ${to}]`,
           );
         }
 

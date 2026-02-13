@@ -17,7 +17,7 @@ const RISK_PROFILE_RETURNS: Record<string, number> = {
   conservative: 0.04,
   balanced: 0.06,
   growth: 0.08,
-  aggressive: 0.10,
+  aggressive: 0.1,
 };
 
 /** 50/30/20 budget rule variants by risk profile */
@@ -63,19 +63,19 @@ function simulatePayoff(
     interestRate: number;
     minimumPaymentCents: number;
   }>,
-  extraPaymentCents: number
+  extraPaymentCents: number,
 ): {
   totalInterestCents: number;
   months: number;
   order: Array<{ debtName: string; payoffMonth: number }>;
 } {
-  const balances = debts.map(d => ({ ...d, remaining: d.balanceCents }));
+  const balances = debts.map((d) => ({ ...d, remaining: d.balanceCents }));
   let totalInterestCents = 0;
   let month = 0;
   const maxMonths = 360;
   const order: Array<{ debtName: string; payoffMonth: number }> = [];
 
-  while (balances.some(d => d.remaining > 0) && month < maxMonths) {
+  while (balances.some((d) => d.remaining > 0) && month < maxMonths) {
     month++;
 
     for (const d of balances) {
@@ -108,7 +108,7 @@ function simulatePayoff(
   }
 
   const seen = new Set<string>();
-  const uniqueOrder = order.filter(o => {
+  const uniqueOrder = order.filter((o) => {
     if (seen.has(o.debtName)) return false;
     seen.add(o.debtName);
     return true;
@@ -117,7 +117,10 @@ function simulatePayoff(
   return { totalInterestCents, months: month, order: uniqueOrder };
 }
 
-export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, FinancialPlannerOutput> {
+export class VercelFinancialPlanner extends VercelAgent<
+  FinancialPlannerInput,
+  FinancialPlannerOutput
+> {
   constructor() {
     super('financial_planner', SYSTEM_PROMPT, FinancialPlannerOutputSchema);
   }
@@ -133,7 +136,8 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
         properties: {
           transactions: {
             type: 'array',
-            description: 'Array of transaction objects with id, date, description, amount, category',
+            description:
+              'Array of transaction objects with id, date, description, amount, category',
           },
         },
         required: ['transactions'],
@@ -178,14 +182,14 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
           .map(([category, totalCents]) => ({
             category,
             totalCents,
-            percentOfIncome: totalIncomeCents > 0
-              ? Math.round((totalCents / totalIncomeCents) * 10000) / 100
-              : 0,
+            percentOfIncome:
+              totalIncomeCents > 0 ? Math.round((totalCents / totalIncomeCents) * 10000) / 100 : 0,
           }));
 
-        const savingsRatePercent = totalIncomeCents > 0
-          ? Math.round(((totalIncomeCents - totalExpensesCents) / totalIncomeCents) * 10000) / 100
-          : 0;
+        const savingsRatePercent =
+          totalIncomeCents > 0
+            ? Math.round(((totalIncomeCents - totalExpensesCents) / totalIncomeCents) * 10000) / 100
+            : 0;
 
         return {
           totalIncomeCents,
@@ -208,7 +212,10 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
         properties: {
           currentSavingsCents: { type: 'number', description: 'Current savings in cents' },
           monthlySavingsCents: { type: 'number', description: 'Monthly savings in cents' },
-          riskProfile: { type: 'string', description: 'Risk profile: conservative, balanced, growth, or aggressive' },
+          riskProfile: {
+            type: 'string',
+            description: 'Risk profile: conservative, balanced, growth, or aggressive',
+          },
           yearsToProject: { type: 'number', description: 'Number of years to project' },
         },
         required: ['currentSavingsCents', 'monthlySavingsCents', 'riskProfile'],
@@ -252,9 +259,13 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
         properties: {
           debts: {
             type: 'array',
-            description: 'Array of debts with name, balanceCents, interestRate, minimumPaymentCents',
+            description:
+              'Array of debts with name, balanceCents, interestRate, minimumPaymentCents',
           },
-          extraPaymentCents: { type: 'number', description: 'Extra monthly payment beyond minimums' },
+          extraPaymentCents: {
+            type: 'number',
+            description: 'Extra monthly payment beyond minimums',
+          },
         },
         required: ['debts'],
       },
@@ -286,10 +297,13 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
             payoffMonths: snowballResult.months,
             order: snowballResult.order,
           },
-          recommendation: avalancheResult.totalInterestCents <= snowballResult.totalInterestCents
-            ? 'avalanche'
-            : 'snowball',
-          interestSavedCents: Math.abs(snowballResult.totalInterestCents - avalancheResult.totalInterestCents),
+          recommendation:
+            avalancheResult.totalInterestCents <= snowballResult.totalInterestCents
+              ? 'avalanche'
+              : 'snowball',
+          interestSavedCents: Math.abs(
+            snowballResult.totalInterestCents - avalancheResult.totalInterestCents,
+          ),
         };
       },
     );
@@ -305,7 +319,10 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
             type: 'object',
             description: 'Current spending amounts by category',
           },
-          riskProfile: { type: 'string', description: 'Risk profile: conservative, balanced, growth, or aggressive' },
+          riskProfile: {
+            type: 'string',
+            description: 'Risk profile: conservative, balanced, growth, or aggressive',
+          },
         },
         required: ['monthlyIncomeCents', 'currentSpendingByCategory'],
       },
@@ -321,8 +338,13 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
         const savingsBudgetCents = Math.round(monthlyIncomeCents * (rule.savings / 100));
 
         const needsCategories = new Set([
-          'Rent & Lease', 'Utilities', 'Insurance', 'Groceries',
-          'Communication & Internet', 'Motor Vehicle Expenses', 'Medical & Health',
+          'Rent & Lease',
+          'Utilities',
+          'Insurance',
+          'Groceries',
+          'Communication & Internet',
+          'Motor Vehicle Expenses',
+          'Medical & Health',
         ]);
 
         const monthlyTargets: Array<{
@@ -333,9 +355,7 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
 
         for (const [category, current] of Object.entries(spending)) {
           const isNeed = needsCategories.has(category);
-          const recommended = isNeed
-            ? current
-            : Math.round(current * 0.8);
+          const recommended = isNeed ? current : Math.round(current * 0.8);
           monthlyTargets.push({
             category,
             currentCents: Math.abs(current),
@@ -362,7 +382,10 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
         type: 'object',
         properties: {
           query: { type: 'string', description: 'Search query for financial patterns' },
-          patternType: { type: 'string', description: 'Optional pattern type filter (e.g., "spending", "income", "savings")' },
+          patternType: {
+            type: 'string',
+            description: 'Optional pattern type filter (e.g., "spending", "income", "savings")',
+          },
         },
         required: ['query'],
       },
@@ -371,7 +394,10 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
         const patternType = input.patternType as string | undefined;
         const searchQuery = patternType ? `${query} type:${patternType}` : query;
         try {
-          const results = await cogneeTools.searchWithDataPoint(searchQuery, 'FinancialTransaction');
+          const results = await cogneeTools.searchWithDataPoint(
+            searchQuery,
+            'FinancialTransaction',
+          );
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };
@@ -418,7 +444,12 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
       async (input) => {
         const query = input.query as string;
         try {
-          const results = await cogneeTools.crossModuleSearch(query, ['transactions', 'forecasting', 'tax', 'analytics']);
+          const results = await cogneeTools.crossModuleSearch(query, [
+            'transactions',
+            'forecasting',
+            'tax',
+            'analytics',
+          ]);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cross-module search unavailable' };
@@ -457,12 +488,8 @@ export class VercelFinancialPlanner extends VercelAgent<FinancialPlannerInput, F
     const parts = [
       `Analyze the financial data for user ${input.userId}, financial year ${input.financialYear}.`,
       `Risk profile: ${input.riskProfile ?? 'balanced'}.`,
-      input.goals && input.goals.length > 0
-        ? `Goals: ${input.goals.join(', ')}.`
-        : '',
-      input.debts && input.debts.length > 0
-        ? `Debts: ${JSON.stringify(input.debts)}.`
-        : '',
+      input.goals && input.goals.length > 0 ? `Goals: ${input.goals.join(', ')}.` : '',
+      input.debts && input.debts.length > 0 ? `Debts: ${JSON.stringify(input.debts)}.` : '',
       `Transactions (${input.transactions.length} total):`,
       JSON.stringify(input.transactions.slice(0, 200), null, 2),
     ].filter(Boolean);

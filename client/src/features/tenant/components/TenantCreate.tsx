@@ -1,11 +1,24 @@
 import { useState } from 'react';
-import { Building2, Briefcase, Users, DollarSign, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import {
+  Building2,
+  Briefcase,
+  Users,
+  DollarSign,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { tenantApi } from '@/api';
 import { PlanComparison } from '../../subscription/components/PlanComparison';
 
 const ENTITY_TYPES = [
-  { value: 'sole_trader', label: 'Sole Trader', icon: Briefcase, desc: 'Individual operating a business' },
+  {
+    value: 'sole_trader',
+    label: 'Sole Trader',
+    icon: Briefcase,
+    desc: 'Individual operating a business',
+  },
   { value: 'company', label: 'Company', icon: Building2, desc: 'Pty Ltd or Ltd entity' },
   { value: 'trust', label: 'Trust', icon: Users, desc: 'Family, unit or discretionary trust' },
   { value: 'partnership', label: 'Partnership', icon: Users, desc: 'Two or more partners' },
@@ -70,7 +83,9 @@ export function TenantCreate() {
           <Check className="w-8 h-8 text-emerald-400" />
         </div>
         <h2 className="text-2xl font-bold text-zinc-100">Workspace Created!</h2>
-        <p className="text-sm text-zinc-400">Your workspace <span className="text-[#FFCC00] font-bold">{form.name}</span> is ready.</p>
+        <p className="text-sm text-zinc-400">
+          Your workspace <span className="text-[#FFCC00] font-bold">{form.name}</span> is ready.
+        </p>
         <button
           type="button"
           onClick={() => window.location.reload()}
@@ -98,23 +113,27 @@ export function TenantCreate() {
               onClick={() => i < step && setStep(i)}
               className={cn(
                 'flex items-center gap-2 transition-all',
-                i <= step ? 'text-[#FFCC00]' : 'text-zinc-600'
+                i <= step ? 'text-[#FFCC00]' : 'text-zinc-600',
               )}
             >
-              <div className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all',
-                i < step
-                  ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                  : i === step
-                    ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-2 ring-[#FFCC00]/50'
-                    : 'bg-zinc-800 text-zinc-500'
-              )}>
+              <div
+                className={cn(
+                  'w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all',
+                  i < step
+                    ? 'bg-[#FFCC00] text-[#0a0a0f]'
+                    : i === step
+                      ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-2 ring-[#FFCC00]/50'
+                      : 'bg-zinc-800 text-zinc-500',
+                )}
+              >
                 {i < step ? <Check className="w-4 h-4" /> : i + 1}
               </div>
               <span className="hidden sm:block text-xs font-bold">{s}</span>
             </button>
             {i < STEPS.length - 1 && (
-              <div className={cn('w-8 h-0.5 rounded-full', i < step ? 'bg-[#FFCC00]' : 'bg-zinc-800')} />
+              <div
+                className={cn('w-8 h-0.5 rounded-full', i < step ? 'bg-[#FFCC00]' : 'bg-zinc-800')}
+              />
             )}
           </div>
         ))}
@@ -126,18 +145,24 @@ export function TenantCreate() {
           <div className="space-y-5">
             <h3 className="text-lg font-bold text-zinc-100">Business Details</h3>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Business Name</label>
+              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+                Business Name
+              </label>
               <input
                 type="text"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value, slug: autoSlug(e.target.value) })}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value, slug: autoSlug(e.target.value) })
+                }
                 placeholder="My Business Pty Ltd"
                 className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
                 autoFocus
               />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Workspace URL</label>
+              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+                Workspace URL
+              </label>
               <div className="flex items-center neu-inset rounded-xl">
                 <span className="text-sm text-zinc-500 pl-3">goldledger.app/</span>
                 <input
@@ -149,7 +174,9 @@ export function TenantCreate() {
               </div>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">ABN (optional)</label>
+              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+                ABN (optional)
+              </label>
               <input
                 type="text"
                 value={form.abn}
@@ -177,17 +204,21 @@ export function TenantCreate() {
                       'flex items-start gap-3 p-4 rounded-xl border text-left transition-all',
                       selected
                         ? 'border-[#FFCC00]/50 bg-[#FFCC00]/5 shadow-[0_0_20px_rgba(255,204,0,0.08)]'
-                        : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
+                        : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]',
                     )}
                   >
-                    <div className={cn(
-                      'neu-inset p-2 rounded-xl shrink-0',
-                      selected ? 'text-[#FFCC00]' : 'text-zinc-500'
-                    )}>
+                    <div
+                      className={cn(
+                        'neu-inset p-2 rounded-xl shrink-0',
+                        selected ? 'text-[#FFCC00]' : 'text-zinc-500',
+                      )}
+                    >
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className={cn('font-bold', selected ? 'text-[#FFCC00]' : 'text-zinc-200')}>{et.label}</p>
+                      <p className={cn('font-bold', selected ? 'text-[#FFCC00]' : 'text-zinc-200')}>
+                        {et.label}
+                      </p>
                       <p className="text-xs text-zinc-500 mt-0.5">{et.desc}</p>
                     </div>
                     {selected && <Check className="w-5 h-5 text-[#FFCC00] shrink-0 ml-auto" />}
@@ -220,11 +251,15 @@ export function TenantCreate() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-500">Type</span>
-                <span className="text-zinc-200 font-bold">{form.entityType.replace(/_/g, ' ')}</span>
+                <span className="text-zinc-200 font-bold">
+                  {form.entityType.replace(/_/g, ' ')}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-500">Plan</span>
-                <span className="text-[#FFCC00] font-bold">{form.planId.charAt(0).toUpperCase() + form.planId.slice(1)}</span>
+                <span className="text-[#FFCC00] font-bold">
+                  {form.planId.charAt(0).toUpperCase() + form.planId.slice(1)}
+                </span>
               </div>
               {form.abn && (
                 <div className="flex justify-between text-sm">

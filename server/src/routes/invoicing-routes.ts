@@ -38,7 +38,10 @@ const createCustomerSchema = z.object({
   state: z.string().optional(),
   postcode: z.string().optional(),
   country: z.string().default('AU'),
-  abn: z.string().regex(/^\d{11}$/).optional(),
+  abn: z
+    .string()
+    .regex(/^\d{11}$/)
+    .optional(),
   paymentTermsDays: z.number().int().min(0).max(365).default(30),
   notes: z.string().optional(),
 });
@@ -114,7 +117,8 @@ invoicingRoutes.get('/customers', async (c) => {
     const limit = Math.min(Math.max(1, parseInt(c.req.query('limit') || '50', 10)), 100);
     const search = c.req.query('search') || undefined;
     const isActiveParam = c.req.query('isActive');
-    const isActive = isActiveParam === 'false' ? false : isActiveParam === 'true' ? true : undefined;
+    const isActive =
+      isActiveParam === 'false' ? false : isActiveParam === 'true' ? true : undefined;
 
     const result = await customerService.listCustomers(userId, { offset, limit, search, isActive });
     return c.json(result);
@@ -195,16 +199,20 @@ invoicingRoutes.get('/customers/:id/contacts', async (c) => {
 });
 
 // 7. POST /customers/:id/contacts — add contact
-invoicingRoutes.post('/customers/:id/contacts', zValidator('json', createContactSchema), async (c) => {
-  try {
-    const customerId = c.req.param('id');
-    const data = c.req.valid('json');
-    const contact = await customerService.addContact(customerId, data);
-    return c.json(contact, 201);
-  } catch (err: any) {
-    return c.json({ error: err.message ?? 'Failed to add contact' }, 500);
-  }
-});
+invoicingRoutes.post(
+  '/customers/:id/contacts',
+  zValidator('json', createContactSchema),
+  async (c) => {
+    try {
+      const customerId = c.req.param('id');
+      const data = c.req.valid('json');
+      const contact = await customerService.addContact(customerId, data);
+      return c.json(contact, 201);
+    } catch (err: any) {
+      return c.json({ error: err.message ?? 'Failed to add contact' }, 500);
+    }
+  },
+);
 
 // ============================================================================
 // INVOICE ENDPOINTS (10)
@@ -259,16 +267,20 @@ invoicingRoutes.get('/invoices/next-number', async (c) => {
 });
 
 // 11. POST /invoices/credit-note — create credit note (BEFORE :id routes)
-invoicingRoutes.post('/invoices/credit-note', zValidator('json', createCreditNoteSchema), async (c) => {
-  try {
-    const userId = getUserId(c);
-    const data = c.req.valid('json');
-    const creditNote = await invoicingService.createCreditNote(userId, data);
-    return c.json(creditNote, 201);
-  } catch (err: any) {
-    return c.json({ error: err.message ?? 'Failed to create credit note' }, 500);
-  }
-});
+invoicingRoutes.post(
+  '/invoices/credit-note',
+  zValidator('json', createCreditNoteSchema),
+  async (c) => {
+    try {
+      const userId = getUserId(c);
+      const data = c.req.valid('json');
+      const creditNote = await invoicingService.createCreditNote(userId, data);
+      return c.json(creditNote, 201);
+    } catch (err: any) {
+      return c.json({ error: err.message ?? 'Failed to create credit note' }, 500);
+    }
+  },
+);
 
 // 12. GET /invoices/:id — get invoice with lines + customer
 invoicingRoutes.get('/invoices/:id', async (c) => {
@@ -379,22 +391,26 @@ invoicingRoutes.get('/invoices/:id/pdf', async (c) => {
 });
 
 // 17. POST /invoices/:id/payment — record payment
-invoicingRoutes.post('/invoices/:id/payment', zValidator('json', recordPaymentSchema), async (c) => {
-  try {
-    const userId = getUserId(c);
-    const invoiceId = c.req.param('id');
-    const data = c.req.valid('json');
-    const payment = await invoicingService.recordPayment(userId, invoiceId, data);
-    return c.json(payment, 201);
-  } catch (err: any) {
-    if (err.message?.includes('not found')) {
-      return c.json({ error: err.message }, 404);
+invoicingRoutes.post(
+  '/invoices/:id/payment',
+  zValidator('json', recordPaymentSchema),
+  async (c) => {
+    try {
+      const userId = getUserId(c);
+      const invoiceId = c.req.param('id');
+      const data = c.req.valid('json');
+      const payment = await invoicingService.recordPayment(userId, invoiceId, data);
+      return c.json(payment, 201);
+    } catch (err: any) {
+      if (err.message?.includes('not found')) {
+        return c.json({ error: err.message }, 404);
+      }
+      if (err.message?.includes('Cannot record')) {
+        return c.json({ error: err.message }, 400);
+      }
+      return c.json({ error: err.message ?? 'Failed to record payment' }, 500);
     }
-    if (err.message?.includes('Cannot record')) {
-      return c.json({ error: err.message }, 400);
-    }
-    return c.json({ error: err.message ?? 'Failed to record payment' }, 500);
-  }
-});
+  },
+);
 
 export default invoicingRoutes;

@@ -19,7 +19,9 @@ export function MatchStatistics() {
     }
   };
 
-  useEffect(() => { loadStats(); }, []);
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   if (loading) {
     return (
@@ -40,15 +42,24 @@ export function MatchStatistics() {
     return (
       <div className="neu-raised rounded-xl p-8 text-center">
         <p className="text-zinc-400">No statistics available</p>
-        <button onClick={loadStats} className="mt-4 px-4 py-2 neu-raised rounded-lg text-[#FFCC00] hover:bg-white/5 text-sm font-medium">
+        <button
+          onClick={loadStats}
+          className="mt-4 px-4 py-2 neu-raised rounded-lg text-[#FFCC00] hover:bg-white/5 text-sm font-medium"
+        >
           Retry
         </button>
       </div>
     );
   }
 
-  const matchRateColor = stats.matchRate > 80 ? 'text-emerald-400' : stats.matchRate < 50 ? 'text-red-400' : 'text-amber-400';
-  const maxVendorCount = stats.topVendors.length > 0 ? Math.max(...stats.topVendors.map(v => v.count)) : 1;
+  const matchRateColor =
+    stats.matchRate > 80
+      ? 'text-emerald-400'
+      : stats.matchRate < 50
+        ? 'text-red-400'
+        : 'text-amber-400';
+  const maxVendorCount =
+    stats.topVendors.length > 0 ? Math.max(...stats.topVendors.map((v: any) => v.count)) : 1;
 
   return (
     <div className="space-y-6">
@@ -59,7 +70,9 @@ export function MatchStatistics() {
             <div className="neu-inset p-2 rounded-lg">
               <FileText className="h-4 w-4 text-blue-400" />
             </div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Documents</span>
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Total Documents
+            </span>
           </div>
           <p className="text-2xl font-bold text-zinc-100">{stats.totalDocuments}</p>
           <p className="text-xs text-zinc-500 mt-1">{stats.matched} matched</p>
@@ -70,7 +83,9 @@ export function MatchStatistics() {
             <div className="neu-inset p-2 rounded-lg">
               <Target className={`h-4 w-4 ${matchRateColor}`} />
             </div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Match Rate</span>
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Match Rate
+            </span>
           </div>
           <p className={`text-2xl font-bold ${matchRateColor}`}>{stats.matchRate.toFixed(1)}%</p>
           <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -86,9 +101,13 @@ export function MatchStatistics() {
             <div className="neu-inset p-2 rounded-lg">
               <ShieldCheck className="h-4 w-4 text-[#FFCC00]" />
             </div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Avg Confidence</span>
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Avg Confidence
+            </span>
           </div>
-          <p className="text-2xl font-bold text-zinc-100">{(stats.averageConfidence * 100).toFixed(0)}%</p>
+          <p className="text-2xl font-bold text-zinc-100">
+            {(stats.averageConfidence * 100).toFixed(0)}%
+          </p>
           <div className="mt-2 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full bg-[#FFCC00] transition-all duration-500"
@@ -102,7 +121,9 @@ export function MatchStatistics() {
             <div className="neu-inset p-2 rounded-lg">
               <Clock className="h-4 w-4 text-amber-400" />
             </div>
-            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Pending Review</span>
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              Pending Review
+            </span>
           </div>
           <p className="text-2xl font-bold text-zinc-100">{stats.pending}</p>
           <p className="text-xs text-zinc-500 mt-1">{stats.failed} failed</p>
@@ -113,8 +134,13 @@ export function MatchStatistics() {
         {/* Top Vendors */}
         <div className="neu-raised rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-[#FFCC00] uppercase tracking-wider">Top Vendors</h3>
-            <button onClick={loadStats} className="p-1.5 neu-raised-sm rounded-lg text-zinc-400 hover:text-zinc-200">
+            <h3 className="text-sm font-semibold text-[#FFCC00] uppercase tracking-wider">
+              Top Vendors
+            </h3>
+            <button
+              onClick={loadStats}
+              className="p-1.5 neu-raised-sm rounded-lg text-zinc-400 hover:text-zinc-200"
+            >
               <RefreshCw className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -122,7 +148,7 @@ export function MatchStatistics() {
             <p className="text-zinc-500 text-sm">No vendor data yet</p>
           ) : (
             <div className="space-y-3">
-              {stats.topVendors.slice(0, 10).map((vendor, i) => (
+              {stats.topVendors.slice(0, 10).map((vendor: any, i: number) => (
                 <div key={i} className="flex items-center gap-3">
                   <span className="text-xs text-zinc-500 w-5 text-right">{i + 1}.</span>
                   <div className="flex-1 min-w-0">
@@ -145,7 +171,9 @@ export function MatchStatistics() {
 
         {/* Rule Effectiveness */}
         <div className="neu-raised rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-[#FFCC00] uppercase tracking-wider mb-4">Rule Effectiveness</h3>
+          <h3 className="text-sm font-semibold text-[#FFCC00] uppercase tracking-wider mb-4">
+            Rule Effectiveness
+          </h3>
           {stats.ruleEffectiveness.length === 0 ? (
             <p className="text-zinc-500 text-sm">No rules configured yet</p>
           ) : (
@@ -161,18 +189,26 @@ export function MatchStatistics() {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {stats.ruleEffectiveness
-                    .sort((a, b) => b.matchCount - a.matchCount)
-                    .map((rule) => {
-                      const isRecent = rule.lastMatched && (Date.now() - new Date(rule.lastMatched).getTime()) < 7 * 24 * 60 * 60 * 1000;
+                    .sort((a: any, b: any) => b.matchCount - a.matchCount)
+                    .map((rule: any) => {
+                      const isRecent =
+                        rule.lastMatched &&
+                        Date.now() - new Date(rule.lastMatched).getTime() < 7 * 24 * 60 * 60 * 1000;
                       return (
                         <tr key={rule.ruleId} className="hover:bg-white/5">
                           <td className="py-2.5 text-zinc-200">{rule.name}</td>
-                          <td className="py-2.5 text-right font-mono text-zinc-300">{rule.matchCount}</td>
+                          <td className="py-2.5 text-right font-mono text-zinc-300">
+                            {rule.matchCount}
+                          </td>
                           <td className="py-2.5 text-right text-zinc-400 text-xs">
-                            {rule.lastMatched ? new Date(rule.lastMatched).toLocaleDateString() : 'Never'}
+                            {rule.lastMatched
+                              ? new Date(rule.lastMatched).toLocaleDateString()
+                              : 'Never'}
                           </td>
                           <td className="py-2.5 text-center">
-                            <span className={`inline-block w-2 h-2 rounded-full ${isRecent ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                            <span
+                              className={`inline-block w-2 h-2 rounded-full ${isRecent ? 'bg-emerald-400' : 'bg-zinc-600'}`}
+                            />
                           </td>
                         </tr>
                       );
@@ -186,7 +222,9 @@ export function MatchStatistics() {
 
       {/* Match Method Distribution */}
       <div className="neu-raised rounded-xl p-6">
-        <h3 className="text-sm font-semibold text-[#FFCC00] uppercase tracking-wider mb-4">Match Summary</h3>
+        <h3 className="text-sm font-semibold text-[#FFCC00] uppercase tracking-wider mb-4">
+          Match Summary
+        </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: 'Matched', value: stats.matched, color: 'bg-emerald-400' },
@@ -204,13 +242,25 @@ export function MatchStatistics() {
         {stats.totalDocuments > 0 && (
           <div className="mt-4 h-3 bg-zinc-800 rounded-full overflow-hidden flex">
             {stats.matched > 0 && (
-              <div className="h-full bg-emerald-400 transition-all" style={{ width: `${(stats.matched / stats.totalDocuments) * 100}%` }} title={`Matched: ${stats.matched}`} />
+              <div
+                className="h-full bg-emerald-400 transition-all"
+                style={{ width: `${(stats.matched / stats.totalDocuments) * 100}%` }}
+                title={`Matched: ${stats.matched}`}
+              />
             )}
             {stats.pending > 0 && (
-              <div className="h-full bg-amber-400 transition-all" style={{ width: `${(stats.pending / stats.totalDocuments) * 100}%` }} title={`Pending: ${stats.pending}`} />
+              <div
+                className="h-full bg-amber-400 transition-all"
+                style={{ width: `${(stats.pending / stats.totalDocuments) * 100}%` }}
+                title={`Pending: ${stats.pending}`}
+              />
             )}
             {stats.failed > 0 && (
-              <div className="h-full bg-red-400 transition-all" style={{ width: `${(stats.failed / stats.totalDocuments) * 100}%` }} title={`Failed: ${stats.failed}`} />
+              <div
+                className="h-full bg-red-400 transition-all"
+                style={{ width: `${(stats.failed / stats.totalDocuments) * 100}%` }}
+                title={`Failed: ${stats.failed}`}
+              />
             )}
           </div>
         )}

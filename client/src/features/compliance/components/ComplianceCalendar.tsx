@@ -69,7 +69,7 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
     const now = new Date();
     const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     return obligations
-      .filter(o => {
+      .filter((o) => {
         const d = new Date(o.dueDate);
         return d >= now && d <= in30;
       })
@@ -95,20 +95,26 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
       <div className="lg:col-span-2 neu-raised rounded-2xl p-4">
         {/* Month Navigation */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={prevMonth} className="p-2 rounded-xl neu-raised-sm text-zinc-400 hover:text-white transition-colors">
+          <button
+            onClick={prevMonth}
+            className="p-2 rounded-xl neu-raised-sm text-zinc-400 hover:text-white transition-colors"
+          >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <h3 className="text-zinc-200 font-bold">
             {currentMonth.toLocaleString('en-AU', { month: 'long', year: 'numeric' })}
           </h3>
-          <button onClick={nextMonth} className="p-2 rounded-xl neu-raised-sm text-zinc-400 hover:text-white transition-colors">
+          <button
+            onClick={nextMonth}
+            className="p-2 rounded-xl neu-raised-sm text-zinc-400 hover:text-white transition-colors"
+          >
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
 
         {/* Day Headers */}
         <div className="grid grid-cols-7 gap-1 mb-1">
-          {DAYS.map(d => (
+          {DAYS.map((d) => (
             <div key={d} className="text-center text-[10px] font-bold text-zinc-500 uppercase py-1">
               {d}
             </div>
@@ -134,15 +140,14 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
                 key={day}
                 onClick={() => setSelectedDate(isSelected ? null : dateStr)}
                 className={cn(
-                  "h-16 rounded-xl p-1 text-left transition-all duration-200 relative",
-                  isSelected ? "ring-2 ring-[#FFCC00] bg-[#FFCC00]/5" : "hover:bg-white/5",
-                  isToday && "border border-[#FFCC00]/30"
+                  'h-16 rounded-xl p-1 text-left transition-all duration-200 relative',
+                  isSelected ? 'ring-2 ring-[#FFCC00] bg-[#FFCC00]/5' : 'hover:bg-white/5',
+                  isToday && 'border border-[#FFCC00]/30',
                 )}
               >
-                <span className={cn(
-                  "text-xs font-bold",
-                  isToday ? "text-[#FFCC00]" : "text-zinc-400"
-                )}>
+                <span
+                  className={cn('text-xs font-bold', isToday ? 'text-[#FFCC00]' : 'text-zinc-400')}
+                >
                   {day}
                 </span>
                 {dayObs.length > 0 && (
@@ -150,11 +155,16 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
                     {dayObs.slice(0, 3).map((ob, j) => (
                       <span
                         key={j}
-                        className={cn("w-2 h-2 rounded-full", statusDotColors[ob.status] ?? 'bg-zinc-400')}
+                        className={cn(
+                          'w-2 h-2 rounded-full',
+                          statusDotColors[ob.status] ?? 'bg-zinc-400',
+                        )}
                       />
                     ))}
                     {dayObs.length > 3 && (
-                      <span className="text-[8px] text-zinc-500 font-bold">+{dayObs.length - 3}</span>
+                      <span className="text-[8px] text-zinc-500 font-bold">
+                        +{dayObs.length - 3}
+                      </span>
                     )}
                   </div>
                 )}
@@ -168,14 +178,24 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
           <div className="mt-4 space-y-2 border-t border-white/5 pt-4">
             <h4 className="text-zinc-300 text-sm font-bold">
               {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-AU', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
               })}
             </h4>
-            {selectedObligations.map(ob => (
+            {selectedObligations.map((ob) => (
               <div key={ob.id} className="flex items-center gap-2 text-sm">
-                <span className={cn("w-2 h-2 rounded-full shrink-0", statusDotColors[ob.status] ?? 'bg-zinc-400')} />
+                <span
+                  className={cn(
+                    'w-2 h-2 rounded-full shrink-0',
+                    statusDotColors[ob.status] ?? 'bg-zinc-400',
+                  )}
+                />
                 <span className="text-zinc-200 font-medium">{ob.type}</span>
-                <span className="text-zinc-500 text-xs capitalize">({ob.status.replace('_', ' ')})</span>
+                <span className="text-zinc-500 text-xs capitalize">
+                  ({ob.status.replace('_', ' ')})
+                </span>
               </div>
             ))}
           </div>
@@ -192,9 +212,14 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
           <p className="text-zinc-500 text-sm">No upcoming obligations</p>
         ) : (
           <div className="space-y-3">
-            {upcomingObligations.map(ob => (
+            {upcomingObligations.map((ob) => (
               <div key={ob.id} className="flex items-start gap-2">
-                <span className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0", statusDotColors[ob.status] ?? 'bg-zinc-400')} />
+                <span
+                  className={cn(
+                    'w-2 h-2 rounded-full mt-1.5 shrink-0',
+                    statusDotColors[ob.status] ?? 'bg-zinc-400',
+                  )}
+                />
                 <div className="min-w-0">
                   <p className="text-zinc-200 text-sm font-medium truncate">{ob.type}</p>
                   <p className="text-zinc-500 text-xs">

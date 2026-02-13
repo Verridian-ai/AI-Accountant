@@ -60,11 +60,11 @@ interface LatencyEntry {
 // ============================================================================
 
 const CONFIG = {
-  checkIntervalMs: 60_000,     // Health checks every 60s
-  metricsIntervalMs: 30_000,   // Metrics collection every 30s
-  timeoutMs: 5_000,            // Individual check timeout
-  retentionHours: 168,         // 7 days retention
-  latencyBufferSize: 50,       // Flush after 50 entries
+  checkIntervalMs: 60_000, // Health checks every 60s
+  metricsIntervalMs: 30_000, // Metrics collection every 30s
+  timeoutMs: 5_000, // Individual check timeout
+  retentionHours: 168, // 7 days retention
+  latencyBufferSize: 50, // Flush after 50 entries
   latencyFlushIntervalMs: 15_000, // Or flush every 15s
 };
 
@@ -91,7 +91,10 @@ class SystemHealthService {
     try {
       const result = await withTimeout(async () => {
         // Test basic connectivity
-        await db.select({ one: sql`1` }).from(sql`(SELECT 1) AS t`).get();
+        await db
+          .select({ one: sql`1` })
+          .from(sql`(SELECT 1) AS t`)
+          .get();
 
         // Gather stats
         const connCount = await db
@@ -138,12 +141,16 @@ class SystemHealthService {
     const start = Date.now();
     try {
       const result = await withTimeout(async () => {
-        const res = await fetch(`${COGNEE_URL}/health`, { signal: AbortSignal.timeout(CONFIG.timeoutMs) });
+        const res = await fetch(`${COGNEE_URL}/health`, {
+          signal: AbortSignal.timeout(CONFIG.timeoutMs),
+        });
         const healthy = res.ok;
 
         let datasetCount = 0;
         try {
-          const dsRes = await fetch(`${COGNEE_URL}/api/v1/datasets`, { signal: AbortSignal.timeout(CONFIG.timeoutMs) });
+          const dsRes = await fetch(`${COGNEE_URL}/api/v1/datasets`, {
+            signal: AbortSignal.timeout(CONFIG.timeoutMs),
+          });
           if (dsRes.ok) {
             const datasets = await dsRes.json();
             datasetCount = Array.isArray(datasets) ? datasets.length : 0;
@@ -214,7 +221,9 @@ class SystemHealthService {
     const start = Date.now();
     try {
       const result = await withTimeout(async () => {
-        const res = await fetch('http://client:80/', { signal: AbortSignal.timeout(CONFIG.timeoutMs) });
+        const res = await fetch('http://client:80/', {
+          signal: AbortSignal.timeout(CONFIG.timeoutMs),
+        });
         return { statusCode: res.status, healthy: res.ok };
       }, CONFIG.timeoutMs);
 
@@ -311,12 +320,12 @@ class SystemHealthService {
     });
 
     // Postgres down = unhealthy; non-critical services down = degraded
-    const postgresCheck = checks.find(c => c.service === 'postgres');
+    const postgresCheck = checks.find((c) => c.service === 'postgres');
     let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
 
     if (postgresCheck?.status === 'unhealthy') {
       overallStatus = 'unhealthy';
-    } else if (checks.some(c => c.status === 'unhealthy' || c.status === 'degraded')) {
+    } else if (checks.some((c) => c.status === 'unhealthy' || c.status === 'degraded')) {
       overallStatus = 'degraded';
     }
 
@@ -344,31 +353,82 @@ class SystemHealthService {
     const loadAvg = os.loadavg();
 
     const metrics = [
-      { name: 'memory_rss_mb', type: 'gauge', value: mem.rss / 1048576, unit: 'MB', source: 'server' },
-      { name: 'memory_heap_used_mb', type: 'gauge', value: mem.heapUsed / 1048576, unit: 'MB', source: 'server' },
-      { name: 'memory_heap_total_mb', type: 'gauge', value: mem.heapTotal / 1048576, unit: 'MB', source: 'server' },
-      { name: 'cpu_user_us', type: 'counter', value: cpu.user, unit: 'microseconds', source: 'server' },
-      { name: 'cpu_system_us', type: 'counter', value: cpu.system, unit: 'microseconds', source: 'server' },
-      { name: 'uptime_seconds', type: 'gauge', value: process.uptime(), unit: 'seconds', source: 'server' },
+      {
+        name: 'memory_rss_mb',
+        type: 'gauge',
+        value: mem.rss / 1048576,
+        unit: 'MB',
+        source: 'server',
+      },
+      {
+        name: 'memory_heap_used_mb',
+        type: 'gauge',
+        value: mem.heapUsed / 1048576,
+        unit: 'MB',
+        source: 'server',
+      },
+      {
+        name: 'memory_heap_total_mb',
+        type: 'gauge',
+        value: mem.heapTotal / 1048576,
+        unit: 'MB',
+        source: 'server',
+      },
+      {
+        name: 'cpu_user_us',
+        type: 'counter',
+        value: cpu.user,
+        unit: 'microseconds',
+        source: 'server',
+      },
+      {
+        name: 'cpu_system_us',
+        type: 'counter',
+        value: cpu.system,
+        unit: 'microseconds',
+        source: 'server',
+      },
+      {
+        name: 'uptime_seconds',
+        type: 'gauge',
+        value: process.uptime(),
+        unit: 'seconds',
+        source: 'server',
+      },
       { name: 'load_avg_1m', type: 'gauge', value: loadAvg[0], unit: 'load', source: 'os' },
       { name: 'load_avg_5m', type: 'gauge', value: loadAvg[1], unit: 'load', source: 'os' },
       { name: 'load_avg_15m', type: 'gauge', value: loadAvg[2], unit: 'load', source: 'os' },
-      { name: 'free_memory_mb', type: 'gauge', value: os.freemem() / 1048576, unit: 'MB', source: 'os' },
-      { name: 'total_memory_mb', type: 'gauge', value: os.totalmem() / 1048576, unit: 'MB', source: 'os' },
+      {
+        name: 'free_memory_mb',
+        type: 'gauge',
+        value: os.freemem() / 1048576,
+        unit: 'MB',
+        source: 'os',
+      },
+      {
+        name: 'total_memory_mb',
+        type: 'gauge',
+        value: os.totalmem() / 1048576,
+        unit: 'MB',
+        source: 'os',
+      },
     ];
 
     try {
       for (const m of metrics) {
-        await db.insert(systemMetrics).values({
-          id: crypto.randomUUID(),
-          metricName: m.name,
-          metricType: m.type,
-          value: m.value,
-          unit: m.unit,
-          source: m.source,
-          tags: '{}',
-          observationTime: now,
-        }).run();
+        await db
+          .insert(systemMetrics)
+          .values({
+            id: crypto.randomUUID(),
+            metricName: m.name,
+            metricType: m.type,
+            value: m.value,
+            unit: m.unit,
+            source: m.source,
+            tags: '{}',
+            observationTime: now,
+          })
+          .run();
       }
     } catch (err: any) {
       console.error('[SystemHealth] Failed to collect metrics:', err.message);
@@ -408,20 +468,23 @@ class SystemHealthService {
 
     try {
       for (const entry of entries) {
-        await db.insert(systemMetrics).values({
-          id: crypto.randomUUID(),
-          metricName: 'api_latency_ms',
-          metricType: 'histogram',
-          value: entry.durationMs,
-          unit: 'ms',
-          source: 'api',
-          tags: JSON.stringify({
-            path: entry.path,
-            method: entry.method,
-            statusCode: entry.statusCode,
-          }),
-          observationTime: entry.timestamp,
-        }).run();
+        await db
+          .insert(systemMetrics)
+          .values({
+            id: crypto.randomUUID(),
+            metricName: 'api_latency_ms',
+            metricType: 'histogram',
+            value: entry.durationMs,
+            unit: 'ms',
+            source: 'api',
+            tags: JSON.stringify({
+              path: entry.path,
+              method: entry.method,
+              statusCode: entry.statusCode,
+            }),
+            observationTime: entry.timestamp,
+          })
+          .run();
       }
     } catch (err: any) {
       console.error('[SystemHealth] Failed to flush latency buffer:', err.message);
@@ -457,11 +520,12 @@ class SystemHealthService {
           sum: sql`SUM(${systemMetrics.value})`,
         }[filters.aggregation];
 
-        const intervalExpr = filters.interval === 'minute'
-          ? sql`substr(${systemMetrics.observationTime}, 1, 16)`  // YYYY-MM-DDTHH:MM
-          : filters.interval === 'hour'
-          ? sql`substr(${systemMetrics.observationTime}, 1, 13)`  // YYYY-MM-DDTHH
-          : sql`substr(${systemMetrics.observationTime}, 1, 10)`; // YYYY-MM-DD
+        const intervalExpr =
+          filters.interval === 'minute'
+            ? sql`substr(${systemMetrics.observationTime}, 1, 16)` // YYYY-MM-DDTHH:MM
+            : filters.interval === 'hour'
+              ? sql`substr(${systemMetrics.observationTime}, 1, 13)` // YYYY-MM-DDTHH
+              : sql`substr(${systemMetrics.observationTime}, 1, 10)`; // YYYY-MM-DD
 
         const query = db
           .select({
@@ -473,7 +537,8 @@ class SystemHealthService {
           .from(systemMetrics);
 
         if (conditions.length > 0) {
-          return await (query as any).where(and(...conditions))
+          return await (query as any)
+            .where(and(...conditions))
             .groupBy(intervalExpr, systemMetrics.metricName)
             .orderBy(desc(intervalExpr))
             .limit(filters.limit ?? 500)
@@ -488,12 +553,11 @@ class SystemHealthService {
       }
 
       // Non-aggregated query
-      const query = db
-        .select()
-        .from(systemMetrics);
+      const query = db.select().from(systemMetrics);
 
       if (conditions.length > 0) {
-        return await (query as any).where(and(...conditions))
+        return await (query as any)
+          .where(and(...conditions))
           .orderBy(desc(systemMetrics.observationTime))
           .limit(filters.limit ?? 200)
           .all();
@@ -513,9 +577,7 @@ class SystemHealthService {
     try {
       const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 
-      const conditions: any[] = [
-        gte(systemHealthChecks.checkedAt, cutoff),
-      ];
+      const conditions: any[] = [gte(systemHealthChecks.checkedAt, cutoff)];
 
       if (serviceName) {
         conditions.push(eq(systemHealthChecks.serviceName, serviceName));
@@ -585,31 +647,34 @@ class SystemHealthService {
 
     // Health checks every 60s
     this.healthInterval = setInterval(() => {
-      this.runAllChecks().catch(err => {
+      this.runAllChecks().catch((err) => {
         console.error('[SystemHealth] Background health check failed:', err.message);
       });
     }, CONFIG.checkIntervalMs);
 
     // Metrics collection every 30s
     this.metricsInterval = setInterval(() => {
-      this.collectMetrics().catch(err => {
+      this.collectMetrics().catch((err) => {
         console.error('[SystemHealth] Background metrics collection failed:', err.message);
       });
     }, CONFIG.metricsIntervalMs);
 
     // Latency buffer flush every 15s
     this.latencyFlushInterval = setInterval(() => {
-      this.flushLatencyBuffer().catch(err => {
+      this.flushLatencyBuffer().catch((err) => {
         console.error('[SystemHealth] Latency buffer flush failed:', err.message);
       });
     }, CONFIG.latencyFlushIntervalMs);
 
     // Cleanup old data daily
-    setInterval(() => {
-      this.cleanupOldData().catch(err => {
-        console.error('[SystemHealth] Cleanup failed:', err.message);
-      });
-    }, 24 * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cleanupOldData().catch((err) => {
+          console.error('[SystemHealth] Cleanup failed:', err.message);
+        });
+      },
+      24 * 60 * 60 * 1000,
+    );
 
     // Run initial check after a brief delay (let other services start)
     setTimeout(() => {
@@ -645,15 +710,11 @@ class SystemHealthService {
     let deletedChecks = 0;
 
     try {
-      await db.delete(systemMetrics)
-        .where(lte(systemMetrics.observationTime, cutoff))
-        .run();
+      await db.delete(systemMetrics).where(lte(systemMetrics.observationTime, cutoff)).run();
       // Can't easily get deleted count from drizzle .run(), so estimate
       deletedMetrics = -1; // Indicates cleanup ran
 
-      await db.delete(systemHealthChecks)
-        .where(lte(systemHealthChecks.checkedAt, cutoff))
-        .run();
+      await db.delete(systemHealthChecks).where(lte(systemHealthChecks.checkedAt, cutoff)).run();
       deletedChecks = -1;
 
       console.log(`[SystemHealth] Cleaned up data older than ${CONFIG.retentionHours}h`);
@@ -672,16 +733,19 @@ class SystemHealthService {
     const now = new Date().toISOString();
     try {
       for (const check of checks) {
-        await db.insert(systemHealthChecks).values({
-          id: crypto.randomUUID(),
-          serviceName: check.service,
-          checkType: 'periodic',
-          status: check.status,
-          responseTimeMs: check.responseTimeMs,
-          details: JSON.stringify(check.details),
-          errorMessage: check.error ?? null,
-          checkedAt: now,
-        }).run();
+        await db
+          .insert(systemHealthChecks)
+          .values({
+            id: crypto.randomUUID(),
+            serviceName: check.service,
+            checkType: 'periodic',
+            status: check.status,
+            responseTimeMs: check.responseTimeMs,
+            details: JSON.stringify(check.details),
+            errorMessage: check.error ?? null,
+            checkedAt: now,
+          })
+          .run();
       }
     } catch (err: any) {
       console.error('[SystemHealth] Failed to persist health checks:', err.message);
@@ -697,8 +761,14 @@ function withTimeout<T>(fn: () => Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms);
     fn().then(
-      (result) => { clearTimeout(timer); resolve(result); },
-      (err) => { clearTimeout(timer); reject(err); },
+      (result) => {
+        clearTimeout(timer);
+        resolve(result);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
     );
   });
 }

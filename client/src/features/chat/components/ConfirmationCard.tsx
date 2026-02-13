@@ -73,10 +73,12 @@ export function ConfirmationCard({
       : '';
 
   return (
-    <div className={cn(
-      'neu-raised rounded-2xl p-4 border space-y-3',
-      isExpired ? 'border-zinc-700 opacity-60' : 'border-[#FFCC00]/20'
-    )}>
+    <div
+      className={cn(
+        'neu-raised rounded-2xl p-4 border space-y-3',
+        isExpired ? 'border-zinc-700 opacity-60' : 'border-[#FFCC00]/20',
+      )}
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -102,23 +104,34 @@ export function ConfirmationCard({
       {/* Confidence bar */}
       {confidencePct != null && (
         <div className="flex items-center gap-2">
-          <span className="text-[7px] font-bold text-zinc-500 uppercase w-14 shrink-0">Confidence</span>
+          <span className="text-[7px] font-bold text-zinc-500 uppercase w-14 shrink-0">
+            Confidence
+          </span>
           <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-            <div className={cn('h-full rounded-full transition-all', confidenceColor)} style={{ width: `${confidencePct}%` }} />
+            <div
+              className={cn('h-full rounded-full transition-all', confidenceColor)}
+              style={{ width: `${confidencePct}%` }}
+            />
           </div>
-          <span className="text-[8px] font-black text-zinc-400 w-8 text-right">{confidencePct}%</span>
+          <span className="text-[8px] font-black text-zinc-400 w-8 text-right">
+            {confidencePct}%
+          </span>
         </div>
       )}
 
       {/* Before / After diff */}
       <div className="grid grid-cols-2 gap-2 text-[9px]">
         {beforeState && (
-          <div className="text-[7px] font-black text-zinc-500 uppercase tracking-wider pb-0.5 border-b border-zinc-800">Before</div>
+          <div className="text-[7px] font-black text-zinc-500 uppercase tracking-wider pb-0.5 border-b border-zinc-800">
+            Before
+          </div>
         )}
-        <div className={cn(
-          'text-[7px] font-black text-zinc-500 uppercase tracking-wider pb-0.5 border-b border-zinc-800',
-          !beforeState && 'col-span-2'
-        )}>
+        <div
+          className={cn(
+            'text-[7px] font-black text-zinc-500 uppercase tracking-wider pb-0.5 border-b border-zinc-800',
+            !beforeState && 'col-span-2',
+          )}
+        >
           {beforeState ? 'After' : 'Proposed Changes'}
         </div>
 
@@ -131,13 +144,17 @@ export function ConfirmationCard({
             <div key={key} className="contents">
               <div className={cn('px-1.5 py-0.5 rounded', isChanged ? 'bg-red-500/10' : '')}>
                 <span className="text-zinc-500 font-bold">{key}: </span>
-                <span className={cn('font-medium', isChanged ? 'text-red-400/80' : 'text-zinc-400')}>
+                <span
+                  className={cn('font-medium', isChanged ? 'text-red-400/80' : 'text-zinc-400')}
+                >
                   {formatValue(beforeVal)}
                 </span>
               </div>
               <div className={cn('px-1.5 py-0.5 rounded', isChanged ? 'bg-emerald-500/10' : '')}>
                 <span className="text-zinc-500 font-bold">{key}: </span>
-                <span className={cn('font-medium', isChanged ? 'text-emerald-400' : 'text-zinc-400')}>
+                <span
+                  className={cn('font-medium', isChanged ? 'text-emerald-400' : 'text-zinc-400')}
+                >
                   {formatValue(afterVal)}
                 </span>
               </div>

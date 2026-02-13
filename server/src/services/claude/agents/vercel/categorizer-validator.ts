@@ -16,7 +16,9 @@ export function validateCategorization(output: CategorizerOutput): ValidationRes
 
   for (const result of output.results) {
     if (result.confidence < 0 || result.confidence > 1) {
-      errors.push(`Transaction ${result.transactionId}: confidence ${result.confidence} out of range [0,1]`);
+      errors.push(
+        `Transaction ${result.transactionId}: confidence ${result.confidence} out of range [0,1]`,
+      );
     }
     if (!result.category) {
       errors.push(`Transaction ${result.transactionId}: missing category`);
@@ -27,7 +29,7 @@ export function validateCategorization(output: CategorizerOutput): ValidationRes
   }
 
   // Check for duplicate transaction IDs
-  const ids = output.results.map(r => r.transactionId);
+  const ids = output.results.map((r) => r.transactionId);
   const uniqueIds = new Set(ids);
   if (ids.length !== uniqueIds.size) {
     errors.push('Duplicate transaction IDs in output');
@@ -51,7 +53,7 @@ export function reconcileWithLegacy(
   const details: ComparisonResult['details'] = [];
 
   for (const vr of vercelOutput.results) {
-    const lr = legacyOutput.results.find(r => r.transactionId === vr.transactionId);
+    const lr = legacyOutput.results.find((r) => r.transactionId === vr.transactionId);
     if (!lr) continue;
     if (vr.category === lr.category) {
       matches++;

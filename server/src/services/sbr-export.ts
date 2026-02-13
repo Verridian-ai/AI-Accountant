@@ -217,14 +217,11 @@ export class SBRExporter {
   /**
    * Generate ATO-compliant SBR XML for BAS lodgement
    */
-  async generateBASXML(
-    basData: BASData,
-    businessProfile: BusinessProfile
-  ): Promise<string> {
+  async generateBASXML(basData: BASData, businessProfile: BusinessProfile): Promise<string> {
     // Validate data first
     const validation = this.validateBASData(basData);
     if (!validation.isValid) {
-      const errorMessages = validation.errors.map(e => e.message).join('; ');
+      const errorMessages = validation.errors.map((e) => e.message).join('; ');
       throw new Error(`BAS validation failed: ${errorMessages}`);
     }
 
@@ -324,7 +321,7 @@ export class SBRExporter {
 
     // G6 = G1 - G5 (Total sales subject to GST)
     if (g.G6 !== undefined && g.G1 !== undefined) {
-      const g5 = g.G5 || ((g.G2 || 0) + (g.G3 || 0) + (g.G4 || 0));
+      const g5 = g.G5 || (g.G2 || 0) + (g.G3 || 0) + (g.G4 || 0);
       const expectedG6 = g.G1 - g5;
       if (g.G6 !== expectedG6) {
         errors.push({
@@ -359,7 +356,7 @@ export class SBRExporter {
 
     // G16 = G12 - G13 - G14 - G15 (Total purchases subject to GST)
     if (g.G16 !== undefined) {
-      const g12 = g.G12 || ((g.G10 || 0) + (g.G11 || 0));
+      const g12 = g.G12 || (g.G10 || 0) + (g.G11 || 0);
       const expectedG16 = g12 - (g.G13 || 0) - (g.G14 || 0) - (g.G15 || 0);
       if (g.G16 !== expectedG16) {
         errors.push({
@@ -470,7 +467,7 @@ export class SBRExporter {
     // W2 should be reasonable percentage of W1 (typically 15-47%)
     if (payg.W1 > 0 && payg.W2 > 0) {
       const withholdingRate = payg.W2 / payg.W1;
-      if (withholdingRate < 0.10) {
+      if (withholdingRate < 0.1) {
         warnings.push({
           code: 'W2_LOW_RATE',
           label: 'W2',
@@ -478,7 +475,7 @@ export class SBRExporter {
           severity: 'warning',
         });
       }
-      if (withholdingRate > 0.50) {
+      if (withholdingRate > 0.5) {
         warnings.push({
           code: 'W2_HIGH_RATE',
           label: 'W2',
@@ -551,12 +548,7 @@ export class SBRExporter {
     const history = await db
       .select()
       .from(exportHistory)
-      .where(
-        and(
-          eq(exportHistory.userId, userId),
-          eq(exportHistory.exportType, 'sbr_bas')
-        )
-      )
+      .where(and(eq(exportHistory.userId, userId), eq(exportHistory.exportType, 'sbr_bas')))
       .orderBy(desc(exportHistory.createdAt))
       .limit(limit);
 
@@ -597,7 +589,7 @@ export class SBRExporter {
     userId: string,
     basData: BASData,
     businessProfile: BusinessProfile,
-    format: 'xml' | 'csv' | 'pdf'
+    format: 'xml' | 'csv' | 'pdf',
   ): Promise<SBRExportResult> {
     const exportId = crypto.randomUUID();
     const now = new Date();
@@ -692,7 +684,7 @@ export class SBRExporter {
   async loadBASFromDatabase(
     userId: string,
     financialYear: string,
-    quarter: number
+    quarter: number,
   ): Promise<BASData | null> {
     const period = await db
       .select()
@@ -701,8 +693,8 @@ export class SBRExporter {
         and(
           eq(basPeriods.userId, userId),
           eq(basPeriods.financialYear, financialYear),
-          eq(basPeriods.quarter, quarter)
-        )
+          eq(basPeriods.quarter, quarter),
+        ),
       )
       .limit(1);
 
@@ -882,7 +874,9 @@ export class SBRExporter {
   </PAYGInstalmentSection>
 
   <!-- Fuel Tax Credits Section -->
-  ${basData.fuelTaxCredits ? `
+  ${
+    basData.fuelTaxCredits
+      ? `
   <FuelTaxCreditsSection>
     ${basData.fuelTaxCredits['7A'] !== undefined ? `<Label7A>${this.centsToWholeNumber(basData.fuelTaxCredits['7A'])}</Label7A>` : ''}
     ${basData.fuelTaxCredits['7B'] !== undefined ? `<Label7B>${this.centsToWholeNumber(basData.fuelTaxCredits['7B'])}</Label7B>` : ''}
@@ -890,24 +884,34 @@ export class SBRExporter {
     <Label7D>${this.centsToWholeNumber(basData.fuelTaxCredits['7D'])}</Label7D>
     <TotalFuelTaxCredits>${this.centsToWholeNumber(totalFuelTaxCredits)}</TotalFuelTaxCredits>
   </FuelTaxCreditsSection>
-  ` : ''}
+  `
+      : ''
+  }
 
   <!-- Deferred GST Section -->
-  ${basData.deferredGst ? `
+  ${
+    basData.deferredGst
+      ? `
   <DeferredGSTSection>
     <Label7>${this.centsToWholeNumber(basData.deferredGst['7'])}</Label7>
   </DeferredGSTSection>
-  ` : ''}
+  `
+      : ''
+  }
 
   <!-- FBT Instalment Section -->
-  ${basData.fbtInstalment ? `
+  ${
+    basData.fbtInstalment
+      ? `
   <FBTInstalmentSection>
     ${basData.fbtInstalment.F1 !== undefined ? `<F1>${this.centsToWholeNumber(basData.fbtInstalment.F1)}</F1>` : ''}
     ${basData.fbtInstalment.F2 !== undefined ? `<F2>${this.centsToWholeNumber(basData.fbtInstalment.F2)}</F2>` : ''}
     ${basData.fbtInstalment.F3 !== undefined ? `<F3>${this.centsToWholeNumber(basData.fbtInstalment.F3)}</F3>` : ''}
     ${basData.fbtInstalment.F4 !== undefined ? `<F4>${basData.fbtInstalment.F4}</F4>` : ''}
   </FBTInstalmentSection>
-  ` : ''}
+  `
+      : ''
+  }
 
   <!-- Summary -->
   <Summary>
@@ -972,10 +976,18 @@ export class SBRExporter {
 
     // PAYG Withholding
     rows.push(['PAYG Withholding']);
-    rows.push(['W1', 'Total salary, wages and payments', this.formatCurrencyCSV(basData.paygWithholding.W1)]);
+    rows.push([
+      'W1',
+      'Total salary, wages and payments',
+      this.formatCurrencyCSV(basData.paygWithholding.W1),
+    ]);
     rows.push(['W2', 'Amounts withheld', this.formatCurrencyCSV(basData.paygWithholding.W2)]);
     if (basData.paygWithholding.W3) {
-      rows.push(['W3', 'Other amounts withheld', this.formatCurrencyCSV(basData.paygWithholding.W3)]);
+      rows.push([
+        'W3',
+        'Other amounts withheld',
+        this.formatCurrencyCSV(basData.paygWithholding.W3),
+      ]);
     }
     rows.push([]);
 
@@ -996,7 +1008,8 @@ export class SBRExporter {
 
     // Summary
     const totalPaygWithholding = basData.paygWithholding.W4 || basData.paygWithholding.W2;
-    const totalFuelTaxCredits = (basData.fuelTaxCredits?.['7C'] || 0) + (basData.fuelTaxCredits?.['7D'] || 0);
+    const totalFuelTaxCredits =
+      (basData.fuelTaxCredits?.['7C'] || 0) + (basData.fuelTaxCredits?.['7D'] || 0);
     const paygInstalment = basData.paygInstalment['5A'] || 0;
     const totalPayable = netGst + totalPaygWithholding + paygInstalment - totalFuelTaxCredits;
 
@@ -1039,44 +1052,69 @@ export class SBRExporter {
     lines.push(subDivider);
     lines.push('');
     lines.push('Sales');
-    lines.push(`  G1  Total sales (including GST)       ${this.formatCurrencyReport(basData.gstLabels.G1)}`);
-    lines.push(`  G2  Export sales                      ${this.formatCurrencyReport(basData.gstLabels.G2)}`);
-    lines.push(`  G3  Other GST-free sales              ${this.formatCurrencyReport(basData.gstLabels.G3)}`);
+    lines.push(
+      `  G1  Total sales (including GST)       ${this.formatCurrencyReport(basData.gstLabels.G1)}`,
+    );
+    lines.push(
+      `  G2  Export sales                      ${this.formatCurrencyReport(basData.gstLabels.G2)}`,
+    );
+    lines.push(
+      `  G3  Other GST-free sales              ${this.formatCurrencyReport(basData.gstLabels.G3)}`,
+    );
     lines.push('');
     lines.push('Purchases');
-    lines.push(`  G10 Capital purchases                 ${this.formatCurrencyReport(basData.gstLabels.G10)}`);
-    lines.push(`  G11 Non-capital purchases             ${this.formatCurrencyReport(basData.gstLabels.G11)}`);
+    lines.push(
+      `  G10 Capital purchases                 ${this.formatCurrencyReport(basData.gstLabels.G10)}`,
+    );
+    lines.push(
+      `  G11 Non-capital purchases             ${this.formatCurrencyReport(basData.gstLabels.G11)}`,
+    );
     lines.push('');
     lines.push('GST Summary');
-    lines.push(`  1A  GST on sales                      ${this.formatCurrencyReport(basData.gstSummary['1A'])}`);
-    lines.push(`  1B  GST on purchases                  ${this.formatCurrencyReport(basData.gstSummary['1B'])}`);
+    lines.push(
+      `  1A  GST on sales                      ${this.formatCurrencyReport(basData.gstSummary['1A'])}`,
+    );
+    lines.push(
+      `  1B  GST on purchases                  ${this.formatCurrencyReport(basData.gstSummary['1B'])}`,
+    );
     const netGst = (basData.gstSummary['1A'] || 0) - (basData.gstSummary['1B'] || 0);
     lines.push(`      Net GST                           ${this.formatCurrencyReport(netGst)}`);
     lines.push('');
 
     lines.push('PAYG WITHHOLDING');
     lines.push(subDivider);
-    lines.push(`  W1  Total salary, wages and payments  ${this.formatCurrencyReport(basData.paygWithholding.W1)}`);
-    lines.push(`  W2  Amounts withheld                  ${this.formatCurrencyReport(basData.paygWithholding.W2)}`);
+    lines.push(
+      `  W1  Total salary, wages and payments  ${this.formatCurrencyReport(basData.paygWithholding.W1)}`,
+    );
+    lines.push(
+      `  W2  Amounts withheld                  ${this.formatCurrencyReport(basData.paygWithholding.W2)}`,
+    );
     lines.push('');
 
     if (basData.paygInstalment['5A']) {
       lines.push('PAYG INSTALMENT');
       lines.push(subDivider);
-      lines.push(`  5A  PAYG instalment                   ${this.formatCurrencyReport(basData.paygInstalment['5A'])}`);
+      lines.push(
+        `  5A  PAYG instalment                   ${this.formatCurrencyReport(basData.paygInstalment['5A'])}`,
+      );
       lines.push('');
     }
 
     if (basData.fuelTaxCredits?.['7C'] || basData.fuelTaxCredits?.['7D']) {
       lines.push('FUEL TAX CREDITS');
       lines.push(subDivider);
-      lines.push(`  7C  Business use                      ${this.formatCurrencyReport(basData.fuelTaxCredits['7C'])}`);
-      lines.push(`  7D  Other activities                  ${this.formatCurrencyReport(basData.fuelTaxCredits['7D'])}`);
+      lines.push(
+        `  7C  Business use                      ${this.formatCurrencyReport(basData.fuelTaxCredits['7C'])}`,
+      );
+      lines.push(
+        `  7D  Other activities                  ${this.formatCurrencyReport(basData.fuelTaxCredits['7D'])}`,
+      );
       lines.push('');
     }
 
     const totalPaygWithholding = basData.paygWithholding.W4 || basData.paygWithholding.W2;
-    const totalFuelTaxCredits = (basData.fuelTaxCredits?.['7C'] || 0) + (basData.fuelTaxCredits?.['7D'] || 0);
+    const totalFuelTaxCredits =
+      (basData.fuelTaxCredits?.['7C'] || 0) + (basData.fuelTaxCredits?.['7D'] || 0);
     const paygInstalment = basData.paygInstalment['5A'] || 0;
     const totalPayable = netGst + totalPaygWithholding + paygInstalment - totalFuelTaxCredits;
 
@@ -1085,11 +1123,19 @@ export class SBRExporter {
     lines.push(divider);
     lines.push('');
     lines.push(`  Net GST                               ${this.formatCurrencyReport(netGst)}`);
-    lines.push(`  PAYG Withholding                      ${this.formatCurrencyReport(totalPaygWithholding)}`);
-    lines.push(`  PAYG Instalment                       ${this.formatCurrencyReport(paygInstalment)}`);
-    lines.push(`  Fuel Tax Credits                      ${this.formatCurrencyReport(-totalFuelTaxCredits)}`);
+    lines.push(
+      `  PAYG Withholding                      ${this.formatCurrencyReport(totalPaygWithholding)}`,
+    );
+    lines.push(
+      `  PAYG Instalment                       ${this.formatCurrencyReport(paygInstalment)}`,
+    );
+    lines.push(
+      `  Fuel Tax Credits                      ${this.formatCurrencyReport(-totalFuelTaxCredits)}`,
+    );
     lines.push(subDivider);
-    lines.push(`  TOTAL ${totalPayable >= 0 ? 'PAYABLE' : 'REFUND'}                    ${this.formatCurrencyReport(Math.abs(totalPayable))}`);
+    lines.push(
+      `  TOTAL ${totalPayable >= 0 ? 'PAYABLE' : 'REFUND'}                    ${this.formatCurrencyReport(Math.abs(totalPayable))}`,
+    );
     lines.push('');
     lines.push(divider);
     lines.push(`Generated: ${new Date().toISOString()}`);
@@ -1219,23 +1265,25 @@ export class SBRExporter {
       return '';
     }
 
-    return str
-      // Remove null bytes and other control characters (except tab, newline, carriage return)
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-      // Escape XML entities (order matters: & must be first)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;')
-      // Remove or escape any CDATA section attempts
-      .replace(/\]\]>/g, ']]&gt;')
-      // Remove XML declaration attempts
-      .replace(/<\?xml/gi, '&lt;?xml')
-      // Remove DOCTYPE attempts
-      .replace(/<!DOCTYPE/gi, '&lt;!DOCTYPE')
-      // Remove entity declaration attempts
-      .replace(/<!ENTITY/gi, '&lt;!ENTITY');
+    return (
+      str
+        // Remove null bytes and other control characters (except tab, newline, carriage return)
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+        // Escape XML entities (order matters: & must be first)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;')
+        // Remove or escape any CDATA section attempts
+        .replace(/\]\]>/g, ']]&gt;')
+        // Remove XML declaration attempts
+        .replace(/<\?xml/gi, '&lt;?xml')
+        // Remove DOCTYPE attempts
+        .replace(/<!DOCTYPE/gi, '&lt;!DOCTYPE')
+        // Remove entity declaration attempts
+        .replace(/<!ENTITY/gi, '&lt;!ENTITY')
+    );
   }
 
   /**

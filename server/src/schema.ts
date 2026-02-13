@@ -17,20 +17,21 @@ dotenv.config();
 
 const isProduction = process.env.NODE_ENV === 'production';
 const dbUrl = process.env.DATABASE_URL || 'file:sqlite.db';
-const usePostgres = isProduction || dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://');
+const usePostgres =
+  isProduction || dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://');
 
 /** SQLite-compat query builder that adds .get()/.all()/.run() to PG query chains */
 interface SqliteCompatQuery<T = any> {
-    get(): Promise<T | undefined>;
-    all(): Promise<T[]>;
-    run(): Promise<void>;
-    where(...args: any[]): SqliteCompatQuery<T>;
-    set(...args: any[]): SqliteCompatQuery<T>;
-    values(...args: any[]): SqliteCompatQuery<T>;
-    from(...args: any[]): SqliteCompatQuery<T>;
-    leftJoin(...args: any[]): SqliteCompatQuery<T>;
-    orderBy(...args: any[]): SqliteCompatQuery<T>;
-    [key: string]: any;
+  get(): Promise<T | undefined>;
+  all(): Promise<T[]>;
+  run(): Promise<void>;
+  where(...args: any[]): SqliteCompatQuery<T>;
+  set(...args: any[]): SqliteCompatQuery<T>;
+  values(...args: any[]): SqliteCompatQuery<T>;
+  from(...args: any[]): SqliteCompatQuery<T>;
+  leftJoin(...args: any[]): SqliteCompatQuery<T>;
+  orderBy(...args: any[]): SqliteCompatQuery<T>;
+  [key: string]: any;
 }
 
 /**
@@ -38,88 +39,88 @@ interface SqliteCompatQuery<T = any> {
  * and add .get() / .all() / .run() methods that are SQLite-specific.
  */
 function wrapPgDb(pgDb: any): any {
-    const handler: ProxyHandler<any> = {
-        get(target, prop, receiver) {
-            const value = Reflect.get(target, prop, receiver);
-            if (typeof value === 'function') {
-                return function (this: any, ...args: any[]) {
-                    const result = value.apply(target, args);
-                    // Wrap the result in a proxy to add .get()/.all()/.run()
-                    if (result && typeof result === 'object' && typeof result.then === 'function') {
-                        return addSqliteCompat(result);
-                    }
-                    if (result && typeof result === 'object') {
-                        return addSqliteCompat(result);
-                    }
-                    return result;
-                };
-            }
-            return value;
-        },
-    };
-    return new Proxy(pgDb, handler);
+  const handler: ProxyHandler<any> = {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value === 'function') {
+        return function (this: any, ...args: any[]) {
+          const result = value.apply(target, args);
+          // Wrap the result in a proxy to add .get()/.all()/.run()
+          if (result && typeof result === 'object' && typeof result.then === 'function') {
+            return addSqliteCompat(result);
+          }
+          if (result && typeof result === 'object') {
+            return addSqliteCompat(result);
+          }
+          return result;
+        };
+      }
+      return value;
+    },
+  };
+  return new Proxy(pgDb, handler);
 }
 
 function addSqliteCompat(obj: any): any {
-    if (!obj || typeof obj !== 'object') return obj;
-    // Avoid double-wrapping
-    if (obj.__pgWrapped) return obj;
+  if (!obj || typeof obj !== 'object') return obj;
+  // Avoid double-wrapping
+  if (obj.__pgWrapped) return obj;
 
-    return new Proxy(obj, {
-        get(target, prop, receiver) {
-            if (prop === '__pgWrapped') return true;
-            if (prop === 'get') {
-                return async function () {
-                    const rows = await target;
-                    return Array.isArray(rows) ? rows[0] ?? undefined : rows;
-                };
-            }
-            if (prop === 'all') {
-                return async function () {
-                    const rows = await target;
-                    return Array.isArray(rows) ? rows : [rows];
-                };
-            }
-            if (prop === 'run') {
-                return async function () {
-                    return await target;
-                };
-            }
-            const value = Reflect.get(target, prop, receiver);
-            if (typeof value === 'function') {
-                return function (this: any, ...args: any[]) {
-                    const result = value.apply(target, args);
-                    if (result && typeof result === 'object') {
-                        return addSqliteCompat(result);
-                    }
-                    return result;
-                };
-            }
-            return value;
-        },
-    });
+  return new Proxy(obj, {
+    get(target, prop, receiver) {
+      if (prop === '__pgWrapped') return true;
+      if (prop === 'get') {
+        return async function () {
+          const rows = await target;
+          return Array.isArray(rows) ? (rows[0] ?? undefined) : rows;
+        };
+      }
+      if (prop === 'all') {
+        return async function () {
+          const rows = await target;
+          return Array.isArray(rows) ? rows : [rows];
+        };
+      }
+      if (prop === 'run') {
+        return async function () {
+          return await target;
+        };
+      }
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value === 'function') {
+        return function (this: any, ...args: any[]) {
+          const result = value.apply(target, args);
+          if (result && typeof result === 'object') {
+            return addSqliteCompat(result);
+          }
+          return result;
+        };
+      }
+      return value;
+    },
+  });
 }
 
 function createDb() {
-    if (usePostgres) {
-        console.log('[DB] Using PostgreSQL');
-        const pool = new pg.Pool({
-            host: process.env.DB_HOST || '127.0.0.1',
-            port: parseInt(process.env.DB_PORT || '5432'),
-            database: process.env.DB_NAME || 'ai_accountant',
-            user: process.env.DB_USER || 'app_user',
-            password: process.env.DB_PASSWORD,
-            ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
-            max: 20,
-        });
-        const pgDb = drizzlePg(pool);
-        console.log('[DB] PostgreSQL compatibility layer applied (get/all/run via Proxy)');
-        return wrapPgDb(pgDb);
-    } else {
-        console.log('[DB] Using SQLite');
-        const client = createClient({ url: dbUrl });
-        return drizzleSqlite(client);
-    }
+  if (usePostgres) {
+    console.log('[DB] Using PostgreSQL');
+    const pool = new pg.Pool({
+      host: process.env.DB_HOST || '127.0.0.1',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      database: process.env.DB_NAME || 'ai_accountant',
+      user: process.env.DB_USER || 'app_user',
+      password: process.env.DB_PASSWORD,
+      ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
+      max: 20,
+    });
+    const pgDb = drizzlePg(pool);
+    console.log('[DB] PostgreSQL compatibility layer applied (get/all/run via Proxy)');
+    return wrapPgDb(pgDb);
+  } else {
+    console.log('[DB] Using SQLite');
+    const client = createClient({ url: dbUrl });
+    return drizzleSqlite(client);
+  }
 }
 
 export const db = createDb();
@@ -137,10 +138,16 @@ export const users = sqliteTable('users', {
 });
 
 export const userSettings = sqliteTable('user_settings', {
-  userId: text('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
   modelParsingText: text('model_parsing_text').notNull().default('google/gemini-3-flash-preview'),
-  modelParsingVision: text('model_parsing_vision').notNull().default('google/gemini-3-flash-preview'),
-  modelCategorization: text('model_categorization').notNull().default('google/gemini-3-flash-preview'),
+  modelParsingVision: text('model_parsing_vision')
+    .notNull()
+    .default('google/gemini-3-flash-preview'),
+  modelCategorization: text('model_categorization')
+    .notNull()
+    .default('google/gemini-3-flash-preview'),
   modelChat: text('model_chat').notNull().default('google/gemini-3-flash-preview'),
   modelEmbedding: text('model_embedding').notNull().default('openai/text-embedding-3-large'),
 });
@@ -151,7 +158,9 @@ export const userSettings = sqliteTable('user_settings', {
 
 export const accounts = sqliteTable('accounts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   accountNumber: text('account_number').notNull(),
   accountNumberHash: text('account_number_hash').notNull(),
   accountName: text('account_name').notNull(),
@@ -172,7 +181,9 @@ export const accounts = sqliteTable('accounts', {
 
 export const accountBalanceHistory = sqliteTable('account_balance_history', {
   id: text('id').primaryKey(),
-  accountId: text('account_id').notNull().references(() => accounts.id, { onDelete: 'cascade' }),
+  accountId: text('account_id')
+    .notNull()
+    .references(() => accounts.id, { onDelete: 'cascade' }),
   balance: integer('balance').notNull(),
   balanceDate: text('balance_date').notNull(),
   source: text('source').notNull(),
@@ -206,8 +217,12 @@ export const statements = sqliteTable('statements', {
 });
 
 export const statementAccounts = sqliteTable('statement_accounts', {
-  statementId: text('statement_id').primaryKey().references(() => statements.id, { onDelete: 'cascade' }),
-  accountId: text('account_id').notNull().references(() => accounts.id, { onDelete: 'cascade' }),
+  statementId: text('statement_id')
+    .primaryKey()
+    .references(() => statements.id, { onDelete: 'cascade' }),
+  accountId: text('account_id')
+    .notNull()
+    .references(() => accounts.id, { onDelete: 'cascade' }),
 });
 
 // ============================================================================
@@ -255,9 +270,15 @@ export const transactionHistory = sqliteTable('transaction_history', {
 
 export const transferLinks = sqliteTable('transfer_links', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  sourceTransactionId: text('source_transaction_id').notNull().references(() => transactions.id, { onDelete: 'cascade' }),
-  destinationTransactionId: text('destination_transaction_id').notNull().references(() => transactions.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  sourceTransactionId: text('source_transaction_id')
+    .notNull()
+    .references(() => transactions.id, { onDelete: 'cascade' }),
+  destinationTransactionId: text('destination_transaction_id')
+    .notNull()
+    .references(() => transactions.id, { onDelete: 'cascade' }),
   sourceAccountId: text('source_account_id').references(() => accounts.id),
   destinationAccountId: text('destination_account_id').references(() => accounts.id),
   amount: integer('amount').notNull(),
@@ -273,7 +294,9 @@ export const transferLinks = sqliteTable('transfer_links', {
 
 export const merchantMemory = sqliteTable('merchant_memory', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   merchantPattern: text('merchant_pattern').notNull(),
   merchantDisplayName: text('merchant_display_name'),
   category: text('category').notNull(),
@@ -286,8 +309,12 @@ export const merchantMemory = sqliteTable('merchant_memory', {
 
 export const pendingCategorization = sqliteTable('pending_categorization', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  transactionId: text('transaction_id').notNull().references(() => transactions.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  transactionId: text('transaction_id')
+    .notNull()
+    .references(() => transactions.id, { onDelete: 'cascade' }),
   suggestedCategory: text('suggested_category'),
   suggestedConfidence: real('suggested_confidence'),
   aiReasoning: text('ai_reasoning'),
@@ -304,8 +331,12 @@ export const pendingCategorization = sqliteTable('pending_categorization', {
 
 export const reconciliationAlerts = sqliteTable('reconciliation_alerts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  accountId: text('account_id').notNull().references(() => accounts.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  accountId: text('account_id')
+    .notNull()
+    .references(() => accounts.id, { onDelete: 'cascade' }),
   alertType: text('alert_type').notNull(),
   expectedValue: integer('expected_value'),
   actualValue: integer('actual_value'),
@@ -324,7 +355,9 @@ export const reconciliationAlerts = sqliteTable('reconciliation_alerts', {
 
 export const businessProfiles = sqliteTable('business_profiles', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   businessName: text('business_name').notNull(),
   abn: text('abn'),
   entityType: text('entity_type').notNull().default('sole_trader'),
@@ -342,7 +375,9 @@ export const businessProfiles = sqliteTable('business_profiles', {
 
 export const basPeriods = sqliteTable('bas_periods', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   financialYear: text('financial_year').notNull(),
   quarter: integer('quarter').notNull(),
   periodType: text('period_type').notNull().default('quarterly'),
@@ -360,7 +395,9 @@ export const basPeriods = sqliteTable('bas_periods', {
 
 export const basCalculations = sqliteTable('bas_calculations', {
   id: text('id').primaryKey(),
-  basPeriodId: text('bas_period_id').notNull().references(() => basPeriods.id, { onDelete: 'cascade' }),
+  basPeriodId: text('bas_period_id')
+    .notNull()
+    .references(() => basPeriods.id, { onDelete: 'cascade' }),
   periodId: text('period_id').references(() => basPeriods.id, { onDelete: 'cascade' }),
   label: text('label'),
   value: integer('value').default(0),
@@ -403,7 +440,9 @@ export const taxBrackets = sqliteTable('tax_brackets', {
 
 export const deductions = sqliteTable('deductions', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   taxYear: text('tax_year').notNull(),
   financialYear: text('financial_year'),
   category: text('category').notNull(),
@@ -418,7 +457,9 @@ export const deductions = sqliteTable('deductions', {
 
 export const cgtAssets = sqliteTable('cgt_assets', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   assetName: text('asset_name').notNull(),
   assetType: text('asset_type').notNull(),
   quantity: real('quantity').default(1),
@@ -433,8 +474,12 @@ export const cgtAssets = sqliteTable('cgt_assets', {
 
 export const cgtEvents = sqliteTable('cgt_events', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  assetId: text('asset_id').notNull().references(() => cgtAssets.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  assetId: text('asset_id')
+    .notNull()
+    .references(() => cgtAssets.id, { onDelete: 'cascade' }),
   taxYear: text('tax_year').notNull(),
   eventType: text('event_type').notNull(),
   eventDate: text('event_date').notNull(),
@@ -452,7 +497,9 @@ export const cgtEvents = sqliteTable('cgt_events', {
 
 export const depreciableAssets = sqliteTable('depreciable_assets', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   assetName: text('asset_name').notNull(),
   assetCategory: text('asset_category').notNull(),
   purchaseDate: text('purchase_date').notNull(),
@@ -472,7 +519,9 @@ export const depreciableAssets = sqliteTable('depreciable_assets', {
 
 export const depreciationSchedule = sqliteTable('depreciation_schedule', {
   id: text('id').primaryKey(),
-  assetId: text('asset_id').notNull().references(() => depreciableAssets.id, { onDelete: 'cascade' }),
+  assetId: text('asset_id')
+    .notNull()
+    .references(() => depreciableAssets.id, { onDelete: 'cascade' }),
   financialYear: text('financial_year').notNull(),
   openingValue: integer('opening_value').notNull(),
   depreciationAmount: integer('depreciation_amount').notNull(),
@@ -482,7 +531,9 @@ export const depreciationSchedule = sqliteTable('depreciation_schedule', {
 
 export const taxYearSummary = sqliteTable('tax_year_summary', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   taxYear: text('tax_year').notNull(),
   financialYear: text('financial_year'),
   grossIncome: integer('gross_income').default(0),
@@ -519,7 +570,9 @@ export const auditLog = sqliteTable('audit_log', {
 
 export const sessions = sqliteTable('sessions', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   refreshTokenHash: text('refresh_token_hash').notNull(),
   deviceFingerprint: text('device_fingerprint'),
   ipAddress: text('ip_address'),
@@ -536,7 +589,9 @@ export const sessions = sqliteTable('sessions', {
 export const teams = sqliteTable('teams', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
-  ownerId: text('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  ownerId: text('owner_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   description: text('description'),
   settings: text('settings'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
@@ -545,19 +600,27 @@ export const teams = sqliteTable('teams', {
 
 export const teamMembers = sqliteTable('team_members', {
   id: text('id').primaryKey(),
-  teamId: text('team_id').notNull().references(() => teams.id, { onDelete: 'cascade' }),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  teamId: text('team_id')
+    .notNull()
+    .references(() => teams.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   role: text('role').notNull().default('viewer'),
   joinedAt: text('joined_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const teamInvitations = sqliteTable('team_invitations', {
   id: text('id').primaryKey(),
-  teamId: text('team_id').notNull().references(() => teams.id, { onDelete: 'cascade' }),
+  teamId: text('team_id')
+    .notNull()
+    .references(() => teams.id, { onDelete: 'cascade' }),
   email: text('email').notNull(),
   role: text('role').notNull().default('viewer'),
   token: text('token').notNull().unique(),
-  invitedBy: text('invited_by').notNull().references(() => users.id),
+  invitedBy: text('invited_by')
+    .notNull()
+    .references(() => users.id),
   status: text('status').notNull().default('pending'),
   expiresAt: text('expires_at').notNull(),
   acceptedAt: text('accepted_at'),
@@ -566,7 +629,9 @@ export const teamInvitations = sqliteTable('team_invitations', {
 
 export const subscriptions = sqliteTable('subscriptions', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   stripeCustomerId: text('stripe_customer_id'),
   stripeSubscriptionId: text('stripe_subscription_id'),
   plan: text('plan').notNull().default('free'),
@@ -584,7 +649,9 @@ export const subscriptions = sqliteTable('subscriptions', {
 
 export const exportHistory = sqliteTable('export_history', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   exportType: text('export_type').notNull(),
   format: text('format').notNull(),
   parameters: text('parameters'),
@@ -645,7 +712,9 @@ export const parserAccuracyAggregates = sqliteTable('parser_accuracy_aggregates'
 
 export const parserFeedback = sqliteTable('parser_feedback', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   statementId: text('statement_id').references(() => statements.id, { onDelete: 'set null' }),
   transactionId: text('transaction_id').references(() => transactions.id, { onDelete: 'set null' }),
   feedbackType: text('feedback_type').notNull(),
@@ -668,7 +737,9 @@ export const parserFeedback = sqliteTable('parser_feedback', {
 
 export const chartOfAccounts = sqliteTable('chart_of_accounts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   code: text('code').notNull(),
   name: text('name').notNull(),
   type: text('type').notNull(),
@@ -686,7 +757,9 @@ export const chartOfAccounts = sqliteTable('chart_of_accounts', {
 
 export const journalEntries = sqliteTable('journal_entries', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   entryDate: text('entry_date').notNull(),
   reference: text('reference'),
   description: text('description').notNull(),
@@ -699,8 +772,12 @@ export const journalEntries = sqliteTable('journal_entries', {
 
 export const journalEntryLines = sqliteTable('journal_entry_lines', {
   id: text('id').primaryKey(),
-  entryId: text('entry_id').notNull().references(() => journalEntries.id, { onDelete: 'cascade' }),
-  accountId: text('account_id').notNull().references(() => chartOfAccounts.id),
+  entryId: text('entry_id')
+    .notNull()
+    .references(() => journalEntries.id, { onDelete: 'cascade' }),
+  accountId: text('account_id')
+    .notNull()
+    .references(() => chartOfAccounts.id),
   debit: integer('debit').default(0),
   credit: integer('credit').default(0),
   description: text('description'),
@@ -712,7 +789,9 @@ export const journalEntryLines = sqliteTable('journal_entry_lines', {
 
 export const accountingPeriods = sqliteTable('accounting_periods', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   startDate: text('start_date').notNull(),
   endDate: text('end_date').notNull(),
@@ -723,8 +802,12 @@ export const accountingPeriods = sqliteTable('accounting_periods', {
 
 export const accountBalances = sqliteTable('account_balances', {
   id: text('id').primaryKey(),
-  chartAccountId: text('chart_account_id').notNull().references(() => chartOfAccounts.id, { onDelete: 'cascade' }),
-  periodId: text('period_id').notNull().references(() => accountingPeriods.id, { onDelete: 'cascade' }),
+  chartAccountId: text('chart_account_id')
+    .notNull()
+    .references(() => chartOfAccounts.id, { onDelete: 'cascade' }),
+  periodId: text('period_id')
+    .notNull()
+    .references(() => accountingPeriods.id, { onDelete: 'cascade' }),
   openingBalance: integer('opening_balance').notNull().default(0),
   debits: integer('debits').notNull().default(0),
   credits: integer('credits').notNull().default(0),
@@ -738,7 +821,9 @@ export const accountBalances = sqliteTable('account_balances', {
 
 export const ragNamespaces = sqliteTable('rag_namespaces', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   chunkCount: integer('chunk_count').default(0),
@@ -754,8 +839,12 @@ export const ragNamespaces = sqliteTable('rag_namespaces', {
 
 export const ragChunks = sqliteTable('rag_chunks', {
   id: text('id').primaryKey(),
-  namespaceId: text('namespace_id').notNull().references(() => ragNamespaces.id, { onDelete: 'cascade' }),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  namespaceId: text('namespace_id')
+    .notNull()
+    .references(() => ragNamespaces.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   content: text('content').notNull(),
   contentHash: text('content_hash').notNull(),
   chunkType: text('chunk_type').notNull(),
@@ -777,8 +866,12 @@ export const ragChunks = sqliteTable('rag_chunks', {
 
 export const ragDocuments = sqliteTable('rag_documents', {
   id: text('id').primaryKey(),
-  namespaceId: text('namespace_id').notNull().references(() => ragNamespaces.id, { onDelete: 'cascade' }),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  namespaceId: text('namespace_id')
+    .notNull()
+    .references(() => ragNamespaces.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   sourceType: text('source_type').notNull(),
   sourceId: text('source_id'),
@@ -792,9 +885,13 @@ export const ragDocuments = sqliteTable('rag_documents', {
 
 export const ragCitations = sqliteTable('rag_citations', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   queryId: text('query_id').notNull(),
-  chunkId: text('chunk_id').notNull().references(() => ragChunks.id, { onDelete: 'cascade' }),
+  chunkId: text('chunk_id')
+    .notNull()
+    .references(() => ragChunks.id, { onDelete: 'cascade' }),
   relevanceScore: real('relevance_score'),
   usedInResponse: integer('used_in_response', { mode: 'boolean' }).default(false),
   documentId: text('document_id'),
@@ -838,7 +935,9 @@ export const capitalLosses = sqliteTable('capital_losses', {
 
 export const uploadQueue = sqliteTable('upload_queue', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   batchId: text('batch_id').notNull(),
   filename: text('filename').notNull(),
   originalName: text('original_name').notNull(),
@@ -895,7 +994,9 @@ export const savedCharts = sqliteTable('saved_charts', {
 
 export const cogneeUserAccounts = sqliteTable('cognee_user_accounts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   cogneeEmail: text('cognee_email').notNull(),
   cogneeRefreshToken: text('cognee_refresh_token'), // Encrypted refresh token, NOT password (D02 CRIT-03)
   cogneeUserId: text('cognee_user_id'),
@@ -908,7 +1009,9 @@ export const cogneeUserAccounts = sqliteTable('cognee_user_accounts', {
 
 export const cogneeSessions = sqliteTable('cognee_sessions', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   sessionType: text('session_type').notNull().default('chat'),
   cogneeSessionId: text('cognee_session_id'),
   state: text('state').notNull().default('active'),
@@ -992,7 +1095,9 @@ export const agentSessions = sqliteTable('agent_sessions', {
 
 export const agentMutations = sqliteTable('agent_mutations', {
   id: text('id').primaryKey(),
-  sessionId: text('session_id').notNull().references(() => agentSessions.id),
+  sessionId: text('session_id')
+    .notNull()
+    .references(() => agentSessions.id),
   agentType: text('agent_type').notNull(),
   mutationType: text('mutation_type').notNull(),
   targetTable: text('target_table').notNull(),
@@ -1003,7 +1108,9 @@ export const agentMutations = sqliteTable('agent_mutations', {
   description: text('description').notNull(),
   status: text('status').notNull().default('proposed'),
   confidence: real('confidence'),
-  requiresConfirmation: integer('requires_confirmation', { mode: 'boolean' }).notNull().default(true),
+  requiresConfirmation: integer('requires_confirmation', { mode: 'boolean' })
+    .notNull()
+    .default(true),
   confirmedAt: text('confirmed_at'),
   executedAt: text('executed_at'),
   rejectedAt: text('rejected_at'),
@@ -1053,8 +1160,12 @@ export const tenants = sqliteTable('tenants', {
 
 export const tenantMembers = sqliteTable('tenant_members', {
   id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   role: text('role').notNull().default('viewer'),
   displayName: text('display_name'),
   isPrimaryContact: integer('is_primary_contact', { mode: 'boolean' }).notNull().default(false),
@@ -1067,10 +1178,14 @@ export const tenantMembers = sqliteTable('tenant_members', {
 
 export const tenantInvitations = sqliteTable('tenant_invitations', {
   id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
   email: text('email').notNull(),
   role: text('role').notNull().default('viewer'),
-  invitedBy: text('invited_by').notNull().references(() => users.id),
+  invitedBy: text('invited_by')
+    .notNull()
+    .references(() => users.id),
   token: text('token').notNull().unique(),
   status: text('status').notNull().default('pending'),
   expiresAt: text('expires_at').notNull(),
@@ -1090,9 +1205,13 @@ export const permissions = sqliteTable('permissions', {
 
 export const rolePermissions = sqliteTable('role_permissions', {
   id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
   role: text('role').notNull(),
-  permissionId: text('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  permissionId: text('permission_id')
+    .notNull()
+    .references(() => permissions.id, { onDelete: 'cascade' }),
   grantedBy: text('granted_by').references(() => users.id),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
 });
@@ -1118,8 +1237,12 @@ export const subscriptionPlans = sqliteTable('subscription_plans', {
 
 export const subscriptionHistory = sqliteTable('subscription_history', {
   id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
-  planId: text('plan_id').notNull().references(() => subscriptionPlans.id),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
+  planId: text('plan_id')
+    .notNull()
+    .references(() => subscriptionPlans.id),
   status: text('status').notNull().default('active'),
   billingCycle: text('billing_cycle').notNull().default('monthly'),
   currentPeriodStart: text('current_period_start').notNull(),
@@ -1128,14 +1251,18 @@ export const subscriptionHistory = sqliteTable('subscription_history', {
   cancelledAt: text('cancelled_at'),
   trialEnd: text('trial_end'),
   paymentMethodJson: text('payment_method_json'),
-  usageJson: text('usage_json').default('{"members":0,"accounts":0,"transactions":0,"aiQueries":0,"storageMb":0}'),
+  usageJson: text('usage_json').default(
+    '{"members":0,"accounts":0,"transactions":0,"aiQueries":0,"storageMb":0}',
+  ),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
 });
 
 export const apiRateLimits = sqliteTable('api_rate_limits', {
   id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
   endpointPattern: text('endpoint_pattern').notNull(),
   requestsPerMinute: integer('requests_per_minute').notNull().default(60),
   requestsPerHour: integer('requests_per_hour').notNull().default(1000),
@@ -1152,7 +1279,9 @@ export const apiRateLimits = sqliteTable('api_rate_limits', {
 
 export const ownerEquityEvents = sqliteTable('owner_equity_events', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
   transactionId: text('transaction_id').references(() => transactions.id, { onDelete: 'set null' }),
   eventType: text('event_type').notNull(),
@@ -1181,7 +1310,9 @@ export const economicDataCache = sqliteTable('economic_data_cache', {
 export const reportSnapshots = sqliteTable('report_snapshots', {
   id: text('id').primaryKey(),
   templateId: text('template_id').notNull(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   reportType: text('report_type').notNull(),
   periodStart: text('period_start').notNull(),
   periodEnd: text('period_end').notNull(),
@@ -1193,7 +1324,9 @@ export const reportSnapshots = sqliteTable('report_snapshots', {
 
 export const budgets = sqliteTable('budgets', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
   name: text('name').notNull(),
   budgetType: text('budget_type').notNull(),
@@ -1209,7 +1342,9 @@ export const budgets = sqliteTable('budgets', {
 
 export const budgetLines = sqliteTable('budget_lines', {
   id: text('id').primaryKey(),
-  budgetId: text('budget_id').notNull().references(() => budgets.id, { onDelete: 'cascade' }),
+  budgetId: text('budget_id')
+    .notNull()
+    .references(() => budgets.id, { onDelete: 'cascade' }),
   category: text('category').notNull(),
   subcategory: text('subcategory'),
   period: text('period').notNull(),
@@ -1220,7 +1355,9 @@ export const budgetLines = sqliteTable('budget_lines', {
 
 export const budgetVsActual = sqliteTable('budget_vs_actual', {
   id: text('id').primaryKey(),
-  budgetLineId: text('budget_line_id').notNull().references(() => budgetLines.id, { onDelete: 'cascade' }),
+  budgetLineId: text('budget_line_id')
+    .notNull()
+    .references(() => budgetLines.id, { onDelete: 'cascade' }),
   actualAmount: real('actual_amount').notNull().default(0),
   varianceAmount: real('variance_amount').notNull().default(0),
   variancePercent: real('variance_percent').default(0),
@@ -1230,7 +1367,9 @@ export const budgetVsActual = sqliteTable('budget_vs_actual', {
 
 export const forecastScenarios = sqliteTable('forecast_scenarios', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   scenarioType: text('scenario_type').notNull(),
   basePeriodStart: text('base_period_start').notNull(),
@@ -1244,7 +1383,9 @@ export const forecastScenarios = sqliteTable('forecast_scenarios', {
 
 export const forecastPeriods = sqliteTable('forecast_periods', {
   id: text('id').primaryKey(),
-  scenarioId: text('scenario_id').notNull().references(() => forecastScenarios.id, { onDelete: 'cascade' }),
+  scenarioId: text('scenario_id')
+    .notNull()
+    .references(() => forecastScenarios.id, { onDelete: 'cascade' }),
   period: text('period').notNull(),
   category: text('category').notNull(),
   forecastAmount: real('forecast_amount').notNull(),
@@ -1255,7 +1396,9 @@ export const forecastPeriods = sqliteTable('forecast_periods', {
 
 export const kpiMetrics = sqliteTable('kpi_metrics', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   metricName: text('metric_name').notNull(),
   metricValue: real('metric_value').notNull(),
   period: text('period').notNull(),
@@ -1271,7 +1414,9 @@ export const kpiMetrics = sqliteTable('kpi_metrics', {
 
 export const ocrDocuments = sqliteTable('ocr_documents', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
   fileName: text('file_name').notNull(),
   filePath: text('file_path').notNull(),
@@ -1298,7 +1443,9 @@ export const ocrDocuments = sqliteTable('ocr_documents', {
 
 export const ocrLineItems = sqliteTable('ocr_line_items', {
   id: text('id').primaryKey(),
-  documentId: text('document_id').notNull().references(() => ocrDocuments.id, { onDelete: 'cascade' }),
+  documentId: text('document_id')
+    .notNull()
+    .references(() => ocrDocuments.id, { onDelete: 'cascade' }),
   lineNumber: integer('line_number').notNull(),
   description: text('description').notNull(),
   quantity: real('quantity').default(1),
@@ -1313,7 +1460,9 @@ export const ocrLineItems = sqliteTable('ocr_line_items', {
 
 export const paymentMatchRules = sqliteTable('payment_match_rules', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   ruleType: text('rule_type').notNull(),
   vendorPattern: text('vendor_pattern'),
@@ -1332,8 +1481,12 @@ export const paymentMatchRules = sqliteTable('payment_match_rules', {
 
 export const paymentMatches = sqliteTable('payment_matches', {
   id: text('id').primaryKey(),
-  documentId: text('document_id').notNull().references(() => ocrDocuments.id, { onDelete: 'cascade' }),
-  transactionId: text('transaction_id').notNull().references(() => transactions.id, { onDelete: 'cascade' }),
+  documentId: text('document_id')
+    .notNull()
+    .references(() => ocrDocuments.id, { onDelete: 'cascade' }),
+  transactionId: text('transaction_id')
+    .notNull()
+    .references(() => transactions.id, { onDelete: 'cascade' }),
   ruleId: text('rule_id').references(() => paymentMatchRules.id, { onDelete: 'set null' }),
   matchScore: real('match_score').notNull(),
   matchMethod: text('match_method').notNull(),
@@ -1348,8 +1501,12 @@ export const paymentMatches = sqliteTable('payment_matches', {
 
 export const documentQueue = sqliteTable('document_queue', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  documentId: text('document_id').notNull().references(() => ocrDocuments.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  documentId: text('document_id')
+    .notNull()
+    .references(() => ocrDocuments.id, { onDelete: 'cascade' }),
   action: text('action').notNull(),
   priority: integer('priority').default(100),
   status: text('status').notNull().default('queued'),
@@ -1368,7 +1525,9 @@ export const documentQueue = sqliteTable('document_queue', {
 
 export const cashFlowForecasts = sqliteTable('cash_flow_forecasts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
   accountId: text('account_id').references(() => accounts.id),
   name: text('name').notNull(),
   forecastType: text('forecast_type').notNull(),
@@ -1385,7 +1544,9 @@ export const cashFlowForecasts = sqliteTable('cash_flow_forecasts', {
 
 export const cashFlowForecastPeriods = sqliteTable('cash_flow_forecast_periods', {
   id: text('id').primaryKey(),
-  forecastId: text('forecast_id').notNull().references(() => cashFlowForecasts.id, { onDelete: 'cascade' }),
+  forecastId: text('forecast_id')
+    .notNull()
+    .references(() => cashFlowForecasts.id, { onDelete: 'cascade' }),
   periodStart: text('period_start').notNull(),
   periodEnd: text('period_end').notNull(),
   predictedInflow: real('predicted_inflow').notNull().default(0),
@@ -1404,7 +1565,9 @@ export const cashFlowForecastPeriods = sqliteTable('cash_flow_forecast_periods',
 
 export const anomalyAlerts = sqliteTable('anomaly_alerts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
   accountId: text('account_id').references(() => accounts.id),
   transactionId: text('transaction_id').references(() => transactions.id),
   alertType: text('alert_type').notNull(),
@@ -1420,7 +1583,9 @@ export const anomalyAlerts = sqliteTable('anomaly_alerts', {
 
 export const complianceChecks = sqliteTable('compliance_checks', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
   obligationType: text('obligation_type').notNull(),
   period: text('period').notNull(),
   dueDate: text('due_date').notNull(),
@@ -1437,7 +1602,9 @@ export const complianceChecks = sqliteTable('compliance_checks', {
 
 export const complianceSchedules = sqliteTable('compliance_schedules', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
   obligationType: text('obligation_type').notNull(),
   frequency: text('frequency').notNull(),
   baseDueDay: integer('base_due_day').notNull(),
@@ -1531,7 +1698,9 @@ export const moduleConnections = sqliteTable('module_connections', {
 
 export const suppliers = sqliteTable('suppliers', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   businessName: text('business_name').notNull(),
   contactName: text('contact_name'),
   email: text('email'),
@@ -1549,8 +1718,12 @@ export const suppliers = sqliteTable('suppliers', {
 
 export const bills = sqliteTable('bills', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  supplierId: text('supplier_id').notNull().references(() => suppliers.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  supplierId: text('supplier_id')
+    .notNull()
+    .references(() => suppliers.id),
   billNumber: text('bill_number'),
   status: text('status').notNull().default('draft'),
   issueDate: text('issue_date').notNull(),
@@ -1568,7 +1741,9 @@ export const bills = sqliteTable('bills', {
 
 export const billLines = sqliteTable('bill_lines', {
   id: text('id').primaryKey(),
-  billId: text('bill_id').notNull().references(() => bills.id, { onDelete: 'cascade' }),
+  billId: text('bill_id')
+    .notNull()
+    .references(() => bills.id, { onDelete: 'cascade' }),
   description: text('description').notNull(),
   quantity: real('quantity').notNull().default(1),
   unitPrice: integer('unit_price').notNull().default(0),
@@ -1581,7 +1756,9 @@ export const billLines = sqliteTable('bill_lines', {
 
 export const billPayments = sqliteTable('bill_payments', {
   id: text('id').primaryKey(),
-  billId: text('bill_id').notNull().references(() => bills.id),
+  billId: text('bill_id')
+    .notNull()
+    .references(() => bills.id),
   paymentDate: text('payment_date').notNull(),
   amount: integer('amount').notNull(),
   paymentMethod: text('payment_method'),
@@ -1593,8 +1770,12 @@ export const billPayments = sqliteTable('bill_payments', {
 
 export const purchaseOrders = sqliteTable('purchase_orders', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  supplierId: text('supplier_id').notNull().references(() => suppliers.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  supplierId: text('supplier_id')
+    .notNull()
+    .references(() => suppliers.id),
   poNumber: text('po_number').notNull().unique(),
   status: text('status').notNull().default('draft'),
   issueDate: text('issue_date').notNull(),
@@ -1609,7 +1790,9 @@ export const purchaseOrders = sqliteTable('purchase_orders', {
 
 export const poLines = sqliteTable('po_lines', {
   id: text('id').primaryKey(),
-  purchaseOrderId: text('purchase_order_id').notNull().references(() => purchaseOrders.id, { onDelete: 'cascade' }),
+  purchaseOrderId: text('purchase_order_id')
+    .notNull()
+    .references(() => purchaseOrders.id, { onDelete: 'cascade' }),
   description: text('description').notNull(),
   quantity: real('quantity').notNull().default(1),
   unitPrice: integer('unit_price').notNull().default(0),
@@ -1619,7 +1802,9 @@ export const poLines = sqliteTable('po_lines', {
 
 export const poReceipts = sqliteTable('po_receipts', {
   id: text('id').primaryKey(),
-  purchaseOrderId: text('purchase_order_id').notNull().references(() => purchaseOrders.id),
+  purchaseOrderId: text('purchase_order_id')
+    .notNull()
+    .references(() => purchaseOrders.id),
   receiptDate: text('receipt_date').notNull(),
   receivedBy: text('received_by').references(() => users.id),
   notes: text('notes'),
@@ -1628,14 +1813,20 @@ export const poReceipts = sqliteTable('po_receipts', {
 
 export const poReceiptLines = sqliteTable('po_receipt_lines', {
   id: text('id').primaryKey(),
-  receiptId: text('receipt_id').notNull().references(() => poReceipts.id, { onDelete: 'cascade' }),
-  poLineId: text('po_line_id').notNull().references(() => poLines.id),
+  receiptId: text('receipt_id')
+    .notNull()
+    .references(() => poReceipts.id, { onDelete: 'cascade' }),
+  poLineId: text('po_line_id')
+    .notNull()
+    .references(() => poLines.id),
   quantityReceived: real('quantity_received').notNull(),
 });
 
 export const supplierPaymentRuns = sqliteTable('supplier_payment_runs', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   paymentDate: text('payment_date').notNull(),
   status: text('status').notNull().default('draft'),
   totalAmount: integer('total_amount').notNull().default(0),
@@ -1645,8 +1836,12 @@ export const supplierPaymentRuns = sqliteTable('supplier_payment_runs', {
 
 export const supplierPaymentRunItems = sqliteTable('supplier_payment_run_items', {
   id: text('id').primaryKey(),
-  paymentRunId: text('payment_run_id').notNull().references(() => supplierPaymentRuns.id, { onDelete: 'cascade' }),
-  billId: text('bill_id').notNull().references(() => bills.id),
+  paymentRunId: text('payment_run_id')
+    .notNull()
+    .references(() => supplierPaymentRuns.id, { onDelete: 'cascade' }),
+  billId: text('bill_id')
+    .notNull()
+    .references(() => bills.id),
   amount: integer('amount').notNull(),
 });
 
@@ -1656,8 +1851,12 @@ export const supplierPaymentRunItems = sqliteTable('supplier_payment_run_items',
 
 export const pushSubscriptions = sqliteTable('push_subscriptions', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
   endpoint: text('endpoint').notNull().unique(),
   keysJson: text('keys_json').notNull(),
   userAgent: text('user_agent'),
@@ -1671,8 +1870,12 @@ export const pushSubscriptions = sqliteTable('push_subscriptions', {
 
 export const notificationPreferences = sqliteTable('notification_preferences', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
   transactionAlerts: integer('transaction_alerts', { mode: 'boolean' }).notNull().default(true),
   basReminders: integer('bas_reminders', { mode: 'boolean' }).notNull().default(true),
   budgetAlerts: integer('budget_alerts', { mode: 'boolean' }).notNull().default(true),
@@ -1681,7 +1884,9 @@ export const notificationPreferences = sqliteTable('notification_preferences', {
   syncNotifications: integer('sync_notifications', { mode: 'boolean' }).notNull().default(false),
   teamNotifications: integer('team_notifications', { mode: 'boolean' }).notNull().default(true),
   systemNotifications: integer('system_notifications', { mode: 'boolean' }).notNull().default(true),
-  largeTransactionThresholdCents: integer('large_transaction_threshold_cents').notNull().default(100000),
+  largeTransactionThresholdCents: integer('large_transaction_threshold_cents')
+    .notNull()
+    .default(100000),
   budgetAlertThresholdPercent: integer('budget_alert_threshold_percent').notNull().default(80),
   pushEnabled: integer('push_enabled', { mode: 'boolean' }).notNull().default(true),
   emailEnabled: integer('email_enabled', { mode: 'boolean' }).notNull().default(false),
@@ -1694,8 +1899,12 @@ export const notificationPreferences = sqliteTable('notification_preferences', {
 
 export const offlineSyncLog = sqliteTable('offline_sync_log', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id')
+    .notNull()
+    .references(() => tenants.id, { onDelete: 'cascade' }),
   deviceId: text('device_id').notNull(),
   operation: text('operation').notNull(),
   resourceType: text('resource_type').notNull(),
@@ -1718,7 +1927,9 @@ export const offlineSyncLog = sqliteTable('offline_sync_log', {
 
 export const customers = sqliteTable('customers', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   businessName: text('business_name').notNull(),
   contactName: text('contact_name'),
   email: text('email'),
@@ -1737,7 +1948,9 @@ export const customers = sqliteTable('customers', {
 
 export const customerContacts = sqliteTable('customer_contacts', {
   id: text('id').primaryKey(),
-  customerId: text('customer_id').notNull().references(() => customers.id, { onDelete: 'cascade' }),
+  customerId: text('customer_id')
+    .notNull()
+    .references(() => customers.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   email: text('email'),
   phone: text('phone'),
@@ -1748,8 +1961,12 @@ export const customerContacts = sqliteTable('customer_contacts', {
 
 export const invoices = sqliteTable('invoices', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  customerId: text('customer_id').notNull().references(() => customers.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  customerId: text('customer_id')
+    .notNull()
+    .references(() => customers.id),
   invoiceNumber: text('invoice_number').notNull(),
   type: text('type').notNull().default('tax_invoice'),
   status: text('status').notNull().default('draft'),
@@ -1770,7 +1987,9 @@ export const invoices = sqliteTable('invoices', {
 
 export const invoiceLines = sqliteTable('invoice_lines', {
   id: text('id').primaryKey(),
-  invoiceId: text('invoice_id').notNull().references(() => invoices.id, { onDelete: 'cascade' }),
+  invoiceId: text('invoice_id')
+    .notNull()
+    .references(() => invoices.id, { onDelete: 'cascade' }),
   description: text('description').notNull(),
   quantity: real('quantity').notNull().default(1),
   unitPrice: integer('unit_price').notNull().default(0),
@@ -1783,7 +2002,9 @@ export const invoiceLines = sqliteTable('invoice_lines', {
 
 export const invoiceNumberSequences = sqliteTable('invoice_number_sequences', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   prefix: text('prefix').notNull().default('INV-'),
   nextNumber: integer('next_number').notNull().default(1),
   format: text('format').notNull().default('{prefix}{number:06d}'),
@@ -1791,7 +2012,9 @@ export const invoiceNumberSequences = sqliteTable('invoice_number_sequences', {
 
 export const invoicePayments = sqliteTable('invoice_payments', {
   id: text('id').primaryKey(),
-  invoiceId: text('invoice_id').notNull().references(() => invoices.id, { onDelete: 'cascade' }),
+  invoiceId: text('invoice_id')
+    .notNull()
+    .references(() => invoices.id, { onDelete: 'cascade' }),
   paymentDate: text('payment_date').notNull(),
   amount: integer('amount').notNull(),
   paymentMethod: text('payment_method'),
@@ -1813,7 +2036,9 @@ export * from './db/cdr-schema.js';
 
 export const employees = sqliteTable('employees', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   email: text('email'),
@@ -1831,7 +2056,9 @@ export const employees = sqliteTable('employees', {
 
 export const employeeBankDetails = sqliteTable('employee_bank_details', {
   id: text('id').primaryKey(),
-  employeeId: text('employee_id').notNull().references(() => employees.id, { onDelete: 'cascade' }),
+  employeeId: text('employee_id')
+    .notNull()
+    .references(() => employees.id, { onDelete: 'cascade' }),
   bsb: text('bsb').notNull(), // AES-256-GCM encrypted
   accountNumber: text('account_number').notNull(), // AES-256-GCM encrypted
   accountName: text('account_name').notNull(),
@@ -1842,7 +2069,9 @@ export const employeeBankDetails = sqliteTable('employee_bank_details', {
 
 export const employeeSuperFunds = sqliteTable('employee_super_funds', {
   id: text('id').primaryKey(),
-  employeeId: text('employee_id').notNull().references(() => employees.id, { onDelete: 'cascade' }),
+  employeeId: text('employee_id')
+    .notNull()
+    .references(() => employees.id, { onDelete: 'cascade' }),
   fundName: text('fund_name').notNull(),
   fundABN: text('fund_abn'),
   usi: text('usi'),
@@ -1853,7 +2082,9 @@ export const employeeSuperFunds = sqliteTable('employee_super_funds', {
 
 export const employeeTaxDeclarations = sqliteTable('employee_tax_declarations', {
   id: text('id').primaryKey(),
-  employeeId: text('employee_id').notNull().references(() => employees.id, { onDelete: 'cascade' }),
+  employeeId: text('employee_id')
+    .notNull()
+    .references(() => employees.id, { onDelete: 'cascade' }),
   taxFreeThreshold: integer('tax_free_threshold', { mode: 'boolean' }).default(true),
   helpDebt: integer('help_debt', { mode: 'boolean' }).default(false),
   sfssDebt: integer('sfss_debt', { mode: 'boolean' }).default(false),
@@ -1865,7 +2096,9 @@ export const employeeTaxDeclarations = sqliteTable('employee_tax_declarations', 
 
 export const payCategories = sqliteTable('pay_categories', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   type: text('type').notNull(),
   rateType: text('rate_type').notNull().default('hourly'),
@@ -1879,8 +2112,12 @@ export const payCategories = sqliteTable('pay_categories', {
 
 export const payStructures = sqliteTable('pay_structures', {
   id: text('id').primaryKey(),
-  employeeId: text('employee_id').notNull().references(() => employees.id, { onDelete: 'cascade' }),
-  payCategoryId: text('pay_category_id').notNull().references(() => payCategories.id),
+  employeeId: text('employee_id')
+    .notNull()
+    .references(() => employees.id, { onDelete: 'cascade' }),
+  payCategoryId: text('pay_category_id')
+    .notNull()
+    .references(() => payCategories.id),
   rate: integer('rate').notNull(),
   hoursPerWeek: real('hours_per_week'),
   annualSalary: integer('annual_salary'),
@@ -1890,7 +2127,9 @@ export const payStructures = sqliteTable('pay_structures', {
 
 export const employeeDocuments = sqliteTable('employee_documents', {
   id: text('id').primaryKey(),
-  employeeId: text('employee_id').notNull().references(() => employees.id, { onDelete: 'cascade' }),
+  employeeId: text('employee_id')
+    .notNull()
+    .references(() => employees.id, { onDelete: 'cascade' }),
   documentType: text('document_type').notNull(),
   fileName: text('file_name').notNull(),
   filePath: text('file_path').notNull(),

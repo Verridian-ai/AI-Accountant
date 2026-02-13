@@ -19,7 +19,12 @@ import type { AgentType } from './types.js';
 // ---------------------------------------------------------------------------
 
 export interface IntentClassification {
-  intent: 'agent_invocation' | 'direct_question' | 'transaction_edit' | 'batch_operation' | 'multi_agent';
+  intent:
+    | 'agent_invocation'
+    | 'direct_question'
+    | 'transaction_edit'
+    | 'batch_operation'
+    | 'multi_agent';
   primaryAgent: AgentType;
   secondaryAgents: AgentType[];
   confidence: number;
@@ -54,17 +59,22 @@ const KEYWORD_RULES: KeywordRule[] = [
     primaryAgent: 'payroll_agent',
     secondaryAgents: [],
     intent: 'agent_invocation',
-    confidence: 0.90,
+    confidence: 0.9,
   },
   {
     patterns: [/\bdepreciat/i, /\basset\s+write/i],
     primaryAgent: 'asset_management',
     secondaryAgents: [],
     intent: 'agent_invocation',
-    confidence: 0.90,
+    confidence: 0.9,
   },
   {
-    patterns: [/\bp\s*&\s*l\b/i, /\bprofit\s+and\s+loss/i, /\bbalance\s+sheet/i, /\btrial\s+balance/i],
+    patterns: [
+      /\bp\s*&\s*l\b/i,
+      /\bprofit\s+and\s+loss/i,
+      /\bbalance\s+sheet/i,
+      /\btrial\s+balance/i,
+    ],
     primaryAgent: 'financial_reporting',
     secondaryAgents: [],
     intent: 'agent_invocation',
@@ -85,11 +95,24 @@ const KEYWORD_RULES: KeywordRule[] = [
     confidence: 0.88,
   },
   {
-    patterns: [/\bmortgage/i, /\bhome\s+loan/i, /\binterest\s+rate/i, /\bcompare\s+(rate|product|bank)/i, /\brefinanc/i, /\bborrowing\s+capacity/i, /\bcdr\b/i, /\bopen\s+banking/i, /\bbank(ing)?\s+product/i, /\bsavings\s+account/i, /\bterm\s+deposit/i, /\bcredit\s+card\s+rate/i],
+    patterns: [
+      /\bmortgage/i,
+      /\bhome\s+loan/i,
+      /\binterest\s+rate/i,
+      /\bcompare\s+(rate|product|bank)/i,
+      /\brefinanc/i,
+      /\bborrowing\s+capacity/i,
+      /\bcdr\b/i,
+      /\bopen\s+banking/i,
+      /\bbank(ing)?\s+product/i,
+      /\bsavings\s+account/i,
+      /\bterm\s+deposit/i,
+      /\bcredit\s+card\s+rate/i,
+    ],
     primaryAgent: 'cdr_product',
     secondaryAgents: [],
     intent: 'agent_invocation',
-    confidence: 0.90,
+    confidence: 0.9,
   },
 ];
 
@@ -113,7 +136,8 @@ export class IntentRouter {
    */
   private buildAgentListPrompt(): string {
     if (this.orchestrator && typeof this.orchestrator.getRegisteredAgents === 'function') {
-      const agents: Array<{ type: string; description: string }> = this.orchestrator.getRegisteredAgents();
+      const agents: Array<{ type: string; description: string }> =
+        this.orchestrator.getRegisteredAgents();
       return agents.map((a) => `- ${a.type}: ${a.description}`).join('\n');
     }
     return this.getStaticAgentList();
@@ -162,7 +186,7 @@ export class IntentRouter {
       accountIds?: string[];
       hasUnprocessedStatements?: boolean;
       conversationHistory?: Array<{ role: string; content: string }>;
-    }
+    },
   ): Promise<IntentClassification> {
     // ---- Tier 1: Keyword pre-filter ----
     const keywordMatch = this.matchKeywords(query);
@@ -208,7 +232,7 @@ export class IntentRouter {
       accountIds?: string[];
       hasUnprocessedStatements?: boolean;
       conversationHistory?: Array<{ role: string; content: string }>;
-    }
+    },
   ): Promise<IntentClassification> {
     const agentList = this.buildAgentListPrompt();
 
@@ -250,9 +274,7 @@ Rules:
       messages: [{ role: 'user', content: userContent }],
     });
 
-    const textBlock = response.content.find(
-      (b): b is Anthropic.TextBlock => b.type === 'text'
-    );
+    const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text');
 
     if (!textBlock) {
       throw new Error('No text response from Haiku classifier');
@@ -282,7 +304,7 @@ Rules:
       accountIds?: string[];
       hasUnprocessedStatements?: boolean;
       conversationHistory?: Array<{ role: string; content: string }>;
-    }
+    },
   ): string {
     let msg = `User query: "${query}"`;
 
@@ -299,7 +321,9 @@ Rules:
       }
       if (context.conversationHistory?.length) {
         const recent = context.conversationHistory.slice(-4);
-        parts.push(`Recent conversation:\n${recent.map((m) => `${m.role}: ${m.content}`).join('\n')}`);
+        parts.push(
+          `Recent conversation:\n${recent.map((m) => `${m.role}: ${m.content}`).join('\n')}`,
+        );
       }
       if (parts.length > 0) {
         msg += `\n\nContext:\n${parts.join('\n')}`;
@@ -339,7 +363,13 @@ Rules:
    * Validate and normalize raw parsed classification data.
    */
   private validateClassification(raw: any): IntentClassification {
-    const validIntents = ['agent_invocation', 'direct_question', 'transaction_edit', 'batch_operation', 'multi_agent'];
+    const validIntents = [
+      'agent_invocation',
+      'direct_question',
+      'transaction_edit',
+      'batch_operation',
+      'multi_agent',
+    ];
     const intent = validIntents.includes(raw.intent) ? raw.intent : 'direct_question';
 
     return {
@@ -348,11 +378,13 @@ Rules:
       secondaryAgents: Array.isArray(raw.secondaryAgents)
         ? raw.secondaryAgents.filter((a: unknown): a is AgentType => typeof a === 'string')
         : [],
-      confidence: typeof raw.confidence === 'number' ? Math.min(1, Math.max(0, raw.confidence)) : 0.5,
+      confidence:
+        typeof raw.confidence === 'number' ? Math.min(1, Math.max(0, raw.confidence)) : 0.5,
       reasoning: typeof raw.reasoning === 'string' ? raw.reasoning : 'No reasoning provided',
-      extractedParams: typeof raw.extractedParams === 'object' && raw.extractedParams !== null
-        ? raw.extractedParams
-        : {},
+      extractedParams:
+        typeof raw.extractedParams === 'object' && raw.extractedParams !== null
+          ? raw.extractedParams
+          : {},
     };
   }
 

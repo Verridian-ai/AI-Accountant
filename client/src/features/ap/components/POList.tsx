@@ -13,7 +13,14 @@ import {
 import { apApi } from '../../../api';
 import type { PurchaseOrder } from '../../../api';
 
-const STATUS_FILTERS = ['all', 'draft', 'sent', 'partially_received', 'received', 'cancelled'] as const;
+const STATUS_FILTERS = [
+  'all',
+  'draft',
+  'sent',
+  'partially_received',
+  'received',
+  'cancelled',
+] as const;
 type StatusFilter = (typeof STATUS_FILTERS)[number];
 
 const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
@@ -88,14 +95,21 @@ export function POList({ onNewPO, onEditPO, onReceive }: POListProps) {
           {STATUS_FILTERS.map((s) => (
             <button
               key={s}
-              onClick={() => { setStatusFilter(s); setPage(1); }}
+              onClick={() => {
+                setStatusFilter(s);
+                setPage(1);
+              }}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 statusFilter === s
                   ? 'bg-[#FFCC00]/10 text-[#FFCC00] shadow-sm'
                   : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
-              {s === 'all' ? 'All' : s === 'partially_received' ? 'Partial Recv' : s.charAt(0).toUpperCase() + s.slice(1)}
+              {s === 'all'
+                ? 'All'
+                : s === 'partially_received'
+                  ? 'Partial Recv'
+                  : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
         </div>
@@ -141,108 +155,110 @@ export function POList({ onNewPO, onEditPO, onReceive }: POListProps) {
             </tr>
           </thead>
           <tbody>
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-white/5">
-                    <td colSpan={8} className="px-4 py-4">
-                      <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
-                    </td>
-                  </tr>
-                ))
-              : orders.length === 0
-              ? (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center">
-                      <ClipboardList className="h-10 w-10 text-zinc-600 mx-auto mb-2" />
-                      <p className="text-zinc-400 text-sm">No purchase orders found</p>
-                    </td>
-                  </tr>
-                )
-              : orders.map((po) => {
-                  const badge = STATUS_BADGE[po.status] ?? STATUS_BADGE.draft;
-                  const receivedPct = po.receivedPercentage ?? 0;
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="border-b border-white/5">
+                  <td colSpan={8} className="px-4 py-4">
+                    <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
+                  </td>
+                </tr>
+              ))
+            ) : orders.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-12 text-center">
+                  <ClipboardList className="h-10 w-10 text-zinc-600 mx-auto mb-2" />
+                  <p className="text-zinc-400 text-sm">No purchase orders found</p>
+                </td>
+              </tr>
+            ) : (
+              orders.map((po) => {
+                const badge = STATUS_BADGE[po.status] ?? STATUS_BADGE.draft;
+                const receivedPct = po.receivedPercentage ?? 0;
 
-                  return (
-                    <tr
-                      key={po.id}
-                      className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <span className="text-sm font-mono font-medium text-white">
-                          {po.poNumber}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-zinc-300 hidden md:table-cell">
-                        {po.supplierName ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-zinc-400 hidden lg:table-cell">
-                        {po.issueDate ? new Date(po.issueDate).toLocaleDateString('en-AU') : '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-zinc-400 hidden lg:table-cell">
-                        {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString('en-AU') : '—'}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm font-medium text-white">
-                        {formatCurrency(po.total)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
-                          {badge.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                            <div
-                              className="h-full rounded-full bg-[#FFCC00] transition-all"
-                              style={{ width: `${receivedPct}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-zinc-500 w-9 text-right">
-                            {receivedPct}%
-                          </span>
+                return (
+                  <tr
+                    key={po.id}
+                    className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-mono font-medium text-white">
+                        {po.poNumber}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-zinc-300 hidden md:table-cell">
+                      {po.supplierName ?? '—'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-zinc-400 hidden lg:table-cell">
+                      {po.issueDate ? new Date(po.issueDate).toLocaleDateString('en-AU') : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-zinc-400 hidden lg:table-cell">
+                      {po.expectedDate
+                        ? new Date(po.expectedDate).toLocaleDateString('en-AU')
+                        : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm font-medium text-white">
+                      {formatCurrency(po.total)}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}
+                      >
+                        {badge.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-[#FFCC00] transition-all"
+                            style={{ width: `${receivedPct}%` }}
+                          />
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <span className="text-xs text-zinc-500 w-9 text-right">{receivedPct}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => onEditPO(po.id)}
+                          title="View / Edit"
+                          className="p-1.5 rounded-lg text-zinc-500 hover:text-[#FFCC00] transition-colors"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
+                        {po.status === 'draft' && (
                           <button
-                            onClick={() => onEditPO(po.id)}
-                            title="View / Edit"
-                            className="p-1.5 rounded-lg text-zinc-500 hover:text-[#FFCC00] transition-colors"
+                            onClick={() => handleSendPO(po.id)}
+                            title="Send to Supplier"
+                            className="p-1.5 rounded-lg text-zinc-500 hover:text-blue-400 transition-colors"
                           >
-                            <Eye className="h-3.5 w-3.5" />
+                            <Send className="h-3.5 w-3.5" />
                           </button>
-                          {po.status === 'draft' && (
-                            <button
-                              onClick={() => handleSendPO(po.id)}
-                              title="Send to Supplier"
-                              className="p-1.5 rounded-lg text-zinc-500 hover:text-blue-400 transition-colors"
-                            >
-                              <Send className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                          {(po.status === 'sent' || po.status === 'partially_received') && (
-                            <button
-                              onClick={() => onReceive(po.id)}
-                              title="Receive Goods"
-                              className="p-1.5 rounded-lg text-zinc-500 hover:text-emerald-400 transition-colors"
-                            >
-                              <PackageCheck className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                          {(po.status === 'draft' || po.status === 'sent') && (
-                            <button
-                              onClick={() => handleCancelPO(po.id)}
-                              title="Cancel"
-                              className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 transition-colors"
-                            >
-                              <XCircle className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        )}
+                        {(po.status === 'sent' || po.status === 'partially_received') && (
+                          <button
+                            onClick={() => onReceive(po.id)}
+                            title="Receive Goods"
+                            className="p-1.5 rounded-lg text-zinc-500 hover:text-emerald-400 transition-colors"
+                          >
+                            <PackageCheck className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                        {(po.status === 'draft' || po.status === 'sent') && (
+                          <button
+                            onClick={() => handleCancelPO(po.id)}
+                            title="Cancel"
+                            className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 transition-colors"
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

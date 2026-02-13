@@ -191,8 +191,7 @@ Return a JSON object matching the MarketIntelOutput schema with "briefing", "key
               'abs_statistics',
               'asx_market_data',
             ],
-            description:
-              'Knowledge dataset to search (default: market_intelligence)',
+            description: 'Knowledge dataset to search (default: market_intelligence)',
           },
         },
         required: ['query'],
@@ -200,10 +199,7 @@ Return a JSON object matching the MarketIntelOutput schema with "briefing", "key
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'get_economic_indicators',
       async (input) => {
@@ -244,9 +240,7 @@ Return a JSON object matching the MarketIntelOutput schema with "briefing", "key
             const rbaResult = await rbaDataFeed.fetchAllTables();
             let indicators = rbaResult.indicators;
             if (categories && categories.length > 0) {
-              indicators = indicators.filter((ind) =>
-                categories.includes(ind.category),
-              );
+              indicators = indicators.filter((ind) => categories.includes(ind.category));
             }
             results.rba = {
               tablesProcessed: rbaResult.tablesProcessed,
@@ -274,9 +268,7 @@ Return a JSON object matching the MarketIntelOutput schema with "briefing", "key
             const absResult = await absDataFeed.fetchAllIndicators();
             let indicators = absResult.indicators;
             if (categories && categories.length > 0) {
-              indicators = indicators.filter((ind) =>
-                categories.includes(ind.category),
-              );
+              indicators = indicators.filter((ind) => categories.includes(ind.category));
             }
             results.abs = {
               dataflowsProcessed: absResult.dataflowsProcessed,
@@ -316,15 +308,24 @@ Return a JSON object matching the MarketIntelOutput schema with "briefing", "key
 
             // Determine if crypto or ASX
             const cryptoIds = [
-              'bitcoin', 'ethereum', 'solana', 'ripple', 'cardano',
-              'polkadot', 'chainlink', 'avalanche-2',
+              'bitcoin',
+              'ethereum',
+              'solana',
+              'ripple',
+              'cardano',
+              'polkadot',
+              'chainlink',
+              'avalanche-2',
             ];
-            const isCrypto = cryptoIds.includes(symbol.toLowerCase()) ||
-              ['BTC', 'ETH', 'SOL', 'XRP', 'ADA', 'DOT', 'LINK', 'AVAX'].includes(symbol.toUpperCase());
+            const isCrypto =
+              cryptoIds.includes(symbol.toLowerCase()) ||
+              ['BTC', 'ETH', 'SOL', 'XRP', 'ADA', 'DOT', 'LINK', 'AVAX'].includes(
+                symbol.toUpperCase(),
+              );
 
             if (isCrypto) {
-              const coinId = cryptoIds.find((c) => c === symbol.toLowerCase()) ??
-                symbol.toLowerCase();
+              const coinId =
+                cryptoIds.find((c) => c === symbol.toLowerCase()) ?? symbol.toLowerCase();
               const price = await marketPriceService.fetchCryptoPrice(coinId);
               return price ?? { error: `No price found for ${symbol}` };
             }
@@ -523,9 +524,8 @@ Return a JSON object matching the MarketIntelOutput schema with "briefing", "key
 
         // Fetch sentiment
         if (includeSentiment) {
-          const sentimentTopic = focus === 'general'
-            ? 'Australian financial market'
-            : `Australian ${focus} market`;
+          const sentimentTopic =
+            focus === 'general' ? 'Australian financial market' : `Australian ${focus} market`;
           try {
             const sentiment = await sentimentAnalysisService.getSentimentSnapshot(sentimentTopic);
             briefing.sentiment = {

@@ -20,7 +20,13 @@ interface QuickStats {
 
 export function ComplianceDashboard() {
   const [activeTab, setActiveTab] = useState<ComplianceTab>('obligations');
-  const [stats, setStats] = useState<QuickStats>({ overdue: 0, dueSoon: 0, compliant: 0, totalAlerts: 0, healthScore: 100 });
+  const [stats, setStats] = useState<QuickStats>({
+    overdue: 0,
+    dueSoon: 0,
+    compliant: 0,
+    totalAlerts: 0,
+    healthScore: 100,
+  });
   const [loading, setLoading] = useState(true);
 
   const userId = 'default';
@@ -38,16 +44,19 @@ export function ComplianceDashboard() {
         complianceApi.risk(userId),
       ]);
 
-      const obs = obligationData.status === 'fulfilled'
-        ? (obligationData.value.obligations ?? obligationData.value ?? [])
-        : [];
+      const obs =
+        obligationData.status === 'fulfilled'
+          ? (obligationData.value.obligations ?? obligationData.value ?? [])
+          : [];
       const aStats = anomalyStats.status === 'fulfilled' ? anomalyStats.value : { total: 0 };
       const risk = riskData.status === 'fulfilled' ? riskData.value : { overallScore: 100 };
 
       setStats({
         overdue: Array.isArray(obs) ? obs.filter((o: any) => o.status === 'overdue').length : 0,
         dueSoon: Array.isArray(obs) ? obs.filter((o: any) => o.status === 'pending').length : 0,
-        compliant: Array.isArray(obs) ? obs.filter((o: any) => o.status === 'compliant' || o.status === 'lodged').length : 0,
+        compliant: Array.isArray(obs)
+          ? obs.filter((o: any) => o.status === 'compliant' || o.status === 'lodged').length
+          : 0,
         totalAlerts: aStats.total ?? aStats.open ?? 0,
         healthScore: Math.max(0, 100 - (risk.overallScore ?? 0)),
       });
@@ -58,7 +67,12 @@ export function ComplianceDashboard() {
     }
   };
 
-  const healthColor = stats.healthScore >= 70 ? 'text-emerald-400' : stats.healthScore >= 40 ? 'text-yellow-400' : 'text-red-400';
+  const healthColor =
+    stats.healthScore >= 70
+      ? 'text-emerald-400'
+      : stats.healthScore >= 40
+        ? 'text-yellow-400'
+        : 'text-red-400';
 
   const tabs: { id: ComplianceTab; label: string }[] = [
     { id: 'obligations', label: 'Obligations' },
@@ -89,7 +103,7 @@ export function ComplianceDashboard() {
             ) : (
               <div className="flex items-center gap-2 neu-inset px-4 py-2 rounded-xl">
                 <span className="text-xs text-zinc-500 font-bold">Health:</span>
-                <span className={cn("text-2xl font-bold tabular-nums", healthColor)}>
+                <span className={cn('text-2xl font-bold tabular-nums', healthColor)}>
                   {stats.healthScore}
                 </span>
                 <span className="text-xs text-zinc-500">/100</span>
@@ -133,15 +147,15 @@ export function ComplianceDashboard() {
 
       {/* Tab Navigation */}
       <div className="flex items-center gap-1 overflow-x-auto pb-1">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300",
+              'px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300',
               activeTab === tab.id
-                ? "bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5 neu-raised-sm"
+                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 neu-raised-sm',
             )}
           >
             {tab.label}

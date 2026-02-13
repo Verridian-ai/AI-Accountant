@@ -35,21 +35,28 @@ interface PayCategory {
 
 // ── Constants ────────────────────────────────────────────────────────
 
-const TYPE_ORDER: CategoryType[] = ['ordinary', 'overtime', 'allowance', 'deduction', 'super', 'leave'];
+const TYPE_ORDER: CategoryType[] = [
+  'ordinary',
+  'overtime',
+  'allowance',
+  'deduction',
+  'super',
+  'leave',
+];
 
 const TYPE_STYLES: Record<CategoryType, { bg: string; text: string; label: string }> = {
-  ordinary:  { bg: 'bg-blue-500/10',    text: 'text-blue-400',    label: 'Ordinary' },
-  overtime:  { bg: 'bg-purple-500/10',   text: 'text-purple-400',  label: 'Overtime' },
-  allowance: { bg: 'bg-emerald-500/10',  text: 'text-emerald-400', label: 'Allowance' },
-  deduction: { bg: 'bg-red-500/10',      text: 'text-red-400',     label: 'Deduction' },
-  super:     { bg: 'bg-[#FFCC00]/10',    text: 'text-[#FFCC00]',   label: 'Super' },
-  leave:     { bg: 'bg-teal-500/10',     text: 'text-teal-400',    label: 'Leave' },
+  ordinary: { bg: 'bg-blue-500/10', text: 'text-blue-400', label: 'Ordinary' },
+  overtime: { bg: 'bg-purple-500/10', text: 'text-purple-400', label: 'Overtime' },
+  allowance: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: 'Allowance' },
+  deduction: { bg: 'bg-red-500/10', text: 'text-red-400', label: 'Deduction' },
+  super: { bg: 'bg-[#FFCC00]/10', text: 'text-[#FFCC00]', label: 'Super' },
+  leave: { bg: 'bg-teal-500/10', text: 'text-teal-400', label: 'Leave' },
 };
 
 const RATE_SUFFIXES: Record<RateType, string> = {
   hourly: '/hr',
   annual: '/year',
-  fixed:  '',
+  fixed: '',
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -91,7 +98,9 @@ export function PayCategoryManager() {
     }
   };
 
-  useEffect(() => { loadCategories(); }, []);
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   const grouped = useMemo(() => {
     const map = new Map<CategoryType, PayCategory[]>();
@@ -219,7 +228,10 @@ export function PayCategoryManager() {
       {/* Actions Bar */}
       <div className="flex items-center gap-3 flex-wrap">
         <button
-          onClick={() => { resetForm(); setShowForm(true); }}
+          onClick={() => {
+            resetForm();
+            setShowForm(true);
+          }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
         >
           <Plus className="h-4 w-4" />
@@ -271,7 +283,9 @@ export function PayCategoryManager() {
                 className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               >
                 {TYPE_ORDER.map((t) => (
-                  <option key={t} value={t}>{TYPE_STYLES[t].label}</option>
+                  <option key={t} value={t}>
+                    {TYPE_STYLES[t].label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -292,7 +306,9 @@ export function PayCategoryManager() {
 
             {/* Default Rate */}
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Default Rate ($)</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">
+                Default Rate ($)
+              </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
                 <input
@@ -407,10 +423,14 @@ export function PayCategoryManager() {
                     ) : (
                       <ChevronRight className="h-4 w-4 text-zinc-400" />
                     )}
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
+                    >
                       {style.label}
                     </span>
-                    <span className="text-xs text-zinc-500">{items.length} {items.length === 1 ? 'category' : 'categories'}</span>
+                    <span className="text-xs text-zinc-500">
+                      {items.length} {items.length === 1 ? 'category' : 'categories'}
+                    </span>
                   </div>
                 </button>
 
@@ -420,13 +440,27 @@ export function PayCategoryManager() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-white/5">
-                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">Name</th>
-                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden sm:table-cell">Rate Type</th>
-                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">Default Rate</th>
-                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden md:table-cell">Multiplier</th>
-                          <th className="text-center text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden lg:table-cell">Taxable</th>
-                          <th className="text-center text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden lg:table-cell">Super</th>
-                          <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">Actions</th>
+                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">
+                            Name
+                          </th>
+                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden sm:table-cell">
+                            Rate Type
+                          </th>
+                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">
+                            Default Rate
+                          </th>
+                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden md:table-cell">
+                            Multiplier
+                          </th>
+                          <th className="text-center text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden lg:table-cell">
+                            Taxable
+                          </th>
+                          <th className="text-center text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden lg:table-cell">
+                            Super
+                          </th>
+                          <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">
+                            Actions
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -449,13 +483,17 @@ export function PayCategoryManager() {
                               <span className="text-sm text-zinc-300 font-mono">
                                 {centsToDollars(cat.defaultRateCents)}
                                 {cat.defaultRateCents != null && (
-                                  <span className="text-zinc-500 text-xs">{RATE_SUFFIXES[cat.rateType]}</span>
+                                  <span className="text-zinc-500 text-xs">
+                                    {RATE_SUFFIXES[cat.rateType]}
+                                  </span>
                                 )}
                               </span>
                             </td>
                             <td className="px-4 py-2.5 hidden md:table-cell">
                               {cat.type === 'overtime' && cat.multiplier != null ? (
-                                <span className="text-sm text-purple-400 font-semibold">{cat.multiplier}x</span>
+                                <span className="text-sm text-purple-400 font-semibold">
+                                  {cat.multiplier}x
+                                </span>
                               ) : (
                                 <span className="text-xs text-zinc-600">-</span>
                               )}

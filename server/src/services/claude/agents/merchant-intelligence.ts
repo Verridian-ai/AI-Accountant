@@ -9,31 +9,116 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
-import type {
-  MerchantIntelligenceInput,
-  MerchantIntelligenceOutput,
-} from '../types.js';
+import type { MerchantIntelligenceInput, MerchantIntelligenceOutput } from '../types.js';
 
 /** Common merchant abbreviation patterns */
-const KNOWN_MERCHANTS: Record<string, { canonical: string; industry: string; gst: boolean; category: string }> = {
-  'woolworths': { canonical: 'Woolworths Group Ltd', industry: 'Retail - Grocery', gst: true, category: 'Groceries & Supermarkets' },
-  'coles': { canonical: 'Coles Group Ltd', industry: 'Retail - Grocery', gst: true, category: 'Groceries & Supermarkets' },
-  'aldi': { canonical: 'ALDI Stores Australia', industry: 'Retail - Grocery', gst: true, category: 'Groceries & Supermarkets' },
-  'bunnings': { canonical: 'Bunnings Group Ltd', industry: 'Retail - Hardware', gst: true, category: 'Home & Garden' },
-  'kmart': { canonical: 'Kmart Australia Ltd', industry: 'Retail - Department Store', gst: true, category: 'Shopping & Retail' },
-  'target': { canonical: 'Target Australia Pty Ltd', industry: 'Retail - Department Store', gst: true, category: 'Shopping & Retail' },
-  'officeworks': { canonical: 'Officeworks Superstores Pty Ltd', industry: 'Retail - Office Supplies', gst: true, category: 'Office Supplies' },
-  'jb hi-fi': { canonical: 'JB Hi-Fi Group Pty Ltd', industry: 'Retail - Electronics', gst: true, category: 'Electronics & Technology' },
-  'telstra': { canonical: 'Telstra Corporation Ltd', industry: 'Telecommunications', gst: true, category: 'Phone & Internet' },
-  'optus': { canonical: 'Singtel Optus Pty Ltd', industry: 'Telecommunications', gst: true, category: 'Phone & Internet' },
-  'netflix': { canonical: 'Netflix International B.V.', industry: 'Digital Entertainment', gst: true, category: 'Subscriptions & Streaming' },
-  'spotify': { canonical: 'Spotify AB', industry: 'Digital Entertainment', gst: true, category: 'Subscriptions & Streaming' },
-  'uber': { canonical: 'Uber Australia Pty Ltd', industry: 'Transport/Food Delivery', gst: true, category: 'Transport & Rideshare' },
-  'mcdonald': { canonical: "McDonald's Australia Ltd", industry: 'Food & Beverage', gst: true, category: 'Dining & Restaurants' },
-  'shell': { canonical: 'Shell Company of Australia', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
-  'bp ': { canonical: 'BP Australia Pty Ltd', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
-  'caltex': { canonical: 'Ampol Ltd (formerly Caltex)', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
-  'ampol': { canonical: 'Ampol Ltd', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
+const KNOWN_MERCHANTS: Record<
+  string,
+  { canonical: string; industry: string; gst: boolean; category: string }
+> = {
+  woolworths: {
+    canonical: 'Woolworths Group Ltd',
+    industry: 'Retail - Grocery',
+    gst: true,
+    category: 'Groceries & Supermarkets',
+  },
+  coles: {
+    canonical: 'Coles Group Ltd',
+    industry: 'Retail - Grocery',
+    gst: true,
+    category: 'Groceries & Supermarkets',
+  },
+  aldi: {
+    canonical: 'ALDI Stores Australia',
+    industry: 'Retail - Grocery',
+    gst: true,
+    category: 'Groceries & Supermarkets',
+  },
+  bunnings: {
+    canonical: 'Bunnings Group Ltd',
+    industry: 'Retail - Hardware',
+    gst: true,
+    category: 'Home & Garden',
+  },
+  kmart: {
+    canonical: 'Kmart Australia Ltd',
+    industry: 'Retail - Department Store',
+    gst: true,
+    category: 'Shopping & Retail',
+  },
+  target: {
+    canonical: 'Target Australia Pty Ltd',
+    industry: 'Retail - Department Store',
+    gst: true,
+    category: 'Shopping & Retail',
+  },
+  officeworks: {
+    canonical: 'Officeworks Superstores Pty Ltd',
+    industry: 'Retail - Office Supplies',
+    gst: true,
+    category: 'Office Supplies',
+  },
+  'jb hi-fi': {
+    canonical: 'JB Hi-Fi Group Pty Ltd',
+    industry: 'Retail - Electronics',
+    gst: true,
+    category: 'Electronics & Technology',
+  },
+  telstra: {
+    canonical: 'Telstra Corporation Ltd',
+    industry: 'Telecommunications',
+    gst: true,
+    category: 'Phone & Internet',
+  },
+  optus: {
+    canonical: 'Singtel Optus Pty Ltd',
+    industry: 'Telecommunications',
+    gst: true,
+    category: 'Phone & Internet',
+  },
+  netflix: {
+    canonical: 'Netflix International B.V.',
+    industry: 'Digital Entertainment',
+    gst: true,
+    category: 'Subscriptions & Streaming',
+  },
+  spotify: {
+    canonical: 'Spotify AB',
+    industry: 'Digital Entertainment',
+    gst: true,
+    category: 'Subscriptions & Streaming',
+  },
+  uber: {
+    canonical: 'Uber Australia Pty Ltd',
+    industry: 'Transport/Food Delivery',
+    gst: true,
+    category: 'Transport & Rideshare',
+  },
+  mcdonald: {
+    canonical: "McDonald's Australia Ltd",
+    industry: 'Food & Beverage',
+    gst: true,
+    category: 'Dining & Restaurants',
+  },
+  shell: {
+    canonical: 'Shell Company of Australia',
+    industry: 'Fuel & Energy',
+    gst: true,
+    category: 'Fuel & Auto',
+  },
+  'bp ': {
+    canonical: 'BP Australia Pty Ltd',
+    industry: 'Fuel & Energy',
+    gst: true,
+    category: 'Fuel & Auto',
+  },
+  caltex: {
+    canonical: 'Ampol Ltd (formerly Caltex)',
+    industry: 'Fuel & Energy',
+    gst: true,
+    category: 'Fuel & Auto',
+  },
+  ampol: { canonical: 'Ampol Ltd', industry: 'Fuel & Energy', gst: true, category: 'Fuel & Auto' },
 };
 
 /** Square POS prefix patterns */
@@ -84,19 +169,24 @@ Return a JSON object matching the MerchantIntelligenceOutput schema.`;
     },
     {
       name: 'resolve_merchant_name',
-      description: 'Resolve an abbreviated merchant name to its canonical business name using known patterns and heuristics.',
+      description:
+        'Resolve an abbreviated merchant name to its canonical business name using known patterns and heuristics.',
       input_schema: {
         type: 'object' as const,
         properties: {
           abbreviatedName: { type: 'string' },
-          amount: { type: 'number', description: 'Transaction amount in cents (helps infer merchant type)' },
+          amount: {
+            type: 'number',
+            description: 'Transaction amount in cents (helps infer merchant type)',
+          },
         },
         required: ['abbreviatedName'],
       },
     },
     {
       name: 'lookup_abn',
-      description: 'Look up a business on the Australian Business Register to check ABN and GST registration.',
+      description:
+        'Look up a business on the Australian Business Register to check ABN and GST registration.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -158,10 +248,7 @@ Return a JSON object matching the MerchantIntelligenceOutput schema.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'search_cognee_merchant',
       async (input) => {
@@ -169,7 +256,7 @@ Return a JSON object matching the MerchantIntelligenceOutput schema.`;
         const results = await cogneeTools.search(
           `merchant mapping for "${name}"`,
           'merchant_mappings',
-          'CHUNKS_LEXICAL'
+          'CHUNKS_LEXICAL',
         );
         return { found: results.length > 0, results };
       },
@@ -262,21 +349,46 @@ Return a JSON object matching the MerchantIntelligenceOutput schema.`;
     [
       'infer_category',
       async (input) => {
-        const name = (input.merchantName as string || '').toLowerCase();
-        const industry = (input.industry as string || '').toLowerCase();
-        const amount = input.amount as number || 0;
+        const name = ((input.merchantName as string) || '').toLowerCase();
+        const industry = ((input.industry as string) || '').toLowerCase();
+        const amount = (input.amount as number) || 0;
 
         // Category inference rules
-        if (industry.includes('fuel') || name.includes('petrol') || name.includes('fuel') || name.includes('bp ') || name.includes('shell') || name.includes('caltex') || name.includes('ampol')) {
+        if (
+          industry.includes('fuel') ||
+          name.includes('petrol') ||
+          name.includes('fuel') ||
+          name.includes('bp ') ||
+          name.includes('shell') ||
+          name.includes('caltex') ||
+          name.includes('ampol')
+        ) {
           return { category: 'Fuel & Auto', confidence: 0.9 };
         }
-        if (industry.includes('grocery') || name.includes('woolworths') || name.includes('coles') || name.includes('aldi') || name.includes('iga')) {
+        if (
+          industry.includes('grocery') ||
+          name.includes('woolworths') ||
+          name.includes('coles') ||
+          name.includes('aldi') ||
+          name.includes('iga')
+        ) {
           return { category: 'Groceries & Supermarkets', confidence: 0.9 };
         }
-        if (industry.includes('telecom') || name.includes('telstra') || name.includes('optus') || name.includes('vodafone')) {
+        if (
+          industry.includes('telecom') ||
+          name.includes('telstra') ||
+          name.includes('optus') ||
+          name.includes('vodafone')
+        ) {
           return { category: 'Phone & Internet', confidence: 0.9 };
         }
-        if (industry.includes('food') || name.includes('cafe') || name.includes('restaurant') || name.includes('pizza') || name.includes('sushi')) {
+        if (
+          industry.includes('food') ||
+          name.includes('cafe') ||
+          name.includes('restaurant') ||
+          name.includes('pizza') ||
+          name.includes('sushi')
+        ) {
           return { category: 'Dining & Restaurants', confidence: 0.8 };
         }
         if (name.includes('uber eats') || name.includes('doordash') || name.includes('menulog')) {
@@ -285,10 +397,16 @@ Return a JSON object matching the MerchantIntelligenceOutput schema.`;
         if (name.includes('uber') || name.includes('didi') || name.includes('ola')) {
           return { category: 'Transport & Rideshare', confidence: 0.85 };
         }
-        if (industry.includes('insurance') || name.includes('insurance') || name.includes('nrma') || name.includes('allianz')) {
+        if (
+          industry.includes('insurance') ||
+          name.includes('insurance') ||
+          name.includes('nrma') ||
+          name.includes('allianz')
+        ) {
           return { category: 'Insurance', confidence: 0.85 };
         }
-        if (Math.abs(amount) > 500000) { // > $5000
+        if (Math.abs(amount) > 500000) {
+          // > $5000
           return { category: 'Large Purchase', confidence: 0.5 };
         }
 

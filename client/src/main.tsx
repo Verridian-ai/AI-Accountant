@@ -1,8 +1,8 @@
-import { StrictMode, Component, type ReactNode, type ErrorInfo } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { SSEProvider } from './context/SSEContext.tsx'
+import { StrictMode, Component, type ReactNode, type ErrorInfo } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from './App.tsx';
+import { SSEProvider } from './context/SSEContext.tsx';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -58,4 +58,4 @@ createRoot(document.getElementById('root')!).render(
       </SSEProvider>
     </ErrorBoundary>
   </StrictMode>,
-)
+);

@@ -12,10 +12,7 @@ import { describe, it, expect } from 'vitest';
 
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3501';
 
-async function api(
-  path: string,
-  init?: RequestInit,
-): Promise<{ status: number; data: any }> {
+async function api(path: string, init?: RequestInit): Promise<{ status: number; data: any }> {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
     ...init,
@@ -162,9 +159,7 @@ describe('CDR Loan & Savings Endpoints', () => {
 
   // 13. GET /api/cdr/rates/market
   it('GET /api/cdr/rates/market — returns market rate summary', async () => {
-    const { status, data } = await api(
-      '/api/cdr/rates/market?category=RESIDENTIAL_MORTGAGES',
-    );
+    const { status, data } = await api('/api/cdr/rates/market?category=RESIDENTIAL_MORTGAGES');
     expect(status).toBe(200);
     // Should have rate summary fields
     expect(data).toHaveProperty('averageRate');

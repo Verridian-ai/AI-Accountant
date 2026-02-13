@@ -23,7 +23,10 @@ export function StreamingMessage({ tokens, isComplete, agentType }: StreamingMes
   const displayText = tokens.join('');
 
   return (
-    <div ref={containerRef} className="neu-raised rounded-2xl rounded-bl-none px-4 py-3 border border-white/5 max-w-[85%]">
+    <div
+      ref={containerRef}
+      className="neu-raised rounded-2xl rounded-bl-none px-4 py-3 border border-white/5 max-w-[85%]"
+    >
       {/* Agent type badge */}
       {agentType && (
         <div className="flex items-center gap-1.5 mb-1.5">
@@ -46,11 +49,22 @@ export function StreamingMessage({ tokens, isComplete, agentType }: StreamingMes
       {!isComplete && (
         <div className="flex items-center gap-1.5 mt-2">
           <div className="flex gap-0.5">
-            <span className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span
+              className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce"
+              style={{ animationDelay: '0ms' }}
+            />
+            <span
+              className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce"
+              style={{ animationDelay: '150ms' }}
+            />
+            <span
+              className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce"
+              style={{ animationDelay: '300ms' }}
+            />
           </div>
-          <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">Streaming</span>
+          <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">
+            Streaming
+          </span>
         </div>
       )}
 

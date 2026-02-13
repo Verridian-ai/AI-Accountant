@@ -39,7 +39,8 @@ When returning results, provide a JSON object matching the FinancialReportingOut
   protected tools: Anthropic.Tool[] = [
     {
       name: 'generate_pnl',
-      description: 'Generate Profit & Loss statement for a date range. Returns revenue/expense categories and net profit.',
+      description:
+        'Generate Profit & Loss statement for a date range. Returns revenue/expense categories and net profit.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -53,7 +54,8 @@ When returning results, provide a JSON object matching the FinancialReportingOut
     },
     {
       name: 'generate_balance_sheet',
-      description: 'Generate Balance Sheet as at a specific date. Returns assets, liabilities, equity sections and balance check.',
+      description:
+        'Generate Balance Sheet as at a specific date. Returns assets, liabilities, equity sections and balance check.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -65,7 +67,8 @@ When returning results, provide a JSON object matching the FinancialReportingOut
     },
     {
       name: 'generate_cash_flow',
-      description: 'Generate Cash Flow Statement for a date range. Returns operating, investing, financing sections.',
+      description:
+        'Generate Cash Flow Statement for a date range. Returns operating, investing, financing sections.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -78,7 +81,8 @@ When returning results, provide a JSON object matching the FinancialReportingOut
     },
     {
       name: 'analyze_trends',
-      description: 'Compare two periods and identify significant trends. Calculates per-category variances and flags changes > 10%.',
+      description:
+        'Compare two periods and identify significant trends. Calculates per-category variances and flags changes > 10%.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -87,14 +91,18 @@ When returning results, provide a JSON object matching the FinancialReportingOut
           currentEnd: { type: 'string', description: 'Current period end date (YYYY-MM-DD)' },
           priorStart: { type: 'string', description: 'Prior period start date (YYYY-MM-DD)' },
           priorEnd: { type: 'string', description: 'Prior period end date (YYYY-MM-DD)' },
-          reportType: { type: 'string', description: 'Report type: profit_and_loss, balance_sheet, cash_flow, trial_balance' },
+          reportType: {
+            type: 'string',
+            description: 'Report type: profit_and_loss, balance_sheet, cash_flow, trial_balance',
+          },
         },
         required: ['userId', 'currentStart', 'currentEnd', 'priorStart', 'priorEnd', 'reportType'],
       },
     },
     {
       name: 'explain_variance',
-      description: 'Provide structured variance data for AI interpretation. The agent LLM will generate the narrative explanation.',
+      description:
+        'Provide structured variance data for AI interpretation. The agent LLM will generate the narrative explanation.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -108,10 +116,7 @@ When returning results, provide a JSON object matching the FinancialReportingOut
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'generate_pnl',
       async (input) => {
@@ -148,7 +153,14 @@ When returning results, provide a JSON object matching the FinancialReportingOut
         const priorStart = input.priorStart as string;
         const priorEnd = input.priorEnd as string;
         const reportType = input.reportType as string;
-        return await reportService.comparePeriods(userId, currentStart, currentEnd, priorStart, priorEnd, reportType);
+        return await reportService.comparePeriods(
+          userId,
+          currentStart,
+          currentEnd,
+          priorStart,
+          priorEnd,
+          reportType,
+        );
       },
     ],
     [
@@ -159,7 +171,8 @@ When returning results, provide a JSON object matching the FinancialReportingOut
         const priorAmount = input.priorAmount as number;
         const variancePercent = input.variancePercent as number;
         const varianceAmount = currentAmount - priorAmount;
-        const direction = varianceAmount > 0 ? 'increase' : varianceAmount < 0 ? 'decrease' : 'unchanged';
+        const direction =
+          varianceAmount > 0 ? 'increase' : varianceAmount < 0 ? 'decrease' : 'unchanged';
 
         return {
           category,

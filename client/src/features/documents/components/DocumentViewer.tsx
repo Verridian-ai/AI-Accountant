@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, RefreshCw, Search, Trash2, Loader2, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Search,
+  Trash2,
+  Loader2,
+  ExternalLink,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { documentsApi } from '@/api';
@@ -13,10 +22,15 @@ interface DocumentViewerProps {
 
 function statusBadge(status: string) {
   switch (status) {
-    case 'extracted': case 'verified':
+    case 'extracted':
+    case 'verified':
       return <Badge variant="success">{status}</Badge>;
     case 'processing':
-      return <Badge variant="warning" className="animate-pulse">{status}</Badge>;
+      return (
+        <Badge variant="warning" className="animate-pulse">
+          {status}
+        </Badge>
+      );
     case 'pending':
       return <Badge variant="secondary">{status}</Badge>;
     case 'matched':
@@ -42,7 +56,9 @@ function confidenceBarColor(score: number) {
 
 function formatCurrency(amount: number | undefined | null) {
   if (amount == null) return '-';
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(amount / 100);
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(
+    amount / 100,
+  );
 }
 
 export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
@@ -63,7 +79,9 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
     }
   };
 
-  useEffect(() => { loadDocument(); }, [documentId]);
+  useEffect(() => {
+    loadDocument();
+  }, [documentId]);
 
   const handleReprocess = async () => {
     setProcessing(true);
@@ -111,23 +129,30 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
       <div className="neu-raised rounded-xl p-8 text-center">
         <XCircle className="h-12 w-12 text-red-400 mx-auto mb-3" />
         <p className="text-zinc-400">Document not found</p>
-        <button onClick={onBack} className="mt-4 px-4 py-2 rounded-lg bg-white/5 text-zinc-300 hover:bg-white/10 text-sm">
+        <button
+          onClick={onBack}
+          className="mt-4 px-4 py-2 rounded-lg bg-white/5 text-zinc-300 hover:bg-white/10 text-sm"
+        >
           Go back
         </button>
       </div>
     );
   }
 
-  const gstValid = doc.subtotal != null && doc.gstAmount != null && doc.totalAmount != null
-    ? Math.abs((doc.subtotal + doc.gstAmount) - doc.totalAmount) < 2
-    : null;
+  const gstValid =
+    doc.subtotal != null && doc.gstAmount != null && doc.totalAmount != null
+      ? Math.abs(doc.subtotal + doc.gstAmount - doc.totalAmount) < 2
+      : null;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="neu-raised p-2 rounded-xl text-zinc-400 hover:text-zinc-200 transition-colors">
+          <button
+            onClick={onBack}
+            className="neu-raised p-2 rounded-xl text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
@@ -135,7 +160,9 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
             <div className="flex items-center gap-2 mt-0.5">
               {statusBadge(doc.status)}
               <span className="text-xs text-zinc-500">{doc.mimeType}</span>
-              <span className="text-xs text-zinc-500">{new Date(doc.createdAt).toLocaleDateString()}</span>
+              <span className="text-xs text-zinc-500">
+                {new Date(doc.createdAt).toLocaleDateString()}
+              </span>
             </div>
           </div>
         </div>
@@ -172,11 +199,15 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
         <div className="space-y-4">
           {/* Document Info */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">Document Info</h3>
+            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">
+              Document Info
+            </h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-zinc-500 text-xs">Type</p>
-                <p className="text-zinc-200 font-medium capitalize">{doc.documentType || 'Unknown'}</p>
+                <p className="text-zinc-200 font-medium capitalize">
+                  {doc.documentType || 'Unknown'}
+                </p>
               </div>
               <div>
                 <p className="text-zinc-500 text-xs">Document Number</p>
@@ -195,7 +226,9 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
           {/* Vendor Info */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">Vendor</h3>
+            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">
+              Vendor
+            </h3>
             <div className="space-y-2 text-sm">
               <div>
                 <p className="text-zinc-500 text-xs">Name</p>
@@ -222,7 +255,9 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
           {/* GST Summary */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">Amounts</h3>
+            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">
+              Amounts
+            </h3>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-500">Subtotal</span>
@@ -236,11 +271,12 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
                 <span className="text-zinc-300 font-semibold">Total</span>
                 <div className="flex items-center gap-2">
                   <span className="text-zinc-100 font-bold">{formatCurrency(doc.totalAmount)}</span>
-                  {gstValid !== null && (
-                    gstValid
-                      ? <CheckCircle className="h-4 w-4 text-green-400" />
-                      : <XCircle className="h-4 w-4 text-red-400" />
-                  )}
+                  {gstValid !== null &&
+                    (gstValid ? (
+                      <CheckCircle className="h-4 w-4 text-green-400" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-400" />
+                    ))}
                 </div>
               </div>
             </div>
@@ -248,7 +284,9 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
           {/* Confidence */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">Confidence</h3>
+            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">
+              Confidence
+            </h3>
             <div className="flex items-center gap-3">
               <Progress value={doc.confidenceScore} className="flex-1 h-2.5" />
               <span className={`text-sm font-bold ${confidenceColor(doc.confidenceScore)}`}>
@@ -269,7 +307,9 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
         <div className="space-y-4">
           <div className="neu-raised rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide">Extracted Data</h3>
+              <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide">
+                Extracted Data
+              </h3>
               <button
                 onClick={() => setShowRawData(!showRawData)}
                 className="text-xs px-2 py-1 rounded-md bg-white/5 text-zinc-400 hover:text-zinc-200 transition-colors"
@@ -290,7 +330,9 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
               </div>
             ) : (
               <div className="neu-inset rounded-lg p-4">
-                <p className="text-zinc-400 text-sm">Data extracted successfully. Click &quot;Show JSON&quot; to view raw data.</p>
+                <p className="text-zinc-400 text-sm">
+                  Data extracted successfully. Click &quot;Show JSON&quot; to view raw data.
+                </p>
               </div>
             )}
           </div>
@@ -299,7 +341,9 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
       {/* Line Items */}
       <div className="neu-raised rounded-xl p-5">
-        <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-4">Line Items</h3>
+        <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-4">
+          Line Items
+        </h3>
         <LineItemEditor documentId={documentId} />
       </div>
     </div>

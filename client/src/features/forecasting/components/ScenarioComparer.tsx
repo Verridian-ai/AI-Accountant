@@ -40,7 +40,11 @@ const TEMPLATES: ScenarioConfig[] = [
 const SCENARIO_COLORS = ['#FFCC00', '#22c55e', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 const formatDollar = (value: number) =>
-  new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(value / 100);
+  new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+    maximumFractionDigits: 0,
+  }).format(value / 100);
 
 interface ScenarioComparerProps {
   userId: string;
@@ -68,20 +72,23 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
 
   const addScenario = (template?: ScenarioConfig) => {
     if (scenarios.length >= 5) return;
-    setScenarios(prev => [...prev, template ?? { ...TEMPLATES[0], name: `Scenario ${prev.length + 1}` }]);
+    setScenarios((prev) => [
+      ...prev,
+      template ?? { ...TEMPLATES[0], name: `Scenario ${prev.length + 1}` },
+    ]);
   };
 
   const updateScenario = (index: number, update: Partial<ScenarioConfig>) => {
-    setScenarios(prev => prev.map((s, i) => (i === index ? { ...s, ...update } : s)));
+    setScenarios((prev) => prev.map((s, i) => (i === index ? { ...s, ...update } : s)));
   };
 
   const removeScenario = (index: number) => {
     if (scenarios.length <= 1) return;
-    setScenarios(prev => prev.filter((_, i) => i !== index));
+    setScenarios((prev) => prev.filter((_, i) => i !== index));
   };
 
   const runComparison = async () => {
-    const forecastIds = scenarios.map(s => s.forecastId).filter(Boolean) as string[];
+    const forecastIds = scenarios.map((s) => s.forecastId).filter(Boolean) as string[];
     if (!forecastIds.length) return;
 
     setLoading(true);
@@ -110,7 +117,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
           </button>
           <button
             onClick={runComparison}
-            disabled={loading || !scenarios.some(s => s.forecastId)}
+            disabled={loading || !scenarios.some((s) => s.forecastId)}
             className="neu-raised-sm px-4 py-1.5 rounded-xl text-xs font-bold bg-[#FFCC00]/10 text-[#FFCC00] hover:bg-[#FFCC00]/20 transition-colors disabled:opacity-30 flex items-center gap-1.5"
           >
             <GitCompareArrows className="w-3.5 h-3.5" />
@@ -125,7 +132,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
         <div className="neu-inset rounded-2xl p-4">
           <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Templates</p>
           <div className="space-y-2">
-            {TEMPLATES.map(t => (
+            {TEMPLATES.map((t) => (
               <button
                 key={t.name}
                 onClick={() => addScenario({ ...t })}
@@ -148,7 +155,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
             <div className="flex items-center justify-between mb-3">
               <input
                 value={scenario.name}
-                onChange={e => updateScenario(idx, { name: e.target.value })}
+                onChange={(e) => updateScenario(idx, { name: e.target.value })}
                 className="bg-transparent text-sm font-bold text-zinc-100 border-none outline-none w-full"
               />
               {scenarios.length > 1 && (
@@ -166,11 +173,11 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
                 <label className="text-[11px] text-zinc-500 block mb-1">Forecast</label>
                 <select
                   value={scenario.forecastId ?? ''}
-                  onChange={e => updateScenario(idx, { forecastId: e.target.value || null })}
+                  onChange={(e) => updateScenario(idx, { forecastId: e.target.value || null })}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-sm text-zinc-300 outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
                 >
                   <option value="">Select forecast...</option>
-                  {forecasts.map(f => (
+                  {forecasts.map((f) => (
                     <option key={f.id} value={f.id}>
                       {f.forecastType} — {f.financialYear} ({f.granularity})
                     </option>
@@ -181,8 +188,11 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
               <div>
                 <label className="text-[11px] text-zinc-500 flex justify-between mb-1">
                   <span>Inflow Adj.</span>
-                  <span className={scenario.inflowAdjustment >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                    {scenario.inflowAdjustment > 0 ? '+' : ''}{scenario.inflowAdjustment}%
+                  <span
+                    className={scenario.inflowAdjustment >= 0 ? 'text-emerald-400' : 'text-red-400'}
+                  >
+                    {scenario.inflowAdjustment > 0 ? '+' : ''}
+                    {scenario.inflowAdjustment}%
                   </span>
                 </label>
                 <input
@@ -190,7 +200,9 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
                   min={-50}
                   max={50}
                   value={scenario.inflowAdjustment}
-                  onChange={e => updateScenario(idx, { inflowAdjustment: Number(e.target.value) })}
+                  onChange={(e) =>
+                    updateScenario(idx, { inflowAdjustment: Number(e.target.value) })
+                  }
                   className="w-full accent-[#FFCC00]"
                 />
               </div>
@@ -198,8 +210,13 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
               <div>
                 <label className="text-[11px] text-zinc-500 flex justify-between mb-1">
                   <span>Outflow Adj.</span>
-                  <span className={scenario.outflowAdjustment <= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                    {scenario.outflowAdjustment > 0 ? '+' : ''}{scenario.outflowAdjustment}%
+                  <span
+                    className={
+                      scenario.outflowAdjustment <= 0 ? 'text-emerald-400' : 'text-red-400'
+                    }
+                  >
+                    {scenario.outflowAdjustment > 0 ? '+' : ''}
+                    {scenario.outflowAdjustment}%
                   </span>
                 </label>
                 <input
@@ -207,7 +224,9 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
                   min={-50}
                   max={50}
                   value={scenario.outflowAdjustment}
-                  onChange={e => updateScenario(idx, { outflowAdjustment: Number(e.target.value) })}
+                  onChange={(e) =>
+                    updateScenario(idx, { outflowAdjustment: Number(e.target.value) })
+                  }
                   className="w-full accent-[#FFCC00]"
                 />
               </div>
@@ -237,11 +256,19 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
                 width={80}
               />
               <Tooltip
-                contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }}
+                contentStyle={{
+                  backgroundColor: '#1a1a2e',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 12,
+                }}
                 labelStyle={{ color: '#a1a1aa' }}
                 formatter={(value: number) => formatDollar(value)}
               />
-              <Legend formatter={(value: string) => <span className="text-xs text-zinc-400">{value}</span>} />
+              <Legend
+                formatter={(value: string) => (
+                  <span className="text-xs text-zinc-400">{value}</span>
+                )}
+              />
               {scenarios.map((s, idx) => (
                 <Line
                   key={idx}
@@ -269,7 +296,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
       {comparisonData && comparisonData.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {scenarios.map((s, idx) => {
-            const values = comparisonData.map(d => d[`scenario_${idx}`] ?? 0);
+            const values = comparisonData.map((d) => d[`scenario_${idx}`] ?? 0);
             const total = values.reduce((sum: number, v: number) => sum + v, 0);
             const avg = values.length ? total / values.length : 0;
             return (

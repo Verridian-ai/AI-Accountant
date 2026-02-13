@@ -70,12 +70,7 @@ export interface MatchStats {
 
 export interface CreateRuleParams {
   name: string;
-  ruleType:
-    | 'exact_amount'
-    | 'amount_range'
-    | 'vendor_match'
-    | 'recurring'
-    | 'composite';
+  ruleType: 'exact_amount' | 'amount_range' | 'vendor_match' | 'recurring' | 'composite';
   vendorPattern?: string;
   amountExact?: number;
   amountMin?: number;
@@ -137,21 +132,14 @@ export class PaymentMatchingService {
   // Match Candidate Discovery
   // --------------------------------------------------------------------------
 
-  async findMatchCandidates(
-    documentId: string,
-    options?: MatchOptions
-  ): Promise<MatchCandidate[]> {
+  async findMatchCandidates(documentId: string, options?: MatchOptions): Promise<MatchCandidate[]> {
     const amountTolerance = options?.amountTolerance ?? DEFAULT_AMOUNT_TOLERANCE;
     const dateTolerance = options?.dateTolerance ?? DEFAULT_DATE_TOLERANCE;
     const minScore = options?.minScore ?? 0;
     const limit = options?.limit ?? DEFAULT_LIMIT;
 
     // Fetch the OCR document
-    const doc = await db
-      .select()
-      .from(ocrDocuments)
-      .where(eq(ocrDocuments.id, documentId))
-      .get();
+    const doc = await db.select().from(ocrDocuments).where(eq(ocrDocuments.id, documentId)).get();
 
     if (!doc) {
       return [];
@@ -175,8 +163,8 @@ export class PaymentMatchingService {
         .where(
           and(
             sql`ABS(${transactions.amount}) >= ${amountLow}`,
-            sql`ABS(${transactions.amount}) <= ${amountHigh}`
-          )
+            sql`ABS(${transactions.amount}) <= ${amountHigh}`,
+          ),
         )
         .all();
 
@@ -200,10 +188,7 @@ export class PaymentMatchingService {
         .select()
         .from(transactions)
         .where(
-          and(
-            sql`${transactions.date} >= ${startStr}`,
-            sql`${transactions.date} <= ${endStr}`
-          )
+          and(sql`${transactions.date} >= ${startStr}`, sql`${transactions.date} <= ${endStr}`),
         )
         .all();
 
@@ -219,9 +204,7 @@ export class PaymentMatchingService {
         const vendorMatches = await db
           .select()
           .from(transactions)
-          .where(
-            sql`LOWER(${transactions.description}) LIKE ${'%' + normalizedVendor + '%'}`
-          )
+          .where(sql`LOWER(${transactions.description}) LIKE ${'%' + normalizedVendor + '%'}`)
           .all();
 
         for (const tx of vendorMatches) {
@@ -262,10 +245,7 @@ export class PaymentMatchingService {
     // Amount factor (40%)
     let amountFactor = 0;
     if (docAmount > 0) {
-      amountFactor = Math.max(
-        0,
-        Math.min(1, 1.0 - Math.abs(docAmount - txAmount) / docAmount)
-      );
+      amountFactor = Math.max(0, Math.min(1, 1.0 - Math.abs(docAmount - txAmount) / docAmount));
     } else if (txAmount === 0) {
       amountFactor = 1.0;
     }
@@ -279,22 +259,15 @@ export class PaymentMatchingService {
       const docDateObj = new Date(docDate);
       const txDateObj = new Date(txDate);
       daysDiff = Math.abs(
-        Math.round(
-          (docDateObj.getTime() - txDateObj.getTime()) / (1000 * 60 * 60 * 24)
-        )
+        Math.round((docDateObj.getTime() - txDateObj.getTime()) / (1000 * 60 * 60 * 24)),
       );
-      dateFactor = Math.max(
-        0,
-        Math.min(1, 1.0 - daysDiff / DEFAULT_DATE_TOLERANCE)
-      );
+      dateFactor = Math.max(0, Math.min(1, 1.0 - daysDiff / DEFAULT_DATE_TOLERANCE));
     }
 
     // Vendor factor (20%)
     const docVendor = document.vendorName ?? '';
     const txDesc = transaction.description ?? '';
-    let vendorFactor = docVendor
-      ? this.calculateSimilarity(docVendor, txDesc)
-      : 0.5;
+    let vendorFactor = docVendor ? this.calculateSimilarity(docVendor, txDesc) : 0.5;
 
     // Rule factor (15%)
     let ruleFactor = 0;
@@ -362,33 +335,26 @@ export class PaymentMatchingService {
         normalized = normalized.slice(prefix.length).trim();
       }
     }
-    return normalized.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+    return normalized
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   // --------------------------------------------------------------------------
   // Auto-Matching
   // --------------------------------------------------------------------------
 
-  async autoMatch(
-    userId: string,
-    options?: AutoMatchOptions
-  ): Promise<AutoMatchResult> {
-    const autoThreshold =
-      options?.autoMatchThreshold ?? DEFAULT_AUTO_MATCH_THRESHOLD;
-    const suggestThreshold =
-      options?.suggestThreshold ?? DEFAULT_SUGGEST_THRESHOLD;
+  async autoMatch(userId: string, options?: AutoMatchOptions): Promise<AutoMatchResult> {
+    const autoThreshold = options?.autoMatchThreshold ?? DEFAULT_AUTO_MATCH_THRESHOLD;
+    const suggestThreshold = options?.suggestThreshold ?? DEFAULT_SUGGEST_THRESHOLD;
     const shouldApplyRules = options?.applyRules ?? true;
 
     // Fetch unmatched documents
     const unmatchedDocs = await db
       .select()
       .from(ocrDocuments)
-      .where(
-        and(
-          eq(ocrDocuments.userId, userId),
-          eq(ocrDocuments.status, 'extracted')
-        )
-      )
+      .where(and(eq(ocrDocuments.userId, userId), eq(ocrDocuments.status, 'extracted')))
       .all();
 
     const result: AutoMatchResult = {
@@ -671,21 +637,13 @@ export class PaymentMatchingService {
   }
 
   async listRules(userId: string, isActive?: boolean): Promise<any[]> {
-    let query = db
-      .select()
-      .from(paymentMatchRules)
-      .where(eq(paymentMatchRules.userId, userId));
+    let query = db.select().from(paymentMatchRules).where(eq(paymentMatchRules.userId, userId));
 
     if (isActive !== undefined) {
       query = db
         .select()
         .from(paymentMatchRules)
-        .where(
-          and(
-            eq(paymentMatchRules.userId, userId),
-            eq(paymentMatchRules.isActive, isActive)
-          )
-        );
+        .where(and(eq(paymentMatchRules.userId, userId), eq(paymentMatchRules.isActive, isActive)));
     }
 
     return query.orderBy(asc(paymentMatchRules.priority)).all();
@@ -732,10 +690,7 @@ export class PaymentMatchingService {
   }
 
   async deleteRule(ruleId: string): Promise<void> {
-    await db
-      .delete(paymentMatchRules)
-      .where(eq(paymentMatchRules.id, ruleId))
-      .run();
+    await db.delete(paymentMatchRules).where(eq(paymentMatchRules.id, ruleId)).run();
   }
 
   // --------------------------------------------------------------------------
@@ -743,23 +698,14 @@ export class PaymentMatchingService {
   // --------------------------------------------------------------------------
 
   async applyRules(documentId: string): Promise<MatchCandidate | null> {
-    const doc = await db
-      .select()
-      .from(ocrDocuments)
-      .where(eq(ocrDocuments.id, documentId))
-      .get();
+    const doc = await db.select().from(ocrDocuments).where(eq(ocrDocuments.id, documentId)).get();
 
     if (!doc || !doc.userId) return null;
 
     const rules = await db
       .select()
       .from(paymentMatchRules)
-      .where(
-        and(
-          eq(paymentMatchRules.userId, doc.userId),
-          eq(paymentMatchRules.isActive, true)
-        )
-      )
+      .where(and(eq(paymentMatchRules.userId, doc.userId), eq(paymentMatchRules.isActive, true)))
       .orderBy(asc(paymentMatchRules.priority))
       .all();
 
@@ -805,10 +751,7 @@ export class PaymentMatchingService {
         return Math.abs(docAmount - (rule.amountExact ?? 0)) <= tolerance;
       }
       case 'amount_range': {
-        return (
-          docAmount >= (rule.amountMin ?? 0) &&
-          docAmount <= (rule.amountMax ?? Infinity)
-        );
+        return docAmount >= (rule.amountMin ?? 0) && docAmount <= (rule.amountMax ?? Infinity);
       }
       case 'vendor_match': {
         if (!rule.vendorPattern || !docVendor) return false;
@@ -823,22 +766,17 @@ export class PaymentMatchingService {
         const normPattern = this.normalizeString(rule.vendorPattern);
         const amountMatch =
           rule.amountExact != null
-            ? Math.abs(docAmount - rule.amountExact) <=
-              (rule.amountTolerance ?? 0.01)
+            ? Math.abs(docAmount - rule.amountExact) <= (rule.amountTolerance ?? 0.01)
             : true;
         return (
-          amountMatch &&
-          (normVendor.includes(normPattern) || normPattern.includes(normVendor))
+          amountMatch && (normVendor.includes(normPattern) || normPattern.includes(normVendor))
         );
       }
       case 'composite': {
         // All conditions must match
         let pass = true;
         if (rule.amountExact != null) {
-          pass =
-            pass &&
-            Math.abs(docAmount - rule.amountExact) <=
-              (rule.amountTolerance ?? 0.01);
+          pass = pass && Math.abs(docAmount - rule.amountExact) <= (rule.amountTolerance ?? 0.01);
         }
         if (rule.amountMin != null && rule.amountMax != null) {
           pass = pass && docAmount >= rule.amountMin && docAmount <= rule.amountMax;
@@ -846,10 +784,7 @@ export class PaymentMatchingService {
         if (rule.vendorPattern) {
           const normVendor = this.normalizeString(docVendor);
           const normPattern = this.normalizeString(rule.vendorPattern);
-          pass =
-            pass &&
-            (normVendor.includes(normPattern) ||
-              normPattern.includes(normVendor));
+          pass = pass && (normVendor.includes(normPattern) || normPattern.includes(normVendor));
         }
         return pass;
       }
@@ -868,14 +803,10 @@ export class PaymentMatchingService {
     // Amount filtering
     if (rule.amountExact != null) {
       const tolerance = rule.amountTolerance ?? 0.01;
-      conditions.push(
-        sql`ABS(ABS(${transactions.amount}) - ${rule.amountExact}) <= ${tolerance}`
-      );
+      conditions.push(sql`ABS(ABS(${transactions.amount}) - ${rule.amountExact}) <= ${tolerance}`);
     } else if (docAmount > 0) {
       const tolerance = rule.amountTolerance ?? DEFAULT_AMOUNT_TOLERANCE;
-      conditions.push(
-        sql`ABS(ABS(${transactions.amount}) - ${docAmount}) <= ${tolerance}`
-      );
+      conditions.push(sql`ABS(ABS(${transactions.amount}) - ${docAmount}) <= ${tolerance}`);
     }
 
     // Date filtering
@@ -896,9 +827,7 @@ export class PaymentMatchingService {
     if (rule.vendorPattern) {
       const normPattern = this.normalizeString(rule.vendorPattern);
       if (normPattern.length > 2) {
-        conditions.push(
-          sql`LOWER(${transactions.description}) LIKE ${'%' + normPattern + '%'}`
-        );
+        conditions.push(sql`LOWER(${transactions.description}) LIKE ${'%' + normPattern + '%'}`);
       }
     }
 
@@ -961,18 +890,10 @@ export class PaymentMatchingService {
       const mDoc = await db
         .select()
         .from(ocrDocuments)
-        .where(
-          and(
-            eq(ocrDocuments.id, m.documentId),
-            eq(ocrDocuments.userId, doc.userId)
-          )
-        )
+        .where(and(eq(ocrDocuments.id, m.documentId), eq(ocrDocuments.userId, doc.userId)))
         .get();
 
-      if (
-        mDoc?.vendorName &&
-        this.normalizeString(mDoc.vendorName) === vendorNorm
-      ) {
+      if (mDoc?.vendorName && this.normalizeString(mDoc.vendorName) === vendorNorm) {
         vendorMatchCount++;
         totalAmount += mDoc.totalAmount ?? 0;
       }
@@ -987,8 +908,8 @@ export class PaymentMatchingService {
         .where(
           and(
             eq(paymentMatchRules.userId, doc.userId),
-            eq(paymentMatchRules.ruleType, 'recurring')
-          )
+            eq(paymentMatchRules.ruleType, 'recurring'),
+          ),
         )
         .all();
 
@@ -1007,9 +928,7 @@ export class PaymentMatchingService {
           amountTolerance: Math.round(avgAmount * 0.1 * 100) / 100, // 10% tolerance
           priority: 50,
         });
-        console.log(
-          `[PaymentMatching] Auto-created matching rule for ${doc.vendorName}`
-        );
+        console.log(`[PaymentMatching] Auto-created matching rule for ${doc.vendorName}`);
       }
     }
   }
@@ -1029,13 +948,10 @@ export class PaymentMatchingService {
     const totalDocuments = allDocs.length;
     const matched = allDocs.filter((d: any) => d.status === 'matched').length;
     const pending = allDocs.filter((d: any) =>
-      ['pending', 'processing', 'extracted'].includes(d.status)
+      ['pending', 'processing', 'extracted'].includes(d.status),
     ).length;
     const failed = allDocs.filter((d: any) => d.status === 'failed').length;
-    const matchRate =
-      totalDocuments > 0
-        ? Math.round((matched / totalDocuments) * 10000) / 100
-        : 0;
+    const matchRate = totalDocuments > 0 ? Math.round((matched / totalDocuments) * 10000) / 100 : 0;
 
     // Average confidence of confirmed matches
     const confirmedMatches = await db
@@ -1046,15 +962,13 @@ export class PaymentMatchingService {
 
     // Filter to user's documents
     const userDocIds = new Set(allDocs.map((d: any) => d.id));
-    const userMatches = confirmedMatches.filter((m: any) =>
-      userDocIds.has(m.documentId)
-    );
+    const userMatches = confirmedMatches.filter((m: any) => userDocIds.has(m.documentId));
     const averageConfidence =
       userMatches.length > 0
         ? Math.round(
             (userMatches.reduce((sum: number, m: any) => sum + (m.matchScore ?? 0), 0) /
               userMatches.length) *
-              1000
+              1000,
           ) / 1000
         : 0;
 
@@ -1105,12 +1019,7 @@ export class PaymentMatchingService {
     const rules = await db
       .select()
       .from(paymentMatchRules)
-      .where(
-        and(
-          eq(paymentMatchRules.userId, doc.userId),
-          eq(paymentMatchRules.isActive, true)
-        )
-      )
+      .where(and(eq(paymentMatchRules.userId, doc.userId), eq(paymentMatchRules.isActive, true)))
       .orderBy(asc(paymentMatchRules.priority))
       .all();
 

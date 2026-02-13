@@ -5,7 +5,16 @@
  * Supports scheduled exports, email delivery, and export history tracking.
  */
 
-import { db, transactions, accounts, exportHistory, basPeriods, basCalculations, taxYearSummary, deductions } from '../schema.js';
+import {
+  db,
+  transactions,
+  accounts,
+  exportHistory,
+  basPeriods,
+  basCalculations,
+  taxYearSummary,
+  deductions,
+} from '../schema.js';
 import { eq, and, gte, lte, inArray, desc, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 import path from 'path';
@@ -147,7 +156,6 @@ export class ExportService {
         .where(eq(exportHistory.id, exportId));
 
       return result;
-
     } catch (error) {
       // Mark export as failed
       await db
@@ -167,7 +175,7 @@ export class ExportService {
    */
   private async exportTransactions(
     exportId: string,
-    options: ExportOptions
+    options: ExportOptions,
   ): Promise<ExportResult> {
     // Build query conditions
     const conditions = [eq(transactions.userId, options.userId)];
@@ -215,10 +223,7 @@ export class ExportService {
   /**
    * Export BAS data
    */
-  private async exportBAS(
-    exportId: string,
-    options: ExportOptions
-  ): Promise<ExportResult> {
+  private async exportBAS(exportId: string, options: ExportOptions): Promise<ExportResult> {
     // Get BAS periods and calculations
     const periods = await db
       .select()
@@ -269,10 +274,7 @@ export class ExportService {
   /**
    * Export tax summary
    */
-  private async exportTaxSummary(
-    exportId: string,
-    options: ExportOptions
-  ): Promise<ExportResult> {
+  private async exportTaxSummary(exportId: string, options: ExportOptions): Promise<ExportResult> {
     // Get tax summaries
     const summaries = await db
       .select()
@@ -324,10 +326,7 @@ export class ExportService {
   /**
    * Export full backup (all user data)
    */
-  private async exportFullBackup(
-    exportId: string,
-    options: ExportOptions
-  ): Promise<ExportResult> {
+  private async exportFullBackup(exportId: string, options: ExportOptions): Promise<ExportResult> {
     // Fetch all user data
     const userTransactions = await db
       .select()
@@ -396,7 +395,7 @@ export class ExportService {
     exportId: string,
     options: ExportOptions,
     data: unknown,
-    baseName: string
+    baseName: string,
   ): Promise<ExportResult> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `${baseName}_${timestamp}.${options.format}`;
@@ -483,7 +482,7 @@ export class ExportService {
     const allKeys = new Set<string>();
     for (const item of data) {
       if (typeof item === 'object' && item !== null) {
-        Object.keys(item).forEach(key => allKeys.add(key));
+        Object.keys(item).forEach((key) => allKeys.add(key));
       }
     }
 
@@ -491,12 +490,12 @@ export class ExportService {
     const rows: string[] = [];
 
     // Header row
-    rows.push(headers.map(h => this.escapeCSV(h)).join(','));
+    rows.push(headers.map((h) => this.escapeCSV(h)).join(','));
 
     // Data rows
     for (const item of data) {
       if (typeof item === 'object' && item !== null) {
-        const row = headers.map(h => {
+        const row = headers.map((h) => {
           const value = (item as Record<string, unknown>)[h];
           return this.escapeCSV(value);
         });
@@ -530,7 +529,7 @@ export class ExportService {
    */
   private generateTextReport(data: unknown, type: ExportType): string {
     const lines: string[] = [];
-    lines.push('=' .repeat(60));
+    lines.push('='.repeat(60));
     lines.push(`GoldLedger - ${type.toUpperCase()} Export`);
     lines.push(`Generated: ${new Date().toISOString()}`);
     lines.push('='.repeat(60));
@@ -602,14 +601,14 @@ export class ExportService {
    * @param requestingUserId - The user requesting the export (for authorization)
    * @returns The export record if found and authorized, null otherwise
    */
-  async getExport(exportId: string, requestingUserId: string): Promise<typeof exportHistory.$inferSelect | null> {
+  async getExport(
+    exportId: string,
+    requestingUserId: string,
+  ): Promise<typeof exportHistory.$inferSelect | null> {
     const result = await db
       .select()
       .from(exportHistory)
-      .where(and(
-        eq(exportHistory.id, exportId),
-        eq(exportHistory.userId, requestingUserId)
-      ))
+      .where(and(eq(exportHistory.id, exportId), eq(exportHistory.userId, requestingUserId)))
       .limit(1);
 
     return result[0] || null;
@@ -641,8 +640,8 @@ export class ExportService {
    */
   async getUserExports(
     userId: string,
-    limit: number = 20
-  ): Promise<typeof exportHistory.$inferSelect[]> {
+    limit: number = 20,
+  ): Promise<(typeof exportHistory.$inferSelect)[]> {
     return db
       .select()
       .from(exportHistory)
@@ -664,10 +663,7 @@ export class ExportService {
       .set({
         downloadCount: sql`download_count + 1`,
       })
-      .where(and(
-        eq(exportHistory.id, exportId),
-        eq(exportHistory.userId, requestingUserId)
-      ));
+      .where(and(eq(exportHistory.id, exportId), eq(exportHistory.userId, requestingUserId)));
 
     // Check if any row was updated (result handling depends on driver, but this is the pattern)
     return true;
@@ -680,10 +676,7 @@ export class ExportService {
     const now = new Date().toISOString();
 
     // Get expired exports
-    const expired = await db
-      .select()
-      .from(exportHistory)
-      .where(lte(exportHistory.expiresAt, now));
+    const expired = await db.select().from(exportHistory).where(lte(exportHistory.expiresAt, now));
 
     let cleaned = 0;
 
@@ -698,9 +691,7 @@ export class ExportService {
       }
 
       // Delete record
-      await db
-        .delete(exportHistory)
-        .where(eq(exportHistory.id, exp.id));
+      await db.delete(exportHistory).where(eq(exportHistory.id, exp.id));
 
       cleaned++;
     }
@@ -717,13 +708,17 @@ export const exportService = new ExportService();
 
 // Schedule cleanup job (run daily)
 if (process.env.NODE_ENV === 'production') {
-  setInterval(() => {
-    exportService.cleanupExpiredExports()
-      .then(count => {
-        if (count > 0) {
-          console.log(`Cleaned up ${count} expired exports`);
-        }
-      })
-      .catch(console.error);
-  }, 24 * 60 * 60 * 1000); // 24 hours
+  setInterval(
+    () => {
+      exportService
+        .cleanupExpiredExports()
+        .then((count) => {
+          if (count > 0) {
+            console.log(`Cleaned up ${count} expired exports`);
+          }
+        })
+        .catch(console.error);
+    },
+    24 * 60 * 60 * 1000,
+  ); // 24 hours
 }

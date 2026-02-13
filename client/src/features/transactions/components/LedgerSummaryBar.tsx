@@ -30,14 +30,26 @@ export function LedgerSummaryBar({ transactions }: LedgerSummaryBarProps) {
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-      <StatPill label="Income" value={<CurrencyDisplay amount={stats.income} />} colorClass="text-emerald-400" />
-      <StatPill label="Expenses" value={<CurrencyDisplay amount={stats.expenses} />} colorClass="text-red-400" />
+      <StatPill
+        label="Income"
+        value={<CurrencyDisplay amount={stats.income} />}
+        colorClass="text-emerald-400"
+      />
+      <StatPill
+        label="Expenses"
+        value={<CurrencyDisplay amount={stats.expenses} />}
+        colorClass="text-red-400"
+      />
       <StatPill
         label="Net Flow"
         value={<CurrencyDisplay amount={stats.netFlow} />}
         colorClass={stats.netFlow >= 0 ? 'text-[#FFCC00]' : 'text-red-400'}
       />
-      <StatPill label="GST" value={<CurrencyDisplay amount={stats.gstTotal} />} colorClass="text-blue-400" />
+      <StatPill
+        label="GST"
+        value={<CurrencyDisplay amount={stats.gstTotal} />}
+        colorClass="text-blue-400"
+      />
       <StatPill label="Count" value={stats.count} />
       {stats.transferCount > 0 && (
         <StatPill label="Transfers" value={stats.transferCount} colorClass="text-zinc-400" />
@@ -58,7 +70,9 @@ function StatPill({
   return (
     <div className="flex flex-col bg-[#12121a]/80 border border-white/5 rounded-xl px-4 py-2 min-w-[100px] shrink-0">
       <span className="text-xs font-black text-zinc-600 uppercase tracking-widest">{label}</span>
-      <span className={cn('text-sm font-bold tracking-tight', colorClass || 'text-white')}>{value}</span>
+      <span className={cn('text-sm font-bold tracking-tight', colorClass || 'text-white')}>
+        {value}
+      </span>
     </div>
   );
 }

@@ -84,7 +84,9 @@ export async function withOfflineMutation<T>(
   };
 
   await addToSyncQueue(syncOp);
-  console.log(`[OfflineInterceptor] Queued ${operation} ${resourceType} (queue size: ${await getQueueSize()})`);
+  console.log(
+    `[OfflineInterceptor] Queued ${operation} ${resourceType} (queue size: ${await getQueueSize()})`,
+  );
 
   return optimisticResponse;
 }
@@ -93,9 +95,17 @@ export async function withOfflineMutation<T>(
 
 /** Intercepted fetchTransactions: caches to IDB, reads from IDB when offline */
 export function createTransactionInterceptor(
-  originalFetch: (options?: { limit?: number; offset?: number; accountId?: string }) => Promise<{ transactions: Transaction[]; total: number }>,
+  originalFetch: (options?: {
+    limit?: number;
+    offset?: number;
+    accountId?: string;
+  }) => Promise<{ transactions: Transaction[]; total: number }>,
 ) {
-  return async (options?: { limit?: number; offset?: number; accountId?: string }): Promise<{ transactions: Transaction[]; total: number }> => {
+  return async (options?: {
+    limit?: number;
+    offset?: number;
+    accountId?: string;
+  }): Promise<{ transactions: Transaction[]; total: number }> => {
     if (navigator.onLine) {
       try {
         const result = await originalFetch(options);
@@ -120,9 +130,7 @@ export function createTransactionInterceptor(
 }
 
 /** Intercepted fetchAccounts: caches to IDB, reads from IDB when offline */
-export function createAccountInterceptor(
-  originalFetch: () => Promise<Account[]>,
-) {
+export function createAccountInterceptor(originalFetch: () => Promise<Account[]>) {
   return async (): Promise<Account[]> => {
     if (navigator.onLine) {
       try {
@@ -157,9 +165,7 @@ export function createUpdateTransactionInterceptor(
 }
 
 /** Intercepted deleteTransaction: queues to sync queue when offline */
-export function createDeleteTransactionInterceptor(
-  originalDelete: (id: string) => Promise<void>,
-) {
+export function createDeleteTransactionInterceptor(originalDelete: (id: string) => Promise<void>) {
   return async (id: string): Promise<void> => {
     return withOfflineMutation(
       () => originalDelete(id),

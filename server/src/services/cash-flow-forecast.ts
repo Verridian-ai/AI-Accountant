@@ -51,7 +51,6 @@ export interface ForecastComparison {
 // ============================================================================
 
 export class CashFlowForecastService {
-
   // --------------------------------------------------------------------------
   // Public Methods
   // --------------------------------------------------------------------------
@@ -60,11 +59,7 @@ export class CashFlowForecastService {
    * Generate a forecast from historical transactions.
    * Fetches 12-24 months of data, runs the selected model, persists results.
    */
-  async generateForecast(
-    userId: string,
-    accountId: string | null,
-    options: ForecastOptions
-  ) {
+  async generateForecast(userId: string, accountId: string | null, options: ForecastOptions) {
     const now = new Date().toISOString();
     const forecastId = crypto.randomUUID();
     const confidence = options.confidenceLevel ?? 0.85;
@@ -112,7 +107,11 @@ export class CashFlowForecastService {
     // Build category breakdown if requested
     let categoryBreakdowns: Map<string, Record<string, number>> | undefined;
     if (options.categoryBreakdown) {
-      categoryBreakdowns = this._buildCategoryBreakdowns(historicalTx, options.granularity, periods);
+      categoryBreakdowns = this._buildCategoryBreakdowns(
+        historicalTx,
+        options.granularity,
+        periods,
+      );
     }
 
     // Persist the forecast
@@ -177,24 +176,24 @@ export class CashFlowForecastService {
     periodData: Map<string, { inflow: number; outflow: number }>,
     model: 'linear' | 'seasonal' | 'ml_weighted',
     granularity: string,
-    opts: { startDate: string; endDate: string; confidenceLevel: number }
+    opts: { startDate: string; endDate: string; confidenceLevel: number },
   ): ForecastPeriodResult[] {
     // Sort historical periods chronologically
     const sortedKeys = Array.from(periodData.keys()).sort();
-    const inflowSeries = sortedKeys.map(k => periodData.get(k)!.inflow);
-    const outflowSeries = sortedKeys.map(k => periodData.get(k)!.outflow);
+    const inflowSeries = sortedKeys.map((k) => periodData.get(k)!.inflow);
+    const outflowSeries = sortedKeys.map((k) => periodData.get(k)!.outflow);
     const netSeries = inflowSeries.map((v, i) => v - outflowSeries[i]);
 
     // Generate future period boundaries
     const futurePeriods = this._generatePeriodBoundaries(opts.startDate, opts.endDate, granularity);
 
     // Calculate standard deviation of net series for confidence bands
-    const netMean = netSeries.length > 0
-      ? netSeries.reduce((s, v) => s + v, 0) / netSeries.length
-      : 0;
-    const netVariance = netSeries.length > 1
-      ? netSeries.reduce((s, v) => s + (v - netMean) ** 2, 0) / (netSeries.length - 1)
-      : 0;
+    const netMean =
+      netSeries.length > 0 ? netSeries.reduce((s, v) => s + v, 0) / netSeries.length : 0;
+    const netVariance =
+      netSeries.length > 1
+        ? netSeries.reduce((s, v) => s + (v - netMean) ** 2, 0) / (netSeries.length - 1)
+        : 0;
     const netStdDev = Math.sqrt(netVariance);
 
     const results: ForecastPeriodResult[] = [];
@@ -253,18 +252,28 @@ export class CashFlowForecastService {
           const inflowTrendReg = this._linearRegression(inflowDecomp.trend);
           const outflowTrendReg = this._linearRegression(outflowDecomp.trend);
           const seasonalIdx = idx % periodLen;
-          const seasonalInflow = (inflowTrendReg.intercept + inflowTrendReg.slope * idx)
-            + (inflowDecomp.seasonal[seasonalIdx] ?? 0);
-          const seasonalOutflow = (outflowTrendReg.intercept + outflowTrendReg.slope * idx)
-            + (outflowDecomp.seasonal[seasonalIdx] ?? 0);
+          const seasonalInflow =
+            inflowTrendReg.intercept +
+            inflowTrendReg.slope * idx +
+            (inflowDecomp.seasonal[seasonalIdx] ?? 0);
+          const seasonalOutflow =
+            outflowTrendReg.intercept +
+            outflowTrendReg.slope * idx +
+            (outflowDecomp.seasonal[seasonalIdx] ?? 0);
 
           // Recent trend component (last 3 periods average change)
           const recentInflow = this._recentTrendPredict(inflowSeries, idx);
           const recentOutflow = this._recentTrendPredict(outflowSeries, idx);
 
           // Weighted blend
-          predictedInflow = Math.max(0, 0.3 * linearInflow + 0.5 * seasonalInflow + 0.2 * recentInflow);
-          predictedOutflow = Math.max(0, 0.3 * linearOutflow + 0.5 * seasonalOutflow + 0.2 * recentOutflow);
+          predictedInflow = Math.max(
+            0,
+            0.3 * linearInflow + 0.5 * seasonalInflow + 0.2 * recentInflow,
+          );
+          predictedOutflow = Math.max(
+            0,
+            0.3 * linearOutflow + 0.5 * seasonalOutflow + 0.2 * recentOutflow,
+          );
           predictedNet = predictedInflow - predictedOutflow;
           break;
         }
@@ -277,7 +286,7 @@ export class CashFlowForecastService {
       const { lower, upper } = this._calculateConfidenceBands(
         predictedNet,
         netStdDev,
-        opts.confidenceLevel
+        opts.confidenceLevel,
       );
 
       results.push({
@@ -403,7 +412,7 @@ export class CashFlowForecastService {
 
     // Recommendation: pick the forecast with lowest MAPE (if evaluated) or lowest MAE
     let recommendation = 'Insufficient data to recommend a model.';
-    const evaluated = forecastResults.filter(f => f.accuracy.periodsEvaluated > 0);
+    const evaluated = forecastResults.filter((f) => f.accuracy.periodsEvaluated > 0);
     if (evaluated.length > 0) {
       evaluated.sort((a, b) => a.accuracy.mape - b.accuracy.mape);
       recommendation = `Recommend '${evaluated[0].type}' model (forecast ${evaluated[0].id}) with MAPE ${evaluated[0].accuracy.mape}%.`;
@@ -463,9 +472,10 @@ export class CashFlowForecastService {
       }
       const actualNet = actualInflow - actualOutflow;
       const variance = actualNet - period.predictedNet;
-      const variancePct = period.predictedNet !== 0
-        ? parseFloat(((variance / Math.abs(period.predictedNet)) * 100).toFixed(2))
-        : 0;
+      const variancePct =
+        period.predictedNet !== 0
+          ? parseFloat(((variance / Math.abs(period.predictedNet)) * 100).toFixed(2))
+          : 0;
 
       await db
         .update(cashFlowForecastPeriods)
@@ -526,10 +536,11 @@ export class CashFlowForecastService {
 
     return {
       ...(forecast as any),
-      parameters: typeof (forecast as any).parameters === 'string'
-        ? JSON.parse((forecast as any).parameters)
-        : (forecast as any).parameters,
-      periods: (periods as any[]).map(p => ({
+      parameters:
+        typeof (forecast as any).parameters === 'string'
+          ? JSON.parse((forecast as any).parameters)
+          : (forecast as any).parameters,
+      periods: (periods as any[]).map((p) => ({
         ...p,
         breakdown: typeof p.breakdown === 'string' ? JSON.parse(p.breakdown) : p.breakdown,
       })),
@@ -556,12 +567,19 @@ export class CashFlowForecastService {
    * Standard least-squares linear regression.
    * Data points indexed by position (0, 1, 2...).
    */
-  private _linearRegression(dataPoints: number[]): { slope: number; intercept: number; r2: number } {
+  private _linearRegression(dataPoints: number[]): {
+    slope: number;
+    intercept: number;
+    r2: number;
+  } {
     const n = dataPoints.length;
     if (n === 0) return { slope: 0, intercept: 0, r2: 0 };
     if (n === 1) return { slope: 0, intercept: dataPoints[0], r2: 1 };
 
-    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+    let sumX = 0,
+      sumY = 0,
+      sumXY = 0,
+      sumXX = 0;
     for (let i = 0; i < n; i++) {
       sumX += i;
       sumY += dataPoints[i];
@@ -577,7 +595,8 @@ export class CashFlowForecastService {
 
     // R² calculation
     const yMean = sumY / n;
-    let ssTot = 0, ssRes = 0;
+    let ssTot = 0,
+      ssRes = 0;
     for (let i = 0; i < n; i++) {
       ssTot += (dataPoints[i] - yMean) ** 2;
       const predicted = intercept + slope * i;
@@ -594,7 +613,7 @@ export class CashFlowForecastService {
    */
   private _seasonalDecompose(
     dataPoints: number[],
-    periodLength: number
+    periodLength: number,
   ): { trend: number[]; seasonal: number[]; residual: number[] } {
     const n = dataPoints.length;
 
@@ -658,7 +677,7 @@ export class CashFlowForecastService {
   private _calculateConfidenceBands(
     predicted: number,
     stdDev: number,
-    confidence: number
+    confidence: number,
   ): { lower: number; upper: number } {
     // Z-scores for common confidence levels
     const zScores: Record<string, number> = {
@@ -683,7 +702,7 @@ export class CashFlowForecastService {
    */
   _aggregateTransactionsByPeriod(
     txns: any[],
-    granularity: string
+    granularity: string,
   ): Map<string, { inflow: number; outflow: number }> {
     const result = new Map<string, { inflow: number; outflow: number }>();
 
@@ -738,11 +757,16 @@ export class CashFlowForecastService {
    */
   private _getPeriodLength(granularity: string): number {
     switch (granularity) {
-      case 'daily': return 30;     // ~monthly cycle
-      case 'weekly': return 52;    // annual cycle
-      case 'monthly': return 12;   // annual cycle
-      case 'quarterly': return 4;  // annual cycle
-      default: return 12;
+      case 'daily':
+        return 30; // ~monthly cycle
+      case 'weekly':
+        return 52; // annual cycle
+      case 'monthly':
+        return 12; // annual cycle
+      case 'quarterly':
+        return 4; // annual cycle
+      default:
+        return 12;
     }
   }
 
@@ -770,7 +794,7 @@ export class CashFlowForecastService {
   private _generatePeriodBoundaries(
     startDate: string,
     endDate: string,
-    granularity: string
+    granularity: string,
   ): Array<{ start: string; end: string }> {
     const periods: Array<{ start: string; end: string }> = [];
     let current = new Date(startDate);
@@ -833,7 +857,7 @@ export class CashFlowForecastService {
   private _buildCategoryBreakdowns(
     txns: any[],
     granularity: string,
-    futurePeriods: ForecastPeriodResult[]
+    futurePeriods: ForecastPeriodResult[],
   ): Map<string, Record<string, number>> {
     // Group historical transactions by category → period → net amount
     const catPeriods = new Map<string, Map<string, number>>();
@@ -851,9 +875,8 @@ export class CashFlowForecastService {
       const breakdown: Record<string, number> = {};
       for (const [cat, periodMap] of catPeriods) {
         const values = Array.from(periodMap.values());
-        const avg = values.length > 0
-          ? Math.round(values.reduce((s, v) => s + v, 0) / values.length)
-          : 0;
+        const avg =
+          values.length > 0 ? Math.round(values.reduce((s, v) => s + v, 0) / values.length) : 0;
         if (avg !== 0) breakdown[cat] = avg;
       }
       result.set(period.periodStart, breakdown);

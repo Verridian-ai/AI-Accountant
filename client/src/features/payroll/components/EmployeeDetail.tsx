@@ -163,7 +163,9 @@ export function EmployeeDetail({ employeeId, onBack }: EmployeeDetailProps) {
             <span className="text-sm text-zinc-400">
               {typeLabels[employee.employment_type] ?? employee.employment_type}
             </span>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text}`}
+            >
               {status.label}
             </span>
           </div>
@@ -212,19 +214,29 @@ export function EmployeeDetail({ employeeId, onBack }: EmployeeDetailProps) {
           />
         )}
 
-        {activeTab === 'bank' && <BankTab bankDetails={bankDetails} employeeId={employeeId} onRefresh={loadData} />}
+        {activeTab === 'bank' && (
+          <BankTab bankDetails={bankDetails} employeeId={employeeId} onRefresh={loadData} />
+        )}
 
-        {activeTab === 'super' && <SuperTab superFund={superFund} employeeId={employeeId} onRefresh={loadData} />}
+        {activeTab === 'super' && (
+          <SuperTab superFund={superFund} employeeId={employeeId} onRefresh={loadData} />
+        )}
 
-        {activeTab === 'tax' && <TaxTab taxDeclaration={taxDeclaration} employeeId={employeeId} onRefresh={loadData} />}
+        {activeTab === 'tax' && (
+          <TaxTab taxDeclaration={taxDeclaration} employeeId={employeeId} onRefresh={loadData} />
+        )}
 
-        {activeTab === 'pay' && <PayTab payStructure={payStructure} employeeId={employeeId} onRefresh={loadData} />}
+        {activeTab === 'pay' && (
+          <PayTab payStructure={payStructure} employeeId={employeeId} onRefresh={loadData} />
+        )}
 
         {activeTab === 'documents' && (
           <div className="text-center py-12">
             <FolderOpen className="h-12 w-12 text-zinc-600 mx-auto mb-3" />
             <p className="text-zinc-400 font-medium">Documents</p>
-            <p className="text-xs text-zinc-500 mt-1">Document management coming in a future update</p>
+            <p className="text-xs text-zinc-500 mt-1">
+              Document management coming in a future update
+            </p>
           </div>
         )}
       </div>
@@ -295,7 +307,9 @@ function PersonalTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {fields.map((f) => (
           <div key={f.key}>
-            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{f.label}</label>
+            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+              {f.label}
+            </label>
             {editing ? (
               <input
                 type={f.key === 'date_of_birth' ? 'date' : 'text'}
@@ -310,7 +324,9 @@ function PersonalTab({
         ))}
         <div>
           <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">TFN</label>
-          <p className="text-sm text-white mt-1 font-mono">{employee.tfn_masked ?? '***-***-***'}</p>
+          <p className="text-sm text-white mt-1 font-mono">
+            {employee.tfn_masked ?? '***-***-***'}
+          </p>
         </div>
       </div>
     </div>
@@ -329,7 +345,12 @@ function BankTab({
   onRefresh: () => void;
 }) {
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ bsb: '', account_number: '', account_name: '', split_percentage: '100' });
+  const [form, setForm] = useState({
+    bsb: '',
+    account_number: '',
+    account_name: '',
+    split_percentage: '100',
+  });
 
   const handleAdd = async () => {
     try {
@@ -370,7 +391,9 @@ function BankTab({
             </div>
             <div>
               <p className="text-xs text-zinc-500">Account Number</p>
-              <p className="text-sm text-white font-mono mt-0.5">{bd.account_number_masked ?? '****' + (bd.account_number?.slice(-4) ?? '****')}</p>
+              <p className="text-sm text-white font-mono mt-0.5">
+                {bd.account_number_masked ?? '****' + (bd.account_number?.slice(-4) ?? '****')}
+              </p>
             </div>
             <div>
               <p className="text-xs text-zinc-500">Account Name</p>
@@ -415,10 +438,16 @@ function BankTab({
             />
           </div>
           <div className="flex gap-2 justify-end">
-            <button onClick={() => setAdding(false)} className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors">
+            <button
+              onClick={() => setAdding(false)}
+              className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+            >
               Cancel
             </button>
-            <button onClick={handleAdd} className="px-3 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors">
+            <button
+              onClick={handleAdd}
+              className="px-3 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors"
+            >
               Save
             </button>
           </div>
@@ -491,7 +520,9 @@ function SuperTab({
               { key: 'member_number', label: 'Member Number', placeholder: 'Member #' },
             ].map((f) => (
               <div key={f.key}>
-                <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{f.label}</label>
+                <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  {f.label}
+                </label>
                 <input
                   type="text"
                   value={(form as any)[f.key]}
@@ -527,11 +558,17 @@ function SuperTab({
           </div>
           <div className="flex gap-2 justify-end">
             {superFund && (
-              <button onClick={() => setEditing(false)} className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors">
+              <button
+                onClick={() => setEditing(false)}
+                className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+              >
                 Cancel
               </button>
             )}
-            <button onClick={handleSave} className="px-4 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors">
+            <button
+              onClick={handleSave}
+              className="px-4 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors"
+            >
               Save Super Fund
             </button>
           </div>
@@ -565,7 +602,9 @@ function SuperTab({
                     : 'bg-red-500/10 text-red-400'
                 }`}
               >
-                {(superFund.contribution_rate ?? 0) >= SUPER_MIN_RATE ? 'Compliant' : `Below ${SUPER_MIN_RATE}%`}
+                {(superFund.contribution_rate ?? 0) >= SUPER_MIN_RATE
+                  ? 'Compliant'
+                  : `Below ${SUPER_MIN_RATE}%`}
               </span>
             </div>
           </div>
@@ -657,11 +696,17 @@ function TaxTab({
       {editing && (
         <div className="flex gap-2 justify-end mt-4">
           {taxDeclaration && (
-            <button onClick={() => setEditing(false)} className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors">
+            <button
+              onClick={() => setEditing(false)}
+              className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+            >
               Cancel
             </button>
           )}
-          <button onClick={handleSave} className="px-4 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors">
+          <button
+            onClick={handleSave}
+            className="px-4 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors"
+          >
             Save Declaration
           </button>
         </div>
@@ -711,12 +756,18 @@ function PayTab({
             <tbody>
               {payStructure.map((ps, i) => (
                 <tr key={i} className="border-b border-white/5 last:border-0">
-                  <td className="px-4 py-3 text-sm text-white">{ps.category_name ?? ps.pay_category_id}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-400 capitalize">{ps.rate_type ?? '-'}</td>
+                  <td className="px-4 py-3 text-sm text-white">
+                    {ps.category_name ?? ps.pay_category_id}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-zinc-400 capitalize">
+                    {ps.rate_type ?? '-'}
+                  </td>
                   <td className="px-4 py-3 text-sm text-white text-right font-mono">
                     ${((ps.rate_cents ?? 0) / 100).toFixed(2)}
                   </td>
-                  <td className="px-4 py-3 text-sm text-zinc-400 text-right">{ps.standard_hours ?? '-'}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-400 text-right">
+                    {ps.standard_hours ?? '-'}
+                  </td>
                 </tr>
               ))}
             </tbody>

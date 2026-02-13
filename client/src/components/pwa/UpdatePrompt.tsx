@@ -14,9 +14,7 @@ export function UpdatePrompt() {
             <RefreshCw className="h-5 w-5 text-[#FFCC00]" />
           </div>
 
-          <p className="flex-1 text-sm font-medium text-zinc-200">
-            A new version is available
-          </p>
+          <p className="flex-1 text-sm font-medium text-zinc-200">A new version is available</p>
 
           <button
             type="button"

@@ -66,7 +66,9 @@ export function RuleManager() {
     }
   };
 
-  useEffect(() => { loadRules(); }, []);
+  useEffect(() => {
+    loadRules();
+  }, []);
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
@@ -105,7 +107,7 @@ export function RuleManager() {
   };
 
   const updateField = <K extends keyof NewRuleForm>(field: K, value: NewRuleForm[K]) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const showVendor = form.ruleType === 'vendor_match' || form.ruleType === 'composite';
@@ -142,7 +144,7 @@ export function RuleManager() {
               <input
                 type="text"
                 value={form.name}
-                onChange={e => updateField('name', e.target.value)}
+                onChange={(e) => updateField('name', e.target.value)}
                 placeholder="e.g. Monthly Rent Payment"
                 className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
               />
@@ -151,11 +153,15 @@ export function RuleManager() {
               <label className="block text-xs text-zinc-400 mb-1">Rule Type</label>
               <select
                 value={form.ruleType}
-                onChange={e => updateField('ruleType', e.target.value as PaymentMatchRule['ruleType'])}
+                onChange={(e) =>
+                  updateField('ruleType', e.target.value as PaymentMatchRule['ruleType'])
+                }
                 className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
               >
-                {RULE_TYPES.map(t => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                {RULE_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -163,11 +169,13 @@ export function RuleManager() {
 
           {showVendor && (
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Vendor Pattern (supports wildcards *)</label>
+              <label className="block text-xs text-zinc-400 mb-1">
+                Vendor Pattern (supports wildcards *)
+              </label>
               <input
                 type="text"
                 value={form.vendorPattern}
-                onChange={e => updateField('vendorPattern', e.target.value)}
+                onChange={(e) => updateField('vendorPattern', e.target.value)}
                 placeholder="e.g. *ELECTRICITY* or Telstra*"
                 className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
               />
@@ -182,7 +190,7 @@ export function RuleManager() {
                   type="number"
                   step="0.01"
                   value={form.amountExact}
-                  onChange={e => updateField('amountExact', e.target.value)}
+                  onChange={(e) => updateField('amountExact', e.target.value)}
                   placeholder="0.00"
                   className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
                 />
@@ -193,7 +201,7 @@ export function RuleManager() {
                   type="number"
                   step="0.01"
                   value={form.amountTolerance}
-                  onChange={e => updateField('amountTolerance', e.target.value)}
+                  onChange={(e) => updateField('amountTolerance', e.target.value)}
                   placeholder="0.01"
                   className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
                 />
@@ -209,7 +217,7 @@ export function RuleManager() {
                   type="number"
                   step="0.01"
                   value={form.amountMin}
-                  onChange={e => updateField('amountMin', e.target.value)}
+                  onChange={(e) => updateField('amountMin', e.target.value)}
                   placeholder="0.00"
                   className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
                 />
@@ -220,7 +228,7 @@ export function RuleManager() {
                   type="number"
                   step="0.01"
                   value={form.amountMax}
-                  onChange={e => updateField('amountMax', e.target.value)}
+                  onChange={(e) => updateField('amountMax', e.target.value)}
                   placeholder="0.00"
                   className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
                 />
@@ -236,7 +244,7 @@ export function RuleManager() {
                 min="0"
                 max="90"
                 value={form.dateToleranceDays}
-                onChange={e => updateField('dateToleranceDays', e.target.value)}
+                onChange={(e) => updateField('dateToleranceDays', e.target.value)}
                 className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
               />
             </div>
@@ -245,7 +253,7 @@ export function RuleManager() {
               <input
                 type="text"
                 value={form.categoryFilter}
-                onChange={e => updateField('categoryFilter', e.target.value)}
+                onChange={(e) => updateField('categoryFilter', e.target.value)}
                 placeholder="Optional"
                 className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
               />
@@ -257,7 +265,7 @@ export function RuleManager() {
                 min="1"
                 max="100"
                 value={form.priority}
-                onChange={e => updateField('priority', e.target.value)}
+                onChange={(e) => updateField('priority', e.target.value)}
                 className="w-full px-3 py-2 neu-inset rounded-lg bg-transparent text-zinc-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
               />
             </div>
@@ -272,7 +280,10 @@ export function RuleManager() {
               {creating ? 'Creating...' : 'Create Rule'}
             </button>
             <button
-              onClick={() => { setShowForm(false); setForm(DEFAULT_FORM); }}
+              onClick={() => {
+                setShowForm(false);
+                setForm(DEFAULT_FORM);
+              }}
               className="px-4 py-2 rounded-lg text-zinc-400 text-sm hover:text-zinc-200 transition-colors"
             >
               Cancel
@@ -299,19 +310,26 @@ export function RuleManager() {
         </div>
       ) : (
         <div className="space-y-3">
-          {rules.map(rule => {
+          {rules.map((rule) => {
             const isExpanded = expandedId === rule.id;
-            const isRecent = rule.lastMatchedAt && (Date.now() - new Date(rule.lastMatchedAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
+            const isRecent =
+              rule.lastMatchedAt &&
+              Date.now() - new Date(rule.lastMatchedAt).getTime() < 7 * 24 * 60 * 60 * 1000;
 
             return (
-              <div key={rule.id} className={`neu-raised rounded-xl overflow-hidden ${!rule.isActive ? 'opacity-60' : ''}`}>
+              <div
+                key={rule.id}
+                className={`neu-raised rounded-xl overflow-hidden ${!rule.isActive ? 'opacity-60' : ''}`}
+              >
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : rule.id)}
                   className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-sm font-medium text-zinc-200 truncate">{rule.name}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${RULE_TYPE_COLORS[rule.ruleType] ?? 'bg-zinc-700 text-zinc-300'}`}>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${RULE_TYPE_COLORS[rule.ruleType] ?? 'bg-zinc-700 text-zinc-300'}`}
+                    >
                       {rule.ruleType.replace('_', ' ')}
                     </span>
                     {rule.matchCount > 0 && (
@@ -319,11 +337,17 @@ export function RuleManager() {
                         {rule.matchCount} matches
                       </span>
                     )}
-                    <span className={`w-2 h-2 rounded-full ${isRecent ? 'bg-emerald-400' : rule.matchCount > 0 ? 'bg-zinc-600' : 'bg-zinc-700'}`} />
+                    <span
+                      className={`w-2 h-2 rounded-full ${isRecent ? 'bg-emerald-400' : rule.matchCount > 0 ? 'bg-zinc-600' : 'bg-zinc-700'}`}
+                    />
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-zinc-500 font-mono">P{rule.priority}</span>
-                    {isExpanded ? <ChevronUp className="h-4 w-4 text-zinc-400" /> : <ChevronDown className="h-4 w-4 text-zinc-400" />}
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4 text-zinc-400" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-zinc-400" />
+                    )}
                   </div>
                 </button>
 
@@ -333,28 +357,38 @@ export function RuleManager() {
                       {rule.vendorPattern && (
                         <div>
                           <span className="text-xs text-zinc-500">Vendor Pattern</span>
-                          <p className="text-zinc-300 font-mono text-xs mt-0.5">{rule.vendorPattern}</p>
+                          <p className="text-zinc-300 font-mono text-xs mt-0.5">
+                            {rule.vendorPattern}
+                          </p>
                         </div>
                       )}
                       {rule.amountExact != null && (
                         <div>
                           <span className="text-xs text-zinc-500">Exact Amount</span>
-                          <p className="text-zinc-300 font-mono text-xs mt-0.5">${rule.amountExact.toFixed(2)}</p>
+                          <p className="text-zinc-300 font-mono text-xs mt-0.5">
+                            ${rule.amountExact.toFixed(2)}
+                          </p>
                         </div>
                       )}
                       {rule.amountMin != null && (
                         <div>
                           <span className="text-xs text-zinc-500">Amount Range</span>
-                          <p className="text-zinc-300 font-mono text-xs mt-0.5">${rule.amountMin.toFixed(2)} - ${(rule.amountMax ?? 0).toFixed(2)}</p>
+                          <p className="text-zinc-300 font-mono text-xs mt-0.5">
+                            ${rule.amountMin.toFixed(2)} - ${(rule.amountMax ?? 0).toFixed(2)}
+                          </p>
                         </div>
                       )}
                       <div>
                         <span className="text-xs text-zinc-500">Amount Tolerance</span>
-                        <p className="text-zinc-300 font-mono text-xs mt-0.5">${rule.amountTolerance.toFixed(2)}</p>
+                        <p className="text-zinc-300 font-mono text-xs mt-0.5">
+                          ${rule.amountTolerance.toFixed(2)}
+                        </p>
                       </div>
                       <div>
                         <span className="text-xs text-zinc-500">Date Tolerance</span>
-                        <p className="text-zinc-300 text-xs mt-0.5">{rule.dateToleranceDays} days</p>
+                        <p className="text-zinc-300 text-xs mt-0.5">
+                          {rule.dateToleranceDays} days
+                        </p>
                       </div>
                       {rule.categoryFilter && (
                         <div>
@@ -365,7 +399,9 @@ export function RuleManager() {
                       <div>
                         <span className="text-xs text-zinc-500">Last Matched</span>
                         <p className="text-zinc-300 text-xs mt-0.5">
-                          {rule.lastMatchedAt ? new Date(rule.lastMatchedAt).toLocaleDateString() : 'Never'}
+                          {rule.lastMatchedAt
+                            ? new Date(rule.lastMatchedAt).toLocaleDateString()
+                            : 'Never'}
                         </p>
                       </div>
                     </div>

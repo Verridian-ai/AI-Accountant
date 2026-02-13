@@ -11,7 +11,9 @@ interface LineItemEditorProps {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(amount / 100);
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(
+    amount / 100,
+  );
 }
 
 function confidenceBadge(score: number) {
@@ -63,7 +65,8 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
             break;
           case 'quantity':
             updated.quantity = parseFloat(editValue) || 0;
-            if (updated.unitPrice != null) updated.amount = Math.round(updated.quantity * updated.unitPrice);
+            if (updated.unitPrice != null)
+              updated.amount = Math.round(updated.quantity * updated.unitPrice);
             break;
           case 'unitPrice':
             updated.unitPrice = parseFloat(editValue) || 0;
@@ -77,7 +80,7 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
             break;
         }
         return updated;
-      })
+      }),
     );
     setEditingCell(null);
   };
@@ -111,20 +114,41 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-white/10">
-            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-10">#</th>
-            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide">Description</th>
-            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-16">Qty</th>
-            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-24">Unit Price</th>
-            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-24">Amount</th>
-            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-20">GST</th>
-            <th className="text-center py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-10">Inc</th>
-            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-36">Category</th>
-            <th className="text-center py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-16">Conf</th>
+            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-10">
+              #
+            </th>
+            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide">
+              Description
+            </th>
+            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-16">
+              Qty
+            </th>
+            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-24">
+              Unit Price
+            </th>
+            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-24">
+              Amount
+            </th>
+            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-20">
+              GST
+            </th>
+            <th className="text-center py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-10">
+              Inc
+            </th>
+            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-36">
+              Category
+            </th>
+            <th className="text-center py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-16">
+              Conf
+            </th>
           </tr>
         </thead>
         <tbody>
           {items.map((item, i) => (
-            <tr key={item.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+            <tr
+              key={item.id}
+              className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+            >
               <td className="py-2 px-2 text-zinc-500">{item.lineNumber}</td>
               <td
                 className={`py-2 px-2 text-zinc-200 ${!readOnly ? 'cursor-pointer hover:bg-white/5 rounded' : ''}`}
@@ -175,8 +199,10 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                     onKeyDown={handleKeyDown}
                     className="w-full bg-white/5 border border-[#FFCC00]/30 rounded px-2 py-0.5 text-right text-zinc-200 focus:outline-none"
                   />
+                ) : item.unitPrice != null ? (
+                  formatCurrency(item.unitPrice)
                 ) : (
-                  item.unitPrice != null ? formatCurrency(item.unitPrice) : '-'
+                  '-'
                 )}
               </td>
               <td
@@ -197,12 +223,15 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                   formatCurrency(item.amount)
                 )}
               </td>
-              <td className="py-2 px-2 text-right text-zinc-400">{formatCurrency(item.gstAmount)}</td>
+              <td className="py-2 px-2 text-right text-zinc-400">
+                {formatCurrency(item.gstAmount)}
+              </td>
               <td className="py-2 px-2 text-center">
-                {item.gstInclusive
-                  ? <Check className="h-4 w-4 text-green-400 mx-auto" />
-                  : <Minus className="h-4 w-4 text-zinc-600 mx-auto" />
-                }
+                {item.gstInclusive ? (
+                  <Check className="h-4 w-4 text-green-400 mx-auto" />
+                ) : (
+                  <Minus className="h-4 w-4 text-zinc-600 mx-auto" />
+                )}
               </td>
               <td className="py-2 px-2">
                 {readOnly ? (
@@ -212,14 +241,18 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                     value={item.category || ''}
                     onChange={(e) => {
                       setItems((prev) =>
-                        prev.map((it, idx) => idx === i ? { ...it, category: e.target.value } : it)
+                        prev.map((it, idx) =>
+                          idx === i ? { ...it, category: e.target.value } : it,
+                        ),
                       );
                     }}
                     className="w-full bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-xs text-zinc-300 focus:ring-1 focus:ring-[#FFCC00]/20 focus:outline-none"
                   >
                     <option value="">Select...</option>
                     {categoryNames.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                 )}
@@ -230,8 +263,15 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
         </tbody>
         <tfoot>
           <tr className="border-t border-white/10 bg-white/[0.02]">
-            <td colSpan={4} className="py-2 px-2 text-right text-xs font-bold text-zinc-400 uppercase">Total</td>
-            <td className="py-2 px-2 text-right text-zinc-100 font-bold">{formatCurrency(totalAmount)}</td>
+            <td
+              colSpan={4}
+              className="py-2 px-2 text-right text-xs font-bold text-zinc-400 uppercase"
+            >
+              Total
+            </td>
+            <td className="py-2 px-2 text-right text-zinc-100 font-bold">
+              {formatCurrency(totalAmount)}
+            </td>
             <td className="py-2 px-2 text-right text-zinc-300">{formatCurrency(totalGst)}</td>
             <td colSpan={3} />
           </tr>

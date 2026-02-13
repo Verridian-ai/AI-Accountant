@@ -63,13 +63,46 @@ export interface GraphData {
 const PREDEFINED_ONTOLOGIES = {
   financial: {
     name: 'Financial Ontology',
-    description: 'Core financial entity relationships: accounts, transactions, merchants, categories',
+    description:
+      'Core financial entity relationships: accounts, transactions, merchants, categories',
     ontologyType: 'financial' as const,
     nodeTypes: [
-      { name: 'Account', properties: [{ name: 'account_number', type: 'string' }, { name: 'account_type', type: 'string' }, { name: 'balance', type: 'number' }], color: '#FFCC00' },
-      { name: 'Transaction', properties: [{ name: 'amount', type: 'number' }, { name: 'date', type: 'date' }, { name: 'category', type: 'string' }], color: '#4CAF50' },
-      { name: 'Merchant', properties: [{ name: 'name', type: 'string' }, { name: 'abn', type: 'string' }, { name: 'industry', type: 'string' }], color: '#2196F3' },
-      { name: 'Category', properties: [{ name: 'name', type: 'string' }, { name: 'parent', type: 'string' }, { name: 'tax_deductible', type: 'boolean' }], color: '#9C27B0' },
+      {
+        name: 'Account',
+        properties: [
+          { name: 'account_number', type: 'string' },
+          { name: 'account_type', type: 'string' },
+          { name: 'balance', type: 'number' },
+        ],
+        color: '#FFCC00',
+      },
+      {
+        name: 'Transaction',
+        properties: [
+          { name: 'amount', type: 'number' },
+          { name: 'date', type: 'date' },
+          { name: 'category', type: 'string' },
+        ],
+        color: '#4CAF50',
+      },
+      {
+        name: 'Merchant',
+        properties: [
+          { name: 'name', type: 'string' },
+          { name: 'abn', type: 'string' },
+          { name: 'industry', type: 'string' },
+        ],
+        color: '#2196F3',
+      },
+      {
+        name: 'Category',
+        properties: [
+          { name: 'name', type: 'string' },
+          { name: 'parent', type: 'string' },
+          { name: 'tax_deductible', type: 'boolean' },
+        ],
+        color: '#9C27B0',
+      },
     ],
     edgeTypes: [
       { name: 'BELONGS_TO', sourceType: 'Transaction', targetType: 'Account' },
@@ -84,10 +117,42 @@ const PREDEFINED_ONTOLOGIES = {
     description: 'Australian tax obligations: entities, obligations, deductions, ATO rulings',
     ontologyType: 'tax' as const,
     nodeTypes: [
-      { name: 'TaxEntity', properties: [{ name: 'entity_type', type: 'string' }, { name: 'abn', type: 'string' }, { name: 'tfn', type: 'string' }], color: '#F44336' },
-      { name: 'TaxObligation', properties: [{ name: 'type', type: 'string' }, { name: 'period', type: 'string' }, { name: 'amount', type: 'number' }], color: '#FF9800' },
-      { name: 'Deduction', properties: [{ name: 'category', type: 'string' }, { name: 'amount', type: 'number' }, { name: 'substantiated', type: 'boolean' }], color: '#8BC34A' },
-      { name: 'ATORuling', properties: [{ name: 'reference', type: 'string' }, { name: 'topic', type: 'string' }, { name: 'date', type: 'date' }], color: '#607D8B' },
+      {
+        name: 'TaxEntity',
+        properties: [
+          { name: 'entity_type', type: 'string' },
+          { name: 'abn', type: 'string' },
+          { name: 'tfn', type: 'string' },
+        ],
+        color: '#F44336',
+      },
+      {
+        name: 'TaxObligation',
+        properties: [
+          { name: 'type', type: 'string' },
+          { name: 'period', type: 'string' },
+          { name: 'amount', type: 'number' },
+        ],
+        color: '#FF9800',
+      },
+      {
+        name: 'Deduction',
+        properties: [
+          { name: 'category', type: 'string' },
+          { name: 'amount', type: 'number' },
+          { name: 'substantiated', type: 'boolean' },
+        ],
+        color: '#8BC34A',
+      },
+      {
+        name: 'ATORuling',
+        properties: [
+          { name: 'reference', type: 'string' },
+          { name: 'topic', type: 'string' },
+          { name: 'date', type: 'date' },
+        ],
+        color: '#607D8B',
+      },
     ],
     edgeTypes: [
       { name: 'OWES', sourceType: 'TaxEntity', targetType: 'TaxObligation' },
@@ -101,9 +166,32 @@ const PREDEFINED_ONTOLOGIES = {
     description: 'Business relationships: businesses, people, services',
     ontologyType: 'relationship' as const,
     nodeTypes: [
-      { name: 'Business', properties: [{ name: 'name', type: 'string' }, { name: 'abn', type: 'string' }, { name: 'industry', type: 'string' }], color: '#3F51B5' },
-      { name: 'Person', properties: [{ name: 'name', type: 'string' }, { name: 'role', type: 'string' }], color: '#00BCD4' },
-      { name: 'Service', properties: [{ name: 'name', type: 'string' }, { name: 'category', type: 'string' }, { name: 'recurring', type: 'boolean' }], color: '#CDDC39' },
+      {
+        name: 'Business',
+        properties: [
+          { name: 'name', type: 'string' },
+          { name: 'abn', type: 'string' },
+          { name: 'industry', type: 'string' },
+        ],
+        color: '#3F51B5',
+      },
+      {
+        name: 'Person',
+        properties: [
+          { name: 'name', type: 'string' },
+          { name: 'role', type: 'string' },
+        ],
+        color: '#00BCD4',
+      },
+      {
+        name: 'Service',
+        properties: [
+          { name: 'name', type: 'string' },
+          { name: 'category', type: 'string' },
+          { name: 'recurring', type: 'boolean' },
+        ],
+        color: '#CDDC39',
+      },
     ],
     edgeTypes: [
       { name: 'EMPLOYS', sourceType: 'Business', targetType: 'Person' },
@@ -125,7 +213,7 @@ export class CogneeOntologyService {
    * Validates that all edge source/target types reference existing node types.
    */
   async defineOntology(userId: string, definition: OntologyDefinition) {
-    const nodeTypeNames = new Set(definition.nodeTypes.map(n => n.name));
+    const nodeTypeNames = new Set(definition.nodeTypes.map((n) => n.name));
 
     // Validate edge type references
     for (const edge of definition.edgeTypes) {
@@ -140,22 +228,25 @@ export class CogneeOntologyService {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    await db.insert(graphSchemas).values({
-      id,
-      userId,
-      name: definition.name,
-      description: definition.description ?? null,
-      ontologyType: definition.ontologyType,
-      nodeTypes: JSON.stringify(definition.nodeTypes),
-      edgeTypes: JSON.stringify(definition.edgeTypes),
-      constraints: definition.constraints ? JSON.stringify(definition.constraints) : null,
-      isActive: true,
-      isPredefined: false,
-      appliedDatasets: JSON.stringify([]),
-      version: 1,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await db
+      .insert(graphSchemas)
+      .values({
+        id,
+        userId,
+        name: definition.name,
+        description: definition.description ?? null,
+        ontologyType: definition.ontologyType,
+        nodeTypes: JSON.stringify(definition.nodeTypes),
+        edgeTypes: JSON.stringify(definition.edgeTypes),
+        constraints: definition.constraints ? JSON.stringify(definition.constraints) : null,
+        isActive: true,
+        isPredefined: false,
+        appliedDatasets: JSON.stringify([]),
+        version: 1,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
     return this.getOntology(id);
   }
@@ -174,8 +265,12 @@ export class CogneeOntologyService {
     const edgeTypes = JSON.parse(ontology.edgeTypes) as OntologyDefinition['edgeTypes'];
 
     // Build ontology-aware extraction prompt for Cognee
-    const nodeDesc = nodeTypes.map(n => `${n.name} (${n.properties.map(p => p.name).join(', ')})`).join('; ');
-    const edgeDesc = edgeTypes.map(e => `${e.sourceType} -[${e.name}]-> ${e.targetType}`).join('; ');
+    const nodeDesc = nodeTypes
+      .map((n) => `${n.name} (${n.properties.map((p) => p.name).join(', ')})`)
+      .join('; ');
+    const edgeDesc = edgeTypes
+      .map((e) => `${e.sourceType} -[${e.name}]-> ${e.targetType}`)
+      .join('; ');
     const customPrompt =
       `Extract entities matching this ontology. Node types: ${nodeDesc}. ` +
       `Relationships: ${edgeDesc}. ` +
@@ -194,7 +289,8 @@ export class CogneeOntologyService {
     }
 
     const now = new Date().toISOString();
-    await db.update(graphSchemas)
+    await db
+      .update(graphSchemas)
       .set({
         appliedDatasets: JSON.stringify(currentDatasets),
         updatedAt: now,
@@ -231,10 +327,7 @@ export class CogneeOntologyService {
     // Always filter to user's own + predefined
     if (conditions.length > 0) {
       // Apply all filter conditions; the DB will return matching rows for this user
-      query = query.where(and(
-        eq(graphSchemas.userId, userId),
-        ...conditions,
-      )) as any;
+      query = query.where(and(eq(graphSchemas.userId, userId), ...conditions)) as any;
     } else {
       query = query.where(eq(graphSchemas.userId, userId)) as any;
     }
@@ -243,7 +336,7 @@ export class CogneeOntologyService {
 
     // Sort by name
     return (results as any[]).sort((a: any, b: any) =>
-      (a.name as string).localeCompare(b.name as string)
+      (a.name as string).localeCompare(b.name as string),
     );
   }
 
@@ -251,10 +344,7 @@ export class CogneeOntologyService {
    * Retrieve a single ontology by ID.
    */
   async getOntology(ontologyId: string) {
-    return db.select()
-      .from(graphSchemas)
-      .where(eq(graphSchemas.id, ontologyId))
-      .get();
+    return db.select().from(graphSchemas).where(eq(graphSchemas.id, ontologyId)).get();
   }
 
   /**
@@ -264,7 +354,9 @@ export class CogneeOntologyService {
    */
   async updateOntology(
     ontologyId: string,
-    updates: Partial<Pick<OntologyDefinition, 'name' | 'description' | 'nodeTypes' | 'edgeTypes' | 'constraints'>>
+    updates: Partial<
+      Pick<OntologyDefinition, 'name' | 'description' | 'nodeTypes' | 'edgeTypes' | 'constraints'>
+    >,
   ) {
     const existing = await this.getOntology(ontologyId);
     if (!existing) {
@@ -299,12 +391,10 @@ export class CogneeOntologyService {
     if (updates.description !== undefined) setValues.description = updates.description;
     if (updates.nodeTypes !== undefined) setValues.nodeTypes = JSON.stringify(updates.nodeTypes);
     if (updates.edgeTypes !== undefined) setValues.edgeTypes = JSON.stringify(updates.edgeTypes);
-    if (updates.constraints !== undefined) setValues.constraints = JSON.stringify(updates.constraints);
+    if (updates.constraints !== undefined)
+      setValues.constraints = JSON.stringify(updates.constraints);
 
-    await db.update(graphSchemas)
-      .set(setValues)
-      .where(eq(graphSchemas.id, ontologyId))
-      .run();
+    await db.update(graphSchemas).set(setValues).where(eq(graphSchemas.id, ontologyId)).run();
 
     // Re-apply to associated datasets if types changed
     if (typesChanged) {
@@ -330,7 +420,8 @@ export class CogneeOntologyService {
     }
 
     const now = new Date().toISOString();
-    await db.update(graphSchemas)
+    await db
+      .update(graphSchemas)
       .set({ isActive: false, updatedAt: now })
       .where(eq(graphSchemas.id, ontologyId))
       .run();
@@ -357,10 +448,12 @@ export class CogneeOntologyService {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    const validNodeTypeNames = new Set(nodeTypes.map(n => n.name));
-    const nodeTypeLookup = new Map(nodeTypes.map(n => [n.name, n]));
-    const validEdgeSignatures = new Set(edgeTypes.map(e => `${e.sourceType}|${e.name}|${e.targetType}`));
-    const nodeIdSet = new Set(graphData.nodes.map(n => n.id));
+    const validNodeTypeNames = new Set(nodeTypes.map((n) => n.name));
+    const nodeTypeLookup = new Map(nodeTypes.map((n) => [n.name, n]));
+    const validEdgeSignatures = new Set(
+      edgeTypes.map((e) => `${e.sourceType}|${e.name}|${e.targetType}`),
+    );
+    const nodeIdSet = new Set(graphData.nodes.map((n) => n.id));
 
     // --- Validate nodes ---
     const nodeCountsByType: Record<string, number> = {};
@@ -377,8 +470,13 @@ export class CogneeOntologyService {
       const typeDef = nodeTypeLookup.get(node.type);
       if (typeDef) {
         for (const prop of typeDef.properties) {
-          if (prop.required && (node.properties[prop.name] === undefined || node.properties[prop.name] === null)) {
-            errors.push(`Node "${node.id}" (${node.type}) missing required property "${prop.name}"`);
+          if (
+            prop.required &&
+            (node.properties[prop.name] === undefined || node.properties[prop.name] === null)
+          ) {
+            errors.push(
+              `Node "${node.id}" (${node.type}) missing required property "${prop.name}"`,
+            );
           }
         }
       }
@@ -395,13 +493,13 @@ export class CogneeOntologyService {
         continue;
       }
 
-      const sourceNode = graphData.nodes.find(n => n.id === edge.source);
-      const targetNode = graphData.nodes.find(n => n.id === edge.target);
+      const sourceNode = graphData.nodes.find((n) => n.id === edge.source);
+      const targetNode = graphData.nodes.find((n) => n.id === edge.target);
       if (sourceNode && targetNode) {
         const sig = `${sourceNode.type}|${edge.type}|${targetNode.type}`;
         if (!validEdgeSignatures.has(sig)) {
           errors.push(
-            `Edge "${edge.type}" from ${sourceNode.type} to ${targetNode.type} is not allowed by ontology`
+            `Edge "${edge.type}" from ${sourceNode.type} to ${targetNode.type} is not allowed by ontology`,
           );
         }
       }
@@ -422,14 +520,18 @@ export class CogneeOntologyService {
       // Required edges
       if (constraints.requiredEdges) {
         for (const req of constraints.requiredEdges) {
-          const found = graphData.edges.some(e => {
-            const src = graphData.nodes.find(n => n.id === e.source);
-            const tgt = graphData.nodes.find(n => n.id === e.target);
-            return src?.type === req.sourceType && e.type === req.edgeType && tgt?.type === req.targetType;
+          const found = graphData.edges.some((e) => {
+            const src = graphData.nodes.find((n) => n.id === e.source);
+            const tgt = graphData.nodes.find((n) => n.id === e.target);
+            return (
+              src?.type === req.sourceType &&
+              e.type === req.edgeType &&
+              tgt?.type === req.targetType
+            );
           });
           if (!found) {
             warnings.push(
-              `Required edge ${req.sourceType} -[${req.edgeType}]-> ${req.targetType} not found in graph`
+              `Required edge ${req.sourceType} -[${req.edgeType}]-> ${req.targetType} not found in graph`,
             );
           }
         }
@@ -438,11 +540,15 @@ export class CogneeOntologyService {
       // Unique properties
       if (constraints.uniqueProperties) {
         for (const uq of constraints.uniqueProperties) {
-          const nodesOfType = graphData.nodes.filter(n => n.type === uq.nodeType);
-          const values = nodesOfType.map(n => n.properties[uq.property]).filter(v => v !== undefined && v !== null);
-          const uniqueValues = new Set(values.map(v => String(v)));
+          const nodesOfType = graphData.nodes.filter((n) => n.type === uq.nodeType);
+          const values = nodesOfType
+            .map((n) => n.properties[uq.property])
+            .filter((v) => v !== undefined && v !== null);
+          const uniqueValues = new Set(values.map((v) => String(v)));
           if (uniqueValues.size < values.length) {
-            errors.push(`Property "${uq.property}" on "${uq.nodeType}" must be unique but has duplicates`);
+            errors.push(
+              `Property "${uq.property}" on "${uq.nodeType}" must be unique but has duplicates`,
+            );
           }
         }
       }
@@ -476,12 +582,10 @@ export class CogneeOntologyService {
    * Idempotent — skips if already seeded.
    */
   private async ensurePredefinedOntologies(userId: string) {
-    const existing = await db.select()
+    const existing = await db
+      .select()
       .from(graphSchemas)
-      .where(and(
-        eq(graphSchemas.userId, userId),
-        eq(graphSchemas.isPredefined, true),
-      ))
+      .where(and(eq(graphSchemas.userId, userId), eq(graphSchemas.isPredefined, true)))
       .all();
 
     const existingNames = new Set((existing as any[]).map((r: any) => r.name));
@@ -492,22 +596,25 @@ export class CogneeOntologyService {
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
 
-      await db.insert(graphSchemas).values({
-        id,
-        userId,
-        name: def.name,
-        description: def.description,
-        ontologyType: def.ontologyType,
-        nodeTypes: JSON.stringify(def.nodeTypes),
-        edgeTypes: JSON.stringify(def.edgeTypes),
-        constraints: null,
-        isActive: true,
-        isPredefined: true,
-        appliedDatasets: JSON.stringify([]),
-        version: 1,
-        createdAt: now,
-        updatedAt: now,
-      }).run();
+      await db
+        .insert(graphSchemas)
+        .values({
+          id,
+          userId,
+          name: def.name,
+          description: def.description,
+          ontologyType: def.ontologyType,
+          nodeTypes: JSON.stringify(def.nodeTypes),
+          edgeTypes: JSON.stringify(def.edgeTypes),
+          constraints: null,
+          isActive: true,
+          isPredefined: true,
+          appliedDatasets: JSON.stringify([]),
+          version: 1,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .run();
     }
   }
 }

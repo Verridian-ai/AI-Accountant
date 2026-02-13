@@ -17,9 +17,7 @@ export function getClient(): Anthropic {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    console.warn(
-      '[Claude] ANTHROPIC_API_KEY not set — agent calls will fail.'
-    );
+    console.warn('[Claude] ANTHROPIC_API_KEY not set — agent calls will fail.');
   }
 
   clientInstance = new Anthropic({ apiKey: apiKey || '' });

@@ -141,10 +141,7 @@ export function WidgetPicker({ open, onClose, onSelect }: WidgetPickerProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative neu-raised rounded-2xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#FFCC00]/20 shrink-0">
@@ -167,7 +164,7 @@ export function WidgetPicker({ open, onClose, onSelect }: WidgetPickerProps) {
                 className={cn(
                   'neu-raised-sm rounded-xl p-4 text-left border border-transparent',
                   'hover:border-[#FFCC00]/30 hover:shadow-[0_0_15px_rgba(255,204,0,0.08)]',
-                  'transition-all duration-200 group'
+                  'transition-all duration-200 group',
                 )}
               >
                 <div className="flex items-center gap-3 mb-2">
@@ -176,9 +173,7 @@ export function WidgetPicker({ open, onClose, onSelect }: WidgetPickerProps) {
                   </div>
                   <h4 className="font-bold text-zinc-100 text-sm">{wt.name}</h4>
                 </div>
-                <p className="text-xs text-zinc-500 leading-relaxed">
-                  {wt.description}
-                </p>
+                <p className="text-xs text-zinc-500 leading-relaxed">{wt.description}</p>
               </button>
             ))}
           </div>

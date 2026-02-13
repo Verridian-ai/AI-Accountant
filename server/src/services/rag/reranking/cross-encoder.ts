@@ -113,7 +113,7 @@ export class CrossEncoderReranker {
   async rerank(
     query: string,
     documents: RerankInput[],
-    topK?: number
+    topK?: number,
   ): Promise<CrossEncoderResult> {
     const startTime = Date.now();
     const warnings: string[] = [];
@@ -132,7 +132,7 @@ export class CrossEncoderReranker {
     const batchDocs = documents.slice(0, this.config.maxBatchSize);
     if (documents.length > this.config.maxBatchSize) {
       warnings.push(
-        `Truncated input from ${documents.length} to ${this.config.maxBatchSize} documents`
+        `Truncated input from ${documents.length} to ${this.config.maxBatchSize} documents`,
       );
     }
 
@@ -161,7 +161,7 @@ export class CrossEncoderReranker {
 
     // Apply minimum score threshold and top-k
     result.results = result.results.filter(
-      (r) => r.crossEncoderScore >= this.config.minScoreThreshold
+      (r) => r.crossEncoderScore >= this.config.minScoreThreshold,
     );
 
     if (topK && topK > 0) {
@@ -219,7 +219,7 @@ export class CrossEncoderReranker {
   private async tryLocalRerank(
     query: string,
     documents: RerankInput[],
-    warnings: string[]
+    warnings: string[],
   ): Promise<CrossEncoderResult> {
     try {
       const isAvailable = await this.checkLocalAvailability();
@@ -333,7 +333,7 @@ export class CrossEncoderReranker {
   private async tryCohereRerank(
     query: string,
     documents: RerankInput[],
-    warnings: string[]
+    warnings: string[],
   ): Promise<CrossEncoderResult> {
     if (!this.config.cohereApiKey) {
       warnings.push('Cohere API key not configured');
@@ -344,7 +344,7 @@ export class CrossEncoderReranker {
       const response = await fetch('https://api.cohere.ai/v1/rerank', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.config.cohereApiKey}`,
+          Authorization: `Bearer ${this.config.cohereApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -361,7 +361,7 @@ export class CrossEncoderReranker {
         throw new Error(`Cohere API error: ${response.status} - ${errorText}`);
       }
 
-      const data = await response.json() as CohereRerankResponse;
+      const data = (await response.json()) as CohereRerankResponse;
 
       if (!data.results || !Array.isArray(data.results)) {
         warnings.push('Invalid response from Cohere API');
@@ -409,7 +409,7 @@ export class CrossEncoderReranker {
 
   private mapScoresToDocuments(
     documents: RerankInput[],
-    scores: Array<{ index: number; score: number }>
+    scores: Array<{ index: number; score: number }>,
   ): RerankOutput[] {
     // Normalize scores to 0-1 range using sigmoid
     const normalizedScores = scores.map((s) => ({

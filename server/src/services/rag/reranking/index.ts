@@ -167,7 +167,7 @@ export class RerankerPipeline {
   async rerank(
     query: string,
     results: HybridSearchResult[],
-    context?: FinancialContext
+    context?: FinancialContext,
   ): Promise<RerankerPipelineResult> {
     const startTime = Date.now();
     const warnings: string[] = [];
@@ -201,7 +201,7 @@ export class RerankerPipeline {
       crossEncoderDetails = await this.crossEncoder.rerank(
         query,
         crossEncoderInput,
-        this.config.topK * 2 // Get extra for filtering
+        this.config.topK * 2, // Get extra for filtering
       );
 
       warnings.push(...crossEncoderDetails.warnings);
@@ -234,11 +234,7 @@ export class RerankerPipeline {
 
     // Stage 3: Combine scores
     stagesExecuted.push('score-combination');
-    const combinedResults = this.combineScores(
-      results,
-      crossEncoderScores,
-      financialBoostScores
-    );
+    const combinedResults = this.combineScores(results, crossEncoderScores, financialBoostScores);
 
     // Stage 4: Filter and sort
     stagesExecuted.push('filter-and-rank');
@@ -279,7 +275,7 @@ export class RerankerPipeline {
   async rerankSemanticOnly(
     query: string,
     results: HybridSearchResult[],
-    topK?: number
+    topK?: number,
   ): Promise<RerankerPipelineResult> {
     const tempConfig: Partial<RerankerPipelineConfig> = {
       ...this.config,
@@ -298,7 +294,7 @@ export class RerankerPipeline {
   rerankFinancialOnly(
     query: string,
     results: HybridSearchResult[],
-    context?: FinancialContext
+    context?: FinancialContext,
   ): RerankerPipelineResult {
     const startTime = Date.now();
     const stagesExecuted = ['financial-boost', 'filter-and-rank'];
@@ -398,7 +394,7 @@ export class RerankerPipeline {
   private combineScores(
     results: HybridSearchResult[],
     crossEncoderScores: Map<string, RerankOutput>,
-    financialBoostScores: Map<string, BoostOutput>
+    financialBoostScores: Map<string, BoostOutput>,
   ): RerankedResult[] {
     return results.map((r) => {
       const ceResult = crossEncoderScores.get(r.id);
@@ -455,7 +451,7 @@ export class RerankerPipeline {
   private emptyResult(
     startTime: number,
     stagesExecuted: string[],
-    warnings: string[]
+    warnings: string[],
   ): RerankerPipelineResult {
     return {
       results: [],

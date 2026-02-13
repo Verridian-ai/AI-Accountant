@@ -250,7 +250,7 @@ export class CdrCrawler {
   private async fetchWithRetry(
     url: string,
     holderId: string,
-    stage: CrawlError['stage']
+    stage: CrawlError['stage'],
   ): Promise<any> {
     let lastError: Error | null = null;
 
@@ -258,10 +258,7 @@ export class CdrCrawler {
       await this.rateLimiter.wait(holderId);
 
       const controller = new AbortController();
-      const timeout = setTimeout(
-        () => controller.abort(),
-        this.config.requestTimeoutMs
-      );
+      const timeout = setTimeout(() => controller.abort(), this.config.requestTimeoutMs);
 
       try {
         const response = await fetch(url, {
@@ -276,16 +273,13 @@ export class CdrCrawler {
         clearTimeout(timeout);
 
         if (response.status === 429) {
-          const retryAfter = parseInt(
-            response.headers.get('Retry-After') ?? '5',
-            10
-          );
+          const retryAfter = parseInt(response.headers.get('Retry-After') ?? '5', 10);
           const backoff = Math.max(
             retryAfter * 1000,
-            this.config.retryDelayMs * Math.pow(2, attempt)
+            this.config.retryDelayMs * Math.pow(2, attempt),
           );
           console.warn(
-            `[CDR] 429 from ${holderId}, retrying in ${backoff}ms (attempt ${attempt + 1})`
+            `[CDR] 429 from ${holderId}, retrying in ${backoff}ms (attempt ${attempt + 1})`,
           );
           await new Promise((r) => setTimeout(r, backoff));
           continue;
@@ -294,16 +288,14 @@ export class CdrCrawler {
         if (response.status >= 500) {
           const backoff = this.config.retryDelayMs * Math.pow(2, attempt);
           console.warn(
-            `[CDR] ${response.status} from ${holderId}, retrying in ${backoff}ms (attempt ${attempt + 1})`
+            `[CDR] ${response.status} from ${holderId}, retrying in ${backoff}ms (attempt ${attempt + 1})`,
           );
           await new Promise((r) => setTimeout(r, backoff));
           continue;
         }
 
         if (!response.ok) {
-          throw new Error(
-            `HTTP ${response.status}: ${response.statusText} for ${url}`
-          );
+          throw new Error(`HTTP ${response.status}: ${response.statusText} for ${url}`);
         }
 
         return await response.json();
@@ -312,9 +304,7 @@ export class CdrCrawler {
         lastError = err;
 
         if (err.name === 'AbortError') {
-          console.warn(
-            `[CDR] Timeout for ${holderId} (attempt ${attempt + 1})`
-          );
+          console.warn(`[CDR] Timeout for ${holderId} (attempt ${attempt + 1})`);
         }
 
         if (attempt < this.config.retryAttempts - 1) {
@@ -346,18 +336,17 @@ export class CdrCrawler {
       const brands: CdrRegisterBrand[] = body?.data ?? body ?? [];
 
       const activeBrands = (Array.isArray(brands) ? brands : []).filter(
-        (b) => b.status === 'ACTIVE'
+        (b) => b.status === 'ACTIVE',
       );
 
       console.log(
-        `[CDR] Found ${activeBrands.length} active data holders (of ${Array.isArray(brands) ? brands.length : 0} total)`
+        `[CDR] Found ${activeBrands.length} active data holders (of ${Array.isArray(brands) ? brands.length : 0} total)`,
       );
 
       const now = new Date().toISOString();
 
       for (const brand of activeBrands) {
-        const publicBaseUri =
-          brand.endpointDetail?.publicBaseUri ?? brand.registerUri ?? '';
+        const publicBaseUri = brand.endpointDetail?.publicBaseUri ?? brand.registerUri ?? '';
 
         if (!publicBaseUri) {
           errors.push({
@@ -445,16 +434,14 @@ export class CdrCrawler {
     let totalPages = 1;
 
     try {
-      console.log(
-        `[CDR] Stage 2: Crawling catalog for ${dataHolder.brandName}`
-      );
+      console.log(`[CDR] Stage 2: Crawling catalog for ${dataHolder.brandName}`);
 
       while (page <= totalPages) {
         const url = `${dataHolder.publicBaseUri}/cds-au/v1/banking/products?page=${page}&page-size=25`;
         const body: CdrProductListResponse = await this.fetchWithRetry(
           url,
           dataHolder.id,
-          'catalog'
+          'catalog',
         );
 
         const products = body?.data?.products ?? [];
@@ -469,8 +456,7 @@ export class CdrCrawler {
             .where(eq(cdrProducts.id, compositeId))
             .get();
 
-          const additionalInfoUri =
-            product.additionalInformation?.overviewUri ?? null;
+          const additionalInfoUri = product.additionalInformation?.overviewUri ?? null;
 
           if (existing) {
             await db
@@ -530,13 +516,9 @@ export class CdrCrawler {
         .where(eq(cdrDataHolders.id, dataHolder.id))
         .run();
 
-      console.log(
-        `[CDR] Cataloged ${productIds.length} products from ${dataHolder.brandName}`
-      );
+      console.log(`[CDR] Cataloged ${productIds.length} products from ${dataHolder.brandName}`);
     } catch (err: any) {
-      console.error(
-        `[CDR] Catalog failed for ${dataHolder.brandName}: ${err.message}`
-      );
+      console.error(`[CDR] Catalog failed for ${dataHolder.brandName}: ${err.message}`);
       errors.push({
         stage: 'catalog',
         dataHolderId: dataHolder.id,
@@ -554,7 +536,7 @@ export class CdrCrawler {
 
   async crawlProductDetail(
     dataHolder: DataHolderRecord,
-    compositeProductId: string
+    compositeProductId: string,
   ): Promise<{ errors: CrawlError[] }> {
     const errors: CrawlError[] = [];
     const productId = compositeProductId.split('::')[1] ?? compositeProductId;
@@ -564,7 +546,7 @@ export class CdrCrawler {
       const body: CdrProductDetailResponse = await this.fetchWithRetry(
         url,
         dataHolder.id,
-        'detail'
+        'detail',
       );
 
       const detail = body?.data;
@@ -602,9 +584,7 @@ export class CdrCrawler {
               productId: compositeProductId,
               lendingRateType: lr.lendingRateType,
               rate: parseFloat(lr.rate) || 0,
-              comparisonRate: lr.comparisonRate
-                ? parseFloat(lr.comparisonRate)
-                : null,
+              comparisonRate: lr.comparisonRate ? parseFloat(lr.comparisonRate) : null,
               calculationFrequency: lr.calculationFrequency ?? null,
               applicationFrequency: lr.applicationFrequency ?? null,
               interestPaymentDue: lr.interestPaymentDue ?? null,
@@ -648,10 +628,7 @@ export class CdrCrawler {
       }
 
       // Fees
-      await db
-        .delete(cdrFees)
-        .where(eq(cdrFees.productId, compositeProductId))
-        .run();
+      await db.delete(cdrFees).where(eq(cdrFees.productId, compositeProductId)).run();
 
       if (detail.fees?.length) {
         for (const fee of detail.fees) {
@@ -679,10 +656,7 @@ export class CdrCrawler {
       }
 
       // Features
-      await db
-        .delete(cdrFeatures)
-        .where(eq(cdrFeatures.productId, compositeProductId))
-        .run();
+      await db.delete(cdrFeatures).where(eq(cdrFeatures.productId, compositeProductId)).run();
 
       if (detail.features?.length) {
         for (const feat of detail.features) {
@@ -703,10 +677,7 @@ export class CdrCrawler {
       }
 
       // Eligibility
-      await db
-        .delete(cdrEligibility)
-        .where(eq(cdrEligibility.productId, compositeProductId))
-        .run();
+      await db.delete(cdrEligibility).where(eq(cdrEligibility.productId, compositeProductId)).run();
 
       if (detail.eligibility?.length) {
         for (const elig of detail.eligibility) {
@@ -726,7 +697,7 @@ export class CdrCrawler {
       }
     } catch (err: any) {
       console.error(
-        `[CDR] Detail failed for ${productId} @ ${dataHolder.brandName}: ${err.message}`
+        `[CDR] Detail failed for ${productId} @ ${dataHolder.brandName}: ${err.message}`,
       );
       errors.push({
         stage: 'detail',
@@ -829,8 +800,7 @@ export class CdrCrawler {
 
     try {
       // Stage 1
-      const { holders, errors: discoveryErrors } =
-        await this.discoverDataHolders();
+      const { holders, errors: discoveryErrors } = await this.discoverDataHolders();
       allErrors.push(...discoveryErrors);
       holdersDiscovered = holders.length;
 
@@ -852,7 +822,7 @@ export class CdrCrawler {
             }
 
             holdersProcessed++;
-          })
+          }),
         );
 
         // Capture unexpected rejections
@@ -886,7 +856,7 @@ export class CdrCrawler {
       .run();
 
     console.log(
-      `[CDR] Full crawl complete: ${holdersDiscovered} holders, ${totalProductsDiscovered} products, ${totalProductsDetailed} detailed, ${allErrors.length} errors in ${durationMs}ms`
+      `[CDR] Full crawl complete: ${holdersDiscovered} holders, ${totalProductsDiscovered} products, ${totalProductsDetailed} detailed, ${allErrors.length} errors in ${durationMs}ms`,
     );
 
     return {
@@ -968,8 +938,7 @@ export class CdrCrawler {
               // Skip detail if we already have rawJson and it was updated within the last 24h
               const lastUpdated = existingProduct?.lastUpdated;
               if (lastUpdated && existingProduct?.rawJson) {
-                const age =
-                  Date.now() - new Date(lastUpdated).getTime();
+                const age = Date.now() - new Date(lastUpdated).getTime();
                 if (age < 24 * 60 * 60 * 1000) {
                   totalProductsDetailed++;
                   continue;
@@ -982,7 +951,7 @@ export class CdrCrawler {
             }
 
             holdersProcessed++;
-          })
+          }),
         );
 
         for (const result of results) {
@@ -1014,7 +983,7 @@ export class CdrCrawler {
       .run();
 
     console.log(
-      `[CDR] Incremental crawl complete: ${holdersProcessed} holders, ${totalProductsDiscovered} products in ${durationMs}ms`
+      `[CDR] Incremental crawl complete: ${holdersProcessed} holders, ${totalProductsDiscovered} products in ${durationMs}ms`,
     );
 
     return {

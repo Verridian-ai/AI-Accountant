@@ -107,7 +107,7 @@ export class CogneeDataPointService {
    */
   async defineDataPoint(
     userId: string,
-    config: DataPointDefinition
+    config: DataPointDefinition,
   ): Promise<Record<string, unknown>> {
     this._validateSchema(config.schemaDefinition);
 
@@ -140,7 +140,7 @@ export class CogneeDataPointService {
 
     // Best-effort send to Cognee
     await this._sendToCognee(config.datasetName, config.schemaDefinition, userId).catch((err) =>
-      console.warn('[DataPointService] Failed to send schema to Cognee:', err)
+      console.warn('[DataPointService] Failed to send schema to Cognee:', err),
     );
 
     return {
@@ -188,13 +188,12 @@ export class CogneeDataPointService {
       .run();
 
     // Trigger cognify with the extraction prompt
-    const prompt = config.extractionPrompt ?? this._buildExtractionPrompt(
-      config.datapointType,
-      JSON.parse(config.schemaDefinition).fields
-    );
-    await cogneeClient.cognify([config.datasetName], true, prompt, userId).catch((err) =>
-      console.warn('[DataPointService] Cognify trigger failed:', err)
-    );
+    const prompt =
+      config.extractionPrompt ??
+      this._buildExtractionPrompt(config.datapointType, JSON.parse(config.schemaDefinition).fields);
+    await cogneeClient
+      .cognify([config.datasetName], true, prompt, userId)
+      .catch((err) => console.warn('[DataPointService] Cognify trigger failed:', err));
   }
 
   /**
@@ -203,7 +202,7 @@ export class CogneeDataPointService {
    */
   async listDataPoints(
     userId: string,
-    filters?: DataPointFilters
+    filters?: DataPointFilters,
   ): Promise<Record<string, unknown>[]> {
     // Ensure predefined DataPoints exist for this user
     await this._ensurePredefinedExist(userId);
@@ -263,8 +262,13 @@ export class CogneeDataPointService {
    */
   async updateDataPoint(
     datapointId: string,
-    updates: Partial<Pick<DataPointDefinition, 'description' | 'schemaDefinition' | 'extractionPrompt' | 'datasetName'>> & { name?: string; datapointType?: string },
-    userId?: string
+    updates: Partial<
+      Pick<
+        DataPointDefinition,
+        'description' | 'schemaDefinition' | 'extractionPrompt' | 'datasetName'
+      >
+    > & { name?: string; datapointType?: string },
+    userId?: string,
   ): Promise<Record<string, unknown> | null> {
     const existing = await db
       .select()
@@ -295,7 +299,8 @@ export class CogneeDataPointService {
 
     if (updates.name !== undefined) setValues.name = updates.name;
     if (updates.description !== undefined) setValues.description = updates.description;
-    if (updates.extractionPrompt !== undefined) setValues.extractionPrompt = updates.extractionPrompt;
+    if (updates.extractionPrompt !== undefined)
+      setValues.extractionPrompt = updates.extractionPrompt;
     if (updates.datasetName !== undefined) setValues.datasetName = updates.datasetName;
     if (updates.schemaDefinition !== undefined) {
       setValues.schemaDefinition = JSON.stringify(updates.schemaDefinition);
@@ -311,7 +316,7 @@ export class CogneeDataPointService {
     if (updates.schemaDefinition) {
       const dsName = updates.datasetName ?? existingRow.datasetName;
       await this._sendToCognee(dsName, updates.schemaDefinition, userId).catch((err) =>
-        console.warn('[DataPointService] Re-send schema to Cognee failed:', err)
+        console.warn('[DataPointService] Re-send schema to Cognee failed:', err),
       );
     }
 
@@ -363,10 +368,7 @@ export class CogneeDataPointService {
       throw new Error('Cannot delete a predefined DataPoint');
     }
 
-    await db
-      .delete(datapointConfigs)
-      .where(eq(datapointConfigs.id, datapointId))
-      .run();
+    await db.delete(datapointConfigs).where(eq(datapointConfigs.id, datapointId)).run();
   }
 
   /**
@@ -403,7 +405,7 @@ export class CogneeDataPointService {
         configRow.datasetName,
         3,
         'CHUNKS',
-        userId
+        userId,
       );
       sampleEntities = results.map((r) => ({
         text: r.text,
@@ -470,9 +472,10 @@ export class CogneeDataPointService {
   private async _sendToCognee(
     datasetName: string,
     schema: { fields: Array<{ name: string; type: string; required?: boolean }> },
-    userId?: string
+    userId?: string,
   ): Promise<void> {
-    const schemaText = `DataPoint Schema for ${datasetName}:\n` +
+    const schemaText =
+      `DataPoint Schema for ${datasetName}:\n` +
       schema.fields
         .map((f) => `  - ${f.name} (${f.type})${f.required ? ' [required]' : ''}`)
         .join('\n');
@@ -486,7 +489,7 @@ export class CogneeDataPointService {
    */
   private _buildExtractionPrompt(
     datapointType: string,
-    fields: ReadonlyArray<{ name: string; type: string; required?: boolean }>
+    fields: ReadonlyArray<{ name: string; type: string; required?: boolean }>,
   ): string {
     const requiredFields = fields.filter((f) => f.required).map((f) => f.name);
     const optionalFields = fields.filter((f) => !f.required).map((f) => f.name);
@@ -522,10 +525,7 @@ export class CogneeDataPointService {
       .select()
       .from(datapointConfigs)
       .where(
-        and(
-          eq(datapointConfigs.userId, config.userId),
-          eq(datapointConfigs.name, config.name)
-        )
+        and(eq(datapointConfigs.userId, config.userId), eq(datapointConfigs.name, config.name)),
       )
       .get();
 
@@ -572,7 +572,8 @@ export class CogneeDataPointService {
    * Returns the number of DataPoint models registered.
    */
   async registerWave3DataPoints(userId: string, datasetPrefix: string): Promise<number> {
-    const { ALL_DATAPOINT_MODELS, registerAllDataPoints } = await import('./cognee/datapoint-models.js');
+    const { ALL_DATAPOINT_MODELS, registerAllDataPoints } =
+      await import('./cognee/datapoint-models.js');
     await registerAllDataPoints(this, userId, datasetPrefix);
     return ALL_DATAPOINT_MODELS.length;
   }
@@ -589,12 +590,7 @@ export class CogneeDataPointService {
     const existing = await db
       .select()
       .from(datapointConfigs)
-      .where(
-        and(
-          eq(datapointConfigs.userId, userId),
-          eq(datapointConfigs.isPredefined, true)
-        )
-      )
+      .where(and(eq(datapointConfigs.userId, userId), eq(datapointConfigs.isPredefined, true)))
       .all();
 
     const existingNames = new Set((existing as any[]).map((r) => r.name));

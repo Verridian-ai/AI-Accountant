@@ -1,7 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import type { RefObject } from 'react';
 import type { VisibilityState } from '@tanstack/react-table';
-import { Activity, Search, Filter, FileText, FileSpreadsheet, Columns3, Eye, EyeOff } from 'lucide-react';
+import {
+  Activity,
+  Search,
+  Filter,
+  FileText,
+  FileSpreadsheet,
+  Columns3,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TOGGLEABLE_COLUMNS = [
@@ -64,9 +73,7 @@ export function LedgerHeader({
     });
   };
 
-  const hiddenCount = TOGGLEABLE_COLUMNS.filter(
-    (col) => columnVisibility[col.id] === false
-  ).length;
+  const hiddenCount = TOGGLEABLE_COLUMNS.filter((col) => columnVisibility[col.id] === false).length;
 
   return (
     <div className="p-4 lg:p-6 border-b border-white/5 bg-white/1 space-y-4 lg:space-y-6">
@@ -113,10 +120,10 @@ export function LedgerHeader({
             type="button"
             onClick={onToggleFilters}
             className={cn(
-              "px-5 py-3 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest transition-all btn-press border border-white/5",
+              'px-5 py-3 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest transition-all btn-press border border-white/5',
               showFilters || hasActiveFilters
-                ? "cba-gold-gradient text-[#0a0a0f] cba-gold-glow"
-                : "neu-raised-sm text-zinc-500 hover:text-[#FFCC00]"
+                ? 'cba-gold-gradient text-[#0a0a0f] cba-gold-glow'
+                : 'neu-raised-sm text-zinc-500 hover:text-[#FFCC00]',
             )}
           >
             <Filter className="h-4 w-4" />
@@ -130,10 +137,10 @@ export function LedgerHeader({
               type="button"
               onClick={() => setShowColumnMenu(!showColumnMenu)}
               className={cn(
-                "px-5 py-3 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest transition-all btn-press border border-white/5",
+                'px-5 py-3 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest transition-all btn-press border border-white/5',
                 showColumnMenu || hiddenCount > 0
-                  ? "cba-gold-gradient text-[#0a0a0f] cba-gold-glow"
-                  : "neu-raised-sm text-zinc-500 hover:text-[#FFCC00]"
+                  ? 'cba-gold-gradient text-[#0a0a0f] cba-gold-glow'
+                  : 'neu-raised-sm text-zinc-500 hover:text-[#FFCC00]',
               )}
               title="Toggle column visibility"
             >
@@ -149,7 +156,9 @@ export function LedgerHeader({
             {showColumnMenu && (
               <div className="absolute right-0 top-full mt-2 w-56 neu-raised rounded-2xl border border-white/10 bg-[#12121a] shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
                 <div className="px-4 py-3 border-b border-white/5">
-                  <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Show / Hide</p>
+                  <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">
+                    Show / Hide
+                  </p>
                 </div>
                 <div className="py-2">
                   {TOGGLEABLE_COLUMNS.map((col) => {
@@ -160,8 +169,8 @@ export function LedgerHeader({
                         type="button"
                         onClick={() => toggleColumn(col.id)}
                         className={cn(
-                          "w-full px-4 py-2.5 flex items-center justify-between text-sm font-bold transition-colors hover:bg-white/5",
-                          isVisible ? "text-zinc-200" : "text-zinc-600"
+                          'w-full px-4 py-2.5 flex items-center justify-between text-sm font-bold transition-colors hover:bg-white/5',
+                          isVisible ? 'text-zinc-200' : 'text-zinc-600',
                         )}
                       >
                         <span>{col.label}</span>

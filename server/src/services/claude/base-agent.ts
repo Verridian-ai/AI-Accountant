@@ -90,7 +90,7 @@ export abstract class ClaudeAgent<TInput, TOutput> {
           system: this.systemPrompt,
           tools: this.tools,
           messages,
-        })
+        }),
       );
 
       // Track usage
@@ -99,21 +99,17 @@ export abstract class ClaudeAgent<TInput, TOutput> {
 
       // Separate tool_use blocks from text blocks
       const toolUseBlocks = response.content.filter(
-        (b): b is Anthropic.ContentBlock & { type: 'tool_use' } =>
-          b.type === 'tool_use'
+        (b): b is Anthropic.ContentBlock & { type: 'tool_use' } => b.type === 'tool_use',
       );
 
       // If no tool calls, extract final text answer
       if (toolUseBlocks.length === 0 || response.stop_reason === 'end_turn') {
         const textBlock = response.content.find(
-          (b): b is Anthropic.ContentBlock & { type: 'text'; text: string } =>
-            b.type === 'text'
+          (b): b is Anthropic.ContentBlock & { type: 'text'; text: string } => b.type === 'text',
         );
 
         if (!textBlock) {
-          throw new Error(
-            `[${this.agentType}] No text response from agent`
-          );
+          throw new Error(`[${this.agentType}] No text response from agent`);
         }
 
         // If there were also tool_use blocks in the same response
@@ -127,9 +123,7 @@ export abstract class ClaudeAgent<TInput, TOutput> {
 
       // Budget check
       if (usage.toolCalls + toolUseBlocks.length > budget.maxToolCalls) {
-        throw new Error(
-          `[${this.agentType}] Tool call budget exceeded (${budget.maxToolCalls})`
-        );
+        throw new Error(`[${this.agentType}] Tool call budget exceeded (${budget.maxToolCalls})`);
       }
 
       // Execute tool calls
@@ -166,9 +160,7 @@ export abstract class ClaudeAgent<TInput, TOutput> {
         }
 
         try {
-          const result = await handler(
-            toolUse.input as Record<string, unknown>
-          );
+          const result = await handler(toolUse.input as Record<string, unknown>);
           toolResults.push({
             type: 'tool_result',
             tool_use_id: toolUse.id,
@@ -182,8 +174,7 @@ export abstract class ClaudeAgent<TInput, TOutput> {
             type: 'tool_result',
             tool_use_id: toolUse.id,
             content: JSON.stringify({
-              error:
-                err instanceof Error ? err.message : 'Tool execution failed',
+              error: err instanceof Error ? err.message : 'Tool execution failed',
             }),
             is_error: true,
           });
@@ -201,9 +192,7 @@ export abstract class ClaudeAgent<TInput, TOutput> {
       });
     }
 
-    throw new Error(
-      `[${this.agentType}] Agent loop exceeded ${maxIterations} iterations`
-    );
+    throw new Error(`[${this.agentType}] Agent loop exceeded ${maxIterations} iterations`);
   }
 
   /**
@@ -227,9 +216,7 @@ export abstract class ClaudeAgent<TInput, TOutput> {
           // fall through
         }
       }
-      throw new Error(
-        `[${this.agentType}] Failed to parse JSON output: ${text.slice(0, 200)}`
-      );
+      throw new Error(`[${this.agentType}] Failed to parse JSON output: ${text.slice(0, 200)}`);
     }
   }
 }

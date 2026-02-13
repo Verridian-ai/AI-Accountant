@@ -19,7 +19,7 @@ export class BaseError extends Error {
     code: string = 'INTERNAL_ERROR',
     statusCode: number = 500,
     isOperational: boolean = true,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -75,7 +75,7 @@ export class ValidationError extends BaseError {
   constructor(
     message: string,
     errors: Array<{ field: string; message: string }> = [],
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ) {
     super(message, 'VALIDATION_ERROR', 400, true, context);
     this.errors = errors;
@@ -165,7 +165,11 @@ export class DatabaseError extends BaseError {
 export class RateLimitError extends BaseError {
   public readonly retryAfter: number;
 
-  constructor(message: string = 'Rate limit exceeded', retryAfter: number = 60, context?: Record<string, unknown>) {
+  constructor(
+    message: string = 'Rate limit exceeded',
+    retryAfter: number = 60,
+    context?: Record<string, unknown>,
+  ) {
     super(message, 'RATE_LIMIT_EXCEEDED', 429, true, context);
     this.retryAfter = retryAfter;
   }

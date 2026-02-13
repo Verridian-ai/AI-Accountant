@@ -110,7 +110,7 @@ export class CogneeGraphService {
   async getGraphData(
     datasetName: string,
     options: GraphDataOptions = {},
-    userId?: string
+    userId?: string,
   ): Promise<GraphVisualizationData> {
     const { maxNodes = 500, ontologyId, nodeFilter, includeMetadata = true } = options;
 
@@ -130,11 +130,11 @@ export class CogneeGraphService {
 
     // Apply node type filter
     if (nodeFilter) {
-      const filterTypes = new Set(nodeFilter.split(',').map(t => t.trim().toLowerCase()));
-      const filteredNodes = nodes.filter(n => filterTypes.has(n.type.toLowerCase()));
-      const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+      const filterTypes = new Set(nodeFilter.split(',').map((t) => t.trim().toLowerCase()));
+      const filteredNodes = nodes.filter((n) => filterTypes.has(n.type.toLowerCase()));
+      const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
       nodes = filteredNodes;
-      edges = edges.filter(e => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target));
+      edges = edges.filter((e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target));
     }
 
     // Calculate node sizes based on connectivity
@@ -149,8 +149,8 @@ export class CogneeGraphService {
     if (truncated) {
       nodes.sort((a, b) => b.size - a.size);
       nodes = nodes.slice(0, maxNodes);
-      const keptIds = new Set(nodes.map(n => n.id));
-      edges = edges.filter(e => keptIds.has(e.source) && keptIds.has(e.target));
+      const keptIds = new Set(nodes.map((n) => n.id));
+      edges = edges.filter((e) => keptIds.has(e.source) && keptIds.has(e.target));
     }
 
     // Generate initial 3D positions (sphere distribution)
@@ -203,9 +203,8 @@ export class CogneeGraphService {
       degreeMap.set(e.target, (degreeMap.get(e.target) ?? 0) + 1);
     }
 
-    const averageDegree = nodeCount > 0
-      ? Array.from(degreeMap.values()).reduce((sum, d) => sum + d, 0) / nodeCount
-      : 0;
+    const averageDegree =
+      nodeCount > 0 ? Array.from(degreeMap.values()).reduce((sum, d) => sum + d, 0) / nodeCount : 0;
 
     // Node type distribution
     const nodeTypeDistribution: Record<string, number> = {};
@@ -223,7 +222,7 @@ export class CogneeGraphService {
     const sortedByDegree = Array.from(degreeMap.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10);
-    const nodeMap = new Map(nodes.map(n => [n.id, n]));
+    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
     const topConnectedNodes = sortedByDegree.map(([id, degree]) => ({
       id,
       label: nodeMap.get(id)?.label ?? id,
@@ -249,7 +248,7 @@ export class CogneeGraphService {
   async pruneNodes(
     datasetName: string,
     criteria: PruneCriteria,
-    userId?: string
+    userId?: string,
   ): Promise<GraphVisualizationData> {
     const rawData = await cogneeClient.getDatasetGraph(datasetName, userId);
     let { nodes, edges } = this._transformCogneeGraph(rawData);
@@ -268,27 +267,28 @@ export class CogneeGraphService {
 
     // Apply node-level filters
     if (criteria.minDegree !== undefined) {
-      nodes = nodes.filter(n => (degreeMap.get(n.id) ?? 0) >= criteria.minDegree!);
+      nodes = nodes.filter((n) => (degreeMap.get(n.id) ?? 0) >= criteria.minDegree!);
     }
     if (criteria.nodeTypes && criteria.nodeTypes.length > 0) {
-      const allowed = new Set(criteria.nodeTypes.map(t => t.toLowerCase()));
-      nodes = nodes.filter(n => allowed.has(n.type.toLowerCase()));
+      const allowed = new Set(criteria.nodeTypes.map((t) => t.toLowerCase()));
+      nodes = nodes.filter((n) => allowed.has(n.type.toLowerCase()));
     }
     if (criteria.excludeNodeTypes && criteria.excludeNodeTypes.length > 0) {
-      const excluded = new Set(criteria.excludeNodeTypes.map(t => t.toLowerCase()));
-      nodes = nodes.filter(n => !excluded.has(n.type.toLowerCase()));
+      const excluded = new Set(criteria.excludeNodeTypes.map((t) => t.toLowerCase()));
+      nodes = nodes.filter((n) => !excluded.has(n.type.toLowerCase()));
     }
     if (criteria.searchQuery) {
       const query = criteria.searchQuery.toLowerCase();
-      nodes = nodes.filter(n =>
-        n.label.toLowerCase().includes(query) ||
-        n.type.toLowerCase().includes(query) ||
-        JSON.stringify(n.properties).toLowerCase().includes(query)
+      nodes = nodes.filter(
+        (n) =>
+          n.label.toLowerCase().includes(query) ||
+          n.type.toLowerCase().includes(query) ||
+          JSON.stringify(n.properties).toLowerCase().includes(query),
       );
     }
     if (criteria.maxAge !== undefined) {
       const cutoff = Date.now() - criteria.maxAge * 86400_000;
-      nodes = nodes.filter(n => {
+      nodes = nodes.filter((n) => {
         const created = n.properties.created_at ?? n.properties.date;
         if (typeof created === 'string') {
           const ts = new Date(created).getTime();
@@ -299,13 +299,13 @@ export class CogneeGraphService {
     }
 
     // Rebuild edge set for surviving nodes
-    const keptIds = new Set(nodes.map(n => n.id));
-    edges = edges.filter(e => keptIds.has(e.source) && keptIds.has(e.target));
+    const keptIds = new Set(nodes.map((n) => n.id));
+    edges = edges.filter((e) => keptIds.has(e.source) && keptIds.has(e.target));
 
     // Apply edge type filter
     if (criteria.edgeTypes && criteria.edgeTypes.length > 0) {
-      const allowedEdges = new Set(criteria.edgeTypes.map(t => t.toLowerCase()));
-      edges = edges.filter(e => allowedEdges.has(e.type.toLowerCase()));
+      const allowedEdges = new Set(criteria.edgeTypes.map((t) => t.toLowerCase()));
+      edges = edges.filter((e) => allowedEdges.has(e.type.toLowerCase()));
     }
 
     nodes = this._generateInitialPositions(nodes);
@@ -336,7 +336,7 @@ export class CogneeGraphService {
     datasetName: string,
     rootNodeId: string,
     depth: number = 2,
-    userId?: string
+    userId?: string,
   ): Promise<GraphVisualizationData> {
     const rawData = await cogneeClient.getDatasetGraph(datasetName, userId);
     const { nodes: allNodes, edges: allEdges } = this._transformCogneeGraph(rawData);
@@ -370,13 +370,13 @@ export class CogneeGraphService {
       }
     }
 
-    const nodeMap = new Map(allNodes.map(n => [n.id, n]));
+    const nodeMap = new Map(allNodes.map((n) => [n.id, n]));
     let nodes = Array.from(visited)
-      .map(id => nodeMap.get(id))
+      .map((id) => nodeMap.get(id))
       .filter((n): n is GraphNode => n !== undefined);
     const edges = Array.from(visitedEdges)
-      .map(idx => allEdges[idx])
-      .filter(e => visited.has(e.source) && visited.has(e.target));
+      .map((idx) => allEdges[idx])
+      .filter((e) => visited.has(e.source) && visited.has(e.target));
 
     nodes = this._calculateNodeSizes(nodes, edges);
     nodes = this._generateInitialPositions(nodes);
@@ -405,12 +405,12 @@ export class CogneeGraphService {
   async getNodeNeighbors(
     datasetName: string,
     nodeId: string,
-    userId?: string
+    userId?: string,
   ): Promise<{ node: GraphNode | null; neighbors: GraphNode[]; edges: GraphEdge[] }> {
     const rawData = await cogneeClient.getDatasetGraph(datasetName, userId);
     const { nodes: allNodes, edges: allEdges } = this._transformCogneeGraph(rawData);
 
-    const nodeMap = new Map(allNodes.map(n => [n.id, n]));
+    const nodeMap = new Map(allNodes.map((n) => [n.id, n]));
     const centerNode = nodeMap.get(nodeId) ?? null;
 
     if (!centerNode) {
@@ -431,7 +431,7 @@ export class CogneeGraphService {
     }
 
     const neighbors = Array.from(neighborIds)
-      .map(id => nodeMap.get(id))
+      .map((id) => nodeMap.get(id))
       .filter((n): n is GraphNode => n !== undefined);
 
     return { node: centerNode, neighbors, edges: connectedEdges };
@@ -445,7 +445,7 @@ export class CogneeGraphService {
     datasetName: string,
     query: string,
     limit: number = 20,
-    userId?: string
+    userId?: string,
   ): Promise<GraphNode[]> {
     const rawData = await cogneeClient.getDatasetGraph(datasetName, userId);
     const { nodes } = this._transformCogneeGraph(rawData);
@@ -485,18 +485,30 @@ export class CogneeGraphService {
       const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
 
       const id = String(obj.id ?? obj.node_id ?? `node-${idx}`);
-      const label = String(
-        obj.label ?? obj.name ?? obj.text ?? obj.title ?? id
-      );
+      const label = String(obj.label ?? obj.name ?? obj.text ?? obj.title ?? id);
       const type = String(obj.type ?? obj.node_type ?? obj.category ?? 'default');
-      const color = typeof obj.color === 'string'
-        ? obj.color
-        : DEFAULT_NODE_COLORS[type] ?? DEFAULT_NODE_COLORS.default;
+      const color =
+        typeof obj.color === 'string'
+          ? obj.color
+          : (DEFAULT_NODE_COLORS[type] ?? DEFAULT_NODE_COLORS.default);
 
       // Collect remaining properties
       const properties: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(obj)) {
-        if (!['id', 'node_id', 'label', 'name', 'text', 'title', 'type', 'node_type', 'category', 'color'].includes(key)) {
+        if (
+          ![
+            'id',
+            'node_id',
+            'label',
+            'name',
+            'text',
+            'title',
+            'type',
+            'node_type',
+            'category',
+            'color',
+          ].includes(key)
+        ) {
           properties[key] = value;
         }
       }
@@ -510,15 +522,32 @@ export class CogneeGraphService {
       const id = String(obj.id ?? obj.edge_id ?? `edge-${idx}`);
       const source = String(obj.source ?? obj.from ?? obj.source_id ?? '');
       const target = String(obj.target ?? obj.to ?? obj.target_id ?? '');
-      const label = String(obj.label ?? obj.relationship ?? obj.type ?? obj.edge_type ?? 'RELATED_TO');
+      const label = String(
+        obj.label ?? obj.relationship ?? obj.type ?? obj.edge_type ?? 'RELATED_TO',
+      );
       const type = String(obj.type ?? obj.edge_type ?? obj.relationship ?? label);
       const weight = typeof obj.weight === 'number' ? obj.weight : 1;
 
       // Collect remaining properties
       const properties: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(obj)) {
-        if (!['id', 'edge_id', 'source', 'from', 'source_id', 'target', 'to', 'target_id',
-              'label', 'relationship', 'type', 'edge_type', 'weight'].includes(key)) {
+        if (
+          ![
+            'id',
+            'edge_id',
+            'source',
+            'from',
+            'source_id',
+            'target',
+            'to',
+            'target_id',
+            'label',
+            'relationship',
+            'type',
+            'edge_type',
+            'weight',
+          ].includes(key)
+        ) {
           properties[key] = value;
         }
       }
@@ -543,13 +572,14 @@ export class CogneeGraphService {
    */
   _applyOntologyColors(
     nodes: GraphNode[],
-    ontology: { nodeTypes: string } | Record<string, unknown>
+    ontology: { nodeTypes: string } | Record<string, unknown>,
   ): GraphNode[] {
     let nodeTypesDef: Array<{ name: string; color?: string }>;
     try {
-      const raw = typeof (ontology as any).nodeTypes === 'string'
-        ? JSON.parse((ontology as any).nodeTypes)
-        : (ontology as any).nodeTypes;
+      const raw =
+        typeof (ontology as any).nodeTypes === 'string'
+          ? JSON.parse((ontology as any).nodeTypes)
+          : (ontology as any).nodeTypes;
       nodeTypesDef = Array.isArray(raw) ? raw : [];
     } catch {
       nodeTypesDef = [];
@@ -562,7 +592,7 @@ export class CogneeGraphService {
       }
     }
 
-    return nodes.map(n => ({
+    return nodes.map((n) => ({
       ...n,
       color: colorMap.get(n.type) ?? DEFAULT_NODE_COLORS[n.type] ?? DEFAULT_NODE_COLORS.default,
     }));
@@ -583,11 +613,9 @@ export class CogneeGraphService {
     const degrees = Array.from(degreeMap.values());
     const maxDegree = degrees.length > 0 ? Math.max(...degrees) : 0;
 
-    return nodes.map(n => ({
+    return nodes.map((n) => ({
       ...n,
-      size: maxDegree > 0
-        ? 1 + ((degreeMap.get(n.id) ?? 0) / maxDegree) * 9
-        : 1,
+      size: maxDegree > 0 ? 1 + ((degreeMap.get(n.id) ?? 0) / maxDegree) * 9 : 1,
     }));
   }
 

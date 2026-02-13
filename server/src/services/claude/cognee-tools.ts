@@ -26,10 +26,7 @@ const SHARED_DATASETS = new Set([
 
 // Wave 3: Row-filtered datasets — no prefix, use user_id metadata filtering.
 // Multiple users contribute to the same dataset; filtering happens at query time.
-const ROW_FILTERED_DATASETS = new Set([
-  'merchant_data',
-  'matching_patterns',
-]);
+const ROW_FILTERED_DATASETS = new Set(['merchant_data', 'matching_patterns']);
 
 // ── AP Data Interfaces (Wave 10) ────────────────────────────────────
 export interface SupplierProfileData {
@@ -96,10 +93,13 @@ export class CogneeTools {
    * - Row-filtered datasets: no prefix, user_id metadata filtering
    */
   static forUser(userId: string, client?: CogneeClient): CogneeTools {
-    return new CogneeTools({
-      datasetPrefix: `user_${userId}`,
-      userId,
-    }, client);
+    return new CogneeTools(
+      {
+        datasetPrefix: `user_${userId}`,
+        userId,
+      },
+      client,
+    );
   }
 
   /**
@@ -108,11 +108,14 @@ export class CogneeTools {
    * Optionally also scoped to a specific user within that tenant.
    */
   static forTenant(tenantId: string, userId?: string, client?: CogneeClient): CogneeTools {
-    return new CogneeTools({
-      datasetPrefix: userId ? `user_${userId}` : '',
-      userId,
-      tenantId,
-    }, client);
+    return new CogneeTools(
+      {
+        datasetPrefix: userId ? `user_${userId}` : '',
+        userId,
+        tenantId,
+      },
+      client,
+    );
   }
 
   /**
@@ -122,7 +125,7 @@ export class CogneeTools {
   async search(
     query: string,
     dataset: string,
-    searchType: CogneeSearchType = 'GRAPH_COMPLETION'
+    searchType: CogneeSearchType = 'GRAPH_COMPLETION',
   ): Promise<string[]> {
     return this.client.search(
       query,
@@ -149,7 +152,12 @@ export class CogneeTools {
     } else {
       for (let i = 0; i < data.length; i += this.config.indexBatchSize) {
         const batch = data.slice(i, i + this.config.indexBatchSize);
-        await this.client.add(batch, this.prefixDataset(dataset), this.config.userId, this.config.tenantId);
+        await this.client.add(
+          batch,
+          this.prefixDataset(dataset),
+          this.config.userId,
+          this.config.tenantId,
+        );
       }
     }
   }
@@ -282,7 +290,7 @@ export class CogneeTools {
   private async addWithUserMetadata(data: string[], dataset: string): Promise<void> {
     const userId = this.config.userId;
     // Prefix each line with user tag for row-level filtering
-    const taggedData = data.map(item => `[user:${userId}] ${item}`);
+    const taggedData = data.map((item) => `[user:${userId}] ${item}`);
     await this.client.add(taggedData, dataset, userId, this.config.tenantId);
   }
 
@@ -363,8 +371,12 @@ export class CogneeTools {
   async searchCustomers(query: string, topK?: number): Promise<string[]> {
     const dataset = this.prefixDataset(COGNEE_DATASETS.customerProfiles);
     return this.client.search(
-      query, dataset, topK ?? 5, 'CHUNKS',
-      this.config.userId, this.config.tenantId,
+      query,
+      dataset,
+      topK ?? 5,
+      'CHUNKS',
+      this.config.userId,
+      this.config.tenantId,
     );
   }
 
@@ -397,8 +409,12 @@ export class CogneeTools {
   async searchInvoiceHistory(query: string, topK?: number): Promise<string[]> {
     const dataset = this.prefixDataset(COGNEE_DATASETS.invoiceHistory);
     return this.client.search(
-      query, dataset, topK ?? 10, 'GRAPH_COMPLETION',
-      this.config.userId, this.config.tenantId,
+      query,
+      dataset,
+      topK ?? 10,
+      'GRAPH_COMPLETION',
+      this.config.userId,
+      this.config.tenantId,
     );
   }
 
@@ -408,8 +424,12 @@ export class CogneeTools {
   async searchEntityHierarchy(query: string, topK?: number): Promise<any[]> {
     const dataset = this.prefixDataset('entity_hierarchy');
     return this.client.search(
-      query, dataset, topK ?? this.config.searchTopK, 'GRAPH_COMPLETION',
-      this.config.userId, this.config.tenantId
+      query,
+      dataset,
+      topK ?? this.config.searchTopK,
+      'GRAPH_COMPLETION',
+      this.config.userId,
+      this.config.tenantId,
     );
   }
 
@@ -419,8 +439,12 @@ export class CogneeTools {
   async searchConsolidationPatterns(query: string, topK?: number): Promise<any[]> {
     const dataset = this.prefixDataset('consolidation_patterns');
     return this.client.search(
-      query, dataset, topK ?? this.config.searchTopK, 'CHUNKS',
-      this.config.userId, this.config.tenantId
+      query,
+      dataset,
+      topK ?? this.config.searchTopK,
+      'CHUNKS',
+      this.config.userId,
+      this.config.tenantId,
     );
   }
 
@@ -452,8 +476,12 @@ export class CogneeTools {
   async searchSupplierProfiles(query: string, topK?: number): Promise<string[]> {
     const dataset = this.prefixDataset(COGNEE_DATASETS.supplierProfiles);
     return this.client.search(
-      query, dataset, topK ?? this.config.searchTopK, 'CHUNKS',
-      this.config.userId, this.config.tenantId,
+      query,
+      dataset,
+      topK ?? this.config.searchTopK,
+      'CHUNKS',
+      this.config.userId,
+      this.config.tenantId,
     );
   }
 
@@ -465,7 +493,7 @@ export class CogneeTools {
     const total = (bill.totalAmountCents / 100).toFixed(2);
     const gst = (bill.gstAmountCents / 100).toFixed(2);
     const items = bill.lineItems
-      .map(li => `${li.description}: $${(li.amountCents / 100).toFixed(2)}`)
+      .map((li) => `${li.description}: $${(li.amountCents / 100).toFixed(2)}`)
       .join('; ');
     const parts = [
       `Bill ${bill.billNumber} from ${bill.supplierName}`,
@@ -487,8 +515,12 @@ export class CogneeTools {
   async searchBillPatterns(query: string, topK?: number): Promise<string[]> {
     const dataset = this.prefixDataset(COGNEE_DATASETS.billPatterns);
     return this.client.search(
-      query, dataset, topK ?? this.config.searchTopK, 'GRAPH_COMPLETION',
-      this.config.userId, this.config.tenantId,
+      query,
+      dataset,
+      topK ?? this.config.searchTopK,
+      'GRAPH_COMPLETION',
+      this.config.userId,
+      this.config.tenantId,
     );
   }
 
@@ -499,7 +531,7 @@ export class CogneeTools {
   async indexPurchaseOrderHistory(po: POHistoryData): Promise<void> {
     const total = (po.totalAmountCents / 100).toFixed(2);
     const items = po.lineItems
-      .map(li => `${li.description} x${li.quantity} @ $${(li.unitPriceCents / 100).toFixed(2)}`)
+      .map((li) => `${li.description} x${li.quantity} @ $${(li.unitPriceCents / 100).toFixed(2)}`)
       .join('; ');
     const parts = [
       `PO ${po.poNumber} to ${po.supplierName}`,
@@ -521,22 +553,26 @@ export class CogneeTools {
   async searchAPContext(query: string, topK?: number): Promise<string[]> {
     const k = topK ?? this.config.searchTopK;
     const [supplierResults, billResults] = await Promise.all([
-      this.client.search(
-        query,
-        this.prefixDataset(COGNEE_DATASETS.supplierProfiles),
-        k,
-        'CHUNKS',
-        this.config.userId,
-        this.config.tenantId,
-      ).catch(() => [] as string[]),
-      this.client.search(
-        query,
-        this.prefixDataset(COGNEE_DATASETS.billPatterns),
-        k,
-        'GRAPH_COMPLETION',
-        this.config.userId,
-        this.config.tenantId,
-      ).catch(() => [] as string[]),
+      this.client
+        .search(
+          query,
+          this.prefixDataset(COGNEE_DATASETS.supplierProfiles),
+          k,
+          'CHUNKS',
+          this.config.userId,
+          this.config.tenantId,
+        )
+        .catch(() => [] as string[]),
+      this.client
+        .search(
+          query,
+          this.prefixDataset(COGNEE_DATASETS.billPatterns),
+          k,
+          'GRAPH_COMPLETION',
+          this.config.userId,
+          this.config.tenantId,
+        )
+        .catch(() => [] as string[]),
     ]);
     return [...supplierResults, ...billResults];
   }
@@ -548,15 +584,18 @@ export class CogneeTools {
    * Indexes: name, email, employment type, status, start date.
    * Uses employee_profiles dataset with CHUNKS_LEXICAL for name matching.
    */
-  async indexEmployee(employee: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email?: string;
-    employmentType: string;
-    status: string;
-    startDate: string;
-  }, userId?: string): Promise<void> {
+  async indexEmployee(
+    employee: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email?: string;
+      employmentType: string;
+      status: string;
+      startDate: string;
+    },
+    userId?: string,
+  ): Promise<void> {
     const dataset = this.prefixDataset(COGNEE_DATASETS.employeeProfiles);
     const data = [
       `Employee: ${employee.firstName} ${employee.lastName}`,
@@ -575,17 +614,22 @@ export class CogneeTools {
    * Converts cents to dollars for display in search results.
    * Uses pay_structures dataset with CHUNKS for semantic matching.
    */
-  async indexPayStructure(structure: {
-    employeeName: string;
-    categoryName: string;
-    rate: number; // cents
-    rateType: string;
-    hoursPerWeek?: number;
-    annualSalary?: number; // cents
-  }, userId?: string): Promise<void> {
+  async indexPayStructure(
+    structure: {
+      employeeName: string;
+      categoryName: string;
+      rate: number; // cents
+      rateType: string;
+      hoursPerWeek?: number;
+      annualSalary?: number; // cents
+    },
+    userId?: string,
+  ): Promise<void> {
     const dataset = this.prefixDataset(COGNEE_DATASETS.payStructures);
     const rateDollars = (structure.rate / 100).toFixed(2);
-    const salaryDollars = structure.annualSalary ? (structure.annualSalary / 100).toFixed(2) : 'N/A';
+    const salaryDollars = structure.annualSalary
+      ? (structure.annualSalary / 100).toFixed(2)
+      : 'N/A';
 
     const data = [
       `Employee: ${structure.employeeName}`,
@@ -604,7 +648,14 @@ export class CogneeTools {
    */
   async searchEmployees(query: string, topK: number = 5, userId?: string): Promise<string[]> {
     const dataset = this.prefixDataset(COGNEE_DATASETS.employeeProfiles);
-    return this.client.search(query, dataset, topK, 'CHUNKS_LEXICAL', userId ?? this.config.userId, this.config.tenantId);
+    return this.client.search(
+      query,
+      dataset,
+      topK,
+      'CHUNKS_LEXICAL',
+      userId ?? this.config.userId,
+      this.config.tenantId,
+    );
   }
 
   /**
@@ -613,7 +664,14 @@ export class CogneeTools {
    */
   async searchPayStructures(query: string, topK: number = 5, userId?: string): Promise<string[]> {
     const dataset = this.prefixDataset(COGNEE_DATASETS.payStructures);
-    return this.client.search(query, dataset, topK, 'CHUNKS', userId ?? this.config.userId, this.config.tenantId);
+    return this.client.search(
+      query,
+      dataset,
+      topK,
+      'CHUNKS',
+      userId ?? this.config.userId,
+      this.config.tenantId,
+    );
   }
 }
 

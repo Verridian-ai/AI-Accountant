@@ -55,7 +55,9 @@ export class AgentOrchestrator implements IAgentOrchestrator {
     try {
       // Check cache first
       if (!request.skipCache) {
-        const contextHash = request.context ? hashContext(request.context as Record<string, unknown>) : undefined;
+        const contextHash = request.context
+          ? hashContext(request.context as Record<string, unknown>)
+          : undefined;
         const cacheKey = generateCacheKey(request.agentType, request.query, contextHash);
         const cached = agentCache.get(cacheKey);
 
@@ -78,14 +80,15 @@ export class AgentOrchestrator implements IAgentOrchestrator {
 
       // Cache successful responses
       if (response.status === 'success' && !request.skipCache) {
-        const contextHash = request.context ? hashContext(request.context as Record<string, unknown>) : undefined;
+        const contextHash = request.context
+          ? hashContext(request.context as Record<string, unknown>)
+          : undefined;
         const cacheKey = generateCacheKey(request.agentType, request.query, contextHash);
         agentCache.set(cacheKey, response);
       }
 
       agentTracer.endTrace(traceId, 'ok');
       return response;
-
     } catch (error) {
       agentTracer.addEvent(traceId, 'error', {
         error: error instanceof Error ? error.message : String(error),
@@ -100,7 +103,7 @@ export class AgentOrchestrator implements IAgentOrchestrator {
    * Uses Promise.allSettled to prevent a single failure from canceling all requests
    */
   async executeConcurrent(requests: AgentRequest[]): Promise<AgentResponse[]> {
-    const promises = requests.map(request => this.execute(request));
+    const promises = requests.map((request) => this.execute(request));
     const results = await Promise.allSettled(promises);
 
     return results.map((result, index) => {
@@ -190,7 +193,7 @@ export class AgentOrchestrator implements IAgentOrchestrator {
   private async executeWithRetry(
     request: AgentRequest,
     config: AgentConfig,
-    traceId: string
+    traceId: string,
   ): Promise<AgentResponse> {
     let lastError: AgentError | null = null;
     const maxRetries = config.maxRetries;
@@ -227,17 +230,13 @@ export class AgentOrchestrator implements IAgentOrchestrator {
           fromCache: false,
           status: 'success',
         };
-
       } catch (error) {
-        lastError = error instanceof AgentErrorImpl
-          ? error
-          : this.createError('UNKNOWN_ERROR', String(error));
+        lastError =
+          error instanceof AgentErrorImpl
+            ? error
+            : this.createError('UNKNOWN_ERROR', String(error));
 
-        agentRegistry.recordError(
-          request.agentType,
-          lastError.code,
-          lastError.message
-        );
+        agentRegistry.recordError(request.agentType, lastError.code, lastError.message);
 
         agentTracer.addEvent(traceId, 'attempt_failed', {
           attempt,
@@ -279,7 +278,7 @@ export class AgentOrchestrator implements IAgentOrchestrator {
   private async executeAgent(
     request: AgentRequest,
     config: AgentConfig,
-    timeoutMs: number
+    timeoutMs: number,
   ): Promise<AgentExecutionResult> {
     return new Promise((resolve, reject) => {
       const controller = new AbortController();
@@ -348,10 +347,12 @@ export class AgentOrchestrator implements IAgentOrchestrator {
         if (isSettled) return;
 
         if (code !== 0) {
-          safeReject(this.createError(
-            'PROCESS_CRASHED',
-            `Agent process exited with code ${code}: ${stderr}`
-          ));
+          safeReject(
+            this.createError(
+              'PROCESS_CRASHED',
+              `Agent process exited with code ${code}: ${stderr}`,
+            ),
+          );
           return;
         }
 
@@ -367,10 +368,9 @@ export class AgentOrchestrator implements IAgentOrchestrator {
             agentVersion: result.version,
           });
         } catch (parseError) {
-          safeReject(this.createError(
-            'INVALID_RESPONSE',
-            `Failed to parse agent response: ${parseError}`
-          ));
+          safeReject(
+            this.createError('INVALID_RESPONSE', `Failed to parse agent response: ${parseError}`),
+          );
         }
       });
 
@@ -392,11 +392,7 @@ export class AgentOrchestrator implements IAgentOrchestrator {
 
   private createError(code: ErrorCode, message: string): AgentError {
     const config = ERROR_CONFIG[code];
-    return new AgentErrorImpl(
-      code,
-      message || config.defaultMessage,
-      config.retryable
-    );
+    return new AgentErrorImpl(code, message || config.defaultMessage, config.retryable);
   }
 
   private errorCodeToStatus(code: ErrorCode): ResponseStatus {
@@ -409,7 +405,7 @@ export class AgentOrchestrator implements IAgentOrchestrator {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
@@ -470,7 +466,7 @@ export const agentOrchestrator = new AgentOrchestrator();
 export async function routeAndExecute(
   query: string,
   userId: string,
-  context?: AgentContext
+  context?: AgentContext,
 ): Promise<AgentResponse> {
   const agentType = agentRegistry.routeQuery(query);
   const requestId = crypto.randomUUID();

@@ -93,8 +93,17 @@ export class TaxReturnService {
    */
   private async getYearTransactions(
     userId: string,
-    financialYear: string
-  ): Promise<Array<{ id: string; date: string; description: string; amount: number; category: string | null; accountId: string | null }>> {
+    financialYear: string,
+  ): Promise<
+    Array<{
+      id: string;
+      date: string;
+      description: string;
+      amount: number;
+      category: string | null;
+      accountId: string | null;
+    }>
+  > {
     const dates = getFinancialYearDates(financialYear);
     const rows = await db
       .select({
@@ -112,11 +121,18 @@ export class TaxReturnService {
           gte(transactions.date, dates.start),
           lte(transactions.date, dates.end),
           eq(transactions.isTransfer, false),
-          eq(transactions.isOwnerContribution, false)
-        )
+          eq(transactions.isOwnerContribution, false),
+        ),
       )
       .all();
-    return rows as Array<{ id: string; date: string; description: string; amount: number; category: string | null; accountId: string | null }>;
+    return rows as Array<{
+      id: string;
+      date: string;
+      description: string;
+      amount: number;
+      category: string | null;
+      accountId: string | null;
+    }>;
   }
 
   /**
@@ -147,10 +163,7 @@ export class TaxReturnService {
    * Business P&L, owner equity, SBITO, LITO.
    * Income and expenses flow through to the individual's personal return.
    */
-  async calculateSoleTraderReturn(
-    userId: string,
-    financialYear: string
-  ): Promise<TaxReturnResult> {
+  async calculateSoleTraderReturn(userId: string, financialYear: string): Promise<TaxReturnResult> {
     const txns = await this.getYearTransactions(userId, financialYear);
     const { incomeCents, expensesCents, categoryTotals } = this.aggregateTransactions(txns);
     const warnings: string[] = [];
@@ -211,7 +224,7 @@ export class TaxReturnService {
       motorVehicleKm?: number;
       hasHelpDebt?: boolean;
       helpBalance?: number;
-    }
+    },
   ): Promise<TaxReturnResult> {
     const txns = await this.getYearTransactions(userId, financialYear);
     const { incomeCents, expensesCents, categoryTotals } = this.aggregateTransactions(txns);
@@ -283,10 +296,7 @@ export class TaxReturnService {
    *
    * 25% base rate entity tax. Franking credits.
    */
-  async calculateCompanyReturn(
-    userId: string,
-    financialYear: string
-  ): Promise<TaxReturnResult> {
+  async calculateCompanyReturn(userId: string, financialYear: string): Promise<TaxReturnResult> {
     const txns = await this.getYearTransactions(userId, financialYear);
     const { incomeCents, expensesCents, categoryTotals } = this.aggregateTransactions(txns);
     const warnings: string[] = [];
@@ -300,7 +310,9 @@ export class TaxReturnService {
 
     const entityType = (profile as any)?.entityType ?? 'company';
     if (entityType !== 'company') {
-      warnings.push(`Business profile entity type is '${entityType}', not 'company'. Using company tax rate regardless.`);
+      warnings.push(
+        `Business profile entity type is '${entityType}', not 'company'. Using company tax rate regardless.`,
+      );
     }
 
     const COMPANY_TAX_RATE = 0.25; // Base rate entity
@@ -341,7 +353,7 @@ export class TaxReturnService {
   async calculateTrustReturn(
     userId: string,
     financialYear: string,
-    beneficiaries?: Array<{ name: string; distributionPercent: number }>
+    beneficiaries?: Array<{ name: string; distributionPercent: number }>,
   ): Promise<TaxReturnResult> {
     const txns = await this.getYearTransactions(userId, financialYear);
     const { incomeCents, expensesCents, categoryTotals } = this.aggregateTransactions(txns);
@@ -356,7 +368,9 @@ export class TaxReturnService {
     // Validate distributions total 100%
     const totalPercent = bens.reduce((sum, b) => sum + b.distributionPercent, 0);
     if (Math.abs(totalPercent - 100) > 0.01) {
-      warnings.push(`Beneficiary distributions total ${totalPercent}%, not 100%. Adjusting proportionally.`);
+      warnings.push(
+        `Beneficiary distributions total ${totalPercent}%, not 100%. Adjusting proportionally.`,
+      );
     }
 
     // Calculate each beneficiary's share
@@ -368,7 +382,7 @@ export class TaxReturnService {
     // Section 100A warning: if distributions to low-income beneficiaries are reimbursed
     warnings.push(
       'Section 100A: Ensure distributions are genuine and beneficiaries retain economic benefit. ' +
-      'Trust distributions where the economic benefit is redirected may be deemed tax avoidance.'
+        'Trust distributions where the economic benefit is redirected may be deemed tax avoidance.',
     );
 
     // Trust itself pays no tax if fully distributed
@@ -398,7 +412,7 @@ export class TaxReturnService {
     financialYear: string,
     options?: {
       pensionModeProportion?: number; // 0-1, proportion in pension phase (exempt)
-    }
+    },
   ): Promise<TaxReturnResult> {
     const txns = await this.getYearTransactions(userId, financialYear);
     const { incomeCents, expensesCents, categoryTotals } = this.aggregateTransactions(txns);
@@ -419,7 +433,7 @@ export class TaxReturnService {
 
     if (pensionProportion > 0) {
       warnings.push(
-        `${Math.round(pensionProportion * 100)}% of fund income is in pension phase (tax exempt).`
+        `${Math.round(pensionProportion * 100)}% of fund income is in pension phase (tax exempt).`,
       );
     }
 

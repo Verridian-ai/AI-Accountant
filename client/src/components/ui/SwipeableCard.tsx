@@ -80,7 +80,7 @@ function springAnimation(
   to: number,
   velocity: number,
   callback: (value: number) => void,
-  onComplete?: () => void
+  onComplete?: () => void,
 ) {
   const stiffness = 300;
   const damping = 30;
@@ -141,7 +141,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
       className,
       resetAfterAction = true,
     },
-    ref
+    ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [offset, setOffset] = useState(0);
@@ -205,18 +205,12 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
         cancelAnimation.current?.();
         setIsAnimating(true);
 
-        cancelAnimation.current = springAnimation(
-          offset,
-          targetOffset,
-          velocity,
-          setOffset,
-          () => {
-            setIsAnimating(false);
-            cancelAnimation.current = null;
-          }
-        );
+        cancelAnimation.current = springAnimation(offset, targetOffset, velocity, setOffset, () => {
+          setIsAnimating(false);
+          cancelAnimation.current = null;
+        });
       },
-      [offset]
+      [offset],
     );
 
     // ========================================================================
@@ -237,7 +231,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
           velocity: 0,
         };
       },
-      [disabled, offset]
+      [disabled, offset],
     );
 
     const handleDragMove = useCallback(
@@ -272,7 +266,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
 
         setOffset(newOffset);
       },
-      [disabled, leftActions.length, rightActions.length, maxLeftOffset, maxRightOffset]
+      [disabled, leftActions.length, rightActions.length, maxLeftOffset, maxRightOffset],
     );
 
     const handleDragEnd = useCallback(() => {
@@ -342,7 +336,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
         if (!touch) return;
         handleDragStart(touch.clientX);
       },
-      [handleDragStart]
+      [handleDragStart],
     );
 
     const handleTouchMove = useCallback(
@@ -351,7 +345,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
         if (!touch) return;
         handleDragMove(touch.clientX);
       },
-      [handleDragMove]
+      [handleDragMove],
     );
 
     const handleMouseDown = useCallback(
@@ -371,7 +365,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
       },
-      [handleDragStart, handleDragMove, handleDragEnd]
+      [handleDragStart, handleDragMove, handleDragEnd],
     );
 
     const handleActionClick = useCallback(
@@ -382,7 +376,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
           setIsOpen(null);
         }
       },
-      [resetAfterAction, animateTo]
+      [resetAfterAction, animateTo],
     );
 
     // ========================================================================
@@ -394,10 +388,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
     const rightActionsVisible = offset > 0;
 
     return (
-      <div
-        ref={containerRef}
-        className={cn('relative overflow-hidden', className)}
-      >
+      <div ref={containerRef} className={cn('relative overflow-hidden', className)}>
         {/* Right side actions (shown when swiping left) */}
         {leftActions.length > 0 && (
           <div
@@ -414,7 +405,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
                   'flex flex-col items-center justify-center px-4',
                   'transition-opacity',
                   action.bgColor,
-                  action.textColor || 'text-white'
+                  action.textColor || 'text-white',
                 )}
                 style={{ width: ACTION_WIDTH }}
                 onClick={() => handleActionClick(action)}
@@ -442,7 +433,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
                   'flex flex-col items-center justify-center px-4',
                   'transition-opacity',
                   action.bgColor,
-                  action.textColor || 'text-white'
+                  action.textColor || 'text-white',
                 )}
                 style={{ width: ACTION_WIDTH }}
                 onClick={() => handleActionClick(action)}
@@ -456,10 +447,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
 
         {/* Card content */}
         <div
-          className={cn(
-            'relative bg-dark-surface',
-            !isAnimating && 'touch-pan-y'
-          )}
+          className={cn('relative bg-dark-surface', !isAnimating && 'touch-pan-y')}
           style={{
             transform: `translateX(${offset}px)`,
             willChange: isAnimating ? 'transform' : undefined,
@@ -473,7 +461,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 SwipeableCard.displayName = 'SwipeableCard';
@@ -486,12 +474,7 @@ export const createDeleteAction = (onDelete: () => void): SwipeAction => ({
   id: 'delete',
   label: 'Delete',
   icon: (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -508,12 +491,7 @@ export const createEditAction = (onEdit: () => void): SwipeAction => ({
   id: 'edit',
   label: 'Edit',
   icon: (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -530,12 +508,7 @@ export const createArchiveAction = (onArchive: () => void): SwipeAction => ({
   id: 'archive',
   label: 'Archive',
   icon: (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"

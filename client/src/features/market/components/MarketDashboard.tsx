@@ -116,7 +116,9 @@ export function MarketDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Market Intelligence</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
+            Market Intelligence
+          </h2>
           <p className="text-sm text-zinc-500">
             Australian economic indicators, prices, and market sentiment
           </p>
@@ -149,13 +151,18 @@ export function MarketDashboard() {
               </div>
             ))
           : snapshot.map((metric, idx) => (
-              <div key={idx} className="neu-raised rounded-2xl p-4 hover:border-[#FFCC00]/20 border border-transparent transition-all">
+              <div
+                key={idx}
+                className="neu-raised rounded-2xl p-4 hover:border-[#FFCC00]/20 border border-transparent transition-all"
+              >
                 <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-1">
                   {metric.label}
                 </p>
                 <p className="text-xl font-bold text-white">{metric.value}</p>
                 {metric.change && (
-                  <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${getChangeColor(metric.changeDirection)}`}>
+                  <div
+                    className={`flex items-center gap-1 mt-1 text-xs font-medium ${getChangeColor(metric.changeDirection)}`}
+                  >
                     {getChangeIcon(metric.changeDirection)}
                     <span>{metric.change}</span>
                   </div>

@@ -98,7 +98,8 @@ export function MemberManager() {
     }
   };
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
     <div className="space-y-6">
@@ -129,12 +130,18 @@ export function MemberManager() {
           <div className="neu-raised rounded-2xl border border-white/10 p-6 w-full max-w-md space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-zinc-100">Invite Member</h3>
-              <button type="button" onClick={() => setShowInvite(false)} className="p-1 rounded-lg text-zinc-500 hover:text-zinc-300">
+              <button
+                type="button"
+                onClick={() => setShowInvite(false)}
+                className="p-1 rounded-lg text-zinc-500 hover:text-zinc-300"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Email Address</label>
+              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+                Email Address
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                 <input
@@ -147,14 +154,18 @@ export function MemberManager() {
               </div>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Role</label>
+              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+                Role
+              </label>
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
                 className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {ROLES.filter((r) => r !== 'owner').map((r) => (
-                  <option key={r} value={r} className="bg-[#16213e]">{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                  <option key={r} value={r} className="bg-[#16213e]">
+                    {r.charAt(0).toUpperCase() + r.slice(1)}
+                  </option>
                 ))}
               </select>
             </div>
@@ -177,11 +188,21 @@ export function MemberManager() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Member</th>
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Role</th>
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden md:table-cell">Joined</th>
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden lg:table-cell">Last Active</th>
-                <th className="text-right px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Actions</th>
+                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Member
+                </th>
+                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Role
+                </th>
+                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden md:table-cell">
+                  Joined
+                </th>
+                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden lg:table-cell">
+                  Last Active
+                </th>
+                <th className="text-right px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -189,7 +210,10 @@ export function MemberManager() {
                 const style = ROLE_STYLES[member.role] ?? ROLE_STYLES.viewer;
                 const RoleIcon = style.icon;
                 return (
-                  <tr key={member.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+                  <tr
+                    key={member.id}
+                    className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
+                  >
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-bold text-zinc-200">{member.name}</p>
@@ -203,27 +227,44 @@ export function MemberManager() {
                         disabled={member.role === 'owner'}
                         className={cn(
                           'text-xs font-bold px-2 py-1 rounded-lg border-0 outline-none',
-                          style.bg, style.text,
-                          member.role === 'owner' && 'cursor-not-allowed'
+                          style.bg,
+                          style.text,
+                          member.role === 'owner' && 'cursor-not-allowed',
                         )}
                       >
                         {ROLES.map((r) => (
-                          <option key={r} value={r} className="bg-[#16213e] text-zinc-200">{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                          <option key={r} value={r} className="bg-[#16213e] text-zinc-200">
+                            {r.charAt(0).toUpperCase() + r.slice(1)}
+                          </option>
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-zinc-400 hidden md:table-cell">{formatDate(member.joinedAt)}</td>
+                    <td className="px-4 py-3 text-zinc-400 hidden md:table-cell">
+                      {formatDate(member.joinedAt)}
+                    </td>
                     <td className="px-4 py-3 text-zinc-400 hidden lg:table-cell">
-                      {member.lastActiveAt ? formatDate(member.lastActiveAt) : <span className="text-zinc-600">Never</span>}
+                      {member.lastActiveAt ? (
+                        formatDate(member.lastActiveAt)
+                      ) : (
+                        <span className="text-zinc-600">Never</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {member.role !== 'owner' && (
-                        confirmRemove === member.id ? (
+                      {member.role !== 'owner' &&
+                        (confirmRemove === member.id ? (
                           <div className="flex items-center gap-1 justify-end">
-                            <button type="button" onClick={() => handleRemove(member.id)} className="px-2 py-1 rounded-lg text-xs font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20">
+                            <button
+                              type="button"
+                              onClick={() => handleRemove(member.id)}
+                              className="px-2 py-1 rounded-lg text-xs font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                            >
                               Confirm
                             </button>
-                            <button type="button" onClick={() => setConfirmRemove(null)} className="px-2 py-1 rounded-lg text-xs font-bold text-zinc-500 hover:text-zinc-300">
+                            <button
+                              type="button"
+                              onClick={() => setConfirmRemove(null)}
+                              className="px-2 py-1 rounded-lg text-xs font-bold text-zinc-500 hover:text-zinc-300"
+                            >
                               Cancel
                             </button>
                           </div>
@@ -235,8 +276,7 @@ export function MemberManager() {
                           >
                             <X className="w-4 h-4" />
                           </button>
-                        )
-                      )}
+                        ))}
                     </td>
                   </tr>
                 );
@@ -261,7 +301,11 @@ export function MemberManager() {
                     <Mail className="w-4 h-4 text-zinc-500" />
                     <div>
                       <p className="text-sm font-bold text-zinc-300">{inv.email}</p>
-                      <span className={cn('text-[10px] font-bold uppercase tracking-wider', style.text)}>{inv.role}</span>
+                      <span
+                        className={cn('text-[10px] font-bold uppercase tracking-wider', style.text)}
+                      >
+                        {inv.role}
+                      </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

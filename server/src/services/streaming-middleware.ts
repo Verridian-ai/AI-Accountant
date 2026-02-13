@@ -57,9 +57,7 @@ const MAX_CONCURRENT_STREAMS = 5;
 export function streamingRateLimiter() {
   return createMiddleware(async (c, next) => {
     const userId: string =
-      (c.get('userId') as string | undefined) ??
-      c.req.query('userId') ??
-      'anonymous';
+      (c.get('userId') as string | undefined) ?? c.req.query('userId') ?? 'anonymous';
 
     const current = activeStreams.get(userId) ?? 0;
 

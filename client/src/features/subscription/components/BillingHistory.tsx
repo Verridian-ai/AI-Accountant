@@ -73,25 +73,46 @@ export function BillingHistory() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5">
-                  <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Plan</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Status</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden md:table-cell">Cycle</th>
-                  <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden lg:table-cell">Period</th>
-                  <th className="text-right px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Amount</th>
+                  <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                    Plan
+                  </th>
+                  <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                    Status
+                  </th>
+                  <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden md:table-cell">
+                    Cycle
+                  </th>
+                  <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden lg:table-cell">
+                    Period
+                  </th>
+                  <th className="text-right px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                    Amount
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {records.map((rec) => {
                   const style = STATUS_STYLES[rec.status] ?? STATUS_STYLES.expired;
                   return (
-                    <tr key={rec.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+                    <tr
+                      key={rec.id}
+                      className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
+                    >
                       <td className="px-4 py-3 font-bold text-zinc-200">{rec.planName}</td>
                       <td className="px-4 py-3">
-                        <span className={cn('text-xs font-bold px-2 py-1 rounded-lg uppercase tracking-wider', style.bg, style.text)}>
+                        <span
+                          className={cn(
+                            'text-xs font-bold px-2 py-1 rounded-lg uppercase tracking-wider',
+                            style.bg,
+                            style.text,
+                          )}
+                        >
                           {rec.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-zinc-400 hidden md:table-cell capitalize">{rec.billingCycle}</td>
+                      <td className="px-4 py-3 text-zinc-400 hidden md:table-cell capitalize">
+                        {rec.billingCycle}
+                      </td>
                       <td className="px-4 py-3 text-zinc-400 hidden lg:table-cell">
                         {formatDate(rec.periodStart)} — {formatDate(rec.periodEnd)}
                       </td>

@@ -240,18 +240,30 @@ function expandYear(shortYear: number): number {
  */
 function parseMonthName(name: string): number | null {
   const months: Record<string, number> = {
-    jan: 1, january: 1,
-    feb: 2, february: 2,
-    mar: 3, march: 3,
-    apr: 4, april: 4,
+    jan: 1,
+    january: 1,
+    feb: 2,
+    february: 2,
+    mar: 3,
+    march: 3,
+    apr: 4,
+    april: 4,
     may: 5,
-    jun: 6, june: 6,
-    jul: 7, july: 7,
-    aug: 8, august: 8,
-    sep: 9, sept: 9, september: 9,
-    oct: 10, october: 10,
-    nov: 11, november: 11,
-    dec: 12, december: 12,
+    jun: 6,
+    june: 6,
+    jul: 7,
+    july: 7,
+    aug: 8,
+    august: 8,
+    sep: 9,
+    sept: 9,
+    september: 9,
+    oct: 10,
+    october: 10,
+    nov: 11,
+    november: 11,
+    dec: 12,
+    december: 12,
   };
   return months[name.toLowerCase()] || null;
 }
@@ -338,7 +350,7 @@ export class QIFStatementParser {
           }
         } catch (error) {
           result.warnings.push(
-            `Transaction ${i + 1}: ${error instanceof Error ? error.message : 'Parse error'}`
+            `Transaction ${i + 1}: ${error instanceof Error ? error.message : 'Parse error'}`,
           );
           result.metadata.skippedCount++;
         }
@@ -629,7 +641,7 @@ export class QIFStatementParser {
   private convertTransaction(
     tx: QIFTransaction,
     index: number,
-    dateFormat: 'US' | 'AU'
+    dateFormat: 'US' | 'AU',
   ): ParsedTransaction | null {
     // Parse date
     const date = this.parseQIFDate(tx.date, dateFormat);

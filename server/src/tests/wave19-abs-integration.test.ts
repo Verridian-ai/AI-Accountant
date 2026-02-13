@@ -36,7 +36,9 @@ function assertEqual<T>(actual: T, expected: T, message: string): void {
   } else {
     failed++;
     errors.push(`${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
-    console.error(`  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    console.error(
+      `  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+    );
   }
 }
 
@@ -83,12 +85,7 @@ const MOCK_CPI_SDMX = {
     dimensions: {
       observation: [
         {
-          values: [
-            { id: '2025-Q1' },
-            { id: '2025-Q2' },
-            { id: '2025-Q3' },
-            { id: '2025-Q4' },
-          ],
+          values: [{ id: '2025-Q1' }, { id: '2025-Q2' }, { id: '2025-Q3' }, { id: '2025-Q4' }],
         },
       ],
       series: [],
@@ -128,11 +125,7 @@ const MOCK_LABOUR_FORCE_SDMX = {
     dimensions: {
       observation: [
         {
-          values: [
-            { id: '2025-10' },
-            { id: '2025-11' },
-            { id: '2025-12' },
-          ],
+          values: [{ id: '2025-10' }, { id: '2025-11' }, { id: '2025-12' }],
         },
       ],
       series: [],
@@ -165,11 +158,7 @@ const MOCK_GDP_SDMX = {
     dimensions: {
       observation: [
         {
-          values: [
-            { id: '2025-Q1' },
-            { id: '2025-Q2' },
-            { id: '2025-Q3' },
-          ],
+          values: [{ id: '2025-Q1' }, { id: '2025-Q2' }, { id: '2025-Q3' }],
         },
       ],
       series: [],
@@ -343,7 +332,10 @@ describe('AbsDataFeed — Unknown dataflow key throws error', async () => {
     await feed.parseDataflow('INVALID_DATAFLOW', MOCK_CPI_SDMX);
     assert(false, 'parseDataflow should throw for unknown key');
   } catch (err: any) {
-    assert(err.message.includes('Unknown ABS dataflow key'), 'Error message mentions unknown dataflow key');
+    assert(
+      err.message.includes('Unknown ABS dataflow key'),
+      'Error message mentions unknown dataflow key',
+    );
   }
 });
 
@@ -388,7 +380,10 @@ describe('AbsDataFeed — Period-to-ISO-date conversion', async () => {
 
     if (ue) {
       // 2025-12 should be converted to 2025-12-01
-      assert(ue.observationDate.startsWith('2025-12'), 'Monthly observation date starts with 2025-12');
+      assert(
+        ue.observationDate.startsWith('2025-12'),
+        'Monthly observation date starts with 2025-12',
+      );
     }
   } catch (err: any) {
     assert(false, `Period conversion should not throw: ${err.message}`);

@@ -56,9 +56,12 @@ export function NotificationPreferences() {
   const [testing, setTesting] = useState(false);
 
   useEffect(() => {
-    apApi.fetchNotificationPreferences().then((data) => {
-      setPrefs({ ...DEFAULT_PREFS, ...(data as Partial<Prefs>) });
-    }).catch(() => {});
+    apApi
+      .fetchNotificationPreferences()
+      .then((data) => {
+        setPrefs({ ...DEFAULT_PREFS, ...(data as Partial<Prefs>) });
+      })
+      .catch(() => {});
   }, []);
 
   const save = useCallback(async () => {
@@ -112,7 +115,9 @@ export function NotificationPreferences() {
             onClick={() => toggle('pushEnabled')}
             className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs.pushEnabled ? 'bg-[#FFCC00]' : 'bg-zinc-700'}`}
           >
-            <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs.pushEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            <div
+              className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs.pushEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+            />
           </button>
         </div>
         <div className="flex items-center justify-between min-h-[44px]">
@@ -125,7 +130,9 @@ export function NotificationPreferences() {
             onClick={() => toggle('emailEnabled')}
             className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs.emailEnabled ? 'bg-[#FFCC00]' : 'bg-zinc-700'}`}
           >
-            <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs.emailEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            <div
+              className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs.emailEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+            />
           </button>
         </div>
       </section>
@@ -144,7 +151,9 @@ export function NotificationPreferences() {
               onClick={() => toggle(key)}
               className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs[key] ? 'bg-[#FFCC00]' : 'bg-zinc-700'}`}
             >
-              <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs[key] ? 'translate-x-5' : 'translate-x-0'}`} />
+              <div
+                className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs[key] ? 'translate-x-5' : 'translate-x-0'}`}
+              />
             </button>
           </div>
         ))}
@@ -155,7 +164,8 @@ export function NotificationPreferences() {
         <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Thresholds</h3>
         <div>
           <label className="text-sm text-zinc-200 block mb-2">
-            Large transaction: <span className="text-[#FFCC00] font-bold">${thresholdDollars.toLocaleString()}</span>
+            Large transaction:{' '}
+            <span className="text-[#FFCC00] font-bold">${thresholdDollars.toLocaleString()}</span>
           </label>
           <input
             type="range"
@@ -163,7 +173,9 @@ export function NotificationPreferences() {
             max={1000000}
             step={5000}
             value={prefs.largeTransactionThresholdCents}
-            onChange={(e) => setPrefs((p) => ({ ...p, largeTransactionThresholdCents: Number(e.target.value) }))}
+            onChange={(e) =>
+              setPrefs((p) => ({ ...p, largeTransactionThresholdCents: Number(e.target.value) }))
+            }
             className="w-full accent-[#FFCC00] min-h-[44px]"
           />
           <div className="flex justify-between text-[10px] text-zinc-600">
@@ -173,7 +185,8 @@ export function NotificationPreferences() {
         </div>
         <div>
           <label className="text-sm text-zinc-200 block mb-2">
-            Budget alert at: <span className="text-[#FFCC00] font-bold">{prefs.budgetAlertThresholdPercent}%</span>
+            Budget alert at:{' '}
+            <span className="text-[#FFCC00] font-bold">{prefs.budgetAlertThresholdPercent}%</span>
           </label>
           <input
             type="range"
@@ -181,7 +194,9 @@ export function NotificationPreferences() {
             max={100}
             step={5}
             value={prefs.budgetAlertThresholdPercent}
-            onChange={(e) => setPrefs((p) => ({ ...p, budgetAlertThresholdPercent: Number(e.target.value) }))}
+            onChange={(e) =>
+              setPrefs((p) => ({ ...p, budgetAlertThresholdPercent: Number(e.target.value) }))
+            }
             className="w-full accent-[#FFCC00] min-h-[44px]"
           />
           <div className="flex justify-between text-[10px] text-zinc-600">

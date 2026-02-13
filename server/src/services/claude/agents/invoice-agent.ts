@@ -11,17 +11,11 @@ import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
 import { invoicingService } from '../../invoicing.js';
 import { CustomerService } from '../../customers.js';
-import type {
-  InvoiceAgentInput,
-  InvoiceAgentOutput,
-} from '../types.js';
+import type { InvoiceAgentInput, InvoiceAgentOutput } from '../types.js';
 
 const customerService = new CustomerService();
 
-export class InvoiceAgent extends ClaudeAgent<
-  InvoiceAgentInput,
-  InvoiceAgentOutput
-> {
+export class InvoiceAgent extends ClaudeAgent<InvoiceAgentInput, InvoiceAgentOutput> {
   protected systemPrompt = `You are an Australian invoicing assistant for GoldLedger. You help users:
 - Create and manage customer records
 - Generate professional tax invoices with correct GST calculations
@@ -93,7 +87,11 @@ Key rules:
         type: 'object' as const,
         properties: {
           customerId: { type: 'string', description: 'Customer ID' },
-          status: { type: 'string', enum: ['draft', 'sent', 'paid', 'overdue', 'void'], description: 'Optional status filter' },
+          status: {
+            type: 'string',
+            enum: ['draft', 'sent', 'paid', 'overdue', 'void'],
+            description: 'Optional status filter',
+          },
         },
         required: ['customerId'],
       },
@@ -107,7 +105,11 @@ Key rules:
           invoiceId: { type: 'string', description: 'Invoice ID' },
           amountCents: { type: 'integer', description: 'Payment amount in cents' },
           paymentDate: { type: 'string', description: 'ISO date string' },
-          paymentMethod: { type: 'string', enum: ['bank_transfer', 'credit_card', 'cash', 'cheque', 'other'], description: 'Payment method' },
+          paymentMethod: {
+            type: 'string',
+            enum: ['bank_transfer', 'credit_card', 'cash', 'cheque', 'other'],
+            description: 'Payment method',
+          },
           reference: { type: 'string', description: 'Payment reference number' },
         },
         required: ['invoiceId', 'amountCents', 'paymentDate', 'paymentMethod'],
@@ -137,10 +139,7 @@ Key rules:
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'create_invoice',
       async (input) => {

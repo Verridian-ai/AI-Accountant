@@ -63,13 +63,13 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
 
   const filteredBills = supplierFilter
     ? bills.filter((b) =>
-        (b.supplierName ?? '').toLowerCase().includes(supplierFilter.toLowerCase())
+        (b.supplierName ?? '').toLowerCase().includes(supplierFilter.toLowerCase()),
       )
     : bills;
 
   // Sort by due date soonest first
   const sortedBills = [...filteredBills].sort(
-    (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+    (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
   );
 
   const toggleBill = (id: string) => {
@@ -131,7 +131,7 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
     try {
       await apApi.processPaymentRun(paymentRun.id);
       setRunStatus('completed');
-      setPaymentRun((prev) => prev ? { ...prev, status: 'completed' } : prev);
+      setPaymentRun((prev) => (prev ? { ...prev, status: 'completed' } : prev));
     } catch (e: any) {
       setError(e.message ?? 'Failed to process payment');
       setRunStatus('draft');
@@ -166,12 +166,12 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
           <h2 className="text-xl font-bold text-white mb-2">Payment Run Complete</h2>
           <p className="text-zinc-400 text-sm mb-1">
             {paymentRun?.billCount} bills paid totalling{' '}
-            <span className="text-[#FFCC00] font-semibold">{formatCurrency(paymentRun?.totalAmount ?? 0)}</span>
+            <span className="text-[#FFCC00] font-semibold">
+              {formatCurrency(paymentRun?.totalAmount ?? 0)}
+            </span>
           </p>
           {paymentRun?.bankReference && (
-            <p className="text-zinc-500 text-xs">
-              Bank Reference: {paymentRun.bankReference}
-            </p>
+            <p className="text-zinc-500 text-xs">Bank Reference: {paymentRun.bankReference}</p>
           )}
           <button
             onClick={onComplete}
@@ -190,7 +190,10 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => { setRunStatus('selecting'); setPaymentRun(null); }}
+            onClick={() => {
+              setRunStatus('selecting');
+              setPaymentRun(null);
+            }}
             className="p-2 rounded-xl bg-white/5 text-zinc-400 hover:text-white transition-all"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -209,7 +212,9 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-zinc-500 text-xs">Payment Date</span>
-              <p className="text-white font-medium">{new Date(paymentRun.paymentDate).toLocaleDateString('en-AU')}</p>
+              <p className="text-white font-medium">
+                {new Date(paymentRun.paymentDate).toLocaleDateString('en-AU')}
+              </p>
             </div>
             <div>
               <span className="text-zinc-500 text-xs">Bills</span>
@@ -232,8 +237,12 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
             <thead>
               <tr className="border-b border-white/5">
                 <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400">Bill #</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 hidden md:table-cell">Supplier</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 hidden md:table-cell">Due Date</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 hidden md:table-cell">
+                  Supplier
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 hidden md:table-cell">
+                  Due Date
+                </th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-zinc-400">Amount</th>
               </tr>
             </thead>
@@ -241,7 +250,9 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
               {paymentRun.bills.map((b) => (
                 <tr key={b.id} className="border-b border-white/5">
                   <td className="px-4 py-3 text-sm font-mono text-white">{b.billNumber}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-300 hidden md:table-cell">{b.supplierName ?? '—'}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-300 hidden md:table-cell">
+                    {b.supplierName ?? '—'}
+                  </td>
                   <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
                     {new Date(b.dueDate).toLocaleDateString('en-AU')}
                   </td>
@@ -262,7 +273,10 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
 
         <div className="flex justify-end gap-3">
           <button
-            onClick={() => { setRunStatus('selecting'); setPaymentRun(null); }}
+            onClick={() => {
+              setRunStatus('selecting');
+              setPaymentRun(null);
+            }}
             className="px-4 py-2.5 rounded-xl bg-white/5 text-zinc-400 text-sm font-medium hover:text-white transition-all"
           >
             Cancel
@@ -319,7 +333,9 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Supplier Filter</label>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+              Supplier Filter
+            </label>
             <input
               type="text"
               value={supplierFilter}
@@ -413,9 +429,7 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
                       <span className={overdue ? 'text-red-400' : 'text-zinc-400'}>
                         {new Date(b.dueDate).toLocaleDateString('en-AU')}
                       </span>
-                      {overdue && (
-                        <span className="ml-1.5 text-xs text-red-400/80">Overdue</span>
-                      )}
+                      {overdue && <span className="ml-1.5 text-xs text-red-400/80">Overdue</span>}
                     </td>
                     <td className="px-4 py-3 text-sm text-right font-medium text-white">
                       {formatCurrency(b.total)}
@@ -446,9 +460,7 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
             </div>
           </div>
 
-          {error && (
-            <span className="text-red-400 text-xs mr-4">{error}</span>
-          )}
+          {error && <span className="text-red-400 text-xs mr-4">{error}</span>}
 
           <button
             onClick={handleCreatePaymentRun}

@@ -33,7 +33,9 @@ export const cdrDataHolders = sqliteTable('cdr_data_holders', {
 
 export const cdrProducts = sqliteTable('cdr_products', {
   id: text('id').primaryKey(),
-  dataHolderId: text('data_holder_id').notNull().references(() => cdrDataHolders.id),
+  dataHolderId: text('data_holder_id')
+    .notNull()
+    .references(() => cdrDataHolders.id),
   productId: text('product_id').notNull(),
   name: text('name').notNull(),
   description: text('description'),
@@ -57,7 +59,9 @@ export const cdrProducts = sqliteTable('cdr_products', {
 
 export const cdrLendingRates = sqliteTable('cdr_lending_rates', {
   id: text('id').primaryKey(),
-  productId: text('product_id').notNull().references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id')
+    .notNull()
+    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
   lendingRateType: text('lending_rate_type').notNull(),
   rate: real('rate').notNull(),
   comparisonRate: real('comparison_rate'),
@@ -79,7 +83,9 @@ export const cdrLendingRates = sqliteTable('cdr_lending_rates', {
 
 export const cdrDepositRates = sqliteTable('cdr_deposit_rates', {
   id: text('id').primaryKey(),
-  productId: text('product_id').notNull().references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id')
+    .notNull()
+    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
   depositRateType: text('deposit_rate_type').notNull(),
   rate: real('rate').notNull(),
   calculationFrequency: text('calculation_frequency'),
@@ -97,7 +103,9 @@ export const cdrDepositRates = sqliteTable('cdr_deposit_rates', {
 
 export const cdrFees = sqliteTable('cdr_fees', {
   id: text('id').primaryKey(),
-  productId: text('product_id').notNull().references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id')
+    .notNull()
+    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   feeType: text('fee_type').notNull(),
   amount: text('amount'),
@@ -119,7 +127,9 @@ export const cdrFees = sqliteTable('cdr_fees', {
 
 export const cdrFeatures = sqliteTable('cdr_features', {
   id: text('id').primaryKey(),
-  productId: text('product_id').notNull().references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id')
+    .notNull()
+    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
   featureType: text('feature_type').notNull(),
   additionalValue: text('additional_value'),
   additionalInfo: text('additional_info'),
@@ -134,7 +144,9 @@ export const cdrFeatures = sqliteTable('cdr_features', {
 
 export const cdrEligibility = sqliteTable('cdr_eligibility', {
   id: text('id').primaryKey(),
-  productId: text('product_id').notNull().references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id')
+    .notNull()
+    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
   eligibilityType: text('eligibility_type').notNull(),
   additionalValue: text('additional_value'),
   additionalInfo: text('additional_info'),

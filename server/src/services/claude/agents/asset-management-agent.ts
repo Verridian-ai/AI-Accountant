@@ -10,10 +10,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
 import { fixedAssetService } from '../../fixed-assets.js';
-import type {
-  AssetManagementInput,
-  AssetManagementOutput,
-} from '../types.js';
+import type { AssetManagementInput, AssetManagementOutput } from '../types.js';
 
 /** SBE instant write-off threshold in cents ($20,000) */
 const INSTANT_WRITE_OFF_THRESHOLD = 20_000_00;
@@ -21,10 +18,7 @@ const INSTANT_WRITE_OFF_THRESHOLD = 20_000_00;
 /** SBE aggregated turnover threshold in cents ($10M) */
 const SBE_TURNOVER_THRESHOLD = 10_000_000_00;
 
-export class AssetManagementAgent extends ClaudeAgent<
-  AssetManagementInput,
-  AssetManagementOutput
-> {
+export class AssetManagementAgent extends ClaudeAgent<AssetManagementInput, AssetManagementOutput> {
   protected systemPrompt = `You are an Australian fixed asset management specialist. You help businesses:
 1. Register and track depreciating assets per ATO Division 40 ITAA 1997
 2. Calculate depreciation using straight-line or diminishing value methods
@@ -40,8 +34,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
   protected tools: Anthropic.Tool[] = [
     {
       name: 'calculate_depreciation',
-      description:
-        'Calculate depreciation for an asset or batch of assets for a financial year',
+      description: 'Calculate depreciation for an asset or batch of assets for a financial year',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -115,20 +108,14 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
     },
     {
       name: 'generate_asset_report',
-      description:
-        'Generate a comprehensive asset register report or depreciation schedule',
+      description: 'Generate a comprehensive asset register report or depreciation schedule',
       input_schema: {
         type: 'object' as const,
         properties: {
           userId: { type: 'string' },
           reportType: {
             type: 'string',
-            enum: [
-              'register',
-              'depreciation_schedule',
-              'disposal_summary',
-              'category_breakdown',
-            ],
+            enum: ['register', 'depreciation_schedule', 'disposal_summary', 'category_breakdown'],
           },
           financialYear: { type: 'string' },
           entityId: { type: 'string' },
@@ -138,10 +125,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'calculate_depreciation',
       async (input) => {
@@ -151,10 +135,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         const entityId = input.entityId as string | undefined;
 
         if (assetId) {
-          const result = await fixedAssetService.calculateDepreciation(
-            assetId,
-            financialYear
-          );
+          const result = await fixedAssetService.calculateDepreciation(assetId, financialYear);
           return {
             mode: 'single',
             assetId,
@@ -165,7 +146,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         const batchResult = await fixedAssetService.runBatchDepreciation(
           userId,
           financialYear,
-          entityId
+          entityId,
         );
         return {
           mode: 'batch',
@@ -179,12 +160,9 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         const assetCategory = input.assetCategory as string;
         const purchasePrice = input.purchasePrice as number;
         const entityType = input.entityType as string;
-        const isSmallBusinessEntity =
-          (input.isSmallBusinessEntity as boolean) ?? false;
-        const expectedUsefulLife =
-          (input.expectedUsefulLife as number) ?? 10;
-        const businessUsePercentage =
-          (input.businessUsePercentage as number) ?? 100;
+        const isSmallBusinessEntity = (input.isSmallBusinessEntity as boolean) ?? false;
+        const expectedUsefulLife = (input.expectedUsefulLife as number) ?? 10;
+        const businessUsePercentage = (input.businessUsePercentage as number) ?? 100;
 
         let recommendedMethod: string;
         let reason: string;
@@ -192,55 +170,45 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         let estimatedFirstYearDeduction: number;
 
         // ATO decision tree
-        if (
-          isSmallBusinessEntity &&
-          purchasePrice < INSTANT_WRITE_OFF_THRESHOLD
-        ) {
+        if (isSmallBusinessEntity && purchasePrice < INSTANT_WRITE_OFF_THRESHOLD) {
           // Rule 1: SBE instant write-off
           recommendedMethod = 'instant_write_off';
           reason = `Asset cost ($${(purchasePrice / 100).toFixed(2)}) is under the $20,000 SBE instant write-off threshold. Full deduction in the year of purchase.`;
           atoReference = 'TD 2024/1 — Instant asset write-off for SBEs';
-          estimatedFirstYearDeduction = Math.round(
-            purchasePrice * (businessUsePercentage / 100)
-          );
+          estimatedFirstYearDeduction = Math.round(purchasePrice * (businessUsePercentage / 100));
         } else if (expectedUsefulLife <= 2) {
           // Rule 2: Short life → low value pool likely
           recommendedMethod = 'low_value_pool';
           reason = `Asset WDV will fall below $1,000 within 2 years. Low value pool (37.5% first year, 30% subsequent) is more efficient.`;
-          atoReference =
-            'Div 40 ITAA 1997 s.40-425 — Low value pool';
+          atoReference = 'Div 40 ITAA 1997 s.40-425 — Low value pool';
           estimatedFirstYearDeduction = Math.round(
-            purchasePrice * 0.375 * (businessUsePercentage / 100)
+            purchasePrice * 0.375 * (businessUsePercentage / 100),
           );
         } else if (entityType === 'company') {
           // Rule 3: Companies benefit from front-loaded deductions
           recommendedMethod = 'diminishing_value';
           reason = `Companies benefit from front-loaded deductions via diminishing value method (200% rate). Higher deductions in early years reduce taxable income faster.`;
-          atoReference =
-            'TR 2024/3 — Effective life, Div 40 s.40-72 DV formula';
+          atoReference = 'TR 2024/3 — Effective life, Div 40 s.40-72 DV formula';
           const dvRate = 2 / expectedUsefulLife;
           estimatedFirstYearDeduction = Math.round(
-            purchasePrice * dvRate * (businessUsePercentage / 100)
+            purchasePrice * dvRate * (businessUsePercentage / 100),
           );
         } else if (expectedUsefulLife > 10) {
           // Rule 4: Long-life assets → straight line for predictability
           recommendedMethod = 'straight_line';
           reason = `Asset has a long effective life (${expectedUsefulLife} years). Straight-line method provides predictable, even deductions for better budget planning.`;
-          atoReference =
-            'TR 2024/3 — Effective life, Div 40 s.40-70 SL formula';
+          atoReference = 'TR 2024/3 — Effective life, Div 40 s.40-70 SL formula';
           estimatedFirstYearDeduction = Math.round(
-            (purchasePrice / expectedUsefulLife) *
-              (businessUsePercentage / 100)
+            (purchasePrice / expectedUsefulLife) * (businessUsePercentage / 100),
           );
         } else {
           // Rule 5: Default to diminishing value (ATO preferred)
           recommendedMethod = 'diminishing_value';
           reason = `Diminishing value is the ATO default method for most assets. Provides higher deductions in early years when the asset depreciates fastest.`;
-          atoReference =
-            'TR 2024/3 — Effective life, Div 40 s.40-72 DV formula';
+          atoReference = 'TR 2024/3 — Effective life, Div 40 s.40-72 DV formula';
           const dvRate = 2 / expectedUsefulLife;
           estimatedFirstYearDeduction = Math.round(
-            purchasePrice * dvRate * (businessUsePercentage / 100)
+            purchasePrice * dvRate * (businessUsePercentage / 100),
           );
         }
 
@@ -249,7 +217,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         try {
           const results = await cogneeTools.search(
             'depreciation method ' + assetCategory,
-            'asset_register'
+            'asset_register',
           );
           if (results.length > 0) {
             cogneeAdvice = JSON.stringify(results.slice(0, 3));
@@ -274,8 +242,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         const purchasePrice = input.purchasePrice as number;
         const purchaseDate = input.purchaseDate as string;
         const entityType = input.entityType as string;
-        const aggregatedTurnover =
-          (input.aggregatedTurnover as number) ?? 0;
+        const aggregatedTurnover = (input.aggregatedTurnover as number) ?? 0;
         const isNewAsset = (input.isNewAsset as boolean) ?? true;
 
         const purchaseDateObj = new Date(purchaseDate);
@@ -283,8 +250,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         const purchaseMonth = purchaseDateObj.getMonth(); // 0-indexed
 
         // Determine FY of purchase
-        const fyStartYear =
-          purchaseMonth >= 6 ? purchaseYear : purchaseYear - 1;
+        const fyStartYear = purchaseMonth >= 6 ? purchaseYear : purchaseYear - 1;
 
         let eligible = false;
         let threshold = 0;
@@ -328,16 +294,13 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
             const results = await cogneeTools.search(
               'instant asset write-off threshold ' +
                 `${fyStartYear}-${String(fyStartYear + 1).slice(2)}`,
-              'ato_rulings'
+              'ato_rulings',
             );
             if (results.length > 0) {
               // Try to extract threshold from Cognee results
-              const thresholdMatch = JSON.stringify(results).match(
-                /\$(\d[\d,]*)/
-              );
+              const thresholdMatch = JSON.stringify(results).match(/\$(\d[\d,]*)/);
               if (thresholdMatch) {
-                cogneeThreshold =
-                  parseFloat(thresholdMatch[1].replace(/,/g, '')) * 100;
+                cogneeThreshold = parseFloat(thresholdMatch[1].replace(/,/g, '')) * 100;
               }
             }
           } catch {
@@ -384,7 +347,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           case 'register': {
             const register = await fixedAssetService.getAssetRegister(
               userId,
-              entityId ? { entityId } : undefined
+              entityId ? { entityId } : undefined,
             );
             return {
               reportType: 'register',
@@ -395,16 +358,14 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           case 'depreciation_schedule': {
             if (!financialYear) {
               return {
-                error:
-                  'financialYear is required for depreciation_schedule report',
+                error: 'financialYear is required for depreciation_schedule report',
               };
             }
-            const schedule =
-              await fixedAssetService.getDepreciationSchedule(
-                userId,
-                financialYear,
-                entityId
-              );
+            const schedule = await fixedAssetService.getDepreciationSchedule(
+              userId,
+              financialYear,
+              entityId,
+            );
             return {
               reportType: 'depreciation_schedule',
               ...schedule,
@@ -413,10 +374,10 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
 
           case 'disposal_summary': {
             // Get all disposed assets and summarize
-            const disposed = await fixedAssetService.getAssetRegister(
-              userId,
-              { status: 'disposed', entityId }
-            );
+            const disposed = await fixedAssetService.getAssetRegister(userId, {
+              status: 'disposed',
+              entityId,
+            });
             const totalProceeds = 0; // Disposal records aren't queried directly here
             return {
               reportType: 'disposal_summary',
@@ -430,7 +391,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
           case 'category_breakdown': {
             const all = await fixedAssetService.getAssetRegister(
               userId,
-              entityId ? { entityId } : undefined
+              entityId ? { entityId } : undefined,
             );
             return {
               reportType: 'category_breakdown',

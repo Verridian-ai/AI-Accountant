@@ -1,13 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import {
-  Plus,
-  Check,
-  X,
-  History,
-  DollarSign,
-  Calculator,
-  ArrowLeft,
-} from 'lucide-react';
+import { Plus, Check, X, History, DollarSign, Calculator, ArrowLeft } from 'lucide-react';
 import {
   fetchPayCategories,
   fetchPayStructure,
@@ -65,12 +57,12 @@ interface PayStructureEditorProps {
 const SUPER_RATE = 0.115; // 11.5% SG rate for 2025-26
 
 const TYPE_STYLES: Record<CategoryType, { bg: string; text: string }> = {
-  ordinary:  { bg: 'bg-blue-500/10',    text: 'text-blue-400' },
-  overtime:  { bg: 'bg-purple-500/10',   text: 'text-purple-400' },
-  allowance: { bg: 'bg-emerald-500/10',  text: 'text-emerald-400' },
-  deduction: { bg: 'bg-red-500/10',      text: 'text-red-400' },
-  super:     { bg: 'bg-[#FFCC00]/10',    text: 'text-[#FFCC00]' },
-  leave:     { bg: 'bg-teal-500/10',     text: 'text-teal-400' },
+  ordinary: { bg: 'bg-blue-500/10', text: 'text-blue-400' },
+  overtime: { bg: 'bg-purple-500/10', text: 'text-purple-400' },
+  allowance: { bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
+  deduction: { bg: 'bg-red-500/10', text: 'text-red-400' },
+  super: { bg: 'bg-[#FFCC00]/10', text: 'text-[#FFCC00]' },
+  leave: { bg: 'bg-teal-500/10', text: 'text-teal-400' },
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -123,12 +115,14 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
     }
   };
 
-  useEffect(() => { loadData(); }, [employeeId]);
+  useEffect(() => {
+    loadData();
+  }, [employeeId]);
 
   // Selected category info for conditional form fields
   const selectedCategory = useMemo(
     () => categories.find((c) => c.id === formCategoryId),
-    [categories, formCategoryId]
+    [categories, formCategoryId],
   );
 
   // ── Pay Summary Calculations ─────────────────────────────────────────
@@ -151,7 +145,8 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
           oteBasis += weeklyItem * 52;
         }
       } else if (item.rateType === 'annual') {
-        const annual = item.annualSalaryCents != null ? item.annualSalaryCents / 100 : rateInDollars;
+        const annual =
+          item.annualSalaryCents != null ? item.annualSalaryCents / 100 : rateInDollars;
         weeklyGross += annual / 52;
         annualTotal += annual;
         if (item.categoryType === 'ordinary') {
@@ -205,7 +200,8 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
     try {
       const rateCents = Math.round(parseFloat(formRate) * 100);
       const hoursPerWeek = cat.rateType === 'hourly' ? parseFloat(formHoursPerWeek) || 38 : null;
-      const annualSalaryCents = cat.rateType === 'annual' ? Math.round(parseFloat(formAnnualSalary) * 100) : null;
+      const annualSalaryCents =
+        cat.rateType === 'annual' ? Math.round(parseFloat(formAnnualSalary) * 100) : null;
 
       await setPayStructure(employeeId, {
         payCategoryId: formCategoryId,
@@ -260,7 +256,8 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
           </h3>
           {employee && (
             <p className="text-xs text-zinc-500 mt-0.5">
-              {employee.employment_type?.replace('_', ' ')} &middot; {employee.position ?? 'No position'}
+              {employee.employment_type?.replace('_', ' ')} &middot;{' '}
+              {employee.position ?? 'No position'}
             </p>
           )}
         </div>
@@ -269,16 +266,28 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
       {/* Pay Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
-          { label: 'Weekly',      value: summary.weekly },
+          { label: 'Weekly', value: summary.weekly },
           { label: 'Fortnightly', value: summary.fortnightly },
-          { label: 'Monthly',     value: summary.monthly },
-          { label: 'Annual',      value: summary.annual },
-          { label: `Super (${(SUPER_RATE * 100).toFixed(1)}%)`, value: summary.superAnnual, accent: true },
+          { label: 'Monthly', value: summary.monthly },
+          { label: 'Annual', value: summary.annual },
+          {
+            label: `Super (${(SUPER_RATE * 100).toFixed(1)}%)`,
+            value: summary.superAnnual,
+            accent: true,
+          },
         ].map((card) => (
           <div key={card.label} className="neu-raised rounded-xl p-3">
-            <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">{card.label}</p>
-            <p className={`text-lg font-bold mt-0.5 font-mono ${card.accent ? 'text-[#FFCC00]' : 'text-white'}`}>
-              ${card.value.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
+              {card.label}
+            </p>
+            <p
+              className={`text-lg font-bold mt-0.5 font-mono ${card.accent ? 'text-[#FFCC00]' : 'text-white'}`}
+            >
+              $
+              {card.value.toLocaleString('en-AU', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </p>
           </div>
         ))}
@@ -287,7 +296,10 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
       {/* Actions */}
       <div className="flex items-center gap-3">
         <button
-          onClick={() => { resetForm(); setShowForm(true); }}
+          onClick={() => {
+            resetForm();
+            setShowForm(true);
+          }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
         >
           <Plus className="h-4 w-4" />
@@ -340,7 +352,11 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
                 Rate ($)
                 {selectedCategory && (
                   <span className="text-zinc-600 ml-1">
-                    {selectedCategory.rateType === 'hourly' ? 'per hour' : selectedCategory.rateType === 'annual' ? 'base rate' : 'fixed amount'}
+                    {selectedCategory.rateType === 'hourly'
+                      ? 'per hour'
+                      : selectedCategory.rateType === 'annual'
+                        ? 'base rate'
+                        : 'fixed amount'}
                   </span>
                 )}
               </label>
@@ -378,7 +394,9 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
             {/* Annual Salary (annual only) */}
             {selectedCategory?.rateType === 'annual' && (
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Annual Salary ($)</label>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                  Annual Salary ($)
+                </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
                   <input
@@ -440,14 +458,28 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3">Category</th>
-                <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Rate Type</th>
-                <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3">Rate</th>
-                <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden md:table-cell">Hrs/Wk</th>
-                <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden lg:table-cell">Annual</th>
-                <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden md:table-cell">Effective</th>
+                <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3">
+                  Category
+                </th>
+                <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">
+                  Rate Type
+                </th>
+                <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3">
+                  Rate
+                </th>
+                <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden md:table-cell">
+                  Hrs/Wk
+                </th>
+                <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
+                  Annual
+                </th>
+                <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden md:table-cell">
+                  Effective
+                </th>
                 {showHistory && (
-                  <th className="text-center text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3">Active</th>
+                  <th className="text-center text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3">
+                    Active
+                  </th>
                 )}
               </tr>
             </thead>
@@ -460,9 +492,11 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
                 let annualDisplay = 0;
                 const rateInDollars = item.rateCents / 100;
                 if (item.rateType === 'hourly') {
-                  annualDisplay = rateInDollars * (item.hoursPerWeek ?? 38) * (item.multiplier || 1) * 52;
+                  annualDisplay =
+                    rateInDollars * (item.hoursPerWeek ?? 38) * (item.multiplier || 1) * 52;
                 } else if (item.rateType === 'annual') {
-                  annualDisplay = item.annualSalaryCents != null ? item.annualSalaryCents / 100 : rateInDollars;
+                  annualDisplay =
+                    item.annualSalaryCents != null ? item.annualSalaryCents / 100 : rateInDollars;
                 } else {
                   annualDisplay = rateInDollars * (item.multiplier || 1) * 52;
                 }
@@ -476,18 +510,26 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
                   >
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${style.bg} ${style.text}`}>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${style.bg} ${style.text}`}
+                        >
                           {catType}
                         </span>
-                        <span className="text-sm text-white font-medium">{item.categoryName ?? 'Unknown'}</span>
+                        <span className="text-sm text-white font-medium">
+                          {item.categoryName ?? 'Unknown'}
+                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-2.5 hidden sm:table-cell">
                       <span className="text-xs text-zinc-400 capitalize">{item.rateType}</span>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className="text-sm text-white font-mono">{centsToDollars(item.rateCents)}</span>
-                      {item.rateType === 'hourly' && <span className="text-zinc-500 text-xs">/hr</span>}
+                      <span className="text-sm text-white font-mono">
+                        {centsToDollars(item.rateCents)}
+                      </span>
+                      {item.rateType === 'hourly' && (
+                        <span className="text-zinc-500 text-xs">/hr</span>
+                      )}
                       {item.multiplier > 1 && (
                         <span className="text-purple-400 text-xs ml-1">({item.multiplier}x)</span>
                       )}
@@ -499,12 +541,18 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
                     </td>
                     <td className="px-4 py-2.5 text-right hidden lg:table-cell">
                       <span className="text-sm text-zinc-300 font-mono">
-                        ${annualDisplay.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        $
+                        {annualDisplay.toLocaleString('en-AU', {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })}
                       </span>
                     </td>
                     <td className="px-4 py-2.5 hidden md:table-cell">
                       <span className="text-xs text-zinc-500">
-                        {item.effectiveDate ? new Date(item.effectiveDate).toLocaleDateString('en-AU') : '-'}
+                        {item.effectiveDate
+                          ? new Date(item.effectiveDate).toLocaleDateString('en-AU')
+                          : '-'}
                       </span>
                     </td>
                     {showHistory && (
@@ -528,14 +576,26 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#FFCC00]/10 text-[#FFCC00]">
                 super
               </span>
-              <span className="text-sm text-zinc-300">Super Guarantee ({(SUPER_RATE * 100).toFixed(1)}% of OTE)</span>
+              <span className="text-sm text-zinc-300">
+                Super Guarantee ({(SUPER_RATE * 100).toFixed(1)}% of OTE)
+              </span>
             </div>
             <div className="text-right">
               <span className="text-sm text-[#FFCC00] font-mono font-semibold">
-                ${summary.superMonthly.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/mo
+                $
+                {summary.superMonthly.toLocaleString('en-AU', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+                /mo
               </span>
               <span className="text-xs text-zinc-500 ml-2">
-                (${summary.superAnnual.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/yr)
+                ($
+                {summary.superAnnual.toLocaleString('en-AU', {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                })}
+                /yr)
               </span>
             </div>
           </div>

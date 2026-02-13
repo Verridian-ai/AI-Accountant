@@ -24,7 +24,11 @@ export function IntelligenceDashboard() {
   const [activeTab, setActiveTab] = useState<TabId>('insights');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [stats, setStats] = useState<{ insightCount: number; criticalAlerts: number; activeSubscriptions: number } | null>(null);
+  const [stats, setStats] = useState<{
+    insightCount: number;
+    criticalAlerts: number;
+    activeSubscriptions: number;
+  } | null>(null);
   const [scanning, setScanning] = useState(false);
 
   const userId = 'default';
@@ -40,11 +44,13 @@ export function IntelligenceDashboard() {
         intelligenceApi.listInsights(userId).catch(() => []),
         intelligenceApi.listSubscriptions(userId).catch(() => []),
       ]);
-      const insightList = Array.isArray(insights) ? insights : (insights as any).insights ?? [];
-      const subList = Array.isArray(subs) ? subs : (subs as any).subscriptions ?? [];
+      const insightList = Array.isArray(insights) ? insights : ((insights as any).insights ?? []);
+      const subList = Array.isArray(subs) ? subs : ((subs as any).subscriptions ?? []);
       setStats({
         insightCount: insightList.length,
-        criticalAlerts: insightList.filter((i: any) => i.severity === 'critical' && i.status === 'new').length,
+        criticalAlerts: insightList.filter(
+          (i: any) => i.severity === 'critical' && i.status === 'new',
+        ).length,
         activeSubscriptions: subList.filter((s: any) => s.isActive).length,
       });
     } catch {
@@ -76,7 +82,9 @@ export function IntelligenceDashboard() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-zinc-100">Intelligence Hub</h2>
-            <p className="text-xs text-zinc-500">Cross-module insights, temporal queries & correlations</p>
+            <p className="text-xs text-zinc-500">
+              Cross-module insights, temporal queries & correlations
+            </p>
           </div>
         </div>
 
@@ -129,7 +137,7 @@ export function IntelligenceDashboard() {
           <input
             type="date"
             value={startDate}
-            onChange={e => setStartDate(e.target.value)}
+            onChange={(e) => setStartDate(e.target.value)}
             className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300"
           />
         </div>
@@ -138,7 +146,7 @@ export function IntelligenceDashboard() {
           <input
             type="date"
             value={endDate}
-            onChange={e => setEndDate(e.target.value)}
+            onChange={(e) => setEndDate(e.target.value)}
             className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300"
           />
         </div>
@@ -146,7 +154,7 @@ export function IntelligenceDashboard() {
 
       {/* Tab Bar */}
       <div className="neu-raised rounded-lg p-1.5 flex flex-wrap gap-1">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -154,7 +162,7 @@ export function IntelligenceDashboard() {
               'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 whitespace-nowrap',
               activeTab === tab.id
                 ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
+                : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5',
             )}
           >
             <tab.icon className="w-4 h-4" />
@@ -165,24 +173,12 @@ export function IntelligenceDashboard() {
 
       {/* Tab Content */}
       <div className="animate-in fade-in duration-300">
-        {activeTab === 'insights' && (
-          <InsightFeed userId={userId} dateRange={dateRange} />
-        )}
-        {activeTab === 'timeline' && (
-          <IntelligenceTimeline userId={userId} />
-        )}
-        {activeTab === 'temporal' && (
-          <TemporalQueryBuilder userId={userId} />
-        )}
-        {activeTab === 'modules' && (
-          <ModuleConnectionMap />
-        )}
-        {activeTab === 'subscriptions' && (
-          <SubscriptionManager userId={userId} />
-        )}
-        {activeTab === 'correlations' && (
-          <CorrelationExplorer userId={userId} />
-        )}
+        {activeTab === 'insights' && <InsightFeed userId={userId} dateRange={dateRange} />}
+        {activeTab === 'timeline' && <IntelligenceTimeline userId={userId} />}
+        {activeTab === 'temporal' && <TemporalQueryBuilder userId={userId} />}
+        {activeTab === 'modules' && <ModuleConnectionMap />}
+        {activeTab === 'subscriptions' && <SubscriptionManager userId={userId} />}
+        {activeTab === 'correlations' && <CorrelationExplorer userId={userId} />}
       </div>
     </div>
   );

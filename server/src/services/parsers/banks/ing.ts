@@ -5,12 +5,7 @@
  * ING is an online-only bank with distinct statement formats.
  */
 
-import {
-  BankParserConfig,
-  ParsedTransaction,
-  AccountInfo,
-  AccountType,
-} from '../types';
+import { BankParserConfig, ParsedTransaction, AccountInfo, AccountType } from '../types';
 import { BaseBankParser, parseDate, parseAmount } from '../base-parser';
 
 /**
@@ -41,8 +36,7 @@ const ING_CONFIG: BankParserConfig = {
   transactionPatterns: {
     datePattern: /(\d{1,2}\/\d{1,2}\/\d{2,4})/,
     amountPattern: /\$?([\d,]+\.\d{2})/,
-    transactionLinePattern:
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})/,
+    transactionLinePattern: /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})/,
     debitIndicators: ['-', 'DR'],
     creditIndicators: ['+', 'CR'],
     separateDebitCreditColumns: false,
@@ -61,10 +55,8 @@ const ING_CONFIG: BankParserConfig = {
     /Statement\s+Period[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})\s*(?:to|-)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i,
   ],
 
-  openingBalancePattern:
-    /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
-  closingBalancePattern:
-    /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  openingBalancePattern: /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  closingBalancePattern: /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
 };
 
 /**
@@ -112,12 +104,9 @@ export class INGParser extends BaseBankParser {
   /**
    * Parse a single transaction line
    */
-  private parseTransactionLine(
-    line: string,
-    lineNumber: number
-  ): ParsedTransaction | null {
+  private parseTransactionLine(line: string, lineNumber: number): ParsedTransaction | null {
     const match = line.match(
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})(?:\s+(-?\$?[\d,]+\.\d{2}))?$/
+      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})(?:\s+(-?\$?[\d,]+\.\d{2}))?$/,
     );
 
     if (!match) return null;
@@ -151,9 +140,7 @@ export class INGParser extends BaseBankParser {
     let accountName = '';
     let accountType: AccountType = 'unknown';
 
-    const bsbMatch = pdfText.match(
-      /BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i
-    );
+    const bsbMatch = pdfText.match(/BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i);
     if (bsbMatch) {
       bsb = bsbMatch[1].replace(/\s|-/g, '');
       accountNumber = bsbMatch[2];

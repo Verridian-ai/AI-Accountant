@@ -141,11 +141,7 @@ class AgentMonitoringService {
   // Cost calculation
   // --------------------------------------------------------------------------
 
-  private estimateCost(
-    modelUsed: string,
-    inputTokens: number,
-    outputTokens: number
-  ): number {
+  private estimateCost(modelUsed: string, inputTokens: number, outputTokens: number): number {
     const costs = TOKEN_COSTS[modelUsed] ?? TOKEN_COSTS.default;
     return (inputTokens / 1000) * costs.input + (outputTokens / 1000) * costs.output;
   }
@@ -181,10 +177,7 @@ class AgentMonitoringService {
   // Record execution complete
   // --------------------------------------------------------------------------
 
-  async recordExecutionComplete(
-    executionId: string,
-    result: ExecutionResult
-  ): Promise<void> {
+  async recordExecutionComplete(executionId: string, result: ExecutionResult): Promise<void> {
     const now = new Date().toISOString();
 
     // Fetch start record to compute duration
@@ -239,10 +232,7 @@ class AgentMonitoringService {
   // Monitoring wrapper
   // --------------------------------------------------------------------------
 
-  async withMonitoring<T>(
-    params: ExecutionStartParams,
-    fn: () => Promise<T>
-  ): Promise<T> {
+  async withMonitoring<T>(params: ExecutionStartParams, fn: () => Promise<T>): Promise<T> {
     const executionId = await this.recordExecutionStart(params);
     const startTime = Date.now();
 
@@ -257,9 +247,10 @@ class AgentMonitoringService {
 
       await this.recordExecutionComplete(executionId, {
         status: 'completed',
-        outputSummary: typeof result === 'object' && result !== null
-          ? JSON.stringify(result).slice(0, 500)
-          : String(result).slice(0, 500),
+        outputSummary:
+          typeof result === 'object' && result !== null
+            ? JSON.stringify(result).slice(0, 500)
+            : String(result).slice(0, 500),
         inputTokens,
         outputTokens,
         totalTokens: inputTokens + outputTokens,
@@ -331,10 +322,11 @@ class AgentMonitoringService {
             : 0,
         totalTokens: execs.reduce((s, e) => s + (e.totalTokens ?? 0), 0),
         totalCostUsd: execs.reduce((s, e) => s + (e.estimatedCostUsd ?? 0), 0),
-        lastExecution: execs
-          .map((e) => e.startedAt ?? '')
-          .sort()
-          .pop() ?? '',
+        lastExecution:
+          execs
+            .map((e) => e.startedAt ?? '')
+            .sort()
+            .pop() ?? '',
       };
     });
 
@@ -384,9 +376,7 @@ class AgentMonitoringService {
   // Execution history
   // --------------------------------------------------------------------------
 
-  async getExecutionHistory(
-    filters: HistoryFilters
-  ): Promise<PaginatedResult<AgentExecution>> {
+  async getExecutionHistory(filters: HistoryFilters): Promise<PaginatedResult<AgentExecution>> {
     const limit = filters.limit ?? 50;
     const offset = filters.offset ?? 0;
 
@@ -422,12 +412,7 @@ class AgentMonitoringService {
 
     const sortFn = filters.sortOrder === 'asc' ? sql`${sortCol} asc` : desc(sortCol);
 
-    let query = db
-      .select()
-      .from(agentExecutions)
-      .orderBy(sortFn)
-      .limit(limit)
-      .offset(offset);
+    let query = db.select().from(agentExecutions).orderBy(sortFn).limit(limit).offset(offset);
 
     if (whereClause) {
       query = query.where(whereClause);
@@ -436,9 +421,7 @@ class AgentMonitoringService {
     const data: AgentExecution[] = await query.all();
 
     // Count total
-    let countQuery = db
-      .select({ count: sql<number>`count(*)` })
-      .from(agentExecutions);
+    let countQuery = db.select({ count: sql<number>`count(*)` }).from(agentExecutions);
     if (whereClause) {
       countQuery = countQuery.where(whereClause);
     }
@@ -488,7 +471,7 @@ class AgentMonitoringService {
       .all();
 
     const failuresLast1h = last1h.filter(
-      (r) => r.status === 'failed' || r.status === 'timeout'
+      (r) => r.status === 'failed' || r.status === 'timeout',
     ).length;
 
     const tokensLast24h = last24h.reduce((s, r) => s + (r.totalTokens ?? 0), 0);
@@ -631,9 +614,7 @@ class AgentMonitoringService {
   // --------------------------------------------------------------------------
 
   async cleanupOldExecutions(): Promise<number> {
-    const cutoff = new Date(
-      Date.now() - this.retentionDays * 24 * 60 * 60 * 1000
-    ).toISOString();
+    const cutoff = new Date(Date.now() - this.retentionDays * 24 * 60 * 60 * 1000).toISOString();
 
     // Count first
     const countResult = await db
@@ -644,10 +625,7 @@ class AgentMonitoringService {
     const count = (countResult as any)?.count ?? 0;
 
     if (count > 0) {
-      await db
-        .delete(agentExecutions)
-        .where(lte(agentExecutions.createdAt, cutoff))
-        .run();
+      await db.delete(agentExecutions).where(lte(agentExecutions.createdAt, cutoff)).run();
     }
 
     return count;
@@ -658,10 +636,7 @@ class AgentMonitoringService {
   // --------------------------------------------------------------------------
 
   async getAgentConfigurations(): Promise<AgentConfiguration[]> {
-    const configs: AgentConfiguration[] = await db
-      .select()
-      .from(agentConfigurations)
-      .all();
+    const configs: AgentConfiguration[] = await db.select().from(agentConfigurations).all();
 
     if (configs.length === 0) {
       await this.seedAgentConfigurations();
@@ -673,13 +648,25 @@ class AgentMonitoringService {
 
   async updateAgentConfiguration(
     agentType: string,
-    updates: Partial<Pick<AgentConfiguration,
-      'displayName' | 'description' | 'isEnabled' | 'model' |
-      'maxInputTokens' | 'maxOutputTokens' | 'temperature' |
-      'systemPromptOverride' | 'toolsEnabled' | 'rateLimitPerMinute' |
-      'rateLimitPerHour' | 'circuitBreakerThreshold' | 'circuitBreakerRecoveryMs' |
-      'customConfig'
-    >>
+    updates: Partial<
+      Pick<
+        AgentConfiguration,
+        | 'displayName'
+        | 'description'
+        | 'isEnabled'
+        | 'model'
+        | 'maxInputTokens'
+        | 'maxOutputTokens'
+        | 'temperature'
+        | 'systemPromptOverride'
+        | 'toolsEnabled'
+        | 'rateLimitPerMinute'
+        | 'rateLimitPerHour'
+        | 'circuitBreakerThreshold'
+        | 'circuitBreakerRecoveryMs'
+        | 'customConfig'
+      >
+    >,
   ): Promise<AgentConfiguration | null> {
     await db
       .update(agentConfigurations)

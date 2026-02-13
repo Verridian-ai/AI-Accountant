@@ -113,7 +113,7 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
                         'w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200',
                         isActive
                           ? 'bg-[#FFCC00]/10 border border-[#FFCC00]/20 text-[#FFCC00]'
-                          : 'text-zinc-300 hover:bg-white/5 border border-transparent'
+                          : 'text-zinc-300 hover:bg-white/5 border border-transparent',
                       )
                     }
                   >
@@ -122,7 +122,7 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
                         <div
                           className={cn(
                             'p-2 rounded-lg',
-                            isActive ? 'bg-[#FFCC00]/15' : 'neu-inset'
+                            isActive ? 'bg-[#FFCC00]/15' : 'neu-inset',
                           )}
                         >
                           <item.icon className="h-5 w-5" />

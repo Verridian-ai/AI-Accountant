@@ -7,7 +7,11 @@ import type { MoneyFlow } from '../types';
 const PERIODS = ['1m', '3m', '6m', '12m'] as const;
 
 function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(cents / 100);
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 }
 
 interface AccountNode {
@@ -43,12 +47,22 @@ export function MoneyFlowDiagram() {
     const accountMap = new Map<number, AccountNode>();
     let max = 0;
 
-    flows.forEach(f => {
+    flows.forEach((f) => {
       if (!accountMap.has(f.fromAccountId)) {
-        accountMap.set(f.fromAccountId, { id: f.fromAccountId, name: f.fromAccountName, totalIn: 0, totalOut: 0 });
+        accountMap.set(f.fromAccountId, {
+          id: f.fromAccountId,
+          name: f.fromAccountName,
+          totalIn: 0,
+          totalOut: 0,
+        });
       }
       if (!accountMap.has(f.toAccountId)) {
-        accountMap.set(f.toAccountId, { id: f.toAccountId, name: f.toAccountName, totalIn: 0, totalOut: 0 });
+        accountMap.set(f.toAccountId, {
+          id: f.toAccountId,
+          name: f.toAccountName,
+          totalIn: 0,
+          totalOut: 0,
+        });
       }
       accountMap.get(f.fromAccountId)!.totalOut += f.totalAmount;
       accountMap.get(f.toAccountId)!.totalIn += f.totalAmount;
@@ -65,8 +79,8 @@ export function MoneyFlowDiagram() {
   const RIGHT_X = SVG_WIDTH - 80;
 
   // Build unique left/right account lists
-  const leftAccounts = accounts.filter(a => a.totalOut > 0);
-  const rightAccounts = accounts.filter(a => a.totalIn > 0);
+  const leftAccounts = accounts.filter((a) => a.totalOut > 0);
+  const rightAccounts = accounts.filter((a) => a.totalIn > 0);
 
   const getY = (index: number, total: number): number => {
     const spacing = (SVG_HEIGHT - 60) / Math.max(total, 1);
@@ -101,17 +115,19 @@ export function MoneyFlowDiagram() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <GitBranch className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Money Flow</span>
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            Money Flow
+          </span>
         </div>
         <div className="flex gap-1 neu-inset rounded-xl p-1">
-          {PERIODS.map(p => (
+          {PERIODS.map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => setPeriod(p)}
               className={cn(
-                "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
-                period === p ? "bg-[#FFCC00] text-[#0a0a0f]" : "text-zinc-500 hover:text-zinc-300"
+                'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
+                period === p ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'text-zinc-500 hover:text-zinc-300',
               )}
             >
               {p}
@@ -129,8 +145,8 @@ export function MoneyFlowDiagram() {
         >
           {/* Flow arrows */}
           {flows.map((flow, i) => {
-            const leftIdx = leftAccounts.findIndex(a => a.id === flow.fromAccountId);
-            const rightIdx = rightAccounts.findIndex(a => a.id === flow.toAccountId);
+            const leftIdx = leftAccounts.findIndex((a) => a.id === flow.fromAccountId);
+            const rightIdx = rightAccounts.findIndex((a) => a.id === flow.toAccountId);
             if (leftIdx === -1 || rightIdx === -1) return null;
 
             const y1 = getY(leftIdx, leftAccounts.length);
@@ -139,7 +155,8 @@ export function MoneyFlowDiagram() {
             const isHovered = hoveredFlow === i;
 
             return (
-              <g key={i}
+              <g
+                key={i}
                 onMouseEnter={() => setHoveredFlow(i)}
                 onMouseLeave={() => setHoveredFlow(null)}
                 className="cursor-pointer"
@@ -159,8 +176,8 @@ export function MoneyFlowDiagram() {
                   y={(y1 + y2) / 2 - thickness / 2 - 4}
                   textAnchor="middle"
                   className={cn(
-                    "text-[10px] font-bold transition-opacity duration-200",
-                    isHovered ? "opacity-100" : "opacity-0"
+                    'text-[10px] font-bold transition-opacity duration-200',
+                    isHovered ? 'opacity-100' : 'opacity-0',
                   )}
                   fill="#FFCC00"
                 >
@@ -175,11 +192,30 @@ export function MoneyFlowDiagram() {
             const y = getY(i, leftAccounts.length);
             return (
               <g key={`left-${account.id}`}>
-                <circle cx={LEFT_X} cy={y} r={NODE_R} fill="#1a1a24" stroke="rgba(255,204,0,0.3)" strokeWidth={2} />
-                <text x={LEFT_X} y={y + 1} textAnchor="middle" fill="#f5f5f7" className="text-[9px] font-bold">
+                <circle
+                  cx={LEFT_X}
+                  cy={y}
+                  r={NODE_R}
+                  fill="#1a1a24"
+                  stroke="rgba(255,204,0,0.3)"
+                  strokeWidth={2}
+                />
+                <text
+                  x={LEFT_X}
+                  y={y + 1}
+                  textAnchor="middle"
+                  fill="#f5f5f7"
+                  className="text-[9px] font-bold"
+                >
                   {account.name.slice(0, 4)}
                 </text>
-                <text x={LEFT_X - NODE_R - 6} y={y + 1} textAnchor="end" fill="#a1a1aa" className="text-[8px] font-bold">
+                <text
+                  x={LEFT_X - NODE_R - 6}
+                  y={y + 1}
+                  textAnchor="end"
+                  fill="#a1a1aa"
+                  className="text-[8px] font-bold"
+                >
                   {account.name}
                 </text>
               </g>
@@ -191,11 +227,30 @@ export function MoneyFlowDiagram() {
             const y = getY(i, rightAccounts.length);
             return (
               <g key={`right-${account.id}`}>
-                <circle cx={RIGHT_X} cy={y} r={NODE_R} fill="#1a1a24" stroke="rgba(16,185,129,0.3)" strokeWidth={2} />
-                <text x={RIGHT_X} y={y + 1} textAnchor="middle" fill="#f5f5f7" className="text-[9px] font-bold">
+                <circle
+                  cx={RIGHT_X}
+                  cy={y}
+                  r={NODE_R}
+                  fill="#1a1a24"
+                  stroke="rgba(16,185,129,0.3)"
+                  strokeWidth={2}
+                />
+                <text
+                  x={RIGHT_X}
+                  y={y + 1}
+                  textAnchor="middle"
+                  fill="#f5f5f7"
+                  className="text-[9px] font-bold"
+                >
                   {account.name.slice(0, 4)}
                 </text>
-                <text x={RIGHT_X + NODE_R + 6} y={y + 1} textAnchor="start" fill="#a1a1aa" className="text-[8px] font-bold">
+                <text
+                  x={RIGHT_X + NODE_R + 6}
+                  y={y + 1}
+                  textAnchor="start"
+                  fill="#a1a1aa"
+                  className="text-[8px] font-bold"
+                >
                   {account.name}
                 </text>
               </g>
@@ -211,7 +266,9 @@ export function MoneyFlowDiagram() {
             <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest truncate">
               {flow.fromAccountName} → {flow.toAccountName}
             </p>
-            <p className="text-sm font-black text-[#FFCC00] mt-1">{formatCurrency(flow.totalAmount)}</p>
+            <p className="text-sm font-black text-[#FFCC00] mt-1">
+              {formatCurrency(flow.totalAmount)}
+            </p>
             <p className="text-[8px] text-zinc-600 mt-0.5">{flow.transactionCount} transfers</p>
           </div>
         ))}

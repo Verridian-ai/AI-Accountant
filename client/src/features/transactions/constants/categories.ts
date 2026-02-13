@@ -233,8 +233,7 @@ export const CATEGORIES: CategoryDefinition[] = [
  * with 'Uncategorized' at the end
  */
 export const CATEGORY_NAMES: string[] = [
-  ...CATEGORIES
-    .filter((c) => c.type !== 'system')
+  ...CATEGORIES.filter((c) => c.type !== 'system')
     .map((c) => c.name)
     .sort((a, b) => a.localeCompare(b)),
   'Uncategorized',
@@ -244,9 +243,7 @@ export const CATEGORY_NAMES: string[] = [
  * Find a category by its name
  */
 export function getCategoryByName(name: string): CategoryDefinition | undefined {
-  return CATEGORIES.find(
-    (c) => c.name.toLowerCase() === name.toLowerCase()
-  );
+  return CATEGORIES.find((c) => c.name.toLowerCase() === name.toLowerCase());
 }
 
 /**

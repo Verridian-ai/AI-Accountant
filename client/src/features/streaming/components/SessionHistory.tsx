@@ -35,7 +35,7 @@ export function SessionHistory() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setSessions(Array.isArray(data) ? data : data.sessions ?? []);
+      setSessions(Array.isArray(data) ? data : (data.sessions ?? []));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load sessions');
     } finally {
@@ -43,11 +43,11 @@ export function SessionHistory() {
     }
   }, []);
 
-  useEffect(() => { fetchSessions(); }, [fetchSessions]);
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
-  const filtered = filter === 'all'
-    ? sessions
-    : sessions.filter((s) => s.agent_type === filter);
+  const filtered = filter === 'all' ? sessions : sessions.filter((s) => s.agent_type === filter);
 
   const agentTypes = [...new Set(sessions.map((s) => s.agent_type))];
 
@@ -60,7 +60,9 @@ export function SessionHistory() {
       cancelled: 'bg-orange-500/10 text-orange-400',
     };
     return (
-      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${colors[status] ?? colors.pending}`}>
+      <span
+        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${colors[status] ?? colors.pending}`}
+      >
         {status}
       </span>
     );
@@ -90,10 +92,15 @@ export function SessionHistory() {
           >
             <option value="all">All agents</option>
             {agentTypes.map((t) => (
-              <option key={t} value={t}>{formatAgent(t)}</option>
+              <option key={t} value={t}>
+                {formatAgent(t)}
+              </option>
             ))}
           </select>
-          <button onClick={fetchSessions} className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]">
+          <button
+            onClick={fetchSessions}
+            className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]"
+          >
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -107,13 +114,14 @@ export function SessionHistory() {
 
       {/* Session list */}
       {filtered.length === 0 ? (
-        <div className="text-center py-8 text-zinc-500 text-sm">
-          No streaming sessions found
-        </div>
+        <div className="text-center py-8 text-zinc-500 text-sm">No streaming sessions found</div>
       ) : (
         <div className="space-y-2">
           {filtered.map((session) => (
-            <div key={session.id} className="neu-inset rounded-xl p-4 hover:border-[#FFCC00]/10 border border-transparent transition-colors">
+            <div
+              key={session.id}
+              className="neu-inset rounded-xl p-4 hover:border-[#FFCC00]/10 border border-transparent transition-colors"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-[#FFCC00]" />
@@ -137,9 +145,7 @@ export function SessionHistory() {
                     {session.token_usage.totalTokens} tokens
                   </span>
                 )}
-                {session.model_id && (
-                  <span className="text-zinc-600">{session.model_id}</span>
-                )}
+                {session.model_id && <span className="text-zinc-600">{session.model_id}</span>}
               </div>
             </div>
           ))}

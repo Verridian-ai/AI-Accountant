@@ -39,8 +39,8 @@ function sanitizePDFText(input: unknown, maxLength = 500): string {
   if (input == null) return '';
   const str = String(input);
   return str
-    .replace(/<[^>]*>/g, '')                          // strip HTML tags
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')   // strip control chars
+    .replace(/<[^>]*>/g, '') // strip HTML tags
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '') // strip control chars
     .slice(0, maxLength);
 }
 
@@ -167,7 +167,15 @@ export class InvoicePDFService {
     y -= 18;
 
     if (businessProfile?.abn) {
-      drawText(page, `ABN: ${formatABN(businessProfile.abn)}`, MARGIN_LEFT, y, font, BODY_SIZE, GREY_TEXT);
+      drawText(
+        page,
+        `ABN: ${formatABN(businessProfile.abn)}`,
+        MARGIN_LEFT,
+        y,
+        font,
+        BODY_SIZE,
+        GREY_TEXT,
+      );
       y -= 14;
     }
 
@@ -207,7 +215,15 @@ export class InvoicePDFService {
     drawText(page, terms, MARGIN_LEFT + 95, y, font, BODY_SIZE, DARK_TEXT);
 
     // Status badge on the right
-    drawRightAlignedText(page, `Status: ${status}`, rightEdge, detailsStartY, boldFont, BODY_SIZE, GREY_TEXT);
+    drawRightAlignedText(
+      page,
+      `Status: ${status}`,
+      rightEdge,
+      detailsStartY,
+      boldFont,
+      BODY_SIZE,
+      GREY_TEXT,
+    );
 
     y -= 24;
     drawHorizontalLine(page, y);
@@ -225,12 +241,28 @@ export class InvoicePDFService {
       }
 
       if (customer.contactName && customer.businessName) {
-        drawText(page, `Attn: ${sanitizePDFText(customer.contactName, 100)}`, MARGIN_LEFT, y, font, BODY_SIZE, DARK_TEXT);
+        drawText(
+          page,
+          `Attn: ${sanitizePDFText(customer.contactName, 100)}`,
+          MARGIN_LEFT,
+          y,
+          font,
+          BODY_SIZE,
+          DARK_TEXT,
+        );
         y -= 14;
       }
 
       if (customer.abn) {
-        drawText(page, `ABN: ${formatABN(customer.abn)}`, MARGIN_LEFT, y, font, BODY_SIZE, GREY_TEXT);
+        drawText(
+          page,
+          `ABN: ${formatABN(customer.abn)}`,
+          MARGIN_LEFT,
+          y,
+          font,
+          BODY_SIZE,
+          GREY_TEXT,
+        );
         y -= 14;
       }
 
@@ -244,7 +276,15 @@ export class InvoicePDFService {
       }
 
       if (customer.email) {
-        drawText(page, sanitizePDFText(customer.email, 100), MARGIN_LEFT, y, font, BODY_SIZE, GREY_TEXT);
+        drawText(
+          page,
+          sanitizePDFText(customer.email, 100),
+          MARGIN_LEFT,
+          y,
+          font,
+          BODY_SIZE,
+          GREY_TEXT,
+        );
         y -= 14;
       }
     } else {
@@ -284,7 +324,15 @@ export class InvoicePDFService {
         // Continue on new page — but for simplicity, we'll stop here.
         // In a production system, we'd track the current page.
         // For now we truncate the display (invoices rarely exceed 1 page).
-        drawText(newPage, '... continued', MARGIN_LEFT, PAGE_HEIGHT - 50, font, BODY_SIZE, GREY_TEXT);
+        drawText(
+          newPage,
+          '... continued',
+          MARGIN_LEFT,
+          PAGE_HEIGHT - 50,
+          font,
+          BODY_SIZE,
+          GREY_TEXT,
+        );
         break;
       }
 
@@ -298,9 +346,33 @@ export class InvoicePDFService {
       const descLines = wrapText(desc, font, BODY_SIZE, colQty - colDesc - 10);
       drawText(page, descLines[0], colDesc, y, font, BODY_SIZE, DARK_TEXT);
       drawRightAlignedText(page, qty.toString(), colQty + 30, y, font, BODY_SIZE, DARK_TEXT);
-      drawRightAlignedText(page, formatCurrency(unitPriceCents), colUnitPrice + 50, y, font, BODY_SIZE, DARK_TEXT);
-      drawRightAlignedText(page, formatCurrency(gstAmountCents), colGST + 35, y, font, BODY_SIZE, DARK_TEXT);
-      drawRightAlignedText(page, formatCurrency(amountCents), colAmount, y, font, BODY_SIZE, DARK_TEXT);
+      drawRightAlignedText(
+        page,
+        formatCurrency(unitPriceCents),
+        colUnitPrice + 50,
+        y,
+        font,
+        BODY_SIZE,
+        DARK_TEXT,
+      );
+      drawRightAlignedText(
+        page,
+        formatCurrency(gstAmountCents),
+        colGST + 35,
+        y,
+        font,
+        BODY_SIZE,
+        DARK_TEXT,
+      );
+      drawRightAlignedText(
+        page,
+        formatCurrency(amountCents),
+        colAmount,
+        y,
+        font,
+        BODY_SIZE,
+        DARK_TEXT,
+      );
       y -= 14;
 
       // Draw additional description lines if wrapped
@@ -328,21 +400,53 @@ export class InvoicePDFService {
     const dueCents = Number(invoice?.amountDue ?? 0);
 
     drawRightAlignedText(page, 'Subtotal:', totalsLabelX + 50, y, font, BODY_SIZE, DARK_TEXT);
-    drawRightAlignedText(page, formatCurrency(subtotalCents), totalsValueX, y, font, BODY_SIZE, DARK_TEXT);
+    drawRightAlignedText(
+      page,
+      formatCurrency(subtotalCents),
+      totalsValueX,
+      y,
+      font,
+      BODY_SIZE,
+      DARK_TEXT,
+    );
     y -= 16;
 
     drawRightAlignedText(page, 'GST (10%):', totalsLabelX + 50, y, font, BODY_SIZE, DARK_TEXT);
-    drawRightAlignedText(page, formatCurrency(gstTotalCents), totalsValueX, y, font, BODY_SIZE, DARK_TEXT);
+    drawRightAlignedText(
+      page,
+      formatCurrency(gstTotalCents),
+      totalsValueX,
+      y,
+      font,
+      BODY_SIZE,
+      DARK_TEXT,
+    );
     y -= 8;
     drawHorizontalLine(page, y, totalsLabelX - 20, rightEdge, 0.5, DARK_TEXT);
     y -= 16;
 
     drawRightAlignedText(page, 'TOTAL:', totalsLabelX + 50, y, boldFont, 12, DARK_TEXT);
-    drawRightAlignedText(page, formatCurrency(totalCents), totalsValueX, y, boldFont, 12, DARK_TEXT);
+    drawRightAlignedText(
+      page,
+      formatCurrency(totalCents),
+      totalsValueX,
+      y,
+      boldFont,
+      12,
+      DARK_TEXT,
+    );
     y -= 18;
 
     drawRightAlignedText(page, 'Paid:', totalsLabelX + 50, y, font, BODY_SIZE, GREY_TEXT);
-    drawRightAlignedText(page, formatCurrency(paidCents), totalsValueX, y, font, BODY_SIZE, GREY_TEXT);
+    drawRightAlignedText(
+      page,
+      formatCurrency(paidCents),
+      totalsValueX,
+      y,
+      font,
+      BODY_SIZE,
+      GREY_TEXT,
+    );
     y -= 16;
 
     drawRightAlignedText(page, 'AMOUNT DUE:', totalsLabelX + 50, y, boldFont, 12, GOLD);

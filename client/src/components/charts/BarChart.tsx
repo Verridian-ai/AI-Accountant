@@ -42,7 +42,14 @@ function BarChartInner({
     return (
       <ChartContainer title={title} subtitle={subtitle} height={height}>
         <RechartsBarChart data={[]}>
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize={14}>
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#9CA3AF"
+            fontSize={14}
+          >
             No data available
           </text>
         </RechartsBarChart>
@@ -53,17 +60,34 @@ function BarChartInner({
   const layout = horizontal ? 'vertical' : 'horizontal';
 
   return (
-    <ChartContainer title={title} subtitle={subtitle} height={height} loading={loading} error={error}>
+    <ChartContainer
+      title={title}
+      subtitle={subtitle}
+      height={height}
+      loading={loading}
+      error={error}
+    >
       <RechartsBarChart data={data} layout={layout}>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
         {horizontal ? (
           <>
-            <XAxis type="number" tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }} />
-            <YAxis dataKey={xAxisKey} type="category" tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }} width={80} />
+            <XAxis
+              type="number"
+              tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }}
+            />
+            <YAxis
+              dataKey={xAxisKey}
+              type="category"
+              tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }}
+              width={80}
+            />
           </>
         ) : (
           <>
-            <XAxis dataKey={xAxisKey} tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }} />
+            <XAxis
+              dataKey={xAxisKey}
+              tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }}
+            />
             <YAxis tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }} />
           </>
         )}

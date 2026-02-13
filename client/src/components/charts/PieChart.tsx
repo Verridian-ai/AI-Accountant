@@ -1,15 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import {
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  type PieSectorDataItem,
-  Sector,
-} from 'recharts';
+import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, Sector } from 'recharts';
 import { CHART_COLORS, CHART_THEME, getCategoryColor } from './ChartColorPalette';
 import { ChartContainer } from './ChartContainer';
+
+type PieSectorDataItem = any;
 
 interface PieDataItem {
   name: string;
@@ -43,16 +37,18 @@ interface ActiveShapeProps extends PieSectorDataItem {
 
 function renderActiveShape(props: unknown) {
   const p = props as ActiveShapeProps;
-  const {
-    cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, value,
-  } = p;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, value } = p;
 
   return (
     <g>
       {innerRadius > 0 && (
         <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
           <tspan x={cx} dy="-0.3em" fill={CHART_COLORS.primary} fontSize={16} fontWeight="bold">
-            {value.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 })}
+            {value.toLocaleString('en-AU', {
+              style: 'currency',
+              currency: 'AUD',
+              maximumFractionDigits: 0,
+            })}
           </tspan>
           <tspan x={cx} dy="1.4em" fill="#9CA3AF" fontSize={11}>
             {payload.name}
@@ -108,7 +104,14 @@ function PieChartInner({
     return (
       <ChartContainer title={title} subtitle={subtitle} height={height}>
         <RechartsPieChart>
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize={14}>
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#9CA3AF"
+            fontSize={14}
+          >
             No data available
           </text>
         </RechartsPieChart>
@@ -117,7 +120,13 @@ function PieChartInner({
   }
 
   return (
-    <ChartContainer title={title} subtitle={subtitle} height={height} loading={loading} error={error}>
+    <ChartContainer
+      title={title}
+      subtitle={subtitle}
+      height={height}
+      loading={loading}
+      error={error}
+    >
       <RechartsPieChart>
         <Pie
           data={data}
@@ -142,7 +151,11 @@ function PieChartInner({
           contentStyle={CHART_THEME.tooltipStyle}
           labelStyle={{ color: CHART_COLORS.primary }}
           formatter={(value: number) => [
-            value.toLocaleString('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }),
+            value.toLocaleString('en-AU', {
+              style: 'currency',
+              currency: 'AUD',
+              maximumFractionDigits: 0,
+            }),
             '',
           ]}
         />

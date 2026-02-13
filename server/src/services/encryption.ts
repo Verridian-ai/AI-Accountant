@@ -20,7 +20,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
  */
 
 const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 12;  // 96 bits recommended for GCM
+const IV_LENGTH = 12; // 96 bits recommended for GCM
 const TAG_LENGTH = 16; // 128 bits
 
 /**
@@ -48,13 +48,13 @@ function getEncryptionKey(): Buffer | null {
       // REVISION (D02 SEC-01): FAIL FAST in production — never store sensitive data unencrypted
       throw new Error(
         'FATAL: TFN_ENCRYPTION_KEY not set or invalid length (must be 64 hex chars / 32 bytes). ' +
-        'Cannot start in production without encryption key. Generate with: openssl rand -hex 32'
+          'Cannot start in production without encryption key. Generate with: openssl rand -hex 32',
       );
     }
     console.error(
       '\u26a0\ufe0f  CRITICAL WARNING: TFN_ENCRYPTION_KEY not set or invalid. ' +
-      'Sensitive data (TFN, bank accounts) will be stored as plaintext with [UNENCRYPTED] prefix. ' +
-      'This is ONLY acceptable in development. Set TFN_ENCRYPTION_KEY before deploying.'
+        'Sensitive data (TFN, bank accounts) will be stored as plaintext with [UNENCRYPTED] prefix. ' +
+        'This is ONLY acceptable in development. Set TFN_ENCRYPTION_KEY before deploying.',
     );
     _encryptionKey = null;
     return null;
@@ -83,10 +83,7 @@ export function encryptField(plaintext: string): string {
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: TAG_LENGTH });
 
-  const encrypted = Buffer.concat([
-    cipher.update(plaintext, 'utf8'),
-    cipher.final(),
-  ]);
+  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
 
   const tag = cipher.getAuthTag();
 
@@ -132,10 +129,7 @@ export function decryptField(ciphertext: string): string {
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(tag);
 
-  const decrypted = Buffer.concat([
-    decipher.update(data),
-    decipher.final(),
-  ]);
+  const decrypted = Buffer.concat([decipher.update(data), decipher.final()]);
 
   return decrypted.toString('utf8');
 }

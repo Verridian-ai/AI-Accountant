@@ -13,10 +13,7 @@ import { taxReturnService } from '../../tax-return.js';
 import { taxOptimizerService } from '../../tax-optimizer.js';
 import type { TaxStrategyInput, TaxStrategyOutput } from '../types.js';
 
-export class TaxStrategyAgent extends ClaudeAgent<
-  TaxStrategyInput,
-  TaxStrategyOutput
-> {
+export class TaxStrategyAgent extends ClaudeAgent<TaxStrategyInput, TaxStrategyOutput> {
   protected systemPrompt = `You are an expert Australian tax strategy advisor AI agent. Your role is to:
 
 1. Analyze the user's entity structure and financial position
@@ -43,12 +40,16 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
   protected tools: Anthropic.Tool[] = [
     {
       name: 'analyze_entity_structure',
-      description: 'Analyze the user\'s business entity structure and determine optimal entity type for tax purposes.',
+      description:
+        "Analyze the user's business entity structure and determine optimal entity type for tax purposes.",
       input_schema: {
         type: 'object' as const,
         properties: {
           userId: { type: 'string' },
-          entityType: { type: 'string', enum: ['sole_trader', 'personal', 'company', 'trust', 'smsf'] },
+          entityType: {
+            type: 'string',
+            enum: ['sole_trader', 'personal', 'company', 'trust', 'smsf'],
+          },
           financialYear: { type: 'string' },
         },
         required: ['userId', 'entityType', 'financialYear'],
@@ -64,7 +65,10 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
           financialYear: { type: 'string' },
           entityTypes: {
             type: 'array',
-            items: { type: 'string', enum: ['sole_trader', 'personal', 'company', 'trust', 'smsf'] },
+            items: {
+              type: 'string',
+              enum: ['sole_trader', 'personal', 'company', 'trust', 'smsf'],
+            },
           },
         },
         required: ['userId', 'financialYear', 'entityTypes'],
@@ -72,7 +76,8 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
     },
     {
       name: 'search_tax_rulings',
-      description: 'Search Cognee knowledge base for ATO tax rulings, legislation references, and precedents.',
+      description:
+        'Search Cognee knowledge base for ATO tax rulings, legislation references, and precedents.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -83,43 +88,58 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
     },
     {
       name: 'generate_strategies',
-      description: 'Generate tax optimization strategies based on the user\'s financial position.',
+      description: "Generate tax optimization strategies based on the user's financial position.",
       input_schema: {
         type: 'object' as const,
         properties: {
           userId: { type: 'string' },
           financialYear: { type: 'string' },
-          entityType: { type: 'string', enum: ['sole_trader', 'personal', 'company', 'trust', 'smsf'] },
+          entityType: {
+            type: 'string',
+            enum: ['sole_trader', 'personal', 'company', 'trust', 'smsf'],
+          },
         },
         required: ['userId', 'financialYear', 'entityType'],
       },
     },
     {
       name: 'explore_tax_ontology',
-      description: 'Explore the tax ontology graph for relationships between tax concepts, rulings, deductions, and entity types.',
+      description:
+        'Explore the tax ontology graph for relationships between tax concepts, rulings, deductions, and entity types.',
       input_schema: {
         type: 'object' as const,
         properties: {
-          query: { type: 'string', description: 'Tax concept or question to explore in the ontology' },
+          query: {
+            type: 'string',
+            description: 'Tax concept or question to explore in the ontology',
+          },
         },
         required: ['query'],
       },
     },
     {
       name: 'search_deduction_precedents',
-      description: 'Search for deduction precedents using DataPoint-structured entity matching. Finds similar deduction claims from the knowledge graph.',
+      description:
+        'Search for deduction precedents using DataPoint-structured entity matching. Finds similar deduction claims from the knowledge graph.',
       input_schema: {
         type: 'object' as const,
         properties: {
-          deductionType: { type: 'string', description: 'Type of deduction (e.g., "home office", "motor vehicle", "travel")' },
-          entityType: { type: 'string', description: 'Entity type (e.g., "sole_trader", "company", "trust")' },
+          deductionType: {
+            type: 'string',
+            description: 'Type of deduction (e.g., "home office", "motor vehicle", "travel")',
+          },
+          entityType: {
+            type: 'string',
+            description: 'Entity type (e.g., "sole_trader", "company", "trust")',
+          },
         },
         required: ['deductionType', 'entityType'],
       },
     },
     {
       name: 'temporal_tax_search',
-      description: 'Search tax strategies and deduction patterns for a specific financial year. Converts FY notation (e.g., "2024-25") to date range.',
+      description:
+        'Search tax strategies and deduction patterns for a specific financial year. Converts FY notation (e.g., "2024-25") to date range.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -131,7 +151,8 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
     },
     {
       name: 'cross_module_tax_impact',
-      description: 'Assess cross-module tax impact from spending, compliance, and forecasts. Gathers context from tax, transactions, compliance, and forecasting modules.',
+      description:
+        'Assess cross-module tax impact from spending, compliance, and forecasts. Gathers context from tax, transactions, compliance, and forecasting modules.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -142,7 +163,8 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
     },
     {
       name: 'search_financial_context',
-      description: 'Search Cognee for the user\'s financial context, transaction patterns, and history.',
+      description:
+        "Search Cognee for the user's financial context, transaction patterns, and history.",
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -154,15 +176,17 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'analyze_entity_structure',
       async (input) => {
         const userId = input.userId as string;
-        const entityType = input.entityType as 'sole_trader' | 'personal' | 'company' | 'trust' | 'smsf';
+        const entityType = input.entityType as
+          | 'sole_trader'
+          | 'personal'
+          | 'company'
+          | 'trust'
+          | 'smsf';
         const financialYear = input.financialYear as string;
 
         const result = await this.calculateForEntity(userId, financialYear, entityType);
@@ -181,7 +205,7 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
           scenarios[et] = await this.calculateForEntity(
             userId,
             financialYear,
-            et as 'sole_trader' | 'personal' | 'company' | 'trust' | 'smsf'
+            et as 'sole_trader' | 'personal' | 'company' | 'trust' | 'smsf',
           );
         }
         return scenarios;
@@ -204,9 +228,18 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
       async (input) => {
         const userId = input.userId as string;
         const financialYear = input.financialYear as string;
-        const entityType = input.entityType as 'sole_trader' | 'personal' | 'company' | 'trust' | 'smsf';
+        const entityType = input.entityType as
+          | 'sole_trader'
+          | 'personal'
+          | 'company'
+          | 'trust'
+          | 'smsf';
 
-        const strategies = await taxOptimizerService.generateStrategies(userId, financialYear, entityType);
+        const strategies = await taxOptimizerService.generateStrategies(
+          userId,
+          financialYear,
+          entityType,
+        );
         return { strategies, count: strategies.length };
       },
     ],
@@ -230,7 +263,7 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
         try {
           const results = await cogneeTools.searchWithDataPoint(
             `${deductionType} ${entityType}`,
-            'TaxEvent'
+            'TaxEvent',
           );
           return { found: results.length > 0, results };
         } catch {
@@ -246,7 +279,11 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
         // Convert financial year (e.g., '2024-25') to date range (2024-07-01 to 2025-06-30)
         const match = financialYear.match(/^(\d{4})-(\d{2})$/);
         if (!match) {
-          return { found: false, results: [], error: `Invalid financial year format: ${financialYear}. Expected "2024-25".` };
+          return {
+            found: false,
+            results: [],
+            error: `Invalid financial year format: ${financialYear}. Expected "2024-25".`,
+          };
         }
         const startYear = parseInt(match[1], 10);
         const timeRange = { start: `${startYear}-07-01`, end: `${startYear + 1}-06-30` };
@@ -263,7 +300,12 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
       async (input) => {
         const query = input.query as string;
         try {
-          const results = await cogneeTools.crossModuleSearch(query, ['tax', 'transactions', 'compliance', 'forecasting']);
+          const results = await cogneeTools.crossModuleSearch(query, [
+            'tax',
+            'transactions',
+            'compliance',
+            'forecasting',
+          ]);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cross-module search unavailable' };
@@ -293,7 +335,7 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
   private async calculateForEntity(
     userId: string,
     financialYear: string,
-    entityType: 'sole_trader' | 'personal' | 'company' | 'trust' | 'smsf'
+    entityType: 'sole_trader' | 'personal' | 'company' | 'trust' | 'smsf',
   ) {
     switch (entityType) {
       case 'sole_trader':

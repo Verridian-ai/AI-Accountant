@@ -36,14 +36,14 @@ export function AgentRoutingIndicator({ agentType, isProcessing }: AgentRoutingI
   const label = agentType ? (AGENT_LABELS[agentType] ?? agentType) : 'Routing';
 
   return (
-    <div className={cn(
-      'flex items-center gap-2 px-3 py-1.5 transition-opacity duration-300',
-      isProcessing ? 'opacity-100' : 'opacity-0'
-    )}>
+    <div
+      className={cn(
+        'flex items-center gap-2 px-3 py-1.5 transition-opacity duration-300',
+        isProcessing ? 'opacity-100' : 'opacity-0',
+      )}
+    >
       <Loader2 className="h-3 w-3 text-[#FFCC00] animate-spin" />
-      <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">
-        {label}
-      </span>
+      <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{label}</span>
     </div>
   );
 }

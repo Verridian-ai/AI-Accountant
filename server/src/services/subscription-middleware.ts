@@ -25,15 +25,18 @@ export function subscriptionLimitMiddleware(metric: UsageMetric) {
       await subscriptionService.enforceLimit(tenantId, metric);
     } catch (err) {
       if (err instanceof UsageLimitExceededError) {
-        return c.json({
-          error: 'Usage limit exceeded',
-          message: err.message,
-          metric: err.metric,
-          current: err.current,
-          limit: err.limit,
-          plan: err.planName,
-          upgradeUrl: '/settings/subscription',
-        }, 402);
+        return c.json(
+          {
+            error: 'Usage limit exceeded',
+            message: err.message,
+            metric: err.metric,
+            current: err.current,
+            limit: err.limit,
+            plan: err.planName,
+            upgradeUrl: '/settings/subscription',
+          },
+          402,
+        );
       }
       throw err;
     }
@@ -57,12 +60,15 @@ export function featureGateMiddleware(feature: string) {
 
     const enabled = await subscriptionService.isFeatureEnabled(tenantId, feature);
     if (!enabled) {
-      return c.json({
-        error: 'Feature not available',
-        message: `The "${feature}" feature is not included in your current plan. Upgrade to access this feature.`,
-        feature,
-        upgradeUrl: '/settings/subscription',
-      }, 403);
+      return c.json(
+        {
+          error: 'Feature not available',
+          message: `The "${feature}" feature is not included in your current plan. Upgrade to access this feature.`,
+          feature,
+          upgradeUrl: '/settings/subscription',
+        },
+        403,
+      );
     }
 
     await next();

@@ -6,7 +6,14 @@
  * sources for financial insights.
  */
 
-import { db, ragCitations, ragChunks, ragDocuments, transactions, accounts } from '../../../schema.js';
+import {
+  db,
+  ragCitations,
+  ragChunks,
+  ragDocuments,
+  transactions,
+  accounts,
+} from '../../../schema.js';
 import { eq, and, inArray, desc, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
@@ -139,7 +146,11 @@ export interface CreateCitationResult {
 // ============================================================================
 
 export class CitationError extends Error {
-  constructor(message: string, public code: string, public details?: unknown) {
+  constructor(
+    message: string,
+    public code: string,
+    public details?: unknown,
+  ) {
     super(message);
     this.name = 'CitationError';
     Error.captureStackTrace(this, this.constructor);
@@ -192,7 +203,7 @@ export class CitationManager {
     answerText: string,
     sourceChunks: SourceChunk[],
     userId: string,
-    options?: CreateCitationOptions
+    options?: CreateCitationOptions,
   ): Promise<CreateCitationResult> {
     const config = { ...DEFAULT_OPTIONS, ...options };
     const now = new Date().toISOString();
@@ -200,7 +211,7 @@ export class CitationManager {
 
     // Filter chunks by relevance threshold
     const relevantChunks = sourceChunks
-      .filter(chunk => (chunk.relevanceScore ?? 0) >= config.minRelevanceScore)
+      .filter((chunk) => (chunk.relevanceScore ?? 0) >= config.minRelevanceScore)
       .sort((a, b) => (b.relevanceScore ?? 0) - (a.relevanceScore ?? 0))
       .slice(0, config.maxCitations);
 
@@ -471,11 +482,7 @@ export class CitationManager {
     document?: typeof ragDocuments.$inferSelect;
     linkedTransaction?: TransactionDetails | null;
   } | null> {
-    const chunkResult = await db
-      .select()
-      .from(ragChunks)
-      .where(eq(ragChunks.id, chunkId))
-      .limit(1);
+    const chunkResult = await db.select().from(ragChunks).where(eq(ragChunks.id, chunkId)).limit(1);
 
     if (chunkResult.length === 0) {
       return { exists: false };
@@ -488,11 +495,7 @@ export class CitationManager {
 
     // Batch fetch document and transaction in parallel
     const [documentResult, transactionResult] = await Promise.all([
-      db
-        .select()
-        .from(ragDocuments)
-        .where(eq(ragDocuments.id, chunk.documentId))
-        .limit(1),
+      db.select().from(ragDocuments).where(eq(ragDocuments.id, chunk.documentId)).limit(1),
       metadata.transactionId
         ? db
             .select({
@@ -530,7 +533,7 @@ export class CitationManager {
    * @returns Formatted citations ready for UI rendering
    */
   formatCitationsForDisplay(citations: CitationWithSource[]): FormattedCitation[] {
-    return citations.map(citation => {
+    return citations.map((citation) => {
       const sourceType = this.mapSourceType(citation.sourceType);
       const relevanceLabel = this.getRelevanceLabel(citation.relevanceScore || 0);
 
@@ -583,10 +586,7 @@ export class CitationManager {
    * @param wasHelpful - Whether the citation was helpful
    */
   async recordFeedback(citationId: string, wasHelpful: boolean): Promise<void> {
-    await db
-      .update(ragCitations)
-      .set({ wasHelpful })
-      .where(eq(ragCitations.id, citationId));
+    await db.update(ragCitations).set({ wasHelpful }).where(eq(ragCitations.id, citationId));
   }
 
   /**

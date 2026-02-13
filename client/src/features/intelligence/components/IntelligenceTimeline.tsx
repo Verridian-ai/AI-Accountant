@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import {
-  DollarSign, TrendingUp, ShieldCheck, Receipt, Calculator, Network, Clock,
+  DollarSign,
+  TrendingUp,
+  ShieldCheck,
+  Receipt,
+  Calculator,
+  Network,
+  Clock,
 } from 'lucide-react';
 import { intelligenceApi } from '../../../api';
 import { cn } from '../../../lib/utils';
@@ -37,7 +43,9 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
   const [granularity, setGranularity] = useState<Granularity>('day');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [activeModules, setActiveModules] = useState<Set<string>>(new Set(Object.keys(moduleConfig)));
+  const [activeModules, setActiveModules] = useState<Set<string>>(
+    new Set(Object.keys(moduleConfig)),
+  );
 
   useEffect(() => {
     loadTimeline();
@@ -50,7 +58,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
       const data = await intelligenceApi.getTimeline(userId, params);
-      setEvents(Array.isArray(data) ? data : data.events ?? []);
+      setEvents(Array.isArray(data) ? data : (data.events ?? []));
       setError(null);
     } catch {
       setError('Failed to load timeline');
@@ -60,7 +68,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
   };
 
   const toggleModule = (mod: string) => {
-    setActiveModules(prev => {
+    setActiveModules((prev) => {
       const next = new Set(prev);
       if (next.has(mod)) next.delete(mod);
       else next.add(mod);
@@ -68,7 +76,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
     });
   };
 
-  const filteredEvents = events.filter(e => activeModules.has(e.module));
+  const filteredEvents = events.filter((e) => activeModules.has(e.module));
 
   // Group events by date
   const grouped = filteredEvents.reduce<Record<string, TimelineEvent[]>>((acc, evt) => {
@@ -90,7 +98,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
             <input
               type="date"
               value={startDate}
-              onChange={e => setStartDate(e.target.value)}
+              onChange={(e) => setStartDate(e.target.value)}
               className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300"
             />
           </div>
@@ -99,12 +107,12 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
             <input
               type="date"
               value={endDate}
-              onChange={e => setEndDate(e.target.value)}
+              onChange={(e) => setEndDate(e.target.value)}
               className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300"
             />
           </div>
           <div className="flex rounded-lg overflow-hidden border border-zinc-700">
-            {(['day', 'week', 'month'] as Granularity[]).map(g => (
+            {(['day', 'week', 'month'] as Granularity[]).map((g) => (
               <button
                 key={g}
                 onClick={() => setGranularity(g)}
@@ -112,7 +120,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
                   'px-3 py-1.5 text-xs font-bold uppercase transition-colors',
                   granularity === g
                     ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                    : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                    : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200',
                 )}
               >
                 {g}
@@ -131,7 +139,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
                 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border transition-all',
                 activeModules.has(mod)
                   ? `${cfg.bg} ${cfg.color} border-current`
-                  : 'bg-zinc-800/50 text-zinc-600 border-zinc-700'
+                  : 'bg-zinc-800/50 text-zinc-600 border-zinc-700',
               )}
             >
               <cfg.icon className="w-3 h-3" />
@@ -158,7 +166,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
           {/* Vertical line */}
           <div className="absolute left-3 top-0 bottom-0 w-px bg-zinc-700" />
 
-          {sortedDates.map(date => (
+          {sortedDates.map((date) => (
             <div key={date} className="mb-6">
               {/* Date marker */}
               <div className="flex items-center gap-3 mb-3 relative">
@@ -177,8 +185,12 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
 
               {/* Events for this date */}
               <div className="space-y-2 ml-4">
-                {grouped[date].map(evt => {
-                  const cfg = moduleConfig[evt.module] || { icon: Clock, color: 'text-zinc-400', bg: 'bg-zinc-500/10' };
+                {grouped[date].map((evt) => {
+                  const cfg = moduleConfig[evt.module] || {
+                    icon: Clock,
+                    color: 'text-zinc-400',
+                    bg: 'bg-zinc-500/10',
+                  };
                   const ModIcon = cfg.icon;
                   return (
                     <div key={evt.id} className="neu-raised p-3 rounded-lg flex items-start gap-3">
@@ -188,13 +200,22 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-zinc-200">{evt.title}</span>
-                          <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold uppercase', cfg.bg, cfg.color)}>
+                          <span
+                            className={cn(
+                              'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase',
+                              cfg.bg,
+                              cfg.color,
+                            )}
+                          >
                             {evt.module}
                           </span>
                         </div>
                         <p className="text-xs text-zinc-500 mt-0.5">{evt.description}</p>
                         <span className="text-[10px] text-zinc-600 mt-1 block">
-                          {new Date(evt.timestamp).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(evt.timestamp).toLocaleTimeString('en-AU', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </span>
                       </div>
                     </div>

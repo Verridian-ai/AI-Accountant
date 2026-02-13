@@ -18,134 +18,133 @@ export type PythonAgentType = 'financial_analyst' | 'bas' | 'tax' | 'reconciliat
 export type { AgentType } from './claude/types.js';
 
 export interface AgentContext {
-    transactions?: any[];
-    accounts?: any[];
-    statements?: any[];
+  transactions?: any[];
+  accounts?: any[];
+  statements?: any[];
 }
 
 export interface AgentResponse {
-    success: boolean;
-    message: string;
-    data?: any;
-    reasoning?: string;
-    code_executed?: string;
-    code_result?: any;
+  success: boolean;
+  message: string;
+  data?: any;
+  reasoning?: string;
+  code_executed?: string;
+  code_result?: any;
 }
 
 export interface CodeExecutionResult {
-    success: boolean;
-    output: string;
-    result?: any;
-    error?: string;
-    execution_time_ms: number;
+  success: boolean;
+  output: string;
+  result?: any;
+  error?: string;
+  execution_time_ms: number;
 }
 
 export interface AgentInfo {
-    available_agents?: string[];
-    descriptions?: Record<string, string>;
-    name?: string;
-    model_type?: string;
-    system_prompt?: string;
+  available_agents?: string[];
+  descriptions?: Record<string, string>;
+  name?: string;
+  model_type?: string;
+  system_prompt?: string;
 }
 
 class AgentService {
-    private async runPython(args: string[]): Promise<any> {
-        return new Promise((resolve, reject) => {
-            const process = spawn(PYTHON_PATH, [RUNNER_PATH, ...args]);
-            let stdout = '';
-            let stderr = '';
+  private async runPython(args: string[]): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const process = spawn(PYTHON_PATH, [RUNNER_PATH, ...args]);
+      let stdout = '';
+      let stderr = '';
 
-            process.stdout.on('data', (data) => {
-                stdout += data.toString();
-            });
+      process.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
 
-            process.stderr.on('data', (data) => {
-                stderr += data.toString();
-            });
+      process.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
 
-            process.on('close', (code) => {
-                if (code !== 0) {
-                    console.error('[AgentService] Python stderr:', stderr);
-                    reject(new Error(`Agent process exited with code ${code}. Error: ${stderr}`));
-                    return;
-                }
-                try {
-                    // Parse the last line of output (in case of debug prints)
-                    const lines = stdout.trim().split('\n');
-                    const lastLine = lines[lines.length - 1];
-                    resolve(JSON.parse(lastLine));
-                } catch (_e) {
-                    reject(new Error(`Failed to parse agent output: ${stdout}`));
-                }
-            });
-        });
-    }
-
-    /**
-     * Run an AI agent with a query and context.
-     */
-    async runAgent(
-        agentType: PythonAgentType,
-        query: string,
-        context: AgentContext = {}
-    ): Promise<AgentResponse> {
-        const data = {
-            query,
-            transactions: context.transactions || [],
-            accounts: context.accounts || [],
-            statements: context.statements || [],
-        };
-
-        return this.runPython(['run', agentType, JSON.stringify(data)]);
-    }
-
-    /**
-     * Execute Python code in the sandboxed interpreter.
-     */
-    async executeCode(code: string, context: Record<string, any> = {}): Promise<CodeExecutionResult> {
-        const data = { code, context };
-        return this.runPython(['code', JSON.stringify(data)]);
-    }
-
-    /**
-     * Get information about available agents.
-     */
-    async getAgentInfo(agentType?: PythonAgentType): Promise<AgentInfo> {
-        const args = ['info'];
-        if (agentType) {
-            args.push(agentType);
+      process.on('close', (code) => {
+        if (code !== 0) {
+          console.error('[AgentService] Python stderr:', stderr);
+          reject(new Error(`Agent process exited with code ${code}. Error: ${stderr}`));
+          return;
         }
-        return this.runPython(args);
-    }
+        try {
+          // Parse the last line of output (in case of debug prints)
+          const lines = stdout.trim().split('\n');
+          const lastLine = lines[lines.length - 1];
+          resolve(JSON.parse(lastLine));
+        } catch (_e) {
+          reject(new Error(`Failed to parse agent output: ${stdout}`));
+        }
+      });
+    });
+  }
 
-    /**
-     * Run the Financial Analyst agent.
-     */
-    async analyzeFinances(query: string, context: AgentContext): Promise<AgentResponse> {
-        return this.runAgent('financial_analyst', query, context);
-    }
+  /**
+   * Run an AI agent with a query and context.
+   */
+  async runAgent(
+    agentType: PythonAgentType,
+    query: string,
+    context: AgentContext = {},
+  ): Promise<AgentResponse> {
+    const data = {
+      query,
+      transactions: context.transactions || [],
+      accounts: context.accounts || [],
+      statements: context.statements || [],
+    };
 
-    /**
-     * Run the BAS agent for GST calculations.
-     */
-    async calculateBAS(query: string, context: AgentContext): Promise<AgentResponse> {
-        return this.runAgent('bas', query, context);
-    }
+    return this.runPython(['run', agentType, JSON.stringify(data)]);
+  }
 
-    /**
-     * Run the Tax agent for income tax calculations.
-     */
-    async calculateTax(query: string, context: AgentContext): Promise<AgentResponse> {
-        return this.runAgent('tax', query, context);
-    }
+  /**
+   * Execute Python code in the sandboxed interpreter.
+   */
+  async executeCode(code: string, context: Record<string, any> = {}): Promise<CodeExecutionResult> {
+    const data = { code, context };
+    return this.runPython(['code', JSON.stringify(data)]);
+  }
 
-    /**
-     * Run the Reconciliation agent.
-     */
-    async reconcileTransactions(query: string, context: AgentContext): Promise<AgentResponse> {
-        return this.runAgent('reconciliation', query, context);
+  /**
+   * Get information about available agents.
+   */
+  async getAgentInfo(agentType?: PythonAgentType): Promise<AgentInfo> {
+    const args = ['info'];
+    if (agentType) {
+      args.push(agentType);
     }
+    return this.runPython(args);
+  }
+
+  /**
+   * Run the Financial Analyst agent.
+   */
+  async analyzeFinances(query: string, context: AgentContext): Promise<AgentResponse> {
+    return this.runAgent('financial_analyst', query, context);
+  }
+
+  /**
+   * Run the BAS agent for GST calculations.
+   */
+  async calculateBAS(query: string, context: AgentContext): Promise<AgentResponse> {
+    return this.runAgent('bas', query, context);
+  }
+
+  /**
+   * Run the Tax agent for income tax calculations.
+   */
+  async calculateTax(query: string, context: AgentContext): Promise<AgentResponse> {
+    return this.runAgent('tax', query, context);
+  }
+
+  /**
+   * Run the Reconciliation agent.
+   */
+  async reconcileTransactions(query: string, context: AgentContext): Promise<AgentResponse> {
+    return this.runAgent('reconciliation', query, context);
+  }
 }
 
 export const agentService = new AgentService();
-

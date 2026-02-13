@@ -15,7 +15,7 @@ const TABS = [
   { id: 'stats', label: 'Graph Stats', icon: BarChart3 },
 ] as const;
 
-type TabId = typeof TABS[number]['id'];
+type TabId = (typeof TABS)[number]['id'];
 
 interface QuickStat {
   label: string;
@@ -34,11 +34,12 @@ export function KnowledgeDashboard() {
   // Load datasets
   useEffect(() => {
     setLoadingDatasets(true);
-    knowledgeApi.getGraph('', { maxNodes: 0 })
+    knowledgeApi
+      .getGraph('', { maxNodes: 0 })
       .then(() => {
         // Attempt to load dataset list — fallback to placeholder if the endpoint doesn't exist yet
         return fetch(`${(window as any).__BASE_URL || ''}/api/knowledge/datasets`)
-          .then((r) => r.ok ? r.json() : [])
+          .then((r) => (r.ok ? r.json() : []))
           .catch(() => []);
       })
       .then((list: any[]) => {
@@ -57,13 +58,22 @@ export function KnowledgeDashboard() {
   // Load quick stats when dataset changes
   useEffect(() => {
     if (!selectedDataset) return;
-    knowledgeApi.graphStats(selectedDataset)
+    knowledgeApi
+      .graphStats(selectedDataset)
       .then((stats: any) => {
         setQuickStats([
           { label: 'Total Nodes', value: stats.nodeCount ?? 0, color: 'text-[#FFCC00]' },
           { label: 'Total Edges', value: stats.edgeCount ?? 0, color: 'text-blue-400' },
-          { label: 'DataPoints Active', value: stats.activeDataPoints ?? '-', color: 'text-emerald-400' },
-          { label: 'Feedback Score', value: stats.feedbackScore != null ? `${(stats.feedbackScore * 100).toFixed(0)}%` : '-', color: 'text-purple-400' },
+          {
+            label: 'DataPoints Active',
+            value: stats.activeDataPoints ?? '-',
+            color: 'text-emerald-400',
+          },
+          {
+            label: 'Feedback Score',
+            value: stats.feedbackScore != null ? `${(stats.feedbackScore * 100).toFixed(0)}%` : '-',
+            color: 'text-purple-400',
+          },
         ]);
       })
       .catch(() => {
@@ -88,7 +98,9 @@ export function KnowledgeDashboard() {
         </div>
         {/* Dataset Selector */}
         <div className="flex items-center gap-2">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Dataset:</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+            Dataset:
+          </label>
           {loadingDatasets ? (
             <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
           ) : (
@@ -98,7 +110,9 @@ export function KnowledgeDashboard() {
               className="neu-inset rounded-lg px-3 py-1.5 text-sm text-zinc-200 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {datasets.map((ds) => (
-                <option key={ds} value={ds}>{ds}</option>
+                <option key={ds} value={ds}>
+                  {ds}
+                </option>
               ))}
             </select>
           )}
@@ -110,7 +124,9 @@ export function KnowledgeDashboard() {
         {quickStats.map((stat) => (
           <div key={stat.label} className="neu-raised rounded-xl p-3 text-center">
             <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{stat.label}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              {stat.label}
+            </p>
           </div>
         ))}
       </div>
@@ -136,21 +152,11 @@ export function KnowledgeDashboard() {
 
       {/* Tab Content */}
       <div className="animate-in fade-in duration-300">
-        {activeTab === 'graph' && (
-          <KnowledgeGraphExplorer datasetName={selectedDataset} />
-        )}
-        {activeTab === 'datapoints' && (
-          <DataPointManager userId={userId} />
-        )}
-        {activeTab === 'ontologies' && (
-          <OntologyManager userId={userId} />
-        )}
-        {activeTab === 'feedback' && (
-          <FeedbackPanel userId={userId} />
-        )}
-        {activeTab === 'stats' && (
-          <GraphStatsPanel datasetName={selectedDataset} />
-        )}
+        {activeTab === 'graph' && <KnowledgeGraphExplorer datasetName={selectedDataset} />}
+        {activeTab === 'datapoints' && <DataPointManager userId={userId} />}
+        {activeTab === 'ontologies' && <OntologyManager userId={userId} />}
+        {activeTab === 'feedback' && <FeedbackPanel userId={userId} />}
+        {activeTab === 'stats' && <GraphStatsPanel datasetName={selectedDataset} />}
       </div>
     </div>
   );

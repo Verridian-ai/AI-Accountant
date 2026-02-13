@@ -29,7 +29,13 @@ function addDays(date: Date, days: number): Date {
 }
 
 function parseUsageJson(raw: string | null | undefined): UsageJson {
-  const defaults: UsageJson = { members: 0, accounts: 0, transactions: 0, aiQueries: 0, storageMb: 0 };
+  const defaults: UsageJson = {
+    members: 0,
+    accounts: 0,
+    transactions: 0,
+    aiQueries: 0,
+    storageMb: 0,
+  };
   if (!raw) return defaults;
   try {
     const parsed = JSON.parse(raw) as Partial<UsageJson>;
@@ -41,11 +47,16 @@ function parseUsageJson(raw: string | null | undefined): UsageJson {
 
 function metricToLimit(plan: SubscriptionPlan, metric: UsageMetric): number {
   switch (metric) {
-    case 'members': return plan.maxMembers;
-    case 'accounts': return plan.maxAccounts;
-    case 'transactions': return plan.maxTransactionsPerMonth;
-    case 'aiQueries': return plan.maxAiQueriesPerMonth;
-    case 'storageMb': return plan.maxStorageMb;
+    case 'members':
+      return plan.maxMembers;
+    case 'accounts':
+      return plan.maxAccounts;
+    case 'transactions':
+      return plan.maxTransactionsPerMonth;
+    case 'aiQueries':
+      return plan.maxAiQueriesPerMonth;
+    case 'storageMb':
+      return plan.maxStorageMb;
   }
 }
 
@@ -113,7 +124,6 @@ function dbRowToSubscription(row: any, plan: SubscriptionPlan): Subscription {
 // ============================================================================
 
 export class SubscriptionService {
-
   // --------------------------------------------------------------------------
   // PLAN MANAGEMENT
   // --------------------------------------------------------------------------
@@ -161,8 +171,13 @@ export class SubscriptionService {
     // Cancel any existing active subscription
     const existing = await this._getActiveSubscriptionRow(tenantId);
     if (existing) {
-      await db.update(subscriptionHistory)
-        .set({ status: 'cancelled', cancelledAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
+      await db
+        .update(subscriptionHistory)
+        .set({
+          status: 'cancelled',
+          cancelledAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
         .where(eq(subscriptionHistory.id, existing.id))
         .run();
     }
@@ -186,7 +201,13 @@ export class SubscriptionService {
       currentPeriodEnd: periodEnd.toISOString(),
       cancelAtPeriodEnd: false,
       trialEnd,
-      usageJson: JSON.stringify({ members: 0, accounts: 0, transactions: 0, aiQueries: 0, storageMb: 0 }),
+      usageJson: JSON.stringify({
+        members: 0,
+        accounts: 0,
+        transactions: 0,
+        aiQueries: 0,
+        storageMb: 0,
+      }),
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     };
@@ -204,12 +225,19 @@ export class SubscriptionService {
     if (!newPlan) throw new Error(`Plan not found: ${newPlanName}`);
 
     // End current subscription immediately
-    await db.update(subscriptionHistory)
-      .set({ status: 'cancelled', cancelledAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
-      .where(and(
-        eq(subscriptionHistory.tenantId, tenantId),
-        eq(subscriptionHistory.status, current.status),
-      ))
+    await db
+      .update(subscriptionHistory)
+      .set({
+        status: 'cancelled',
+        cancelledAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .where(
+        and(
+          eq(subscriptionHistory.tenantId, tenantId),
+          eq(subscriptionHistory.status, current.status),
+        ),
+      )
       .run();
 
     // Create new subscription effective immediately, carrying over usage
@@ -256,7 +284,8 @@ export class SubscriptionService {
     // Mark current subscription to end at period end
     const activeRow = await this._getActiveSubscriptionRow(tenantId);
     if (activeRow) {
-      await db.update(subscriptionHistory)
+      await db
+        .update(subscriptionHistory)
         .set({ cancelAtPeriodEnd: true, updatedAt: new Date().toISOString() })
         .where(eq(subscriptionHistory.id, activeRow.id))
         .run();
@@ -278,7 +307,13 @@ export class SubscriptionService {
       currentPeriodEnd: periodEnd.toISOString(),
       cancelAtPeriodEnd: false,
       trialEnd: null,
-      usageJson: JSON.stringify({ members: 0, accounts: 0, transactions: 0, aiQueries: 0, storageMb: 0 }),
+      usageJson: JSON.stringify({
+        members: 0,
+        accounts: 0,
+        transactions: 0,
+        aiQueries: 0,
+        storageMb: 0,
+      }),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -298,7 +333,8 @@ export class SubscriptionService {
 
     const activeRow = await this._getActiveSubscriptionRow(tenantId);
     if (activeRow) {
-      await db.update(subscriptionHistory)
+      await db
+        .update(subscriptionHistory)
         .set({
           cancelAtPeriodEnd: true,
           cancelledAt: new Date().toISOString(),
@@ -321,7 +357,8 @@ export class SubscriptionService {
     const isCancelling = activeRow.cancelAtPeriodEnd ?? activeRow.cancel_at_period_end;
     if (!isCancelling) throw new Error('Subscription is not scheduled for cancellation');
 
-    await db.update(subscriptionHistory)
+    await db
+      .update(subscriptionHistory)
       .set({
         cancelAtPeriodEnd: false,
         cancelledAt: null,
@@ -370,7 +407,11 @@ export class SubscriptionService {
   // USAGE TRACKING
   // --------------------------------------------------------------------------
 
-  async trackUsage(tenantId: string, metric: UsageMetric, increment: number = 1): Promise<UsageStatus> {
+  async trackUsage(
+    tenantId: string,
+    metric: UsageMetric,
+    increment: number = 1,
+  ): Promise<UsageStatus> {
     const row = await this._getActiveSubscriptionRow(tenantId);
     if (!row) throw new Error('No active subscription found');
 
@@ -381,7 +422,8 @@ export class SubscriptionService {
     const usage = parseUsageJson(row.usageJson ?? row.usage_json);
     usage[metric] = (usage[metric] ?? 0) + increment;
 
-    await db.update(subscriptionHistory)
+    await db
+      .update(subscriptionHistory)
       .set({ usageJson: JSON.stringify(usage), updatedAt: new Date().toISOString() })
       .where(eq(subscriptionHistory.id, row.id))
       .run();
@@ -402,7 +444,13 @@ export class SubscriptionService {
       // Return zeroed report with free-tier defaults
       return buildUsageReport(
         { members: 0, accounts: 0, transactions: 0, aiQueries: 0, storageMb: 0 },
-        { maxMembers: 1, maxAccounts: 2, maxTransactionsPerMonth: 500, maxAiQueriesPerMonth: 50, maxStorageMb: 100 } as SubscriptionPlan,
+        {
+          maxMembers: 1,
+          maxAccounts: 2,
+          maxTransactionsPerMonth: 500,
+          maxAiQueriesPerMonth: 50,
+          maxStorageMb: 100,
+        } as SubscriptionPlan,
       );
     }
     return sub.usage;
@@ -417,7 +465,8 @@ export class SubscriptionService {
     usage.transactions = 0;
     usage.aiQueries = 0;
 
-    await db.update(subscriptionHistory)
+    await db
+      .update(subscriptionHistory)
       .set({ usageJson: JSON.stringify(usage), updatedAt: new Date().toISOString() })
       .where(eq(subscriptionHistory.id, row.id))
       .run();
@@ -476,10 +525,9 @@ export class SubscriptionService {
     const active = await db
       .select()
       .from(subscriptionHistory)
-      .where(and(
-        eq(subscriptionHistory.tenantId, tenantId),
-        eq(subscriptionHistory.status, 'active'),
-      ))
+      .where(
+        and(eq(subscriptionHistory.tenantId, tenantId), eq(subscriptionHistory.status, 'active')),
+      )
       .orderBy(desc(subscriptionHistory.createdAt))
       .get();
     if (active) return active;
@@ -488,10 +536,9 @@ export class SubscriptionService {
     const trialing = await db
       .select()
       .from(subscriptionHistory)
-      .where(and(
-        eq(subscriptionHistory.tenantId, tenantId),
-        eq(subscriptionHistory.status, 'trialing'),
-      ))
+      .where(
+        and(eq(subscriptionHistory.tenantId, tenantId), eq(subscriptionHistory.status, 'trialing')),
+      )
       .orderBy(desc(subscriptionHistory.createdAt))
       .get();
     return trialing ?? null;

@@ -62,7 +62,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 1_000_000,
     maxOutput: 65_536,
     status: 'preview',
-    pricing: { input: 1.25, output: 5.00 },
+    pricing: { input: 1.25, output: 5.0 },
     features: ['adaptive-thinking', 'grounding', 'multimodal', 'code', 'agentic'],
   },
   {
@@ -73,7 +73,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 1_000_000,
     maxOutput: 65_536,
     status: 'preview',
-    pricing: { input: 0.15, output: 0.60 },
+    pricing: { input: 0.15, output: 0.6 },
     features: ['multimodal', 'reasoning', 'code', 'agentic'],
   },
 
@@ -86,7 +86,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 1_000_000,
     maxOutput: 65_536,
     status: 'ga',
-    pricing: { input: 1.25, output: 5.00 },
+    pricing: { input: 1.25, output: 5.0 },
     features: ['adaptive-thinking', 'code', 'multimodal', 'grounding'],
   },
   {
@@ -97,7 +97,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 1_000_000,
     maxOutput: 65_536,
     status: 'ga',
-    pricing: { input: 0.15, output: 0.60 },
+    pricing: { input: 0.15, output: 0.6 },
     features: ['thinking-budgets', 'multimodal', 'code'],
   },
   {
@@ -121,7 +121,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 1_000_000,
     maxOutput: 8_192,
     status: 'deprecated',
-    pricing: { input: 0.10, output: 0.40 },
+    pricing: { input: 0.1, output: 0.4 },
     features: ['multimodal', 'general-purpose'],
   },
 
@@ -134,7 +134,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 200_000,
     maxOutput: 32_000,
     status: 'ga',
-    pricing: { input: 15.00, output: 75.00 },
+    pricing: { input: 15.0, output: 75.0 },
     features: ['deep-reasoning', 'code', 'analysis', 'long-context'],
   },
   {
@@ -145,7 +145,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 200_000,
     maxOutput: 16_000,
     status: 'ga',
-    pricing: { input: 3.00, output: 15.00 },
+    pricing: { input: 3.0, output: 15.0 },
     features: ['balanced', 'code', 'analysis'],
   },
   {
@@ -156,7 +156,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 200_000,
     maxOutput: 8_192,
     status: 'ga',
-    pricing: { input: 0.80, output: 4.00 },
+    pricing: { input: 0.8, output: 4.0 },
     features: ['fast', 'cost-effective', 'code'],
   },
 
@@ -169,7 +169,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 128_000,
     maxOutput: 8_192,
     status: 'ga',
-    pricing: { input: 0.27, output: 1.10 },
+    pricing: { input: 0.27, output: 1.1 },
     features: ['reasoning', 'code', 'math'],
   },
   {
@@ -180,7 +180,7 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
     contextWindow: 256_000,
     maxOutput: 16_384,
     status: 'ga',
-    pricing: { input: 0.30, output: 0.90 },
+    pricing: { input: 0.3, output: 0.9 },
     features: ['code-generation', 'fill-in-middle', '80+ languages'],
   },
 ];
@@ -191,14 +191,14 @@ export const VERTEX_AI_MODELS: VertexModel[] = [
 
 export const FINTECH_MODEL_PRESETS = {
   // Best models for each task type
-  reasoning: 'gemini-2.5-pro',       // Complex financial analysis
-  fast: 'gemini-2.5-flash',          // Quick categorization
-  vision: 'gemini-3.0-flash',        // PDF/receipt OCR
-  code: 'gemini-2.5-pro',            // Code generation for agents
-  categorization: 'gemini-2.5-flash-lite',  // Bulk transaction categorization
-  tax: 'gemini-2.5-pro',             // Tax calculations (accuracy critical)
-  chat: 'gemini-2.5-flash',          // User chat interactions
-  embedding: 'text-embedding-005',   // Embeddings for RAG
+  reasoning: 'gemini-2.5-pro', // Complex financial analysis
+  fast: 'gemini-2.5-flash', // Quick categorization
+  vision: 'gemini-3.0-flash', // PDF/receipt OCR
+  code: 'gemini-2.5-pro', // Code generation for agents
+  categorization: 'gemini-2.5-flash-lite', // Bulk transaction categorization
+  tax: 'gemini-2.5-pro', // Tax calculations (accuracy critical)
+  chat: 'gemini-2.5-flash', // User chat interactions
+  embedding: 'text-embedding-005', // Embeddings for RAG
 } as const;
 
 // ============================================================================
@@ -345,9 +345,7 @@ export class VertexAIClient {
   /**
    * Get recommended model for a task type
    */
-  getRecommendedModel(
-    task: keyof typeof FINTECH_MODEL_PRESETS
-  ): VertexModel | undefined {
+  getRecommendedModel(task: keyof typeof FINTECH_MODEL_PRESETS): VertexModel | undefined {
     const modelId = FINTECH_MODEL_PRESETS[task];
     return VERTEX_AI_MODELS.find((m) => m.id === modelId);
   }
@@ -401,9 +399,7 @@ export class VertexAIClient {
         parts: [{ text: m.content }],
       }));
 
-    const systemInstruction = request.messages.find(
-      (m) => m.role === 'system'
-    );
+    const systemInstruction = request.messages.find((m) => m.role === 'system');
 
     return {
       contents,
@@ -455,14 +451,9 @@ export class VertexAIClient {
     };
   }
 
-  private parseGeminiResponse(
-    data: any,
-    model: string
-  ): VertexAIResponse {
+  private parseGeminiResponse(data: any, model: string): VertexAIResponse {
     const candidate = data.candidates?.[0];
-    const content = candidate?.content?.parts
-      ?.map((p: any) => p.text)
-      .join('') ?? '';
+    const content = candidate?.content?.parts?.map((p: any) => p.text).join('') ?? '';
 
     return {
       content,
@@ -476,13 +467,8 @@ export class VertexAIClient {
     };
   }
 
-  private parseClaudeResponse(
-    data: any,
-    model: string
-  ): VertexAIResponse {
-    const content = data.content
-      ?.map((c: any) => c.text)
-      .join('') ?? '';
+  private parseClaudeResponse(data: any, model: string): VertexAIResponse {
+    const content = data.content?.map((c: any) => c.text).join('') ?? '';
 
     return {
       content,
@@ -490,23 +476,18 @@ export class VertexAIClient {
       usage: {
         promptTokens: data.usage?.input_tokens ?? 0,
         completionTokens: data.usage?.output_tokens ?? 0,
-        totalTokens:
-          (data.usage?.input_tokens ?? 0) +
-          (data.usage?.output_tokens ?? 0),
+        totalTokens: (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0),
       },
       finishReason: data.stop_reason ?? 'unknown',
     };
   }
 
-  private parseGenericResponse(
-    data: any,
-    model: string
-  ): VertexAIResponse {
+  private parseGenericResponse(data: any, model: string): VertexAIResponse {
     const prediction = data.predictions?.[0];
     const content =
       typeof prediction === 'string'
         ? prediction
-        : prediction?.content ?? JSON.stringify(prediction);
+        : (prediction?.content ?? JSON.stringify(prediction));
 
     return {
       content,

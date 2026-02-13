@@ -25,7 +25,7 @@ import { getFinancialYearDates } from './tax.js';
 
 export interface DetectedEquityEvent {
   transactionId: string;
-  amount: number;          // cents (always positive)
+  amount: number; // cents (always positive)
   date: string;
   sourceAccount: string;
   description: string;
@@ -37,7 +37,7 @@ export interface EquityEventParams {
   accountId?: string;
   transactionId?: string;
   eventType: 'contribution' | 'drawing';
-  amount: number;          // cents
+  amount: number; // cents
   financialYear: string;
   notes?: string;
   detectedBy?: 'ai' | 'manual' | 'rule';
@@ -45,14 +45,14 @@ export interface EquityEventParams {
 
 export interface EquitySummary {
   financialYear: string;
-  totalContributions: number;  // cents
-  totalDrawings: number;       // cents
-  netEquityChange: number;     // cents
+  totalContributions: number; // cents
+  totalDrawings: number; // cents
+  netEquityChange: number; // cents
   monthlyBreakdown: Array<{
-    month: string;             // YYYY-MM
-    contributions: number;     // cents
-    drawings: number;          // cents
-    net: number;               // cents
+    month: string; // YYYY-MM
+    contributions: number; // cents
+    drawings: number; // cents
+    net: number; // cents
   }>;
   eventCount: number;
 }
@@ -74,32 +74,25 @@ const PERSONAL_EXPENSE_CATEGORIES = [
 ];
 
 /** Description patterns that indicate ATM withdrawals */
-const ATM_PATTERNS = [
-  /\bATM\b/i,
-  /\bCASH\s+W(?:ITH)?D(?:RAWAL)?\b/i,
-  /\bWITHDRAW(?:AL)?\b/i,
-];
-
+const ATM_PATTERNS = [/\bATM\b/i, /\bCASH\s+W(?:ITH)?D(?:RAWAL)?\b/i, /\bWITHDRAW(?:AL)?\b/i];
 
 // ============================================================================
 // SERVICE CLASS
 // ============================================================================
 
 export class OwnerEquityService {
-
   /**
    * Scan for potential owner contributions (personal → business transfers)
    * Uses TransferDetector to match cross-account transfers.
    */
-  async scanForContributions(userId: string, financialYear: string): Promise<DetectedEquityEvent[]> {
+  async scanForContributions(
+    userId: string,
+    financialYear: string,
+  ): Promise<DetectedEquityEvent[]> {
     const { start, end } = getFinancialYearDates(financialYear);
 
     // Load accounts
-    const userAccounts = await db
-      .select()
-      .from(accounts)
-      .where(eq(accounts.userId, userId))
-      .all();
+    const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId)).all();
 
     // Load transactions in the financial year
     const txRows = await db
@@ -110,7 +103,7 @@ export class OwnerEquityService {
           eq(transactions.userId, userId),
           gte(transactions.date, start),
           lte(transactions.date, end),
-        )
+        ),
       )
       .all();
 
@@ -173,12 +166,7 @@ export class OwnerEquityService {
     const businessAccounts = await db
       .select()
       .from(accounts)
-      .where(
-        and(
-          eq(accounts.userId, userId),
-          sql`${accounts.ownershipTag} = 'business'`
-        )
-      )
+      .where(and(eq(accounts.userId, userId), sql`${accounts.ownershipTag} = 'business'`))
       .all();
 
     if (businessAccounts.length === 0) return [];
@@ -195,7 +183,7 @@ export class OwnerEquityService {
           gte(transactions.date, start),
           lte(transactions.date, end),
           sql`${transactions.amount} < 0`,
-        )
+        ),
       )
       .all();
 
@@ -209,7 +197,7 @@ export class OwnerEquityService {
       const desc = tx.description ?? '';
 
       // Check for ATM withdrawals
-      const isATM = ATM_PATTERNS.some(p => p.test(desc));
+      const isATM = ATM_PATTERNS.some((p) => p.test(desc));
       if (isATM) {
         const account = businessAccounts.find((a: any) => a.id === tx.accountId);
         events.push({
@@ -262,20 +250,23 @@ export class OwnerEquityService {
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
 
-    await db.insert(ownerEquityEvents).values({
-      id,
-      userId: params.userId,
-      accountId: params.accountId ?? null,
-      transactionId: params.transactionId ?? null,
-      eventType: params.eventType,
-      amount: params.amount,
-      detectedBy: params.detectedBy ?? 'manual',
-      confirmed: false,
-      financialYear: params.financialYear,
-      notes: params.notes ?? null,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await db
+      .insert(ownerEquityEvents)
+      .values({
+        id,
+        userId: params.userId,
+        accountId: params.accountId ?? null,
+        transactionId: params.transactionId ?? null,
+        eventType: params.eventType,
+        amount: params.amount,
+        detectedBy: params.detectedBy ?? 'manual',
+        confirmed: false,
+        financialYear: params.financialYear,
+        notes: params.notes ?? null,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
     return id;
   }
@@ -308,7 +299,7 @@ export class OwnerEquityService {
           eq(ownerEquityEvents.userId, userId),
           eq(ownerEquityEvents.financialYear, financialYear),
           eq(ownerEquityEvents.confirmed, true),
-        )
+        ),
       )
       .all();
 

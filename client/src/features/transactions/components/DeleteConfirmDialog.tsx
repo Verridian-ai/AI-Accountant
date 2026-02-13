@@ -42,8 +42,8 @@ export function DeleteConfirmDialog({
     if (!dialogRef.current) return [];
     return Array.from(
       dialogRef.current.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      )
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
     ).filter((el) => !el.hasAttribute('disabled'));
   }, []);
 
@@ -127,7 +127,7 @@ export function DeleteConfirmDialog({
         className={cn(
           'relative neu-raised rounded-2xl p-6 max-w-md w-full mx-4',
           'border border-white/10',
-          'animate-in zoom-in-95 fade-in duration-200'
+          'animate-in zoom-in-95 fade-in duration-200',
         )}
       >
         {/* Close button */}
@@ -138,7 +138,7 @@ export function DeleteConfirmDialog({
             'absolute top-4 right-4 p-1.5 rounded-lg',
             'text-zinc-500 hover:text-zinc-300',
             'hover:bg-white/5 transition-colors',
-            'focus:outline-none focus:ring-2 focus:ring-[#FFCC00]/50'
+            'focus:outline-none focus:ring-2 focus:ring-[#FFCC00]/50',
           )}
           aria-label="Close dialog"
         >
@@ -180,7 +180,7 @@ export function DeleteConfirmDialog({
               'text-zinc-300 font-black uppercase text-xs tracking-widest',
               'hover:text-[#FFCC00] hover:border-[#FFCC00]/20',
               'transition-all duration-200',
-              'focus:outline-none focus:ring-2 focus:ring-[#FFCC00]/50'
+              'focus:outline-none focus:ring-2 focus:ring-[#FFCC00]/50',
             )}
           >
             {cancelLabel}
@@ -195,7 +195,7 @@ export function DeleteConfirmDialog({
               'text-red-400 font-black uppercase text-xs tracking-widest',
               'hover:bg-red-500/20 hover:border-red-500/50',
               'transition-all duration-200',
-              'focus:outline-none focus:ring-2 focus:ring-red-500/50'
+              'focus:outline-none focus:ring-2 focus:ring-red-500/50',
             )}
           >
             {confirmLabel}

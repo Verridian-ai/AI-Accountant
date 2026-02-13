@@ -225,7 +225,7 @@ export class CSVStatementParser {
   async parse(
     content: string,
     bankId?: string,
-    options?: { encoding?: string }
+    options?: { encoding?: string },
   ): Promise<CSVParseResult> {
     const result: CSVParseResult = {
       success: false,
@@ -245,14 +245,14 @@ export class CSVStatementParser {
       // Input validation: Check file size to prevent memory exhaustion
       const contentSizeBytes = Buffer.byteLength(content, 'utf8');
       if (contentSizeBytes > MAX_CSV_SIZE_BYTES) {
-        result.errors.push(`File size (${Math.round(contentSizeBytes / 1024 / 1024)}MB) exceeds maximum allowed size (${MAX_CSV_SIZE_BYTES / 1024 / 1024}MB)`);
+        result.errors.push(
+          `File size (${Math.round(contentSizeBytes / 1024 / 1024)}MB) exceeds maximum allowed size (${MAX_CSV_SIZE_BYTES / 1024 / 1024}MB)`,
+        );
         return result;
       }
 
       // Detect or use provided bank config
-      const config = bankId
-        ? this.configs[bankId]
-        : this.detectBankConfig(content);
+      const config = bankId ? this.configs[bankId] : this.detectBankConfig(content);
 
       if (!config) {
         result.errors.push('Unable to detect bank format. Please specify the bank.');
@@ -279,7 +279,9 @@ export class CSVStatementParser {
             result.metadata.skippedCount++;
           }
         } catch (error) {
-          result.warnings.push(`Row ${i + 1}: ${error instanceof Error ? error.message : 'Parse error'}`);
+          result.warnings.push(
+            `Row ${i + 1}: ${error instanceof Error ? error.message : 'Parse error'}`,
+          );
           result.metadata.skippedCount++;
         }
       }
@@ -287,8 +289,8 @@ export class CSVStatementParser {
       // Calculate date range
       if (result.transactions.length > 0) {
         const dates = result.transactions
-          .map(t => t.date)
-          .filter(d => d)
+          .map((t) => t.date)
+          .filter((d) => d)
           .sort();
 
         result.metadata.dateRange = {
@@ -298,7 +300,6 @@ export class CSVStatementParser {
       }
 
       result.success = result.transactions.length > 0;
-
     } catch (error) {
       result.errors.push(error instanceof Error ? error.message : 'Unknown error');
     }
@@ -317,9 +318,10 @@ export class CSVStatementParser {
     const firstLines = detectionContent.split('\n').slice(0, 5).join('\n').toLowerCase();
 
     for (const [, config] of Object.entries(this.configs)) {
-      const matches = config.identifyPatterns.some(pattern =>
-        lowerContent.includes(pattern.toLowerCase()) ||
-        firstLines.includes(pattern.toLowerCase())
+      const matches = config.identifyPatterns.some(
+        (pattern) =>
+          lowerContent.includes(pattern.toLowerCase()) ||
+          firstLines.includes(pattern.toLowerCase()),
       );
 
       if (matches) {
@@ -341,12 +343,10 @@ export class CSVStatementParser {
       if (!config.hasHeader) continue;
 
       const expectedHeaders = Object.values(config.columns)
-        .filter(col => typeof col === 'string')
-        .map(col => (col as string).toLowerCase());
+        .filter((col) => typeof col === 'string')
+        .map((col) => (col as string).toLowerCase());
 
-      const matchCount = expectedHeaders.filter(header =>
-        firstLine.includes(header)
-      ).length;
+      const matchCount = expectedHeaders.filter((header) => firstLine.includes(header)).length;
 
       // Require at least half of expected headers to match
       if (matchCount >= expectedHeaders.length / 2) {
@@ -360,10 +360,7 @@ export class CSVStatementParser {
   /**
    * Parse CSV content into records
    */
-  private parseCSVContent(
-    content: string,
-    config: BankCSVConfig
-  ): Record<string, string>[] {
+  private parseCSVContent(content: string, config: BankCSVConfig): Record<string, string>[] {
     const options: Parameters<typeof csvParse>[1] = {
       delimiter: config.delimiter,
       skip_empty_lines: true,
@@ -387,7 +384,7 @@ export class CSVStatementParser {
   private recordToTransaction(
     record: Record<string, string> | string[],
     config: BankCSVConfig,
-    rowIndex: number
+    rowIndex: number,
   ): ParsedTransaction | null {
     // Get field values
     const getValue = (field: string | number): string => {
@@ -420,12 +417,8 @@ export class CSVStatementParser {
       }
     } else {
       // Separate debit/credit columns
-      const debitStr = config.columns.debit !== undefined
-        ? getValue(config.columns.debit)
-        : '';
-      const creditStr = config.columns.credit !== undefined
-        ? getValue(config.columns.credit)
-        : '';
+      const debitStr = config.columns.debit !== undefined ? getValue(config.columns.debit) : '';
+      const creditStr = config.columns.credit !== undefined ? getValue(config.columns.credit) : '';
 
       const debit = this.parseAmount(debitStr, config);
       const credit = this.parseAmount(creditStr, config);
@@ -467,10 +460,7 @@ export class CSVStatementParser {
     }
 
     // Remove currency symbols and thousands separators
-    let cleaned = amountStr
-      .replace(/[$ ]/g, '')
-      .replace(/,/g, '')
-      .trim();
+    let cleaned = amountStr.replace(/[$ ]/g, '').replace(/,/g, '').trim();
 
     // Handle parentheses for negative (accounting format)
     const isNegative = cleaned.startsWith('(') && cleaned.endsWith(')');
@@ -563,11 +553,7 @@ export class CSVStatementParser {
 
     // Validate date
     const date = new Date(year, month - 1, day);
-    if (
-      date.getFullYear() !== year ||
-      date.getMonth() !== month - 1 ||
-      date.getDate() !== day
-    ) {
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
       return null;
     }
 
@@ -580,8 +566,18 @@ export class CSVStatementParser {
    */
   private parseMonthAbbreviation(abbrev: string): number | null {
     const months: Record<string, number> = {
-      jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
-      jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+      jan: 1,
+      feb: 2,
+      mar: 3,
+      apr: 4,
+      may: 5,
+      jun: 6,
+      jul: 7,
+      aug: 8,
+      sep: 9,
+      oct: 10,
+      nov: 11,
+      dec: 12,
     };
     return months[abbrev.toLowerCase().slice(0, 3)] || null;
   }
@@ -591,10 +587,10 @@ export class CSVStatementParser {
    */
   private cleanDescription(description: string): string {
     return description
-      .replace(/\s+/g, ' ')  // Normalize whitespace
-      .replace(/^\d{2}\/\d{2}\s*/, '')  // Remove leading date
-      .replace(/Card xx\d{4}/i, '')  // Remove card numbers
-      .replace(/Value Date:.*$/i, '')  // Remove value date suffix
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/^\d{2}\/\d{2}\s*/, '') // Remove leading date
+      .replace(/Card xx\d{4}/i, '') // Remove card numbers
+      .replace(/Value Date:.*$/i, '') // Remove value date suffix
       .trim();
   }
 

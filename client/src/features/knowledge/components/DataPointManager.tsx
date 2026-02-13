@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Database, Plus, Shield, Power, PowerOff, Trash2, Loader2, CheckCircle, X } from 'lucide-react';
+import {
+  Database,
+  Plus,
+  Shield,
+  Power,
+  PowerOff,
+  Trash2,
+  Loader2,
+  CheckCircle,
+  X,
+} from 'lucide-react';
 import { knowledgeApi } from '../../../api';
 
 interface DataPointManagerProps {
@@ -44,13 +54,16 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
   const loadDataPoints = () => {
     setLoading(true);
     setError(null);
-    knowledgeApi.listDataPoints(userId)
+    knowledgeApi
+      .listDataPoints(userId)
       .then(setDataPoints)
-      .catch((e) => setError(e.message))
+      .catch((e: any) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadDataPoints(); }, [userId]);
+  useEffect(() => {
+    loadDataPoints();
+  }, [userId]);
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
@@ -58,8 +71,11 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
     try {
       let parsedSchema: any = {};
       if (form.schemaFields.trim()) {
-        try { parsedSchema = JSON.parse(form.schemaFields); }
-        catch { parsedSchema = { raw: form.schemaFields }; }
+        try {
+          parsedSchema = JSON.parse(form.schemaFields);
+        } catch {
+          parsedSchema = { raw: form.schemaFields };
+        }
       }
       await knowledgeApi.createDataPoint({
         userId,
@@ -71,7 +87,14 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
         schemaFields: parsedSchema,
       });
       setShowCreate(false);
-      setForm({ name: '', description: '', datapointType: 'entity', datasetName: '', extractionPrompt: '', schemaFields: '' });
+      setForm({
+        name: '',
+        description: '',
+        datapointType: 'entity',
+        datasetName: '',
+        extractionPrompt: '',
+        schemaFields: '',
+      });
       loadDataPoints();
     } catch (e: any) {
       setError(e.message);
@@ -121,7 +144,11 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
       {error && (
         <div className="neu-inset rounded-xl p-3 text-xs text-red-400 flex items-center justify-between">
           <span>{error}</span>
-          <button type="button" onClick={() => setError(null)} className="text-zinc-500 hover:text-zinc-300">
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="text-zinc-500 hover:text-zinc-300"
+          >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -133,7 +160,9 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
           <h4 className="text-sm font-bold text-zinc-200">New DataPoint</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Name</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                Name
+              </label>
               <input
                 type="text"
                 value={form.name}
@@ -143,20 +172,26 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Type</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                Type
+              </label>
               <select
                 value={form.datapointType}
                 onChange={(e) => setForm({ ...form, datapointType: e.target.value })}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {TYPE_OPTIONS.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Description</label>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              Description
+            </label>
             <input
               type="text"
               value={form.description}
@@ -167,7 +202,9 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Dataset</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                Dataset
+              </label>
               <input
                 type="text"
                 value={form.datasetName}
@@ -177,7 +214,9 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Schema (JSON)</label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                Schema (JSON)
+              </label>
               <input
                 type="text"
                 value={form.schemaFields}
@@ -188,7 +227,9 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Extraction Prompt</label>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              Extraction Prompt
+            </label>
             <textarea
               value={form.extractionPrompt}
               onChange={(e) => setForm({ ...form, extractionPrompt: e.target.value })}
@@ -211,7 +252,11 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               disabled={creating || !form.name.trim()}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 disabled:opacity-50 transition-colors"
             >
-              {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+              {creating ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <CheckCircle className="w-3.5 h-3.5" />
+              )}
               Create
             </button>
           </div>
@@ -222,7 +267,9 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
       {dataPoints.length === 0 ? (
         <div className="neu-inset rounded-xl p-8 text-center">
           <Database className="w-8 h-8 mx-auto mb-3 text-zinc-600" />
-          <p className="text-sm text-zinc-500">No datapoints yet. Create one to start extracting knowledge.</p>
+          <p className="text-sm text-zinc-500">
+            No datapoints yet. Create one to start extracting knowledge.
+          </p>
         </div>
       ) : (
         <div className="neu-raised rounded-xl overflow-hidden">
@@ -244,7 +291,9 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                   <tr key={dp.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="p-3 font-medium text-zinc-200">
                       <div className="flex items-center gap-1.5">
-                        {dp.isPredefined && <Shield className="w-3.5 h-3.5 text-[#FFCC00] shrink-0" title="Predefined" />}
+                        {dp.isPredefined && (
+                          <Shield className="w-3.5 h-3.5 text-[#FFCC00] shrink-0" />
+                        )}
                         <span className="truncate max-w-[160px]">{dp.name}</span>
                       </div>
                     </td>
@@ -253,9 +302,13 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                         {dp.datapointType}
                       </span>
                     </td>
-                    <td className="p-3 text-zinc-400 truncate max-w-[120px]">{dp.datasetName || '-'}</td>
+                    <td className="p-3 text-zinc-400 truncate max-w-[120px]">
+                      {dp.datasetName || '-'}
+                    </td>
                     <td className="p-3 text-center">
-                      <span className={`inline-block w-2 h-2 rounded-full ${dp.isActive ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                      <span
+                        className={`inline-block w-2 h-2 rounded-full ${dp.isActive ? 'bg-emerald-400' : 'bg-zinc-600'}`}
+                      />
                     </td>
                     <td className="p-3 text-right text-zinc-300">{dp.extractionCount}</td>
                     <td className="p-3">
@@ -266,7 +319,9 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                             style={{ width: `${(dp.accuracy ?? 0) * 100}%` }}
                           />
                         </div>
-                        <span className="text-zinc-400 w-8 text-right">{((dp.accuracy ?? 0) * 100).toFixed(0)}%</span>
+                        <span className="text-zinc-400 w-8 text-right">
+                          {((dp.accuracy ?? 0) * 100).toFixed(0)}%
+                        </span>
                       </div>
                     </td>
                     <td className="p-3">

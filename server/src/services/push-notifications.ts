@@ -14,12 +14,7 @@
 
 import webpush from 'web-push';
 import crypto from 'crypto';
-import {
-  db,
-  pushSubscriptions,
-  notificationPreferences,
-  tenantMembers,
-} from '../schema.js';
+import { db, pushSubscriptions, notificationPreferences, tenantMembers } from '../schema.js';
 import { eq, and, sql } from 'drizzle-orm';
 import type { TenantRole } from './tenant-types.js';
 import type {
@@ -143,11 +138,7 @@ export class PushNotificationService {
   private initVapid(): void {
     if (this.vapidPublicKey && this.vapidPrivateKey) {
       try {
-        webpush.setVapidDetails(
-          this.vapidSubject,
-          this.vapidPublicKey,
-          this.vapidPrivateKey
-        );
+        webpush.setVapidDetails(this.vapidSubject, this.vapidPublicKey, this.vapidPrivateKey);
         this.configured = true;
       } catch (err) {
         console.warn('[PushNotification] Failed to set VAPID details:', err);
@@ -156,7 +147,7 @@ export class PushNotificationService {
     } else {
       console.warn(
         '[PushNotification] VAPID keys not configured. Push notifications disabled. ' +
-        'Set VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT env vars.'
+          'Set VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT env vars.',
       );
     }
   }
@@ -192,7 +183,7 @@ export class PushNotificationService {
     userId: string,
     tenantId: string,
     subscription: ClientPushSubscription,
-    deviceName?: string
+    deviceName?: string,
   ): Promise<void> {
     const now = new Date().toISOString();
 
@@ -211,7 +202,8 @@ export class PushNotificationService {
           userId,
           tenantId,
           keysJson: JSON.stringify(subscription.keys),
-          deviceName: deviceName ?? (existing as any).deviceName ?? (existing as any).device_name ?? null,
+          deviceName:
+            deviceName ?? (existing as any).deviceName ?? (existing as any).device_name ?? null,
           isActive: true,
           errorCount: 0,
           lastUsedAt: now,
@@ -220,19 +212,22 @@ export class PushNotificationService {
         .where(eq(pushSubscriptions.endpoint, subscription.endpoint))
         .run();
     } else {
-      await db.insert(pushSubscriptions).values({
-        id: crypto.randomUUID(),
-        userId,
-        tenantId,
-        endpoint: subscription.endpoint,
-        keysJson: JSON.stringify(subscription.keys),
-        deviceName: deviceName ?? null,
-        isActive: true,
-        errorCount: 0,
-        lastUsedAt: now,
-        createdAt: now,
-        updatedAt: now,
-      }).run();
+      await db
+        .insert(pushSubscriptions)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          tenantId,
+          endpoint: subscription.endpoint,
+          keysJson: JSON.stringify(subscription.keys),
+          deviceName: deviceName ?? null,
+          isActive: true,
+          errorCount: 0,
+          lastUsedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .run();
     }
   }
 
@@ -240,12 +235,7 @@ export class PushNotificationService {
   async unsubscribe(userId: string, endpoint: string): Promise<void> {
     await db
       .delete(pushSubscriptions)
-      .where(
-        and(
-          eq(pushSubscriptions.userId, userId),
-          eq(pushSubscriptions.endpoint, endpoint)
-        )
-      )
+      .where(and(eq(pushSubscriptions.userId, userId), eq(pushSubscriptions.endpoint, endpoint)))
       .run();
   }
 
@@ -258,8 +248,8 @@ export class PushNotificationService {
         and(
           eq(pushSubscriptions.userId, userId),
           eq(pushSubscriptions.tenantId, tenantId),
-          eq(pushSubscriptions.isActive, true)
-        )
+          eq(pushSubscriptions.isActive, true),
+        ),
       )
       .all();
     return (rows as any[]).map(rowToSubscription);
@@ -305,7 +295,7 @@ export class PushNotificationService {
     userId: string,
     tenantId: string,
     payload: NotificationPayload,
-    category?: NotificationCategory
+    category?: NotificationCategory,
   ): Promise<SendResult> {
     const result: SendResult = { sent: 0, failed: 0, skipped: 0, errors: [] };
 
@@ -339,11 +329,7 @@ export class PushNotificationService {
 
     // Deliver to each endpoint
     for (const sub of subscriptions) {
-      const success = await this.deliverToEndpoint(
-        sub.endpoint,
-        sub.keysJson,
-        payload
-      );
+      const success = await this.deliverToEndpoint(sub.endpoint, sub.keysJson, payload);
       if (success) {
         result.sent++;
       } else {
@@ -363,7 +349,7 @@ export class PushNotificationService {
     tenantId: string,
     payload: NotificationPayload,
     category?: NotificationCategory,
-    roles?: TenantRole[]
+    roles?: TenantRole[],
   ): Promise<SendResult> {
     const aggregate: SendResult = { sent: 0, failed: 0, skipped: 0, errors: [] };
 
@@ -373,10 +359,7 @@ export class PushNotificationService {
     }
 
     // Get tenant members (optionally filtered by role)
-    let membersQuery = db
-      .select()
-      .from(tenantMembers)
-      .where(eq(tenantMembers.tenantId, tenantId));
+    let membersQuery = db.select().from(tenantMembers).where(eq(tenantMembers.tenantId, tenantId));
 
     const members = await membersQuery.all();
 
@@ -390,12 +373,7 @@ export class PushNotificationService {
         continue;
       }
 
-      const userResult = await this.sendNotification(
-        memberUserId,
-        tenantId,
-        payload,
-        category
-      );
+      const userResult = await this.sendNotification(memberUserId, tenantId, payload, category);
 
       aggregate.sent += userResult.sent;
       aggregate.failed += userResult.failed;
@@ -410,7 +388,12 @@ export class PushNotificationService {
    * Batch send notifications with rate limiting.
    */
   async sendBulk(
-    notifications: Array<{ userId: string; tenantId: string; payload: NotificationPayload; category?: NotificationCategory }>
+    notifications: Array<{
+      userId: string;
+      tenantId: string;
+      payload: NotificationPayload;
+      category?: NotificationCategory;
+    }>,
   ): Promise<BulkSendResult> {
     const bulkResult: BulkSendResult = {
       totalSent: 0,
@@ -424,7 +407,7 @@ export class PushNotificationService {
         notif.userId,
         notif.tenantId,
         notif.payload,
-        notif.category
+        notif.category,
       );
       bulkResult.results.push(result);
       bulkResult.totalSent += result.sent;
@@ -452,7 +435,7 @@ export class PushNotificationService {
   async deliverToEndpoint(
     endpoint: string,
     keys: { p256dh: string; auth: string },
-    payload: NotificationPayload
+    payload: NotificationPayload,
   ): Promise<boolean> {
     if (!this.configured) return false;
 
@@ -480,7 +463,7 @@ export class PushNotificationService {
           },
         },
         pushPayload,
-        { TTL: 60 * 60 } // 1 hour time-to-live
+        { TTL: 60 * 60 }, // 1 hour time-to-live
       );
 
       // Update last_used_at on success
@@ -529,7 +512,7 @@ export class PushNotificationService {
       }
 
       console.warn(
-        `[PushNotification] Delivery failed for ${endpoint}: ${err?.message ?? 'Unknown error'}`
+        `[PushNotification] Delivery failed for ${endpoint}: ${err?.message ?? 'Unknown error'}`,
       );
       return false;
     }
@@ -550,8 +533,8 @@ export class PushNotificationService {
       .where(
         and(
           eq(notificationPreferences.userId, userId),
-          eq(notificationPreferences.tenantId, tenantId)
-        )
+          eq(notificationPreferences.tenantId, tenantId),
+        ),
       )
       .get();
 
@@ -576,7 +559,7 @@ export class PushNotificationService {
   async isNotificationEnabled(
     userId: string,
     tenantId: string,
-    category: NotificationCategory
+    category: NotificationCategory,
   ): Promise<boolean> {
     const prefs = await db
       .select()
@@ -584,8 +567,8 @@ export class PushNotificationService {
       .where(
         and(
           eq(notificationPreferences.userId, userId),
-          eq(notificationPreferences.tenantId, tenantId)
-        )
+          eq(notificationPreferences.tenantId, tenantId),
+        ),
       )
       .get();
 

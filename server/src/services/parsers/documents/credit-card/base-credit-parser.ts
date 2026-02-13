@@ -11,11 +11,7 @@
  * - Foreign transaction conversion
  */
 
-import {
-  BankId,
-  AccountType,
-  AccountInfo,
-} from '../../types';
+import { BankId, AccountType, AccountInfo } from '../../types';
 import { BaseBankParser, parseDate, parseAmount } from '../../base-parser';
 
 /**
@@ -246,17 +242,17 @@ export function parseForeignAmount(amountStr: string): { amount: number; currenc
   // 99.50 EUR
 
   const currencySymbols: Record<string, string> = {
-    '$': 'USD',
-    'US$': 'USD',
-    'A$': 'AUD',
-    'AU$': 'AUD',
+    $: 'USD',
+    US$: 'USD',
+    A$: 'AUD',
+    AU$: 'AUD',
     '\u20AC': 'EUR', // Euro symbol
     '\u00A3': 'GBP', // Pound symbol
     '\u00A5': 'JPY', // Yen symbol
-    'NZ$': 'NZD',
-    'S$': 'SGD',
-    'HK$': 'HKD',
-    'C$': 'CAD',
+    NZ$: 'NZD',
+    S$: 'SGD',
+    HK$: 'HKD',
+    C$: 'CAD',
   };
 
   const cleaned = amountStr.trim();
@@ -511,9 +507,7 @@ export abstract class BaseCreditCardParser implements CreditCardParser {
         accountInfo: this.getDefaultAccountInfo(),
         transactions: [],
         parseWarnings: warnings,
-        parseErrors: [
-          `Parse failed: ${err instanceof Error ? err.message : String(err)}`,
-        ],
+        parseErrors: [`Parse failed: ${err instanceof Error ? err.message : String(err)}`],
         detectionConfidence: detection.confidence,
         parserUsed: `${this.config.bankId}-credit`,
         processingTimeMs: Date.now() - startTime,
@@ -606,11 +600,7 @@ export abstract class BaseCreditCardParser implements CreditCardParser {
   /**
    * Extract text between two patterns
    */
-  protected extractBetween(
-    text: string,
-    startPattern: RegExp,
-    endPattern: RegExp
-  ): string | null {
+  protected extractBetween(text: string, startPattern: RegExp, endPattern: RegExp): string | null {
     const startMatch = text.match(startPattern);
     if (!startMatch) return null;
 

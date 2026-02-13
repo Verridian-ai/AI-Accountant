@@ -77,9 +77,7 @@ export function adaptLegacyTool(
     zodShape[key] = field;
   }
 
-  const zodSchema = Object.keys(zodShape).length > 0
-    ? z.object(zodShape)
-    : z.object({});
+  const zodSchema = Object.keys(zodShape).length > 0 ? z.object(zodShape) : z.object({});
 
   // Type assertion bridges the dynamically-built Zod schema to the
   // strictly-typed tool() overloads.  At runtime the schema works correctly.
@@ -87,8 +85,7 @@ export function adaptLegacyTool(
   return (tool as any)({
     description,
     parameters: zodSchema,
-    execute: async (args: Record<string, unknown>) =>
-      handler(args),
+    execute: async (args: Record<string, unknown>) => handler(args),
   });
 }
 
@@ -118,18 +115,11 @@ export function adaptAllTools(
   for (const def of tools) {
     const handler = handlers.get(def.name);
     if (!handler) {
-      console.warn(
-        `[tool-adapter] No handler for tool "${def.name}" — skipping`,
-      );
+      console.warn(`[tool-adapter] No handler for tool "${def.name}" — skipping`);
       continue;
     }
 
-    result[def.name] = adaptLegacyTool(
-      def.name,
-      def.description,
-      def.input_schema,
-      handler,
-    );
+    result[def.name] = adaptLegacyTool(def.name, def.description, def.input_schema, handler);
   }
 
   return result;

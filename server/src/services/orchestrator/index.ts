@@ -21,11 +21,7 @@ export {
 } from './cache.js';
 
 // Orchestrator
-export {
-  AgentOrchestrator,
-  agentOrchestrator,
-  routeAndExecute,
-} from './orchestrator.js';
+export { AgentOrchestrator, agentOrchestrator, routeAndExecute } from './orchestrator.js';
 
 // Health
 export {
@@ -38,9 +34,4 @@ export {
 } from './health.js';
 
 // Tracing
-export {
-  AgentTracer,
-  agentTracer,
-  type TracerConfig,
-  type TracingStats,
-} from './tracing.js';
+export { AgentTracer, agentTracer, type TracerConfig, type TracingStats } from './tracing.js';

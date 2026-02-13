@@ -4,7 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint server/src/ client/src/ --max-warnings 0",
+    "lint:fix": "eslint server/src/ client/src/ --fix",
+    "format": "prettier --write \"server/src/**/*.ts\" \"client/src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"server/src/**/*.ts\" \"client/src/**/*.{ts,tsx}\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "server/src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "client/src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -23,5 +37,18 @@
     "openai": "^6.15.0",
     "pdf-parse": "^2.4.5",
     "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.0",
+    "globals": "^17.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0"
   }
 }

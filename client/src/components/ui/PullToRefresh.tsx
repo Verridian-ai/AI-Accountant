@@ -86,7 +86,7 @@ function springAnimation(
   to: number,
   velocity: number,
   callback: (value: number) => void,
-  onComplete?: () => void
+  onComplete?: () => void,
 ): () => void {
   const stiffness = 400;
   const damping = 35;
@@ -155,10 +155,7 @@ function DefaultSpinner({ progress, state, size = SPINNER_SIZE }: SpinnerProps) 
       }}
     >
       <svg
-        className={cn(
-          'text-primary transition-colors',
-          isRefreshing && 'animate-spin'
-        )}
+        className={cn('text-primary transition-colors', isRefreshing && 'animate-spin')}
         style={{
           width: size,
           height: size,
@@ -174,17 +171,8 @@ function DefaultSpinner({ progress, state, size = SPINNER_SIZE }: SpinnerProps) 
         {isRefreshing ? (
           // Spinner circle for refreshing state
           <>
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeOpacity="0.25"
-            />
-            <path
-              d="M12 2a10 10 0 0 1 10 10"
-              stroke="currentColor"
-            />
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" />
+            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" />
           </>
         ) : (
           // Arrow for pulling state
@@ -223,7 +211,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
       contentClassName,
       onStateChange,
     },
-    ref
+    ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -248,7 +236,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
         setState(newState);
         onStateChange?.(newState);
       },
-      [onStateChange]
+      [onStateChange],
     );
 
     // Calculate progress (0-1) based on pull distance
@@ -295,7 +283,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
         () => {
           updateState('idle');
           cancelAnimation.current = null;
-        }
+        },
       );
     }, [updateState]);
 
@@ -312,10 +300,10 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
           setPullDistance,
           () => {
             cancelAnimation.current = null;
-          }
+          },
         );
       },
-      [threshold]
+      [threshold],
     );
 
     // ========================================================================
@@ -366,7 +354,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
           isTracking: true,
         };
       },
-      [canPull]
+      [canPull],
     );
 
     const handleDragMove = useCallback(
@@ -416,7 +404,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
           }
         }
       },
-      [pullDistance, threshold, maxPull, resistance, state, updateState]
+      [pullDistance, threshold, maxPull, resistance, state, updateState],
     );
 
     const handleDragEnd = useCallback(() => {
@@ -444,7 +432,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
         if (!touch) return;
         handleDragStart(touch.clientY);
       },
-      [handleDragStart]
+      [handleDragStart],
     );
 
     const handleTouchMove = useCallback(
@@ -458,7 +446,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
           e.preventDefault();
         }
       },
-      [handleDragMove, pullDistance]
+      [handleDragMove, pullDistance],
     );
 
     const handleTouchEnd = useCallback(() => {
@@ -483,7 +471,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
       },
-      [handleDragStart, handleDragMove, handleDragEnd]
+      [handleDragStart, handleDragMove, handleDragEnd],
     );
 
     // ========================================================================
@@ -504,16 +492,13 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
     const showIndicator = pullDistance > 0 || state === 'refreshing';
 
     return (
-      <div
-        ref={containerRef}
-        className={cn('relative overflow-hidden', className)}
-      >
+      <div ref={containerRef} className={cn('relative overflow-hidden', className)}>
         {/* Pull indicator area */}
         <div
           className={cn(
             'absolute left-0 right-0 top-0 flex items-center justify-center',
             'transition-opacity duration-200',
-            showIndicator ? 'opacity-100' : 'opacity-0'
+            showIndicator ? 'opacity-100' : 'opacity-0',
           )}
           style={{
             height: indicatorHeight,
@@ -542,7 +527,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
           className={cn(
             'relative overflow-auto',
             state !== 'refreshing' && 'touch-pan-y',
-            contentClassName
+            contentClassName,
           )}
           style={{
             transform: `translateY(${pullDistance}px)`,
@@ -557,7 +542,7 @@ export const PullToRefresh = forwardRef<PullToRefreshRef, PullToRefreshProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 PullToRefresh.displayName = 'PullToRefresh';

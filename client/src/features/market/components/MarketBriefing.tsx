@@ -17,7 +17,14 @@ interface BriefingData {
   summary?: string;
 }
 
-const FOCUS_OPTIONS: Focus[] = ['General', 'Rates', 'Equities', 'Property', 'Business', 'Personal Finance'];
+const FOCUS_OPTIONS: Focus[] = [
+  'General',
+  'Rates',
+  'Equities',
+  'Property',
+  'Business',
+  'Personal Finance',
+];
 const TIMEFRAMES: { id: Timeframe; label: string }[] = [
   { id: 'daily', label: 'Daily' },
   { id: 'weekly', label: 'Weekly' },
@@ -85,15 +92,18 @@ export function MarketBriefing() {
         sections: [
           {
             title: 'Market Overview',
-            content: 'The Australian market continues to navigate a complex macroeconomic environment. The RBA has maintained the cash rate as it monitors inflation trends against employment data.',
+            content:
+              'The Australian market continues to navigate a complex macroeconomic environment. The RBA has maintained the cash rate as it monitors inflation trends against employment data.',
           },
           {
             title: 'Key Indicators',
-            content: 'Cash Rate: 4.35% (held steady)\nCPI: 3.6% YoY (trending down)\nUnemployment: 4.1% (slight uptick)\nASX 200: Moderate gains on global sentiment',
+            content:
+              'Cash Rate: 4.35% (held steady)\nCPI: 3.6% YoY (trending down)\nUnemployment: 4.1% (slight uptick)\nASX 200: Moderate gains on global sentiment',
           },
           {
             title: 'Outlook',
-            content: 'Markets are pricing in potential rate adjustments later in the year, subject to inflation and employment data over coming quarters.',
+            content:
+              'Markets are pricing in potential rate adjustments later in the year, subject to inflation and employment data over coming quarters.',
           },
         ],
       });
@@ -107,7 +117,9 @@ export function MarketBriefing() {
       {/* Controls */}
       <div className="neu-raised rounded-2xl p-4 space-y-4">
         <div>
-          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-2 block">Focus Area</label>
+          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-2 block">
+            Focus Area
+          </label>
           <div className="flex flex-wrap gap-2">
             {FOCUS_OPTIONS.map((opt) => (
               <button
@@ -126,7 +138,9 @@ export function MarketBriefing() {
         </div>
 
         <div>
-          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-2 block">Timeframe</label>
+          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-2 block">
+            Timeframe
+          </label>
           <div className="flex gap-2">
             {TIMEFRAMES.map((tf) => (
               <button

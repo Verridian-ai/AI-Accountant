@@ -8,13 +8,28 @@
 import { z } from 'zod';
 
 export const BankIdSchema = z.enum([
-  'cba', 'anz', 'westpac', 'nab', 'stgeorge',
-  'bendigo', 'ing', 'macquarie', 'bankwest', 'suncorp', 'unknown',
+  'cba',
+  'anz',
+  'westpac',
+  'nab',
+  'stgeorge',
+  'bendigo',
+  'ing',
+  'macquarie',
+  'bankwest',
+  'suncorp',
+  'unknown',
 ]);
 
 export const AccountTypeSchema = z.enum([
-  'transaction', 'savings', 'credit', 'business',
-  'offset', 'loan', 'term_deposit', 'unknown',
+  'transaction',
+  'savings',
+  'credit',
+  'business',
+  'offset',
+  'loan',
+  'term_deposit',
+  'unknown',
 ]);
 
 export const AccountInfoSchema = z.object({
@@ -24,10 +39,12 @@ export const AccountInfoSchema = z.object({
   bsb: z.string().optional(),
   openingBalance: z.number().optional(),
   closingBalance: z.number().optional(),
-  statementPeriod: z.object({
-    start: z.string(),
-    end: z.string(),
-  }).optional(),
+  statementPeriod: z
+    .object({
+      start: z.string(),
+      end: z.string(),
+    })
+    .optional(),
 });
 
 export const ParsedTransactionSchema = z.object({

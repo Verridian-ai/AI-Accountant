@@ -11,15 +11,7 @@
  *   amountDue === totalAmount - amountPaid
  */
 
-import {
-  db,
-  bills,
-  billLines,
-  billPayments,
-  suppliers,
-  purchaseOrders,
-  users,
-} from '../schema.js';
+import { db, bills, billLines, billPayments, suppliers, purchaseOrders, users } from '../schema.js';
 import { eq, and, gte, lte, sql, desc, asc } from 'drizzle-orm';
 import crypto from 'crypto';
 
@@ -183,9 +175,11 @@ function calcGst(amountCents: number, gstRate: number): number {
 }
 
 /** Calculate bill totals from line items. */
-function calcBillTotals(
-  lines: Array<{ amount: number; gstAmount: number }>
-): { subtotal: number; gstAmount: number; totalAmount: number } {
+function calcBillTotals(lines: Array<{ amount: number; gstAmount: number }>): {
+  subtotal: number;
+  gstAmount: number;
+  totalAmount: number;
+} {
   let subtotal = 0;
   let gstAmount = 0;
   for (const line of lines) {
@@ -223,7 +217,7 @@ export class BillService {
    */
   async listBills(
     userId: string,
-    options: BillListOptions = {}
+    options: BillListOptions = {},
   ): Promise<{ data: BillWithSupplier[]; total: number }> {
     const {
       page = 1,
@@ -246,8 +240,7 @@ export class BillService {
       conditions.push(eq(bills.supplierId, supplierId));
     }
 
-    const dateCol =
-      dateField === 'issueDate' ? bills.issueDate : bills.dueDate;
+    const dateCol = dateField === 'issueDate' ? bills.issueDate : bills.dueDate;
     if (dateFrom) {
       conditions.push(gte(dateCol, dateFrom));
     }
@@ -351,11 +344,7 @@ export class BillService {
     }
 
     // Fetch line items
-    const lines = await db
-      .select()
-      .from(billLines)
-      .where(eq(billLines.billId, billId))
-      .all();
+    const lines = await db.select().from(billLines).where(eq(billLines.billId, billId)).all();
 
     // Fetch payments
     const payments = await db
@@ -374,10 +363,7 @@ export class BillService {
       })
       .from(purchaseOrders)
       .where(
-        and(
-          eq(purchaseOrders.supplierId, row.supplierId),
-          eq(purchaseOrders.userId, row.userId)
-        )
+        and(eq(purchaseOrders.supplierId, row.supplierId), eq(purchaseOrders.userId, row.userId)),
       )
       .limit(1)
       .get();
@@ -526,11 +512,7 @@ export class BillService {
    * If lineItems are provided, replaces all existing lines and recalculates totals.
    */
   async updateBill(billId: string, data: UpdateBillInput): Promise<any> {
-    const existing = await db
-      .select()
-      .from(bills)
-      .where(eq(bills.id, billId))
-      .get();
+    const existing = await db.select().from(bills).where(eq(bills.id, billId)).get();
 
     if (!existing) {
       throw new Error(`Bill not found: ${billId}`);
@@ -538,7 +520,7 @@ export class BillService {
 
     if (existing.status !== 'draft' && existing.status !== 'awaiting_approval') {
       throw new Error(
-        `Cannot update bill in '${existing.status}' status. Only draft or awaiting_approval bills can be updated.`
+        `Cannot update bill in '${existing.status}' status. Only draft or awaiting_approval bills can be updated.`,
       );
     }
 
@@ -553,10 +535,7 @@ export class BillService {
     // If line items provided, replace all and recalculate
     if (data.lineItems && data.lineItems.length > 0) {
       // Delete existing lines
-      await db
-        .delete(billLines)
-        .where(eq(billLines.billId, billId))
-        .run();
+      await db.delete(billLines).where(eq(billLines.billId, billId)).run();
 
       // Insert new lines
       const computedLines = data.lineItems.map((item) => {
@@ -591,11 +570,7 @@ export class BillService {
       updates.amountDue = totals.totalAmount - currentPaid;
     }
 
-    await db
-      .update(bills)
-      .set(updates)
-      .where(eq(bills.id, billId))
-      .run();
+    await db.update(bills).set(updates).where(eq(bills.id, billId)).run();
 
     // Return updated bill
     return await db.select().from(bills).where(eq(bills.id, billId)).get();
@@ -607,11 +582,7 @@ export class BillService {
    * Validates all required fields are present.
    */
   async submitForApproval(billId: string): Promise<any> {
-    const bill = await db
-      .select()
-      .from(bills)
-      .where(eq(bills.id, billId))
-      .get();
+    const bill = await db.select().from(bills).where(eq(bills.id, billId)).get();
 
     if (!bill) {
       throw new Error(`Bill not found: ${billId}`);
@@ -619,7 +590,7 @@ export class BillService {
 
     if (bill.status !== 'draft') {
       throw new Error(
-        `Cannot submit bill for approval: current status is '${bill.status}', expected 'draft'`
+        `Cannot submit bill for approval: current status is '${bill.status}', expected 'draft'`,
       );
     }
 
@@ -659,11 +630,7 @@ export class BillService {
    * Exception: single-user mode allows self-approval with a warning.
    */
   async approveBill(billId: string, approvingUserId: string): Promise<any> {
-    const bill = await db
-      .select()
-      .from(bills)
-      .where(eq(bills.id, billId))
-      .get();
+    const bill = await db.select().from(bills).where(eq(bills.id, billId)).get();
 
     if (!bill) {
       throw new Error(`Bill not found: ${billId}`);
@@ -671,7 +638,7 @@ export class BillService {
 
     if (bill.status !== 'awaiting_approval') {
       throw new Error(
-        `Cannot approve bill: current status is '${bill.status}', expected 'awaiting_approval'`
+        `Cannot approve bill: current status is '${bill.status}', expected 'awaiting_approval'`,
       );
     }
 
@@ -687,10 +654,7 @@ export class BillService {
       })
       .from(purchaseOrders)
       .where(
-        and(
-          eq(purchaseOrders.supplierId, bill.supplierId),
-          eq(purchaseOrders.userId, bill.userId)
-        )
+        and(eq(purchaseOrders.supplierId, bill.supplierId), eq(purchaseOrders.userId, bill.userId)),
       )
       .limit(1)
       .get();
@@ -714,12 +678,10 @@ export class BillService {
 
       if (totalUsers <= 1) {
         console.warn(
-          `[BillService] WARNING: Self-approval in single-user mode — bill ${billId} approved by creator ${approvingUserId}`
+          `[BillService] WARNING: Self-approval in single-user mode — bill ${billId} approved by creator ${approvingUserId}`,
         );
       } else {
-        throw new Error(
-          'Separation of duties: the bill/PO creator cannot approve their own bill'
-        );
+        throw new Error('Separation of duties: the bill/PO creator cannot approve their own bill');
       }
     }
 
@@ -738,9 +700,7 @@ export class BillService {
       .where(eq(bills.id, billId))
       .run();
 
-    console.log(
-      `[BillService] Bill ${billId} approved by ${approvingUserId} at ${now}`
-    );
+    console.log(`[BillService] Bill ${billId} approved by ${approvingUserId} at ${now}`);
 
     return await db.select().from(bills).where(eq(bills.id, billId)).get();
   }
@@ -749,15 +709,8 @@ export class BillService {
    * Record a payment against a bill.
    * Updates amountPaid and amountDue. Sets status to 'paid' when fully paid.
    */
-  async recordPayment(
-    billId: string,
-    payment: RecordPaymentInput
-  ): Promise<BillPayment> {
-    const bill = await db
-      .select()
-      .from(bills)
-      .where(eq(bills.id, billId))
-      .get();
+  async recordPayment(billId: string, payment: RecordPaymentInput): Promise<BillPayment> {
+    const bill = await db.select().from(bills).where(eq(bills.id, billId)).get();
 
     if (!bill) {
       throw new Error(`Bill not found: ${billId}`);
@@ -765,7 +718,7 @@ export class BillService {
 
     if (bill.status !== 'approved' && bill.status !== 'overdue') {
       throw new Error(
-        `Cannot record payment: bill status is '${bill.status}'. Bill must be approved or overdue.`
+        `Cannot record payment: bill status is '${bill.status}'. Bill must be approved or overdue.`,
       );
     }
 
@@ -775,9 +728,7 @@ export class BillService {
 
     const currentDue = Number(bill.amountDue) || 0;
     if (payment.amountCents > currentDue) {
-      throw new Error(
-        `Payment amount (${payment.amountCents}) exceeds amount due (${currentDue})`
-      );
+      throw new Error(`Payment amount (${payment.amountCents}) exceeds amount due (${currentDue})`);
     }
 
     const paymentId = crypto.randomUUID();
@@ -838,11 +789,7 @@ export class BillService {
    * Bills with any payments cannot be voided (must reverse payments first).
    */
   async voidBill(billId: string): Promise<any> {
-    const bill = await db
-      .select()
-      .from(bills)
-      .where(eq(bills.id, billId))
-      .get();
+    const bill = await db.select().from(bills).where(eq(bills.id, billId)).get();
 
     if (!bill) {
       throw new Error(`Bill not found: ${billId}`);
@@ -850,7 +797,7 @@ export class BillService {
 
     if (bill.status !== 'draft' && bill.status !== 'awaiting_approval') {
       throw new Error(
-        `Cannot void bill in '${bill.status}' status. Only draft or awaiting_approval bills can be voided.`
+        `Cannot void bill in '${bill.status}' status. Only draft or awaiting_approval bills can be voided.`,
       );
     }
 
@@ -862,9 +809,7 @@ export class BillService {
       .get();
 
     if (Number(paymentCount?.count) > 0) {
-      throw new Error(
-        'Cannot void a bill with existing payments. Reverse payments first.'
-      );
+      throw new Error('Cannot void a bill with existing payments. Reverse payments first.');
     }
 
     const now = new Date().toISOString();
@@ -881,10 +826,7 @@ export class BillService {
    * Generate AP Aging Report.
    * Buckets unpaid bills by days past due: current, 1-30, 31-60, 61-90, 90+.
    */
-  async getAPAging(
-    userId: string,
-    asOfDate?: string
-  ): Promise<APAgingReport> {
+  async getAPAging(userId: string, asOfDate?: string): Promise<APAgingReport> {
     const referenceDate = asOfDate ?? new Date().toISOString().split('T')[0];
 
     // Fetch all unpaid bills (approved or overdue) with supplier names
@@ -906,8 +848,8 @@ export class BillService {
         and(
           eq(bills.userId, userId),
           sql`${bills.status} IN ('approved', 'overdue')`,
-          sql`${bills.amountDue} > 0`
-        )
+          sql`${bills.amountDue} > 0`,
+        ),
       )
       .orderBy(asc(bills.dueDate))
       .all();
@@ -998,8 +940,8 @@ export class BillService {
           eq(bills.userId, userId),
           eq(bills.status, 'approved'),
           sql`${bills.dueDate} < ${today}`,
-          sql`${bills.amountDue} > 0`
-        )
+          sql`${bills.amountDue} > 0`,
+        ),
       )
       .all();
 
@@ -1017,9 +959,7 @@ export class BillService {
     }
 
     if (updated.length > 0) {
-      console.log(
-        `[BillService] Marked ${updated.length} bill(s) as overdue for user ${userId}`
-      );
+      console.log(`[BillService] Marked ${updated.length} bill(s) as overdue for user ${userId}`);
     }
 
     return updated;

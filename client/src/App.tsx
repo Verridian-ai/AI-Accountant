@@ -46,12 +46,7 @@ import { PushPermissionPrompt, NotificationPreferences } from './features/notifi
 import { SyncStatus, ConflictResolver } from './features/offline';
 import { api, getToken } from './api';
 import type { Transaction, TransactionStats, Account } from './api';
-import {
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  Receipt,
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Receipt } from 'lucide-react';
 
 function PageSpinner() {
   return (
@@ -90,10 +85,7 @@ function AppContent() {
 
   const refreshData = async () => {
     try {
-      const [txResult, accts] = await Promise.all([
-        api.fetchTransactions(),
-        api.fetchAccounts()
-      ]);
+      const [txResult, accts] = await Promise.all([api.fetchTransactions(), api.fetchAccounts()]);
       setTransactions(txResult.transactions);
       setTotalTransactions(txResult.total);
       setAccounts(accts);
@@ -109,7 +101,7 @@ function AppContent() {
   const loadMoreTransactions = async () => {
     try {
       const result = await api.fetchTransactions({ offset: transactions.length, limit: 100 });
-      setTransactions(prev => [...prev, ...result.transactions]);
+      setTransactions((prev) => [...prev, ...result.transactions]);
       setTotalTransactions(result.total);
     } catch (e) {
       console.error('Failed to load more transactions', e);
@@ -402,10 +394,7 @@ function AppContent() {
 
       <FloatingChat />
 
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
       <MerchantMemoryManager
         isOpen={isMerchantMemoryOpen}

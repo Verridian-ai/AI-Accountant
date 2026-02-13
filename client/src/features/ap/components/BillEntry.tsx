@@ -42,30 +42,36 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
   // Load existing bill for editing
   useEffect(() => {
     if (isEdit && billId) {
-      apApi.fetchBill(billId).then((bill) => {
-        setSupplierId(bill.supplierId);
-        setBillNumber(bill.billNumber);
-        setIssueDate(bill.issueDate);
-        setDueDate(bill.dueDate);
-        setNotes(bill.notes ?? '');
-        setPurchaseOrderId(bill.purchaseOrderId ?? '');
-        if (bill.lineItems?.length) {
-          setLineItems(
-            bill.lineItems.map((li) => ({
-              description: li.description,
-              quantity: li.quantity,
-              unitPrice: li.unitPrice,
-              gstRate: li.gstRate,
-            }))
-          );
-        }
-        // Load selected supplier
-        apApi.fetchSupplier(bill.supplierId).then((s) => {
-          setSelectedSupplier(s);
-          setSupplierSearch(s.businessName);
-        }).catch(() => {});
-        setLoading(false);
-      }).catch(() => setLoading(false));
+      apApi
+        .fetchBill(billId)
+        .then((bill) => {
+          setSupplierId(bill.supplierId);
+          setBillNumber(bill.billNumber);
+          setIssueDate(bill.issueDate);
+          setDueDate(bill.dueDate);
+          setNotes(bill.notes ?? '');
+          setPurchaseOrderId(bill.purchaseOrderId ?? '');
+          if (bill.lineItems?.length) {
+            setLineItems(
+              bill.lineItems.map((li) => ({
+                description: li.description,
+                quantity: li.quantity,
+                unitPrice: li.unitPrice,
+                gstRate: li.gstRate,
+              })),
+            );
+          }
+          // Load selected supplier
+          apApi
+            .fetchSupplier(bill.supplierId)
+            .then((s) => {
+              setSelectedSupplier(s);
+              setSupplierSearch(s.businessName);
+            })
+            .catch(() => {});
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
     }
   }, [isEdit, billId]);
 
@@ -112,7 +118,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
     setLineItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
     );
   };
 
@@ -174,7 +180,10 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
   if (loading) {
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
-        <button onClick={onCancel} className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors">
+        <button
+          onClick={onCancel}
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
         <div className="neu-raised rounded-2xl p-6 animate-pulse">
@@ -195,12 +204,8 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
       </button>
 
       <div>
-        <h1 className="text-2xl font-bold text-white">
-          {isEdit ? 'Edit Bill' : 'New Bill'}
-        </h1>
-        <p className="text-sm text-zinc-400 mt-1">
-          Enter bill details and line items
-        </p>
+        <h1 className="text-2xl font-bold text-white">{isEdit ? 'Edit Bill' : 'New Bill'}</h1>
+        <p className="text-sm text-zinc-400 mt-1">Enter bill details and line items</p>
       </div>
 
       {/* Bill Header */}
@@ -279,7 +284,9 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Link to Purchase Order (optional)</label>
+          <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+            Link to Purchase Order (optional)
+          </label>
           <input
             type="text"
             value={purchaseOrderId}
@@ -308,12 +315,24 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
           <table className="w-full min-w-[640px]">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left px-2 py-2 text-xs font-semibold text-zinc-400 w-[35%]">Description</th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[10%]">Qty</th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[15%]">Unit Price</th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[10%]">GST %</th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[12%]">Amount</th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[12%]">GST</th>
+                <th className="text-left px-2 py-2 text-xs font-semibold text-zinc-400 w-[35%]">
+                  Description
+                </th>
+                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[10%]">
+                  Qty
+                </th>
+                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[15%]">
+                  Unit Price
+                </th>
+                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[10%]">
+                  GST %
+                </th>
+                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[12%]">
+                  Amount
+                </th>
+                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[12%]">
+                  GST
+                </th>
                 <th className="w-[6%]"></th>
               </tr>
             </thead>

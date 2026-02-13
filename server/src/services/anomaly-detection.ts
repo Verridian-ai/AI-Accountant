@@ -223,10 +223,7 @@ export class AnomalyDetectionService {
   // Detector 2 — Amount Anomalies (z-score per category)
   // -----------------------------------------------------------------------
 
-  async detectAmountAnomalies(
-    txns: any[],
-    category?: string,
-  ): Promise<AnomalyAlertResult[]> {
+  async detectAmountAnomalies(txns: any[], category?: string): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
 
     // Group by category
@@ -279,10 +276,7 @@ export class AnomalyDetectionService {
   // Detector 3 — Velocity Spikes
   // -----------------------------------------------------------------------
 
-  async detectVelocitySpikes(
-    txns: any[],
-    windowDays = 7,
-  ): Promise<AnomalyAlertResult[]> {
+  async detectVelocitySpikes(txns: any[], windowDays = 7): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
     if (txns.length < 10) return alerts;
 
@@ -302,7 +296,7 @@ export class AnomalyDetectionService {
     for (let i = 0; i <= sortedDates.length - windowDays; i++) {
       let count = 0;
       for (let j = i; j < i + windowDays && j < sortedDates.length; j++) {
-        count += (dateGroups.get(sortedDates[j])?.length ?? 0);
+        count += dateGroups.get(sortedDates[j])?.length ?? 0;
       }
       windowCounts.push(count);
     }
@@ -367,10 +361,7 @@ export class AnomalyDetectionService {
   // Detector 4 — Category Drift
   // -----------------------------------------------------------------------
 
-  async detectCategoryDrift(
-    userId: string,
-    months = 6,
-  ): Promise<AnomalyAlertResult[]> {
+  async detectCategoryDrift(userId: string, months = 6): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
 
     const now = new Date();
@@ -726,7 +717,8 @@ export class AnomalyDetectionService {
     const variance = sorted.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
     const stdDev = Math.sqrt(variance);
 
-    const median = n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)];
+    const median =
+      n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)];
 
     const q1Idx = Math.floor(n * 0.25);
     const q3Idx = Math.floor(n * 0.75);
@@ -801,8 +793,14 @@ export class AnomalyDetectionService {
   }
 
   private _merchantSimilarity(a: string, b: string): number {
-    const normA = a.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-    const normB = b.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+    const normA = a
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .trim();
+    const normB = b
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .trim();
 
     if (normA === normB) return 1.0;
     if (!normA || !normB) return 0.0;

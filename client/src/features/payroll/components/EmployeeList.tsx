@@ -52,7 +52,7 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
         (e) =>
           e.first_name.toLowerCase().includes(q) ||
           e.last_name.toLowerCase().includes(q) ||
-          e.email.toLowerCase().includes(q)
+          e.email.toLowerCase().includes(q),
       );
     }
 

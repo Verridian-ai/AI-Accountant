@@ -52,8 +52,20 @@ const ABS_DATAFLOWS: Record<string, AbsDataflowDef> = {
     key: 'Q.10001.10.50.10.AQ',
     name: 'Consumer Price Index',
     indicators: [
-      { seriesId: '10001', code: 'ABS_CPI_ALL_GROUPS', category: 'inflation', name: 'CPI All Groups', unit: 'index' },
-      { seriesId: '10001', code: 'ABS_CPI_ALL_GROUPS_PCT', category: 'inflation', name: 'CPI All Groups % Change', unit: 'percent' },
+      {
+        seriesId: '10001',
+        code: 'ABS_CPI_ALL_GROUPS',
+        category: 'inflation',
+        name: 'CPI All Groups',
+        unit: 'index',
+      },
+      {
+        seriesId: '10001',
+        code: 'ABS_CPI_ALL_GROUPS_PCT',
+        category: 'inflation',
+        name: 'CPI All Groups % Change',
+        unit: 'percent',
+      },
     ],
   },
   LABOUR_FORCE: {
@@ -61,9 +73,24 @@ const ABS_DATAFLOWS: Record<string, AbsDataflowDef> = {
     key: 'M.1.20.10.M6',
     name: 'Labour Force',
     indicators: [
-      { code: 'ABS_UNEMPLOYMENT_RATE', category: 'employment', name: 'Unemployment Rate', unit: 'percent' },
-      { code: 'ABS_PARTICIPATION_RATE', category: 'employment', name: 'Participation Rate', unit: 'percent' },
-      { code: 'ABS_EMPLOYED_PERSONS', category: 'employment', name: 'Employed Persons', unit: 'thousands' },
+      {
+        code: 'ABS_UNEMPLOYMENT_RATE',
+        category: 'employment',
+        name: 'Unemployment Rate',
+        unit: 'percent',
+      },
+      {
+        code: 'ABS_PARTICIPATION_RATE',
+        category: 'employment',
+        name: 'Participation Rate',
+        unit: 'percent',
+      },
+      {
+        code: 'ABS_EMPLOYED_PERSONS',
+        category: 'employment',
+        name: 'Employed Persons',
+        unit: 'thousands',
+      },
     ],
   },
   GDP: {
@@ -80,8 +107,18 @@ const ABS_DATAFLOWS: Record<string, AbsDataflowDef> = {
     key: 'Q.3.10.THRPEB.7',
     name: 'Wage Price Index',
     indicators: [
-      { code: 'ABS_WPI_ALL', category: 'wages', name: 'Wage Price Index All Sectors', unit: 'percent' },
-      { code: 'ABS_WPI_PRIVATE', category: 'wages', name: 'Wage Price Index Private', unit: 'percent' },
+      {
+        code: 'ABS_WPI_ALL',
+        category: 'wages',
+        name: 'Wage Price Index All Sectors',
+        unit: 'percent',
+      },
+      {
+        code: 'ABS_WPI_PRIVATE',
+        category: 'wages',
+        name: 'Wage Price Index Private',
+        unit: 'percent',
+      },
     ],
   },
   DWELLING_APPROVALS: {
@@ -89,7 +126,12 @@ const ABS_DATAFLOWS: Record<string, AbsDataflowDef> = {
     key: 'M.8.1.1001',
     name: 'Building Approvals',
     indicators: [
-      { code: 'ABS_DWELLING_APPROVALS', category: 'housing', name: 'Dwelling Approvals Total', unit: 'count' },
+      {
+        code: 'ABS_DWELLING_APPROVALS',
+        category: 'housing',
+        name: 'Dwelling Approvals Total',
+        unit: 'count',
+      },
     ],
   },
 };
@@ -105,18 +147,13 @@ let lastRequestAt = 0;
 // ============================================================================
 
 export class AbsDataFeed {
-
   // ---------- Public API ----------
 
   /**
    * Fetch raw SDMX JSON data for a dataflow.
    * Uses 2-year lookback by default.
    */
-  async fetchDataflow(
-    dataflowId: string,
-    key: string,
-    startPeriod?: string,
-  ): Promise<any> {
+  async fetchDataflow(dataflowId: string, key: string, startPeriod?: string): Promise<any> {
     const cacheKey = `${dataflowId}:${key}`;
 
     // Check cache
@@ -142,10 +179,7 @@ export class AbsDataFeed {
    * Parse an SDMX JSON response into EconomicIndicatorRecord[].
    * Extracts the most recent observations for each configured indicator.
    */
-  async parseDataflow(
-    dataflowKey: string,
-    rawData: any,
-  ): Promise<EconomicIndicatorRecord[]> {
+  async parseDataflow(dataflowKey: string, rawData: any): Promise<EconomicIndicatorRecord[]> {
     const def = ABS_DATAFLOWS[dataflowKey];
     if (!def) throw new Error(`Unknown ABS dataflow key: ${dataflowKey}`);
 
@@ -182,7 +216,7 @@ export class AbsDataFeed {
         if (!seriesData?.observations) continue;
 
         const obsKeys = Object.keys(seriesData.observations)
-          .map(k => parseInt(k, 10))
+          .map((k) => parseInt(k, 10))
           .sort((a, b) => a - b);
 
         if (obsKeys.length === 0) continue;
@@ -201,9 +235,10 @@ export class AbsDataFeed {
           previousValue = this.extractObsValue(seriesData.observations[prevKey]);
         }
 
-        const changePct = previousValue !== null && previousValue !== 0
-          ? Math.round(((latestValue - previousValue) / Math.abs(previousValue)) * 10000) / 100
-          : null;
+        const changePct =
+          previousValue !== null && previousValue !== 0
+            ? Math.round(((latestValue - previousValue) / Math.abs(previousValue)) * 10000) / 100
+            : null;
 
         const observationDate = this.periodToIsoDate(latestPeriod);
 
@@ -304,10 +339,7 @@ export class AbsDataFeed {
   /**
    * Return historical observations for an indicator code (default last 20 periods).
    */
-  async getIndicatorHistory(
-    code: string,
-    periods = 20,
-  ): Promise<EconomicIndicatorRecord[]> {
+  async getIndicatorHistory(code: string, periods = 20): Promise<EconomicIndicatorRecord[]> {
     try {
       const rows = await db
         .select()
@@ -400,12 +432,18 @@ export class AbsDataFeed {
    */
   private inferFrequency(key: string): string {
     switch (key) {
-      case 'CPI': return 'quarterly';
-      case 'GDP': return 'quarterly';
-      case 'WAGES': return 'quarterly';
-      case 'LABOUR_FORCE': return 'monthly';
-      case 'DWELLING_APPROVALS': return 'monthly';
-      default: return 'quarterly';
+      case 'CPI':
+        return 'quarterly';
+      case 'GDP':
+        return 'quarterly';
+      case 'WAGES':
+        return 'quarterly';
+      case 'LABOUR_FORCE':
+        return 'monthly';
+      case 'DWELLING_APPROVALS':
+        return 'monthly';
+      default:
+        return 'quarterly';
     }
   }
 
@@ -416,7 +454,7 @@ export class AbsDataFeed {
     const now = Date.now();
     const elapsed = now - lastRequestAt;
     if (elapsed < RATE_LIMIT_DELAY_MS) {
-      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS - elapsed));
+      await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY_MS - elapsed));
     }
     lastRequestAt = Date.now();
   }
@@ -434,18 +472,21 @@ export class AbsDataFeed {
         .all();
 
       if (existing.length === 0) {
-        await db.insert(marketDataFeeds).values({
-          id: feedId,
-          feedName: `ABS ${def.dataflowId}: ${def.name}`,
-          feedType: 'sdmx',
-          sourceUrl: `${ABS_BASE_URL}/data/${def.dataflowId}/${def.key}`,
-          sourceName: 'Australian Bureau of Statistics',
-          description: def.name,
-          refreshFrequency: this.inferFrequency(key) === 'monthly' ? 'weekly' : 'monthly',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }).run();
+        await db
+          .insert(marketDataFeeds)
+          .values({
+            id: feedId,
+            feedName: `ABS ${def.dataflowId}: ${def.name}`,
+            feedType: 'sdmx',
+            sourceUrl: `${ABS_BASE_URL}/data/${def.dataflowId}/${def.key}`,
+            sourceName: 'Australian Bureau of Statistics',
+            description: def.name,
+            refreshFrequency: this.inferFrequency(key) === 'monthly' ? 'weekly' : 'monthly',
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          })
+          .run();
       }
     } catch {
       // Non-critical
@@ -481,23 +522,26 @@ export class AbsDataFeed {
           .where(eq(economicIndicators.id, existing[0].id))
           .run();
       } else {
-        await db.insert(economicIndicators).values({
-          id: ind.id,
-          feedId: ind.feedId,
-          indicatorCode: ind.indicatorCode,
-          indicatorName: ind.indicatorName,
-          category: ind.category,
-          value: ind.value,
-          previousValue: ind.previousValue,
-          changePct: ind.changePct,
-          unit: ind.unit,
-          frequency: ind.frequency,
-          referencePeriod: ind.referencePeriod,
-          source: ind.source,
-          notes: ind.notes,
-          observationDate: ind.observationDate,
-          createdAt: new Date().toISOString(),
-        }).run();
+        await db
+          .insert(economicIndicators)
+          .values({
+            id: ind.id,
+            feedId: ind.feedId,
+            indicatorCode: ind.indicatorCode,
+            indicatorName: ind.indicatorName,
+            category: ind.category,
+            value: ind.value,
+            previousValue: ind.previousValue,
+            changePct: ind.changePct,
+            unit: ind.unit,
+            frequency: ind.frequency,
+            referencePeriod: ind.referencePeriod,
+            source: ind.source,
+            notes: ind.notes,
+            observationDate: ind.observationDate,
+            createdAt: new Date().toISOString(),
+          })
+          .run();
       }
     } catch (err) {
       console.error(`[ABS] Failed to upsert indicator ${ind.indicatorCode}:`, err);

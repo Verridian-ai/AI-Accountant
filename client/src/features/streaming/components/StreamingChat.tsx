@@ -20,7 +20,8 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { stream, text, isStreaming, tokenCount, latencyMs, error, cancel } = useStreaming(agentType);
+  const { stream, text, isStreaming, tokenCount, latencyMs, error, cancel } =
+    useStreaming(agentType);
 
   // Auto-scroll during streaming
   useEffect(() => {
@@ -59,9 +60,7 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
           <Zap className="w-4 h-4 text-[#FFCC00]" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-zinc-100">
-            {formatAgent(agentType)}
-          </h3>
+          <h3 className="text-sm font-bold text-zinc-100">{formatAgent(agentType)}</h3>
           <p className="text-xs text-zinc-500">Vercel AI SDK Streaming</p>
         </div>
         {isStreaming && (
@@ -73,10 +72,7 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
       </div>
 
       {/* Response area */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px]"
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px]">
         {text ? (
           <div className="neu-inset rounded-xl p-4">
             <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap text-zinc-200">

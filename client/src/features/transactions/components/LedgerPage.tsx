@@ -175,7 +175,7 @@ export function LedgerPage({
   // Update announcement when filtered count changes
   useEffect(() => {
     setAnnounceMessage(
-      `Showing ${filteredTransactions.length} of ${transactions.length} transactions`
+      `Showing ${filteredTransactions.length} of ${transactions.length} transactions`,
     );
   }, [filteredTransactions.length, transactions.length]);
 
@@ -187,12 +187,7 @@ export function LedgerPage({
   return (
     <>
       {/* Screen reader announcement for filter result changes */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {announceMessage}
       </div>
 

@@ -36,11 +36,7 @@ export abstract class VercelAgent<TInput, TOutput> {
   protected readonly systemPrompt: string;
   protected readonly outputSchema?: z.ZodSchema<TOutput>;
 
-  constructor(
-    agentType: AgentType,
-    systemPrompt: string,
-    outputSchema?: z.ZodSchema<TOutput>,
-  ) {
+  constructor(agentType: AgentType, systemPrompt: string, outputSchema?: z.ZodSchema<TOutput>) {
     this.agentType = agentType;
     this.systemPrompt = systemPrompt;
     this.outputSchema = outputSchema;
@@ -108,9 +104,7 @@ export abstract class VercelAgent<TInput, TOutput> {
           ? {
               promptTokens: result.usage.inputTokens ?? 0,
               completionTokens: result.usage.outputTokens ?? 0,
-              totalTokens:
-                (result.usage.inputTokens ?? 0) +
-                (result.usage.outputTokens ?? 0),
+              totalTokens: (result.usage.inputTokens ?? 0) + (result.usage.outputTokens ?? 0),
             }
           : undefined,
         latencyMs: Date.now() - startMs,
@@ -138,9 +132,7 @@ export abstract class VercelAgent<TInput, TOutput> {
         ? {
             promptTokens: result.usage.inputTokens ?? 0,
             completionTokens: result.usage.outputTokens ?? 0,
-            totalTokens:
-              (result.usage.inputTokens ?? 0) +
-              (result.usage.outputTokens ?? 0),
+            totalTokens: (result.usage.inputTokens ?? 0) + (result.usage.outputTokens ?? 0),
           }
         : undefined,
       latencyMs: Date.now() - startMs,
@@ -190,9 +182,7 @@ export abstract class VercelAgent<TInput, TOutput> {
    * can continue rather than crash.  Subclasses can override
    * `buildFallbackOutput()` for a richer default.
    */
-  async executeWithFallback(
-    input: TInput,
-  ): Promise<VercelAgentExecutionResult<TOutput>> {
+  async executeWithFallback(input: TInput): Promise<VercelAgentExecutionResult<TOutput>> {
     try {
       return await this.execute(input);
     } catch (error) {
@@ -219,12 +209,8 @@ export abstract class VercelAgent<TInput, TOutput> {
    * output type.  The base implementation returns an object with a `summary`
    * field describing the error.
    */
-  protected buildFallbackOutput(
-    _input: TInput,
-    error: unknown,
-  ): TOutput {
-    const message =
-      error instanceof Error ? error.message : 'Unknown error during execution';
+  protected buildFallbackOutput(_input: TInput, error: unknown): TOutput {
+    const message = error instanceof Error ? error.message : 'Unknown error during execution';
     return { summary: `Agent ${this.agentType} failed: ${message}` } as unknown as TOutput;
   }
 

@@ -95,12 +95,15 @@ export function createLedgerColumns({
           <div className="flex items-center justify-center">
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); bulkSelectRef.current?.toggle(tx.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                bulkSelectRef.current?.toggle(tx.id);
+              }}
               className={cn(
                 'w-5 h-5 rounded-md border transition-all flex items-center justify-center',
                 selected
                   ? 'bg-[#FFCC00]/20 border-[#FFCC00]/50 text-[#FFCC00]'
-                  : 'neu-inset border-white/5 text-transparent hover:border-white/20'
+                  : 'neu-inset border-white/5 text-transparent hover:border-white/20',
               )}
               aria-label={selected ? 'Deselect' : 'Select'}
             >
@@ -145,8 +148,14 @@ export function createLedgerColumns({
         let formatted = dateStr;
         try {
           const d = new Date(dateStr + 'T00:00:00');
-          formatted = d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
-        } catch { /* keep original */ }
+          formatted = d.toLocaleDateString('en-AU', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          });
+        } catch {
+          /* keep original */
+        }
         return (
           <div className="flex flex-col">
             <span className="font-mono text-xs font-black text-zinc-500 tracking-wider neu-inset px-2.5 py-1 rounded-lg border border-white/5 w-fit whitespace-nowrap">
@@ -258,7 +267,7 @@ export function createLedgerColumns({
         const tx = row.original;
         const { editingId, editForm } = editStateRef.current;
         const isEditing = editingId === tx.id;
-        const amount = (isEditing ? (editForm.amount || 0) : tx.amount) / 100;
+        const amount = (isEditing ? editForm.amount || 0 : tx.amount) / 100;
 
         if (isEditing) {
           return (
@@ -280,7 +289,7 @@ export function createLedgerColumns({
           );
         }
 
-        return <CurrencyDisplay amount={isEditing ? (editForm.amount || 0) : tx.amount} />;
+        return <CurrencyDisplay amount={isEditing ? editForm.amount || 0 : tx.amount} />;
       },
     },
 
@@ -337,8 +346,8 @@ export function createLedgerColumns({
         const { editingId, editForm } = editStateRef.current;
         const isEditing = editingId === tx.id;
         const cat = isEditing
-          ? (editForm.category || 'Uncategorized')
-          : (tx.category || 'Uncategorized');
+          ? editForm.category || 'Uncategorized'
+          : tx.category || 'Uncategorized';
 
         if (isEditing) {
           return (
@@ -367,13 +376,16 @@ export function createLedgerColumns({
                 color?.badge?.text || 'text-red-400',
                 color?.badge?.border || 'border-red-500/25',
                 color?.badge?.shadow || '',
-                'neu-raised-sm'
+                'neu-raised-sm',
               )}
             >
               {cat}
             </span>
             {confidence != null && confidence < 0.8 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500/60" title={`AI confidence: ${Math.round(confidence * 100)}%`}>
+              <span
+                className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500/60"
+                title={`AI confidence: ${Math.round(confidence * 100)}%`}
+              >
                 <AlertTriangle className="h-2.5 w-2.5" />
                 {Math.round(confidence * 100)}%
               </span>
@@ -402,15 +414,13 @@ export function createLedgerColumns({
             aria-label={gst ? 'GST included' : 'GST not included'}
             title={gst ? 'Click to remove GST' : 'Click to add GST'}
             onClick={() =>
-              isEditing
-                ? setEditForm({ ...editForm, gstApplicable: !gst })
-                : handleEditStart(tx)
+              isEditing ? setEditForm({ ...editForm, gstApplicable: !gst }) : handleEditStart(tx)
             }
             className={cn(
               'px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all btn-press border',
               gst
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)] neu-raised-sm'
-                : 'neu-inset text-zinc-600 border-zinc-800/50'
+                : 'neu-inset text-zinc-600 border-zinc-800/50',
             )}
           >
             {gst ? 'GST' : 'Excl.'}
@@ -445,7 +455,7 @@ export function createLedgerColumns({
               <div
                 className={cn(
                   'w-6 h-6 rounded-lg flex items-center justify-center neu-inset transition-all group-hover/account:glow-success',
-                  account.accountType === 'credit_card' ? 'text-purple-400' : 'text-[#FFCC00]'
+                  account.accountType === 'credit_card' ? 'text-purple-400' : 'text-[#FFCC00]',
                 )}
               >
                 {account.accountType === 'credit_card' ? (

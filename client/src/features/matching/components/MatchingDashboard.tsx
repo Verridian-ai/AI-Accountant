@@ -21,7 +21,10 @@ export function MatchingDashboard() {
   const [stats, setStats] = useState<MatchStats | null>(null);
 
   useEffect(() => {
-    matchesApi.getStats().then(setStats).catch(() => {});
+    matchesApi
+      .getStats()
+      .then(setStats)
+      .catch(() => {});
   }, []);
 
   return (
@@ -57,21 +60,33 @@ export function MatchingDashboard() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="neu-raised rounded-lg px-4 py-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Total Docs</p>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+              Total Docs
+            </p>
             <p className="text-xl font-bold text-zinc-100 mt-1">{stats.totalDocuments}</p>
           </div>
           <div className="neu-raised rounded-lg px-4 py-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Match Rate</p>
-            <p className={`text-xl font-bold mt-1 ${stats.matchRate > 80 ? 'text-emerald-400' : stats.matchRate < 50 ? 'text-red-400' : 'text-amber-400'}`}>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+              Match Rate
+            </p>
+            <p
+              className={`text-xl font-bold mt-1 ${stats.matchRate > 80 ? 'text-emerald-400' : stats.matchRate < 50 ? 'text-red-400' : 'text-amber-400'}`}
+            >
               {stats.matchRate.toFixed(1)}%
             </p>
           </div>
           <div className="neu-raised rounded-lg px-4 py-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Avg Confidence</p>
-            <p className="text-xl font-bold text-zinc-100 mt-1">{(stats.averageConfidence * 100).toFixed(0)}%</p>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+              Avg Confidence
+            </p>
+            <p className="text-xl font-bold text-zinc-100 mt-1">
+              {(stats.averageConfidence * 100).toFixed(0)}%
+            </p>
           </div>
           <div className="neu-raised rounded-lg px-4 py-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Pending</p>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+              Pending
+            </p>
             <p className="text-xl font-bold text-amber-400 mt-1">{stats.pending}</p>
           </div>
         </div>
@@ -79,7 +94,7 @@ export function MatchingDashboard() {
 
       {/* Tab Navigation */}
       <div className="neu-raised rounded-xl p-1.5 flex items-center gap-1">
-        {TABS.map(tab => (
+        {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}

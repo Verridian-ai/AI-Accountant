@@ -102,16 +102,76 @@ const DEFAULT_SENTIMENT_TOPICS = [
 
 // Known Australian economic calendar events
 const AU_ECONOMIC_EVENTS = [
-  { name: 'RBA Cash Rate Decision', type: 'interest_rate', source: 'RBA', importance: 'high' as const, frequency: 'monthly' },
-  { name: 'ABS CPI Release', type: 'inflation', source: 'ABS', importance: 'high' as const, frequency: 'quarterly' },
-  { name: 'ABS Labour Force Report', type: 'employment', source: 'ABS', importance: 'high' as const, frequency: 'monthly' },
-  { name: 'ABS GDP Release', type: 'gdp', source: 'ABS', importance: 'high' as const, frequency: 'quarterly' },
-  { name: 'ABS Wage Price Index', type: 'wages', source: 'ABS', importance: 'medium' as const, frequency: 'quarterly' },
-  { name: 'ABS Building Approvals', type: 'housing', source: 'ABS', importance: 'medium' as const, frequency: 'monthly' },
-  { name: 'RBA Financial Stability Review', type: 'financial_stability', source: 'RBA', importance: 'medium' as const, frequency: 'biannual' },
-  { name: 'Federal Budget Release', type: 'fiscal_policy', source: 'Treasury', importance: 'high' as const, frequency: 'annual' },
-  { name: 'RBA Statement on Monetary Policy', type: 'monetary_policy', source: 'RBA', importance: 'high' as const, frequency: 'quarterly' },
-  { name: 'ABS Retail Trade', type: 'consumer', source: 'ABS', importance: 'medium' as const, frequency: 'monthly' },
+  {
+    name: 'RBA Cash Rate Decision',
+    type: 'interest_rate',
+    source: 'RBA',
+    importance: 'high' as const,
+    frequency: 'monthly',
+  },
+  {
+    name: 'ABS CPI Release',
+    type: 'inflation',
+    source: 'ABS',
+    importance: 'high' as const,
+    frequency: 'quarterly',
+  },
+  {
+    name: 'ABS Labour Force Report',
+    type: 'employment',
+    source: 'ABS',
+    importance: 'high' as const,
+    frequency: 'monthly',
+  },
+  {
+    name: 'ABS GDP Release',
+    type: 'gdp',
+    source: 'ABS',
+    importance: 'high' as const,
+    frequency: 'quarterly',
+  },
+  {
+    name: 'ABS Wage Price Index',
+    type: 'wages',
+    source: 'ABS',
+    importance: 'medium' as const,
+    frequency: 'quarterly',
+  },
+  {
+    name: 'ABS Building Approvals',
+    type: 'housing',
+    source: 'ABS',
+    importance: 'medium' as const,
+    frequency: 'monthly',
+  },
+  {
+    name: 'RBA Financial Stability Review',
+    type: 'financial_stability',
+    source: 'RBA',
+    importance: 'medium' as const,
+    frequency: 'biannual',
+  },
+  {
+    name: 'Federal Budget Release',
+    type: 'fiscal_policy',
+    source: 'Treasury',
+    importance: 'high' as const,
+    frequency: 'annual',
+  },
+  {
+    name: 'RBA Statement on Monetary Policy',
+    type: 'monetary_policy',
+    source: 'RBA',
+    importance: 'high' as const,
+    frequency: 'quarterly',
+  },
+  {
+    name: 'ABS Retail Trade',
+    type: 'consumer',
+    source: 'ABS',
+    importance: 'medium' as const,
+    frequency: 'monthly',
+  },
 ];
 
 // ============================================================================
@@ -179,10 +239,7 @@ function msUntilAestHour(targetHour: number): number {
     hoursUntil += 24;
   }
 
-  const msUntil =
-    hoursUntil * ONE_HOUR -
-    currentMin * ONE_MINUTE -
-    currentSec * 1000;
+  const msUntil = hoursUntil * ONE_HOUR - currentMin * ONE_MINUTE - currentSec * 1000;
 
   return Math.max(msUntil, 1000); // At least 1 second
 }
@@ -193,7 +250,11 @@ function msUntilAestHour(targetHour: number): number {
 function msUntilSundayMidnightAest(): number {
   const day = getAestDayOfWeek();
   const daysUntilSunday = day === 0 ? 7 : 7 - day;
-  return daysUntilSunday * TWENTY_FOUR_HOURS + msUntilAestHour(0) - TWENTY_FOUR_HOURS * (day === 0 ? 0 : 0);
+  return (
+    daysUntilSunday * TWENTY_FOUR_HOURS +
+    msUntilAestHour(0) -
+    TWENTY_FOUR_HOURS * (day === 0 ? 0 : 0)
+  );
 }
 
 // ============================================================================
@@ -204,7 +265,8 @@ export class DataRefreshScheduler {
   private config: SchedulerConfig;
   private deps: SchedulerDeps;
   private jobs: Map<string, ScheduleEntry> = new Map();
-  private timers: Map<string, ReturnType<typeof setTimeout> | ReturnType<typeof setInterval>> = new Map();
+  private timers: Map<string, ReturnType<typeof setTimeout> | ReturnType<typeof setInterval>> =
+    new Map();
   private running = false;
   private startedAt: number | null = null;
 
@@ -247,7 +309,9 @@ export class DataRefreshScheduler {
     this.registerJob('rba_data', this.config.rbaRefreshCron, () => this.refreshRbaData());
     this.registerJob('abs_data', this.config.absRefreshCron, () => this.refreshAbsData());
     this.registerJob('asx_prices', this.config.asxPriceRefreshCron, () => this.refreshAsxPrices());
-    this.registerJob('crypto_prices', this.config.cryptoPriceRefreshCron, () => this.refreshCryptoPrices());
+    this.registerJob('crypto_prices', this.config.cryptoPriceRefreshCron, () =>
+      this.refreshCryptoPrices(),
+    );
     this.registerJob('sentiment', this.config.sentimentRefreshCron, () => this.refreshSentiment());
     this.registerJob('cognee_index', this.config.cogneeIndexCron, () => this.refreshCogneeIndex());
     this.registerJob('calendar', this.config.calendarRefreshCron, () => this.refreshCalendar());
@@ -307,7 +371,10 @@ export class DataRefreshScheduler {
   async triggerJob(name: string): Promise<{ success: boolean; error?: string }> {
     const job = this.jobs.get(name);
     if (!job) {
-      return { success: false, error: `Job '${name}' not found. Available: ${Array.from(this.jobs.keys()).join(', ')}` };
+      return {
+        success: false,
+        error: `Job '${name}' not found. Available: ${Array.from(this.jobs.keys()).join(', ')}`,
+      };
     }
 
     console.log(`[Scheduler] Manual trigger: ${name}`);
@@ -527,10 +594,7 @@ export class DataRefreshScheduler {
   /**
    * Execute a handler with retry logic (exponential backoff).
    */
-  private async executeWithRetry(
-    name: string,
-    handler: () => Promise<void>,
-  ): Promise<void> {
+  private async executeWithRetry(name: string, handler: () => Promise<void>): Promise<void> {
     const job = this.jobs.get(name);
     if (!job) return;
 
@@ -540,9 +604,7 @@ export class DataRefreshScheduler {
 
     for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {
       try {
-        console.log(
-          `[Scheduler] Running ${name} (attempt ${attempt}/${this.config.maxRetries})`,
-        );
+        console.log(`[Scheduler] Running ${name} (attempt ${attempt}/${this.config.maxRetries})`);
         await handler();
 
         // Success
@@ -550,21 +612,15 @@ export class DataRefreshScheduler {
         job.lastDurationMs = Date.now() - start;
         job.lastError = null;
         job.runCount++;
-        console.log(
-          `[Scheduler] ${name} completed in ${job.lastDurationMs}ms`,
-        );
+        console.log(`[Scheduler] ${name} completed in ${job.lastDurationMs}ms`);
         return;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error(
-          `[Scheduler] ${name} attempt ${attempt} failed: ${msg}`,
-        );
+        console.error(`[Scheduler] ${name} attempt ${attempt} failed: ${msg}`);
 
         if (attempt < this.config.maxRetries) {
           const backoffMs = this.config.retryDelayMs * Math.pow(2, attempt - 1);
-          console.log(
-            `[Scheduler] Retrying ${name} in ${Math.round(backoffMs / 1000)}s`,
-          );
+          console.log(`[Scheduler] Retrying ${name} in ${Math.round(backoffMs / 1000)}s`);
           await this.sleep(backoffMs);
         } else {
           // Final failure
@@ -627,7 +683,9 @@ export class DataRefreshScheduler {
     }
 
     if (!isAsxTradingHours()) {
-      console.log('[Scheduler] Outside ASX trading hours (Mon-Fri 10am-4pm AEST) — skipping ASX refresh');
+      console.log(
+        '[Scheduler] Outside ASX trading hours (Mon-Fri 10am-4pm AEST) — skipping ASX refresh',
+      );
       return;
     }
 
@@ -649,9 +707,7 @@ export class DataRefreshScheduler {
 
     console.log('[Scheduler] Refreshing crypto prices...');
     const result = await this.deps.marketPriceService.refreshPrices();
-    console.log(
-      `[Scheduler] Crypto refresh done: ${result.cryptoUpdated ?? 0} crypto updated`,
-    );
+    console.log(`[Scheduler] Crypto refresh done: ${result.cryptoUpdated ?? 0} crypto updated`);
   }
 
   /**
@@ -663,7 +719,9 @@ export class DataRefreshScheduler {
       return;
     }
 
-    console.log(`[Scheduler] Refreshing sentiment for ${DEFAULT_SENTIMENT_TOPICS.length} topics...`);
+    console.log(
+      `[Scheduler] Refreshing sentiment for ${DEFAULT_SENTIMENT_TOPICS.length} topics...`,
+    );
     let successCount = 0;
     let errorCount = 0;
 
@@ -759,11 +817,7 @@ export class DataRefreshScheduler {
    * Generate upcoming dates for an event based on its frequency.
    * Returns the next `count` occurrences after `from`.
    */
-  private getUpcomingDates(
-    frequency: string,
-    from: Date,
-    count: number,
-  ): Date[] {
+  private getUpcomingDates(frequency: string, from: Date, count: number): Date[] {
     const dates: Date[] = [];
     const current = new Date(from);
 

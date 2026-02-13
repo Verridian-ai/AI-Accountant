@@ -42,7 +42,9 @@ function assertEqual<T>(actual: T, expected: T, message: string): void {
   } else {
     failed++;
     errors.push(`${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
-    console.error(`  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    console.error(
+      `  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+    );
   }
 }
 
@@ -71,11 +73,19 @@ function createMockDeps(): SchedulerDeps {
       fetchAllIndicators: async () => ({ indicators: [], dataflowsProcessed: 5, errors: [] }),
     },
     marketPriceService: {
-      refreshPrices: async () => ({ asxUpdated: 0, cryptoUpdated: 0, asxApiCallsRemaining: 25, errors: [] }),
+      refreshPrices: async () => ({
+        asxUpdated: 0,
+        cryptoUpdated: 0,
+        asxApiCallsRemaining: 25,
+        errors: [],
+      }),
     },
     sentimentService: {
       researchTopic: async (_topic: string) => ({ articles: [], summary: 'mock' }),
-      analyzeSentiment: async (_topic: string) => ({ sentimentScore: 0, sentimentLabel: 'neutral' }),
+      analyzeSentiment: async (_topic: string) => ({
+        sentimentScore: 0,
+        sentimentLabel: 'neutral',
+      }),
     },
     marketCogneeIndexer: {
       incrementalIndex: async (_since: string) => ({ totalIndexed: 0, errors: [] }),
@@ -175,8 +185,14 @@ describe('DataRefreshScheduler — SchedulerStatus shape validation', () => {
   for (const job of status.jobs) {
     assert(typeof job.name === 'string', `Job ${job.name} has name`);
     assert(typeof job.cron === 'string', `Job ${job.name} has cron expression`);
-    assert(job.lastStatus === null || typeof job.lastStatus === 'string', `Job ${job.name} lastStatus is null or string`);
-    assert(job.lastRun === null || typeof job.lastRun === 'string', `Job ${job.name} lastRun is null or string`);
+    assert(
+      job.lastStatus === null || typeof job.lastStatus === 'string',
+      `Job ${job.name} lastStatus is null or string`,
+    );
+    assert(
+      job.lastRun === null || typeof job.lastRun === 'string',
+      `Job ${job.name} lastRun is null or string`,
+    );
     assert(typeof job.nextRun === 'string', `Job ${job.name} has nextRun`);
     assert(typeof job.isEnabled === 'boolean', `Job ${job.name} isEnabled is boolean`);
     assert(typeof job.runCount === 'number', `Job ${job.name} runCount is number`);
@@ -230,7 +246,10 @@ describe('DataRefreshScheduler — Manual job trigger (invalid job)', async () =
   try {
     const result = await scheduler.triggerJob('nonexistent_job');
     assertEqual(result.success, false, 'Trigger of nonexistent job fails');
-    assert(result.error !== undefined && result.error.includes('not found'), 'Error mentions job not found');
+    assert(
+      result.error !== undefined && result.error.includes('not found'),
+      'Error mentions job not found',
+    );
   } catch (err: any) {
     assert(false, `Invalid trigger should return failure, not throw: ${err.message}`);
   }
@@ -340,7 +359,10 @@ describe('DataRefreshScheduler — Manual trigger updates job status', async () 
   if (rbaJob) {
     assertEqual(rbaJob.lastStatus, 'success', 'After trigger, lastStatus is success');
     assert(rbaJob.lastRun !== null, 'After trigger, lastRun is set');
-    assert(rbaJob.lastDurationMs !== null && (rbaJob.lastDurationMs ?? 0) >= 0, 'After trigger, lastDurationMs is set');
+    assert(
+      rbaJob.lastDurationMs !== null && (rbaJob.lastDurationMs ?? 0) >= 0,
+      'After trigger, lastDurationMs is set',
+    );
     assertEqual(rbaJob.runCount, 1, 'After trigger, runCount is 1');
     assertEqual(rbaJob.failCount, 0, 'After trigger, failCount is still 0');
   }
@@ -351,13 +373,15 @@ describe('DataRefreshScheduler — Manual trigger updates job status', async () 
 describe('DataRefreshScheduler — Trigger with failing handler', async () => {
   const failingDeps: SchedulerDeps = {
     rbaDataFeed: {
-      fetchAllTables: async () => { throw new Error('Network error'); },
+      fetchAllTables: async () => {
+        throw new Error('Network error');
+      },
     },
   };
 
   const scheduler = new DataRefreshScheduler(failingDeps, {
     enabled: true,
-    maxRetries: 1,  // Fast fail
+    maxRetries: 1, // Fast fail
     retryDelayMs: 10,
   });
 

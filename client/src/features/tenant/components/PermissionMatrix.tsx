@@ -30,8 +30,26 @@ type PermissionMap = Record<string, Record<string, boolean>>;
 const DEFAULTS: PermissionMap = {
   owner: Object.fromEntries(PERMISSIONS.map((p) => [p.key, true])),
   admin: Object.fromEntries(PERMISSIONS.map((p) => [p.key, p.key !== 'billing.manage'])),
-  accountant: Object.fromEntries(PERMISSIONS.map((p) => [p.key, !['members.manage', 'settings.manage', 'billing.manage', 'statements.delete'].includes(p.key)])),
-  bookkeeper: Object.fromEntries(PERMISSIONS.map((p) => [p.key, ['transactions.read', 'transactions.write', 'accounts.read', 'statements.upload', 'reports.read', 'gst.manage', 'ai.query'].includes(p.key)])),
+  accountant: Object.fromEntries(
+    PERMISSIONS.map((p) => [
+      p.key,
+      !['members.manage', 'settings.manage', 'billing.manage', 'statements.delete'].includes(p.key),
+    ]),
+  ),
+  bookkeeper: Object.fromEntries(
+    PERMISSIONS.map((p) => [
+      p.key,
+      [
+        'transactions.read',
+        'transactions.write',
+        'accounts.read',
+        'statements.upload',
+        'reports.read',
+        'gst.manage',
+        'ai.query',
+      ].includes(p.key),
+    ]),
+  ),
   viewer: Object.fromEntries(PERMISSIONS.map((p) => [p.key, p.system])),
 };
 
@@ -67,18 +85,21 @@ export function PermissionMatrix() {
       });
   }, [tenantId]);
 
-  const togglePermission = useCallback((role: string, permission: string) => {
-    if (role === 'owner') return; // Owner always has all perms
-    const perm = PERMISSIONS.find((p) => p.key === permission);
-    if (perm?.system && matrix[role]?.[permission]) return; // Can't remove system read perms
+  const togglePermission = useCallback(
+    (role: string, permission: string) => {
+      if (role === 'owner') return; // Owner always has all perms
+      const perm = PERMISSIONS.find((p) => p.key === permission);
+      if (perm?.system && matrix[role]?.[permission]) return; // Can't remove system read perms
 
-    setMatrix((prev) => {
-      const rolePerms = { ...(prev[role] ?? {}) };
-      rolePerms[permission] = !rolePerms[permission];
-      return { ...prev, [role]: rolePerms };
-    });
-    setModified((prev) => new Set([...prev, role]));
-  }, [matrix]);
+      setMatrix((prev) => {
+        const rolePerms = { ...(prev[role] ?? {}) };
+        rolePerms[permission] = !rolePerms[permission];
+        return { ...prev, [role]: rolePerms };
+      });
+      setModified((prev) => new Set([...prev, role]));
+    },
+    [matrix],
+  );
 
   const handleSave = async () => {
     if (!tenantId) return;
@@ -138,10 +159,17 @@ export function PermissionMatrix() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest min-w-[200px]">Permission</th>
+                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest min-w-[200px]">
+                  Permission
+                </th>
                 {ROLES.map((role) => (
                   <th key={role} className="text-center px-3 py-3 min-w-[100px]">
-                    <span className={cn('text-[10px] font-black uppercase tracking-widest', ROLE_COLORS[role])}>
+                    <span
+                      className={cn(
+                        'text-[10px] font-black uppercase tracking-widest',
+                        ROLE_COLORS[role],
+                      )}
+                    >
                       {role}
                     </span>
                   </th>
@@ -150,7 +178,10 @@ export function PermissionMatrix() {
             </thead>
             <tbody>
               {PERMISSIONS.map((perm) => (
-                <tr key={perm.key} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+                <tr
+                  key={perm.key}
+                  className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
+                >
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       {perm.system && <Lock className="w-3 h-3 text-[#FFCC00]" />}
@@ -177,7 +208,7 @@ export function PermissionMatrix() {
                                 : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
                               : granted
                                 ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                                : 'bg-zinc-800/30 text-zinc-600 hover:bg-zinc-700/30 hover:text-zinc-400'
+                                : 'bg-zinc-800/30 text-zinc-600 hover:bg-zinc-700/30 hover:text-zinc-400',
                           )}
                         >
                           {isLocked && granted ? (
@@ -199,9 +230,15 @@ export function PermissionMatrix() {
       </div>
 
       <div className="flex items-center gap-4 text-xs text-zinc-500">
-        <span className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-400" /> Granted</span>
-        <span className="flex items-center gap-1"><X className="w-3 h-3 text-zinc-600" /> Denied</span>
-        <span className="flex items-center gap-1"><Lock className="w-3 h-3 text-[#FFCC00]" /> System (immutable)</span>
+        <span className="flex items-center gap-1">
+          <Check className="w-3 h-3 text-emerald-400" /> Granted
+        </span>
+        <span className="flex items-center gap-1">
+          <X className="w-3 h-3 text-zinc-600" /> Denied
+        </span>
+        <span className="flex items-center gap-1">
+          <Lock className="w-3 h-3 text-[#FFCC00]" /> System (immutable)
+        </span>
       </div>
     </div>
   );

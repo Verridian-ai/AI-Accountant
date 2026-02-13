@@ -14,11 +14,7 @@ import {
   Line,
   Treemap as RechartsTreemap,
 } from 'recharts';
-import {
-  ChartContainer,
-  CHART_COLORS,
-  CHART_THEME,
-} from '@/components/charts';
+import { ChartContainer, CHART_COLORS, CHART_THEME } from '@/components/charts';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -85,7 +81,9 @@ function generateAssetValueOverTime(): AssetValuePoint[] {
   const data: AssetValuePoint[] = [];
   // Historical (actual values)
   const years = ['FY20', 'FY21', 'FY22', 'FY23', 'FY24', 'FY25'];
-  let equip = 120000, veh = 65000, prop = 480000;
+  let equip = 120000,
+    veh = 65000,
+    prop = 480000;
   for (const year of years) {
     data.push({
       year,
@@ -108,9 +106,9 @@ function generateAssetValueOverTime(): AssetValuePoint[] {
     prProj = Math.round(prProj * 0.975);
     data.push({
       year: fy,
-      equipment: fy === 'FY26' ? lastActual.equipment : undefined as unknown as number,
-      vehicles: fy === 'FY26' ? lastActual.vehicles : undefined as unknown as number,
-      property: fy === 'FY26' ? lastActual.property : undefined as unknown as number,
+      equipment: fy === 'FY26' ? lastActual.equipment : (undefined as unknown as number),
+      vehicles: fy === 'FY26' ? lastActual.vehicles : (undefined as unknown as number),
+      property: fy === 'FY26' ? lastActual.property : (undefined as unknown as number),
       equipmentProj: eqProj,
       vehiclesProj: vhProj,
       propertyProj: prProj,
@@ -156,11 +154,11 @@ const INVENTORY_CATEGORIES: TreeMapCategory[] = [
 ];
 
 function freshnessColor(days: number): string {
-  if (days <= 14) return '#22C55E';      // green — recent
-  if (days <= 30) return '#84CC16';      // lime
-  if (days <= 60) return '#F59E0B';      // amber
-  if (days <= 90) return '#F97316';      // orange
-  return '#EF4444';                       // red — overdue
+  if (days <= 14) return '#22C55E'; // green — recent
+  if (days <= 30) return '#84CC16'; // lime
+  if (days <= 60) return '#F59E0B'; // amber
+  if (days <= 90) return '#F97316'; // orange
+  return '#EF4444'; // red — overdue
 }
 
 // ─── Formatters ───────────────────────────────────────────
@@ -191,7 +189,7 @@ interface TreeMapContentProps {
   fill?: string;
 }
 
-function InventoryTreeMapContent(props: unknown) {
+function InventoryTreeMapContent(props: any) {
   const { x, y, width, height: h, name, value, fill } = props as TreeMapContentProps;
   if (width < 30 || h < 20) return null;
 
@@ -250,10 +248,7 @@ function DonutCenterLabel({ viewBox, total }: CenterLabelProps) {
 // ─── Component ────────────────────────────────────────────
 
 function InventoryValuationInner() {
-  const totalAssets = useMemo(
-    () => ASSET_ALLOCATION.reduce((s, a) => s + a.value, 0),
-    [],
-  );
+  const totalAssets = useMemo(() => ASSET_ALLOCATION.reduce((s, a) => s + a.value, 0), []);
 
   const totalDepreciation = useMemo(
     () => DEPRECIATION_SCHEDULE.reduce((s, a) => s + (a.originalCost - a.bookValue), 0),
@@ -278,7 +273,11 @@ function InventoryValuationInner() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Total Assets', value: formatAUD(totalAssets), color: 'text-[#FFCC00]' },
-          { label: 'Total Depreciation', value: formatAUD(totalDepreciation), color: 'text-red-400' },
+          {
+            label: 'Total Depreciation',
+            value: formatAUD(totalDepreciation),
+            color: 'text-red-400',
+          },
           { label: 'Net Book Value', value: formatAUD(totalBookValue), color: 'text-emerald-400' },
           { label: 'Dep. Expense YTD', value: formatAUD(depExpenseYTD), color: 'text-amber-400' },
         ].map((item) => (
@@ -326,7 +325,7 @@ function InventoryValuationInner() {
             />
             <Tooltip
               contentStyle={CHART_THEME.tooltipStyle}
-              formatter={(value: number) => [formatAUD(value), '']}
+              formatter={((value: number) => [formatAUD(value), '']) as any}
             />
             <Legend
               wrapperStyle={{ color: '#E5E7EB', fontSize: CHART_THEME.fontSize }}
@@ -425,18 +424,20 @@ function InventoryValuationInner() {
             <Tooltip
               contentStyle={CHART_THEME.tooltipStyle}
               labelStyle={{ color: CHART_COLORS.primary }}
-              formatter={(value: number | undefined, name: string) => {
-                if (value == null) return ['-', name];
-                const labels: Record<string, string> = {
-                  equipment: 'Equipment',
-                  vehicles: 'Vehicles',
-                  property: 'Property',
-                  equipmentProj: 'Equipment (Proj)',
-                  vehiclesProj: 'Vehicles (Proj)',
-                  propertyProj: 'Property (Proj)',
-                };
-                return [formatAUD(value), labels[name] ?? name];
-              }}
+              formatter={
+                ((value: number | undefined, name: string) => {
+                  if (value == null) return ['-', name];
+                  const labels: Record<string, string> = {
+                    equipment: 'Equipment',
+                    vehicles: 'Vehicles',
+                    property: 'Property',
+                    equipmentProj: 'Equipment (Proj)',
+                    vehiclesProj: 'Vehicles (Proj)',
+                    propertyProj: 'Property (Proj)',
+                  };
+                  return [formatAUD(value), labels[name] ?? name];
+                }) as any
+              }
             />
             <Legend
               wrapperStyle={{ color: '#E5E7EB', fontSize: CHART_THEME.fontSize }}
@@ -549,20 +550,13 @@ function InventoryValuationInner() {
             dataKey="value"
             aspectRatio={4 / 3}
             animationDuration={500}
-            content={
-              <InventoryTreeMapContent
-                x={0}
-                y={0}
-                width={0}
-                height={0}
-              />
-            }
+            content={(<InventoryTreeMapContent x={0} y={0} width={0} height={0} />) as any}
           >
             <Tooltip
               contentStyle={CHART_THEME.tooltipStyle}
-              formatter={(value: number) => [formatAUD(value), '']}
+              formatter={((value: number) => [formatAUD(value), '']) as any}
             />
-          </RechartsTreemap>
+          </RechartsTreemap>{' '}
         </ChartContainer>
       </div>
     </div>

@@ -15,10 +15,7 @@ import { cogneeTools, COGNEE_DATASETS } from '../cognee-tools.js';
 import { bankReconciliationService } from '../../bank-reconciliation.js';
 import type { BankReconAgentInput, BankReconAgentOutput } from '../types.js';
 
-export class BankReconcilerAgent extends ClaudeAgent<
-  BankReconAgentInput,
-  BankReconAgentOutput
-> {
+export class BankReconcilerAgent extends ClaudeAgent<BankReconAgentInput, BankReconAgentOutput> {
   protected systemPrompt = `You are an Australian bank reconciliation specialist. You help businesses match bank statement transactions against their internal accounting ledger entries. You understand Australian banking conventions (BSB/account numbers, BPAY references, direct debit patterns, EFT descriptions). You score match confidence using amount proximity, date proximity, and description similarity. When uncertain, you flag transactions for manual review rather than making incorrect matches. All amounts are in AUD cents internally.
 
 Key rules:
@@ -50,8 +47,7 @@ Use the available tools to find matches, score them, and apply actions. Return a
           userId: { type: 'string', description: 'User ID' },
           bankTransactionId: {
             type: 'string',
-            description:
-              'Optional: specific bank transaction to find matches for',
+            description: 'Optional: specific bank transaction to find matches for',
           },
         },
         required: ['sessionId', 'userId'],
@@ -101,8 +97,7 @@ Use the available tools to find matches, score them, and apply actions. Return a
     },
     {
       name: 'apply_matching_rules',
-      description:
-        'Confirm, reject, or undo a match in the reconciliation session.',
+      description: 'Confirm, reject, or undo a match in the reconciliation session.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -130,8 +125,7 @@ Use the available tools to find matches, score them, and apply actions. Return a
         properties: {
           query: {
             type: 'string',
-            description:
-              'Search query for reconciliation patterns or matching rules',
+            description: 'Search query for reconciliation patterns or matching rules',
           },
         },
         required: ['query'],
@@ -139,10 +133,7 @@ Use the available tools to find matches, score them, and apply actions. Return a
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'find_matches',
       async (input) => {
@@ -153,11 +144,10 @@ Use the available tools to find matches, score them, and apply actions. Return a
         try {
           if (bankTransactionId) {
             // Suggest matches for a specific bank transaction
-            const suggestions =
-              await bankReconciliationService.suggestMatches(
-                sessionId,
-                bankTransactionId,
-              );
+            const suggestions = await bankReconciliationService.suggestMatches(
+              sessionId,
+              bankTransactionId,
+            );
             return {
               mode: 'suggest',
               bankTransactionId,
@@ -169,10 +159,7 @@ Use the available tools to find matches, score them, and apply actions. Return a
             };
           } else {
             // Auto-match entire session
-            const result = await bankReconciliationService.autoMatch(
-              sessionId,
-              userId,
-            );
+            const result = await bankReconciliationService.autoMatch(sessionId, userId);
             return {
               mode: 'auto',
               matched: result.matched,
@@ -182,10 +169,7 @@ Use the available tools to find matches, score them, and apply actions. Return a
           }
         } catch (err) {
           return {
-            error:
-              err instanceof Error
-                ? err.message
-                : 'Failed to find matches',
+            error: err instanceof Error ? err.message : 'Failed to find matches',
           };
         }
       },
@@ -223,18 +207,25 @@ Use the available tools to find matches, score them, and apply actions. Return a
 
         // Description scoring (keyword overlap)
         const bankWords = new Set(
-          bankDescription.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean),
+          bankDescription
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .split(/\s+/)
+            .filter(Boolean),
         );
         const ledgerWords = new Set(
-          ledgerReference.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean),
+          ledgerReference
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .split(/\s+/)
+            .filter(Boolean),
         );
         const intersection = [...bankWords].filter((w) => ledgerWords.has(w));
         const union = new Set([...bankWords, ...ledgerWords]);
         const descriptionScore = union.size > 0 ? intersection.length / union.size : 0;
 
         // Combined score (weighted)
-        const combinedScore =
-          amountScore * 0.5 + dateScore * 0.3 + descriptionScore * 0.2;
+        const combinedScore = amountScore * 0.5 + dateScore * 0.3 + descriptionScore * 0.2;
 
         return {
           amountScore: Math.round(amountScore * 100) / 100,
@@ -259,10 +250,7 @@ Use the available tools to find matches, score them, and apply actions. Return a
         try {
           switch (action) {
             case 'confirm': {
-              const match = await bankReconciliationService.confirmMatch(
-                matchId,
-                userId,
-              );
+              const match = await bankReconciliationService.confirmMatch(matchId, userId);
               return {
                 success: true,
                 action: 'confirmed',
@@ -283,10 +271,7 @@ Use the available tools to find matches, score them, and apply actions. Return a
           }
         } catch (err) {
           return {
-            error:
-              err instanceof Error
-                ? err.message
-                : 'Failed to apply matching rule',
+            error: err instanceof Error ? err.message : 'Failed to apply matching rule',
           };
         }
       },

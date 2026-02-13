@@ -71,39 +71,42 @@ export function CategorySelect({
     }
   }, [highlightIndex]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!open) {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        setOpen(true);
-        setHighlightIndex(allOptions.indexOf(value));
-      }
-      return;
-    }
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setHighlightIndex((prev) => Math.min(prev + 1, allOptions.length - 1));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setHighlightIndex((prev) => Math.max(prev - 1, 0));
-        break;
-      case 'Enter':
-      case ' ':
-        e.preventDefault();
-        if (highlightIndex >= 0 && allOptions[highlightIndex]) {
-          onChange(allOptions[highlightIndex]);
-          setOpen(false);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!open) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setOpen(true);
+          setHighlightIndex(allOptions.indexOf(value));
         }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setOpen(false);
-        break;
-    }
-  }, [open, highlightIndex, allOptions, value, onChange]);
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setHighlightIndex((prev) => Math.min(prev + 1, allOptions.length - 1));
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setHighlightIndex((prev) => Math.max(prev - 1, 0));
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          if (highlightIndex >= 0 && allOptions[highlightIndex]) {
+            onChange(allOptions[highlightIndex]);
+            setOpen(false);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          setOpen(false);
+          break;
+      }
+    },
+    [open, highlightIndex, allOptions, value, onChange],
+  );
 
   return (
     <div ref={containerRef} className="relative">
@@ -118,17 +121,19 @@ export function CategorySelect({
         className={cn(
           'w-full neu-inset rounded-xl text-[#FFCC00] font-bold bg-transparent border-none focus-gold cursor-pointer pr-10 text-left flex items-center gap-2',
           sizeClasses[size],
-          className
+          className,
         )}
       >
         {selectedColor && (
           <span className={cn('w-2 h-2 rounded-full shrink-0', selectedColor.dot)} />
         )}
         <span className="truncate">{value || 'Select...'}</span>
-        <ChevronDown className={cn(
-          'absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#FFCC00]/50 transition-transform',
-          open && 'rotate-180'
-        )} />
+        <ChevronDown
+          className={cn(
+            'absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#FFCC00]/50 transition-transform',
+            open && 'rotate-180',
+          )}
+        />
       </button>
 
       {open && (
@@ -145,10 +150,15 @@ export function CategorySelect({
               aria-selected={value === 'All'}
               className={cn(
                 'px-4 py-2.5 text-xs font-bold cursor-pointer transition-colors',
-                value === 'All' ? 'text-[#FFCC00] bg-[#FFCC00]/5' : 'text-zinc-300 hover:bg-white/5',
-                highlightIndex === 0 && 'bg-white/10'
+                value === 'All'
+                  ? 'text-[#FFCC00] bg-[#FFCC00]/5'
+                  : 'text-zinc-300 hover:bg-white/5',
+                highlightIndex === 0 && 'bg-white/10',
               )}
-              onClick={() => { onChange('All'); setOpen(false); }}
+              onClick={() => {
+                onChange('All');
+                setOpen(false);
+              }}
             >
               All Categories
             </li>
@@ -172,10 +182,15 @@ export function CategorySelect({
                       aria-selected={value === cat}
                       className={cn(
                         'px-4 py-2 text-xs font-bold cursor-pointer transition-colors flex items-center gap-2',
-                        value === cat ? 'text-[#FFCC00] bg-[#FFCC00]/5' : 'text-zinc-300 hover:bg-white/5',
-                        highlightIndex === flatIndex && 'bg-white/10'
+                        value === cat
+                          ? 'text-[#FFCC00] bg-[#FFCC00]/5'
+                          : 'text-zinc-300 hover:bg-white/5',
+                        highlightIndex === flatIndex && 'bg-white/10',
                       )}
-                      onClick={() => { onChange(cat); setOpen(false); }}
+                      onClick={() => {
+                        onChange(cat);
+                        setOpen(false);
+                      }}
                     >
                       <span className={cn('w-2 h-2 rounded-full shrink-0', color.dot)} />
                       {cat}
@@ -191,21 +206,12 @@ export function CategorySelect({
   );
 }
 
-export function CategorySelectWithBadge({
-  value,
-  onChange,
-  ...props
-}: CategorySelectProps) {
+export function CategorySelectWithBadge({ value, onChange, ...props }: CategorySelectProps) {
   const color = getCategoryColor(value || 'Uncategorized');
 
   return (
     <div className="flex items-center gap-2">
-      <div
-        className={cn(
-          'w-3 h-3 rounded-full shrink-0',
-          color.dot
-        )}
-      />
+      <div className={cn('w-3 h-3 rounded-full shrink-0', color.dot)} />
       <CategorySelect value={value} onChange={onChange} {...props} />
     </div>
   );

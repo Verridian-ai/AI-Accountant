@@ -4,12 +4,7 @@
  * Handles Westpac transaction account, savings, and credit card statements.
  */
 
-import {
-  BankParserConfig,
-  ParsedTransaction,
-  AccountInfo,
-  AccountType,
-} from '../types';
+import { BankParserConfig, ParsedTransaction, AccountInfo, AccountType } from '../types';
 import { BaseBankParser, parseDate, parseAmount } from '../base-parser';
 
 /**
@@ -40,34 +35,31 @@ const WESTPAC_CONFIG: BankParserConfig = {
   transactionPatterns: {
     datePattern: /(\d{1,2}\/\d{1,2}\/\d{2,4})/,
     amountPattern: /\$?([\d,]+\.\d{2})/,
-    transactionLinePattern:
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})/,
+    transactionLinePattern: /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})/,
     debitIndicators: ['-', 'DR'],
     creditIndicators: ['+', 'CR'],
     separateDebitCreditColumns: true,
   },
 
   accountTypes: {
-    'Choice': 'transaction',
-    'Everyday': 'transaction',
-    'Life': 'savings',
-    'eSaver': 'savings',
-    'Bump': 'savings',
-    'Altitude': 'credit',
+    Choice: 'transaction',
+    Everyday: 'transaction',
+    Life: 'savings',
+    eSaver: 'savings',
+    Bump: 'savings',
+    Altitude: 'credit',
     'Low Rate': 'credit',
-    'Mastercard': 'credit',
+    Mastercard: 'credit',
     'Business One': 'business',
-    'Offset': 'offset',
+    Offset: 'offset',
   },
 
   periodPatterns: [
     /Statement\s+Period[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})\s*(?:to|-)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i,
   ],
 
-  openingBalancePattern:
-    /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
-  closingBalancePattern:
-    /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  openingBalancePattern: /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  closingBalancePattern: /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
 };
 
 /**
@@ -95,10 +87,7 @@ export class WestpacParser extends BaseBankParser {
         continue;
       }
 
-      if (
-        inTransactionSection &&
-        /^\s*(?:Closing|Total)\s+/i.test(line)
-      ) {
+      if (inTransactionSection && /^\s*(?:Closing|Total)\s+/i.test(line)) {
         inTransactionSection = false;
         continue;
       }
@@ -119,14 +108,11 @@ export class WestpacParser extends BaseBankParser {
   /**
    * Parse a single transaction line
    */
-  private parseTransactionLine(
-    line: string,
-    lineNumber: number
-  ): ParsedTransaction | null {
+  private parseTransactionLine(line: string, lineNumber: number): ParsedTransaction | null {
     // Westpac may have separate debit/credit columns
     // Format: DD/MM/YYYY Description Debit Credit Balance
     const match = line.match(
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})?\s*(-?\$?[\d,]+\.\d{2})?\s*(-?\$?[\d,]+\.\d{2})?$/
+      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})?\s*(-?\$?[\d,]+\.\d{2})?\s*(-?\$?[\d,]+\.\d{2})?$/,
     );
 
     if (!match) {
@@ -149,7 +135,7 @@ export class WestpacParser extends BaseBankParser {
       const debit = parseAmount(values[0]);
       const credit = parseAmount(values[1]);
       balance = parseAmount(values[2]) ?? undefined;
-      amount = debit && debit !== 0 ? -Math.abs(debit) : credit ?? 0;
+      amount = debit && debit !== 0 ? -Math.abs(debit) : (credit ?? 0);
     } else if (values.length === 2) {
       // Amount, Balance
       amount = parseAmount(values[0]);
@@ -186,9 +172,7 @@ export class WestpacParser extends BaseBankParser {
     let periodEnd: string | undefined;
 
     // Extract BSB and account number
-    const bsbMatch = pdfText.match(
-      /BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i
-    );
+    const bsbMatch = pdfText.match(/BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i);
     if (bsbMatch) {
       bsb = bsbMatch[1].replace(/\s|-/g, '');
       accountNumber = bsbMatch[2];
@@ -196,9 +180,7 @@ export class WestpacParser extends BaseBankParser {
 
     // Westpac account number format
     if (!accountNumber) {
-      const accMatch = pdfText.match(
-        /Account\s*(?:Number|No\.?)[\s:]*(\d{6}\s*\d{6})/i
-      );
+      const accMatch = pdfText.match(/Account\s*(?:Number|No\.?)[\s:]*(\d{6}\s*\d{6})/i);
       if (accMatch) {
         accountNumber = accMatch[1].replace(/\s/g, '');
       }
@@ -246,9 +228,7 @@ export class WestpacParser extends BaseBankParser {
       openingBalance,
       closingBalance,
       statementPeriod:
-        periodStart && periodEnd
-          ? { start: periodStart, end: periodEnd }
-          : undefined,
+        periodStart && periodEnd ? { start: periodStart, end: periodEnd } : undefined,
     };
   }
 }

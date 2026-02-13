@@ -114,17 +114,21 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
         if (l.lineId !== lineId) return l;
         const clamped = Math.max(0, Math.min(qty, l.maxReceivable));
         return { ...l, receivingNow: clamped };
-      })
+      }),
     );
   };
 
   const totalReceivingNow = lines.reduce((sum, l) => sum + l.receivingNow, 0);
-  const linesFullyReceived = lines.filter((l) => l.previouslyReceived + l.receivingNow >= l.orderedQty).length;
+  const linesFullyReceived = lines.filter(
+    (l) => l.previouslyReceived + l.receivingNow >= l.orderedQty,
+  ).length;
   const linesPartial = lines.filter((l) => {
     const total = l.previouslyReceived + l.receivingNow;
     return total > 0 && total < l.orderedQty;
   }).length;
-  const linesOutstanding = lines.filter((l) => l.previouslyReceived + l.receivingNow === 0 && l.orderedQty > 0).length;
+  const linesOutstanding = lines.filter(
+    (l) => l.previouslyReceived + l.receivingNow === 0 && l.orderedQty > 0,
+  ).length;
 
   const handleRecordReceipt = async () => {
     if (totalReceivingNow === 0) {
@@ -190,11 +194,15 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
           <h2 className="text-xl font-bold text-white">Goods Receiving</h2>
           <p className="text-xs text-zinc-500 mt-0.5 font-mono">{po.poNumber}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-          po.status === 'received' ? 'bg-emerald-400/10 text-emerald-400' :
-          po.status === 'partially_received' ? 'bg-amber-400/10 text-amber-400' :
-          'bg-blue-400/10 text-blue-400'
-        }`}>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-medium ${
+            po.status === 'received'
+              ? 'bg-emerald-400/10 text-emerald-400'
+              : po.status === 'partially_received'
+                ? 'bg-amber-400/10 text-amber-400'
+                : 'bg-blue-400/10 text-blue-400'
+          }`}
+        >
           {po.status.replace('_', ' ')}
         </span>
       </div>
@@ -208,11 +216,15 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
           </div>
           <div>
             <span className="text-zinc-500 text-xs">Issue Date</span>
-            <p className="text-white">{po.issueDate ? new Date(po.issueDate).toLocaleDateString('en-AU') : '—'}</p>
+            <p className="text-white">
+              {po.issueDate ? new Date(po.issueDate).toLocaleDateString('en-AU') : '—'}
+            </p>
           </div>
           <div>
             <span className="text-zinc-500 text-xs">Expected Delivery</span>
-            <p className="text-white">{po.expectedDate ? new Date(po.expectedDate).toLocaleDateString('en-AU') : '—'}</p>
+            <p className="text-white">
+              {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString('en-AU') : '—'}
+            </p>
           </div>
           <div>
             <span className="text-zinc-500 text-xs">PO Total</span>
@@ -245,11 +257,21 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/5 bg-white/[0.02]">
-                <th className="text-left px-4 py-2 text-xs font-semibold text-zinc-400">Description</th>
-                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">Ordered</th>
-                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">Prev Recv</th>
-                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400 w-28">Receiving Now</th>
-                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">Unit Price</th>
+                <th className="text-left px-4 py-2 text-xs font-semibold text-zinc-400">
+                  Description
+                </th>
+                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">
+                  Ordered
+                </th>
+                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">
+                  Prev Recv
+                </th>
+                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400 w-28">
+                  Receiving Now
+                </th>
+                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">
+                  Unit Price
+                </th>
                 <th className="text-right px-4 py-2 text-xs font-semibold text-zinc-400">Amount</th>
               </tr>
             </thead>
@@ -264,8 +286,12 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
                     }`}
                   >
                     <td className="px-4 py-3 text-sm text-white">{line.description}</td>
-                    <td className="px-3 py-3 text-sm text-zinc-400 text-right">{line.orderedQty}</td>
-                    <td className="px-3 py-3 text-sm text-zinc-400 text-right">{line.previouslyReceived}</td>
+                    <td className="px-3 py-3 text-sm text-zinc-400 text-right">
+                      {line.orderedQty}
+                    </td>
+                    <td className="px-3 py-3 text-sm text-zinc-400 text-right">
+                      {line.previouslyReceived}
+                    </td>
                     <td className="px-3 py-3">
                       <input
                         type="number"
@@ -374,13 +400,20 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
           <div className="flex items-center gap-2 mb-4">
             <FileText className="h-4 w-4 text-[#FFCC00]" />
             <h3 className="text-sm font-semibold text-zinc-300">Three-Way Match</h3>
-            <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium ${
-              threeWay.status === 'matched' ? 'bg-emerald-400/10 text-emerald-400' :
-              threeWay.status === 'partial' ? 'bg-amber-400/10 text-amber-400' :
-              'bg-red-400/10 text-red-400'
-            }`}>
-              {threeWay.status === 'matched' ? 'Matched' :
-               threeWay.status === 'partial' ? 'Partial Match' : 'Discrepancy'}
+            <span
+              className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium ${
+                threeWay.status === 'matched'
+                  ? 'bg-emerald-400/10 text-emerald-400'
+                  : threeWay.status === 'partial'
+                    ? 'bg-amber-400/10 text-amber-400'
+                    : 'bg-red-400/10 text-red-400'
+              }`}
+            >
+              {threeWay.status === 'matched'
+                ? 'Matched'
+                : threeWay.status === 'partial'
+                  ? 'Partial Match'
+                  : 'Discrepancy'}
             </span>
           </div>
 
@@ -392,11 +425,15 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
             </div>
             <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
               <p className="text-xs text-zinc-500 mb-1">Receipt Total</p>
-              <p className="text-sm font-semibold text-white">{formatCurrency(threeWay.receiptTotal)}</p>
+              <p className="text-sm font-semibold text-white">
+                {formatCurrency(threeWay.receiptTotal)}
+              </p>
             </div>
             <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
               <p className="text-xs text-zinc-500 mb-1">Bill Total</p>
-              <p className="text-sm font-semibold text-white">{formatCurrency(threeWay.billTotal)}</p>
+              <p className="text-sm font-semibold text-white">
+                {formatCurrency(threeWay.billTotal)}
+              </p>
             </div>
           </div>
 
@@ -414,7 +451,10 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
               </thead>
               <tbody>
                 {threeWay.lines.map((l, idx) => (
-                  <tr key={idx} className={`border-b border-white/5 ${!l.matched ? 'bg-red-500/[0.03]' : ''}`}>
+                  <tr
+                    key={idx}
+                    className={`border-b border-white/5 ${!l.matched ? 'bg-red-500/[0.03]' : ''}`}
+                  >
                     <td className="px-3 py-2 text-zinc-300">{l.description}</td>
                     <td className="px-3 py-2 text-right text-zinc-400">{l.poQty}</td>
                     <td className="px-3 py-2 text-right text-zinc-400">{l.receivedQty}</td>

@@ -245,11 +245,7 @@ export class SupplierService {
     await ensureTables();
     if (!_suppliers) return null;
 
-    const row = await db
-      .select()
-      .from(_suppliers)
-      .where(eq(_suppliers.id, supplierId))
-      .get();
+    const row = await db.select().from(_suppliers).where(eq(_suppliers.id, supplierId)).get();
 
     if (!row) return null;
 
@@ -359,9 +355,7 @@ export class SupplierService {
     const now = new Date().toISOString();
 
     // Encrypt bank account number before storage
-    const encryptedAccountNumber = data.bankAccountNumber
-      ? encrypt(data.bankAccountNumber)
-      : null;
+    const encryptedAccountNumber = data.bankAccountNumber ? encrypt(data.bankAccountNumber) : null;
 
     const record: any = {
       id,
@@ -397,11 +391,7 @@ export class SupplierService {
     await ensureTables();
     if (!_suppliers) throw new Error('Suppliers table not available');
 
-    const existing = await db
-      .select()
-      .from(_suppliers)
-      .where(eq(_suppliers.id, supplierId))
-      .get();
+    const existing = await db.select().from(_suppliers).where(eq(_suppliers.id, supplierId)).get();
 
     if (!existing) {
       throw new Error(`Supplier ${supplierId} not found`);
@@ -428,7 +418,8 @@ export class SupplierService {
     if (data.email !== undefined) updates.email = data.email;
     if (data.phone !== undefined) updates.phone = data.phone;
     if (data.address !== undefined) updates.address = data.address;
-    if (data.abn !== undefined) updates.abn = data.abn ? (normalizeABN(data.abn) ?? data.abn) : null;
+    if (data.abn !== undefined)
+      updates.abn = data.abn ? (normalizeABN(data.abn) ?? data.abn) : null;
     if (data.paymentTermsDays !== undefined) updates.paymentTermsDays = data.paymentTermsDays;
     if (data.bankBsb !== undefined) updates.bankBsb = data.bankBsb;
     if (data.bankAccountName !== undefined) updates.bankAccountName = data.bankAccountName;
@@ -436,25 +427,15 @@ export class SupplierService {
 
     // Re-encrypt bank account number if changed
     if (data.bankAccountNumber !== undefined) {
-      updates.bankAccountNumber = data.bankAccountNumber
-        ? encrypt(data.bankAccountNumber)
-        : null;
+      updates.bankAccountNumber = data.bankAccountNumber ? encrypt(data.bankAccountNumber) : null;
     }
 
     if (Object.keys(updates).length > 0) {
-      await db
-        .update(_suppliers)
-        .set(updates)
-        .where(eq(_suppliers.id, supplierId))
-        .run();
+      await db.update(_suppliers).set(updates).where(eq(_suppliers.id, supplierId)).run();
     }
 
     // Re-fetch and return
-    const updated = await db
-      .select()
-      .from(_suppliers)
-      .where(eq(_suppliers.id, supplierId))
-      .get();
+    const updated = await db.select().from(_suppliers).where(eq(_suppliers.id, supplierId)).get();
 
     return this.rowToSupplier(updated, true);
   }
@@ -467,11 +448,7 @@ export class SupplierService {
     await ensureTables();
     if (!_suppliers) throw new Error('Suppliers table not available');
 
-    const existing = await db
-      .select()
-      .from(_suppliers)
-      .where(eq(_suppliers.id, supplierId))
-      .get();
+    const existing = await db.select().from(_suppliers).where(eq(_suppliers.id, supplierId)).get();
 
     if (!existing) {
       throw new Error(`Supplier ${supplierId} not found`);
@@ -499,16 +476,14 @@ export class SupplierService {
       const outstandingCount = Number(outstandingResult?.count ?? 0);
       if (outstandingCount > 0) {
         warning = `Supplier has ${outstandingCount} outstanding bill(s). Archiving will not affect existing bills.`;
-        logger.warn(`[Suppliers] Archiving supplier ${supplierId} with ${outstandingCount} outstanding bills`);
+        logger.warn(
+          `[Suppliers] Archiving supplier ${supplierId} with ${outstandingCount} outstanding bills`,
+        );
       }
     }
 
     // Soft delete — set isActive = false
-    await db
-      .update(_suppliers)
-      .set({ isActive: false })
-      .where(eq(_suppliers.id, supplierId))
-      .run();
+    await db.update(_suppliers).set({ isActive: false }).where(eq(_suppliers.id, supplierId)).run();
 
     return { archived: true, warning };
   }
@@ -554,11 +529,7 @@ export class SupplierService {
     await ensureTables();
     if (!_suppliers) return null;
 
-    const row = await db
-      .select()
-      .from(_suppliers)
-      .where(eq(_suppliers.id, supplierId))
-      .get();
+    const row = await db.select().from(_suppliers).where(eq(_suppliers.id, supplierId)).get();
 
     if (!row) return null;
 
@@ -613,7 +584,10 @@ export class SupplierService {
       }
     } catch (err) {
       // ABR may be temporarily unavailable — warn but allow creation
-      logger.warn(`[Suppliers] ABR lookup failed for ABN ${abn} — proceeding without verification`, err);
+      logger.warn(
+        `[Suppliers] ABR lookup failed for ABN ${abn} — proceeding without verification`,
+        err,
+      );
     }
 
     return { valid: true, businessName };

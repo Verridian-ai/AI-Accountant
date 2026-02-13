@@ -13,22 +13,45 @@ import type { CategorizerInput, CategorizerOutput, TokenUsage } from '../types.j
 
 // Category taxonomy — kept in sync with client/src/features/transactions/constants/categories.ts
 const CATEGORY_TAXONOMY = [
-  'Salary & Wages', 'Business Income', 'Investment Income', 'Government Benefits',
-  'Rental Income', 'Other Income', 'Groceries', 'Dining & Takeaway',
-  'Transport', 'Fuel', 'Utilities', 'Rent', 'Mortgage',
-  'Insurance', 'Medical & Health', 'Education', 'Entertainment',
-  'Clothing & Personal', 'Home & Garden', 'Subscriptions',
-  'Phone & Internet', 'Professional Fees', 'Office Supplies',
-  'Travel', 'Charity & Donations', 'Childcare', 'Pet Care',
-  'Bank Fees', 'Interest Charged', 'Interest Earned', 'Tax',
-  'Superannuation', 'Transfer', 'Cash Withdrawal', 'Refund',
+  'Salary & Wages',
+  'Business Income',
+  'Investment Income',
+  'Government Benefits',
+  'Rental Income',
+  'Other Income',
+  'Groceries',
+  'Dining & Takeaway',
+  'Transport',
+  'Fuel',
+  'Utilities',
+  'Rent',
+  'Mortgage',
+  'Insurance',
+  'Medical & Health',
+  'Education',
+  'Entertainment',
+  'Clothing & Personal',
+  'Home & Garden',
+  'Subscriptions',
+  'Phone & Internet',
+  'Professional Fees',
+  'Office Supplies',
+  'Travel',
+  'Charity & Donations',
+  'Childcare',
+  'Pet Care',
+  'Bank Fees',
+  'Interest Charged',
+  'Interest Earned',
+  'Tax',
+  'Superannuation',
+  'Transfer',
+  'Cash Withdrawal',
+  'Refund',
   'Uncategorized',
 ];
 
-export class TransactionCategorizerAgent extends ClaudeAgent<
-  CategorizerInput,
-  CategorizerOutput
-> {
+export class TransactionCategorizerAgent extends ClaudeAgent<CategorizerInput, CategorizerOutput> {
   protected systemPrompt = `You are an Australian financial transaction categorizer. Categorize bank transactions into the correct category from the provided taxonomy. Consider merchant memory (previous categorizations of the same merchant), transaction description patterns, and amount ranges.
 
 For each transaction, return a category, confidence score, GST category, and reasoning notes.
@@ -46,8 +69,7 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
   protected tools: Anthropic.Tool[] = [
     {
       name: 'lookup_merchant_memory',
-      description:
-        'Check if a merchant was previously categorized in merchant memory.',
+      description: 'Check if a merchant was previously categorized in merchant memory.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -61,8 +83,7 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
     },
     {
       name: 'search_similar_transactions',
-      description:
-        'Find similar past transactions via Cognee knowledge graph.',
+      description: 'Find similar past transactions via Cognee knowledge graph.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -117,10 +138,7 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
     gst: boolean;
   }> = [];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'lookup_merchant_memory',
       async (input) => {
@@ -192,7 +210,7 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
         // Propose mutations for categorized transactions
         if (this.mutationTools) {
           const categorizedSuggestions = suggestions.filter(
-            (s) => s.suggestedCategory != null && s.confidence > 0
+            (s) => s.suggestedCategory != null && s.confidence > 0,
           );
           if (categorizedSuggestions.length > 0) {
             try {
@@ -234,10 +252,12 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
 
     // Learning loop: store high-confidence categorizations back to Cognee
     // so future runs benefit from merchant memory.
-    const highConfidenceResults = output.results.filter(r => r.confidence >= 0.8 && r.merchantKey);
+    const highConfidenceResults = output.results.filter(
+      (r) => r.confidence >= 0.8 && r.merchantKey,
+    );
     if (highConfidenceResults.length > 0) {
       // Build a lookup from input transactions for descriptions
-      const txMap = new Map(input.transactions.map(tx => [tx.id, tx]));
+      const txMap = new Map(input.transactions.map((tx) => [tx.id, tx]));
 
       for (const result of highConfidenceResults) {
         const tx = txMap.get(result.transactionId);
@@ -246,12 +266,12 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
         const gstApplicable = result.gstCategory === 'gst_applicable';
         try {
           await cogneeClient.storeMerchantMapping(
-            result.merchantKey!,        // abbreviated name (merchant key)
-            result.merchantKey!,        // canonical name (use merchant key as best available)
-            undefined,                  // abn
+            result.merchantKey!, // abbreviated name (merchant key)
+            result.merchantKey!, // canonical name (use merchant key as best available)
+            undefined, // abn
             gstApplicable,
-            undefined,                  // industry
-            result.category             // default category
+            undefined, // industry
+            result.category, // default category
           );
         } catch {
           // Non-fatal: don't break categorization if Cognee store fails
@@ -261,7 +281,9 @@ Return a JSON object matching the CategorizerOutput schema with "results" and "l
 
     // Propose category update mutations for all categorized results
     if (this.mutationTools) {
-      const categorizedResults = output.results.filter(r => r.category && r.category !== 'Uncategorized');
+      const categorizedResults = output.results.filter(
+        (r) => r.category && r.category !== 'Uncategorized',
+      );
       if (categorizedResults.length > 0) {
         try {
           const proposals = categorizedResults.map((r) => ({

@@ -94,9 +94,31 @@ const accounts = sqliteTable('accounts', {
 // TYPES
 // ============================================================================
 
-export type EntityType = 'sole_trader' | 'company' | 'trust' | 'partnership' | 'smsf' | 'individual';
-export type AccountRole = 'operating' | 'savings' | 'loan' | 'offset' | 'credit_card' | 'investment' | 'trust' | 'super';
-export type InterEntityTransactionType = 'loan' | 'management_fee' | 'dividend' | 'distribution' | 'rent' | 'service_fee' | 'asset_transfer' | 'capital_contribution';
+export type EntityType =
+  | 'sole_trader'
+  | 'company'
+  | 'trust'
+  | 'partnership'
+  | 'smsf'
+  | 'individual';
+export type AccountRole =
+  | 'operating'
+  | 'savings'
+  | 'loan'
+  | 'offset'
+  | 'credit_card'
+  | 'investment'
+  | 'trust'
+  | 'super';
+export type InterEntityTransactionType =
+  | 'loan'
+  | 'management_fee'
+  | 'dividend'
+  | 'distribution'
+  | 'rent'
+  | 'service_fee'
+  | 'asset_transfer'
+  | 'capital_contribution';
 export type InterEntityStatus = 'pending' | 'confirmed' | 'eliminated' | 'disputed';
 
 export interface Entity {
@@ -180,7 +202,6 @@ function validateACN(acn: string): boolean {
 // ============================================================================
 
 export class MultiEntityService {
-
   /**
    * Create a new entity with default settings based on entity type.
    */
@@ -214,10 +235,7 @@ export class MultiEntityService {
       const parent = await db
         .select()
         .from(entities)
-        .where(and(
-          eq(entities.id, params.parentEntityId),
-          eq(entities.userId, params.userId)
-        ))
+        .where(and(eq(entities.id, params.parentEntityId), eq(entities.userId, params.userId)))
         .get();
 
       if (!parent) {
@@ -285,15 +303,19 @@ export class MultiEntityService {
   /**
    * Update mutable fields of an entity. Cannot change entityType.
    */
-  async updateEntity(entityId: string, userId: string, updates: Partial<{
-    name: string;
-    abn: string;
-    acn: string;
-    status: string;
-    address: string;
-    contactEmail: string;
-    isConsolidatedParent: boolean;
-  }>): Promise<Entity> {
+  async updateEntity(
+    entityId: string,
+    userId: string,
+    updates: Partial<{
+      name: string;
+      abn: string;
+      acn: string;
+      status: string;
+      address: string;
+      contactEmail: string;
+      isConsolidatedParent: boolean;
+    }>,
+  ): Promise<Entity> {
     if (updates.abn && !validateABN(updates.abn)) {
       throw new Error('Invalid ABN format: must be 11 digits');
     }
@@ -333,22 +355,14 @@ export class MultiEntityService {
     const now = new Date().toISOString();
 
     // Verify entity exists
-    const entity = await db
-      .select()
-      .from(entities)
-      .where(eq(entities.id, params.entityId))
-      .get();
+    const entity = await db.select().from(entities).where(eq(entities.id, params.entityId)).get();
 
     if (!entity) {
       throw new Error('Entity not found');
     }
 
     // Verify account exists
-    const account = await db
-      .select()
-      .from(accounts)
-      .where(eq(accounts.id, params.accountId))
-      .get();
+    const account = await db.select().from(accounts).where(eq(accounts.id, params.accountId)).get();
 
     if (!account) {
       throw new Error('Account not found');
@@ -358,10 +372,12 @@ export class MultiEntityService {
     const existing = await db
       .select()
       .from(entityAccounts)
-      .where(and(
-        eq(entityAccounts.entityId, params.entityId),
-        eq(entityAccounts.accountId, params.accountId)
-      ))
+      .where(
+        and(
+          eq(entityAccounts.entityId, params.entityId),
+          eq(entityAccounts.accountId, params.accountId),
+        ),
+      )
       .get();
 
     if (existing) {
@@ -393,43 +409,42 @@ export class MultiEntityService {
   async unlinkAccount(entityId: string, accountId: string): Promise<void> {
     await db
       .delete(entityAccounts)
-      .where(and(
-        eq(entityAccounts.entityId, entityId),
-        eq(entityAccounts.accountId, accountId)
-      ));
+      .where(and(eq(entityAccounts.entityId, entityId), eq(entityAccounts.accountId, accountId)));
   }
 
   /**
    * Build the full entity hierarchy for a user, including accounts, settings, and parent-child relationships.
    */
   async getEntityHierarchy(userId: string): Promise<{
-    entities: Array<Entity & {
-      accounts: EntityAccount[];
-      settings: EntitySetting | null;
-      children: Entity[];
-      parentName?: string;
-    }>;
+    entities: Array<
+      Entity & {
+        accounts: EntityAccount[];
+        settings: EntitySetting | null;
+        children: Entity[];
+        parentName?: string;
+      }
+    >;
     rootEntities: Entity[];
     totalEntities: number;
   }> {
     // Fetch all entities for user
-    const allEntities = await db
+    const allEntities = (await db
       .select()
       .from(entities)
       .where(eq(entities.userId, userId))
-      .all() as Entity[];
+      .all()) as Entity[];
 
     // Fetch all entity accounts for user's entities
-    const entityIds = allEntities.map(e => e.id);
+    const entityIds = allEntities.map((e) => e.id);
     let allEntityAccounts: EntityAccount[] = [];
     if (entityIds.length > 0) {
       // Batch fetch accounts for all entities
       for (const eid of entityIds) {
-        const accts = await db
+        const accts = (await db
           .select()
           .from(entityAccounts)
           .where(eq(entityAccounts.entityId, eid))
-          .all() as EntityAccount[];
+          .all()) as EntityAccount[];
         allEntityAccounts.push(...accts);
       }
     }
@@ -437,23 +452,23 @@ export class MultiEntityService {
     // Fetch all entity settings
     let allSettings: EntitySetting[] = [];
     for (const eid of entityIds) {
-      const setting = await db
+      const setting = (await db
         .select()
         .from(entitySettings)
         .where(eq(entitySettings.entityId, eid))
-        .get() as EntitySetting | undefined;
+        .get()) as EntitySetting | undefined;
       if (setting) allSettings.push(setting);
     }
 
     // Build lookup maps
-    const entityMap = new Map(allEntities.map(e => [e.id, e]));
+    const entityMap = new Map(allEntities.map((e) => [e.id, e]));
     const accountsByEntity = new Map<string, EntityAccount[]>();
     for (const ea of allEntityAccounts) {
       const existing = accountsByEntity.get(ea.entityId) ?? [];
       existing.push(ea);
       accountsByEntity.set(ea.entityId, existing);
     }
-    const settingsByEntity = new Map(allSettings.map(s => [s.entityId, s]));
+    const settingsByEntity = new Map(allSettings.map((s) => [s.entityId, s]));
 
     // Build hierarchy
     const childrenByParent = new Map<string, Entity[]>();
@@ -465,9 +480,9 @@ export class MultiEntityService {
       }
     }
 
-    const rootEntities = allEntities.filter(e => !e.parentEntityId);
+    const rootEntities = allEntities.filter((e) => !e.parentEntityId);
 
-    const enrichedEntities = allEntities.map(entity => ({
+    const enrichedEntities = allEntities.map((entity) => ({
       ...entity,
       accounts: accountsByEntity.get(entity.id) ?? [],
       settings: settingsByEntity.get(entity.id) ?? null,
@@ -486,36 +501,39 @@ export class MultiEntityService {
    * Get a single entity with its accounts (including full account details), settings,
    * parent, and children.
    */
-  async getEntityWithAccounts(entityId: string, userId: string): Promise<{
+  async getEntityWithAccounts(
+    entityId: string,
+    userId: string,
+  ): Promise<{
     entity: Entity;
     settings: EntitySetting | null;
     accounts: Array<EntityAccount & { accountDetails: any }>;
     parent?: Entity;
     children: Entity[];
   }> {
-    const entity = await db
+    const entity = (await db
       .select()
       .from(entities)
       .where(and(eq(entities.id, entityId), eq(entities.userId, userId)))
-      .get() as Entity | undefined;
+      .get()) as Entity | undefined;
 
     if (!entity) {
       throw new Error('Entity not found');
     }
 
     // Get settings
-    const settings = await db
+    const settings = (await db
       .select()
       .from(entitySettings)
       .where(eq(entitySettings.entityId, entityId))
-      .get() as EntitySetting | undefined;
+      .get()) as EntitySetting | undefined;
 
     // Get linked accounts with full account details
-    const linkedAccounts = await db
+    const linkedAccounts = (await db
       .select()
       .from(entityAccounts)
       .where(eq(entityAccounts.entityId, entityId))
-      .all() as EntityAccount[];
+      .all()) as EntityAccount[];
 
     const enrichedAccounts = [];
     for (const ea of linkedAccounts) {
@@ -534,22 +552,19 @@ export class MultiEntityService {
     // Get parent
     let parent: Entity | undefined;
     if (entity.parentEntityId) {
-      parent = await db
+      parent = (await db
         .select()
         .from(entities)
         .where(eq(entities.id, entity.parentEntityId))
-        .get() as Entity | undefined;
+        .get()) as Entity | undefined;
     }
 
     // Get children
-    const children = await db
+    const children = (await db
       .select()
       .from(entities)
-      .where(and(
-        eq(entities.parentEntityId, entityId),
-        eq(entities.userId, userId)
-      ))
-      .all() as Entity[];
+      .where(and(eq(entities.parentEntityId, entityId), eq(entities.userId, userId)))
+      .all()) as Entity[];
 
     return {
       entity,
@@ -563,15 +578,18 @@ export class MultiEntityService {
   /**
    * Upsert entity settings. Validates taxRate is between 0 and 1.
    */
-  async updateEntitySettings(entityId: string, settings: Partial<{
-    basReportingFrequency: 'monthly' | 'quarterly' | 'annually';
-    gstRegistered: boolean;
-    gstMethod: 'cash' | 'accrual';
-    taxRate: number;
-    defaultDepreciationMethod: string;
-    instantWriteOffThreshold: number;
-    chartOfAccountsTemplate: string;
-  }>): Promise<EntitySetting> {
+  async updateEntitySettings(
+    entityId: string,
+    settings: Partial<{
+      basReportingFrequency: 'monthly' | 'quarterly' | 'annually';
+      gstRegistered: boolean;
+      gstMethod: 'cash' | 'accrual';
+      taxRate: number;
+      defaultDepreciationMethod: string;
+      instantWriteOffThreshold: number;
+      chartOfAccountsTemplate: string;
+    }>,
+  ): Promise<EntitySetting> {
     if (settings.taxRate !== undefined && (settings.taxRate < 0 || settings.taxRate > 1)) {
       throw new Error('Tax rate must be between 0 and 1');
     }
@@ -601,11 +619,11 @@ export class MultiEntityService {
       });
     }
 
-    const updated = await db
+    const updated = (await db
       .select()
       .from(entitySettings)
       .where(eq(entitySettings.entityId, entityId))
-      .get() as EntitySetting;
+      .get()) as EntitySetting;
 
     return updated;
   }
@@ -700,13 +718,13 @@ export class MultiEntityService {
   async confirmInterEntityTransaction(
     transactionId: string,
     entityId: string,
-    confirmed: boolean
+    confirmed: boolean,
   ): Promise<InterEntityTransaction> {
-    const txn = await db
+    const txn = (await db
       .select()
       .from(interEntityTransactions)
       .where(eq(interEntityTransactions.id, transactionId))
-      .get() as InterEntityTransaction | undefined;
+      .get()) as InterEntityTransaction | undefined;
 
     if (!txn) {
       throw new Error('Inter-entity transaction not found');
@@ -737,11 +755,11 @@ export class MultiEntityService {
       .set(update)
       .where(eq(interEntityTransactions.id, transactionId));
 
-    const updated = await db
+    const updated = (await db
       .select()
       .from(interEntityTransactions)
       .where(eq(interEntityTransactions.id, transactionId))
-      .get() as InterEntityTransaction;
+      .get()) as InterEntityTransaction;
 
     return updated;
   }
@@ -749,19 +767,24 @@ export class MultiEntityService {
   /**
    * Get inter-entity transactions for a user with optional filters.
    */
-  async getInterEntityTransactions(userId: string, filters?: {
-    entityId?: string;
-    status?: string;
-    financialYear?: string;
-    transactionType?: string;
-  }): Promise<InterEntityTransaction[]> {
+  async getInterEntityTransactions(
+    userId: string,
+    filters?: {
+      entityId?: string;
+      status?: string;
+      financialYear?: string;
+      transactionType?: string;
+    },
+  ): Promise<InterEntityTransaction[]> {
     const conditions = [eq(interEntityTransactions.userId, userId)];
 
     if (filters?.entityId) {
-      conditions.push(or(
-        eq(interEntityTransactions.fromEntityId, filters.entityId),
-        eq(interEntityTransactions.toEntityId, filters.entityId)
-      )!);
+      conditions.push(
+        or(
+          eq(interEntityTransactions.fromEntityId, filters.entityId),
+          eq(interEntityTransactions.toEntityId, filters.entityId),
+        )!,
+      );
     }
 
     if (filters?.status) {
@@ -781,11 +804,11 @@ export class MultiEntityService {
       conditions.push(sql`${interEntityTransactions.transactionDate} <= ${fyEnd}`);
     }
 
-    const results = await db
+    const results = (await db
       .select()
       .from(interEntityTransactions)
       .where(and(...conditions))
-      .all() as InterEntityTransaction[];
+      .all()) as InterEntityTransaction[];
 
     return results;
   }

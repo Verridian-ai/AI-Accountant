@@ -90,7 +90,10 @@ export class ResponseFormatter {
     // Use the last successful result as the primary agent
     const lastSuccessful = [...results].reverse().find((r) => r.success);
     if (!lastSuccessful) {
-      const errors = results.map((r) => r.error).filter(Boolean).join('; ');
+      const errors = results
+        .map((r) => r.error)
+        .filter(Boolean)
+        .join('; ');
       return this.formatError(errors || 'All agents in the pipeline failed');
     }
 
@@ -258,11 +261,13 @@ export class ResponseFormatter {
       ],
     };
 
-    return followupMap[agentType] ?? [
-      'Tell me more about this',
-      'Show related transactions',
-      'Export this data',
-    ];
+    return (
+      followupMap[agentType] ?? [
+        'Tell me more about this',
+        'Show related transactions',
+        'Export this data',
+      ]
+    );
   }
 
   /**

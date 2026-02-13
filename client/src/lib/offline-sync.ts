@@ -52,9 +52,10 @@ const STORES = {
 } as const;
 
 // API base URL - should be configured via environment variable in production
-const API_BASE_URL = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL
-  ? import.meta.env.VITE_API_URL
-  : 'http://localhost:3501/api';
+const API_BASE_URL =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3501/api';
 
 // ============================================================================
 // INDEXED DB WRAPPER
@@ -182,11 +183,7 @@ class OfflineDB {
     });
   }
 
-  async getAllByIndex<T>(
-    storeName: string,
-    indexName: string,
-    value: IDBValidKey
-  ): Promise<T[]> {
+  async getAllByIndex<T>(storeName: string, indexName: string, value: IDBValidKey): Promise<T[]> {
     await this.init();
     return new Promise((resolve, reject) => {
       const store = this.getStore(storeName);
@@ -229,8 +226,8 @@ class OfflineSyncManager {
   }
 
   private notifyListeners(): void {
-    this.getStatus().then(status => {
-      this.listeners.forEach(listener => listener(status));
+    this.getStatus().then((status) => {
+      this.listeners.forEach((listener) => listener(status));
     });
   }
 
@@ -253,7 +250,7 @@ class OfflineSyncManager {
     const pendingCount = await this.db.count(STORES.pendingSync);
     const metadata = await this.db.get<{ key: string; value: string }>(
       STORES.metadata,
-      'lastSyncAt'
+      'lastSyncAt',
     );
 
     return {
@@ -292,20 +289,13 @@ class OfflineSyncManager {
    * Get transactions by category
    */
   async getTransactionsByCategory(category: string): Promise<Transaction[]> {
-    return this.db.getAllByIndex<Transaction>(
-      STORES.transactions,
-      'category',
-      category
-    );
+    return this.db.getAllByIndex<Transaction>(STORES.transactions, 'category', category);
   }
 
   /**
    * Update a transaction (with offline support)
    */
-  async updateTransaction(
-    id: string,
-    updates: Partial<Transaction>
-  ): Promise<void> {
+  async updateTransaction(id: string, updates: Partial<Transaction>): Promise<void> {
     // Get existing transaction
     const existing = await this.db.get<Transaction>(STORES.transactions, id);
     if (!existing) {
@@ -395,7 +385,12 @@ class OfflineSyncManager {
    */
   async sync(): Promise<SyncResult> {
     if (this.syncInProgress || !this.isOnline) {
-      return { success: false, synced: 0, failed: 0, errors: ['Sync already in progress or offline'] };
+      return {
+        success: false,
+        synced: 0,
+        failed: 0,
+        errors: ['Sync already in progress or offline'],
+      };
     }
 
     this.syncInProgress = true;
@@ -419,7 +414,7 @@ class OfflineSyncManager {
         } catch (error) {
           result.failed++;
           result.errors.push(
-            `Failed to sync ${operation.entityType} ${operation.entityId}: ${error}`
+            `Failed to sync ${operation.entityType} ${operation.entityId}: ${error}`,
           );
 
           // Update retry count
@@ -442,7 +437,6 @@ class OfflineSyncManager {
       });
 
       result.success = result.failed === 0;
-
     } finally {
       this.syncInProgress = false;
       this.notifyListeners();
@@ -461,7 +455,7 @@ class OfflineSyncManager {
     }
 
     const headers: HeadersInit = {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
 
@@ -470,14 +464,11 @@ class OfflineSyncManager {
     switch (operation.entityType) {
       case 'transaction':
         if (operation.type === 'update') {
-          const response = await fetch(
-            `${baseUrl}/transactions/${operation.entityId}`,
-            {
-              method: 'PATCH',
-              headers,
-              body: JSON.stringify(operation.data),
-            }
-          );
+          const response = await fetch(`${baseUrl}/transactions/${operation.entityId}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(operation.data),
+          });
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
           }
@@ -492,7 +483,7 @@ class OfflineSyncManager {
               method: 'POST',
               headers,
               body: JSON.stringify(operation.data),
-            }
+            },
           );
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);

@@ -172,7 +172,7 @@ export class OFXStatementParser {
           }
         } catch (error) {
           result.warnings.push(
-            `Transaction ${i + 1}: ${error instanceof Error ? error.message : 'Parse error'}`
+            `Transaction ${i + 1}: ${error instanceof Error ? error.message : 'Parse error'}`,
           );
           result.metadata.skippedCount++;
         }
@@ -231,16 +231,18 @@ export class OFXStatementParser {
    */
   private extractAccountInfo(content: string): OFXAccountInfo | null {
     // Try bank account first
-    const bankAcctMatch = content.match(/<BANKACCTFROM>([\s\S]*?)<\/BANKACCTFROM>/i) ||
-                          content.match(/<BANKACCTFROM>([\s\S]*?)(?=<(?:BANKTRANLIST|LEDGERBAL|AVAILBAL))/i);
+    const bankAcctMatch =
+      content.match(/<BANKACCTFROM>([\s\S]*?)<\/BANKACCTFROM>/i) ||
+      content.match(/<BANKACCTFROM>([\s\S]*?)(?=<(?:BANKTRANLIST|LEDGERBAL|AVAILBAL))/i);
 
     if (bankAcctMatch) {
       return this.parseAccountBlock(bankAcctMatch[1], 'bank');
     }
 
     // Try credit card account
-    const ccAcctMatch = content.match(/<CCACCTFROM>([\s\S]*?)<\/CCACCTFROM>/i) ||
-                        content.match(/<CCACCTFROM>([\s\S]*?)(?=<(?:BANKTRANLIST|LEDGERBAL|AVAILBAL|CCSTMTRS))/i);
+    const ccAcctMatch =
+      content.match(/<CCACCTFROM>([\s\S]*?)<\/CCACCTFROM>/i) ||
+      content.match(/<CCACCTFROM>([\s\S]*?)(?=<(?:BANKTRANLIST|LEDGERBAL|AVAILBAL|CCSTMTRS))/i);
 
     if (ccAcctMatch) {
       return this.parseAccountBlock(ccAcctMatch[1], 'credit');
@@ -298,7 +300,9 @@ export class OFXStatementParser {
     const balances: { ledger?: number; available?: number } = {};
 
     // Ledger balance
-    const ledgerMatch = content.match(/<LEDGERBAL>([\s\S]*?)(?:<\/LEDGERBAL>|<AVAILBAL>|<\/STMTRS>)/i);
+    const ledgerMatch = content.match(
+      /<LEDGERBAL>([\s\S]*?)(?:<\/LEDGERBAL>|<AVAILBAL>|<\/STMTRS>)/i,
+    );
     if (ledgerMatch) {
       const balamt = this.extractTag(ledgerMatch[1], 'BALAMT');
       if (balamt) {
@@ -325,7 +329,8 @@ export class OFXStatementParser {
     const transactions: OFXTransaction[] = [];
 
     // Match all STMTTRN blocks (with or without closing tags)
-    const stmttrnRegex = /<STMTTRN>([\s\S]*?)(?:<\/STMTTRN>|(?=<STMTTRN>|<\/BANKTRANLIST>|<LEDGERBAL>|<AVAILBAL>|$))/gi;
+    const stmttrnRegex =
+      /<STMTTRN>([\s\S]*?)(?:<\/STMTTRN>|(?=<STMTTRN>|<\/BANKTRANLIST>|<LEDGERBAL>|<AVAILBAL>|$))/gi;
     let match;
 
     while ((match = stmttrnRegex.exec(content)) !== null) {
@@ -460,9 +465,7 @@ export class OFXStatementParser {
     }
 
     // Remove any non-numeric characters except minus and decimal point
-    const cleaned = amountStr
-      .replace(/[^0-9.\-]/g, '')
-      .trim();
+    const cleaned = amountStr.replace(/[^0-9.\-]/g, '').trim();
 
     const value = parseFloat(cleaned);
     if (isNaN(value)) {

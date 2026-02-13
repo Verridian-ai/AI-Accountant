@@ -53,7 +53,9 @@ export function SyncStatus() {
       <div className="neu-raised rounded-2xl p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className={`w-3 h-3 rounded-full ${statusDot} ${isOnline ? 'animate-pulse' : ''}`} />
+            <span
+              className={`w-3 h-3 rounded-full ${statusDot} ${isOnline ? 'animate-pulse' : ''}`}
+            />
             <div>
               <p className="text-sm font-bold text-zinc-200">{statusLabel}</p>
               {lastSyncAt && (
@@ -69,7 +71,9 @@ export function SyncStatus() {
             disabled={syncing || syncStatus === 'syncing' || !isOnline}
             className="neu-raised-sm py-2 px-4 rounded-xl text-xs font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 disabled:opacity-30 btn-press flex items-center gap-2 min-h-[44px]"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${syncing || syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${syncing || syncStatus === 'syncing' ? 'animate-spin' : ''}`}
+            />
             Sync Now
           </button>
         </div>
@@ -79,9 +83,11 @@ export function SyncStatus() {
       <div className="neu-raised rounded-2xl p-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-zinc-300">Pending Changes</h3>
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-            pendingChanges > 0 ? 'bg-[#FFCC00]/20 text-[#FFCC00]' : 'bg-zinc-800 text-zinc-500'
-          }`}>
+          <span
+            className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+              pendingChanges > 0 ? 'bg-[#FFCC00]/20 text-[#FFCC00]' : 'bg-zinc-800 text-zinc-500'
+            }`}
+          >
             {pendingChanges}
           </span>
         </div>
@@ -117,11 +123,22 @@ export function SyncStatus() {
         ) : (
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {syncLog.map((entry) => (
-              <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-zinc-800/50 last:border-0">
-                {entry.syncStatus === 'synced' && <CheckCircle className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
-                {entry.syncStatus === 'conflict' && <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0" />}
-                {entry.syncStatus === 'error' && <AlertTriangle className="h-3.5 w-3.5 text-red-400 shrink-0" />}
-                {!['synced', 'conflict', 'error'].includes(entry.syncStatus) && <Clock className="h-3.5 w-3.5 text-zinc-500 shrink-0" />}
+              <div
+                key={entry.id}
+                className="flex items-center gap-3 py-2 border-b border-zinc-800/50 last:border-0"
+              >
+                {entry.syncStatus === 'synced' && (
+                  <CheckCircle className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                )}
+                {entry.syncStatus === 'conflict' && (
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                )}
+                {entry.syncStatus === 'error' && (
+                  <AlertTriangle className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                )}
+                {!['synced', 'conflict', 'error'].includes(entry.syncStatus) && (
+                  <Clock className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+                )}
                 <div className="flex-1 min-w-0">
                   <span className="text-xs text-zinc-300">
                     {entry.operation} {entry.resourceType}

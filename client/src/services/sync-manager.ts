@@ -1,5 +1,11 @@
 import { BASE_URL, getAuthHeaders } from '../api';
-import type { SyncOperation, SyncResult, SyncOperationResult, Conflict, ConflictStrategy } from './sync-types';
+import type {
+  SyncOperation,
+  SyncResult,
+  SyncOperationResult,
+  Conflict,
+  ConflictStrategy,
+} from './sync-types';
 import {
   getPendingSyncQueue,
   updateSyncStatus,

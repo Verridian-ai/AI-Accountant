@@ -20,7 +20,12 @@ const LOST_FEATURES = [
   'Tax optimization suggestions',
 ];
 
-export function CancelConfirmation({ planName, periodEnd, onClose, onCancelled }: CancelConfirmationProps) {
+export function CancelConfirmation({
+  planName,
+  periodEnd,
+  onClose,
+  onCancelled,
+}: CancelConfirmationProps) {
   const [confirmText, setConfirmText] = useState('');
   const [cancelling, setCancelling] = useState(false);
   const [showRetention, setShowRetention] = useState(true);
@@ -55,7 +60,11 @@ export function CancelConfirmation({ planName, periodEnd, onClose, onCancelled }
             <AlertTriangle className="w-5 h-5 text-red-400" />
             <h3 className="text-lg font-bold text-red-400">Cancel Subscription</h3>
           </div>
-          <button type="button" onClick={onClose} className="p-1 rounded-lg text-zinc-500 hover:text-zinc-300">
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-lg text-zinc-500 hover:text-zinc-300"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -63,8 +72,8 @@ export function CancelConfirmation({ planName, periodEnd, onClose, onCancelled }
         {/* Warning */}
         <div className="neu-inset rounded-xl p-4 space-y-2">
           <p className="text-sm text-zinc-300">
-            Your <span className="font-bold text-[#FFCC00]">{planName}</span> plan will remain active until{' '}
-            <span className="font-bold text-zinc-200">{formatDate(periodEnd)}</span>.
+            Your <span className="font-bold text-[#FFCC00]">{planName}</span> plan will remain
+            active until <span className="font-bold text-zinc-200">{formatDate(periodEnd)}</span>.
           </p>
           <p className="text-sm text-zinc-400">
             After that, your workspace will be downgraded to the Starter plan with limited features.
@@ -73,7 +82,9 @@ export function CancelConfirmation({ planName, periodEnd, onClose, onCancelled }
 
         {/* Features Lost */}
         <div>
-          <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Features You'll Lose</p>
+          <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+            Features You'll Lose
+          </p>
           <div className="space-y-1.5">
             {LOST_FEATURES.map((f) => (
               <div key={f} className="flex items-center gap-2 text-sm">
@@ -92,7 +103,8 @@ export function CancelConfirmation({ planName, periodEnd, onClose, onCancelled }
               <p className="text-sm font-bold text-emerald-400">Special Offer</p>
             </div>
             <p className="text-sm text-zinc-400">
-              Stay on {planName} and get <span className="font-bold text-emerald-400">20% off</span> your next month.
+              Stay on {planName} and get <span className="font-bold text-emerald-400">20% off</span>{' '}
+              your next month.
             </p>
             <div className="flex gap-2">
               <button
@@ -136,7 +148,7 @@ export function CancelConfirmation({ planName, periodEnd, onClose, onCancelled }
                   'flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors',
                   confirmText === 'CANCEL'
                     ? 'bg-red-500 text-white hover:bg-red-600'
-                    : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                    : 'bg-zinc-800 text-zinc-600 cursor-not-allowed',
                 )}
               >
                 {cancelling ? 'Cancelling...' : 'Confirm Cancellation'}

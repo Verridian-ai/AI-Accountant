@@ -87,7 +87,9 @@ export class UsageLimitExceededError extends Error {
     public limit: number,
     public planName: string,
   ) {
-    super(`${metric} limit exceeded: ${current}/${limit} on ${planName} plan. Upgrade to increase limits.`);
+    super(
+      `${metric} limit exceeded: ${current}/${limit} on ${planName} plan. Upgrade to increase limits.`,
+    );
     this.name = 'UsageLimitExceededError';
   }
 }

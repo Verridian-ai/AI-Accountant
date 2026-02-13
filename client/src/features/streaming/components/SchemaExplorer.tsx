@@ -6,9 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { BASE_URL, getAuthHeaders } from '../../../api';
-import {
-  Code2, CheckCircle2, XCircle, RefreshCw, ChevronDown, ChevronRight,
-} from 'lucide-react';
+import { Code2, CheckCircle2, XCircle, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 
 const API_URL = `${BASE_URL}/api`;
 
@@ -36,7 +34,7 @@ export function SchemaExplorer() {
       const res = await fetch(`${API_URL}/schemas`, { headers: getAuthHeaders() });
       if (res.ok) {
         const data = await res.json();
-        setSchemas(Array.isArray(data) ? data : data.schemas ?? []);
+        setSchemas(Array.isArray(data) ? data : (data.schemas ?? []));
       }
     } catch {
       // Silent
@@ -45,7 +43,9 @@ export function SchemaExplorer() {
     }
   }, []);
 
-  useEffect(() => { fetchSchemas(); }, [fetchSchemas]);
+  useEffect(() => {
+    fetchSchemas();
+  }, [fetchSchemas]);
 
   const handleValidate = async () => {
     if (!testAgent || !testInput.trim()) return;
@@ -61,7 +61,10 @@ export function SchemaExplorer() {
       const data = await res.json();
       setTestResult(data);
     } catch (err: unknown) {
-      setTestResult({ valid: false, errors: [err instanceof Error ? err.message : 'Invalid JSON'] });
+      setTestResult({
+        valid: false,
+        errors: [err instanceof Error ? err.message : 'Invalid JSON'],
+      });
     } finally {
       setTesting(false);
     }
@@ -82,7 +85,10 @@ export function SchemaExplorer() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-zinc-100">Output Schemas</h3>
-        <button onClick={fetchSchemas} className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]">
+        <button
+          onClick={fetchSchemas}
+          className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]"
+        >
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
@@ -115,12 +121,12 @@ export function SchemaExplorer() {
                 )}
               </div>
             </button>
-            {expanded === schema.agentType && (
+            {expanded === schema.agentType && !!schema.jsonSchema && (
               <div className="px-4 pb-4 border-t border-white/5 pt-3">
                 <p className="text-xs text-zinc-500 mb-2">Schema: {schema.schemaName}</p>
                 {schema.jsonSchema && (
                   <pre className="text-[11px] text-zinc-400 bg-black/30 rounded-lg p-3 overflow-x-auto max-h-48">
-                    {JSON.stringify(schema.jsonSchema, null, 2)}
+                    {JSON.stringify(schema.jsonSchema, null, 2) as any as React.ReactNode}
                   </pre>
                 )}
               </div>
@@ -134,12 +140,17 @@ export function SchemaExplorer() {
         <h4 className="text-sm font-bold text-zinc-200">Test Validation</h4>
         <select
           value={testAgent ?? ''}
-          onChange={(e) => { setTestAgent(e.target.value || null); setTestResult(null); }}
+          onChange={(e) => {
+            setTestAgent(e.target.value || null);
+            setTestResult(null);
+          }}
           className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-300 bg-transparent border border-white/10"
         >
           <option value="">Select agent schema...</option>
           {schemas.map((s) => (
-            <option key={s.agentType} value={s.agentType}>{formatAgent(s.agentType)}</option>
+            <option key={s.agentType} value={s.agentType}>
+              {formatAgent(s.agentType)}
+            </option>
           ))}
         </select>
         <textarea
@@ -175,7 +186,9 @@ export function SchemaExplorer() {
           <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-3">
             <ul className="space-y-1">
               {testResult.errors.map((err, i) => (
-                <li key={i} className="text-xs text-red-400">• {err}</li>
+                <li key={i} className="text-xs text-red-400">
+                  • {err}
+                </li>
               ))}
             </ul>
           </div>

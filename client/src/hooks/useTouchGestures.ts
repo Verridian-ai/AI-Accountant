@@ -124,7 +124,7 @@ function getDirection(
   deltaX: number,
   deltaY: number,
   horizontal: boolean,
-  vertical: boolean
+  vertical: boolean,
 ): SwipeDirection {
   const absX = Math.abs(deltaX);
   const absY = Math.abs(deltaY);
@@ -146,7 +146,7 @@ function isSwipeDetected(
   velocityY: number,
   config: Required<
     Omit<GestureConfig, 'onSwipe' | 'onGestureStart' | 'onGestureMove' | 'onGestureEnd'>
-  >
+  >,
 ): boolean {
   const { swipeThreshold, velocityThreshold, horizontal, vertical } = config;
 
@@ -185,7 +185,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
       config.vertical,
       config.enabled,
       config.preventDefault,
-    ]
+    ],
   );
 
   const [state, setState] = useState<GestureState>(INITIAL_STATE);
@@ -245,7 +245,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
       setState(newState);
       callbacksRef.current.onGestureStart?.(newState);
     },
-    [mergedConfig.enabled]
+    [mergedConfig.enabled],
   );
 
   // Handle gesture move
@@ -277,7 +277,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
         deltaX,
         deltaY,
         mergedConfig.horizontal,
-        mergedConfig.vertical
+        mergedConfig.vertical,
       );
 
       const isSwipe = isSwipeDetected(deltaX, deltaY, velocityX, velocityY, mergedConfig);
@@ -300,7 +300,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
       setState(newState);
       callbacksRef.current.onGestureMove?.(newState);
     },
-    [mergedConfig]
+    [mergedConfig],
   );
 
   // Handle gesture end
@@ -327,12 +327,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
         : 0;
     }
 
-    const direction = getDirection(
-      deltaX,
-      deltaY,
-      mergedConfig.horizontal,
-      mergedConfig.vertical
-    );
+    const direction = getDirection(deltaX, deltaY, mergedConfig.horizontal, mergedConfig.vertical);
 
     const isSwipe = isSwipeDetected(deltaX, deltaY, velocityX, velocityY, mergedConfig);
 
@@ -378,7 +373,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
       if (!touch) return;
       handleStart(touch.clientX, touch.clientY);
     },
-    [handleStart, mergedConfig.preventDefault]
+    [handleStart, mergedConfig.preventDefault],
   );
 
   const onTouchMove = useCallback(
@@ -390,7 +385,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
       if (!touch) return;
       handleMove(touch.clientX, touch.clientY);
     },
-    [handleMove, mergedConfig.preventDefault]
+    [handleMove, mergedConfig.preventDefault],
   );
 
   const onTouchEnd = useCallback(
@@ -400,7 +395,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
       }
       handleEnd();
     },
-    [handleEnd, mergedConfig.preventDefault]
+    [handleEnd, mergedConfig.preventDefault],
   );
 
   // Track mouse event cleanup functions
@@ -434,7 +429,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
         window.removeEventListener('mouseup', handleMouseUp);
       };
     },
-    [handleStart, handleMove, handleEnd]
+    [handleStart, handleMove, handleEnd],
   );
 
   // Cleanup on unmount
@@ -454,7 +449,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
       onTouchEnd,
       onMouseDown,
     }),
-    [onTouchStart, onTouchMove, onTouchEnd, onMouseDown]
+    [onTouchStart, onTouchMove, onTouchEnd, onMouseDown],
   );
 
   return {
@@ -474,7 +469,7 @@ export function useTouchGestures(config: GestureConfig = {}): UseTouchGesturesRe
 export function useHorizontalSwipe(
   onSwipeLeft?: () => void,
   onSwipeRight?: () => void,
-  config?: Omit<GestureConfig, 'horizontal' | 'vertical' | 'onSwipe'>
+  config?: Omit<GestureConfig, 'horizontal' | 'vertical' | 'onSwipe'>,
 ) {
   return useTouchGestures({
     ...config,
@@ -493,7 +488,7 @@ export function useHorizontalSwipe(
 export function useVerticalSwipe(
   onSwipeUp?: () => void,
   onSwipeDown?: () => void,
-  config?: Omit<GestureConfig, 'horizontal' | 'vertical' | 'onSwipe'>
+  config?: Omit<GestureConfig, 'horizontal' | 'vertical' | 'onSwipe'>,
 ) {
   return useTouchGestures({
     ...config,
@@ -616,7 +611,7 @@ export function usePinchToZoom(config: PinchConfig = {}): UsePinchReturn {
         currentDistance: distance,
       }));
     },
-    [enabled, state.scale]
+    [enabled, state.scale],
   );
 
   const onTouchMove = useCallback(
@@ -647,7 +642,7 @@ export function usePinchToZoom(config: PinchConfig = {}): UsePinchReturn {
       setState(newState);
       onPinch?.(newState);
     },
-    [enabled, minScale, maxScale, onPinch]
+    [enabled, minScale, maxScale, onPinch],
   );
 
   const onTouchEnd = useCallback(
@@ -665,7 +660,7 @@ export function usePinchToZoom(config: PinchConfig = {}): UsePinchReturn {
         return finalState;
       });
     },
-    [onPinchEnd]
+    [onPinchEnd],
   );
 
   const handlers: PinchHandlers = useMemo(
@@ -674,7 +669,7 @@ export function usePinchToZoom(config: PinchConfig = {}): UsePinchReturn {
       onTouchMove,
       onTouchEnd,
     }),
-    [onTouchStart, onTouchMove, onTouchEnd]
+    [onTouchStart, onTouchMove, onTouchEnd],
   );
 
   return {

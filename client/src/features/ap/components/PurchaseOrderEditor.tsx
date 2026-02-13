@@ -1,13 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import {
-  ArrowLeft,
-  Plus,
-  Trash2,
-  Save,
-  Send,
-  Package,
-  Search,
-} from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Send, Package, Search } from 'lucide-react';
 import { apApi } from '../../../api';
 import type { Supplier } from '../../../api';
 
@@ -90,7 +82,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
             quantity: li.quantity,
             unitPrice: li.unitPrice,
             amount: li.quantity * li.unitPrice,
-          }))
+          })),
         );
       }
     } catch (e) {
@@ -124,7 +116,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         const updated = { ...li, [field]: value };
         updated.amount = updated.quantity * updated.unitPrice;
         return updated;
-      })
+      }),
     );
   };
 
@@ -169,14 +161,15 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
             description: li.description,
             quantity: li.quantity,
             unitPrice: li.unitPrice,
+            amount: li.quantity * li.unitPrice,
           })),
       };
 
       if (poId) {
-        await apApi.updatePurchaseOrder(poId, payload);
+        await apApi.updatePurchaseOrder(poId, payload as any);
         if (sendAfter) await apApi.sendPurchaseOrder(poId);
       } else {
-        const result = await apApi.createPurchaseOrder(payload);
+        const result = await apApi.createPurchaseOrder(payload as any);
         if (sendAfter) await apApi.sendPurchaseOrder(result.id);
       }
       onSave();
@@ -215,9 +208,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
           <h2 className="text-xl font-bold text-white">
             {poId ? `Edit PO ${poNumber}` : 'New Purchase Order'}
           </h2>
-          {poNumber && (
-            <p className="text-xs text-zinc-500 mt-0.5 font-mono">{poNumber}</p>
-          )}
+          {poNumber && <p className="text-xs text-zinc-500 mt-0.5 font-mono">{poNumber}</p>}
         </div>
         {!isEditable && (
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-400/10 text-blue-400">
@@ -237,9 +228,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         {/* Supplier + Expected Date Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative" ref={dropdownRef}>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-              Supplier *
-            </label>
+            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Supplier *</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
               <input
@@ -263,9 +252,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                     className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-white/5 transition-colors first:rounded-t-xl last:rounded-b-xl"
                   >
                     <span className="font-medium">{s.businessName}</span>
-                    {s.abn && (
-                      <span className="text-zinc-500 ml-2 text-xs">ABN: {s.abn}</span>
-                    )}
+                    {s.abn && <span className="text-zinc-500 ml-2 text-xs">ABN: {s.abn}</span>}
                   </button>
                 ))}
               </div>

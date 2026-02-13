@@ -95,7 +95,10 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
           {statusTabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => { setStatusFilter(tab.id); setPage(1); }}
+              onClick={() => {
+                setStatusFilter(tab.id);
+                setPage(1);
+              }}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 statusFilter === tab.id
                   ? 'bg-[#FFCC00]/10 text-[#FFCC00]'
@@ -145,70 +148,77 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
             </tr>
           </thead>
           <tbody>
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="border-b border-white/5">
-                    <td colSpan={7} className="px-4 py-4">
-                      <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
-                    </td>
-                  </tr>
-                ))
-              : bills.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center">
-                      <FileText className="h-10 w-10 text-zinc-600 mx-auto mb-2" />
-                      <p className="text-zinc-400 text-sm">No bills found</p>
-                    </td>
-                  </tr>
-                ) : (
-                  bills.map((bill) => (
-                    <tr key={bill.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                      <td className="px-4 py-3 text-sm text-white font-mono">{bill.billNumber}</td>
-                      <td className="px-4 py-3 text-sm text-zinc-300">{bill.supplierName ?? '—'}</td>
-                      <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">{bill.issueDate}</td>
-                      <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">{bill.dueDate}</td>
-                      <td className="px-4 py-3 text-right text-sm font-medium text-white">
-                        {formatCurrency(bill.total)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={bill.status} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <ActionButton
-                            icon={Eye}
-                            tooltip="View"
-                            onClick={() => handleQuickAction('view', bill)}
-                          />
-                          {bill.status === 'awaiting_approval' && (
-                            <ActionButton
-                              icon={CheckCircle}
-                              tooltip="Approve"
-                              onClick={() => handleQuickAction('approve', bill)}
-                              accent
-                            />
-                          )}
-                          {bill.status === 'approved' && (
-                            <ActionButton
-                              icon={DollarSign}
-                              tooltip="Pay"
-                              onClick={() => handleQuickAction('pay', bill)}
-                              accent
-                            />
-                          )}
-                          {(bill.status === 'draft' || bill.status === 'awaiting_approval') && (
-                            <ActionButton
-                              icon={Ban}
-                              tooltip="Void"
-                              onClick={() => handleQuickAction('void', bill)}
-                              danger
-                            />
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="border-b border-white/5">
+                  <td colSpan={7} className="px-4 py-4">
+                    <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
+                  </td>
+                </tr>
+              ))
+            ) : bills.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-12 text-center">
+                  <FileText className="h-10 w-10 text-zinc-600 mx-auto mb-2" />
+                  <p className="text-zinc-400 text-sm">No bills found</p>
+                </td>
+              </tr>
+            ) : (
+              bills.map((bill) => (
+                <tr
+                  key={bill.id}
+                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                >
+                  <td className="px-4 py-3 text-sm text-white font-mono">{bill.billNumber}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-300">{bill.supplierName ?? '—'}</td>
+                  <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
+                    {bill.issueDate}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
+                    {bill.dueDate}
+                  </td>
+                  <td className="px-4 py-3 text-right text-sm font-medium text-white">
+                    {formatCurrency(bill.total)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={bill.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <ActionButton
+                        icon={Eye}
+                        tooltip="View"
+                        onClick={() => handleQuickAction('view', bill)}
+                      />
+                      {bill.status === 'awaiting_approval' && (
+                        <ActionButton
+                          icon={CheckCircle}
+                          tooltip="Approve"
+                          onClick={() => handleQuickAction('approve', bill)}
+                          accent
+                        />
+                      )}
+                      {bill.status === 'approved' && (
+                        <ActionButton
+                          icon={DollarSign}
+                          tooltip="Pay"
+                          onClick={() => handleQuickAction('pay', bill)}
+                          accent
+                        />
+                      )}
+                      {(bill.status === 'draft' || bill.status === 'awaiting_approval') && (
+                        <ActionButton
+                          icon={Ban}
+                          tooltip="Void"
+                          onClick={() => handleQuickAction('void', bill)}
+                          danger
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -259,7 +269,9 @@ function StatusBadge({ status }: { status: string }) {
     void: 'Void',
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] ?? styles.draft}`}>
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] ?? styles.draft}`}
+    >
       {labels[status] ?? status}
     </span>
   );
@@ -280,7 +292,10 @@ function ActionButton({
 }) {
   return (
     <button
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       title={tooltip}
       className={`p-1.5 rounded-lg transition-all ${
         danger

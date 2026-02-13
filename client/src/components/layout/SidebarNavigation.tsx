@@ -32,14 +32,14 @@ export function SidebarNavigation({
     <aside
       className={cn(
         'flex flex-col h-screen bg-[#0d0d14] border-r border-white/5 transition-all duration-200 ease-in-out shrink-0 overflow-hidden',
-        collapsed ? 'w-16' : 'w-64'
+        collapsed ? 'w-16' : 'w-64',
       )}
     >
       {/* Logo */}
       <div
         className={cn(
           'flex items-center gap-3 px-4 py-4 border-b border-white/5 shrink-0',
-          collapsed && 'justify-center px-2'
+          collapsed && 'justify-center px-2',
         )}
       >
         <img
@@ -60,7 +60,10 @@ export function SidebarNavigation({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-thin" aria-label="Sidebar navigation">
+      <nav
+        className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-thin"
+        aria-label="Sidebar navigation"
+      >
         {sections.map((section) => {
           const isExpanded = expandedSections[section.title] ?? true;
 
@@ -77,7 +80,7 @@ export function SidebarNavigation({
                   <ChevronRight
                     className={cn(
                       'h-3 w-3 transition-transform duration-200',
-                      isExpanded && 'rotate-90'
+                      isExpanded && 'rotate-90',
                     )}
                   />
                 </button>
@@ -110,7 +113,7 @@ export function SidebarNavigation({
           onClick={() => onCollapsedChange?.(!collapsed)}
           className={cn(
             'w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-all duration-200',
-            collapsed && 'justify-center px-0'
+            collapsed && 'justify-center px-0',
           )}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
@@ -148,7 +151,7 @@ function SidebarItem({ to, icon: Icon, label, collapsed, end }: SidebarItemProps
           collapsed ? 'justify-center p-2.5' : 'px-3 py-2',
           isActive
             ? 'text-[#FFCC00] bg-[#FFCC00]/10'
-            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5',
         )
       }
     >
@@ -159,7 +162,12 @@ function SidebarItem({ to, icon: Icon, label, collapsed, end }: SidebarItemProps
             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-[#FFCC00] shadow-[0_0_8px_rgba(255,204,0,0.4)]" />
           )}
 
-          <Icon className={cn('h-5 w-5 shrink-0', isActive && 'drop-shadow-[0_0_4px_rgba(255,204,0,0.3)]')} />
+          <Icon
+            className={cn(
+              'h-5 w-5 shrink-0',
+              isActive && 'drop-shadow-[0_0_4px_rgba(255,204,0,0.3)]',
+            )}
+          />
 
           {!collapsed && (
             <span className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">

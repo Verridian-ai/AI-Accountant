@@ -34,9 +34,7 @@ export interface MigrationResult {
  * @param defaultTenantId - Tenant ID to assign to legacy datasets
  * @returns Migration result with counts and errors
  */
-export async function migrateLegacyDatasets(
-  defaultTenantId: string,
-): Promise<MigrationResult> {
+export async function migrateLegacyDatasets(defaultTenantId: string): Promise<MigrationResult> {
   const result: MigrationResult = {
     migrated: 0,
     skipped: 0,
@@ -66,9 +64,7 @@ export async function migrateLegacyDatasets(
         const prefixedName = cogneeClient.getTenantDatasetName(defaultTenantId, name);
         await cogneeClient.createDataset(prefixedName);
 
-        console.log(
-          `[CogneeMigration] Created tenant dataset: ${prefixedName} (from: ${name})`,
-        );
+        console.log(`[CogneeMigration] Created tenant dataset: ${prefixedName} (from: ${name})`);
         result.migrated++;
       } catch (err) {
         const msg = `Failed to migrate dataset "${name}": ${err instanceof Error ? err.message : String(err)}`;

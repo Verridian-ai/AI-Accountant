@@ -146,7 +146,7 @@ export class HybridSearchEngine {
   constructor(
     denseEngine?: DenseSearchEngine,
     sparseEngine?: SparseSearchEngine,
-    fusionEngine?: RRFFusionEngine
+    fusionEngine?: RRFFusionEngine,
   ) {
     this.denseEngine = denseEngine || denseSearchEngine;
     this.sparseEngine = sparseEngine || sparseSearchEngine;
@@ -174,7 +174,7 @@ export class HybridSearchEngine {
   async search(
     userId: string,
     query: string,
-    options: HybridSearchOptions = {}
+    options: HybridSearchOptions = {},
   ): Promise<HybridSearchResponse> {
     const startTime = Date.now();
 
@@ -303,7 +303,7 @@ export class HybridSearchEngine {
   private async runDenseSearch(
     userId: string,
     query: string,
-    options: DenseSearchOptions
+    options: DenseSearchOptions,
   ): Promise<DenseSearchResult[]> {
     try {
       // Generate query embedding
@@ -323,7 +323,7 @@ export class HybridSearchEngine {
   private async runSparseSearch(
     userId: string,
     query: string,
-    options: SparseSearchOptions & { expandQuery?: boolean }
+    options: SparseSearchOptions & { expandQuery?: boolean },
   ): Promise<SparseSearchResult[]> {
     try {
       if (options.expandQuery) {
@@ -342,7 +342,7 @@ export class HybridSearchEngine {
   async semanticSearch(
     userId: string,
     query: string,
-    options: DenseSearchOptions = {}
+    options: DenseSearchOptions = {},
   ): Promise<DenseSearchResult[]> {
     if (!this.initialized) {
       await this.initialize();
@@ -358,7 +358,7 @@ export class HybridSearchEngine {
   async keywordSearch(
     userId: string,
     query: string,
-    options: SparseSearchOptions = {}
+    options: SparseSearchOptions = {},
   ): Promise<SparseSearchResult[]> {
     if (!this.initialized) {
       await this.initialize();
@@ -375,7 +375,7 @@ export class HybridSearchEngine {
     query: string,
     denseWeight: number,
     sparseWeight: number,
-    options: Omit<HybridSearchOptions, 'denseWeight' | 'sparseWeight'> = {}
+    options: Omit<HybridSearchOptions, 'denseWeight' | 'sparseWeight'> = {},
   ): Promise<HybridSearchResponse> {
     return this.search(userId, query, {
       ...options,
@@ -391,7 +391,7 @@ export class HybridSearchEngine {
   async searchFinancial(
     userId: string,
     query: string,
-    options: HybridSearchOptions = {}
+    options: HybridSearchOptions = {},
   ): Promise<HybridSearchResponse> {
     // Financial queries often benefit from keyword matching
     // Adjust weights accordingly
@@ -449,7 +449,7 @@ export const hybridSearchEngine = new HybridSearchEngine();
 export async function hybridSearch(
   userId: string,
   query: string,
-  options: HybridSearchOptions = {}
+  options: HybridSearchOptions = {},
 ): Promise<HybridSearchResponse> {
   return hybridSearchEngine.search(userId, query, options);
 }
@@ -460,7 +460,7 @@ export async function hybridSearch(
 export async function semanticSearch(
   userId: string,
   query: string,
-  options: DenseSearchOptions = {}
+  options: DenseSearchOptions = {},
 ): Promise<DenseSearchResult[]> {
   return hybridSearchEngine.semanticSearch(userId, query, options);
 }
@@ -471,7 +471,7 @@ export async function semanticSearch(
 export async function keywordSearch(
   userId: string,
   query: string,
-  options: SparseSearchOptions = {}
+  options: SparseSearchOptions = {},
 ): Promise<SparseSearchResult[]> {
   return hybridSearchEngine.keywordSearch(userId, query, options);
 }

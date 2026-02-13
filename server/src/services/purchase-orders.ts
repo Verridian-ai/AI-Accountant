@@ -35,20 +35,14 @@ import { BillService, billService } from './bills.js';
 // TOLERANCE CONFIGURATION
 // ============================================================================
 
-const AP_AUTO_MATCH_THRESHOLD = parseFloat(
-  process.env.AP_AUTO_MATCH_THRESHOLD || '0.02'
-); // 2% default
+const AP_AUTO_MATCH_THRESHOLD = parseFloat(process.env.AP_AUTO_MATCH_THRESHOLD || '0.02'); // 2% default
 const AP_MAX_MATCH_THRESHOLD = 0.05; // Hard cap at 5% — cannot be set higher
 
 function isWithinTolerance(expected: number, actual: number): boolean {
   if (expected === 0 && actual === 0) return true;
   if (expected === 0 || actual === 0) return false;
-  const variance =
-    Math.abs(expected - actual) / Math.max(Math.abs(expected), Math.abs(actual));
-  const effectiveThreshold = Math.min(
-    AP_AUTO_MATCH_THRESHOLD,
-    AP_MAX_MATCH_THRESHOLD
-  );
+  const variance = Math.abs(expected - actual) / Math.max(Math.abs(expected), Math.abs(actual));
+  const effectiveThreshold = Math.min(AP_AUTO_MATCH_THRESHOLD, AP_MAX_MATCH_THRESHOLD);
   return variance <= effectiveThreshold;
 }
 
@@ -213,9 +207,11 @@ function calcLineAmount(quantity: number, unitPriceCents: number): number {
   return Math.round(quantity * unitPriceCents);
 }
 
-function calcPOTotals(
-  lines: Array<{ amount: number }>
-): { subtotal: number; gstAmount: number; totalAmount: number } {
+function calcPOTotals(lines: Array<{ amount: number }>): {
+  subtotal: number;
+  gstAmount: number;
+  totalAmount: number;
+} {
   let subtotal = 0;
   for (const line of lines) {
     subtotal += line.amount;
@@ -235,7 +231,7 @@ export class PurchaseOrderService {
    */
   async listPurchaseOrders(
     userId: string,
-    options: POListOptions = {}
+    options: POListOptions = {},
   ): Promise<{ data: POWithSupplier[]; total: number }> {
     const { page = 1, limit = 50, status, supplierId, dateFrom, dateTo } = options;
     const offset = (page - 1) * limit;
@@ -331,11 +327,7 @@ export class PurchaseOrderService {
     }
 
     // Fetch line items
-    const lines = await db
-      .select()
-      .from(poLines)
-      .where(eq(poLines.purchaseOrderId, poId))
-      .all();
+    const lines = await db.select().from(poLines).where(eq(poLines.purchaseOrderId, poId)).all();
 
     const lineItems: POLineWithProgress[] = lines.map((l: any) => {
       const qty = Number(l.quantity) || 0;
@@ -394,10 +386,7 @@ export class PurchaseOrderService {
       })
       .from(bills)
       .where(
-        and(
-          eq(bills.supplierId, (row as any).supplierId),
-          eq(bills.userId, (row as any).userId)
-        )
+        and(eq(bills.supplierId, (row as any).supplierId), eq(bills.userId, (row as any).userId)),
       )
       .all();
 
@@ -444,10 +433,7 @@ export class PurchaseOrderService {
    * Create a new PO with auto-generated number and line items.
    * Inserts PO + lines atomically. Status starts as 'draft'.
    */
-  async createPurchaseOrder(
-    userId: string,
-    data: CreatePOInput
-  ): Promise<any> {
+  async createPurchaseOrder(userId: string, data: CreatePOInput): Promise<any> {
     if (!data.lineItems || data.lineItems.length === 0) {
       throw new Error('Purchase order must have at least one line item');
     }
@@ -527,7 +513,7 @@ export class PurchaseOrderService {
 
     if (existing.status !== 'draft') {
       throw new Error(
-        `Cannot update PO in '${existing.status}' status. Only draft POs can be updated.`
+        `Cannot update PO in '${existing.status}' status. Only draft POs can be updated.`,
       );
     }
 
@@ -539,10 +525,7 @@ export class PurchaseOrderService {
 
     // If line items provided, replace all and recalculate
     if (data.lineItems && data.lineItems.length > 0) {
-      await db
-        .delete(poLines)
-        .where(eq(poLines.purchaseOrderId, poId))
-        .run();
+      await db.delete(poLines).where(eq(poLines.purchaseOrderId, poId)).run();
 
       const computedLines = data.lineItems.map((item) => {
         const amount = calcLineAmount(item.quantity, item.unitPriceCents);
@@ -567,37 +550,23 @@ export class PurchaseOrderService {
       updates.totalAmount = totals.totalAmount;
     }
 
-    await db
-      .update(purchaseOrders)
-      .set(updates)
-      .where(eq(purchaseOrders.id, poId))
-      .run();
+    await db.update(purchaseOrders).set(updates).where(eq(purchaseOrders.id, poId)).run();
 
-    return await db
-      .select()
-      .from(purchaseOrders)
-      .where(eq(purchaseOrders.id, poId))
-      .get();
+    return await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
   }
 
   /**
    * Send a PO to the supplier. Transition: draft → sent.
    */
   async sendPurchaseOrder(poId: string): Promise<any> {
-    const po = await db
-      .select()
-      .from(purchaseOrders)
-      .where(eq(purchaseOrders.id, poId))
-      .get();
+    const po = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
 
     if (!po) {
       throw new Error(`Purchase order not found: ${poId}`);
     }
 
     if (po.status !== 'draft') {
-      throw new Error(
-        `Cannot send PO: current status is '${po.status}', expected 'draft'`
-      );
+      throw new Error(`Cannot send PO: current status is '${po.status}', expected 'draft'`);
     }
 
     const now = new Date().toISOString();
@@ -613,11 +582,7 @@ export class PurchaseOrderService {
 
     console.log(`[PurchaseOrderService] PO ${po.poNumber} sent`);
 
-    return await db
-      .select()
-      .from(purchaseOrders)
-      .where(eq(purchaseOrders.id, poId))
-      .get();
+    return await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
   }
 
   /**
@@ -628,15 +593,8 @@ export class PurchaseOrderService {
    *   - Separation of duties: PO creator ≠ goods receiver (single-user exception)
    *   - Updates PO status to 'partially_received' or 'received'
    */
-  async receiveGoods(
-    poId: string,
-    receipt: ReceiveGoodsInput
-  ): Promise<any> {
-    const po = await db
-      .select()
-      .from(purchaseOrders)
-      .where(eq(purchaseOrders.id, poId))
-      .get();
+  async receiveGoods(poId: string, receipt: ReceiveGoodsInput): Promise<any> {
+    const po = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
 
     if (!po) {
       throw new Error(`Purchase order not found: ${poId}`);
@@ -644,7 +602,7 @@ export class PurchaseOrderService {
 
     if (po.status !== 'sent' && po.status !== 'partially_received') {
       throw new Error(
-        `Cannot receive goods: PO status is '${po.status}'. Must be 'sent' or 'partially_received'.`
+        `Cannot receive goods: PO status is '${po.status}'. Must be 'sent' or 'partially_received'.`,
       );
     }
 
@@ -661,11 +619,11 @@ export class PurchaseOrderService {
 
       if (totalUsers <= 1) {
         console.warn(
-          `[PurchaseOrderService] WARNING: Single-user mode — PO creator ${po.userId} is receiving goods against their own PO ${po.poNumber}`
+          `[PurchaseOrderService] WARNING: Single-user mode — PO creator ${po.userId} is receiving goods against their own PO ${po.poNumber}`,
         );
       } else {
         throw new Error(
-          'Separation of duties: PO creator cannot receive goods against their own PO'
+          'Separation of duties: PO creator cannot receive goods against their own PO',
         );
       }
     }
@@ -693,16 +651,14 @@ export class PurchaseOrderService {
         throw new Error(`PO line not found: ${rl.poLineId}`);
       }
       if (rl.quantityReceived <= 0) {
-        throw new Error(
-          `Quantity received must be positive for line: ${poLine.description}`
-        );
+        throw new Error(`Quantity received must be positive for line: ${poLine.description}`);
       }
       const currentReceived = Number(poLine.quantityReceived) || 0;
       const ordered = Number(poLine.quantity) || 0;
       if (currentReceived + rl.quantityReceived > ordered) {
         throw new Error(
           `Cannot receive ${rl.quantityReceived} for "${poLine.description}": ` +
-            `already received ${currentReceived} of ${ordered} ordered`
+            `already received ${currentReceived} of ${ordered} ordered`,
         );
       }
     }
@@ -738,8 +694,7 @@ export class PurchaseOrderService {
 
       // Update po_lines.quantityReceived
       const poLine = lineMap.get(rl.poLineId)!;
-      const newReceived =
-        (Number(poLine.quantityReceived) || 0) + rl.quantityReceived;
+      const newReceived = (Number(poLine.quantityReceived) || 0) + rl.quantityReceived;
       await db
         .update(poLines)
         .set({ quantityReceived: newReceived })
@@ -776,7 +731,7 @@ export class PurchaseOrderService {
       .run();
 
     console.log(
-      `[PurchaseOrderService] Goods received for PO ${po.poNumber} → status: ${newStatus}`
+      `[PurchaseOrderService] Goods received for PO ${po.poNumber} → status: ${newStatus}`,
     );
 
     return {
@@ -795,11 +750,7 @@ export class PurchaseOrderService {
    * Cancel a PO. Only draft or sent POs with no goods received.
    */
   async cancelPurchaseOrder(poId: string): Promise<any> {
-    const po = await db
-      .select()
-      .from(purchaseOrders)
-      .where(eq(purchaseOrders.id, poId))
-      .get();
+    const po = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
 
     if (!po) {
       throw new Error(`Purchase order not found: ${poId}`);
@@ -807,7 +758,7 @@ export class PurchaseOrderService {
 
     if (po.status !== 'draft' && po.status !== 'sent') {
       throw new Error(
-        `Cannot cancel PO in '${po.status}' status. Only draft or sent POs can be cancelled.`
+        `Cannot cancel PO in '${po.status}' status. Only draft or sent POs can be cancelled.`,
       );
     }
 
@@ -820,11 +771,7 @@ export class PurchaseOrderService {
 
     console.log(`[PurchaseOrderService] PO ${po.poNumber} cancelled`);
 
-    return await db
-      .select()
-      .from(purchaseOrders)
-      .where(eq(purchaseOrders.id, poId))
-      .get();
+    return await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
   }
 
   /**
@@ -836,27 +783,16 @@ export class PurchaseOrderService {
    *   2. Price match: bill unit prices vs PO unit prices (within tolerance)
    *   3. Total match: bill total vs PO total (within tolerance)
    */
-  async threeWayMatch(
-    poId: string,
-    billId: string
-  ): Promise<ThreeWayMatchResult> {
+  async threeWayMatch(poId: string, billId: string): Promise<ThreeWayMatchResult> {
     // Fetch PO header
-    const po = await db
-      .select()
-      .from(purchaseOrders)
-      .where(eq(purchaseOrders.id, poId))
-      .get();
+    const po = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
 
     if (!po) {
       throw new Error(`Purchase order not found: ${poId}`);
     }
 
     // Fetch bill header
-    const bill = await db
-      .select()
-      .from(bills)
-      .where(eq(bills.id, billId))
-      .get();
+    const bill = await db.select().from(bills).where(eq(bills.id, billId)).get();
 
     if (!bill) {
       throw new Error(`Bill not found: ${billId}`);
@@ -881,10 +817,7 @@ export class PurchaseOrderService {
       .leftJoin(poReceiptLines, eq(poReceiptLines.poLineId, poLines.id))
       .leftJoin(
         billLines,
-        and(
-          eq(billLines.description, poLines.description),
-          eq(billLines.billId, billId)
-        )
+        and(eq(billLines.description, poLines.description), eq(billLines.billId, billId)),
       )
       .where(eq(poLines.purchaseOrderId, poId))
       .groupBy(
@@ -897,7 +830,7 @@ export class PurchaseOrderService {
         billLines.id,
         billLines.unitPrice,
         billLines.quantity,
-        billLines.amount
+        billLines.amount,
       )
       .all();
 
@@ -990,8 +923,7 @@ export class PurchaseOrderService {
 
     // Determine overall match status
     const allMatch = quantityMatch && priceMatch && totalMatch;
-    const partialMatch =
-      (quantityMatch || priceMatch) && !allMatch;
+    const partialMatch = (quantityMatch || priceMatch) && !allMatch;
 
     const matchStatus: ThreeWayMatchResult['matchStatus'] = allMatch
       ? 'matched'
@@ -1002,7 +934,7 @@ export class PurchaseOrderService {
     const canAutoApprove = allMatch && discrepancies.length === 0;
 
     console.log(
-      `[PurchaseOrderService] Three-way match PO ${po.poNumber} ↔ Bill ${bill.billNumber}: ${matchStatus} (${discrepancies.length} discrepancies)`
+      `[PurchaseOrderService] Three-way match PO ${po.poNumber} ↔ Bill ${bill.billNumber}: ${matchStatus} (${discrepancies.length} discrepancies)`,
     );
 
     return {
@@ -1051,10 +983,7 @@ export class PurchaseOrderService {
    * Create a batch payment run for multiple approved bills.
    * Calculates total, generates bank reference, sets status = 'draft'.
    */
-  async createPaymentRun(
-    userId: string,
-    data: CreatePaymentRunInput
-  ): Promise<any> {
+  async createPaymentRun(userId: string, data: CreatePaymentRunInput): Promise<any> {
     if (!data.billIds || data.billIds.length === 0) {
       throw new Error('Payment run must include at least one bill');
     }
@@ -1076,15 +1005,13 @@ export class PurchaseOrderService {
 
       if (bill.status !== 'approved' && bill.status !== 'overdue') {
         throw new Error(
-          `Bill ${bill.billNumber ?? bId} is in '${bill.status}' status. Only approved or overdue bills can be included in a payment run.`
+          `Bill ${bill.billNumber ?? bId} is in '${bill.status}' status. Only approved or overdue bills can be included in a payment run.`,
         );
       }
 
       const amountDue = Number(bill.amountDue) || 0;
       if (amountDue <= 0) {
-        throw new Error(
-          `Bill ${bill.billNumber ?? bId} has no amount due`
-        );
+        throw new Error(`Bill ${bill.billNumber ?? bId} has no amount due`);
       }
 
       totalAmount += amountDue;
@@ -1094,7 +1021,8 @@ export class PurchaseOrderService {
     const runId = crypto.randomUUID();
     const now = new Date().toISOString();
     const bankReference =
-      data.bankReference ?? `PAY-${now.split('T')[0].replace(/-/g, '')}-${runId.slice(0, 6).toUpperCase()}`;
+      data.bankReference ??
+      `PAY-${now.split('T')[0].replace(/-/g, '')}-${runId.slice(0, 6).toUpperCase()}`;
 
     // Insert payment run
     await db
@@ -1124,7 +1052,7 @@ export class PurchaseOrderService {
     }
 
     console.log(
-      `[PurchaseOrderService] Payment run ${runId} created: ${billDetails.length} bills, total ${totalAmount} cents`
+      `[PurchaseOrderService] Payment run ${runId} created: ${billDetails.length} bills, total ${totalAmount} cents`,
     );
 
     return {
@@ -1157,9 +1085,7 @@ export class PurchaseOrderService {
     }
 
     if (run.status !== 'draft') {
-      throw new Error(
-        `Cannot process payment run: status is '${run.status}', expected 'draft'`
-      );
+      throw new Error(`Cannot process payment run: status is '${run.status}', expected 'draft'`);
     }
 
     // Mark as processing
@@ -1204,11 +1130,11 @@ export class PurchaseOrderService {
     if (errors.length > 0) {
       console.error(
         `[PurchaseOrderService] Payment run ${paymentRunId} had ${errors.length} error(s):`,
-        errors
+        errors,
       );
     } else {
       console.log(
-        `[PurchaseOrderService] Payment run ${paymentRunId} completed: ${items.length} bills paid`
+        `[PurchaseOrderService] Payment run ${paymentRunId} completed: ${items.length} bills paid`,
       );
     }
 

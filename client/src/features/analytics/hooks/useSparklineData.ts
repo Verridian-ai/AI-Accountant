@@ -23,7 +23,9 @@ export function useSparklineData(
       if (groupBy === 'week') {
         // ISO week-based key: YYYY-Www
         const jan1 = new Date(d.getFullYear(), 0, 1);
-        const weekNum = Math.ceil(((d.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
+        const weekNum = Math.ceil(
+          ((d.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7,
+        );
         key = `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
       } else if (groupBy === 'quarter') {
         const q = Math.floor(d.getMonth() / 3) + 1;

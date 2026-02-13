@@ -76,11 +76,11 @@ export const DEFAULT_SECURITY_CONFIG: SecurityHeadersConfig = {
     geolocation: [],
     microphone: [],
     camera: [],
-    'payment': [],
-    'usb': [],
-    'magnetometer': [],
-    'gyroscope': [],
-    'accelerometer': [],
+    payment: [],
+    usb: [],
+    magnetometer: [],
+    gyroscope: [],
+    accelerometer: [],
   },
   csp: {
     defaultSrc: ["'self'"],
@@ -108,7 +108,7 @@ export const DEV_SECURITY_CONFIG: SecurityHeadersConfig = {
   ...DEFAULT_SECURITY_CONFIG,
   enableHSTS: false,
   csp: {
-    ...DEFAULT_SECURITY_CONFIG.csp as CSPDirectives,
+    ...(DEFAULT_SECURITY_CONFIG.csp as CSPDirectives),
     scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Required for Vite HMR
     connectSrc: ["'self'", 'ws:', 'wss:', 'http:', 'https:'], // Allow all for dev
   },
@@ -137,7 +137,7 @@ function buildPermissionsPolicyHeader(policy: Record<string, string[]>): string 
       if (values.length === 0) {
         return `${directive}=()`;
       }
-      return `${directive}=(${values.map(v => v === 'self' ? 'self' : `"${v}"`).join(' ')})`;
+      return `${directive}=(${values.map((v) => (v === 'self' ? 'self' : `"${v}"`)).join(' ')})`;
     })
     .join(', ');
 }
@@ -204,9 +204,7 @@ function buildCSPHeader(directives: CSPDirectives): string {
 /**
  * Security headers middleware factory
  */
-export function securityHeaders(
-  customConfig?: Partial<SecurityHeadersConfig>
-): MiddlewareHandler {
+export function securityHeaders(customConfig?: Partial<SecurityHeadersConfig>): MiddlewareHandler {
   const config = {
     ...(process.env.NODE_ENV === 'production' ? DEFAULT_SECURITY_CONFIG : DEV_SECURITY_CONFIG),
     ...customConfig,

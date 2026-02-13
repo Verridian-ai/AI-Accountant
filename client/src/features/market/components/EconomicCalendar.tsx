@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar as CalendarIcon, List, ChevronLeft, ChevronRight, Clock, AlertCircle } from 'lucide-react';
+import {
+  Calendar as CalendarIcon,
+  List,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  AlertCircle,
+} from 'lucide-react';
 import { fetchEconomicCalendar } from '../../../api';
 
 interface CalendarEvent {
@@ -32,8 +39,18 @@ const IMPORTANCE_DOT: Record<string, string> = {
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 export function EconomicCalendar() {
@@ -64,14 +81,82 @@ export function EconomicCalendar() {
     } catch {
       // Fallback events
       const mockEvents: CalendarEvent[] = [
-        { id: '1', title: 'RBA Board Meeting', date: `${year}-${String(month + 1).padStart(2, '0')}-04`, time: '14:30', importance: 'high', source: 'RBA', category: 'Monetary Policy' },
-        { id: '2', title: 'Employment Data', date: `${year}-${String(month + 1).padStart(2, '0')}-13`, time: '11:30', importance: 'high', source: 'ABS', category: 'Labour', forecast: '20,000', previous: '14,200' },
-        { id: '3', title: 'CPI Release', date: `${year}-${String(month + 1).padStart(2, '0')}-15`, time: '11:30', importance: 'high', source: 'ABS', category: 'Inflation', forecast: '3.4%', previous: '3.6%' },
-        { id: '4', title: 'Retail Sales', date: `${year}-${String(month + 1).padStart(2, '0')}-07`, time: '11:30', importance: 'medium', source: 'ABS', category: 'Consumer' },
-        { id: '5', title: 'Trade Balance', date: `${year}-${String(month + 1).padStart(2, '0')}-09`, time: '11:30', importance: 'medium', source: 'ABS', category: 'Trade' },
-        { id: '6', title: 'Business Confidence', date: `${year}-${String(month + 1).padStart(2, '0')}-11`, time: '11:30', importance: 'medium', source: 'NAB', category: 'Business' },
-        { id: '7', title: 'Consumer Sentiment', date: `${year}-${String(month + 1).padStart(2, '0')}-18`, time: '10:30', importance: 'low', source: 'Westpac', category: 'Consumer' },
-        { id: '8', title: 'Building Approvals', date: `${year}-${String(month + 1).padStart(2, '0')}-22`, time: '11:30', importance: 'low', source: 'ABS', category: 'Housing' },
+        {
+          id: '1',
+          title: 'RBA Board Meeting',
+          date: `${year}-${String(month + 1).padStart(2, '0')}-04`,
+          time: '14:30',
+          importance: 'high',
+          source: 'RBA',
+          category: 'Monetary Policy',
+        },
+        {
+          id: '2',
+          title: 'Employment Data',
+          date: `${year}-${String(month + 1).padStart(2, '0')}-13`,
+          time: '11:30',
+          importance: 'high',
+          source: 'ABS',
+          category: 'Labour',
+          forecast: '20,000',
+          previous: '14,200',
+        },
+        {
+          id: '3',
+          title: 'CPI Release',
+          date: `${year}-${String(month + 1).padStart(2, '0')}-15`,
+          time: '11:30',
+          importance: 'high',
+          source: 'ABS',
+          category: 'Inflation',
+          forecast: '3.4%',
+          previous: '3.6%',
+        },
+        {
+          id: '4',
+          title: 'Retail Sales',
+          date: `${year}-${String(month + 1).padStart(2, '0')}-07`,
+          time: '11:30',
+          importance: 'medium',
+          source: 'ABS',
+          category: 'Consumer',
+        },
+        {
+          id: '5',
+          title: 'Trade Balance',
+          date: `${year}-${String(month + 1).padStart(2, '0')}-09`,
+          time: '11:30',
+          importance: 'medium',
+          source: 'ABS',
+          category: 'Trade',
+        },
+        {
+          id: '6',
+          title: 'Business Confidence',
+          date: `${year}-${String(month + 1).padStart(2, '0')}-11`,
+          time: '11:30',
+          importance: 'medium',
+          source: 'NAB',
+          category: 'Business',
+        },
+        {
+          id: '7',
+          title: 'Consumer Sentiment',
+          date: `${year}-${String(month + 1).padStart(2, '0')}-18`,
+          time: '10:30',
+          importance: 'low',
+          source: 'Westpac',
+          category: 'Consumer',
+        },
+        {
+          id: '8',
+          title: 'Building Approvals',
+          date: `${year}-${String(month + 1).padStart(2, '0')}-22`,
+          time: '11:30',
+          importance: 'low',
+          source: 'ABS',
+          category: 'Housing',
+        },
       ];
       setEvents(mockEvents);
       setError('Using sample calendar data');
@@ -108,9 +193,8 @@ export function EconomicCalendar() {
     return day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
   };
 
-  const filteredEvents = importanceFilter === 'all'
-    ? events
-    : events.filter(e => e.importance === importanceFilter);
+  const filteredEvents =
+    importanceFilter === 'all' ? events : events.filter((e) => e.importance === importanceFilter);
 
   const sortedEvents = [...filteredEvents].sort((a, b) => a.date.localeCompare(b.date));
 
@@ -119,13 +203,19 @@ export function EconomicCalendar() {
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={prevMonth} className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white">
+          <button
+            onClick={prevMonth}
+            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+          >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <h3 className="text-lg font-bold text-white min-w-[180px] text-center">
             {MONTHS[month]} {year}
           </h3>
-          <button onClick={nextMonth} className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white">
+          <button
+            onClick={nextMonth}
+            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+          >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -177,7 +267,10 @@ export function EconomicCalendar() {
         <div className="neu-raised rounded-2xl overflow-hidden">
           <div className="grid grid-cols-7 border-b border-white/5">
             {DAYS.map((day) => (
-              <div key={day} className="px-2 py-2.5 text-center text-xs font-bold text-zinc-500 uppercase tracking-wider">
+              <div
+                key={day}
+                className="px-2 py-2.5 text-center text-xs font-bold text-zinc-500 uppercase tracking-wider"
+              >
                 {day}
               </div>
             ))}
@@ -194,9 +287,11 @@ export function EconomicCalendar() {
                 >
                   {day && (
                     <>
-                      <span className={`text-xs font-medium ${
-                        isToday(day) ? 'text-[#FFCC00] font-bold' : 'text-zinc-400'
-                      }`}>
+                      <span
+                        className={`text-xs font-medium ${
+                          isToday(day) ? 'text-[#FFCC00] font-bold' : 'text-zinc-400'
+                        }`}
+                      >
                         {day}
                       </span>
                       <div className="mt-1 space-y-0.5">
@@ -210,7 +305,9 @@ export function EconomicCalendar() {
                           </div>
                         ))}
                         {dayEvents.length > 3 && (
-                          <span className="text-[10px] text-zinc-500 pl-1">+{dayEvents.length - 3} more</span>
+                          <span className="text-[10px] text-zinc-500 pl-1">
+                            +{dayEvents.length - 3} more
+                          </span>
                         )}
                       </div>
                     </>
@@ -229,19 +326,30 @@ export function EconomicCalendar() {
             </div>
           ) : (
             sortedEvents.map((evt) => (
-              <div key={evt.id} className="neu-raised rounded-xl p-4 flex items-start gap-4 hover:border-[#FFCC00]/10 border border-transparent transition-all">
-                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${IMPORTANCE_DOT[evt.importance]}`} />
+              <div
+                key={evt.id}
+                className="neu-raised rounded-xl p-4 flex items-start gap-4 hover:border-[#FFCC00]/10 border border-transparent transition-all"
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${IMPORTANCE_DOT[evt.importance]}`}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="text-sm font-bold text-white truncate">{evt.title}</h4>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ring-1 font-medium ${IMPORTANCE_COLORS[evt.importance]}`}>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full ring-1 font-medium ${IMPORTANCE_COLORS[evt.importance]}`}
+                    >
                       {evt.importance}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-zinc-500">
                     <span className="flex items-center gap-1">
                       <CalendarIcon className="w-3 h-3" />
-                      {new Date(evt.date).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      {new Date(evt.date).toLocaleDateString('en-AU', {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                      })}
                     </span>
                     {evt.time && (
                       <span className="flex items-center gap-1">
@@ -254,13 +362,19 @@ export function EconomicCalendar() {
                   {(evt.forecast || evt.previous) && (
                     <div className="flex gap-4 mt-2 text-xs">
                       {evt.forecast && (
-                        <span className="text-zinc-400">Forecast: <span className="text-white font-medium">{evt.forecast}</span></span>
+                        <span className="text-zinc-400">
+                          Forecast: <span className="text-white font-medium">{evt.forecast}</span>
+                        </span>
                       )}
                       {evt.previous && (
-                        <span className="text-zinc-400">Previous: <span className="text-zinc-300">{evt.previous}</span></span>
+                        <span className="text-zinc-400">
+                          Previous: <span className="text-zinc-300">{evt.previous}</span>
+                        </span>
                       )}
                       {evt.actual && (
-                        <span className="text-zinc-400">Actual: <span className="text-emerald-400 font-medium">{evt.actual}</span></span>
+                        <span className="text-zinc-400">
+                          Actual: <span className="text-emerald-400 font-medium">{evt.actual}</span>
+                        </span>
                       )}
                     </div>
                   )}

@@ -8,16 +8,35 @@ import type { CategoryBreakdownItem } from '../types';
 const PERIODS = ['1m', '3m', '6m', '12m'] as const;
 
 function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(cents / 100);
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 }
 
 // Color mapping from Tailwind class to hex
 const COLOR_HEX: Record<string, string> = {
-  'red-500': '#ef4444', 'rose-500': '#f43f5e', 'pink-500': '#ec4899', 'fuchsia-500': '#d946ef',
-  'purple-500': '#a855f7', 'violet-500': '#8b5cf6', 'indigo-500': '#6366f1', 'blue-500': '#3b82f6',
-  'sky-500': '#0ea5e9', 'cyan-500': '#06b6d4', 'teal-500': '#14b8a6', 'emerald-500': '#10b981',
-  'green-500': '#22c55e', 'lime-500': '#84cc16', 'yellow-500': '#eab308', 'amber-500': '#f59e0b',
-  'orange-500': '#f97316', 'slate-500': '#64748b', 'zinc-500': '#71717a', 'stone-500': '#78716c',
+  'red-500': '#ef4444',
+  'rose-500': '#f43f5e',
+  'pink-500': '#ec4899',
+  'fuchsia-500': '#d946ef',
+  'purple-500': '#a855f7',
+  'violet-500': '#8b5cf6',
+  'indigo-500': '#6366f1',
+  'blue-500': '#3b82f6',
+  'sky-500': '#0ea5e9',
+  'cyan-500': '#06b6d4',
+  'teal-500': '#14b8a6',
+  'emerald-500': '#10b981',
+  'green-500': '#22c55e',
+  'lime-500': '#84cc16',
+  'yellow-500': '#eab308',
+  'amber-500': '#f59e0b',
+  'orange-500': '#f97316',
+  'slate-500': '#64748b',
+  'zinc-500': '#71717a',
+  'stone-500': '#78716c',
 };
 
 function getHexColor(category: string): string {
@@ -28,12 +47,23 @@ function getHexColor(category: string): string {
   return COLOR_HEX[dotClass] || '#FFCC00';
 }
 
-function polarToCartesian(cx: number, cy: number, r: number, angle: number): { x: number; y: number } {
-  const rad = (angle - 90) * Math.PI / 180;
+function polarToCartesian(
+  cx: number,
+  cy: number,
+  r: number,
+  angle: number,
+): { x: number; y: number } {
+  const rad = ((angle - 90) * Math.PI) / 180;
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-function describeArc(cx: number, cy: number, r: number, startAngle: number, endAngle: number): string {
+function describeArc(
+  cx: number,
+  cy: number,
+  r: number,
+  startAngle: number,
+  endAngle: number,
+): string {
   const start = polarToCartesian(cx, cy, r, endAngle);
   const end = polarToCartesian(cx, cy, r, startAngle);
   const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
@@ -81,7 +111,7 @@ export function CategoryBreakdown() {
     }
 
     let currentAngle = 0;
-    return displayItems.map(item => {
+    return displayItems.map((item) => {
       const angle = Math.max((item.percentage / 100) * 360, 1);
       const segment = {
         ...item,
@@ -95,7 +125,10 @@ export function CategoryBreakdown() {
   }, [items]);
 
   const total = items.reduce((s, i) => s + i.total, 0);
-  const CX = 100, CY = 100, R = 80, INNER_R = 50;
+  const CX = 100,
+    CY = 100,
+    R = 80,
+    INNER_R = 50;
 
   if (loading) {
     return (
@@ -111,7 +144,9 @@ export function CategoryBreakdown() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <PieChart className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Category Breakdown</span>
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            Category Breakdown
+          </span>
         </div>
         <div className="flex gap-2">
           <div className="flex gap-1 neu-inset rounded-xl p-1">
@@ -119,8 +154,10 @@ export function CategoryBreakdown() {
               type="button"
               onClick={() => setMode('expenses')}
               className={cn(
-                "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
-                mode === 'expenses' ? "bg-[#FFCC00] text-[#0a0a0f]" : "text-zinc-500 hover:text-zinc-300"
+                'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
+                mode === 'expenses'
+                  ? 'bg-[#FFCC00] text-[#0a0a0f]'
+                  : 'text-zinc-500 hover:text-zinc-300',
               )}
             >
               Expenses
@@ -129,22 +166,26 @@ export function CategoryBreakdown() {
               type="button"
               onClick={() => setMode('income')}
               className={cn(
-                "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
-                mode === 'income' ? "bg-[#FFCC00] text-[#0a0a0f]" : "text-zinc-500 hover:text-zinc-300"
+                'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
+                mode === 'income'
+                  ? 'bg-[#FFCC00] text-[#0a0a0f]'
+                  : 'text-zinc-500 hover:text-zinc-300',
               )}
             >
               Income
             </button>
           </div>
           <div className="flex gap-1 neu-inset rounded-xl p-1">
-            {PERIODS.map(p => (
+            {PERIODS.map((p) => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPeriod(p)}
                 className={cn(
-                  "px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
-                  period === p ? "bg-[#FFCC00] text-[#0a0a0f]" : "text-zinc-500 hover:text-zinc-300"
+                  'px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
+                  period === p
+                    ? 'bg-[#FFCC00] text-[#0a0a0f]'
+                    : 'text-zinc-500 hover:text-zinc-300',
                 )}
               >
                 {p}
@@ -171,16 +212,30 @@ export function CategoryBreakdown() {
                     strokeWidth={isSelected ? INNER_R - 4 : INNER_R - 10}
                     strokeLinecap="butt"
                     className="cursor-pointer transition-all duration-200 hover:opacity-80"
-                    onClick={() => setSelectedCategory(selectedCategory === seg.category ? null : seg.category)}
+                    onClick={() =>
+                      setSelectedCategory(selectedCategory === seg.category ? null : seg.category)
+                    }
                     opacity={selectedCategory && !isSelected ? 0.3 : 1}
                   />
                 );
               })}
               {/* Center text */}
-              <text x={CX} y={CY - 6} textAnchor="middle" fill="#f5f5f7" className="text-lg font-black">
+              <text
+                x={CX}
+                y={CY - 6}
+                textAnchor="middle"
+                fill="#f5f5f7"
+                className="text-lg font-black"
+              >
                 {formatCurrency(total)}
               </text>
-              <text x={CX} y={CY + 12} textAnchor="middle" fill="#71717a" className="text-[9px] font-bold uppercase">
+              <text
+                x={CX}
+                y={CY + 12}
+                textAnchor="middle"
+                fill="#71717a"
+                className="text-[9px] font-bold uppercase"
+              >
                 Total
               </text>
             </svg>
@@ -192,16 +247,29 @@ export function CategoryBreakdown() {
               <button
                 key={i}
                 type="button"
-                onClick={() => setSelectedCategory(selectedCategory === seg.category ? null : seg.category)}
+                onClick={() =>
+                  setSelectedCategory(selectedCategory === seg.category ? null : seg.category)
+                }
                 className={cn(
-                  "w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left",
-                  selectedCategory === seg.category ? "neu-inset border border-white/10" : "hover:bg-white/5"
+                  'w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left',
+                  selectedCategory === seg.category
+                    ? 'neu-inset border border-white/10'
+                    : 'hover:bg-white/5',
                 )}
               >
-                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: seg.hexColor }} />
-                <span className="text-xs font-bold text-zinc-300 flex-1 truncate">{seg.category}</span>
-                <span className="text-xs font-black text-zinc-400 tabular-nums">{formatCurrency(seg.total)}</span>
-                <span className="text-[9px] font-bold text-zinc-600 w-10 text-right tabular-nums">{seg.percentage.toFixed(1)}%</span>
+                <div
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ backgroundColor: seg.hexColor }}
+                />
+                <span className="text-xs font-bold text-zinc-300 flex-1 truncate">
+                  {seg.category}
+                </span>
+                <span className="text-xs font-black text-zinc-400 tabular-nums">
+                  {formatCurrency(seg.total)}
+                </span>
+                <span className="text-[9px] font-bold text-zinc-600 w-10 text-right tabular-nums">
+                  {seg.percentage.toFixed(1)}%
+                </span>
               </button>
             ))}
           </div>

@@ -12,10 +12,7 @@ import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
 import { ComplianceMonitorService } from '../../compliance-monitor.js';
 import { AnomalyDetectionService } from '../../anomaly-detection.js';
-import type {
-  ComplianceMonitoringInput,
-  ComplianceMonitoringOutput,
-} from '../types.js';
+import type { ComplianceMonitoringInput, ComplianceMonitoringOutput } from '../types.js';
 
 const complianceService = new ComplianceMonitorService();
 const anomalyService = new AnomalyDetectionService();
@@ -59,7 +56,8 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
   protected tools: Anthropic.Tool[] = [
     {
       name: 'check_deadlines',
-      description: 'Check current and upcoming ATO compliance deadlines from the DB, including overdue items (up to 90 days back).',
+      description:
+        'Check current and upcoming ATO compliance deadlines from the DB, including overdue items (up to 90 days back).',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -71,7 +69,8 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
     },
     {
       name: 'assess_risks',
-      description: 'Assess overall compliance risk for a user — scores overdue items, upcoming deadlines, and missing schedules.',
+      description:
+        'Assess overall compliance risk for a user — scores overdue items, upcoming deadlines, and missing schedules.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -82,26 +81,35 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
     },
     {
       name: 'scan_anomalies',
-      description: 'Run anomaly detectors on user transactions to find duplicates, outliers, velocity spikes, category drift, unusual merchants, and schedule deviations.',
+      description:
+        'Run anomaly detectors on user transactions to find duplicates, outliers, velocity spikes, category drift, unusual merchants, and schedule deviations.',
       input_schema: {
         type: 'object' as const,
         properties: {
           userId: { type: 'string', description: 'User ID' },
           detectors: {
             type: 'array',
-            items: { type: 'string', enum: ['duplicates', 'amounts', 'velocity', 'category_drift', 'merchant', 'schedule'] },
+            items: {
+              type: 'string',
+              enum: ['duplicates', 'amounts', 'velocity', 'category_drift', 'merchant', 'schedule'],
+            },
             description: 'Which detectors to run (default: all)',
           },
           dateFrom: { type: 'string', description: 'Start date filter (ISO)' },
           dateTo: { type: 'string', description: 'End date filter (ISO)' },
-          severityThreshold: { type: 'string', enum: ['low', 'medium', 'high'], description: 'Minimum severity to return' },
+          severityThreshold: {
+            type: 'string',
+            enum: ['low', 'medium', 'high'],
+            description: 'Minimum severity to return',
+          },
         },
         required: ['userId'],
       },
     },
     {
       name: 'generate_schedule',
-      description: 'Generate compliance obligations for a financial year based on configured schedules (creates DB records).',
+      description:
+        'Generate compliance obligations for a financial year based on configured schedules (creates DB records).',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -138,20 +146,28 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
     },
     {
       name: 'temporal_compliance_search',
-      description: 'Find time-relevant compliance context and ATO ruling changes for a specific period.',
+      description:
+        'Find time-relevant compliance context and ATO ruling changes for a specific period.',
       input_schema: {
         type: 'object' as const,
         properties: {
           query: { type: 'string', description: 'Compliance query' },
-          period: { type: 'string', description: 'Period identifier (e.g., "2025-Q1", "FY2024-25")' },
-          lookbackMonths: { type: 'number', description: 'Months to look back for context (default 6)' },
+          period: {
+            type: 'string',
+            description: 'Period identifier (e.g., "2025-Q1", "FY2024-25")',
+          },
+          lookbackMonths: {
+            type: 'number',
+            description: 'Months to look back for context (default 6)',
+          },
         },
         required: ['query', 'period'],
       },
     },
     {
       name: 'compliance_timeline',
-      description: 'Generate a compliance-focused timeline for audit preparation. Searches across compliance, tax, and BAS modules.',
+      description:
+        'Generate a compliance-focused timeline for audit preparation. Searches across compliance, tax, and BAS modules.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -163,10 +179,7 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'check_deadlines',
       async (input) => {
@@ -187,7 +200,13 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
         try {
           return await complianceService.assessOverallRisk(userId);
         } catch (err: any) {
-          return { overallRisk: 'medium', score: 0, factors: [], recommendations: [], error: err.message };
+          return {
+            overallRisk: 'medium',
+            score: 0,
+            factors: [],
+            recommendations: [],
+            error: err.message,
+          };
         }
       },
     ],
@@ -195,7 +214,14 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
       'scan_anomalies',
       async (input) => {
         const userId = input.userId as string;
-        const detectors = (input.detectors as string[]) ?? ['duplicates', 'amounts', 'velocity', 'category_drift', 'merchant', 'schedule'];
+        const detectors = (input.detectors as string[]) ?? [
+          'duplicates',
+          'amounts',
+          'velocity',
+          'category_drift',
+          'merchant',
+          'schedule',
+        ];
         try {
           const alerts = await anomalyService.scanTransactions(userId, {
             detectors: detectors as any[],
@@ -290,7 +316,10 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
         }
 
         try {
-          const results = await cogneeTools.temporalSearch(query, 'compliance_rulings', { start, end });
+          const results = await cogneeTools.temporalSearch(query, 'compliance_rulings', {
+            start,
+            end,
+          });
           return { found: results.length > 0, results, period: { start, end } };
         } catch {
           return { found: false, results: [], error: 'Temporal search unavailable' };
@@ -306,9 +335,13 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
           const results = await cogneeTools.searchTimeline(
             'compliance events',
             { start: startDate, end: endDate },
-            ['compliance', 'tax', 'transactions']
+            ['compliance', 'tax', 'transactions'],
           );
-          return { timeline: results.length > 0 ? results : [], count: results.length, period: { startDate, endDate } };
+          return {
+            timeline: results.length > 0 ? results : [],
+            count: results.length,
+            period: { startDate, endDate },
+          };
         } catch {
           return { timeline: [], count: 0, error: 'Timeline search unavailable' };
         }

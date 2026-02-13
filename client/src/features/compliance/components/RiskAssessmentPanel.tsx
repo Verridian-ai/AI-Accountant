@@ -98,14 +98,18 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
           <svg width="180" height="180" viewBox="0 0 180 180" className="mb-4">
             {/* Background ring */}
             <circle
-              cx="90" cy="90" r="70"
+              cx="90"
+              cy="90"
+              r="70"
               fill="none"
               stroke="rgba(255,255,255,0.05)"
               strokeWidth="12"
             />
             {/* Score ring */}
             <circle
-              cx="90" cy="90" r="70"
+              cx="90"
+              cy="90"
+              r="70"
               fill="none"
               stroke={color}
               strokeWidth="12"
@@ -130,37 +134,38 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
 
         {/* Factor Cards */}
         <div className="space-y-3">
-          {risk?.factors && Object.entries(risk.factors).map(([key, factor]) => {
-            const Icon = factorIcons[key] ?? AlertTriangle;
-            const factorColor = scoreColor(factor.score);
-            return (
-              <div key={key} className="neu-raised rounded-xl p-4 flex items-center gap-4">
-                <div className="neu-inset p-2 rounded-xl" style={{ color: factorColor }}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-zinc-200 text-sm font-bold">
-                      {factorLabels[key] ?? key}
-                    </span>
-                    <span className="text-xs text-zinc-500 font-medium">
-                      Weight: {Math.round(factor.weight * 100)}%
-                    </span>
+          {risk?.factors &&
+            Object.entries(risk.factors).map(([key, factor]) => {
+              const Icon = factorIcons[key] ?? AlertTriangle;
+              const factorColor = scoreColor(factor.score);
+              return (
+                <div key={key} className="neu-raised rounded-xl p-4 flex items-center gap-4">
+                  <div className="neu-inset p-2 rounded-xl" style={{ color: factorColor }}>
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{ width: `${factor.score}%`, backgroundColor: factorColor }}
-                    />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-zinc-200 text-sm font-bold">
+                        {factorLabels[key] ?? key}
+                      </span>
+                      <span className="text-xs text-zinc-500 font-medium">
+                        Weight: {Math.round(factor.weight * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${factor.score}%`, backgroundColor: factorColor }}
+                      />
+                    </div>
+                    <p className="text-zinc-500 text-[11px] mt-1">{factor.details}</p>
                   </div>
-                  <p className="text-zinc-500 text-[11px] mt-1">{factor.details}</p>
+                  <span className="text-lg font-bold tabular-nums" style={{ color: factorColor }}>
+                    {factor.score}
+                  </span>
                 </div>
-                <span className="text-lg font-bold tabular-nums" style={{ color: factorColor }}>
-                  {factor.score}
-                </span>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
 

@@ -26,7 +26,7 @@ export function BulkActionBar({
     setIsProcessing(true);
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => api.updateTransaction(id, { category }))
+        Array.from(selectedIds).map((id) => api.updateTransaction(id, { category })),
       );
       onClearSelection();
       onDataChange?.();
@@ -42,7 +42,7 @@ export function BulkActionBar({
     setIsProcessing(true);
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => api.updateTransaction(id, { gstApplicable }))
+        Array.from(selectedIds).map((id) => api.updateTransaction(id, { gstApplicable })),
       );
       onClearSelection();
       onDataChange?.();
@@ -57,9 +57,7 @@ export function BulkActionBar({
     if (!confirm(`Delete ${selectedCount} transactions?`)) return;
     setIsProcessing(true);
     try {
-      await Promise.all(
-        Array.from(selectedIds).map((id) => api.deleteTransaction(id))
-      );
+      await Promise.all(Array.from(selectedIds).map((id) => api.deleteTransaction(id)));
       onClearSelection();
       onDataChange?.();
     } catch (err) {
@@ -131,7 +129,7 @@ export function BulkActionBar({
           onClick={onClearSelection}
           className={cn(
             'p-2 text-zinc-500 hover:text-zinc-300 rounded-xl transition-colors',
-            isProcessing && 'opacity-50 pointer-events-none'
+            isProcessing && 'opacity-50 pointer-events-none',
           )}
           aria-label="Clear selection"
         >

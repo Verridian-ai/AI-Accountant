@@ -47,10 +47,10 @@ export interface IndicatorSummary {
 // ============================================================================
 
 export interface RateDecision {
-  date: string;           // ISO date of the RBA board meeting
-  rate: number;           // Cash rate target after decision (percent, e.g. 4.35)
-  previousRate: number;   // Cash rate before this decision
-  change: number;         // Basis point change (e.g. +25, -25, 0)
+  date: string; // ISO date of the RBA board meeting
+  rate: number; // Cash rate target after decision (percent, e.g. 4.35)
+  previousRate: number; // Cash rate before this decision
+  change: number; // Basis point change (e.g. +25, -25, 0)
   direction: 'increase' | 'decrease' | 'hold';
 }
 

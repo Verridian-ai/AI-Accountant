@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { Search, BarChart3, Trophy, Building2, Bell, Calculator, ArrowUpDown, DollarSign } from 'lucide-react';
+import {
+  Search,
+  BarChart3,
+  Trophy,
+  Building2,
+  Bell,
+  Calculator,
+  ArrowUpDown,
+  DollarSign,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProductExplorer } from './ProductExplorer';
 import { ProductComparison } from './ProductComparison';
@@ -10,7 +19,15 @@ import { DataHolderDirectory } from './DataHolderDirectory';
 import { RateAlertManager } from './RateAlertManager';
 import { SavingsCalculator } from './SavingsCalculator';
 
-type SubTab = 'explore' | 'compare' | 'loan-calc' | 'rates' | 'best' | 'directory' | 'alerts' | 'savings';
+type SubTab =
+  | 'explore'
+  | 'compare'
+  | 'loan-calc'
+  | 'rates'
+  | 'best'
+  | 'directory'
+  | 'alerts'
+  | 'savings';
 
 const SUB_TABS: { id: SubTab; label: string; icon: typeof Search }[] = [
   { id: 'explore', label: 'Explore', icon: Search },
@@ -48,15 +65,15 @@ export function BankingProductsDashboard() {
       {/* Sub-Tab Navigation */}
       {subTab !== 'compare' && (
         <div className="flex flex-wrap gap-2">
-          {SUB_TABS.map(tab => (
+          {SUB_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setSubTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all",
+                'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all',
                 subTab === tab.id
-                  ? "bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_15px_rgba(255,204,0,0.2)]"
-                  : "neu-raised-sm text-zinc-400 hover:text-zinc-200"
+                  ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_15px_rgba(255,204,0,0.2)]'
+                  : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
               )}
             >
               <tab.icon className="w-4 h-4" />

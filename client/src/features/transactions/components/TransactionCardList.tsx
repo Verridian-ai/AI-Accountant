@@ -49,10 +49,7 @@ export function TransactionCardList({
   }
 
   return (
-    <div
-      ref={parentRef}
-      className="h-[calc(100vh-200px)] overflow-auto px-4"
-    >
+    <div ref={parentRef} className="h-[calc(100vh-200px)] overflow-auto px-4">
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,

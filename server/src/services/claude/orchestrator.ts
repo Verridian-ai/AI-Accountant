@@ -115,7 +115,10 @@ export class AgentOrchestrator {
   private registerAgents() {
     const agentDefs: Array<[AgentType, ClaudeAgent<unknown, unknown>]> = [
       ['statement_parser', new StatementParserAgent() as ClaudeAgent<unknown, unknown>],
-      ['transaction_categorizer', new TransactionCategorizerAgent() as ClaudeAgent<unknown, unknown>],
+      [
+        'transaction_categorizer',
+        new TransactionCategorizerAgent() as ClaudeAgent<unknown, unknown>,
+      ],
       ['gst_calculator', new GSTCalculatorAgent() as ClaudeAgent<unknown, unknown>],
       ['account_reconciler', new AccountReconcilerAgent() as ClaudeAgent<unknown, unknown>],
       ['budget_analyzer', new BudgetAnalyzerAgent() as ClaudeAgent<unknown, unknown>],
@@ -138,7 +141,7 @@ export class AgentOrchestrator {
    */
   async invoke<T extends AgentType>(
     agentType: T,
-    input: AgentInputMap[T]
+    input: AgentInputMap[T],
   ): Promise<AgentOutputMap[T] & { usage: TokenUsage }> {
     if (!isClaudeAgentsEnabled()) {
       throw new Error('Claude agents are disabled (USE_CLAUDE_AGENTS != true)');
@@ -154,31 +157,66 @@ export class AgentOrchestrator {
         const vercelAgent = new VercelTransactionCategorizer();
         const result = await vercelAgent.executeWithFallback(input as any);
         this.emitProgress(agentType, 'completed');
-        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+        return {
+          ...result.output,
+          usage: {
+            inputTokens: result.tokenUsage?.promptTokens ?? 0,
+            outputTokens: result.tokenUsage?.completionTokens ?? 0,
+            toolCalls: 0,
+          },
+        } as any;
       }
       if (agentType === 'budget_analyzer') {
         const vercelAgent = new VercelBudgetAnalyzer();
         const result = await vercelAgent.executeWithFallback(input as any);
         this.emitProgress(agentType, 'completed');
-        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+        return {
+          ...result.output,
+          usage: {
+            inputTokens: result.tokenUsage?.promptTokens ?? 0,
+            outputTokens: result.tokenUsage?.completionTokens ?? 0,
+            toolCalls: 0,
+          },
+        } as any;
       }
       if (agentType === 'financial_planner') {
         const vercelAgent = new VercelFinancialPlanner();
         const result = await vercelAgent.executeWithFallback(input as any);
         this.emitProgress(agentType, 'completed');
-        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+        return {
+          ...result.output,
+          usage: {
+            inputTokens: result.tokenUsage?.promptTokens ?? 0,
+            outputTokens: result.tokenUsage?.completionTokens ?? 0,
+            toolCalls: 0,
+          },
+        } as any;
       }
       if (agentType === 'tax_strategy') {
         const vercelAgent = new VercelTaxStrategy();
         const result = await vercelAgent.executeWithFallback(input as any);
         this.emitProgress(agentType, 'completed');
-        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+        return {
+          ...result.output,
+          usage: {
+            inputTokens: result.tokenUsage?.promptTokens ?? 0,
+            outputTokens: result.tokenUsage?.completionTokens ?? 0,
+            toolCalls: 0,
+          },
+        } as any;
       }
       if (agentType === 'merchant_intelligence') {
         const vercelAgent = new VercelMerchantIntelligence();
         const result = await vercelAgent.executeWithFallback(input as any);
         this.emitProgress(agentType, 'completed');
-        return { ...result.output, usage: { inputTokens: result.tokenUsage?.promptTokens ?? 0, outputTokens: result.tokenUsage?.completionTokens ?? 0, toolCalls: 0 } } as any;
+        return {
+          ...result.output,
+          usage: {
+            inputTokens: result.tokenUsage?.promptTokens ?? 0,
+            outputTokens: result.tokenUsage?.completionTokens ?? 0,
+            toolCalls: 0,
+          },
+        } as any;
       }
     }
 
@@ -203,14 +241,12 @@ export class AgentOrchestrator {
     const breaker = this.circuitBreakers.get(agentType)!;
 
     try {
-      const result = await breaker.execute(
+      const result = (await breaker.execute(
         () => agent.invoke(input),
         () => {
-          throw new Error(
-            `[${agentType}] Circuit breaker open — falling back`
-          );
-        }
-      ) as AgentOutputMap[T] & { usage: TokenUsage };
+          throw new Error(`[${agentType}] Circuit breaker open — falling back`);
+        },
+      )) as AgentOutputMap[T] & { usage: TokenUsage };
 
       this.emitProgress(agentType, 'completed', {
         tokenUsage: result.usage,
@@ -293,7 +329,7 @@ export class AgentOrchestrator {
    */
   async analyze(
     query: string,
-    options: { accountIds?: number[]; dateRange?: { start: string; end: string } }
+    options: { accountIds?: number[]; dateRange?: { start: string; end: string } },
   ) {
     // Use budget analyzer for general analysis
     return this.invoke('budget_analyzer', {
@@ -344,15 +380,11 @@ export class AgentOrchestrator {
     if (!ctx || ctx.conversationHistory.length === 0) return '';
     return ctx.conversationHistory
       .slice(-5)
-      .map(t => `${t.role}: ${t.content}`)
+      .map((t) => `${t.role}: ${t.content}`)
       .join('\n');
   }
 
-  private emitProgress(
-    agentType: AgentType,
-    status: string,
-    data?: Record<string, unknown>
-  ) {
+  private emitProgress(agentType: AgentType, status: string, data?: Record<string, unknown>) {
     events.emit('update', {
       type: 'agent_progress',
       agent: agentType,

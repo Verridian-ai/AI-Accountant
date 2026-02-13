@@ -61,7 +61,7 @@ export class AgentDispatcher {
   async dispatchSingle(
     agentType: AgentType,
     input: Record<string, unknown>,
-    options?: { timeout?: number; emitProgress?: boolean }
+    options?: { timeout?: number; emitProgress?: boolean },
   ): Promise<AgentDispatchResult> {
     const emitProgress = options?.emitProgress ?? true;
     const startTime = Date.now();
@@ -74,7 +74,7 @@ export class AgentDispatcher {
       // Build a timeout race if caller specified a timeout
       const invokePromise = this.orchestrator.invoke(
         agentType,
-        input as never // orchestrator.invoke() expects AgentInputMap[T]; cast to satisfy TS
+        input as never, // orchestrator.invoke() expects AgentInputMap[T]; cast to satisfy TS
       );
 
       let result: unknown;
@@ -103,8 +103,7 @@ export class AgentDispatcher {
       return { success: true, agentType, result, usage, duration };
     } catch (error) {
       const duration = Date.now() - startTime;
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
 
       if (emitProgress) {
         this.emitDispatchEvent('agent:dispatch:complete', {
@@ -130,7 +129,7 @@ export class AgentDispatcher {
   async dispatchIntent(
     classification: IntentClassification,
     userQuery: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): Promise<PipelineResult> {
     // Build the base input from extracted params, user query, and context
     const baseInput: Record<string, unknown> = {
@@ -140,16 +139,12 @@ export class AgentDispatcher {
     };
 
     const hasSecondary =
-      classification.secondaryAgents &&
-      classification.secondaryAgents.length > 0;
+      classification.secondaryAgents && classification.secondaryAgents.length > 0;
 
     if (!hasSecondary) {
       // Single-agent path
       const startTime = Date.now();
-      const result = await this.dispatchSingle(
-        classification.primaryAgent,
-        baseInput
-      );
+      const result = await this.dispatchSingle(classification.primaryAgent, baseInput);
       return {
         results: [result],
         finalResult: result.success ? result.result : result.error,
@@ -158,10 +153,7 @@ export class AgentDispatcher {
     }
 
     // Multi-agent path: primary first, then each secondary sequentially
-    const allAgents: AgentType[] = [
-      classification.primaryAgent,
-      ...classification.secondaryAgents,
-    ];
+    const allAgents: AgentType[] = [classification.primaryAgent, ...classification.secondaryAgents];
     const results: AgentDispatchResult[] = [];
     let currentInput = { ...baseInput };
     const startTime = Date.now();
@@ -208,7 +200,7 @@ export class AgentDispatcher {
   // -------------------------------------------------------------------------
   async executePipeline(
     agents: AgentType[],
-    initialInput: Record<string, unknown>
+    initialInput: Record<string, unknown>,
   ): Promise<PipelineResult> {
     const results: AgentDispatchResult[] = [];
     let currentInput = { ...initialInput };
@@ -250,15 +242,12 @@ export class AgentDispatcher {
 
   private timeoutReject(ms: number, agentType: AgentType): Promise<never> {
     return new Promise((_resolve, reject) => {
-      setTimeout(
-        () => reject(new Error(`Agent ${agentType} timed out after ${ms}ms`)),
-        ms
-      );
+      setTimeout(() => reject(new Error(`Agent ${agentType} timed out after ${ms}ms`)), ms);
     });
   }
 
   private extractUsage(
-    result: unknown
+    result: unknown,
   ): { inputTokens: number; outputTokens: number; toolCalls: number } | undefined {
     if (
       result &&
@@ -277,10 +266,7 @@ export class AgentDispatcher {
     return undefined;
   }
 
-  private emitDispatchEvent(
-    eventType: string,
-    data: Record<string, unknown>
-  ): void {
+  private emitDispatchEvent(eventType: string, data: Record<string, unknown>): void {
     events.emit('update', {
       type: 'agent_progress',
       status: eventType,

@@ -30,7 +30,11 @@ interface ForecastChartProps {
 }
 
 const formatDollar = (value: number) =>
-  new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(value / 100);
+  new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+    maximumFractionDigits: 0,
+  }).format(value / 100);
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -56,7 +60,7 @@ export function ForecastChart({ periods, granularity }: ForecastChartProps) {
     );
   }
 
-  const hasActuals = periods.some(p => p.actualNet != null);
+  const hasActuals = periods.some((p) => p.actualNet != null);
 
   return (
     <div className="neu-raised rounded-2xl p-4 sm:p-6">
@@ -143,7 +147,12 @@ export function ForecastChart({ periods, granularity }: ForecastChartProps) {
           {hasActuals && (
             <>
               <Scatter dataKey="actualInflow" fill="#22c55e" name="Actual Inflow" shape="circle" />
-              <Scatter dataKey="actualOutflow" fill="#ef4444" name="Actual Outflow" shape="circle" />
+              <Scatter
+                dataKey="actualOutflow"
+                fill="#ef4444"
+                name="Actual Outflow"
+                shape="circle"
+              />
               <Scatter dataKey="actualNet" fill="#FFCC00" name="Actual Net" shape="diamond" />
             </>
           )}

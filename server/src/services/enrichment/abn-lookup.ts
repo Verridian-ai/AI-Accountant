@@ -151,12 +151,7 @@ export class ABNLookupService {
       const existing = await db
         .select()
         .from(merchantMemory)
-        .where(
-          and(
-            eq(merchantMemory.userId, userId),
-            eq(merchantMemory.merchantPattern, cacheKey)
-          )
-        )
+        .where(and(eq(merchantMemory.userId, userId), eq(merchantMemory.merchantPattern, cacheKey)))
         .get();
 
       if (existing) {
@@ -195,7 +190,7 @@ export class ABNLookupService {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await fetch(url, {
-          headers: { 'Accept': 'application/xml' },
+          headers: { Accept: 'application/xml' },
           signal: AbortSignal.timeout(10000),
         });
 
@@ -208,7 +203,7 @@ export class ABNLookupService {
         logger.warn(`[ABN] Request attempt ${attempt}/${retries} failed: ${err.message}`);
         if (attempt < retries) {
           const delay = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
@@ -249,15 +244,13 @@ export class ABNLookupService {
       const organisationName = this.extractTag(xml, 'organisationName') || '';
       const mainTradingName = this.extractTag(xml, 'mainTradingName') || '';
       const fullName = this.extractTag(xml, 'fullName') || '';
-      const individualName = [
-        this.extractTag(xml, 'givenName'),
-        this.extractTag(xml, 'familyName'),
-      ].filter(Boolean).join(' ');
+      const individualName = [this.extractTag(xml, 'givenName'), this.extractTag(xml, 'familyName')]
+        .filter(Boolean)
+        .join(' ');
 
       const businessName = organisationName || mainTradingName || fullName || individualName || '';
-      const tradingName = mainTradingName && mainTradingName !== businessName
-        ? mainTradingName
-        : undefined;
+      const tradingName =
+        mainTradingName && mainTradingName !== businessName ? mainTradingName : undefined;
 
       // Entity type
       const entityType = this.extractTag(xml, 'entityDescription') || '';
@@ -369,7 +362,8 @@ export class ABNLookupService {
           abnStatus: abnStatus === 'Active' ? 'Active' : 'Cancelled',
           isCurrentABN: true, // Name search only returns active ABNs (activeABNsOnly=Y)
           businessName,
-          tradingName: mainTradingName && mainTradingName !== businessName ? mainTradingName : undefined,
+          tradingName:
+            mainTradingName && mainTradingName !== businessName ? mainTradingName : undefined,
           entityType: '',
           gstRegistered: false, // Name search doesn't include GST details
           state,
@@ -416,7 +410,9 @@ export class ABNLookupService {
         return { ok: false, error: `Unexpected ABN in response: ${result.abn}` };
       }
 
-      logger.info(`[ABN] Connection test passed: ${result.businessName} (GST: ${result.gstRegistered})`);
+      logger.info(
+        `[ABN] Connection test passed: ${result.businessName} (GST: ${result.gstRegistered})`,
+      );
       return { ok: true, result };
     } catch (err: any) {
       return { ok: false, error: `Connection test failed: ${err.message}` };

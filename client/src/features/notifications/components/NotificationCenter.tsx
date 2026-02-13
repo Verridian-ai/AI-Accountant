@@ -48,7 +48,8 @@ function groupByDate(items: Notification[]): Record<string, Notification[]> {
 
   for (const item of items) {
     const dateStr = new Date(item.timestamp).toDateString();
-    const label = dateStr === todayStr ? 'Today' : dateStr === yesterdayStr ? 'Yesterday' : 'Earlier';
+    const label =
+      dateStr === todayStr ? 'Today' : dateStr === yesterdayStr ? 'Yesterday' : 'Earlier';
     if (!groups[label]) groups[label] = [];
     groups[label].push(item);
   }
@@ -177,7 +178,10 @@ export function NotificationCenter() {
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               )}
-              <button onClick={() => setIsOpen(false)} className="text-zinc-500 hover:text-zinc-300 p-1">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-zinc-500 hover:text-zinc-300 p-1"
+              >
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -207,7 +211,9 @@ export function NotificationCenter() {
                       </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={`text-xs font-semibold truncate ${!notif.read ? 'text-zinc-200' : 'text-zinc-400'}`}>
+                          <span
+                            className={`text-xs font-semibold truncate ${!notif.read ? 'text-zinc-200' : 'text-zinc-400'}`}
+                          >
                             {notif.title}
                           </span>
                           {!notif.read && (

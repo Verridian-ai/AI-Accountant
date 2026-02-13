@@ -16,12 +16,7 @@ import { logger } from '../utils/logger.js';
 // Schema tables — Agent 1 adds these to schema.ts in parallel.
 // Import from schema; if not yet available at compile time, the build
 // will succeed once Agent 1's commit lands.
-import {
-  db,
-  customers,
-  customerContacts,
-  invoices,
-} from '../schema.js';
+import { db, customers, customerContacts, invoices } from '../schema.js';
 
 // Re-export the Drizzle-inferred types for external consumers
 import type { Customer, CustomerContact } from '../schema.js';
@@ -174,7 +169,9 @@ export class CustomerService {
         if (result) {
           abnVerified = result.abnStatus === 'Active';
           if (!abnVerified) {
-            logger.warn(`[Customer] ABN ${normalized} found in ABR but status is ${result.abnStatus}`);
+            logger.warn(
+              `[Customer] ABN ${normalized} found in ABR but status is ${result.abnStatus}`,
+            );
           }
         } else {
           logger.warn(`[Customer] ABR lookup unavailable for ABN ${normalized} — saving anyway`);
@@ -209,11 +206,7 @@ export class CustomerService {
     await this.db.insert(customers).values(values).run();
 
     // Return the freshly-created record
-    const created = await this.db
-      .select()
-      .from(customers)
-      .where(eq(customers.id, id))
-      .get();
+    const created = await this.db.select().from(customers).where(eq(customers.id, id)).get();
 
     return created!;
   }
@@ -262,11 +255,7 @@ export class CustomerService {
     if (data.notes !== undefined) setFields.notes = data.notes;
 
     if (Object.keys(setFields).length > 0) {
-      await this.db
-        .update(customers)
-        .set(setFields)
-        .where(eq(customers.id, customerId))
-        .run();
+      await this.db.update(customers).set(setFields).where(eq(customers.id, customerId)).run();
     }
 
     const updated = await this.getCustomer(userId, customerId);
@@ -313,10 +302,7 @@ export class CustomerService {
         .update(customerContacts)
         .set({ isPrimary: false })
         .where(
-          and(
-            eq(customerContacts.customerId, customerId),
-            eq(customerContacts.isPrimary, true),
-          ),
+          and(eq(customerContacts.customerId, customerId), eq(customerContacts.isPrimary, true)),
         )
         .run();
     }
@@ -347,10 +333,7 @@ export class CustomerService {
   // Customer with outstanding balance
   // -------------------------------------------------------------------------
 
-  async getCustomerWithBalance(
-    userId: string,
-    customerId: string,
-  ): Promise<CustomerWithBalance> {
+  async getCustomerWithBalance(userId: string, customerId: string): Promise<CustomerWithBalance> {
     const customer = await this.getCustomer(userId, customerId);
     if (!customer) {
       throw new Error('Customer not found or access denied.');

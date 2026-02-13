@@ -44,7 +44,14 @@ function LineChartInner({
     return (
       <ChartContainer title={title} subtitle={subtitle} height={height}>
         <RechartsLineChart data={[]}>
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize={14}>
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#9CA3AF"
+            fontSize={14}
+          >
             No data available
           </text>
         </RechartsLineChart>
@@ -55,13 +62,26 @@ function LineChartInner({
   const curveType = curved ? 'monotone' : 'linear';
 
   return (
-    <ChartContainer title={title} subtitle={subtitle} height={height} loading={loading} error={error}>
+    <ChartContainer
+      title={title}
+      subtitle={subtitle}
+      height={height}
+      loading={loading}
+      error={error}
+    >
       <RechartsLineChart data={data}>
         <defs>
           {dataKeys.map((key, i) => {
             const color = colors?.[i] ?? getCategoryColor(i);
             return (
-              <linearGradient key={`gradient-${key}`} id={`area-gradient-${key}`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient
+                key={`gradient-${key}`}
+                id={`area-gradient-${key}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
                 <stop offset="0%" stopColor={color} stopOpacity={0.3} />
                 <stop offset="100%" stopColor={color} stopOpacity={0.02} />
               </linearGradient>
@@ -69,7 +89,10 @@ function LineChartInner({
           })}
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
-        <XAxis dataKey={xAxisKey} tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }} />
+        <XAxis
+          dataKey={xAxisKey}
+          tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }}
+        />
         <YAxis tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }} />
         <Tooltip
           contentStyle={CHART_THEME.tooltipStyle}

@@ -155,10 +155,7 @@ export class FinancialBooster {
   /**
    * Apply financial domain boosts to document scores
    */
-  applyBoosts(
-    documents: BoostInput[],
-    context: FinancialContext
-  ): FinancialBoostResult {
+  applyBoosts(documents: BoostInput[], context: FinancialContext): FinancialBoostResult {
     const startTime = Date.now();
 
     if (documents.length === 0) {
@@ -241,10 +238,7 @@ export class FinancialBooster {
   // BOOST CALCULATIONS
   // ========================================================================
 
-  private calculateBoosts(
-    doc: BoostInput,
-    context: FinancialContext
-  ): BoostBreakdown {
+  private calculateBoosts(doc: BoostInput, context: FinancialContext): BoostBreakdown {
     const metadata = doc.financialMetadata;
 
     if (!metadata) {
@@ -262,7 +256,7 @@ export class FinancialBooster {
 
   private calculateMerchantBoost(
     metadata: DocumentFinancialMetadata,
-    context: FinancialContext
+    context: FinancialContext,
   ): number {
     if (!metadata.merchantNormalized || !context.queryMerchants?.length) {
       return 0;
@@ -306,7 +300,7 @@ export class FinancialBooster {
 
   private calculateCategoryBoost(
     metadata: DocumentFinancialMetadata,
-    context: FinancialContext
+    context: FinancialContext,
   ): number {
     if (!metadata.category || !context.queryCategories?.length) {
       return 0;
@@ -340,7 +334,7 @@ export class FinancialBooster {
 
   private calculateRecencyBoost(
     metadata: DocumentFinancialMetadata,
-    context: FinancialContext
+    context: FinancialContext,
   ): number {
     if (!metadata.dateStart && !metadata.dateEnd) {
       return 0;
@@ -353,9 +347,7 @@ export class FinancialBooster {
     if (!docDateStr) return 0;
 
     const docDate = new Date(docDateStr);
-    const daysDiff = Math.abs(
-      (queryDate.getTime() - docDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const daysDiff = Math.abs((queryDate.getTime() - docDate.getTime()) / (1000 * 60 * 60 * 24));
 
     // Full boost for very recent transactions
     if (daysDiff <= this.config.recencyFullBoostDays) {
@@ -377,7 +369,7 @@ export class FinancialBooster {
 
   private calculateAmountBoost(
     metadata: DocumentFinancialMetadata,
-    context: FinancialContext
+    context: FinancialContext,
   ): number {
     if (!context.queryAmountRange) {
       return 0;
@@ -416,7 +408,7 @@ export class FinancialBooster {
 
   private calculateAccountBoost(
     metadata: DocumentFinancialMetadata,
-    context: FinancialContext
+    context: FinancialContext,
   ): number {
     if (!metadata.accountId || !context.queryAccountIds?.length) {
       return 0;
@@ -460,17 +452,50 @@ export class FinancialBooster {
 
     // Common financial categories
     const categoryKeywords = [
-      'groceries', 'food', 'dining', 'restaurant', 'cafe',
-      'transport', 'uber', 'taxi', 'fuel', 'petrol', 'gas',
-      'utilities', 'electricity', 'water', 'internet', 'phone',
-      'entertainment', 'subscription', 'streaming',
-      'shopping', 'retail', 'clothing', 'electronics',
-      'health', 'medical', 'pharmacy', 'doctor',
-      'insurance', 'rent', 'mortgage',
-      'travel', 'hotel', 'flight', 'accommodation',
-      'office', 'supplies', 'equipment',
-      'professional', 'fees', 'services',
-      'income', 'salary', 'wages', 'transfer',
+      'groceries',
+      'food',
+      'dining',
+      'restaurant',
+      'cafe',
+      'transport',
+      'uber',
+      'taxi',
+      'fuel',
+      'petrol',
+      'gas',
+      'utilities',
+      'electricity',
+      'water',
+      'internet',
+      'phone',
+      'entertainment',
+      'subscription',
+      'streaming',
+      'shopping',
+      'retail',
+      'clothing',
+      'electronics',
+      'health',
+      'medical',
+      'pharmacy',
+      'doctor',
+      'insurance',
+      'rent',
+      'mortgage',
+      'travel',
+      'hotel',
+      'flight',
+      'accommodation',
+      'office',
+      'supplies',
+      'equipment',
+      'professional',
+      'fees',
+      'services',
+      'income',
+      'salary',
+      'wages',
+      'transfer',
     ];
 
     for (const keyword of categoryKeywords) {
@@ -491,7 +516,9 @@ export class FinancialBooster {
     // Try patterns in order of specificity
 
     // "between $X and $Y"
-    const betweenMatch = query.match(/between\s+\$?([\d,]+(?:\.\d{2})?)\s+and\s+\$?([\d,]+(?:\.\d{2})?)/i);
+    const betweenMatch = query.match(
+      /between\s+\$?([\d,]+(?:\.\d{2})?)\s+and\s+\$?([\d,]+(?:\.\d{2})?)/i,
+    );
     if (betweenMatch) {
       return {
         min: parseAmount(betweenMatch[1]),
@@ -500,7 +527,9 @@ export class FinancialBooster {
     }
 
     // "over $X" or "more than $X"
-    const overMatch = query.match(/(?:over|more\s+than|above|exceeding)\s+\$?([\d,]+(?:\.\d{2})?)/i);
+    const overMatch = query.match(
+      /(?:over|more\s+than|above|exceeding)\s+\$?([\d,]+(?:\.\d{2})?)/i,
+    );
     if (overMatch) {
       return { min: parseAmount(overMatch[1]) };
     }
@@ -626,16 +655,101 @@ export class FinancialBooster {
 // ============================================================================
 
 const STOP_WORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-  'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
-  'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-  'should', 'may', 'might', 'can', 'must', 'shall', 'this', 'that', 'these',
-  'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'what', 'which',
-  'who', 'when', 'where', 'why', 'how', 'all', 'each', 'every', 'both',
-  'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not',
-  'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'my', 'your',
-  'his', 'her', 'its', 'our', 'their', 'show', 'me', 'find', 'get', 'list',
-  'give', 'tell', 'display', 'see', 'look', 'search', 'query',
+  'the',
+  'a',
+  'an',
+  'and',
+  'or',
+  'but',
+  'in',
+  'on',
+  'at',
+  'to',
+  'for',
+  'of',
+  'with',
+  'by',
+  'from',
+  'as',
+  'is',
+  'was',
+  'are',
+  'were',
+  'been',
+  'be',
+  'have',
+  'has',
+  'had',
+  'do',
+  'does',
+  'did',
+  'will',
+  'would',
+  'could',
+  'should',
+  'may',
+  'might',
+  'can',
+  'must',
+  'shall',
+  'this',
+  'that',
+  'these',
+  'those',
+  'i',
+  'you',
+  'he',
+  'she',
+  'it',
+  'we',
+  'they',
+  'what',
+  'which',
+  'who',
+  'when',
+  'where',
+  'why',
+  'how',
+  'all',
+  'each',
+  'every',
+  'both',
+  'few',
+  'more',
+  'most',
+  'other',
+  'some',
+  'such',
+  'no',
+  'nor',
+  'not',
+  'only',
+  'own',
+  'same',
+  'so',
+  'than',
+  'too',
+  'very',
+  'just',
+  'my',
+  'your',
+  'his',
+  'her',
+  'its',
+  'our',
+  'their',
+  'show',
+  'me',
+  'find',
+  'get',
+  'list',
+  'give',
+  'tell',
+  'display',
+  'see',
+  'look',
+  'search',
+  'query',
 ]);
 
 // ============================================================================

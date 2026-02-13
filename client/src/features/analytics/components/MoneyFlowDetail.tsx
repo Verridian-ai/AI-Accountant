@@ -79,7 +79,9 @@ function MoneyFlowDetailInner({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <p className="text-xs text-gray-400">Total Amount</p>
-            <p className={`text-sm font-bold ${totalAmount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <p
+              className={`text-sm font-bold ${totalAmount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+            >
               {formatAUD(totalAmount)}
             </p>
           </div>
@@ -111,7 +113,9 @@ function MoneyFlowDetailInner({
                     <p className="text-xs text-gray-200 truncate">{tx.description}</p>
                     <p className="text-[10px] text-gray-500">{formatDate(tx.date)}</p>
                   </div>
-                  <p className={`text-xs font-mono font-medium shrink-0 ${tx.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <p
+                    className={`text-xs font-mono font-medium shrink-0 ${tx.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                  >
                     {formatAUD(tx.amount)}
                   </p>
                 </div>

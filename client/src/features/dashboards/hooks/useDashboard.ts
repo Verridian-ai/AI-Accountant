@@ -5,7 +5,16 @@ const API_URL = `${BASE_URL}/api`;
 
 export interface WidgetConfig {
   id: string;
-  chartType: 'bar' | 'line' | 'pie' | 'donut' | 'scatter' | 'composed' | 'treemap' | 'sankey' | 'kpi';
+  chartType:
+    | 'bar'
+    | 'line'
+    | 'pie'
+    | 'donut'
+    | 'scatter'
+    | 'composed'
+    | 'treemap'
+    | 'sankey'
+    | 'kpi';
   title: string;
   dataSourceUrl?: string;
   refreshInterval?: number;
@@ -61,17 +70,15 @@ export function useDashboard(dashboardId?: string) {
   }, [fetchDashboard]);
 
   const addWidget = useCallback((widget: WidgetConfig) => {
-    setWidgets(prev => [...prev, widget]);
+    setWidgets((prev) => [...prev, widget]);
   }, []);
 
   const removeWidget = useCallback((widgetId: string) => {
-    setWidgets(prev => prev.filter(w => w.id !== widgetId));
+    setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
   }, []);
 
   const updateWidgetConfig = useCallback((widgetId: string, updates: Partial<WidgetConfig>) => {
-    setWidgets(prev =>
-      prev.map(w => (w.id === widgetId ? { ...w, ...updates } : w))
-    );
+    setWidgets((prev) => prev.map((w) => (w.id === widgetId ? { ...w, ...updates } : w)));
   }, []);
 
   const updateLayout = useCallback((updatedWidgets: WidgetConfig[]) => {

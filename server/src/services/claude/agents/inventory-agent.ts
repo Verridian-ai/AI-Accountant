@@ -12,10 +12,7 @@ import { cogneeTools, COGNEE_DATASETS } from '../cognee-tools.js';
 import { inventoryService } from '../../inventory.js';
 import type { InventoryAgentInput, InventoryAgentOutput } from '../types.js';
 
-export class InventoryAgent extends ClaudeAgent<
-  InventoryAgentInput,
-  InventoryAgentOutput
-> {
+export class InventoryAgent extends ClaudeAgent<InventoryAgentInput, InventoryAgentOutput> {
   protected systemPrompt = `You are an Australian small business inventory management specialist. You help businesses track stock levels, calculate Cost of Goods Sold (COGS) using the weighted average method, identify reorder needs, and optimize inventory turnover. You understand GST implications on inventory purchases and sales. Always provide amounts in AUD cents internally and format as dollars for display.
 
 Key rules:
@@ -45,8 +42,7 @@ Use the available tools to gather data, then return a JSON object matching the I
           },
           belowReorderOnly: {
             type: 'boolean',
-            description:
-              'If true, only return items below their reorder point',
+            description: 'If true, only return items below their reorder point',
           },
         },
         required: ['userId'],
@@ -98,10 +94,7 @@ Use the available tools to gather data, then return a JSON object matching the I
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'check_stock_levels',
       async (input) => {
@@ -151,11 +144,7 @@ Use the available tools to gather data, then return a JSON object matching the I
         const quantitySold = input.quantitySold as number;
 
         try {
-          const result = await inventoryService.calculateCOGS(
-            userId,
-            itemId,
-            quantitySold,
-          );
+          const result = await inventoryService.calculateCOGS(userId, itemId, quantitySold);
 
           return {
             itemId,
@@ -204,17 +193,11 @@ Use the available tools to gather data, then return a JSON object matching the I
 
           return {
             reorderItems: suggestions,
-            totalEstimatedCostCents: suggestions.reduce(
-              (sum, s) => sum + s.estimatedCostCents,
-              0,
-            ),
+            totalEstimatedCostCents: suggestions.reduce((sum, s) => sum + s.estimatedCostCents, 0),
           };
         } catch (err) {
           return {
-            error:
-              err instanceof Error
-                ? err.message
-                : 'Failed to generate reorder suggestions',
+            error: err instanceof Error ? err.message : 'Failed to generate reorder suggestions',
             reorderItems: [],
           };
         }

@@ -10,7 +10,9 @@ function statusIcon(status: string) {
       return <Clock className="h-4 w-4 text-zinc-400" />;
     case 'processing':
       return <Loader2 className="h-4 w-4 text-blue-400 animate-spin" />;
-    case 'extracted': case 'verified': case 'matched':
+    case 'extracted':
+    case 'verified':
+    case 'matched':
       return <CheckCircle className="h-4 w-4 text-green-400" />;
     case 'failed':
       return <XCircle className="h-4 w-4 text-red-400" />;
@@ -21,10 +23,15 @@ function statusIcon(status: string) {
 
 function statusBadgeEl(status: string) {
   switch (status) {
-    case 'extracted': case 'verified':
+    case 'extracted':
+    case 'verified':
       return <Badge variant="success">{status}</Badge>;
     case 'processing':
-      return <Badge variant="warning" className="animate-pulse">{status}</Badge>;
+      return (
+        <Badge variant="warning" className="animate-pulse">
+          {status}
+        </Badge>
+      );
     case 'failed':
       return <Badge variant="destructive">{status}</Badge>;
     case 'matched':
@@ -45,7 +52,10 @@ export function ProcessingQueue() {
         documentsApi.list('pending'),
         documentsApi.list('processing'),
       ]);
-      const all = [...(Array.isArray(pending) ? pending : []), ...(Array.isArray(processing) ? processing : [])];
+      const all = [
+        ...(Array.isArray(pending) ? pending : []),
+        ...(Array.isArray(processing) ? processing : []),
+      ];
       setDocuments(all);
     } catch (err) {
       console.error('Failed to load queue', err);
@@ -158,25 +168,44 @@ export function ProcessingQueue() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02]">
-                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide">Document</th>
-                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">Type</th>
-                <th className="text-center py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">Status</th>
-                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-36">Created</th>
-                <th className="text-right py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">Actions</th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide">
+                  Document
+                </th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">
+                  Type
+                </th>
+                <th className="text-center py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">
+                  Status
+                </th>
+                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-36">
+                  Created
+                </th>
+                <th className="text-right py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {documents.map((doc) => (
-                <tr key={doc.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                <tr
+                  key={doc.id}
+                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                >
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       {statusIcon(doc.status)}
-                      <span className="text-zinc-200 font-medium truncate max-w-[200px]">{doc.fileName}</span>
+                      <span className="text-zinc-200 font-medium truncate max-w-[200px]">
+                        {doc.fileName}
+                      </span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-zinc-400 capitalize">{doc.documentType || 'Unknown'}</td>
+                  <td className="py-3 px-4 text-zinc-400 capitalize">
+                    {doc.documentType || 'Unknown'}
+                  </td>
                   <td className="py-3 px-4 text-center">{statusBadgeEl(doc.status)}</td>
-                  <td className="py-3 px-4 text-zinc-500 text-xs">{new Date(doc.createdAt).toLocaleString()}</td>
+                  <td className="py-3 px-4 text-zinc-500 text-xs">
+                    {new Date(doc.createdAt).toLocaleString()}
+                  </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-1 justify-end">
                       {doc.status === 'pending' && (

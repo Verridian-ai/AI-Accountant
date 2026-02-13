@@ -70,7 +70,9 @@ interface UseTransactionSplitReturn {
  * if (isBalanced) await handleSplitSave();
  * ```
  */
-export function useTransactionSplit({ onDataChange }: UseTransactionSplitOptions = {}): UseTransactionSplitReturn {
+export function useTransactionSplit({
+  onDataChange,
+}: UseTransactionSplitOptions = {}): UseTransactionSplitReturn {
   const [splittingTx, setSplittingTx] = useState<Transaction | null>(null);
   const [splits, setSplits] = useState<SplitEntry[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,14 +92,14 @@ export function useTransactionSplit({ onDataChange }: UseTransactionSplitOptions
         category: tx.category || 'Uncategorized',
         amount: halfAmount,
         description: tx.description,
-        gst: tx.gstApplicable
+        gst: tx.gstApplicable,
       },
       {
         category: 'Uncategorized',
         amount: tx.amount - halfAmount,
         description: tx.description,
-        gst: tx.gstApplicable
-      }
+        gst: tx.gstApplicable,
+      },
     ]);
   }, []);
 
@@ -126,7 +128,7 @@ export function useTransactionSplit({ onDataChange }: UseTransactionSplitOptions
     }
 
     // Validate no empty or zero amounts
-    const hasInvalidSplit = splits.some(s => s.amount <= 0);
+    const hasInvalidSplit = splits.some((s) => s.amount <= 0);
     if (hasInvalidSplit) {
       const errorMsg = 'All split amounts must be greater than zero';
       setError(errorMsg);
@@ -157,14 +159,14 @@ export function useTransactionSplit({ onDataChange }: UseTransactionSplitOptions
   const addSplit = useCallback(() => {
     if (!splittingTx) return;
 
-    setSplits(prev => [
+    setSplits((prev) => [
       ...prev,
       {
         category: 'Uncategorized',
         amount: 0,
         description: splittingTx.description,
-        gst: splittingTx.gstApplicable
-      }
+        gst: splittingTx.gstApplicable,
+      },
     ]);
   }, [splittingTx]);
 
@@ -173,7 +175,7 @@ export function useTransactionSplit({ onDataChange }: UseTransactionSplitOptions
    * Prevents removal if only 2 splits remain (minimum for a split operation).
    */
   const removeSplit = useCallback((index: number) => {
-    setSplits(prev => {
+    setSplits((prev) => {
       // Don't allow removing if only 2 splits remain
       if (prev.length <= 2) return prev;
       return prev.filter((_, i) => i !== index);
@@ -184,7 +186,7 @@ export function useTransactionSplit({ onDataChange }: UseTransactionSplitOptions
    * Update a specific split entry with partial updates.
    */
   const updateSplit = useCallback((index: number, updates: Partial<SplitEntry>) => {
-    setSplits(prev => {
+    setSplits((prev) => {
       const newSplits = [...prev];
       if (newSplits[index]) {
         newSplits[index] = { ...newSplits[index], ...updates };

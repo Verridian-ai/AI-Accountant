@@ -70,7 +70,9 @@ function statusBadge(status: string) {
   };
   const style = map[status] ?? map.pending;
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${style.bg} ${style.text}`}>
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${style.bg} ${style.text}`}
+    >
       {status}
     </span>
   );
@@ -170,11 +172,13 @@ export function ForecastDashboard() {
             </label>
             <select
               value={forecastType}
-              onChange={e => setForecastType(e.target.value)}
+              onChange={(e) => setForecastType(e.target.value)}
               className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300 outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
-              {FORECAST_TYPES.map(ft => (
-                <option key={ft.value} value={ft.value}>{ft.label}</option>
+              {FORECAST_TYPES.map((ft) => (
+                <option key={ft.value} value={ft.value}>
+                  {ft.label}
+                </option>
               ))}
             </select>
           </div>
@@ -185,11 +189,13 @@ export function ForecastDashboard() {
             </label>
             <select
               value={financialYear}
-              onChange={e => setFinancialYear(e.target.value)}
+              onChange={(e) => setFinancialYear(e.target.value)}
               className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300 outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
-              {getFYOptions().map(fy => (
-                <option key={fy} value={fy}>FY {fy}</option>
+              {getFYOptions().map((fy) => (
+                <option key={fy} value={fy}>
+                  FY {fy}
+                </option>
               ))}
             </select>
           </div>
@@ -200,11 +206,13 @@ export function ForecastDashboard() {
             </label>
             <select
               value={granularity}
-              onChange={e => setGranularity(e.target.value)}
+              onChange={(e) => setGranularity(e.target.value)}
               className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300 outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
-              {GRANULARITIES.map(g => (
-                <option key={g.value} value={g.value}>{g.label}</option>
+              {GRANULARITIES.map((g) => (
+                <option key={g.value} value={g.value}>
+                  {g.label}
+                </option>
               ))}
             </select>
           </div>
@@ -214,7 +222,11 @@ export function ForecastDashboard() {
             disabled={generating}
             className="neu-raised-sm px-5 py-2 rounded-xl text-sm font-bold bg-[#FFCC00]/10 text-[#FFCC00] hover:bg-[#FFCC00]/20 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            {generating ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
             Generate Forecast
           </button>
 
@@ -232,16 +244,20 @@ export function ForecastDashboard() {
       {/* Forecast List */}
       {forecasts.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {forecasts.map(f => (
+          {forecasts.map((f) => (
             <button
               key={f.id}
               onClick={() => selectForecast(f)}
               className={`neu-raised rounded-2xl p-4 text-left transition-all hover:border-[#FFCC00]/30 border ${
-                selectedForecast?.id === f.id ? 'border-[#FFCC00]/50 ring-1 ring-[#FFCC00]/20' : 'border-transparent'
+                selectedForecast?.id === f.id
+                  ? 'border-[#FFCC00]/50 ring-1 ring-[#FFCC00]/20'
+                  : 'border-transparent'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-zinc-100 capitalize">{f.forecastType.replace('_', ' ')}</span>
+                <span className="text-sm font-bold text-zinc-100 capitalize">
+                  {f.forecastType.replace('_', ' ')}
+                </span>
                 {statusBadge(f.status)}
               </div>
               <div className="flex items-center gap-3 text-xs text-zinc-500">
@@ -256,7 +272,10 @@ export function ForecastDashboard() {
               </p>
               {f.status !== 'archived' && (
                 <button
-                  onClick={e => { e.stopPropagation(); archiveForecast(f.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    archiveForecast(f.id);
+                  }}
                   className="mt-2 text-[10px] text-zinc-500 hover:text-yellow-400 flex items-center gap-1"
                 >
                   <Archive className="w-3 h-3" /> Archive

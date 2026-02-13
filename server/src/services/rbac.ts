@@ -47,11 +47,7 @@ export class RBACService {
    * Check if a user has a specific permission in a tenant.
    * Uses cached permissions when available.
    */
-  async checkPermission(
-    tenantId: string,
-    userId: string,
-    permission: string
-  ): Promise<boolean> {
+  async checkPermission(tenantId: string, userId: string, permission: string): Promise<boolean> {
     const perms = await this._getCachedPermissions(tenantId, userId);
     return perms.includes(permission);
   }
@@ -63,7 +59,7 @@ export class RBACService {
   async checkPermissions(
     tenantId: string,
     userId: string,
-    permissionNames: string[]
+    permissionNames: string[],
   ): Promise<Record<string, boolean>> {
     const perms = await this._getCachedPermissions(tenantId, userId);
     const permSet = new Set(perms);
@@ -78,11 +74,7 @@ export class RBACService {
   /**
    * Require a specific permission — throws ForbiddenError if not granted.
    */
-  async requirePermission(
-    tenantId: string,
-    userId: string,
-    permission: string
-  ): Promise<void> {
+  async requirePermission(tenantId: string, userId: string, permission: string): Promise<void> {
     const granted = await this.checkPermission(tenantId, userId, permission);
     if (!granted) {
       throw new ForbiddenError(permission, tenantId, userId);
@@ -109,7 +101,7 @@ export class RBACService {
     tenantId: string,
     userId: string,
     role: TenantRole,
-    assignedBy: string
+    assignedBy: string,
   ): Promise<void> {
     if (!TENANT_ROLES.includes(role)) {
       throw new Error(`Invalid role: ${role}`);
@@ -140,13 +132,14 @@ export class RBACService {
 
     // Update the role
     const now = new Date().toISOString();
-    await db.update(tenantMembers).set({
-      role,
-      updatedAt: now,
-    }).where(and(
-      eq(tenantMembers.tenantId, tenantId),
-      eq(tenantMembers.userId, userId)
-    )).run();
+    await db
+      .update(tenantMembers)
+      .set({
+        role,
+        updatedAt: now,
+      })
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .run();
 
     // Invalidate cache for affected user
     this.cache.invalidate(tenantId, userId);
@@ -156,11 +149,11 @@ export class RBACService {
    * Get a user's role in a tenant.
    */
   async getRoleForUser(tenantId: string, userId: string): Promise<TenantRole | null> {
-    const member = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.userId, userId)
-      )).get();
+    const member = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .get();
 
     if (!member) return null;
     return ((member as any).role ?? 'viewer') as TenantRole;
@@ -170,11 +163,11 @@ export class RBACService {
    * List all members with a specific role in a tenant.
    */
   async getUsersWithRole(tenantId: string, role: TenantRole): Promise<TenantMember[]> {
-    const rows = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.role, role)
-      )).all();
+    const rows = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.role, role)))
+      .all();
 
     return (rows as any[]).map((row: any) => ({
       id: row.id,
@@ -203,8 +196,11 @@ export class RBACService {
     }
 
     // Fetch all role_permissions for this tenant
-    const rps = await db.select().from(rolePermissions)
-      .where(eq(rolePermissions.tenantId, tenantId)).all();
+    const rps = await db
+      .select()
+      .from(rolePermissions)
+      .where(eq(rolePermissions.tenantId, tenantId))
+      .all();
 
     // Fetch all permissions to map IDs to names
     const allPerms = await db.select().from(permissions).all();
@@ -233,7 +229,7 @@ export class RBACService {
     tenantId: string,
     role: TenantRole,
     permissionNames: string[],
-    updatedBy: string
+    updatedBy: string,
   ): Promise<void> {
     // Only owners can modify permissions
     const updaterRole = await this.getRoleForUser(tenantId, updatedBy);
@@ -261,24 +257,26 @@ export class RBACService {
     }
 
     // Delete existing role_permissions for this role in this tenant
-    await db.delete(rolePermissions)
-      .where(and(
-        eq(rolePermissions.tenantId, tenantId),
-        eq(rolePermissions.role, role)
-      )).run();
+    await db
+      .delete(rolePermissions)
+      .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
+      .run();
 
     // Insert new permissions
     for (const name of permissionNames) {
       const permId = permByName.get(name);
       if (!permId) continue;
 
-      await db.insert(rolePermissions).values({
-        id: crypto.randomUUID(),
-        tenantId,
-        role,
-        permissionId: permId,
-        grantedBy: updatedBy,
-      }).run();
+      await db
+        .insert(rolePermissions)
+        .values({
+          id: crypto.randomUUID(),
+          tenantId,
+          role,
+          permissionId: permId,
+          grantedBy: updatedBy,
+        })
+        .run();
     }
 
     // Invalidate entire tenant cache since permissions changed
@@ -290,8 +288,7 @@ export class RBACService {
    */
   async resetToDefaults(tenantId: string): Promise<void> {
     // Delete all existing role_permissions for this tenant
-    await db.delete(rolePermissions)
-      .where(eq(rolePermissions.tenantId, tenantId)).run();
+    await db.delete(rolePermissions).where(eq(rolePermissions.tenantId, tenantId)).run();
 
     // Re-seed defaults
     await seedDefaultPermissions(tenantId);
@@ -326,11 +323,14 @@ export class RBACService {
         await next();
       } catch (err) {
         if (err instanceof ForbiddenError) {
-          return c.json({
-            error: `Forbidden: missing permission '${permission}'`,
-            code: 403,
-            permission,
-          }, 403);
+          return c.json(
+            {
+              error: `Forbidden: missing permission '${permission}'`,
+              code: 403,
+              permission,
+            },
+            403,
+          );
         }
         throw err;
       }
@@ -363,12 +363,15 @@ export class RBACService {
 
       const userLevel = ROLE_LEVEL[userRole] ?? 0;
       if (userLevel < requiredLevel) {
-        return c.json({
-          error: `Insufficient role: requires '${minRole}', you have '${userRole}'`,
-          code: 403,
-          requiredRole: minRole,
-          actualRole: userRole,
-        }, 403);
+        return c.json(
+          {
+            error: `Insufficient role: requires '${minRole}', you have '${userRole}'`,
+            code: 403,
+            requiredRole: minRole,
+            actualRole: userRole,
+          },
+          403,
+        );
       }
 
       await next();
@@ -418,13 +421,13 @@ export class RBACService {
     if (!role) return [];
 
     // Fetch permissions for this role from DB
-    const rps = await db.select().from(rolePermissions)
-      .where(and(
-        eq(rolePermissions.tenantId, tenantId),
-        eq(rolePermissions.role, role)
-      )).all();
+    const rps = await db
+      .select()
+      .from(rolePermissions)
+      .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
+      .all();
 
-    const permIds = (rps as any[]).map(rp => rp.permissionId ?? rp.permission_id);
+    const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
     if (permIds.length === 0) {
       this.cache.set(tenantId, userId, []);
       return [];
@@ -437,9 +440,7 @@ export class RBACService {
       permMap.set(p.id, p.name);
     }
 
-    const permNames = permIds
-      .map(id => permMap.get(id))
-      .filter((name): name is string => !!name);
+    const permNames = permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
 
     // Cache the result
     this.cache.set(tenantId, userId, permNames);

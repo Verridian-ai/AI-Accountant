@@ -28,7 +28,7 @@ export interface ScenarioComparison {
 
 /** Default assumptions per scenario type */
 const SCENARIO_DEFAULTS: Record<string, Record<string, any>> = {
-  optimistic: { growthRate: 0.10, inflationAdjust: true, seasonalWeight: 0.8 },
+  optimistic: { growthRate: 0.1, inflationAdjust: true, seasonalWeight: 0.8 },
   realistic: { growthRate: 0.03, inflationAdjust: true, seasonalWeight: 1.0 },
   pessimistic: { growthRate: -0.05, inflationAdjust: true, seasonalWeight: 1.2 },
 };
@@ -92,9 +92,10 @@ export class ForecastingService {
 
     return {
       ...scenario,
-      assumptions: typeof scenario.assumptions === 'string'
-        ? JSON.parse(scenario.assumptions)
-        : scenario.assumptions,
+      assumptions:
+        typeof scenario.assumptions === 'string'
+          ? JSON.parse(scenario.assumptions)
+          : scenario.assumptions,
       periods,
     };
   }
@@ -109,9 +110,7 @@ export class ForecastingService {
 
     return scenarios.map((s: any) => ({
       ...s,
-      assumptions: typeof s.assumptions === 'string'
-        ? JSON.parse(s.assumptions)
-        : s.assumptions,
+      assumptions: typeof s.assumptions === 'string' ? JSON.parse(s.assumptions) : s.assumptions,
     }));
   }
 
@@ -133,9 +132,10 @@ export class ForecastingService {
 
     if (!scenario) throw new Error(`Scenario not found: ${scenarioId}`);
 
-    const assumptions = typeof scenario.assumptions === 'string'
-      ? JSON.parse(scenario.assumptions)
-      : scenario.assumptions;
+    const assumptions =
+      typeof scenario.assumptions === 'string'
+        ? JSON.parse(scenario.assumptions)
+        : scenario.assumptions;
 
     const growthRate: number = assumptions.growthRate ?? 0.03;
     const seasonalWeight: number = assumptions.seasonalWeight ?? 1.0;
@@ -153,8 +153,8 @@ export class ForecastingService {
           eq(transactions.userId, scenario.userId),
           gte(transactions.date, scenario.basePeriodStart),
           lte(transactions.date, scenario.basePeriodEnd),
-          sql`${transactions.category} IS NOT NULL`
-        )
+          sql`${transactions.category} IS NOT NULL`,
+        ),
       )
       .all();
 
@@ -177,7 +177,10 @@ export class ForecastingService {
 
     // Calculate seasonal factors per category
     const categorySeasonalFactors = new Map<string, Map<number, number>>();
-    const categoryStats = new Map<string, { mean: number; stddev: number; monthlyAmounts: number[] }>();
+    const categoryStats = new Map<
+      string,
+      { mean: number; stddev: number; monthlyAmounts: number[] }
+    >();
 
     for (const [category, monthMap] of categoryData) {
       // Monthly totals
@@ -195,9 +198,10 @@ export class ForecastingService {
         calMonthTotals.get(calMonth)!.push(monthTotal);
       }
 
-      const mean = monthlyTotals.length > 0
-        ? monthlyTotals.reduce((s, v) => s + v, 0) / monthlyTotals.length
-        : 0;
+      const mean =
+        monthlyTotals.length > 0
+          ? monthlyTotals.reduce((s, v) => s + v, 0) / monthlyTotals.length
+          : 0;
 
       const stddev = calculateStdDev(monthlyTotals);
 
@@ -225,10 +229,12 @@ export class ForecastingService {
 
       // Check seasonal variance to determine method
       const factorValues = Array.from(seasonalFactors.values());
-      const factorVariance = factorValues.length > 1
-        ? calculateStdDev(factorValues) / (factorValues.reduce((s, v) => s + v, 0) / factorValues.length)
-        : 0;
-      const useSeasonalDecomp = factorVariance > 0.20;
+      const factorVariance =
+        factorValues.length > 1
+          ? calculateStdDev(factorValues) /
+            (factorValues.reduce((s, v) => s + v, 0) / factorValues.length)
+          : 0;
+      const useSeasonalDecomp = factorVariance > 0.2;
 
       for (let i = 0; i < scenario.forecastMonths; i++) {
         const forecastDate = new Date(forecastStart);
@@ -317,7 +323,7 @@ export class ForecastingService {
     const sortedMonths = Array.from(monthTotals.keys()).sort();
 
     return {
-      months: sortedMonths.map(period => ({
+      months: sortedMonths.map((period) => ({
         period,
         scenarios: monthTotals.get(period) ?? {},
       })),
@@ -329,7 +335,10 @@ export class ForecastingService {
   // Utility Methods
   // --------------------------------------------------------------------------
 
-  calculateSeasonalFactors(txData: Array<{ date: string; amount: number }>, _months: number): Map<number, number> {
+  calculateSeasonalFactors(
+    txData: Array<{ date: string; amount: number }>,
+    _months: number,
+  ): Map<number, number> {
     const monthTotals = new Map<number, number[]>();
 
     for (const tx of txData) {
@@ -371,7 +380,7 @@ export class ForecastingService {
 function calculateStdDev(values: number[]): number {
   if (values.length < 2) return 0;
   const mean = values.reduce((s, v) => s + v, 0) / values.length;
-  const squaredDiffs = values.map(v => (v - mean) ** 2);
+  const squaredDiffs = values.map((v) => (v - mean) ** 2);
   const variance = squaredDiffs.reduce((s, v) => s + v, 0) / (values.length - 1);
   return Math.sqrt(variance);
 }
@@ -379,7 +388,7 @@ function calculateStdDev(values: number[]): number {
 /** Calculate confidence interval: mean ± (z-score × stddev / sqrt(n)) */
 export function calculateConfidenceInterval(
   values: number[],
-  confidenceLevel: number
+  confidenceLevel: number,
 ): { lower: number; upper: number } {
   if (values.length === 0) return { lower: 0, upper: 0 };
   if (values.length === 1) return { lower: values[0], upper: values[0] };
@@ -393,13 +402,13 @@ export function calculateConfidenceInterval(
     zScore = 2.576;
   } else if (confidenceLevel >= 0.95) {
     zScore = 1.96;
-  } else if (confidenceLevel >= 0.90) {
+  } else if (confidenceLevel >= 0.9) {
     zScore = 1.645;
   } else {
     zScore = 1.28; // ~80%
   }
 
-  const marginOfError = zScore * stddev / Math.sqrt(values.length);
+  const marginOfError = (zScore * stddev) / Math.sqrt(values.length);
 
   return {
     lower: Math.round(mean - marginOfError),

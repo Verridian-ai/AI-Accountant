@@ -1,11 +1,4 @@
-import {
-  Search,
-  RefreshCw,
-  LogOut,
-  Brain,
-  Settings as SettingsIcon,
-  User,
-} from 'lucide-react';
+import { Search, RefreshCw, LogOut, Brain, Settings as SettingsIcon, User } from 'lucide-react';
 import { NotificationCenter } from '../../features/notifications';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +38,7 @@ export function HeaderBar({
     <header
       className={cn(
         'sticky top-0 z-40 neu-raised border-b border-[#FFCC00]/10',
-        'bg-[#0d0d14]/95 backdrop-blur-xl'
+        'bg-[#0d0d14]/95 backdrop-blur-xl',
       )}
     >
       <div className="flex items-center justify-between gap-3 px-4 py-2.5">
@@ -65,9 +58,7 @@ export function HeaderBar({
         {/* Center: Page title (mobile) or Search (desktop) */}
         <div className="flex-1 flex justify-center min-w-0">
           {/* Mobile title */}
-          <h1 className="md:hidden text-sm font-bold text-zinc-200 truncate">
-            {pageTitle}
-          </h1>
+          <h1 className="md:hidden text-sm font-bold text-zinc-200 truncate">{pageTitle}</h1>
           {/* Desktop search placeholder */}
           <div className="hidden md:flex items-center gap-2 neu-inset rounded-xl px-4 py-2 w-full max-w-md text-zinc-500 text-sm">
             <Search className="h-4 w-4 shrink-0" />

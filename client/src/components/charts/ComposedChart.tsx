@@ -69,7 +69,14 @@ function ComposedChartInner({
     return (
       <ChartContainer title={title} subtitle={subtitle} height={height}>
         <RechartsComposedChart data={[]}>
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize={14}>
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#9CA3AF"
+            fontSize={14}
+          >
             No data available
           </text>
         </RechartsComposedChart>
@@ -78,14 +85,20 @@ function ComposedChartInner({
   }
 
   return (
-    <ChartContainer title={title} subtitle={subtitle} height={height} loading={loading} error={error}>
+    <ChartContainer
+      title={title}
+      subtitle={subtitle}
+      height={height}
+      loading={loading}
+      error={error}
+    >
       <RechartsComposedChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
-        <XAxis dataKey={xAxisKey} tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }} />
-        <YAxis
-          yAxisId="left"
+        <XAxis
+          dataKey={xAxisKey}
           tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }}
         />
+        <YAxis yAxisId="left" tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }} />
         {dualAxis && (
           <YAxis
             yAxisId="right"

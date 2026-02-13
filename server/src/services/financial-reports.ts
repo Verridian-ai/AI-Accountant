@@ -148,12 +148,7 @@ const REVENUE_CATEGORIES = [
 ];
 
 // Cost of Goods Sold categories
-const COGS_CATEGORIES = [
-  'Cost of Goods Sold',
-  'Direct Labour',
-  'Freight Costs',
-  'Materials',
-];
+const COGS_CATEGORIES = ['Cost of Goods Sold', 'Direct Labour', 'Freight Costs', 'Materials'];
 
 // System/transfer categories excluded from P&L
 const SYSTEM_CATEGORIES = [
@@ -166,15 +161,10 @@ const SYSTEM_CATEGORIES = [
 ];
 
 // Investing-related categories for cash flow classification
-const INVESTING_CATEGORIES = [
-  'Depreciation',
-];
+const INVESTING_CATEGORIES = ['Depreciation'];
 
 // Financing-related categories for cash flow classification
-const FINANCING_CATEGORIES = [
-  'Loan Repayment',
-  'Mortgage',
-];
+const FINANCING_CATEGORIES = ['Loan Repayment', 'Mortgage'];
 
 // ============================================================================
 // HELPERS
@@ -192,10 +182,7 @@ function safeDivide(numerator: number, denominator: number): number {
 }
 
 /** Calculate previous period dates given current period */
-function getPriorPeriod(
-  periodStart: string,
-  periodEnd: string
-): { start: string; end: string } {
+function getPriorPeriod(periodStart: string, periodEnd: string): { start: string; end: string } {
   const start = new Date(periodStart);
   const end = new Date(periodEnd);
   const durationMs = end.getTime() - start.getTime();
@@ -223,7 +210,7 @@ export class FinancialReportService {
     userId: string,
     periodStart: string,
     periodEnd: string,
-    accountId?: string
+    accountId?: string,
   ): Promise<ProfitAndLossReport> {
     // Build where conditions
     const conditions = [
@@ -315,10 +302,7 @@ export class FinancialReportService {
    * Assets = positive account balances, Liabilities = negative balances.
    * Equity includes retained earnings and owner equity events.
    */
-  async generateBalanceSheet(
-    userId: string,
-    asAtDate: string
-  ): Promise<BalanceSheetReport> {
+  async generateBalanceSheet(userId: string, asAtDate: string): Promise<BalanceSheetReport> {
     // Get all active accounts with their balances
     const userAccounts = await db
       .select({
@@ -328,12 +312,7 @@ export class FinancialReportService {
         balance: accounts.currentBalance,
       })
       .from(accounts)
-      .where(
-        and(
-          eq(accounts.userId, userId),
-          eq(accounts.isActive, true)
-        )
-      )
+      .where(and(eq(accounts.userId, userId), eq(accounts.isActive, true)))
       .all();
 
     const assetItems: Array<{ name: string; amount: number }> = [];
@@ -368,12 +347,7 @@ export class FinancialReportService {
         totalAmount: sql<number>`SUM(${ownerEquityEvents.amount})`,
       })
       .from(ownerEquityEvents)
-      .where(
-        and(
-          eq(ownerEquityEvents.userId, userId),
-          eq(ownerEquityEvents.confirmed, true)
-        )
-      )
+      .where(and(eq(ownerEquityEvents.userId, userId), eq(ownerEquityEvents.confirmed, true)))
       .groupBy(ownerEquityEvents.eventType)
       .all();
 
@@ -393,15 +367,13 @@ export class FinancialReportService {
     }
 
     // Retained earnings = Assets - Liabilities - Contributions + Drawings
-    const retainedEarnings =
-      totalAssets - totalLiabilities - totalContributions + totalDrawings;
+    const retainedEarnings = totalAssets - totalLiabilities - totalContributions + totalDrawings;
     equityItems.push({ name: 'Retained Earnings', amount: retainedEarnings });
 
     const totalEquity = totalContributions - totalDrawings + retainedEarnings;
 
     // Balance equation check: Assets = Liabilities + Equity
-    const isBalanced =
-      Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 1; // allow 1 cent rounding
+    const isBalanced = Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 1; // allow 1 cent rounding
 
     return {
       asAtDate,
@@ -422,7 +394,7 @@ export class FinancialReportService {
   async generateCashFlow(
     userId: string,
     periodStart: string,
-    periodEnd: string
+    periodEnd: string,
   ): Promise<CashFlowReport> {
     // Query all transactions in period grouped by category
     const rows = await db
@@ -435,8 +407,8 @@ export class FinancialReportService {
         and(
           eq(transactions.userId, userId),
           gte(transactions.date, periodStart),
-          lte(transactions.date, periodEnd)
-        )
+          lte(transactions.date, periodEnd),
+        ),
       )
       .groupBy(transactions.category)
       .all();
@@ -480,8 +452,8 @@ export class FinancialReportService {
           eq(ownerEquityEvents.userId, userId),
           eq(ownerEquityEvents.confirmed, true),
           gte(ownerEquityEvents.createdAt, periodStart),
-          lte(ownerEquityEvents.createdAt, periodEnd)
-        )
+          lte(ownerEquityEvents.createdAt, periodEnd),
+        ),
       )
       .groupBy(ownerEquityEvents.eventType)
       .all();
@@ -503,12 +475,7 @@ export class FinancialReportService {
         totalBalance: sql<number>`COALESCE(SUM(${accounts.currentBalance}), 0)`,
       })
       .from(accounts)
-      .where(
-        and(
-          eq(accounts.userId, userId),
-          eq(accounts.isActive, true)
-        )
-      )
+      .where(and(eq(accounts.userId, userId), eq(accounts.isActive, true)))
       .get();
 
     const closingBalance = Number(balanceQuery?.totalBalance) || 0;
@@ -531,10 +498,7 @@ export class FinancialReportService {
    * Generate a Trial Balance as at a specific date.
    * Lists all chart-of-accounts entries with debit/credit totals.
    */
-  async generateTrialBalance(
-    userId: string,
-    asAtDate: string
-  ): Promise<TrialBalanceReport> {
+  async generateTrialBalance(userId: string, asAtDate: string): Promise<TrialBalanceReport> {
     // Get all chart of accounts entries for this user
     const coaEntries = await db
       .select({
@@ -545,12 +509,7 @@ export class FinancialReportService {
         normalBalance: chartOfAccounts.normalBalance,
       })
       .from(chartOfAccounts)
-      .where(
-        and(
-          eq(chartOfAccounts.userId, userId),
-          eq(chartOfAccounts.isActive, true)
-        )
-      )
+      .where(and(eq(chartOfAccounts.userId, userId), eq(chartOfAccounts.isActive, true)))
       .orderBy(chartOfAccounts.code)
       .all();
 
@@ -567,8 +526,8 @@ export class FinancialReportService {
         and(
           eq(journalEntries.userId, userId),
           lte(journalEntries.entryDate, asAtDate),
-          eq(journalEntries.status, 'posted')
-        )
+          eq(journalEntries.status, 'posted'),
+        ),
       )
       .groupBy(journalEntryLines.accountId)
       .all();
@@ -626,7 +585,7 @@ export class FinancialReportService {
     currentEnd: string,
     priorStart: string,
     priorEnd: string,
-    reportType: string
+    reportType: string,
   ): Promise<PeriodComparison> {
     let currentData: any;
     let priorData: any;
@@ -655,9 +614,7 @@ export class FinancialReportService {
 
     // Build variance list from P&L-style data (most common comparison)
     const variances = this.calculateVariances(currentData, priorData, reportType);
-    const significantChanges = variances.filter(
-      (v) => Math.abs(v.variancePercent) > 10
-    );
+    const significantChanges = variances.filter((v) => Math.abs(v.variancePercent) > 10);
 
     return {
       reportType,
@@ -674,15 +631,11 @@ export class FinancialReportService {
   private calculateVariances(
     currentData: any,
     priorData: any,
-    reportType: string
+    reportType: string,
   ): CategoryVariance[] {
     const variances: CategoryVariance[] = [];
 
-    if (
-      reportType === 'profit_and_loss' &&
-      currentData.revenue &&
-      priorData.revenue
-    ) {
+    if (reportType === 'profit_and_loss' && currentData.revenue && priorData.revenue) {
       // Combine revenue + expenses + COGS sections
       const allCurrentGroups: CategoryGroup[] = [
         ...(currentData.revenue || []),
@@ -707,9 +660,7 @@ export class FinancialReportService {
       for (const g of allCurrentGroups) {
         seen.add(g.category);
         const priorAmount = priorMap.get(g.category) ?? 0;
-        variances.push(
-          this.buildVariance(g.category, g.amount, priorAmount)
-        );
+        variances.push(this.buildVariance(g.category, g.amount, priorAmount));
       }
 
       // Categories that existed in prior but not current
@@ -724,18 +675,20 @@ export class FinancialReportService {
       for (const section of sections) {
         const currentTotal = currentData[section]?.total ?? 0;
         const priorTotal = priorData[section]?.total ?? 0;
-        variances.push(
-          this.buildVariance(section, currentTotal, priorTotal)
-        );
+        variances.push(this.buildVariance(section, currentTotal, priorTotal));
       }
     } else {
       // Generic: compare top-level totals
-      const keys = ['totalAssets', 'totalLiabilities', 'totalEquity', 'totalDebits', 'totalCredits'];
+      const keys = [
+        'totalAssets',
+        'totalLiabilities',
+        'totalEquity',
+        'totalDebits',
+        'totalCredits',
+      ];
       for (const key of keys) {
         if (currentData[key] !== undefined && priorData[key] !== undefined) {
-          variances.push(
-            this.buildVariance(key, currentData[key], priorData[key])
-          );
+          variances.push(this.buildVariance(key, currentData[key], priorData[key]));
         }
       }
     }
@@ -746,7 +699,7 @@ export class FinancialReportService {
   private buildVariance(
     category: string,
     currentAmount: number,
-    priorAmount: number
+    priorAmount: number,
   ): CategoryVariance {
     const varianceAmount = currentAmount - priorAmount;
     const variancePercent = safeDivide(varianceAmount, priorAmount) * 100;
@@ -774,7 +727,7 @@ export class FinancialReportService {
     userId?: string,
     reportType?: string,
     periodStart?: string,
-    periodEnd?: string
+    periodEnd?: string,
   ): Promise<string> {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -818,11 +771,7 @@ export class FinancialReportService {
     const prior = getPriorPeriod(periodStart, periodEnd);
     let priorPnl: ProfitAndLossReport | null = null;
     try {
-      priorPnl = await this.generateProfitAndLoss(
-        userId,
-        prior.start,
-        prior.end
-      );
+      priorPnl = await this.generateProfitAndLoss(userId, prior.start, prior.end);
     } catch {
       // No prior data available
     }
@@ -830,16 +779,10 @@ export class FinancialReportService {
     // Calculate metrics
     const grossMargin = safeDivide(pnl.grossProfit, pnl.grossRevenue) * 100;
     const netMargin = safeDivide(pnl.netProfitOrLoss, pnl.grossRevenue) * 100;
-    const currentRatio = safeDivide(
-      balanceSheet.totalAssets,
-      balanceSheet.totalLiabilities
-    );
+    const currentRatio = safeDivide(balanceSheet.totalAssets, balanceSheet.totalLiabilities);
     const expenseRatio = safeDivide(pnl.totalExpenses, pnl.grossRevenue) * 100;
     const revenueGrowth = priorPnl
-      ? safeDivide(
-          pnl.grossRevenue - priorPnl.grossRevenue,
-          priorPnl.grossRevenue
-        ) * 100
+      ? safeDivide(pnl.grossRevenue - priorPnl.grossRevenue, priorPnl.grossRevenue) * 100
       : 0;
     const operatingCashFlow = cashFlow.operating.total;
     const totalIncome = pnl.grossRevenue;
@@ -868,12 +811,7 @@ export class FinancialReportService {
         metricValue: kpiMetrics.metricValue,
       })
       .from(kpiMetrics)
-      .where(
-        and(
-          eq(kpiMetrics.userId, userId),
-          sql`${kpiMetrics.period} < ${period}`
-        )
-      )
+      .where(and(eq(kpiMetrics.userId, userId), sql`${kpiMetrics.period} < ${period}`))
       .orderBy(sql`${kpiMetrics.period} DESC`)
       .all();
 
@@ -911,8 +849,8 @@ export class FinancialReportService {
           and(
             eq(kpiMetrics.userId, userId),
             eq(kpiMetrics.metricName, def.name),
-            eq(kpiMetrics.period, period)
-          )
+            eq(kpiMetrics.period, period),
+          ),
         )
         .get();
 

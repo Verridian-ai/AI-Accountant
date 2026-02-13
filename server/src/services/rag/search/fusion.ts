@@ -111,12 +111,14 @@ export class RRFFusionEngine {
   fuse(
     denseResults: DenseSearchResult[],
     sparseResults: SparseSearchResult[],
-    config?: FusionConfig
+    config?: FusionConfig,
   ): FusedSearchResult[] {
     const mergedConfig = { ...this.config, ...config };
     const { k, denseWeight, sparseWeight, minScore, topK } = mergedConfig;
 
-    console.log(`[RRF] Fusing ${denseResults.length} dense + ${sparseResults.length} sparse results`);
+    console.log(
+      `[RRF] Fusing ${denseResults.length} dense + ${sparseResults.length} sparse results`,
+    );
     console.log(`[RRF] Config: k=${k}, denseWeight=${denseWeight}, sparseWeight=${sparseWeight}`);
 
     // Create a map of all unique chunks
@@ -219,7 +221,9 @@ export class RRFFusionEngine {
     const denseOnly = fusedResults.filter((r) => r.sources.inDense && !r.sources.inSparse).length;
     const sparseOnly = fusedResults.filter((r) => !r.sources.inDense && r.sources.inSparse).length;
 
-    console.log(`[RRF] Final: ${fusedResults.length} results (${inBoth} in both, ${denseOnly} dense-only, ${sparseOnly} sparse-only)`);
+    console.log(
+      `[RRF] Final: ${fusedResults.length} results (${inBoth} in both, ${denseOnly} dense-only, ${sparseOnly} sparse-only)`,
+    );
 
     return fusedResults;
   }
@@ -231,7 +235,7 @@ export class RRFFusionEngine {
     denseResults: DenseSearchResult[],
     sparseResults: SparseSearchResult[],
     denseWeight: number,
-    sparseWeight: number
+    sparseWeight: number,
   ): FusedSearchResult[] {
     // Normalize weights to sum to 1
     const totalWeight = denseWeight + sparseWeight;
@@ -313,7 +317,7 @@ export class RRFFusionEngine {
 export function rrfFuse(
   denseResults: DenseSearchResult[],
   sparseResults: SparseSearchResult[],
-  config: FusionConfig = {}
+  config: FusionConfig = {},
 ): FusedSearchResult[] {
   const engine = new RRFFusionEngine(config);
   return engine.fuse(denseResults, sparseResults);
@@ -326,7 +330,7 @@ export function rrfFuse(
 export function calculateMaxRRFScore(
   k: number = 60,
   denseWeight: number = 0.6,
-  sparseWeight: number = 0.4
+  sparseWeight: number = 0.4,
 ): number {
   // Maximum score when a document is ranked #1 in both retrievers
   return denseWeight / (k + 1) + sparseWeight / (k + 1);
@@ -335,7 +339,10 @@ export function calculateMaxRRFScore(
 /**
  * Normalize fused scores to 0-1 range
  */
-export function normalizeScores(results: FusedSearchResult[], config: FusionConfig = {}): FusedSearchResult[] {
+export function normalizeScores(
+  results: FusedSearchResult[],
+  config: FusionConfig = {},
+): FusedSearchResult[] {
   const { k = 60, denseWeight = 0.6, sparseWeight = 0.4 } = config;
   const maxScore = calculateMaxRRFScore(k, denseWeight, sparseWeight);
 

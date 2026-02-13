@@ -44,7 +44,7 @@ export function AnomalyDetection() {
   const loadAnomalies = async () => {
     try {
       const data = await analyticsApi.fetchAnomalies();
-      setAnomalies(data.filter(a => !a.isDismissed));
+      setAnomalies(data.filter((a) => !a.isDismissed));
     } catch (err) {
       console.error('Failed to fetch anomalies:', err);
     } finally {
@@ -56,7 +56,7 @@ export function AnomalyDetection() {
     setDismissingId(id);
     try {
       await analyticsApi.dismissAnomaly(id);
-      setAnomalies(prev => prev.filter(a => a.id !== id));
+      setAnomalies((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
       console.error('Failed to dismiss anomaly:', err);
     } finally {
@@ -65,7 +65,7 @@ export function AnomalyDetection() {
   };
 
   const filtered = useMemo(() => {
-    return anomalies.filter(a => {
+    return anomalies.filter((a) => {
       if (filterType && a.type !== filterType) return false;
       if (filterSeverity && a.severity !== filterSeverity) return false;
       return true;
@@ -74,19 +74,22 @@ export function AnomalyDetection() {
 
   const grouped = useMemo(() => {
     const groups = new Map<string, Anomaly[]>();
-    SEVERITY_ORDER.forEach(s => groups.set(s, []));
-    filtered.forEach(a => {
+    SEVERITY_ORDER.forEach((s) => groups.set(s, []));
+    filtered.forEach((a) => {
       const list = groups.get(a.severity);
       if (list) list.push(a);
     });
     return groups;
   }, [filtered]);
 
-  const counts = useMemo(() => ({
-    critical: anomalies.filter(a => a.severity === 'critical').length,
-    warning: anomalies.filter(a => a.severity === 'warning').length,
-    info: anomalies.filter(a => a.severity === 'info').length,
-  }), [anomalies]);
+  const counts = useMemo(
+    () => ({
+      critical: anomalies.filter((a) => a.severity === 'critical').length,
+      warning: anomalies.filter((a) => a.severity === 'warning').length,
+      info: anomalies.filter((a) => a.severity === 'info').length,
+    }),
+    [anomalies],
+  );
 
   if (loading) {
     return (
@@ -117,7 +120,9 @@ export function AnomalyDetection() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-[#FFCC00]" />
-            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Anomaly Detection</span>
+            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+              Anomaly Detection
+            </span>
           </div>
           <div className="flex gap-2">
             {counts.critical > 0 && <Badge variant="destructive">{counts.critical} critical</Badge>}
@@ -132,13 +137,15 @@ export function AnomalyDetection() {
             type="button"
             onClick={() => setFilterSeverity(null)}
             className={cn(
-              "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border",
-              !filterSeverity ? "border-[#FFCC00]/30 text-[#FFCC00]" : "border-transparent text-zinc-600 hover:text-zinc-400"
+              'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
+              !filterSeverity
+                ? 'border-[#FFCC00]/30 text-[#FFCC00]'
+                : 'border-transparent text-zinc-600 hover:text-zinc-400',
             )}
           >
             All
           </button>
-          {SEVERITY_ORDER.map(s => {
+          {SEVERITY_ORDER.map((s) => {
             const cfg = SEVERITY_CONFIG[s];
             if (!cfg) return null;
             return (
@@ -147,8 +154,10 @@ export function AnomalyDetection() {
                 type="button"
                 onClick={() => setFilterSeverity(filterSeverity === s ? null : s)}
                 className={cn(
-                  "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border",
-                  filterSeverity === s ? `border-white/20 ${cfg.color}` : "border-transparent text-zinc-600 hover:text-zinc-400"
+                  'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
+                  filterSeverity === s
+                    ? `border-white/20 ${cfg.color}`
+                    : 'border-transparent text-zinc-600 hover:text-zinc-400',
                 )}
               >
                 {cfg.label}
@@ -159,7 +168,7 @@ export function AnomalyDetection() {
       </div>
 
       {/* Grouped anomalies */}
-      {SEVERITY_ORDER.map(severity => {
+      {SEVERITY_ORDER.map((severity) => {
         const items = grouped.get(severity) || [];
         if (items.length === 0) return null;
         const sevConfig = SEVERITY_CONFIG[severity];
@@ -169,24 +178,37 @@ export function AnomalyDetection() {
         return (
           <div key={severity}>
             <div className="flex items-center gap-2 mb-2 px-1">
-              <SevIcon className={cn("w-3.5 h-3.5", sevConfig.color)} />
-              <span className={cn("text-[9px] font-black uppercase tracking-[0.2em]", sevConfig.color)}>
+              <SevIcon className={cn('w-3.5 h-3.5', sevConfig.color)} />
+              <span
+                className={cn('text-[9px] font-black uppercase tracking-[0.2em]', sevConfig.color)}
+              >
                 {sevConfig.label} ({items.length})
               </span>
             </div>
 
             <div className="space-y-2">
-              {items.map(anomaly => {
-                const typeConfig = TYPE_COLORS[anomaly.type] ?? { bg: 'bg-amber-500/10', text: 'text-amber-400' };
+              {items.map((anomaly) => {
+                const typeConfig = TYPE_COLORS[anomaly.type] ?? {
+                  bg: 'bg-amber-500/10',
+                  text: 'text-amber-400',
+                };
                 const isDismissing = dismissingId === anomaly.id;
 
                 return (
-                  <div key={anomaly.id} className="neu-raised rounded-2xl border border-white/5 p-4 group hover:border-white/10 transition-all">
+                  <div
+                    key={anomaly.id}
+                    className="neu-raised rounded-2xl border border-white/5 p-4 group hover:border-white/10 transition-all"
+                  >
                     <div className="flex items-start gap-3">
-                      <Badge className={cn("text-[8px] shrink-0", typeConfig.bg, typeConfig.text)} variant="outline">
+                      <Badge
+                        className={cn('text-[8px] shrink-0', typeConfig.bg, typeConfig.text)}
+                        variant="outline"
+                      >
                         {TYPE_LABELS[anomaly.type] || anomaly.type}
                       </Badge>
-                      <p className="text-xs text-zinc-300 flex-1 leading-relaxed">{anomaly.description}</p>
+                      <p className="text-xs text-zinc-300 flex-1 leading-relaxed">
+                        {anomaly.description}
+                      </p>
                       <button
                         type="button"
                         onClick={() => handleDismiss(anomaly.id)}
@@ -194,7 +216,11 @@ export function AnomalyDetection() {
                         className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100 shrink-0"
                         title="Dismiss"
                       >
-                        {isDismissing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                        {isDismissing ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <X className="w-3.5 h-3.5" />
+                        )}
                       </button>
                     </div>
                     <div className="flex items-center gap-3 mt-2">

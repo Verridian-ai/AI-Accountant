@@ -69,14 +69,14 @@ export class ConfirmationFlowService {
       try {
         const existing = await this.db.all(
           `SELECT * FROM agent_sessions WHERE user_id = ? AND status = 'active' ORDER BY last_activity_at DESC LIMIT 1`,
-          [options.userId]
+          [options.userId],
         );
         if (existing.length > 0) {
           // Update last activity timestamp
-          await this.db.run(
-            'UPDATE agent_sessions SET last_activity_at = ? WHERE id = ?',
-            [new Date().toISOString(), existing[0].id]
-          );
+          await this.db.run('UPDATE agent_sessions SET last_activity_at = ? WHERE id = ?', [
+            new Date().toISOString(),
+            existing[0].id,
+          ]);
           return existing[0] as AgentSession;
         }
       } catch (error) {
@@ -108,11 +108,19 @@ export class ConfirmationFlowService {
         query_count, agent_types_used, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        session.id, session.userId, session.startedAt, session.lastActivityAt,
-        session.status, session.context, session.totalMutations,
-        session.confirmedMutations, session.rejectedMutations,
-        session.queryCount, session.agentTypesUsed, session.createdAt,
-      ]
+        session.id,
+        session.userId,
+        session.startedAt,
+        session.lastActivityAt,
+        session.status,
+        session.context,
+        session.totalMutations,
+        session.confirmedMutations,
+        session.rejectedMutations,
+        session.queryCount,
+        session.agentTypesUsed,
+        session.createdAt,
+      ],
     );
 
     return session;
@@ -145,7 +153,7 @@ export class ConfirmationFlowService {
       afterState: unknown;
       description: string;
       confidence?: number;
-    }
+    },
   ): Promise<{
     mutation: AgentMutation;
     autoExecuted: boolean;
@@ -154,13 +162,11 @@ export class ConfirmationFlowService {
     const authDecision = this.authService.canPropose(
       agentType,
       proposal.targetTable,
-      proposal.mutationType
+      proposal.mutationType,
     );
 
     if (!authDecision.allowed) {
-      throw new Error(
-        `Authorization denied: ${authDecision.reason ?? 'Unknown reason'}`
-      );
+      throw new Error(`Authorization denied: ${authDecision.reason ?? 'Unknown reason'}`);
     }
 
     // Step 2: Check auto-execute eligibility
@@ -170,7 +176,7 @@ export class ConfirmationFlowService {
         agentType,
         proposal.mutationType,
         proposal.targetTable,
-        proposal.confidence
+        proposal.confidence,
       );
 
     // Step 3: Create mutation via MutationTools
@@ -197,7 +203,7 @@ export class ConfirmationFlowService {
       } else {
         console.warn(
           `[ConfirmationFlow] Auto-execute failed for ${mutation.id}:`,
-          execResult.error
+          execResult.error,
         );
         // Fall back to requiring confirmation
         mutation.status = 'pending_confirmation' as MutationStatus;
@@ -229,11 +235,7 @@ export class ConfirmationFlowService {
    * REVISION (D02-CRIT-02): userId is REQUIRED (not optional).
    * The confirm endpoint validates that the requesting user owns the session.
    */
-  async confirm(
-    mutationId: string,
-    userId: string,
-    reason?: string
-  ): Promise<AgentMutation> {
+  async confirm(mutationId: string, userId: string, reason?: string): Promise<AgentMutation> {
     if (!userId) {
       throw new Error('User identity required to confirm mutations');
     }
@@ -247,7 +249,7 @@ export class ConfirmationFlowService {
 
     if (mutation.status !== 'pending_confirmation') {
       throw new Error(
-        `Cannot confirm mutation in status '${mutation.status}'. Expected 'pending_confirmation'.`
+        `Cannot confirm mutation in status '${mutation.status}'. Expected 'pending_confirmation'.`,
       );
     }
 
@@ -256,10 +258,11 @@ export class ConfirmationFlowService {
 
     // Check expiration
     if (mutation.expiresAt && new Date(mutation.expiresAt) < new Date()) {
-      await this.db.run(
-        'UPDATE agent_mutations SET status = ?, updated_at = ? WHERE id = ?',
-        ['expired', new Date().toISOString(), mutationId]
-      );
+      await this.db.run('UPDATE agent_mutations SET status = ?, updated_at = ? WHERE id = ?', [
+        'expired',
+        new Date().toISOString(),
+        mutationId,
+      ]);
       throw new Error('Mutation has expired');
     }
 
@@ -267,7 +270,7 @@ export class ConfirmationFlowService {
     const now = new Date().toISOString();
     await this.db.run(
       'UPDATE agent_mutations SET status = ?, confirmed_at = ?, updated_at = ? WHERE id = ?',
-      ['confirmed', now, now, mutationId]
+      ['confirmed', now, now, mutationId],
     );
 
     // Execute the mutation
@@ -280,7 +283,7 @@ export class ConfirmationFlowService {
     // Update session counters
     await this.db.run(
       'UPDATE agent_sessions SET confirmed_mutations = confirmed_mutations + 1, last_activity_at = ? WHERE id = ?',
-      [now, mutation.sessionId]
+      [now, mutation.sessionId],
     );
 
     // Broadcast confirmation event
@@ -300,11 +303,7 @@ export class ConfirmationFlowService {
    *
    * REVISION (D02-CRIT-02): userId is REQUIRED. Must validate session ownership.
    */
-  async reject(
-    mutationId: string,
-    userId: string,
-    reason?: string
-  ): Promise<AgentMutation> {
+  async reject(mutationId: string, userId: string, reason?: string): Promise<AgentMutation> {
     if (!userId) {
       throw new Error('User identity required to reject mutations');
     }
@@ -318,7 +317,7 @@ export class ConfirmationFlowService {
 
     if (mutation.status !== 'pending_confirmation') {
       throw new Error(
-        `Cannot reject mutation in status '${mutation.status}'. Expected 'pending_confirmation'.`
+        `Cannot reject mutation in status '${mutation.status}'. Expected 'pending_confirmation'.`,
       );
     }
 
@@ -328,13 +327,13 @@ export class ConfirmationFlowService {
     const now = new Date().toISOString();
     await this.db.run(
       'UPDATE agent_mutations SET status = ?, rejected_at = ?, rejection_reason = ?, updated_at = ? WHERE id = ?',
-      ['rejected', now, reason ?? null, now, mutationId]
+      ['rejected', now, reason ?? null, now, mutationId],
     );
 
     // Update session counters
     await this.db.run(
       'UPDATE agent_sessions SET rejected_mutations = rejected_mutations + 1, last_activity_at = ? WHERE id = ?',
-      [now, mutation.sessionId]
+      [now, mutation.sessionId],
     );
 
     // Broadcast rejection event
@@ -344,7 +343,12 @@ export class ConfirmationFlowService {
       timestamp: now,
     } as any);
 
-    return { ...mutation, status: 'rejected' as MutationStatus, rejectedAt: now, rejectionReason: reason ?? null };
+    return {
+      ...mutation,
+      status: 'rejected' as MutationStatus,
+      rejectedAt: now,
+      rejectionReason: reason ?? null,
+    };
   }
 
   // ── Expiration ──────────────────────────────────────────────────────────
@@ -361,7 +365,7 @@ export class ConfirmationFlowService {
        WHERE status = 'pending_confirmation'
          AND expires_at IS NOT NULL
          AND expires_at < ?`,
-      [now, now]
+      [now, now],
     );
     const count = result?.changes ?? 0;
 
@@ -389,16 +393,18 @@ export class ConfirmationFlowService {
       `SELECT * FROM agent_mutations
        WHERE session_id = ? AND status = 'pending_confirmation'
        ORDER BY created_at DESC`,
-      [sessionId]
+      [sessionId],
     )) as AgentMutation[];
   }
 
   /**
    * Get session history with pagination.
    */
-  async getSessionHistory(
-    options?: { userId?: string; limit?: number; offset?: number }
-  ): Promise<{ sessions: AgentSession[]; total: number }> {
+  async getSessionHistory(options?: {
+    userId?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ sessions: AgentSession[]; total: number }> {
     const limit = options?.limit ?? 50;
     const offset = options?.offset ?? 0;
     let whereClause = '';
@@ -412,12 +418,9 @@ export class ConfirmationFlowService {
     const [sessions, countResult] = await Promise.all([
       this.db.all(
         `SELECT * FROM agent_sessions ${whereClause} ORDER BY last_activity_at DESC LIMIT ? OFFSET ?`,
-        [...params, limit, offset]
+        [...params, limit, offset],
       ),
-      this.db.all(
-        `SELECT COUNT(*) as count FROM agent_sessions ${whereClause}`,
-        params
-      ),
+      this.db.all(`SELECT COUNT(*) as count FROM agent_sessions ${whereClause}`, params),
     ]);
 
     return {
@@ -430,10 +433,7 @@ export class ConfirmationFlowService {
    * Get a single session by ID.
    */
   async getSession(sessionId: string): Promise<AgentSession | null> {
-    const rows = await this.db.all(
-      'SELECT * FROM agent_sessions WHERE id = ?',
-      [sessionId]
-    );
+    const rows = await this.db.all('SELECT * FROM agent_sessions WHERE id = ?', [sessionId]);
     return rows.length > 0 ? (rows[0] as AgentSession) : null;
   }
 
@@ -445,7 +445,7 @@ export class ConfirmationFlowService {
   async incrementQueryCount(sessionId: string): Promise<void> {
     await this.db.run(
       'UPDATE agent_sessions SET query_count = query_count + 1, last_activity_at = ? WHERE id = ?',
-      [new Date().toISOString(), sessionId]
+      [new Date().toISOString(), sessionId],
     );
   }
 
@@ -453,10 +453,9 @@ export class ConfirmationFlowService {
    * Record that an agent type was used in a session.
    */
   async recordAgentUsage(sessionId: string, agentType: AgentType): Promise<void> {
-    const session = await this.db.all(
-      'SELECT agent_types_used FROM agent_sessions WHERE id = ?',
-      [sessionId]
-    );
+    const session = await this.db.all('SELECT agent_types_used FROM agent_sessions WHERE id = ?', [
+      sessionId,
+    ]);
 
     if (session.length === 0) return;
 
@@ -466,10 +465,10 @@ export class ConfirmationFlowService {
 
     if (!existing.includes(agentType)) {
       existing.push(agentType);
-      await this.db.run(
-        'UPDATE agent_sessions SET agent_types_used = ? WHERE id = ?',
-        [JSON.stringify(existing), sessionId]
-      );
+      await this.db.run('UPDATE agent_sessions SET agent_types_used = ? WHERE id = ?', [
+        JSON.stringify(existing),
+        sessionId,
+      ]);
     }
   }
 
@@ -480,10 +479,9 @@ export class ConfirmationFlowService {
    * with a mutation. Throws an error if the session belongs to a different user.
    */
   private async validateSessionOwnership(sessionId: string, userId: string): Promise<void> {
-    const sessions = await this.db.all(
-      'SELECT user_id FROM agent_sessions WHERE id = ?',
-      [sessionId]
-    );
+    const sessions = await this.db.all('SELECT user_id FROM agent_sessions WHERE id = ?', [
+      sessionId,
+    ]);
 
     if (sessions.length > 0 && sessions[0].user_id && sessions[0].user_id !== userId) {
       throw new Error('Cannot perform action: session belongs to a different user');

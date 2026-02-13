@@ -9,7 +9,6 @@ import { eq, and, desc, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
 export class PayStructureService {
-
   // ============================
   // PAY CATEGORIES
   // ============================
@@ -55,12 +54,15 @@ export class PayStructureService {
   /**
    * List pay categories for a user
    */
-  async listPayCategories(userId: string, options?: {
-    page?: number;
-    limit?: number;
-    type?: string;
-    activeOnly?: boolean;
-  }): Promise<{ data: any[]; total: number }> {
+  async listPayCategories(
+    userId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      type?: string;
+      activeOnly?: boolean;
+    },
+  ): Promise<{ data: any[]; total: number }> {
     const page = options?.page ?? 1;
     const limit = options?.limit ?? 50;
     const offset = (page - 1) * limit;
@@ -70,12 +72,15 @@ export class PayStructureService {
       conditions.push(eq(payCategories.isActive, true));
     }
 
-    const countResult = await db.select({ count: sql<number>`COUNT(*)` })
+    const countResult = await db
+      .select({ count: sql<number>`COUNT(*)` })
       .from(payCategories)
       .where(and(...conditions));
     const total = Number(countResult[0]?.count ?? 0);
 
-    const rows = await db.select().from(payCategories)
+    const rows = await db
+      .select()
+      .from(payCategories)
       .where(and(...conditions))
       .orderBy(payCategories.type, payCategories.name)
       .limit(limit)
@@ -87,16 +92,19 @@ export class PayStructureService {
   /**
    * Update a pay category
    */
-  async updatePayCategory(id: string, data: Partial<{
-    name: string;
-    type: string;
-    rateType: string;
-    defaultRate: number;
-    multiplier: number;
-    isTaxable: boolean;
-    isSuperBearing: boolean;
-    isActive: boolean;
-  }>): Promise<any | null> {
+  async updatePayCategory(
+    id: string,
+    data: Partial<{
+      name: string;
+      type: string;
+      rateType: string;
+      defaultRate: number;
+      multiplier: number;
+      isTaxable: boolean;
+      isSuperBearing: boolean;
+      isActive: boolean;
+    }>,
+  ): Promise<any | null> {
     await db.update(payCategories).set(data).where(eq(payCategories.id, id));
     return this.getPayCategory(id);
   }
@@ -114,7 +122,13 @@ export class PayStructureService {
       { name: 'Overtime 2.0x', type: 'overtime', rateType: 'hourly', multiplier: 2.0 },
       { name: 'Meal Allowance', type: 'allowance', rateType: 'fixed', isSuperBearing: false },
       { name: 'Travel Allowance', type: 'allowance', rateType: 'fixed', isSuperBearing: false },
-      { name: 'Union Fees', type: 'deduction', rateType: 'fixed', isTaxable: false, isSuperBearing: false },
+      {
+        name: 'Union Fees',
+        type: 'deduction',
+        rateType: 'fixed',
+        isTaxable: false,
+        isSuperBearing: false,
+      },
       { name: 'Super Guarantee', type: 'super', rateType: 'fixed', isTaxable: false },
       { name: 'Salary Sacrifice Super', type: 'super', rateType: 'fixed', isTaxable: false },
       { name: 'Annual Leave', type: 'leave', rateType: 'hourly', multiplier: 1.0 },
@@ -170,7 +184,9 @@ export class PayStructureService {
    * Returns all active pay category assignments (most recent effective date per category).
    */
   async getPayStructure(employeeId: string): Promise<any[]> {
-    const rows = await db.select().from(payStructures)
+    const rows = await db
+      .select()
+      .from(payStructures)
       .where(eq(payStructures.employeeId, employeeId))
       .orderBy(desc(payStructures.effectiveDate));
 
@@ -190,7 +206,9 @@ export class PayStructureService {
    * Get pay structure history for an employee (all records)
    */
   async getPayStructureHistory(employeeId: string): Promise<any[]> {
-    return db.select().from(payStructures)
+    return db
+      .select()
+      .from(payStructures)
       .where(eq(payStructures.employeeId, employeeId))
       .orderBy(desc(payStructures.effectiveDate));
   }
@@ -199,7 +217,10 @@ export class PayStructureService {
    * Calculate gross pay for a period.
    * Simple calculation — Wave 5 will add PAYG, super, leave.
    */
-  async calculateGrossPay(employeeId: string, hoursWorked: number): Promise<{
+  async calculateGrossPay(
+    employeeId: string,
+    hoursWorked: number,
+  ): Promise<{
     grossPay: number; // cents
     breakdown: Array<{ category: string; amount: number }>;
   }> {

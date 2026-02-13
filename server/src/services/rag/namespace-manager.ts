@@ -5,7 +5,15 @@
  * Each user has their own namespace with isolated documents and chunks.
  */
 
-import { db, ragNamespaces, ragDocuments, ragChunks, ragCitations, transactions, accounts } from '../../schema.js';
+import {
+  db,
+  ragNamespaces,
+  ragDocuments,
+  ragChunks,
+  ragCitations,
+  transactions,
+  accounts,
+} from '../../schema.js';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import crypto from 'crypto';
 import path from 'path';
@@ -91,10 +99,7 @@ export class NamespaceManager {
     const existing = await db
       .select()
       .from(ragNamespaces)
-      .where(and(
-        eq(ragNamespaces.userId, userId),
-        eq(ragNamespaces.name, 'default')
-      ))
+      .where(and(eq(ragNamespaces.userId, userId), eq(ragNamespaces.name, 'default')))
       .limit(1);
 
     if (existing.length > 0) {
@@ -112,7 +117,7 @@ export class NamespaceManager {
     userId: string,
     name: string,
     description?: string,
-    config?: Partial<NamespaceConfig>
+    config?: Partial<NamespaceConfig>,
   ): Promise<Namespace> {
     const now = new Date().toISOString();
     const namespaceConfig = { ...DEFAULT_NAMESPACE_CONFIG, ...config };
@@ -179,10 +184,7 @@ export class NamespaceManager {
     const result = await db
       .select()
       .from(ragNamespaces)
-      .where(and(
-        eq(ragNamespaces.id, namespaceId),
-        eq(ragNamespaces.userId, userId)
-      ))
+      .where(and(eq(ragNamespaces.id, namespaceId), eq(ragNamespaces.userId, userId)))
       .limit(1);
 
     return result.length > 0 ? this.mapToNamespace(result[0]) : null;
@@ -210,7 +212,7 @@ export class NamespaceManager {
       name: string;
       description: string;
       settings: Partial<NamespaceConfig>;
-    }>
+    }>,
   ): Promise<void> {
     const now = new Date().toISOString();
 
@@ -233,10 +235,7 @@ export class NamespaceManager {
       }
     }
 
-    await db
-      .update(ragNamespaces)
-      .set(updateData)
-      .where(eq(ragNamespaces.id, namespaceId));
+    await db.update(ragNamespaces).set(updateData).where(eq(ragNamespaces.id, namespaceId));
   }
 
   /**
@@ -257,25 +256,17 @@ export class NamespaceManager {
 
     // Delete all citations referencing these chunks (using parameterized query)
     if (chunkIds.length > 0) {
-      await db
-        .delete(ragCitations)
-        .where(inArray(ragCitations.chunkId, chunkIds));
+      await db.delete(ragCitations).where(inArray(ragCitations.chunkId, chunkIds));
     }
 
     // Delete all chunks
-    await db
-      .delete(ragChunks)
-      .where(eq(ragChunks.namespaceId, namespaceId));
+    await db.delete(ragChunks).where(eq(ragChunks.namespaceId, namespaceId));
 
     // Delete all documents
-    await db
-      .delete(ragDocuments)
-      .where(eq(ragDocuments.namespaceId, namespaceId));
+    await db.delete(ragDocuments).where(eq(ragDocuments.namespaceId, namespaceId));
 
     // Delete namespace
-    await db
-      .delete(ragNamespaces)
-      .where(eq(ragNamespaces.id, namespaceId));
+    await db.delete(ragNamespaces).where(eq(ragNamespaces.id, namespaceId));
 
     // Clean up data directory
     await this.cleanupNamespaceDirectory(namespace.userId, namespaceId);
@@ -292,7 +283,7 @@ export class NamespaceManager {
     namespaceId: string,
     userId: string,
     content: string,
-    metadata: DocumentMetadata
+    metadata: DocumentMetadata,
   ): Promise<string> {
     const now = new Date().toISOString();
     const contentHash = crypto.createHash('sha256').update(content).digest('hex');
@@ -301,10 +292,9 @@ export class NamespaceManager {
     const existing = await db
       .select()
       .from(ragDocuments)
-      .where(and(
-        eq(ragDocuments.namespaceId, namespaceId),
-        eq(ragDocuments.contentHash, contentHash)
-      ))
+      .where(
+        and(eq(ragDocuments.namespaceId, namespaceId), eq(ragDocuments.contentHash, contentHash)),
+      )
       .limit(1);
 
     if (existing.length > 0) {
@@ -377,8 +367,8 @@ export class NamespaceManager {
       status?: string;
       limit?: number;
       offset?: number;
-    }
-  ): Promise<typeof ragDocuments.$inferSelect[]> {
+    },
+  ): Promise<(typeof ragDocuments.$inferSelect)[]> {
     let query = db
       .select()
       .from(ragDocuments)
@@ -412,20 +402,14 @@ export class NamespaceManager {
 
     // Delete citations referencing this document's chunks (using parameterized query)
     if (chunkIds.length > 0) {
-      await db
-        .delete(ragCitations)
-        .where(inArray(ragCitations.chunkId, chunkIds));
+      await db.delete(ragCitations).where(inArray(ragCitations.chunkId, chunkIds));
     }
 
     // Delete chunks
-    await db
-      .delete(ragChunks)
-      .where(eq(ragChunks.documentId, documentId));
+    await db.delete(ragChunks).where(eq(ragChunks.documentId, documentId));
 
     // Delete document
-    await db
-      .delete(ragDocuments)
-      .where(eq(ragDocuments.id, documentId));
+    await db.delete(ragDocuments).where(eq(ragDocuments.id, documentId));
 
     // Update counts
     await db
@@ -454,7 +438,7 @@ export class NamespaceManager {
       chunkType: ChunkingStrategy;
       metadata: Record<string, unknown>;
       embedding?: number[];
-    }>
+    }>,
   ): Promise<string[]> {
     const now = new Date().toISOString();
     const chunkIds: string[] = [];
@@ -474,13 +458,13 @@ export class NamespaceManager {
         contentTokens: this.estimateTokenCount(chunk.content),
         embedding: chunk.embedding ? JSON.stringify(chunk.embedding) : null,
         metadata: JSON.stringify(chunk.metadata),
-        dateStart: chunk.metadata.dateStart as string || null,
-        dateEnd: chunk.metadata.dateEnd as string || null,
-        category: chunk.metadata.category as string || null,
-        merchantNormalized: chunk.metadata.merchantNormalized as string || null,
-        accountId: chunk.metadata.accountId as string || null,
-        totalAmount: chunk.metadata.totalAmount as number || null,
-        transactionCount: chunk.metadata.transactionCount as number || null,
+        dateStart: (chunk.metadata.dateStart as string) || null,
+        dateEnd: (chunk.metadata.dateEnd as string) || null,
+        category: (chunk.metadata.category as string) || null,
+        merchantNormalized: (chunk.metadata.merchantNormalized as string) || null,
+        accountId: (chunk.metadata.accountId as string) || null,
+        totalAmount: (chunk.metadata.totalAmount as number) || null,
+        transactionCount: (chunk.metadata.transactionCount as number) || null,
         createdAt: now,
       });
 
@@ -523,8 +507,8 @@ export class NamespaceManager {
       dateEnd?: string;
       accountId?: string;
       limit?: number;
-    }
-  ): Promise<typeof ragChunks.$inferSelect[]> {
+    },
+  ): Promise<(typeof ragChunks.$inferSelect)[]> {
     // Build base query
     let conditions = [eq(ragChunks.namespaceId, namespaceId)];
 

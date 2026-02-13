@@ -67,7 +67,9 @@ export function APDashboard() {
     { id: 'payment-runs', label: 'Payment Runs', icon: Banknote },
   ];
 
-  const overdueBucket = aging?.buckets.find((b) => b.label === '61-90 days' || b.label === '90+ days');
+  const overdueBucket = aging?.buckets.find(
+    (b) => b.label === '61-90 days' || b.label === '90+ days',
+  );
   const totalOverdue = aging
     ? aging.buckets
         .filter((b) => b.label.includes('61') || b.label.includes('90'))
@@ -102,10 +104,38 @@ export function APDashboard() {
   ];
 
   const quickActions = [
-    { label: 'New Bill', icon: FileText, action: () => { setActiveTab('bills'); setView({ type: 'bill-entry' }); } },
-    { label: 'New PO', icon: ClipboardList, action: () => { setActiveTab('purchase-orders'); setView({ type: 'po-editor' }); } },
-    { label: 'New Supplier', icon: Users, action: () => { setActiveTab('suppliers'); setView({ type: 'supplier-form' }); } },
-    { label: 'Payment Run', icon: Banknote, action: () => { setActiveTab('payment-runs'); setView({ type: 'payment-run' }); } },
+    {
+      label: 'New Bill',
+      icon: FileText,
+      action: () => {
+        setActiveTab('bills');
+        setView({ type: 'bill-entry' });
+      },
+    },
+    {
+      label: 'New PO',
+      icon: ClipboardList,
+      action: () => {
+        setActiveTab('purchase-orders');
+        setView({ type: 'po-editor' });
+      },
+    },
+    {
+      label: 'New Supplier',
+      icon: Users,
+      action: () => {
+        setActiveTab('suppliers');
+        setView({ type: 'supplier-form' });
+      },
+    },
+    {
+      label: 'Payment Run',
+      icon: Banknote,
+      action: () => {
+        setActiveTab('payment-runs');
+        setView({ type: 'payment-run' });
+      },
+    },
   ];
 
   // Sub-view renders
@@ -123,7 +153,10 @@ export function APDashboard() {
     return (
       <SupplierForm
         supplierId={view.id}
-        onSave={() => { setView({ type: 'list' }); loadAging(); }}
+        onSave={() => {
+          setView({ type: 'list' });
+          loadAging();
+        }}
         onCancel={() => setView({ type: 'list' })}
       />
     );
@@ -133,7 +166,10 @@ export function APDashboard() {
     return (
       <BillEntry
         billId={view.id}
-        onSave={() => { setView({ type: 'list' }); loadAging(); }}
+        onSave={() => {
+          setView({ type: 'list' });
+          loadAging();
+        }}
         onCancel={() => setView({ type: 'list' })}
       />
     );
@@ -144,7 +180,10 @@ export function APDashboard() {
       <BillApproval
         billId={view.id}
         onBack={() => setView({ type: 'list' })}
-        onAction={() => { setView({ type: 'list' }); loadAging(); }}
+        onAction={() => {
+          setView({ type: 'list' });
+          loadAging();
+        }}
       />
     );
   }
@@ -153,7 +192,10 @@ export function APDashboard() {
     return (
       <PurchaseOrderEditor
         poId={view.id}
-        onSave={() => { setView({ type: 'list' }); loadAging(); }}
+        onSave={() => {
+          setView({ type: 'list' });
+          loadAging();
+        }}
         onCancel={() => setView({ type: 'list' })}
       />
     );
@@ -164,7 +206,10 @@ export function APDashboard() {
       <POReceiving
         poId={view.id}
         onBack={() => setView({ type: 'list' })}
-        onReceived={() => { setView({ type: 'list' }); loadAging(); }}
+        onReceived={() => {
+          setView({ type: 'list' });
+          loadAging();
+        }}
       />
     );
   }
@@ -173,7 +218,10 @@ export function APDashboard() {
     return (
       <SupplierPaymentRun
         onBack={() => setView({ type: 'list' })}
-        onComplete={() => { setView({ type: 'list' }); loadAging(); }}
+        onComplete={() => {
+          setView({ type: 'list' });
+          loadAging();
+        }}
       />
     );
   }
@@ -294,7 +342,10 @@ export function APDashboard() {
       {activeTab === 'payment-runs' && (
         <SupplierPaymentRun
           onBack={() => handleTabChange('bills')}
-          onComplete={() => { handleTabChange('bills'); loadAging(); }}
+          onComplete={() => {
+            handleTabChange('bills');
+            loadAging();
+          }}
         />
       )}
     </div>

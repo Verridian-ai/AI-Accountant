@@ -31,7 +31,7 @@ function marginalRateAtCents(taxableIncomeCents: number): number {
   const dollars = taxableIncomeCents / 100;
   if (dollars <= 18_200) return 0;
   if (dollars <= 45_000) return 0.16;
-  if (dollars <= 135_000) return 0.30;
+  if (dollars <= 135_000) return 0.3;
   if (dollars <= 190_000) return 0.37;
   return 0.45;
 }
@@ -42,11 +42,14 @@ const STRATEGY_TEMPLATES: Array<{
   description: string;
   atoRulingRef?: string;
   applicableEntities: EntityType[];
-  evaluate: (ctx: StrategyContext) => { savingCents: number; confidence: number; steps: string[] } | null;
+  evaluate: (
+    ctx: StrategyContext,
+  ) => { savingCents: number; confidence: number; steps: string[] } | null;
 }> = [
   {
     name: 'Prepay Deductible Expenses',
-    description: 'Bring forward up to 12 months of deductible expenses (rent, insurance, subscriptions) into the current financial year to reduce taxable income.',
+    description:
+      'Bring forward up to 12 months of deductible expenses (rent, insurance, subscriptions) into the current financial year to reduce taxable income.',
     atoRulingRef: 'TR 93/31',
     applicableEntities: ['sole_trader', 'personal', 'company', 'trust'],
     evaluate: (ctx) => {
@@ -67,21 +70,25 @@ const STRATEGY_TEMPLATES: Array<{
   },
   {
     name: 'Superannuation Top-Up',
-    description: 'Make a personal concessional super contribution up to the $27,500 cap. Contributions are taxed at 15% inside super instead of your marginal rate.',
+    description:
+      'Make a personal concessional super contribution up to the $27,500 cap. Contributions are taxed at 15% inside super instead of your marginal rate.',
     atoRulingRef: 'SIS Act s.291-20',
     applicableEntities: ['sole_trader', 'personal'],
     evaluate: (ctx) => {
       if (ctx.marginalRate <= 0.16) return null; // No benefit below 16% marginal
       // Assume employer already contributed 11.5% of salary
       const estimatedEmployerSuperCents = Math.round(ctx.taxReturn.grossIncomeCents * 0.115);
-      const remainingCapCents = Math.max(0, DEDUCTION_RATES.superContributionCapCents - estimatedEmployerSuperCents);
+      const remainingCapCents = Math.max(
+        0,
+        DEDUCTION_RATES.superContributionCapCents - estimatedEmployerSuperCents,
+      );
       if (remainingCapCents < 100_000) return null; // less than $1,000 gap
       const taxSavedCents = Math.round(remainingCapCents * (ctx.marginalRate - 0.15));
       return {
         savingCents: taxSavedCents,
         confidence: 0.85,
         steps: [
-          'Check your super fund\'s year-to-date contributions',
+          "Check your super fund's year-to-date contributions",
           `Contribute up to $${(remainingCapCents / 100).toLocaleString()} as a personal concessional contribution`,
           'Submit a Notice of Intent to claim to your super fund before lodging your return',
           'Receive acknowledgement from fund before claiming the deduction',
@@ -91,7 +98,8 @@ const STRATEGY_TEMPLATES: Array<{
   },
   {
     name: 'Instant Asset Write-Off',
-    description: 'Immediately deduct the cost of business assets under $20,000 instead of depreciating over time.',
+    description:
+      'Immediately deduct the cost of business assets under $20,000 instead of depreciating over time.',
     atoRulingRef: 'ITAA97 s.328-180',
     applicableEntities: ['sole_trader', 'company', 'trust'],
     evaluate: (ctx) => {
@@ -114,7 +122,8 @@ const STRATEGY_TEMPLATES: Array<{
   },
   {
     name: 'Income Splitting via Trust',
-    description: 'Distribute trust income to beneficiaries in lower tax brackets to reduce the overall family tax burden.',
+    description:
+      'Distribute trust income to beneficiaries in lower tax brackets to reduce the overall family tax burden.',
     applicableEntities: ['trust'],
     evaluate: (ctx) => {
       if (ctx.entityType !== 'trust') return null;
@@ -135,14 +144,16 @@ const STRATEGY_TEMPLATES: Array<{
   },
   {
     name: 'Motor Vehicle Deduction (Cents/km)',
-    description: 'Claim 85 cents per km for work-related travel, up to 5,000 km per year ($4,250 max deduction).',
+    description:
+      'Claim 85 cents per km for work-related travel, up to 5,000 km per year ($4,250 max deduction).',
     atoRulingRef: 'TD 2024/4',
     applicableEntities: ['sole_trader', 'personal'],
     evaluate: (ctx) => {
       // If they haven't claimed motor vehicle yet
       const existingMotor = Math.abs(ctx.taxReturn.breakdown['Motor Vehicle Expenses'] ?? 0);
       if (existingMotor > 0) return null; // Already claiming
-      const maxDeductionCents = DEDUCTION_RATES.motorVehicleMaxKm * DEDUCTION_RATES.motorVehicleCentsPerKm;
+      const maxDeductionCents =
+        DEDUCTION_RATES.motorVehicleMaxKm * DEDUCTION_RATES.motorVehicleCentsPerKm;
       const savingCents = Math.round(maxDeductionCents * ctx.marginalRate);
       return {
         savingCents,
@@ -157,7 +168,8 @@ const STRATEGY_TEMPLATES: Array<{
   },
   {
     name: 'Work From Home Deduction',
-    description: 'Claim $0.67 per hour for working from home. Requires a record of hours worked from home.',
+    description:
+      'Claim $0.67 per hour for working from home. Requires a record of hours worked from home.',
     atoRulingRef: 'PCG 2023/1',
     applicableEntities: ['personal', 'sole_trader'],
     evaluate: (ctx) => {
@@ -180,7 +192,8 @@ const STRATEGY_TEMPLATES: Array<{
   },
   {
     name: 'Salary Sacrifice to Super',
-    description: 'Arrange with employer to sacrifice pre-tax salary into super, reducing taxable income. Contributions taxed at 15% in super.',
+    description:
+      'Arrange with employer to sacrifice pre-tax salary into super, reducing taxable income. Contributions taxed at 15% in super.',
     applicableEntities: ['personal'],
     evaluate: (ctx) => {
       if (ctx.entityType !== 'personal') return null;
@@ -201,7 +214,8 @@ const STRATEGY_TEMPLATES: Array<{
   },
   {
     name: 'CGT 50% Discount',
-    description: 'Hold capital assets for more than 12 months to qualify for a 50% CGT discount on gains.',
+    description:
+      'Hold capital assets for more than 12 months to qualify for a 50% CGT discount on gains.',
     atoRulingRef: 'ITAA97 Div.115',
     applicableEntities: ['sole_trader', 'personal', 'trust'],
     evaluate: (ctx) => {
@@ -246,7 +260,8 @@ const STRATEGY_TEMPLATES: Array<{
   },
   {
     name: 'HELP Debt Minimization',
-    description: 'Manage income to stay below HELP repayment thresholds, or make voluntary repayments to reduce compulsory amounts.',
+    description:
+      'Manage income to stay below HELP repayment thresholds, or make voluntary repayments to reduce compulsory amounts.',
     atoRulingRef: 'HTAA s.154-10',
     applicableEntities: ['personal'],
     evaluate: (ctx) => {
@@ -283,7 +298,7 @@ export class TaxOptimizerService {
   async generateStrategies(
     userId: string,
     financialYear: string,
-    entityType: EntityType = 'sole_trader'
+    entityType: EntityType = 'sole_trader',
   ): Promise<TaxStrategy[]> {
     // Calculate the appropriate return
     let taxReturn: TaxReturnResult;
@@ -307,11 +322,12 @@ export class TaxOptimizerService {
         taxReturn = await taxReturnService.calculateSoleTraderReturn(userId, financialYear);
     }
 
-    const marginalRate = entityType === 'company'
-      ? 0.25
-      : entityType === 'smsf'
-        ? 0.15
-        : marginalRateAtCents(taxReturn.taxableIncomeCents);
+    const marginalRate =
+      entityType === 'company'
+        ? 0.25
+        : entityType === 'smsf'
+          ? 0.15
+          : marginalRateAtCents(taxReturn.taxableIncomeCents);
 
     const ctx: StrategyContext = { entityType, taxReturn, marginalRate };
     const strategies: TaxStrategy[] = [];

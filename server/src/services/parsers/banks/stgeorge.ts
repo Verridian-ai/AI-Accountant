@@ -5,12 +5,7 @@
  * St.George is part of the Westpac group but has distinct branding.
  */
 
-import {
-  BankParserConfig,
-  ParsedTransaction,
-  AccountInfo,
-  AccountType,
-} from '../types';
+import { BankParserConfig, ParsedTransaction, AccountInfo, AccountType } from '../types';
 import { BaseBankParser, parseDate, parseAmount } from '../base-parser';
 
 /**
@@ -41,8 +36,7 @@ const STGEORGE_CONFIG: BankParserConfig = {
   transactionPatterns: {
     datePattern: /(\d{1,2}\/\d{1,2}\/\d{2,4})/,
     amountPattern: /\$?([\d,]+\.\d{2})/,
-    transactionLinePattern:
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})/,
+    transactionLinePattern: /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})/,
     debitIndicators: ['-', 'DR'],
     creditIndicators: ['+', 'CR'],
     separateDebitCreditColumns: true,
@@ -50,22 +44,20 @@ const STGEORGE_CONFIG: BankParserConfig = {
 
   accountTypes: {
     'Complete Freedom': 'transaction',
-    'Freedom': 'transaction',
+    Freedom: 'transaction',
     'Maxi Saver': 'savings',
     'Incentive Saver': 'savings',
-    'Amplify': 'credit',
-    'Vertigo': 'credit',
-    'Business': 'business',
+    Amplify: 'credit',
+    Vertigo: 'credit',
+    Business: 'business',
   },
 
   periodPatterns: [
     /Statement\s+Period[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})\s*(?:to|-)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i,
   ],
 
-  openingBalancePattern:
-    /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
-  closingBalancePattern:
-    /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  openingBalancePattern: /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  closingBalancePattern: /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
 };
 
 /**
@@ -113,12 +105,9 @@ export class StGeorgeParser extends BaseBankParser {
   /**
    * Parse a single transaction line
    */
-  private parseTransactionLine(
-    line: string,
-    lineNumber: number
-  ): ParsedTransaction | null {
+  private parseTransactionLine(line: string, lineNumber: number): ParsedTransaction | null {
     const match = line.match(
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})?\s*(-?\$?[\d,]+\.\d{2})?\s*(-?\$?[\d,]+\.\d{2})?$/
+      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})?\s*(-?\$?[\d,]+\.\d{2})?\s*(-?\$?[\d,]+\.\d{2})?$/,
     );
 
     if (!match) return null;
@@ -137,7 +126,7 @@ export class StGeorgeParser extends BaseBankParser {
       const debit = parseAmount(values[0]);
       const credit = parseAmount(values[1]);
       balance = parseAmount(values[2]) ?? undefined;
-      amount = debit && debit !== 0 ? -Math.abs(debit) : credit ?? 0;
+      amount = debit && debit !== 0 ? -Math.abs(debit) : (credit ?? 0);
     } else if (values.length === 2) {
       amount = parseAmount(values[0]);
       balance = parseAmount(values[1]) ?? undefined;
@@ -168,9 +157,7 @@ export class StGeorgeParser extends BaseBankParser {
     let accountName = '';
     let accountType: AccountType = 'unknown';
 
-    const bsbMatch = pdfText.match(
-      /BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i
-    );
+    const bsbMatch = pdfText.match(/BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i);
     if (bsbMatch) {
       bsb = bsbMatch[1].replace(/\s|-/g, '');
       accountNumber = bsbMatch[2];

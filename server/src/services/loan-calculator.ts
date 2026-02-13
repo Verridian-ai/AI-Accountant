@@ -25,54 +25,54 @@ import { CdrProductService } from './cdr-products.js';
 export type RepaymentFrequency = 'weekly' | 'fortnightly' | 'monthly';
 
 export interface HomeLoanParams {
-  principal: number;         // cents
-  annualRate: number;        // decimal, e.g. 0.0625 for 6.25%
-  termMonths: number;        // e.g. 360 for 30 years
+  principal: number; // cents
+  annualRate: number; // decimal, e.g. 0.0625 for 6.25%
+  termMonths: number; // e.g. 360 for 30 years
   frequency: RepaymentFrequency;
-  offsetBalance?: number;    // cents
-  extraRepayment?: number;   // cents per period
+  offsetBalance?: number; // cents
+  extraRepayment?: number; // cents per period
 }
 
 export interface AmortizationEntry {
   period: number;
-  payment: number;           // cents
-  interest: number;          // cents
-  principal: number;         // cents
-  extraPrincipal: number;    // cents
-  balance: number;           // cents
+  payment: number; // cents
+  interest: number; // cents
+  principal: number; // cents
+  extraPrincipal: number; // cents
+  balance: number; // cents
 }
 
 export interface HomeLoanResult {
-  regularPayment: number;    // cents per period
+  regularPayment: number; // cents per period
   frequency: RepaymentFrequency;
-  totalInterest: number;     // cents
-  totalCost: number;         // cents
+  totalInterest: number; // cents
+  totalCost: number; // cents
   periodsToPayOff: number;
   timeSavedMonths: number;
-  interestSaved: number;     // cents
+  interestSaved: number; // cents
   schedule: AmortizationEntry[];
 }
 
 export interface CarFinanceParams {
-  vehiclePrice: number;       // cents
-  deposit: number;            // cents
+  vehiclePrice: number; // cents
+  deposit: number; // cents
   termMonths: number;
-  personalLoanRate: number;   // decimal
+  personalLoanRate: number; // decimal
   chattelMortgageRate: number;
   novatedLeaseRate: number;
-  marginalTaxRate: number;    // e.g. 0.325
+  marginalTaxRate: number; // e.g. 0.325
   gstRegistered: boolean;
-  annualSalary: number;       // cents
+  annualSalary: number; // cents
 }
 
 export interface CarFinanceOption {
   type: string;
-  monthlyPayment: number;    // cents
-  totalCost: number;         // cents
-  totalInterest: number;     // cents
-  taxBenefit: number;        // cents
-  afterTaxCost: number;      // cents
-  effectiveRate: number;     // decimal
+  monthlyPayment: number; // cents
+  totalCost: number; // cents
+  totalInterest: number; // cents
+  taxBenefit: number; // cents
+  afterTaxCost: number; // cents
+  effectiveRate: number; // decimal
 }
 
 export interface CarFinanceComparison {
@@ -83,77 +83,77 @@ export interface CarFinanceComparison {
 }
 
 export interface PersonalLoanParams {
-  principal: number;          // cents
+  principal: number; // cents
   annualRate: number;
   termMonths: number;
-  establishmentFee?: number;  // cents
-  monthlyFee?: number;        // cents
+  establishmentFee?: number; // cents
+  monthlyFee?: number; // cents
 }
 
 export interface PersonalLoanResult {
-  monthlyPayment: number;    // cents
-  totalInterest: number;     // cents
-  totalCost: number;         // cents
-  comparisonRate: number;    // decimal — effective rate including fees
+  monthlyPayment: number; // cents
+  totalInterest: number; // cents
+  totalCost: number; // cents
+  comparisonRate: number; // decimal — effective rate including fees
 }
 
 export interface BusinessLoanParams {
-  principal: number;          // cents
+  principal: number; // cents
   annualRate: number;
   termMonths: number;
-  marginalTaxRate: number;    // e.g. 0.30
+  marginalTaxRate: number; // e.g. 0.30
   isEquipmentFinance?: boolean;
   equipmentEffectiveLife?: number; // years for depreciation
 }
 
 export interface BusinessLoanResult {
-  monthlyPayment: number;        // cents
-  totalInterest: number;         // cents
-  totalCost: number;             // cents
+  monthlyPayment: number; // cents
+  totalInterest: number; // cents
+  totalCost: number; // cents
   taxDeductibleInterest: number; // cents
   taxSavingFromInterest: number; // cents
-  depreciationBenefit: number;   // cents (if equipment finance)
+  depreciationBenefit: number; // cents (if equipment finance)
   effectiveAfterTaxCost: number; // cents
 }
 
 export interface RefinanceParams {
-  currentBalance: number;         // cents
-  currentRate: number;            // decimal
+  currentBalance: number; // cents
+  currentRate: number; // decimal
   currentRemainingMonths: number;
-  newRate: number;                // decimal
+  newRate: number; // decimal
   newTermMonths: number;
-  switchingCosts: number;         // cents (discharge, application, valuation)
+  switchingCosts: number; // cents (discharge, application, valuation)
 }
 
 export interface RefinanceResult {
-  currentMonthlyPayment: number;  // cents
-  newMonthlyPayment: number;      // cents
-  monthlySaving: number;          // cents
+  currentMonthlyPayment: number; // cents
+  newMonthlyPayment: number; // cents
+  monthlySaving: number; // cents
   breakEvenMonths: number;
-  totalSavings: number;           // cents — over remaining term, net of switching costs
-  currentTotalCost: number;       // cents
-  newTotalCost: number;           // cents
+  totalSavings: number; // cents — over remaining term, net of switching costs
+  currentTotalCost: number; // cents
+  newTotalCost: number; // cents
 }
 
 export interface BorrowingCapacityParams {
-  grossAnnualIncome: number;  // cents
-  otherIncome: number;        // cents (annual)
-  existingDebts: number;      // cents per month
-  livingExpenses: number;     // cents per month
+  grossAnnualIncome: number; // cents
+  otherIncome: number; // cents (annual)
+  existingDebts: number; // cents per month
+  livingExpenses: number; // cents per month
   dependants: number;
-  interestRate: number;       // decimal
-  bufferRate?: number;        // APRA buffer, default 0.03 (3%)
+  interestRate: number; // decimal
+  bufferRate?: number; // APRA buffer, default 0.03 (3%)
 }
 
 export interface BorrowingCapacityResult {
-  maxBorrowing: number;           // cents
-  assessmentRate: number;         // decimal (rate + buffer)
-  monthlyRepayment: number;       // cents at assessment rate
-  netMonthlyIncome: number;       // cents
-  monthlyCommitments: number;     // cents
-  surplusIncome: number;          // cents
-  dsr: number;                    // Debt Service Ratio
-  hemFloor: number;               // cents per month
+  maxBorrowing: number; // cents
+  assessmentRate: number; // decimal (rate + buffer)
+  monthlyRepayment: number; // cents at assessment rate
+  netMonthlyIncome: number; // cents
+  monthlyCommitments: number; // cents
+  surplusIncome: number; // cents
+  dsr: number; // Debt Service Ratio
+  hemFloor: number; // cents per month
 }
 
 // ============================================================================
@@ -161,8 +161,8 @@ export interface BorrowingCapacityResult {
 // ============================================================================
 
 export interface MarketRates {
-  lowestVariable: number;       // decimal rate
-  lowestFixed1yr: number;       // decimal rate
+  lowestVariable: number; // decimal rate
+  lowestFixed1yr: number; // decimal rate
   lowestFixed2yr: number;
   lowestFixed3yr: number;
   lowestFixed5yr: number;
@@ -170,42 +170,42 @@ export interface MarketRates {
   medianVariable: number;
   source: 'cdr' | 'hardcoded';
   sampleSize: number;
-  asAt: string;                 // ISO date when rates were sourced
+  asAt: string; // ISO date when rates were sourced
 }
 
 export interface CdrRefinanceParams {
-  currentBalance: number;       // cents
-  currentRate: number;          // decimal
+  currentBalance: number; // cents
+  currentRate: number; // decimal
   currentRemainingMonths: number;
-  loanPurpose?: string;         // e.g. 'OWNER_OCCUPIED', 'INVESTMENT'
-  repaymentType?: string;       // e.g. 'PRINCIPAL_AND_INTEREST'
-  topN?: number;                // max alternatives to return (default 5)
+  loanPurpose?: string; // e.g. 'OWNER_OCCUPIED', 'INVESTMENT'
+  repaymentType?: string; // e.g. 'PRINCIPAL_AND_INTEREST'
+  topN?: number; // max alternatives to return (default 5)
 }
 
 export interface RefinanceAlternative {
   productId: string;
   productName: string;
   dataHolderName: string;
-  newRate: number;              // decimal
+  newRate: number; // decimal
   comparisonRate: number | null;
-  newMonthlyPayment: number;    // cents
-  monthlySaving: number;        // cents
-  totalLifetimeSaving: number;  // cents (net of switching costs)
+  newMonthlyPayment: number; // cents
+  monthlySaving: number; // cents
+  totalLifetimeSaving: number; // cents (net of switching costs)
   breakEvenMonths: number;
   switchingCostBreakdown: SwitchingCosts;
 }
 
 export interface SwitchingCosts {
-  dischargeFee: number;   // cents
-  valuationFee: number;   // cents
-  legalFee: number;       // cents
+  dischargeFee: number; // cents
+  valuationFee: number; // cents
+  legalFee: number; // cents
   applicationFee: number; // cents
-  totalCents: number;     // cents
+  totalCents: number; // cents
 }
 
 export interface CdrRefinanceResult {
   currentRate: number;
-  currentMonthlyPayment: number;  // cents
+  currentMonthlyPayment: number; // cents
   recommendation: 'switch' | 'stay';
   reasoning: string;
   alternatives: RefinanceAlternative[];
@@ -213,52 +213,51 @@ export interface CdrRefinanceResult {
 }
 
 export interface CdrBorrowingCapacityParams {
-  grossAnnualIncome: number;  // cents
-  otherIncome?: number;       // cents (annual)
-  existingDebts?: number;     // cents per month
-  livingExpenses?: number;    // cents per month
+  grossAnnualIncome: number; // cents
+  otherIncome?: number; // cents (annual)
+  existingDebts?: number; // cents per month
+  livingExpenses?: number; // cents per month
   dependants?: number;
-  loanPurpose?: string;       // CDR category filter
+  loanPurpose?: string; // CDR category filter
 }
 
 export interface CdrBorrowingCapacityResult {
-  maxBorrowing: number;           // cents
-  assessmentRate: number;         // decimal (CDR best rate + 3% buffer)
-  baseRate: number;               // decimal (CDR best variable rate)
+  maxBorrowing: number; // cents
+  assessmentRate: number; // decimal (CDR best rate + 3% buffer)
+  baseRate: number; // decimal (CDR best variable rate)
   rateSource: 'cdr' | 'hardcoded';
-  monthlyRepayment: number;       // cents at assessment rate
-  netMonthlyIncome: number;       // cents
-  monthlyCommitments: number;     // cents
-  surplusIncome: number;          // cents
+  monthlyRepayment: number; // cents at assessment rate
+  netMonthlyIncome: number; // cents
+  monthlyCommitments: number; // cents
+  surplusIncome: number; // cents
   dsr: number;
-  hemFloor: number;               // cents per month
-  maxPropertyPrice: number;       // cents (at 80% LVR)
+  hemFloor: number; // cents per month
+  maxPropertyPrice: number; // cents (at 80% LVR)
   disclaimer: string;
 }
 
 export interface RateScenarioParams {
-  principal: number;           // cents
+  principal: number; // cents
   termMonths: number;
-  currentRate?: number;        // decimal — if provided, included as a scenario
-  loanPurpose?: string;        // CDR category filter
+  currentRate?: number; // decimal — if provided, included as a scenario
+  loanPurpose?: string; // CDR category filter
 }
 
 export interface RateScenarioEntry {
   label: string;
-  rate: number;                // decimal
-  monthlyPayment: number;     // cents
-  totalInterest: number;      // cents
-  totalCost: number;          // cents
-  diffFromCurrent: number;    // cents per month (positive = more expensive)
+  rate: number; // decimal
+  monthlyPayment: number; // cents
+  totalInterest: number; // cents
+  totalCost: number; // cents
+  diffFromCurrent: number; // cents per month (positive = more expensive)
 }
 
 export interface RateScenarioResult {
-  principal: number;           // cents
+  principal: number; // cents
   termMonths: number;
   scenarios: RateScenarioEntry[];
   rateSource: 'cdr' | 'hardcoded';
 }
-
 
 // ============================================================================
 // INTERNAL HELPERS
@@ -278,33 +277,42 @@ function pmt(principalCents: number, periodicRate: number, periods: number): num
     return Math.round(principalCents / periods);
   }
   const factor = Math.pow(1 + periodicRate, periods);
-  return Math.round(principalCents * periodicRate * factor / (factor - 1));
+  return Math.round((principalCents * periodicRate * factor) / (factor - 1));
 }
 
 /** Convert annual rate to periodic rate based on frequency */
 function periodicRate(annualRate: number, frequency: RepaymentFrequency): number {
   switch (frequency) {
-    case 'weekly':      return annualRate / 52;
-    case 'fortnightly': return annualRate / 26;
-    case 'monthly':     return annualRate / 12;
+    case 'weekly':
+      return annualRate / 52;
+    case 'fortnightly':
+      return annualRate / 26;
+    case 'monthly':
+      return annualRate / 12;
   }
 }
 
 /** Convert term in months to number of periods */
 function toPeriods(termMonths: number, frequency: RepaymentFrequency): number {
   switch (frequency) {
-    case 'weekly':      return Math.round(termMonths * 52 / 12);
-    case 'fortnightly': return Math.round(termMonths * 26 / 12);
-    case 'monthly':     return termMonths;
+    case 'weekly':
+      return Math.round((termMonths * 52) / 12);
+    case 'fortnightly':
+      return Math.round((termMonths * 26) / 12);
+    case 'monthly':
+      return termMonths;
   }
 }
 
 /** Convert number of periods back to months */
 function periodsToMonths(periods: number, frequency: RepaymentFrequency): number {
   switch (frequency) {
-    case 'weekly':      return Math.round(periods * 12 / 52);
-    case 'fortnightly': return Math.round(periods * 12 / 26);
-    case 'monthly':     return periods;
+    case 'weekly':
+      return Math.round((periods * 12) / 52);
+    case 'fortnightly':
+      return Math.round((periods * 12) / 26);
+    case 'monthly':
+      return periods;
   }
 }
 
@@ -327,7 +335,7 @@ function hemFloorCents(dependants: number): number {
 function atoResidualPercentage(termYears: number): number {
   if (termYears <= 1) return 0.6556;
   if (termYears <= 2) return 0.5633;
-  if (termYears <= 3) return 0.4700;
+  if (termYears <= 3) return 0.47;
   if (termYears <= 4) return 0.3644;
   return 0.2833;
 }
@@ -351,11 +359,11 @@ function hardcodedMarketRates(): MarketRates {
 /** Standard switching costs for refinancing (Australian market averages in cents) */
 function defaultSwitchingCosts(): SwitchingCosts {
   return {
-    dischargeFee: 35_000,    // $350
-    valuationFee: 30_000,    // $300
-    legalFee: 20_000,        // $200
-    applicationFee: 60_000,  // $600
-    totalCents: 145_000,     // $1,450
+    dischargeFee: 35_000, // $350
+    valuationFee: 30_000, // $300
+    legalFee: 20_000, // $200
+    applicationFee: 60_000, // $600
+    totalCents: 145_000, // $1,450
   };
 }
 
@@ -363,18 +371,14 @@ function defaultSwitchingCosts(): SwitchingCosts {
 function median(sorted: number[]): number {
   if (sorted.length === 0) return 0;
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
+  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
-
 
 // ============================================================================
 // SERVICE CLASS
 // ============================================================================
 
 export class LoanCalculatorService {
-
   private cdrProductService: CdrProductService | null;
 
   constructor(cdrProductService?: CdrProductService) {
@@ -417,7 +421,8 @@ export class LoanCalculatorService {
     let totalInterestPaid = 0;
     let period = 0;
 
-    while (balance > 0 && period < totalPeriods * 2) { // safety: max 2x term
+    while (balance > 0 && period < totalPeriods * 2) {
+      // safety: max 2x term
       period++;
       // Interest is calculated on (balance - offset)
       const effectiveBalance = Math.max(0, balance - offsetBalance);
@@ -457,7 +462,8 @@ export class LoanCalculatorService {
     }
 
     const periodsToPayOff = period;
-    const timeSavedMonths = periodsToMonths(totalPeriods, frequency) - periodsToMonths(periodsToPayOff, frequency);
+    const timeSavedMonths =
+      periodsToMonths(totalPeriods, frequency) - periodsToMonths(periodsToPayOff, frequency);
     const interestSaved = baseTotalInterest - totalInterestPaid;
     const totalCost = principal + totalInterestPaid;
 
@@ -542,7 +548,7 @@ export class LoanCalculatorService {
     const taxSaving = Math.round(totalPreTaxSacrifice * marginalTaxRate);
 
     // FBT — statutory formula: 20% of base value
-    const fbtValue = Math.round(vehiclePrice * 0.20 * termYears);
+    const fbtValue = Math.round(vehiclePrice * 0.2 * termYears);
     const fbtTax = Math.round(fbtValue * 0.47 * 2.0802); // FBT rate × gross-up factor
 
     const nlAfterTaxCost = totalPreTaxSacrifice - taxSaving + fbtTax + residualValue + deposit;
@@ -551,7 +557,7 @@ export class LoanCalculatorService {
       type: 'Novated Lease',
       monthlyPayment: nlMonthly + monthlyRunningCosts,
       totalCost: totalPreTaxSacrifice + residualValue + deposit,
-      totalInterest: Math.max(0, (nlMonthly * termMonths) - nlAmountFinanced),
+      totalInterest: Math.max(0, nlMonthly * termMonths - nlAmountFinanced),
       taxBenefit: taxSaving - fbtTax,
       afterTaxCost: nlAfterTaxCost,
       effectiveRate: novatedLeaseRate,
@@ -559,7 +565,7 @@ export class LoanCalculatorService {
 
     // Determine cheapest after-tax
     const options = [personalLoan, chattelMortgage, novatedLease];
-    const cheapest = options.reduce((a, b) => a.afterTaxCost < b.afterTaxCost ? a : b);
+    const cheapest = options.reduce((a, b) => (a.afterTaxCost < b.afterTaxCost ? a : b));
 
     return {
       personalLoan,
@@ -576,13 +582,7 @@ export class LoanCalculatorService {
    * into the effective interest rate (as required by Australian law).
    */
   calculatePersonalLoan(params: PersonalLoanParams): PersonalLoanResult {
-    const {
-      principal,
-      annualRate,
-      termMonths,
-      establishmentFee = 0,
-      monthlyFee = 0,
-    } = params;
+    const { principal, annualRate, termMonths, establishmentFee = 0, monthlyFee = 0 } = params;
 
     const monthlyRate = annualRate / 12;
     const monthlyPayment = pmt(principal, monthlyRate, termMonths);
@@ -694,9 +694,8 @@ export class LoanCalculatorService {
     const newMonthly = pmt(currentBalance, newRate / 12, newTermMonths);
 
     const monthlySaving = currentMonthly - newMonthly;
-    const breakEvenMonths = monthlySaving > 0
-      ? Math.ceil(switchingCosts / monthlySaving)
-      : Infinity;
+    const breakEvenMonths =
+      monthlySaving > 0 ? Math.ceil(switchingCosts / monthlySaving) : Infinity;
 
     const currentTotalCost = currentMonthly * currentRemainingMonths;
     const newTotalCost = newMonthly * newTermMonths + switchingCosts;
@@ -736,7 +735,7 @@ export class LoanCalculatorService {
     // Net monthly income (gross / 12 — simplified, no tax calc here)
     // Use 70% of gross as approximate after-tax income
     const totalAnnualIncome = grossAnnualIncome + otherIncome;
-    const netMonthlyIncome = Math.round(totalAnnualIncome * 0.70 / 12);
+    const netMonthlyIncome = Math.round((totalAnnualIncome * 0.7) / 12);
 
     // HEM floor
     const hem = hemFloorCents(dependants);
@@ -754,7 +753,7 @@ export class LoanCalculatorService {
     if (surplusIncome > 0 && monthlyAssessmentRate > 0) {
       const factor = Math.pow(1 + monthlyAssessmentRate, periods);
       // Reverse PMT: P = payment * ((1+r)^n - 1) / (r * (1+r)^n)
-      maxBorrowing = Math.round(surplusIncome * (factor - 1) / (monthlyAssessmentRate * factor));
+      maxBorrowing = Math.round((surplusIncome * (factor - 1)) / (monthlyAssessmentRate * factor));
     }
 
     // DSR cap: max debt = 6x gross annual income
@@ -762,14 +761,12 @@ export class LoanCalculatorService {
     maxBorrowing = Math.min(maxBorrowing, dsrCap);
 
     // Monthly repayment at assessment rate
-    const monthlyRepayment = maxBorrowing > 0
-      ? pmt(maxBorrowing, monthlyAssessmentRate, periods)
-      : 0;
+    const monthlyRepayment =
+      maxBorrowing > 0 ? pmt(maxBorrowing, monthlyAssessmentRate, periods) : 0;
 
     // DSR
-    const dsr = totalAnnualIncome > 0
-      ? Math.round((maxBorrowing / totalAnnualIncome) * 100) / 100
-      : 0;
+    const dsr =
+      totalAnnualIncome > 0 ? Math.round((maxBorrowing / totalAnnualIncome) * 100) / 100 : 0;
 
     return {
       maxBorrowing,
@@ -813,7 +810,9 @@ export class LoanCalculatorService {
 
       // Filter by purpose if specified
       const filtered = purpose
-        ? bestRates.filter(r => !purpose || r.rateType?.includes('VARIABLE') || r.rateType?.includes('FIXED'))
+        ? bestRates.filter(
+            (r) => !purpose || r.rateType?.includes('VARIABLE') || r.rateType?.includes('FIXED'),
+          )
         : bestRates;
 
       if (filtered.length === 0) {
@@ -822,31 +821,33 @@ export class LoanCalculatorService {
 
       // Separate variable vs fixed rates
       const variableRates = filtered
-        .filter(r => r.rateType?.includes('VARIABLE'))
-        .map(r => r.rate)
+        .filter((r) => r.rateType?.includes('VARIABLE'))
+        .map((r) => r.rate)
         .sort((a, b) => a - b);
 
       const fixedRates = filtered
-        .filter(r => r.rateType?.includes('FIXED'))
-        .map(r => r.rate)
+        .filter((r) => r.rateType?.includes('FIXED'))
+        .map((r) => r.rate)
         .sort((a, b) => a - b);
 
-      const allRates = filtered.map(r => r.rate).sort((a, b) => a - b);
+      const allRates = filtered.map((r) => r.rate).sort((a, b) => a - b);
 
       // Extract lowest fixed by approximate term (CDR additionalValue might encode term)
       // For now, use the sorted fixed rates as a proxy
       const lowestFixed = fixedRates.length > 0 ? fixedRates[0] : 0;
 
-      const avgVariable = variableRates.length > 0
-        ? variableRates.reduce((sum, r) => sum + r, 0) / variableRates.length
-        : 0;
+      const avgVariable =
+        variableRates.length > 0
+          ? variableRates.reduce((sum, r) => sum + r, 0) / variableRates.length
+          : 0;
 
       const defaults = hardcodedMarketRates();
 
       return {
         lowestVariable: variableRates.length > 0 ? variableRates[0] : defaults.lowestVariable,
         lowestFixed1yr: lowestFixed || defaults.lowestFixed1yr,
-        lowestFixed2yr: fixedRates.length > 1 ? fixedRates[1] : (lowestFixed || defaults.lowestFixed2yr),
+        lowestFixed2yr:
+          fixedRates.length > 1 ? fixedRates[1] : lowestFixed || defaults.lowestFixed2yr,
         lowestFixed3yr: fixedRates.length > 2 ? fixedRates[2] : defaults.lowestFixed3yr,
         lowestFixed5yr: fixedRates.length > 4 ? fixedRates[4] : defaults.lowestFixed5yr,
         averageVariable: avgVariable || defaults.averageVariable,
@@ -907,21 +908,22 @@ export class LoanCalculatorService {
 
       // Deduplicate by data holder (one best product per lender)
       const seenHolders = new Set<string>();
-      const candidates = searchResult.products.filter(p => {
-        if (p.bestRate == null || p.bestRate >= currentRate) return false;
-        if (seenHolders.has(p.dataHolderName)) return false;
-        seenHolders.add(p.dataHolderName);
-        return true;
-      }).slice(0, topN);
+      const candidates = searchResult.products
+        .filter((p) => {
+          if (p.bestRate == null || p.bestRate >= currentRate) return false;
+          if (seenHolders.has(p.dataHolderName)) return false;
+          seenHolders.add(p.dataHolderName);
+          return true;
+        })
+        .slice(0, topN);
 
-      const alternatives: RefinanceAlternative[] = candidates.map(candidate => {
+      const alternatives: RefinanceAlternative[] = candidates.map((candidate) => {
         const newRate = candidate.bestRate!;
         const newMonthlyPayment = pmt(currentBalance, newRate / 12, currentRemainingMonths);
         const monthlySaving = currentMonthlyPayment - newMonthlyPayment;
-        const totalLifetimeSaving = (monthlySaving * currentRemainingMonths) - costs.totalCents;
-        const breakEvenMonths = monthlySaving > 0
-          ? Math.ceil(costs.totalCents / monthlySaving)
-          : -1;
+        const totalLifetimeSaving = monthlySaving * currentRemainingMonths - costs.totalCents;
+        const breakEvenMonths =
+          monthlySaving > 0 ? Math.ceil(costs.totalCents / monthlySaving) : -1;
 
         return {
           productId: candidate.id,
@@ -950,7 +952,8 @@ export class LoanCalculatorService {
         reasoning = 'No CDR products found with a lower rate than your current loan.';
       } else if (best.breakEvenMonths > 24) {
         reasoning = `Best alternative (${best.dataHolderName} — ${best.productName}) saves $${(best.monthlySaving / 100).toFixed(2)}/month but takes ${best.breakEvenMonths} months to break even on $${(costs.totalCents / 100).toFixed(2)} switching costs. Consider staying unless you value long-term savings.`;
-      } else if (best.monthlySaving < 5_000) { // less than $50/month
+      } else if (best.monthlySaving < 5_000) {
+        // less than $50/month
         reasoning = `Best alternative saves only $${(best.monthlySaving / 100).toFixed(2)}/month. The hassle and switching costs of $${(costs.totalCents / 100).toFixed(2)} may not be worth it.`;
       } else {
         recommendation = 'switch';
@@ -1005,7 +1008,7 @@ export class LoanCalculatorService {
 
     // Net monthly income (70% of gross as approximate after-tax)
     const totalAnnualIncome = grossAnnualIncome + otherIncome;
-    const netMonthlyIncome = Math.round(totalAnnualIncome * 0.70 / 12);
+    const netMonthlyIncome = Math.round((totalAnnualIncome * 0.7) / 12);
 
     // HEM floor
     const hem = hemFloorCents(dependants);
@@ -1022,23 +1025,21 @@ export class LoanCalculatorService {
 
     if (surplusIncome > 0 && monthlyAssessmentRate > 0) {
       const factor = Math.pow(1 + monthlyAssessmentRate, periods);
-      maxBorrowing = Math.round(surplusIncome * (factor - 1) / (monthlyAssessmentRate * factor));
+      maxBorrowing = Math.round((surplusIncome * (factor - 1)) / (monthlyAssessmentRate * factor));
     }
 
     // DSR cap: 6x gross annual income
     const dsrCap = totalAnnualIncome * 6;
     maxBorrowing = Math.min(maxBorrowing, dsrCap);
 
-    const monthlyRepayment = maxBorrowing > 0
-      ? pmt(maxBorrowing, monthlyAssessmentRate, periods)
-      : 0;
+    const monthlyRepayment =
+      maxBorrowing > 0 ? pmt(maxBorrowing, monthlyAssessmentRate, periods) : 0;
 
-    const dsr = totalAnnualIncome > 0
-      ? Math.round((maxBorrowing / totalAnnualIncome) * 100) / 100
-      : 0;
+    const dsr =
+      totalAnnualIncome > 0 ? Math.round((maxBorrowing / totalAnnualIncome) * 100) / 100 : 0;
 
     // Max property price at 80% LVR
-    const maxPropertyPrice = Math.round(maxBorrowing / 0.80);
+    const maxPropertyPrice = Math.round(maxBorrowing / 0.8);
 
     return {
       maxBorrowing,
@@ -1052,7 +1053,8 @@ export class LoanCalculatorService {
       dsr,
       hemFloor: hem,
       maxPropertyPrice,
-      disclaimer: 'This is an estimate only. Actual borrowing capacity depends on lender criteria, credit history, and full financial assessment. Assessment uses APRA 3% serviceability buffer above the best available CDR variable rate.',
+      disclaimer:
+        'This is an estimate only. Actual borrowing capacity depends on lender criteria, credit history, and full financial assessment. Assessment uses APRA 3% serviceability buffer above the best available CDR variable rate.',
     };
   }
 
@@ -1064,12 +1066,7 @@ export class LoanCalculatorService {
    * rate, and stress-test scenarios at +1%, +2%, +3% from current rate.
    */
   async rateScenario(params: RateScenarioParams): Promise<RateScenarioResult> {
-    const {
-      principal,
-      termMonths,
-      currentRate,
-      loanPurpose,
-    } = params;
+    const { principal, termMonths, currentRate, loanPurpose } = params;
 
     const category = loanPurpose ?? 'RESIDENTIAL_MORTGAGES';
     const marketRates = await this.getMarketRates(category);
@@ -1108,7 +1105,7 @@ export class LoanCalculatorService {
 
     // Deduplicate by rate (rounded to 4 decimal places)
     const seen = new Set<string>();
-    const uniqueScenarios = scenarioRates.filter(s => {
+    const uniqueScenarios = scenarioRates.filter((s) => {
       const key = s.rate.toFixed(4);
       if (seen.has(key)) return false;
       seen.add(key);
@@ -1116,17 +1113,14 @@ export class LoanCalculatorService {
     });
 
     // Calculate repayments for each scenario
-    const currentMonthlyPayment = currentRate != null
-      ? pmt(principal, currentRate / 12, termMonths)
-      : 0;
+    const currentMonthlyPayment =
+      currentRate != null ? pmt(principal, currentRate / 12, termMonths) : 0;
 
-    const scenarios: RateScenarioEntry[] = uniqueScenarios.map(s => {
+    const scenarios: RateScenarioEntry[] = uniqueScenarios.map((s) => {
       const monthlyPayment = pmt(principal, s.rate / 12, termMonths);
       const totalCost = monthlyPayment * termMonths;
       const totalInterest = totalCost - principal;
-      const diffFromCurrent = currentRate != null
-        ? monthlyPayment - currentMonthlyPayment
-        : 0;
+      const diffFromCurrent = currentRate != null ? monthlyPayment - currentMonthlyPayment : 0;
 
       return {
         label: s.label,

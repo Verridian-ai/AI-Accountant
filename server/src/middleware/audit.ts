@@ -36,12 +36,7 @@ export const DEFAULT_AUDIT_CONFIG: AuditConfig = {
   logRequestBodies: true,
   logResponseBodies: false,
   maxBodySize: 10000, // 10KB
-  excludePaths: [
-    '/health',
-    '/api/health',
-    '/api/sse',
-    '/favicon.ico',
-  ],
+  excludePaths: ['/health', '/api/health', '/api/sse', '/favicon.ico'],
   sensitiveFields: [
     'password',
     'passwordHash',
@@ -137,9 +132,18 @@ function singularize(word: string): string {
  */
 function isAction(segment: string): boolean {
   const actions = [
-    'reprocess', 'split', 'export', 'import', 'calculate',
-    'resolve', 'bulk-link', 'auto-detect', 'gap-analysis',
-    'categorize-gst', 'balance-history', 'credit-analytics',
+    'reprocess',
+    'split',
+    'export',
+    'import',
+    'calculate',
+    'resolve',
+    'bulk-link',
+    'auto-detect',
+    'gap-analysis',
+    'categorize-gst',
+    'balance-history',
+    'credit-analytics',
   ];
   return actions.includes(segment);
 }
@@ -151,24 +155,19 @@ function isAction(segment: string): boolean {
 /**
  * Redact sensitive fields from an object
  */
-function redactSensitiveData(
-  data: unknown,
-  sensitiveFields: string[]
-): unknown {
+function redactSensitiveData(data: unknown, sensitiveFields: string[]): unknown {
   if (data === null || data === undefined) {
     return data;
   }
 
   if (Array.isArray(data)) {
-    return data.map(item => redactSensitiveData(item, sensitiveFields));
+    return data.map((item) => redactSensitiveData(item, sensitiveFields));
   }
 
   if (typeof data === 'object') {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
-      if (sensitiveFields.some(field =>
-        key.toLowerCase().includes(field.toLowerCase())
-      )) {
+      if (sensitiveFields.some((field) => key.toLowerCase().includes(field.toLowerCase()))) {
         result[key] = '[REDACTED]';
       } else if (typeof value === 'object') {
         result[key] = redactSensitiveData(value, sensitiveFields);
@@ -189,9 +188,7 @@ function redactSensitiveData(
 /**
  * Audit logging middleware factory
  */
-export function auditMiddleware(
-  customConfig?: Partial<AuditConfig>
-): MiddlewareHandler {
+export function auditMiddleware(customConfig?: Partial<AuditConfig>): MiddlewareHandler {
   const config = { ...DEFAULT_AUDIT_CONFIG, ...customConfig };
 
   return async (c: Context, next: Next) => {
@@ -203,7 +200,7 @@ export function auditMiddleware(
 
     // Check if path should be excluded
     const path = c.req.path;
-    if (config.excludePaths.some(excluded => path.startsWith(excluded))) {
+    if (config.excludePaths.some((excluded) => path.startsWith(excluded))) {
       await next();
       return;
     }
@@ -313,7 +310,7 @@ function isValidIpFormat(ip: string): boolean {
   if (ipv4Pattern.test(ip)) {
     // Validate each octet is 0-255
     const octets = ip.split('.');
-    return octets.every(octet => {
+    return octets.every((octet) => {
       const num = parseInt(octet, 10);
       return num >= 0 && num <= 255;
     });
@@ -365,7 +362,7 @@ function getClientIp(c: Context): string | null {
 function buildAuditMetadata(
   c: Context,
   requestId: string,
-  sensitiveFields: string[]
+  sensitiveFields: string[],
 ): Record<string, unknown> {
   const metadata: Record<string, unknown> = {
     requestId,
@@ -379,8 +376,8 @@ function buildAuditMetadata(
 
     for (const [key, value] of url.searchParams.entries()) {
       // Check if this query param key contains any sensitive field name
-      const isSensitive = sensitiveFields.some(field =>
-        key.toLowerCase().includes(field.toLowerCase())
+      const isSensitive = sensitiveFields.some((field) =>
+        key.toLowerCase().includes(field.toLowerCase()),
       );
       queryParams[key] = isSensitive ? '[REDACTED]' : value;
     }
@@ -446,7 +443,7 @@ export async function logLoginAttempt(
   success: boolean,
   userId?: string,
   ipAddress?: string,
-  userAgent?: string
+  userAgent?: string,
 ): Promise<void> {
   await logAuditEvent({
     userId,
@@ -467,7 +464,7 @@ export async function logLoginAttempt(
 export async function logPasswordChange(
   userId: string,
   ipAddress?: string,
-  userAgent?: string
+  userAgent?: string,
 ): Promise<void> {
   await logAuditEvent({
     userId,
@@ -487,7 +484,7 @@ export async function logDataExport(
   exportType: string,
   recordCount: number,
   ipAddress?: string,
-  userAgent?: string
+  userAgent?: string,
 ): Promise<void> {
   await logAuditEvent({
     userId,

@@ -232,7 +232,7 @@ export const HEALTH_THRESHOLDS = {
   /** Success rate threshold for healthy state */
   healthySuccessRate: 0.95,
   /** Success rate threshold for degraded state */
-  degradedSuccessRate: 0.80,
+  degradedSuccessRate: 0.8,
   /** Maximum p95 response time for healthy state (ms) */
   healthyP95Ms: 30000,
   /** Maximum p95 response time for degraded state (ms) */

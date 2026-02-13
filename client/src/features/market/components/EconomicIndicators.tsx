@@ -60,14 +60,94 @@ export function EconomicIndicators() {
       setError('Failed to load indicators');
       // Fallback data
       setIndicators([
-        { code: 'RBA_CASH_RATE', name: 'Cash Rate Target', category: 'Interest Rates', currentValue: 4.35, previousValue: 4.35, changePercent: 0, period: 'Feb 2026', source: 'RBA', unit: '%' },
-        { code: 'ABS_CPI', name: 'Consumer Price Index', category: 'Inflation', currentValue: 3.6, previousValue: 3.8, changePercent: -5.26, period: 'Dec 2025', source: 'ABS', unit: '%' },
-        { code: 'ABS_UNEMPLOYMENT', name: 'Unemployment Rate', category: 'Employment', currentValue: 4.1, previousValue: 4.0, changePercent: 2.5, period: 'Jan 2026', source: 'ABS', unit: '%' },
-        { code: 'ABS_GDP', name: 'GDP Growth (Annual)', category: 'GDP', currentValue: 1.5, previousValue: 1.1, changePercent: 36.36, period: 'Sep 2025', source: 'ABS', unit: '%' },
-        { code: 'ABS_WAGES', name: 'Wage Price Index', category: 'Wages', currentValue: 4.1, previousValue: 4.2, changePercent: -2.38, period: 'Sep 2025', source: 'ABS', unit: '%' },
-        { code: 'RBA_DWELLING', name: 'Housing Credit Growth', category: 'Housing', currentValue: 5.3, previousValue: 5.1, changePercent: 3.92, period: 'Jan 2026', source: 'RBA', unit: '%' },
-        { code: 'ABS_EMPLOYMENT_CHANGE', name: 'Employment Change', category: 'Employment', currentValue: 14200, previousValue: 61300, changePercent: -76.8, period: 'Jan 2026', source: 'ABS', unit: 'persons' },
-        { code: 'RBA_INFLATION_EXPECT', name: 'Inflation Expectations', category: 'Inflation', currentValue: 4.3, previousValue: 4.5, changePercent: -4.44, period: 'Feb 2026', source: 'RBA', unit: '%' },
+        {
+          code: 'RBA_CASH_RATE',
+          name: 'Cash Rate Target',
+          category: 'Interest Rates',
+          currentValue: 4.35,
+          previousValue: 4.35,
+          changePercent: 0,
+          period: 'Feb 2026',
+          source: 'RBA',
+          unit: '%',
+        },
+        {
+          code: 'ABS_CPI',
+          name: 'Consumer Price Index',
+          category: 'Inflation',
+          currentValue: 3.6,
+          previousValue: 3.8,
+          changePercent: -5.26,
+          period: 'Dec 2025',
+          source: 'ABS',
+          unit: '%',
+        },
+        {
+          code: 'ABS_UNEMPLOYMENT',
+          name: 'Unemployment Rate',
+          category: 'Employment',
+          currentValue: 4.1,
+          previousValue: 4.0,
+          changePercent: 2.5,
+          period: 'Jan 2026',
+          source: 'ABS',
+          unit: '%',
+        },
+        {
+          code: 'ABS_GDP',
+          name: 'GDP Growth (Annual)',
+          category: 'GDP',
+          currentValue: 1.5,
+          previousValue: 1.1,
+          changePercent: 36.36,
+          period: 'Sep 2025',
+          source: 'ABS',
+          unit: '%',
+        },
+        {
+          code: 'ABS_WAGES',
+          name: 'Wage Price Index',
+          category: 'Wages',
+          currentValue: 4.1,
+          previousValue: 4.2,
+          changePercent: -2.38,
+          period: 'Sep 2025',
+          source: 'ABS',
+          unit: '%',
+        },
+        {
+          code: 'RBA_DWELLING',
+          name: 'Housing Credit Growth',
+          category: 'Housing',
+          currentValue: 5.3,
+          previousValue: 5.1,
+          changePercent: 3.92,
+          period: 'Jan 2026',
+          source: 'RBA',
+          unit: '%',
+        },
+        {
+          code: 'ABS_EMPLOYMENT_CHANGE',
+          name: 'Employment Change',
+          category: 'Employment',
+          currentValue: 14200,
+          previousValue: 61300,
+          changePercent: -76.8,
+          period: 'Jan 2026',
+          source: 'ABS',
+          unit: 'persons',
+        },
+        {
+          code: 'RBA_INFLATION_EXPECT',
+          name: 'Inflation Expectations',
+          category: 'Inflation',
+          currentValue: 4.3,
+          previousValue: 4.5,
+          changePercent: -4.44,
+          period: 'Feb 2026',
+          source: 'RBA',
+          unit: '%',
+        },
       ]);
     } finally {
       setLoading(false);
@@ -78,36 +158,41 @@ export function EconomicIndicators() {
     loadIndicators();
   }, [loadIndicators]);
 
-  const toggleExpand = useCallback(async (code: string) => {
-    if (expandedCode === code) {
-      setExpandedCode(null);
-      return;
-    }
-    setExpandedCode(code);
-    if (!historyData[code]) {
-      setHistoryLoading(code);
-      try {
-        const data = await fetchIndicatorHistory(code, 24);
-        const points = Array.isArray(data) ? data : (data as { history: HistoryPoint[] }).history || [];
-        setHistoryData(prev => ({ ...prev, [code]: points }));
-      } catch {
-        // Generate mock history
-        const mockHistory: HistoryPoint[] = [];
-        const now = new Date();
-        for (let i = 23; i >= 0; i--) {
-          const d = new Date(now);
-          d.setMonth(d.getMonth() - i);
-          mockHistory.push({
-            date: d.toISOString().slice(0, 7),
-            value: Number((Math.random() * 2 + 3).toFixed(2)),
-          });
-        }
-        setHistoryData(prev => ({ ...prev, [code]: mockHistory }));
-      } finally {
-        setHistoryLoading(null);
+  const toggleExpand = useCallback(
+    async (code: string) => {
+      if (expandedCode === code) {
+        setExpandedCode(null);
+        return;
       }
-    }
-  }, [expandedCode, historyData]);
+      setExpandedCode(code);
+      if (!historyData[code]) {
+        setHistoryLoading(code);
+        try {
+          const data = await fetchIndicatorHistory(code, 24);
+          const points = Array.isArray(data)
+            ? data
+            : (data as { history: HistoryPoint[] }).history || [];
+          setHistoryData((prev) => ({ ...prev, [code]: points }));
+        } catch {
+          // Generate mock history
+          const mockHistory: HistoryPoint[] = [];
+          const now = new Date();
+          for (let i = 23; i >= 0; i--) {
+            const d = new Date(now);
+            d.setMonth(d.getMonth() - i);
+            mockHistory.push({
+              date: d.toISOString().slice(0, 7),
+              value: Number((Math.random() * 2 + 3).toFixed(2)),
+            });
+          }
+          setHistoryData((prev) => ({ ...prev, [code]: mockHistory }));
+        } finally {
+          setHistoryLoading(null);
+        }
+      }
+    },
+    [expandedCode, historyData],
+  );
 
   const filtered = indicators.filter((ind) => {
     if (searchQuery) {
@@ -193,12 +278,24 @@ export function EconomicIndicators() {
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <tr key={i} className="border-b border-white/5 animate-pulse">
-                    <td className="px-4 py-3"><div className="h-4 w-32 bg-zinc-700 rounded" /></td>
-                    <td className="px-4 py-3 text-right"><div className="h-4 w-16 bg-zinc-700 rounded ml-auto" /></td>
-                    <td className="px-4 py-3 text-right hidden sm:table-cell"><div className="h-4 w-12 bg-zinc-700 rounded ml-auto" /></td>
-                    <td className="px-4 py-3 text-right"><div className="h-4 w-14 bg-zinc-700 rounded ml-auto" /></td>
-                    <td className="px-4 py-3 hidden md:table-cell"><div className="h-4 w-20 bg-zinc-700 rounded" /></td>
-                    <td className="px-4 py-3 hidden lg:table-cell"><div className="h-4 w-10 bg-zinc-700 rounded" /></td>
+                    <td className="px-4 py-3">
+                      <div className="h-4 w-32 bg-zinc-700 rounded" />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="h-4 w-16 bg-zinc-700 rounded ml-auto" />
+                    </td>
+                    <td className="px-4 py-3 text-right hidden sm:table-cell">
+                      <div className="h-4 w-12 bg-zinc-700 rounded ml-auto" />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="h-4 w-14 bg-zinc-700 rounded ml-auto" />
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <div className="h-4 w-20 bg-zinc-700 rounded" />
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      <div className="h-4 w-10 bg-zinc-700 rounded" />
+                    </td>
                     <td className="px-4 py-3" />
                   </tr>
                 ))
@@ -219,24 +316,36 @@ export function EconomicIndicators() {
                         >
                           <td className="px-4 py-3 text-left font-medium text-white">
                             {ind.name}
-                            <span className="ml-2 text-[10px] text-zinc-600 uppercase">{ind.code}</span>
+                            <span className="ml-2 text-[10px] text-zinc-600 uppercase">
+                              {ind.code}
+                            </span>
                           </td>
                           <td className="px-4 py-3 text-right font-bold text-white whitespace-nowrap">
-                            {ind.currentValue}{ind.unit === '%' ? '%' : ''}
+                            {ind.currentValue}
+                            {ind.unit === '%' ? '%' : ''}
                           </td>
                           <td className="px-4 py-3 text-right text-zinc-400 hidden sm:table-cell whitespace-nowrap">
-                            {ind.previousValue ?? '-'}{ind.unit === '%' ? '%' : ''}
+                            {ind.previousValue ?? '-'}
+                            {ind.unit === '%' ? '%' : ''}
                           </td>
-                          <td className={`px-4 py-3 text-right font-medium whitespace-nowrap ${getChangeColor(ind.changePercent)}`}>
-                            {ind.changePercent != null ? `${ind.changePercent > 0 ? '+' : ''}${ind.changePercent.toFixed(1)}%` : '-'}
+                          <td
+                            className={`px-4 py-3 text-right font-medium whitespace-nowrap ${getChangeColor(ind.changePercent)}`}
+                          >
+                            {ind.changePercent != null
+                              ? `${ind.changePercent > 0 ? '+' : ''}${ind.changePercent.toFixed(1)}%`
+                              : '-'}
                           </td>
                           <td className="px-4 py-3 text-left text-zinc-400 hidden md:table-cell">
                             {ind.period ?? '-'}
                           </td>
                           <td className="px-4 py-3 text-left hidden lg:table-cell">
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              ind.source === 'RBA' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'
-                            }`}>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                ind.source === 'RBA'
+                                  ? 'bg-blue-500/10 text-blue-400'
+                                  : 'bg-emerald-500/10 text-emerald-400'
+                              }`}
+                            >
                               {ind.source}
                             </span>
                           </td>

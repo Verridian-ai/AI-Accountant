@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ZAxis,
-} from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ZAxis } from 'recharts';
 import { CHART_COLORS, CHART_THEME } from './ChartColorPalette';
 import { ChartContainer } from './ChartContainer';
 
@@ -44,7 +36,14 @@ function ScatterPlotInner({
     return (
       <ChartContainer title={title} subtitle={subtitle} height={height}>
         <ScatterChart>
-          <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize={14}>
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#9CA3AF"
+            fontSize={14}
+          >
             No data available
           </text>
         </ScatterChart>
@@ -53,20 +52,34 @@ function ScatterPlotInner({
   }
 
   return (
-    <ChartContainer title={title} subtitle={subtitle} height={height} loading={loading} error={error}>
+    <ChartContainer
+      title={title}
+      subtitle={subtitle}
+      height={height}
+      loading={loading}
+      error={error}
+    >
       <ScatterChart>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
         <XAxis
           dataKey={xKey}
           name={xLabel ?? xKey}
           tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }}
-          label={xLabel ? { value: xLabel, position: 'insideBottom', offset: -5, fill: CHART_COLORS.axis } : undefined}
+          label={
+            xLabel
+              ? { value: xLabel, position: 'insideBottom', offset: -5, fill: CHART_COLORS.axis }
+              : undefined
+          }
         />
         <YAxis
           dataKey={yKey}
           name={yLabel ?? yKey}
           tick={{ fill: CHART_COLORS.axis, fontSize: CHART_THEME.fontSize }}
-          label={yLabel ? { value: yLabel, angle: -90, position: 'insideLeft', fill: CHART_COLORS.axis } : undefined}
+          label={
+            yLabel
+              ? { value: yLabel, angle: -90, position: 'insideLeft', fill: CHART_COLORS.axis }
+              : undefined
+          }
         />
         {sizeKey && <ZAxis dataKey={sizeKey} range={[20, 400]} />}
         <Tooltip
@@ -74,12 +87,7 @@ function ScatterPlotInner({
           labelStyle={{ color: CHART_COLORS.primary }}
           cursor={{ strokeDasharray: '3 3', stroke: CHART_COLORS.primary }}
         />
-        <Scatter
-          data={data}
-          fill={color}
-          fillOpacity={0.7}
-          animationDuration={500}
-        />
+        <Scatter data={data} fill={color} fillOpacity={0.7} animationDuration={500} />
       </ScatterChart>
     </ChartContainer>
   );

@@ -20,36 +20,45 @@ interface AccountSwitcherProps {
   className?: string;
 }
 
-export function AccountSwitcher({ selectedAccountId, onAccountChange, className }: AccountSwitcherProps) {
+export function AccountSwitcher({
+  selectedAccountId,
+  onAccountChange,
+  className,
+}: AccountSwitcherProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    api.fetchAccounts()
+    api
+      .fetchAccounts()
       .then(setAccounts)
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const selectedAccount = accounts.find(a => a.id === selectedAccountId);
-  const Icon = selectedAccount ? (ACCOUNT_TYPE_ICONS[selectedAccount.accountType] || Wallet) : Filter;
+  const selectedAccount = accounts.find((a) => a.id === selectedAccountId);
+  const Icon = selectedAccount ? ACCOUNT_TYPE_ICONS[selectedAccount.accountType] || Wallet : Filter;
 
   const formatCurrency = (cents: number | null) => {
     if (cents === null) return '—';
-    return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(cents / 100);
+    return new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
   };
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn('relative', className)}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-xl neu-raised border transition-all w-full sm:w-auto",
-          selectedAccountId ? "border-[#FFCC00]/20" : "border-white/5",
-          "hover:border-[#FFCC00]/30"
+          'flex items-center gap-2 px-3 py-2 rounded-xl neu-raised border transition-all w-full sm:w-auto',
+          selectedAccountId ? 'border-[#FFCC00]/20' : 'border-white/5',
+          'hover:border-[#FFCC00]/30',
         )}
       >
         <Icon className="w-4 h-4 text-[#FFCC00]" />
@@ -61,7 +70,9 @@ export function AccountSwitcher({ selectedAccountId, onAccountChange, className 
             {formatCurrency(selectedAccount.currentBalance)}
           </Badge>
         )}
-        <ChevronDown className={cn("w-3 h-3 text-zinc-500 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown
+          className={cn('w-3 h-3 text-zinc-500 transition-transform', isOpen && 'rotate-180')}
+        />
       </button>
 
       {isOpen && (
@@ -71,10 +82,15 @@ export function AccountSwitcher({ selectedAccountId, onAccountChange, className 
             {/* All Accounts option */}
             <button
               type="button"
-              onClick={() => { onAccountChange(null); setIsOpen(false); }}
+              onClick={() => {
+                onAccountChange(null);
+                setIsOpen(false);
+              }}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 transition-all border-b border-white/5",
-                !selectedAccountId ? "bg-[#FFCC00]/5 text-[#FFCC00]" : "text-zinc-300 hover:bg-white/5"
+                'w-full flex items-center gap-3 px-4 py-3 transition-all border-b border-white/5',
+                !selectedAccountId
+                  ? 'bg-[#FFCC00]/5 text-[#FFCC00]'
+                  : 'text-zinc-300 hover:bg-white/5',
               )}
             >
               <Filter className="w-4 h-4" />
@@ -86,7 +102,7 @@ export function AccountSwitcher({ selectedAccountId, onAccountChange, className 
 
             {/* Account list */}
             <div className="max-h-64 overflow-y-auto">
-              {accounts.map(account => {
+              {accounts.map((account) => {
                 const AccIcon = ACCOUNT_TYPE_ICONS[account.accountType] || Wallet;
                 const isSelected = selectedAccountId === account.id;
                 const isNegative = account.currentBalance !== null && account.currentBalance < 0;
@@ -96,22 +112,38 @@ export function AccountSwitcher({ selectedAccountId, onAccountChange, className 
                   <button
                     key={account.id}
                     type="button"
-                    onClick={() => { onAccountChange(account.id); setIsOpen(false); }}
+                    onClick={() => {
+                      onAccountChange(account.id);
+                      setIsOpen(false);
+                    }}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 transition-all border-b border-white/5 last:border-0",
-                      isSelected ? "bg-[#FFCC00]/5" : "hover:bg-white/5"
+                      'w-full flex items-center gap-3 px-4 py-3 transition-all border-b border-white/5 last:border-0',
+                      isSelected ? 'bg-[#FFCC00]/5' : 'hover:bg-white/5',
                     )}
                   >
-                    <div className={cn("neu-inset p-2 rounded-lg", isSelected ? "text-[#FFCC00]" : "text-zinc-500")}>
+                    <div
+                      className={cn(
+                        'neu-inset p-2 rounded-lg',
+                        isSelected ? 'text-[#FFCC00]' : 'text-zinc-500',
+                      )}
+                    >
                       <AccIcon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 text-left min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className={cn("text-xs font-black uppercase tracking-tight truncate", isSelected ? "text-[#FFCC00]" : "text-zinc-200")}>
+                        <p
+                          className={cn(
+                            'text-xs font-black uppercase tracking-tight truncate',
+                            isSelected ? 'text-[#FFCC00]' : 'text-zinc-200',
+                          )}
+                        >
                           {account.accountName}
                         </p>
                         {ownershipTag && (
-                          <Badge variant={ownershipTag === 'personal' ? 'outline' : 'secondary'} className="text-[7px] shrink-0">
+                          <Badge
+                            variant={ownershipTag === 'personal' ? 'outline' : 'secondary'}
+                            className="text-[7px] shrink-0"
+                          >
                             {ownershipTag}
                           </Badge>
                         )}
@@ -120,10 +152,12 @@ export function AccountSwitcher({ selectedAccountId, onAccountChange, className 
                         {account.bankName || account.accountType.replace('_', ' ')}
                       </p>
                     </div>
-                    <p className={cn(
-                      "text-xs font-black tracking-tighter shrink-0",
-                      isNegative ? "text-red-400" : "text-emerald-400"
-                    )}>
+                    <p
+                      className={cn(
+                        'text-xs font-black tracking-tighter shrink-0',
+                        isNegative ? 'text-red-400' : 'text-emerald-400',
+                      )}
+                    >
                       {formatCurrency(account.currentBalance)}
                     </p>
                   </button>

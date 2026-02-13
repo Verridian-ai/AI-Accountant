@@ -507,7 +507,7 @@ export interface PayrollAgentInput {
     category?: string;
   }>;
   financialYear?: string;
-  employeeId?: string;  // Wave 4: for employee-specific queries
+  employeeId?: string; // Wave 4: for employee-specific queries
   hoursWorked?: number; // Wave 4: for pay calculations
 }
 
@@ -788,7 +788,15 @@ export interface CdrProductOutput {
 
 export interface InvoiceAgentInput {
   userId: string;
-  action: 'create_invoice' | 'update_invoice' | 'generate_pdf' | 'send_invoice' | 'track_payment' | 'list_overdue' | 'search_customers' | 'general_query';
+  action:
+    | 'create_invoice'
+    | 'update_invoice'
+    | 'generate_pdf'
+    | 'send_invoice'
+    | 'track_payment'
+    | 'list_overdue'
+    | 'search_customers'
+    | 'general_query';
   invoiceId?: string;
   customerId?: string;
   lineItems?: Array<{
@@ -837,13 +845,25 @@ export interface InvoiceAgentOutput {
 
 export interface AccountsPayableInput {
   userId: string;
-  action: 'enter_bill' | 'create_po' | 'schedule_payment' | 'match_receipt' | 'aging_report' | 'approve_payment' | 'three_way_match';
+  action:
+    | 'enter_bill'
+    | 'create_po'
+    | 'schedule_payment'
+    | 'match_receipt'
+    | 'aging_report'
+    | 'approve_payment'
+    | 'three_way_match';
   billId?: string;
   supplierId?: string;
   purchaseOrderId?: string;
   amount?: number;
   dueDate?: string;
-  lineItems?: Array<{ description: string; quantity: number; unitPriceCents: number; gstRate?: number }>;
+  lineItems?: Array<{
+    description: string;
+    quantity: number;
+    unitPriceCents: number;
+    gstRate?: number;
+  }>;
 }
 
 export interface AccountsPayableOutput {
@@ -883,7 +903,12 @@ export interface AccountsPayableOutput {
     discrepancies: string[];
     matchStatus: 'matched' | 'discrepancy' | 'partial';
   };
-  paymentSchedule?: Array<{ billId: string; supplierName: string; amountCents: number; scheduledDate: string }>;
+  paymentSchedule?: Array<{
+    billId: string;
+    supplierName: string;
+    amountCents: number;
+    scheduledDate: string;
+  }>;
   summary: string;
 }
 

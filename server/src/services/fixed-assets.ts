@@ -102,10 +102,10 @@ const ATO_EFFECTIVE_LIVES: Record<AssetCategory, number> = {
   computer_equipment: 4,
   furniture_fittings: 13.33,
   building: 40,
-  land: 0,              // land is not depreciated
+  land: 0, // land is not depreciated
   leasehold_improvement: 10,
   intangible: 5,
-  low_value_pool: 0,    // pool rate, not life-based
+  low_value_pool: 0, // pool rate, not life-based
 };
 
 /** SBE instant write-off threshold in cents ($20,000) */
@@ -118,7 +118,7 @@ const LOW_VALUE_POOL_THRESHOLD = 1_000_00;
 const LVP_FIRST_YEAR_RATE = 0.375;
 
 /** LVP subsequent year rate */
-const LVP_SUBSEQUENT_RATE = 0.30;
+const LVP_SUBSEQUENT_RATE = 0.3;
 
 // ============================================================================
 // FINANCIAL YEAR HELPERS
@@ -130,7 +130,7 @@ function parseFY(fy: string): { start: Date; end: Date } {
   const startYear = parseInt(parts[0], 10);
   // FY 2024-25 runs from 1 July 2024 to 30 June 2025
   return {
-    start: new Date(startYear, 6, 1),   // July 1
+    start: new Date(startYear, 6, 1), // July 1
     end: new Date(startYear + 1, 5, 30), // June 30
   };
 }
@@ -191,8 +191,7 @@ export class FixedAssetService {
     const effectiveLifeYears =
       params.effectiveLifeYears ?? ATO_EFFECTIVE_LIVES[params.category] ?? 10;
 
-    const usefulLifeMonths =
-      params.usefulLifeMonths ?? Math.round(effectiveLifeYears * 12);
+    const usefulLifeMonths = params.usefulLifeMonths ?? Math.round(effectiveLifeYears * 12);
 
     const residualValue = params.residualValue ?? 0;
     const gstClaimed = params.gstClaimed ?? 0;
@@ -262,7 +261,7 @@ export class FixedAssetService {
       location?: string;
       serialNumber?: string;
       depreciationMethod?: DepreciationMethod;
-    }
+    },
   ): Promise<void> {
     // If changing depreciation method, verify no depreciation records exist
     if (updates.depreciationMethod) {
@@ -273,9 +272,7 @@ export class FixedAssetService {
         .limit(1);
 
       if (existing.length > 0) {
-        throw new Error(
-          'Cannot change depreciation method after depreciation has been recorded'
-        );
+        throw new Error('Cannot change depreciation method after depreciation has been recorded');
       }
     }
 
@@ -288,10 +285,7 @@ export class FixedAssetService {
       setValues.isInstantWriteOff = updates.depreciationMethod === 'instant_write_off';
     }
 
-    await db
-      .update(depreciableAssets)
-      .set(setValues)
-      .where(eq(depreciableAssets.id, assetId));
+    await db.update(depreciableAssets).set(setValues).where(eq(depreciableAssets.id, assetId));
   }
 
   /**
@@ -303,10 +297,7 @@ export class FixedAssetService {
    * - Instant Write-Off: full deduction if under threshold in purchase year
    * - Low Value Pool: 37.5% first year, 30% subsequent
    */
-  async calculateDepreciation(
-    assetId: string,
-    financialYear: string
-  ): Promise<DepreciationResult> {
+  async calculateDepreciation(assetId: string, financialYear: string): Promise<DepreciationResult> {
     // Fetch asset details
     const rows = await db
       .select()
@@ -350,8 +341,8 @@ export class FixedAssetService {
       .where(
         and(
           eq(depreciationSchedule.assetId, assetId),
-          eq(depreciationSchedule.financialYear, financialYear)
-        )
+          eq(depreciationSchedule.financialYear, financialYear),
+        ),
       )
       .limit(1);
 
@@ -402,9 +393,7 @@ export class FixedAssetService {
         // 200% rate per ATO
         if (effectiveLifeYears <= 0) break;
         rate = 2 / effectiveLifeYears;
-        depreciationAmount = Math.round(
-          openingWDV * rate * (daysHeld / daysInYear)
-        );
+        depreciationAmount = Math.round(openingWDV * rate * (daysHeld / daysInYear));
         break;
       }
 
@@ -458,7 +447,7 @@ export class FixedAssetService {
   async runBatchDepreciation(
     userId: string,
     financialYear: string,
-    entityId?: string
+    entityId?: string,
   ): Promise<{
     assetsProcessed: number;
     totalDepreciation: number;
@@ -474,12 +463,7 @@ export class FixedAssetService {
     const allAssets = await db
       .select()
       .from(depreciableAssets)
-      .where(
-        and(
-          eq(depreciableAssets.userId, userId),
-          eq(depreciableAssets.isActive, true)
-        )
-      );
+      .where(and(eq(depreciableAssets.userId, userId), eq(depreciableAssets.isActive, true)));
 
     const results: Array<{
       assetId: string;
@@ -507,8 +491,7 @@ export class FixedAssetService {
           });
 
           // Update the asset's current WDV
-          const newStatus: AssetStatus =
-            depr.closingValue <= 0 ? 'fully_depreciated' : 'active';
+          const newStatus: AssetStatus = depr.closingValue <= 0 ? 'fully_depreciated' : 'active';
 
           await db
             .update(depreciableAssets)
@@ -623,7 +606,7 @@ export class FixedAssetService {
       status?: AssetStatus;
       purchaseDateFrom?: string;
       purchaseDateTo?: string;
-    }
+    },
   ): Promise<{
     assets: FixedAsset[];
     summary: {
@@ -642,7 +625,11 @@ export class FixedAssetService {
     }
     if (filters?.status === 'active') {
       conditions.push(eq(depreciableAssets.isActive, true));
-    } else if (filters?.status === 'disposed' || filters?.status === 'fully_depreciated' || filters?.status === 'written_off') {
+    } else if (
+      filters?.status === 'disposed' ||
+      filters?.status === 'fully_depreciated' ||
+      filters?.status === 'written_off'
+    ) {
       conditions.push(eq(depreciableAssets.isActive, false));
     }
 
@@ -668,7 +655,7 @@ export class FixedAssetService {
       effectiveLifeYears: r.effectiveLifeYears ?? 0,
       openingWrittenDownValue: r.openingWrittenDownValue ?? r.openingValue ?? 0,
       currentWrittenDownValue: r.currentWrittenDownValue ?? r.currentValue ?? 0,
-      status: r.isActive ? 'active' as AssetStatus : 'disposed' as AssetStatus,
+      status: r.isActive ? ('active' as AssetStatus) : ('disposed' as AssetStatus),
       location: null,
       serialNumber: null,
       supplier: null,
@@ -681,10 +668,10 @@ export class FixedAssetService {
     // Filter by date range in memory (simpler than building dynamic SQL)
     let filtered = assets;
     if (filters?.purchaseDateFrom) {
-      filtered = filtered.filter(a => a.purchaseDate >= filters.purchaseDateFrom!);
+      filtered = filtered.filter((a) => a.purchaseDate >= filters.purchaseDateFrom!);
     }
     if (filters?.purchaseDateTo) {
-      filtered = filtered.filter(a => a.purchaseDate <= filters.purchaseDateTo!);
+      filtered = filtered.filter((a) => a.purchaseDate <= filters.purchaseDateTo!);
     }
 
     // Compute summary
@@ -734,7 +721,7 @@ export class FixedAssetService {
   async getDepreciationSchedule(
     userId: string,
     financialYear: string,
-    _entityId?: string
+    _entityId?: string,
   ): Promise<{
     financialYear: string;
     assets: Array<{
@@ -792,15 +779,16 @@ export class FixedAssetService {
         .where(
           and(
             eq(depreciationSchedule.assetId, asset.id),
-            eq(depreciationSchedule.financialYear, financialYear)
-          )
+            eq(depreciationSchedule.financialYear, financialYear),
+          ),
         )
         .limit(1);
 
       const depr: any = deprRows[0];
-      const openingValue = depr?.openingValue ?? asset.openingWrittenDownValue ?? asset.openingValue ?? 0;
+      const openingValue =
+        depr?.openingValue ?? asset.openingWrittenDownValue ?? asset.openingValue ?? 0;
       const depreciationAmt = depr?.depreciationAmount ?? 0;
-      const closingValue = depr?.closingValue ?? (openingValue - depreciationAmt);
+      const closingValue = depr?.closingValue ?? openingValue - depreciationAmt;
 
       // Additions: assets purchased during this FY
       const purchaseDate = asset.purchaseDate ?? '';

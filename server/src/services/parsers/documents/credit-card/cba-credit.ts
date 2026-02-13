@@ -76,17 +76,8 @@ const CBA_CREDIT_CONFIG: CreditCardParserConfig = {
   ],
 
   transactionTypePatterns: {
-    purchase: [
-      /VISA\s*PURCHASE/i,
-      /EFTPOS\s*PURCHASE/i,
-      /^PURCHASE/i,
-      /RETAIL\s*PURCHASE/i,
-    ],
-    cash_advance: [
-      /CASH\s*ADVANCE/i,
-      /ATM\s*WITHDRAWAL/i,
-      /CASH\s*WITHDRAWAL/i,
-    ],
+    purchase: [/VISA\s*PURCHASE/i, /EFTPOS\s*PURCHASE/i, /^PURCHASE/i, /RETAIL\s*PURCHASE/i],
+    cash_advance: [/CASH\s*ADVANCE/i, /ATM\s*WITHDRAWAL/i, /CASH\s*WITHDRAWAL/i],
     interest: [
       /INTEREST\s*CHARGE/i,
       /FINANCE\s*CHARGE/i,
@@ -108,33 +99,16 @@ const CBA_CREDIT_CONFIG: CreditCardParserConfig = {
       /DIRECT\s*DEBIT\s*PAYMENT/i,
       /AUTOMATIC\s*PAYMENT/i,
     ],
-    refund: [
-      /REFUND/i,
-      /CREDIT\s*ADJUSTMENT/i,
-      /REVERSAL/i,
-      /CHARGEBACK/i,
-      /DISPUTE\s*CREDIT/i,
-    ],
-    balance_transfer: [
-      /BALANCE\s*TRANSFER/i,
-      /PROMOTIONAL\s*TRANSFER/i,
-    ],
-    reward: [
-      /REWARD/i,
-      /POINTS/i,
-      /CASHBACK/i,
-      /BONUS/i,
-    ],
-    adjustment: [
-      /ADJUSTMENT/i,
-      /CORRECTION/i,
-    ],
+    refund: [/REFUND/i, /CREDIT\s*ADJUSTMENT/i, /REVERSAL/i, /CHARGEBACK/i, /DISPUTE\s*CREDIT/i],
+    balance_transfer: [/BALANCE\s*TRANSFER/i, /PROMOTIONAL\s*TRANSFER/i],
+    reward: [/REWARD/i, /POINTS/i, /CASHBACK/i, /BONUS/i],
+    adjustment: [/ADJUSTMENT/i, /CORRECTION/i],
     unknown: [],
   },
 
   foreignTransactionPatterns: [
-    /[A-Z]{3}\s*[\d,]+\.\d{2}/,           // Currency code pattern (e.g., "USD 123.45")
-    /\b(USD|EUR|GBP|JPY|SGD|HKD|NZD)\b/i,  // Common currency codes
+    /[A-Z]{3}\s*[\d,]+\.\d{2}/, // Currency code pattern (e.g., "USD 123.45")
+    /\b(USD|EUR|GBP|JPY|SGD|HKD|NZD)\b/i, // Common currency codes
     /Exchange\s*Rate/i,
     /Conversion\s*Rate/i,
     /Foreign\s*(?:Currency|Transaction)/i,
@@ -275,7 +249,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
   private parseTransactionLine(
     line: string,
     lineNumber: number,
-    pdfText: string
+    pdfText: string,
   ): CreditCardTransaction | null {
     // CBA credit card formats:
     // DD/MM/YYYY Description Amount
@@ -285,7 +259,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
     // Try format with separate transaction and posting dates
     // Allow optional CR/DR suffix after amount for credit card payments
     const dualDateMatch = line.match(
-      /(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i
+      /(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i,
     );
 
     if (dualDateMatch) {
@@ -345,7 +319,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
 
     // Try standard format: DD/MM/YYYY Description Amount
     const standardMatch = line.match(
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i
+      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i,
     );
 
     if (standardMatch) {
@@ -374,7 +348,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
 
     // Try format with month name: DD MMM Description Amount
     const monthNameMatch = line.match(
-      /(\d{1,2}\s+\w{3}(?:\s+\d{2,4})?)\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i
+      /(\d{1,2}\s+\w{3}(?:\s+\d{2,4})?)\s+(.+?)\s+(-?\$?[\d,]+\.\d{2}\s*(?:CR|DR)?)\s*$/i,
     );
 
     if (monthNameMatch) {
@@ -410,8 +384,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
   private mightHaveForeignDetails(line: string): boolean {
     // Look for international indicators without foreign amount on same line
     const hasInternationalIndicator =
-      /overseas|international|foreign/i.test(line) ||
-      /\b[A-Z]{2}\s*(?!AU)$/i.test(line); // Country code at end (not AU)
+      /overseas|international|foreign/i.test(line) || /\b[A-Z]{2}\s*(?!AU)$/i.test(line); // Country code at end (not AU)
 
     const hasForeignAmountOnLine = /[A-Z]{3}\s*[\d,]+\.\d{2}/.test(line);
 
@@ -422,7 +395,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
    * Parse foreign currency details from a continuation line
    */
   private parseForeignCurrencyLine(
-    line: string
+    line: string,
   ): { amount: number; currency: string; rate?: number } | null {
     // Patterns for foreign currency lines:
     // "USD 123.45 @ 0.7523"
@@ -430,9 +403,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
     // "Foreign Currency: USD 123.45"
 
     // Pattern: CURRENCY AMOUNT @ RATE
-    const currencyRateMatch = line.match(
-      /([A-Z]{3})\s*([\d,]+\.?\d*)\s*@\s*(\d+\.?\d*)/i
-    );
+    const currencyRateMatch = line.match(/([A-Z]{3})\s*([\d,]+\.?\d*)\s*@\s*(\d+\.?\d*)/i);
 
     if (currencyRateMatch) {
       const [, currency, amount, rate] = currencyRateMatch;
@@ -450,7 +421,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
 
     // Pattern: AMOUNT CURRENCY (Exchange|Conversion) Rate RATE
     const amountCurrencyMatch = line.match(
-      /([\d,]+\.?\d*)\s*([A-Z]{3})\s*(?:Exchange|Conversion)?\s*Rate[\s:]*(\d+\.?\d*)/i
+      /([\d,]+\.?\d*)\s*([A-Z]{3})\s*(?:Exchange|Conversion)?\s*Rate[\s:]*(\d+\.?\d*)/i,
     );
 
     if (amountCurrencyMatch) {
@@ -468,9 +439,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
     }
 
     // Pattern: Foreign Currency: CURRENCY AMOUNT
-    const foreignCurrencyMatch = line.match(
-      /Foreign\s*Currency[\s:]*([A-Z]{3})\s*([\d,]+\.?\d*)/i
-    );
+    const foreignCurrencyMatch = line.match(/Foreign\s*Currency[\s:]*([A-Z]{3})\s*([\d,]+\.?\d*)/i);
 
     if (foreignCurrencyMatch) {
       const [, currency, amount] = foreignCurrencyMatch;
@@ -485,9 +454,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
     }
 
     // Simple pattern: CURRENCY AMOUNT
-    const simpleForeignMatch = line.match(
-      /^\s*([A-Z]{3})\s*([\d,]+\.?\d*)\s*$/
-    );
+    const simpleForeignMatch = line.match(/^\s*([A-Z]{3})\s*([\d,]+\.?\d*)\s*$/);
 
     if (simpleForeignMatch) {
       const [, currency, amount] = simpleForeignMatch;
@@ -526,7 +493,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
 
     // Extract cardholder name
     const cardholderMatch = pdfText.match(
-      /(?:Card\s*holder|Account\s*holder|Name)[\s:]*([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)+)/
+      /(?:Card\s*holder|Account\s*holder|Name)[\s:]*([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)+)/,
     );
     if (cardholderMatch) {
       info.cardHolder = cardholderMatch[1].trim();
@@ -621,7 +588,7 @@ export class CBACreditCardParser extends BaseCreditCardParser {
           const start = new Date(startDate);
           const end = new Date(endDate);
           info.daysInBillingCycle = Math.round(
-            (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+            (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
           );
         }
         break;
@@ -640,40 +607,32 @@ export class CBACreditCardParser extends BaseCreditCardParser {
     }
 
     // Extract statement date
-    const statementDateMatch = pdfText.match(
-      /Statement\s*Date[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})/i
-    );
+    const statementDateMatch = pdfText.match(/Statement\s*Date[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})/i);
     if (statementDateMatch) {
       info.statementDate = this.parseDate(statementDateMatch[1]) || undefined;
     }
 
     // Extract interest charged
-    const interestMatch = pdfText.match(
-      /Interest\s*Charged[\s:]*\$?([\d,]+\.?\d*)/i
-    );
+    const interestMatch = pdfText.match(/Interest\s*Charged[\s:]*\$?([\d,]+\.?\d*)/i);
     if (interestMatch) {
       info.interestCharged = this.parseAmount(interestMatch[1]) ?? undefined;
     }
 
     // Extract fees charged
-    const feesMatch = pdfText.match(
-      /(?:Total\s*)?Fees\s*(?:Charged)?[\s:]*\$?([\d,]+\.?\d*)/i
-    );
+    const feesMatch = pdfText.match(/(?:Total\s*)?Fees\s*(?:Charged)?[\s:]*\$?([\d,]+\.?\d*)/i);
     if (feesMatch) {
       info.feesCharged = this.parseAmount(feesMatch[1]) ?? undefined;
     }
 
     // Extract new charges
-    const chargesMatch = pdfText.match(
-      /(?:New\s*)?(?:Purchases|Charges)[\s:]*\$?([\d,]+\.?\d*)/i
-    );
+    const chargesMatch = pdfText.match(/(?:New\s*)?(?:Purchases|Charges)[\s:]*\$?([\d,]+\.?\d*)/i);
     if (chargesMatch) {
       info.newCharges = this.parseAmount(chargesMatch[1]) ?? undefined;
     }
 
     // Extract payments received
     const paymentsMatch = pdfText.match(
-      /Payments?\s*(?:Received|Credits?)[\s:]*\$?([\d,]+\.?\d*)/i
+      /Payments?\s*(?:Received|Credits?)[\s:]*\$?([\d,]+\.?\d*)/i,
     );
     if (paymentsMatch) {
       info.paymentsReceived = this.parseAmount(paymentsMatch[1]) ?? undefined;
@@ -681,30 +640,26 @@ export class CBACreditCardParser extends BaseCreditCardParser {
 
     // Extract rewards info
     const pointsEarnedMatch = pdfText.match(
-      /Points?\s*Earned(?:\s*this\s*(?:statement|period))?[\s:]*(\d+)/i
+      /Points?\s*Earned(?:\s*this\s*(?:statement|period))?[\s:]*(\d+)/i,
     );
     if (pointsEarnedMatch) {
       info.rewardPointsEarned = parseInt(pointsEarnedMatch[1], 10);
     }
 
-    const pointsBalanceMatch = pdfText.match(
-      /(?:Total\s*)?Points?\s*Balance[\s:]*(\d+)/i
-    );
+    const pointsBalanceMatch = pdfText.match(/(?:Total\s*)?Points?\s*Balance[\s:]*(\d+)/i);
     if (pointsBalanceMatch) {
       info.rewardPointsBalance = parseInt(pointsBalanceMatch[1], 10);
     }
 
     // Extract cash advance limit
-    const cashLimitMatch = pdfText.match(
-      /Cash\s*(?:Advance\s*)?Limit[\s:]*\$?([\d,]+\.?\d*)/i
-    );
+    const cashLimitMatch = pdfText.match(/Cash\s*(?:Advance\s*)?Limit[\s:]*\$?([\d,]+\.?\d*)/i);
     if (cashLimitMatch) {
       info.cashAdvanceLimit = this.parseAmount(cashLimitMatch[1]) ?? undefined;
     }
 
     // Extract available cash advance
     const availableCashMatch = pdfText.match(
-      /Available\s*(?:Cash(?:\s*Advance)?|for\s*Cash)[\s:]*\$?([\d,]+\.?\d*)/i
+      /Available\s*(?:Cash(?:\s*Advance)?|for\s*Cash)[\s:]*\$?([\d,]+\.?\d*)/i,
     );
     if (availableCashMatch) {
       info.availableCashAdvance = this.parseAmount(availableCashMatch[1]) ?? undefined;

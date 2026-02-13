@@ -31,36 +31,55 @@ export type EnrichmentStatus = 'enriched' | 'pending' | 'unknown' | 'failed';
 
 /** GST category inference from transaction description (non-AI fallback) */
 const GST_FREE_CATEGORIES = new Set([
-  'Government & Tax', 'Internal Transfer', 'Transfer',
-  'Interest & Dividends', 'Loan/Liability Payment',
-  'Superannuation', 'Insurance', 'Medical & Health',
-  'Education & Childcare', 'Donations & Charity',
-  'Employment Income', 'Salary & Wages',
+  'Government & Tax',
+  'Internal Transfer',
+  'Transfer',
+  'Interest & Dividends',
+  'Loan/Liability Payment',
+  'Superannuation',
+  'Insurance',
+  'Medical & Health',
+  'Education & Childcare',
+  'Donations & Charity',
+  'Employment Income',
+  'Salary & Wages',
 ]);
 
-const INPUT_TAXED_CATEGORIES = new Set([
-  'Financial Services',
-]);
+const INPUT_TAXED_CATEGORIES = new Set(['Financial Services']);
 
 /**
  * Payment prefixes to strip when matching merchant patterns.
  * These appear at the start of transaction descriptions and obscure the merchant name.
  */
 const PAYMENT_PREFIXES = [
-  'EFTPOS', 'BPAY', 'DIRECT DEBIT', 'ATM', 'OSKO',
-  'PAY/TRANSFER', 'VISA PURCHASE', 'VISA DEBIT',
-  'MASTERCARD', 'PENDING', 'INTERNATIONAL',
-  'CARD PURCHASE', 'TRANSFER TO', 'TRANSFER FROM',
-  'INTERNET BANKING', 'MOBILE BANKING',
+  'EFTPOS',
+  'BPAY',
+  'DIRECT DEBIT',
+  'ATM',
+  'OSKO',
+  'PAY/TRANSFER',
+  'VISA PURCHASE',
+  'VISA DEBIT',
+  'MASTERCARD',
+  'PENDING',
+  'INTERNATIONAL',
+  'CARD PURCHASE',
+  'TRANSFER TO',
+  'TRANSFER FROM',
+  'INTERNET BANKING',
+  'MOBILE BANKING',
 ];
 
 /** Compiled prefix pattern for stripping payment method prefixes */
 const PREFIX_REGEX = new RegExp(
-  `^(${PAYMENT_PREFIXES.map(p => p.replace(/[/\\]/g, '\\$&')).join('|')})\\s+`,
-  'i'
+  `^(${PAYMENT_PREFIXES.map((p) => p.replace(/[/\\]/g, '\\$&')).join('|')})\\s+`,
+  'i',
 );
 
-function inferGstCategory(category: string, amount: number): { gstCategory: string; gstAmount: number } {
+function inferGstCategory(
+  category: string,
+  amount: number,
+): { gstCategory: string; gstAmount: number } {
   if (INPUT_TAXED_CATEGORIES.has(category)) {
     return { gstCategory: 'input_taxed', gstAmount: 0 };
   }
@@ -103,7 +122,7 @@ export class EnrichmentService {
    */
   async enrichTransactions(
     transactionIds: string[],
-    userId: string
+    userId: string,
   ): Promise<{ enriched: number; failed: number; pending: number }> {
     const stats = { enriched: 0, failed: 0, pending: 0 };
 
@@ -126,7 +145,10 @@ export class EnrichmentService {
       .all();
 
     const existingMappings = memoryRecords
-      .filter((m: any) => !m.merchantPattern.startsWith('abn:') && !m.merchantPattern.startsWith('places:'))
+      .filter(
+        (m: any) =>
+          !m.merchantPattern.startsWith('abn:') && !m.merchantPattern.startsWith('places:'),
+      )
       .map((m: any) => ({
         pattern: m.merchantPattern,
         displayName: m.merchantDisplayName || m.merchantPattern,
@@ -136,12 +158,15 @@ export class EnrichmentService {
 
     // Stage 0: Cache lookup — resolve what we can from memory before calling AI
     const uncachedTxs: typeof txList = [];
-    const cacheHits = new Map<string, { category: string; merchantNormalized: string; gstRegistered: boolean }>();
+    const cacheHits = new Map<
+      string,
+      { category: string; merchantNormalized: string; gstRegistered: boolean }
+    >();
 
     for (const tx of txList) {
       const desc = stripPaymentPrefix((tx as any).description || '');
-      const matched = existingMappings.find(
-        (m: any) => desc.toLowerCase().includes(m.pattern.toLowerCase())
+      const matched = existingMappings.find((m: any) =>
+        desc.toLowerCase().includes(m.pattern.toLowerCase()),
       );
       if (matched && matched.category) {
         cacheHits.set(tx.id, {
@@ -171,7 +196,9 @@ export class EnrichmentService {
 
     if (uncachedTxs.length > 0 && isAgentEnabled('merchant_intelligence')) {
       try {
-        logger.info(`[Enrichment] Stage 1: Running Merchant Intelligence on ${uncachedTxs.length} transactions`);
+        logger.info(
+          `[Enrichment] Stage 1: Running Merchant Intelligence on ${uncachedTxs.length} transactions`,
+        );
 
         const merchantInput = {
           merchants: uncachedTxs.map((tx: any) => ({
@@ -193,12 +220,16 @@ export class EnrichmentService {
 
         // Trigger cognify on merchant_mappings if new mappings were stored
         if (result.newMappings.length > 0) {
-          cogneeClient.cognify(['merchant_mappings'], true).catch(err =>
-            logger.warn('[Enrichment] Background cognify for merchant_mappings failed:', err)
-          );
+          cogneeClient
+            .cognify(['merchant_mappings'], true)
+            .catch((err) =>
+              logger.warn('[Enrichment] Background cognify for merchant_mappings failed:', err),
+            );
         }
 
-        logger.info(`[Enrichment] Stage 1: Merchant Intelligence resolved ${merchantResults.length} merchants`);
+        logger.info(
+          `[Enrichment] Stage 1: Merchant Intelligence resolved ${merchantResults.length} merchants`,
+        );
       } catch (err) {
         logger.warn('[Enrichment] Merchant Intelligence failed, continuing with fallback', err);
       }
@@ -217,7 +248,9 @@ export class EnrichmentService {
                 mr.canonicalName = abnResult.businessName;
               }
               await this.abnLookup.cacheResult(userId, abnResult);
-              logger.debug(`[Enrichment] ABN ${mr.abn}: GST=${abnResult.gstRegistered}, name="${abnResult.businessName}"`);
+              logger.debug(
+                `[Enrichment] ABN ${mr.abn}: GST=${abnResult.gstRegistered}, name="${abnResult.businessName}"`,
+              );
             }
           } catch (err) {
             logger.warn(`[Enrichment] ABN lookup failed for ${mr.abn}:`, err);
@@ -234,7 +267,9 @@ export class EnrichmentService {
             const placeResult = await this.placesLookup.searchPlace(mr.canonicalName);
             if (placeResult) {
               await this.placesLookup.cacheResult(userId, mr.canonicalName, placeResult);
-              logger.debug(`[Enrichment] Places: "${mr.canonicalName}" → ${placeResult.formattedAddress}`);
+              logger.debug(
+                `[Enrichment] Places: "${mr.canonicalName}" → ${placeResult.formattedAddress}`,
+              );
             }
           } catch (err) {
             logger.warn(`[Enrichment] Places lookup failed for "${mr.canonicalName}":`, err);
@@ -261,7 +296,7 @@ export class EnrichmentService {
         } else {
           // Check merchant intelligence results
           const merchantInfo = merchantResults.find(
-            (m) => m.transactionId === (parseInt(txId, 10) || 0)
+            (m) => m.transactionId === (parseInt(txId, 10) || 0),
           );
 
           if (merchantInfo) {
@@ -273,8 +308,8 @@ export class EnrichmentService {
           // Fallback: try memory patterns with prefix stripping
           if (!category) {
             const desc = stripPaymentPrefix((tx as any).description || '');
-            const matched = existingMappings.find(
-              (m: any) => desc.toLowerCase().includes(m.pattern.toLowerCase())
+            const matched = existingMappings.find((m: any) =>
+              desc.toLowerCase().includes(m.pattern.toLowerCase()),
             );
             if (matched) {
               category = matched.category;
@@ -305,10 +340,7 @@ export class EnrichmentService {
             updateData.category = category;
           }
           if (Object.keys(updateData).length > 0) {
-            await db
-              .update(transactions)
-              .set(updateData)
-              .where(eq(transactions.id, txId));
+            await db.update(transactions).set(updateData).where(eq(transactions.id, txId));
           }
           stats.enriched++;
           continue;
@@ -318,7 +350,8 @@ export class EnrichmentService {
         const updateData: Record<string, any> = {
           gstCategory: gstResult.gstCategory,
           gstAmount: gstResult.gstAmount,
-          gstApplicable: gstResult.gstCategory === 'taxable_10' || gstResult.gstCategory === 'capital',
+          gstApplicable:
+            gstResult.gstCategory === 'taxable_10' || gstResult.gstCategory === 'capital',
         };
 
         if (merchantNormalized) {
@@ -328,10 +361,7 @@ export class EnrichmentService {
           updateData.category = category;
         }
 
-        await db
-          .update(transactions)
-          .set(updateData)
-          .where(eq(transactions.id, txId));
+        await db.update(transactions).set(updateData).where(eq(transactions.id, txId));
 
         stats.enriched++;
       } catch (err) {
@@ -365,7 +395,7 @@ export class EnrichmentService {
       gstRegistered: boolean;
       industry?: string;
       defaultCategory: string;
-    }
+    },
   ): Promise<void> {
     try {
       // Check if pattern already exists (prevents Cognee append-only duplication)
@@ -375,8 +405,8 @@ export class EnrichmentService {
         .where(
           and(
             eq(merchantMemory.userId, userId),
-            eq(merchantMemory.merchantPattern, mapping.abbreviatedName.toLowerCase())
-          )
+            eq(merchantMemory.merchantPattern, mapping.abbreviatedName.toLowerCase()),
+          ),
         )
         .get();
 
@@ -416,7 +446,7 @@ export class EnrichmentService {
           mapping.abn,
           mapping.gstRegistered,
           mapping.industry,
-          mapping.defaultCategory
+          mapping.defaultCategory,
         );
       }
     } catch (err) {
@@ -427,15 +457,17 @@ export class EnrichmentService {
   /**
    * Batch enrich all uncategorized transactions for a user.
    */
-  async enrichUncategorized(userId: string): Promise<{ enriched: number; failed: number; pending: number }> {
+  async enrichUncategorized(
+    userId: string,
+  ): Promise<{ enriched: number; failed: number; pending: number }> {
     const uncategorized = await db
       .select()
       .from(transactions)
       .where(
         and(
           eq(transactions.userId, userId),
-          sql`(${transactions.category} IS NULL OR ${transactions.category} = '' OR ${transactions.category} = 'Uncategorized')`
-        )
+          sql`(${transactions.category} IS NULL OR ${transactions.category} = '' OR ${transactions.category} = 'Uncategorized')`,
+        ),
       )
       .all();
 

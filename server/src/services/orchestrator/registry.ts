@@ -46,7 +46,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     modelType: 'reasoning',
     priority: 100,
   },
-  'bas': {
+  bas: {
     id: 'bas',
     name: 'BAS Agent',
     description: 'Handles GST categorization, BAS calculations, and ATO compliance',
@@ -64,7 +64,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     modelType: 'code',
     priority: 90,
   },
-  'tax': {
+  tax: {
     id: 'tax',
     name: 'Tax Agent',
     description: 'Calculates income tax, deductions, CGT, depreciation, and tax planning',
@@ -84,7 +84,7 @@ export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
     modelType: 'code',
     priority: 85,
   },
-  'reconciliation': {
+  reconciliation: {
     id: 'reconciliation',
     name: 'Reconciliation Agent',
     description: 'Detects duplicates, verifies balances, and identifies discrepancies',
@@ -115,7 +115,7 @@ const CAPABILITY_ROUTING: Record<string, AgentType> = {
   // Financial Analyst capabilities
   'spending-analysis': 'financial-analyst',
   'cash-flow': 'financial-analyst',
-  'projections': 'financial-analyst',
+  projections: 'financial-analyst',
   'budget-recommendations': 'financial-analyst',
   'merchant-analysis': 'financial-analyst',
   'category-insights': 'financial-analyst',
@@ -129,9 +129,9 @@ const CAPABILITY_ROUTING: Record<string, AgentType> = {
 
   // Tax Agent capabilities
   'income-tax': 'tax',
-  'deductions': 'tax',
+  deductions: 'tax',
   'cgt-calculation': 'tax',
-  'depreciation': 'tax',
+  depreciation: 'tax',
   'tax-planning': 'tax',
   'wfh-deductions': 'tax',
   'motor-vehicle': 'tax',
@@ -201,9 +201,7 @@ export class AgentRegistry {
    * Find all agents with a specific capability
    */
   findAllByCapability(capability: string): AgentConfig[] {
-    return this.getAllConfigs().filter(config =>
-      config.capabilities.includes(capability)
-    );
+    return this.getAllConfigs().filter((config) => config.capabilities.includes(capability));
   }
 
   /**
@@ -324,7 +322,7 @@ export class AgentRegistry {
     agentType: AgentType,
     errorCode: string,
     errorMessage: string,
-    responseTimeMs?: number
+    responseTimeMs?: number,
   ): void {
     const health = this.healthState.get(agentType);
     if (!health) return;
@@ -391,8 +389,7 @@ export class AgentRegistry {
         return;
       }
 
-      health.metrics.avgResponseTimeMs =
-        times.reduce((a, b) => a + b, 0) / times.length;
+      health.metrics.avgResponseTimeMs = times.reduce((a, b) => a + b, 0) / times.length;
 
       // Calculate p95
       const sorted = [...times].sort((a, b) => a - b);
@@ -401,25 +398,27 @@ export class AgentRegistry {
     }
   }
 
-  private addRecentError(
-    agentType: AgentType,
-    errorCode: string,
-    errorMessage: string
-  ): void {
+  private addRecentError(agentType: AgentType, errorCode: string, errorMessage: string): void {
     const health = this.healthState.get(agentType);
     if (!health) return;
 
     // Validate error code is a known ErrorCode, default to UNKNOWN_ERROR
     const validErrorCodes: ErrorCode[] = [
-      'TIMEOUT', 'PROCESS_CRASHED', 'INVALID_RESPONSE', 'MODEL_ERROR',
-      'VALIDATION_ERROR', 'RATE_LIMITED', 'AGENT_UNAVAILABLE',
-      'CONTEXT_TOO_LARGE', 'UNKNOWN_ERROR'
+      'TIMEOUT',
+      'PROCESS_CRASHED',
+      'INVALID_RESPONSE',
+      'MODEL_ERROR',
+      'VALIDATION_ERROR',
+      'RATE_LIMITED',
+      'AGENT_UNAVAILABLE',
+      'CONTEXT_TOO_LARGE',
+      'UNKNOWN_ERROR',
     ];
     const validatedCode: ErrorCode = validErrorCodes.includes(errorCode as ErrorCode)
       ? (errorCode as ErrorCode)
       : 'UNKNOWN_ERROR';
 
-    const existing = health.recentErrors.find(e => e.code === validatedCode);
+    const existing = health.recentErrors.find((e) => e.code === validatedCode);
     if (existing) {
       existing.count++;
       existing.lastOccurrence = new Date().toISOString();
@@ -447,9 +446,7 @@ export class AgentRegistry {
 
     // Calculate success rate
     metrics.successRate =
-      metrics.totalRequests > 0
-        ? metrics.successCount / metrics.totalRequests
-        : 1;
+      metrics.totalRequests > 0 ? metrics.successCount / metrics.totalRequests : 1;
 
     // Determine health state
     let state: HealthState = 'unknown';

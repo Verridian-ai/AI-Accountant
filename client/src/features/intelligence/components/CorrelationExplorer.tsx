@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { Search, Activity } from 'lucide-react';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis } from 'recharts';
+import {
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ZAxis,
+} from 'recharts';
 import { intelligenceApi } from '../../../api';
 import { cn } from '../../../lib/utils';
 
@@ -19,8 +28,15 @@ interface Correlation {
 }
 
 const MODULES = [
-  'transactions', 'analytics', 'tax', 'bas', 'gst',
-  'knowledge', 'documents', 'matching', 'intelligence',
+  'transactions',
+  'analytics',
+  'tax',
+  'bas',
+  'gst',
+  'knowledge',
+  'documents',
+  'matching',
+  'intelligence',
 ];
 
 function coefficientColor(coeff: number): string {
@@ -56,7 +72,7 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
         moduleA,
         moduleB,
       });
-      const results = Array.isArray(data) ? data : data.correlations ?? [];
+      const results = Array.isArray(data) ? data : (data.correlations ?? []);
       setCorrelations(results);
       setSelectedCorrelation(results[0] ?? null);
     } catch {
@@ -76,11 +92,13 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
             <label className="text-xs text-zinc-500 font-medium block mb-1">Module A</label>
             <select
               value={moduleA}
-              onChange={e => setModuleA(e.target.value)}
+              onChange={(e) => setModuleA(e.target.value)}
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
             >
-              {MODULES.map(m => (
-                <option key={m} value={m}>{m}</option>
+              {MODULES.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
               ))}
             </select>
           </div>
@@ -89,11 +107,13 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
             <label className="text-xs text-zinc-500 font-medium block mb-1">Module B</label>
             <select
               value={moduleB}
-              onChange={e => setModuleB(e.target.value)}
+              onChange={(e) => setModuleB(e.target.value)}
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
             >
-              {MODULES.map(m => (
-                <option key={m} value={m}>{m}</option>
+              {MODULES.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
               ))}
             </select>
           </div>
@@ -114,7 +134,7 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Correlation cards */}
           <div className="space-y-2 lg:w-80 shrink-0">
-            {correlations.map(corr => (
+            {correlations.map((corr) => (
               <button
                 key={corr.id}
                 onClick={() => setSelectedCorrelation(corr)}
@@ -122,17 +142,28 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
                   'w-full text-left neu-raised p-3 rounded-lg transition-all border',
                   selectedCorrelation?.id === corr.id
                     ? 'border-[#FFCC00]/40'
-                    : 'border-transparent hover:border-white/10'
+                    : 'border-transparent hover:border-white/10',
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-zinc-200 truncate flex-1">{corr.description}</span>
-                  <div className={cn('ml-2 px-2 py-0.5 rounded-full text-sm font-bold', coefficientBg(corr.coefficient), coefficientColor(corr.coefficient))}>
-                    {corr.coefficient >= 0 ? '+' : ''}{corr.coefficient.toFixed(2)}
+                  <span className="text-sm font-medium text-zinc-200 truncate flex-1">
+                    {corr.description}
+                  </span>
+                  <div
+                    className={cn(
+                      'ml-2 px-2 py-0.5 rounded-full text-sm font-bold',
+                      coefficientBg(corr.coefficient),
+                      coefficientColor(corr.coefficient),
+                    )}
+                  >
+                    {corr.coefficient >= 0 ? '+' : ''}
+                    {corr.coefficient.toFixed(2)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[10px] text-zinc-500">{corr.moduleA} ↔ {corr.moduleB}</span>
+                  <span className="text-[10px] text-zinc-500">
+                    {corr.moduleA} ↔ {corr.moduleB}
+                  </span>
                   <span className="text-[10px] text-zinc-600">• {corr.confidence}% confidence</span>
                 </div>
               </button>
@@ -142,7 +173,9 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
           {/* Scatter plot */}
           {selectedCorrelation && (
             <div className="flex-1 neu-raised p-4 rounded-lg">
-              <h4 className="text-sm font-bold text-zinc-200 mb-3">{selectedCorrelation.description}</h4>
+              <h4 className="text-sm font-bold text-zinc-200 mb-3">
+                {selectedCorrelation.description}
+              </h4>
               {selectedCorrelation.dataPoints && selectedCorrelation.dataPoints.length > 0 ? (
                 <ResponsiveContainer width="100%" height={350}>
                   <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
@@ -161,7 +194,11 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
                     />
                     <ZAxis range={[40, 160]} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #333', borderRadius: 8 }}
+                      contentStyle={{
+                        backgroundColor: '#1a1a2e',
+                        border: '1px solid #333',
+                        borderRadius: 8,
+                      }}
                       labelStyle={{ color: '#FFCC00' }}
                     />
                     <Scatter

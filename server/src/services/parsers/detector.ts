@@ -7,12 +7,7 @@
  */
 
 import { parserRegistry } from './registry';
-import {
-  BankId,
-  BankDetectionResult,
-  StatementParseResult,
-  ParseOptions,
-} from './types';
+import { BankId, BankDetectionResult, StatementParseResult, ParseOptions } from './types';
 import { detectCreditCardStatement } from './documents/credit-card/index';
 
 /**
@@ -42,23 +37,16 @@ export function getBestBankMatch(pdfText: string): BankDetectionResult | null {
 /**
  * Check if detection confidence is high enough for direct parsing
  */
-export function isConfidentDetection(
-  detection: BankDetectionResult | null
-): boolean {
+export function isConfidentDetection(detection: BankDetectionResult | null): boolean {
   return (detection?.confidence ?? 0) >= CONFIDENCE_THRESHOLDS.HIGH;
 }
 
 /**
  * Check if detection needs AI assistance
  */
-export function needsAIAssistance(
-  detection: BankDetectionResult | null
-): boolean {
+export function needsAIAssistance(detection: BankDetectionResult | null): boolean {
   const confidence = detection?.confidence ?? 0;
-  return (
-    confidence >= CONFIDENCE_THRESHOLDS.LOW &&
-    confidence < CONFIDENCE_THRESHOLDS.HIGH
-  );
+  return confidence >= CONFIDENCE_THRESHOLDS.LOW && confidence < CONFIDENCE_THRESHOLDS.HIGH;
 }
 
 /**
@@ -66,7 +54,7 @@ export function needsAIAssistance(
  */
 export async function parseStatementAuto(
   pdfText: string,
-  options: ParseOptions = {}
+  options: ParseOptions = {},
 ): Promise<StatementParseResult> {
   return parserRegistry.parseStatement(pdfText, options);
 }
@@ -76,7 +64,7 @@ export async function parseStatementAuto(
  */
 export async function parseStatementWithBank(
   pdfText: string,
-  bankId: BankId
+  bankId: BankId,
 ): Promise<StatementParseResult> {
   return parserRegistry.parseStatement(pdfText, { forceBankId: bankId });
 }
@@ -197,14 +185,11 @@ export function analyzeStatement(pdfText: string): {
   }
 
   // Check for account number presence
-  const hasAccountNumber =
-    /(?:BSB|Account|Acc)[\s:#]*\d{3,}/i.test(pdfText);
+  const hasAccountNumber = /(?:BSB|Account|Acc)[\s:#]*\d{3,}/i.test(pdfText);
 
   // Check for transaction section
   const hasTransactionSection =
-    /(?:Date\s+Transaction|Transaction\s+Details|Date\s+Description)/i.test(
-      pdfText
-    );
+    /(?:Date\s+Transaction|Transaction\s+Details|Date\s+Description)/i.test(pdfText);
 
   // Estimate transaction count by looking for date patterns
   const dateMatches = pdfText.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/g);
@@ -241,9 +226,7 @@ export function generateDetectionReport(pdfText: string): string {
 
   if (analysis.bestMatch) {
     lines.push(`Best Match: ${analysis.bestMatch.bankName}`);
-    lines.push(
-      `Confidence: ${(analysis.bestMatch.confidence * 100).toFixed(1)}%`
-    );
+    lines.push(`Confidence: ${(analysis.bestMatch.confidence * 100).toFixed(1)}%`);
     lines.push(`Matched Patterns: ${analysis.bestMatch.matchedPatterns.length}`);
     lines.push('');
   } else {
@@ -258,17 +241,13 @@ export function generateDetectionReport(pdfText: string): string {
   lines.push('Document Analysis:');
   lines.push(`  Has Account Number: ${analysis.hasAccountNumber}`);
   lines.push(`  Has Transaction Section: ${analysis.hasTransactionSection}`);
-  lines.push(
-    `  Estimated Transactions: ~${analysis.estimatedTransactionCount}`
-  );
+  lines.push(`  Estimated Transactions: ~${analysis.estimatedTransactionCount}`);
   lines.push('');
 
   if (analysis.detections.length > 1) {
     lines.push('Other Matches:');
     for (const det of analysis.detections.slice(1, 4)) {
-      lines.push(
-        `  ${det.bankName}: ${(det.confidence * 100).toFixed(1)}%`
-      );
+      lines.push(`  ${det.bankName}: ${(det.confidence * 100).toFixed(1)}%`);
     }
   }
 

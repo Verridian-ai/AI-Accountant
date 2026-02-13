@@ -10,15 +10,14 @@
  */
 
 import {
-    pgTable,
-    text,
-    integer,
-    real,
-    boolean,
-    numeric,
-    timestamp,
-    index,
-    uniqueIndex,
+  pgTable,
+  text,
+  integer,
+  real,
+  boolean,
+  timestamp,
+  index,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 // =============================================================================
@@ -26,38 +25,32 @@ import {
 // =============================================================================
 
 export const users = pgTable(
-    'users',
-    {
-        id: text('id').primaryKey(),
-        username: text('username').notNull().unique(),
-        passwordHash: text('password_hash').notNull(),
-        createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-        updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-    },
-    (table) => ({
-        usernameIdx: uniqueIndex('users_username_unique').on(table.username),
-    })
+  'users',
+  {
+    id: text('id').primaryKey(),
+    username: text('username').notNull().unique(),
+    passwordHash: text('password_hash').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    usernameIdx: uniqueIndex('users_username_unique').on(table.username),
+  }),
 );
 
 export const userSettings = pgTable('user_settings', {
-    userId: text('user_id')
-        .primaryKey()
-        .references(() => users.id, { onDelete: 'cascade' }),
-    modelParsingText: text('model_parsing_text')
-        .notNull()
-        .default('google/gemini-3-flash-preview'),
-    modelParsingVision: text('model_parsing_vision')
-        .notNull()
-        .default('google/gemini-3-flash-preview'),
-    modelCategorization: text('model_categorization')
-        .notNull()
-        .default('google/gemini-3-flash-preview'),
-    modelChat: text('model_chat')
-        .notNull()
-        .default('google/gemini-3-flash-preview'),
-    modelEmbedding: text('model_embedding')
-        .notNull()
-        .default('openai/text-embedding-3-large'),
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  modelParsingText: text('model_parsing_text').notNull().default('google/gemini-3-flash-preview'),
+  modelParsingVision: text('model_parsing_vision')
+    .notNull()
+    .default('google/gemini-3-flash-preview'),
+  modelCategorization: text('model_categorization')
+    .notNull()
+    .default('google/gemini-3-flash-preview'),
+  modelChat: text('model_chat').notNull().default('google/gemini-3-flash-preview'),
+  modelEmbedding: text('model_embedding').notNull().default('openai/text-embedding-3-large'),
 });
 
 // =============================================================================
@@ -65,58 +58,58 @@ export const userSettings = pgTable('user_settings', {
 // =============================================================================
 
 export const accounts = pgTable(
-    'accounts',
-    {
-        id: text('id').primaryKey(),
-        userId: text('user_id')
-            .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
-        accountNumber: text('account_number').notNull(),
-        accountNumberHash: text('account_number_hash').notNull(),
-        accountName: text('account_name').notNull(),
-        accountType: text('account_type').notNull(), // 'checking', 'savings', 'credit_card', 'loan'
-        bankName: text('bank_name'),
-        // Currency amounts stored as cents (BIGINT) for precision
-        currentBalance: integer('current_balance').default(0),
-        lastStatementDate: text('last_statement_date'),
-        // Percentage stored as decimal (e.g., 0.0525 for 5.25%)
-        interestRate: real('interest_rate'),
-        // Currency amounts
-        creditLimit: integer('credit_limit'),
-        minimumPayment: integer('minimum_payment'),
-        paymentDueDay: integer('payment_due_day'),
-        linkedPaymentAccountId: text('linked_payment_account_id'),
-        isActive: boolean('is_active').default(true),
-        createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-        updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-    },
-    (table) => ({
-        userIdIdx: index('accounts_user_id_idx').on(table.userId),
-        hashIdx: index('accounts_hash_idx').on(table.accountNumberHash),
-    })
+  'accounts',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accountNumber: text('account_number').notNull(),
+    accountNumberHash: text('account_number_hash').notNull(),
+    accountName: text('account_name').notNull(),
+    accountType: text('account_type').notNull(), // 'checking', 'savings', 'credit_card', 'loan'
+    bankName: text('bank_name'),
+    // Currency amounts stored as cents (BIGINT) for precision
+    currentBalance: integer('current_balance').default(0),
+    lastStatementDate: text('last_statement_date'),
+    // Percentage stored as decimal (e.g., 0.0525 for 5.25%)
+    interestRate: real('interest_rate'),
+    // Currency amounts
+    creditLimit: integer('credit_limit'),
+    minimumPayment: integer('minimum_payment'),
+    paymentDueDay: integer('payment_due_day'),
+    linkedPaymentAccountId: text('linked_payment_account_id'),
+    isActive: boolean('is_active').default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdIdx: index('accounts_user_id_idx').on(table.userId),
+    hashIdx: index('accounts_hash_idx').on(table.accountNumberHash),
+  }),
 );
 
 export const accountBalanceHistory = pgTable(
-    'account_balance_history',
-    {
-        id: text('id').primaryKey(),
-        accountId: text('account_id')
-            .notNull()
-            .references(() => accounts.id, { onDelete: 'cascade' }),
-        // Balance in cents
-        balance: integer('balance').notNull(),
-        balanceDate: text('balance_date').notNull(),
-        source: text('source').notNull(), // 'statement', 'manual', 'calculated'
-        statementId: text('statement_id').references(() => statements.id),
-        notes: text('notes'),
-        createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    },
-    (table) => ({
-        accountDateIdx: index('balance_history_account_date_idx').on(
-            table.accountId,
-            table.balanceDate
-        ),
-    })
+  'account_balance_history',
+  {
+    id: text('id').primaryKey(),
+    accountId: text('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    // Balance in cents
+    balance: integer('balance').notNull(),
+    balanceDate: text('balance_date').notNull(),
+    source: text('source').notNull(), // 'statement', 'manual', 'calculated'
+    statementId: text('statement_id').references(() => statements.id),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    accountDateIdx: index('balance_history_account_date_idx').on(
+      table.accountId,
+      table.balanceDate,
+    ),
+  }),
 );
 
 // =============================================================================
@@ -124,114 +117,103 @@ export const accountBalanceHistory = pgTable(
 // =============================================================================
 
 export const statements = pgTable(
-    'statements',
-    {
-        id: text('id').primaryKey(),
-        filename: text('filename').notNull(),
-        hash: text('hash').notNull().unique(),
-        uploadDate: timestamp('upload_date', { withTimezone: true }).defaultNow().notNull(),
-        parsingStatus: text('parsing_status').notNull().default('PENDING'),
-        aiModelUsed: text('ai_model_used'),
-        errorMessage: text('error_message'),
-        errorType: text('error_type'),
-        errorDetails: text('error_details'),
-        userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
-        periodStartDate: text('period_start_date'),
-        periodEndDate: text('period_end_date'),
-        // Balances in cents
-        openingBalance: integer('opening_balance'),
-        closingBalance: integer('closing_balance'),
-        transactionCount: integer('transaction_count').default(0),
-        isComplete: boolean('is_complete').default(true),
-        validationErrors: text('validation_errors'), // JSON array of errors
-    },
-    (table) => ({
-        hashIdx: uniqueIndex('statements_hash_unique').on(table.hash),
-        userIdIdx: index('statements_user_id_idx').on(table.userId),
-        uploadDateIdx: index('statements_upload_date_idx').on(table.uploadDate),
-        userDateIdx: index('statements_user_date_idx').on(table.userId, table.uploadDate),
-        periodIdx: index('statements_period_idx').on(
-            table.periodStartDate,
-            table.periodEndDate
-        ),
-    })
+  'statements',
+  {
+    id: text('id').primaryKey(),
+    filename: text('filename').notNull(),
+    hash: text('hash').notNull().unique(),
+    uploadDate: timestamp('upload_date', { withTimezone: true }).defaultNow().notNull(),
+    parsingStatus: text('parsing_status').notNull().default('PENDING'),
+    aiModelUsed: text('ai_model_used'),
+    errorMessage: text('error_message'),
+    errorType: text('error_type'),
+    errorDetails: text('error_details'),
+    userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+    periodStartDate: text('period_start_date'),
+    periodEndDate: text('period_end_date'),
+    // Balances in cents
+    openingBalance: integer('opening_balance'),
+    closingBalance: integer('closing_balance'),
+    transactionCount: integer('transaction_count').default(0),
+    isComplete: boolean('is_complete').default(true),
+    validationErrors: text('validation_errors'), // JSON array of errors
+  },
+  (table) => ({
+    hashIdx: uniqueIndex('statements_hash_unique').on(table.hash),
+    userIdIdx: index('statements_user_id_idx').on(table.userId),
+    uploadDateIdx: index('statements_upload_date_idx').on(table.uploadDate),
+    userDateIdx: index('statements_user_date_idx').on(table.userId, table.uploadDate),
+    periodIdx: index('statements_period_idx').on(table.periodStartDate, table.periodEndDate),
+  }),
 );
 
-export const statementAccounts = pgTable(
-    'statement_accounts',
-    {
-        statementId: text('statement_id')
-            .primaryKey()
-            .references(() => statements.id, { onDelete: 'cascade' }),
-        accountId: text('account_id')
-            .notNull()
-            .references(() => accounts.id, { onDelete: 'cascade' }),
-    }
-);
+export const statementAccounts = pgTable('statement_accounts', {
+  statementId: text('statement_id')
+    .primaryKey()
+    .references(() => statements.id, { onDelete: 'cascade' }),
+  accountId: text('account_id')
+    .notNull()
+    .references(() => accounts.id, { onDelete: 'cascade' }),
+});
 
 // =============================================================================
 // TRANSACTIONS
 // =============================================================================
 
 export const transactions = pgTable(
-    'transactions',
-    {
-        id: text('id').primaryKey(),
-        date: text('date').notNull(), // ISO date string YYYY-MM-DD
-        description: text('description').notNull(),
-        // Amount in cents (positive = credit, negative = debit)
-        amount: integer('amount').notNull(),
-        // Balance in cents
-        balance: integer('balance'),
-        category: text('category'),
-        gstApplicable: boolean('gst_applicable').default(false),
-        aiReasoningNotes: text('ai_reasoning_notes'),
-        confidenceScore: real('confidence_score').default(1.0),
-        isEdited: boolean('is_edited').default(false),
-        isTransfer: boolean('is_transfer').default(false),
-        transferLinkId: text('transfer_link_id'),
-        merchantNormalized: text('merchant_normalized'),
-        parentTransactionId: text('parent_transaction_id'),
-        statementId: text('statement_id').references(() => statements.id, {
-            onDelete: 'set null',
-        }),
-        accountId: text('account_id').references(() => accounts.id, {
-            onDelete: 'set null',
-        }),
-        userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
-    },
-    (table) => ({
-        dateIdx: index('transactions_date_idx').on(table.date),
-        userIdIdx: index('transactions_user_id_idx').on(table.userId),
-        statementIdIdx: index('transactions_statement_id_idx').on(table.statementId),
-        categoryIdx: index('transactions_category_idx').on(table.category),
-        userDateIdx: index('transactions_user_date_idx').on(table.userId, table.date),
-        accountIdIdx: index('transactions_account_id_idx').on(table.accountId),
-        transferIdx: index('transactions_transfer_idx').on(
-            table.isTransfer,
-            table.transferLinkId
-        ),
-    })
+  'transactions',
+  {
+    id: text('id').primaryKey(),
+    date: text('date').notNull(), // ISO date string YYYY-MM-DD
+    description: text('description').notNull(),
+    // Amount in cents (positive = credit, negative = debit)
+    amount: integer('amount').notNull(),
+    // Balance in cents
+    balance: integer('balance'),
+    category: text('category'),
+    gstApplicable: boolean('gst_applicable').default(false),
+    aiReasoningNotes: text('ai_reasoning_notes'),
+    confidenceScore: real('confidence_score').default(1.0),
+    isEdited: boolean('is_edited').default(false),
+    isTransfer: boolean('is_transfer').default(false),
+    transferLinkId: text('transfer_link_id'),
+    merchantNormalized: text('merchant_normalized'),
+    parentTransactionId: text('parent_transaction_id'),
+    statementId: text('statement_id').references(() => statements.id, {
+      onDelete: 'set null',
+    }),
+    accountId: text('account_id').references(() => accounts.id, {
+      onDelete: 'set null',
+    }),
+    userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+  },
+  (table) => ({
+    dateIdx: index('transactions_date_idx').on(table.date),
+    userIdIdx: index('transactions_user_id_idx').on(table.userId),
+    statementIdIdx: index('transactions_statement_id_idx').on(table.statementId),
+    categoryIdx: index('transactions_category_idx').on(table.category),
+    userDateIdx: index('transactions_user_date_idx').on(table.userId, table.date),
+    accountIdIdx: index('transactions_account_id_idx').on(table.accountId),
+    transferIdx: index('transactions_transfer_idx').on(table.isTransfer, table.transferLinkId),
+  }),
 );
 
 export const transactionHistory = pgTable(
-    'transaction_history',
-    {
-        id: text('id').primaryKey(),
-        transactionId: text('transaction_id').references(() => transactions.id, {
-            onDelete: 'set null',
-        }),
-        changeType: text('change_type').notNull(), // 'create', 'update', 'delete', 'split', 'merge'
-        oldData: text('old_data'), // JSON
-        newData: text('new_data'), // JSON
-        timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow().notNull(),
-    },
-    (table) => ({
-        transactionIdIdx: index('transaction_history_transaction_idx').on(
-            table.transactionId
-        ),
-        timestampIdx: index('transaction_history_timestamp_idx').on(table.timestamp),
-    })
+  'transaction_history',
+  {
+    id: text('id').primaryKey(),
+    transactionId: text('transaction_id').references(() => transactions.id, {
+      onDelete: 'set null',
+    }),
+    changeType: text('change_type').notNull(), // 'create', 'update', 'delete', 'split', 'merge'
+    oldData: text('old_data'), // JSON
+    newData: text('new_data'), // JSON
+    timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    transactionIdIdx: index('transaction_history_transaction_idx').on(table.transactionId),
+    timestampIdx: index('transaction_history_timestamp_idx').on(table.timestamp),
+  }),
 );
 
 // =============================================================================
@@ -239,32 +221,32 @@ export const transactionHistory = pgTable(
 // =============================================================================
 
 export const transferLinks = pgTable(
-    'transfer_links',
-    {
-        id: text('id').primaryKey(),
-        userId: text('user_id')
-            .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
-        sourceTransactionId: text('source_transaction_id')
-            .notNull()
-            .references(() => transactions.id, { onDelete: 'cascade' }),
-        destinationTransactionId: text('destination_transaction_id')
-            .notNull()
-            .references(() => transactions.id, { onDelete: 'cascade' }),
-        sourceAccountId: text('source_account_id').references(() => accounts.id),
-        destinationAccountId: text('destination_account_id').references(() => accounts.id),
-        // Amount in cents
-        amount: integer('amount').notNull(),
-        transferDate: text('transfer_date').notNull(),
-        confidence: real('confidence').default(1.0),
-        isUserConfirmed: boolean('is_user_confirmed').default(false),
-        createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    },
-    (table) => ({
-        userIdx: index('transfer_links_user_idx').on(table.userId),
-        sourceIdx: index('transfer_links_source_idx').on(table.sourceTransactionId),
-        destIdx: index('transfer_links_dest_idx').on(table.destinationTransactionId),
-    })
+  'transfer_links',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sourceTransactionId: text('source_transaction_id')
+      .notNull()
+      .references(() => transactions.id, { onDelete: 'cascade' }),
+    destinationTransactionId: text('destination_transaction_id')
+      .notNull()
+      .references(() => transactions.id, { onDelete: 'cascade' }),
+    sourceAccountId: text('source_account_id').references(() => accounts.id),
+    destinationAccountId: text('destination_account_id').references(() => accounts.id),
+    // Amount in cents
+    amount: integer('amount').notNull(),
+    transferDate: text('transfer_date').notNull(),
+    confidence: real('confidence').default(1.0),
+    isUserConfirmed: boolean('is_user_confirmed').default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdx: index('transfer_links_user_idx').on(table.userId),
+    sourceIdx: index('transfer_links_source_idx').on(table.sourceTransactionId),
+    destIdx: index('transfer_links_dest_idx').on(table.destinationTransactionId),
+  }),
 );
 
 // =============================================================================
@@ -272,77 +254,71 @@ export const transferLinks = pgTable(
 // =============================================================================
 
 export const userCategories = pgTable(
-    'user_categories',
-    {
-        id: text('id').primaryKey(),
-        userId: text('user_id')
-            .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
-        categoryName: text('category_name').notNull(),
-        parentCategory: text('parent_category'),
-        icon: text('icon'),
-        color: text('color'),
-        isIncome: boolean('is_income').default(false),
-        isTransfer: boolean('is_transfer').default(false),
-        isHidden: boolean('is_hidden').default(false),
-        sortOrder: integer('sort_order').default(0),
-    },
-    (table) => ({
-        userCategoriesIdx: index('user_categories_idx').on(
-            table.userId,
-            table.categoryName
-        ),
-    })
+  'user_categories',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    categoryName: text('category_name').notNull(),
+    parentCategory: text('parent_category'),
+    icon: text('icon'),
+    color: text('color'),
+    isIncome: boolean('is_income').default(false),
+    isTransfer: boolean('is_transfer').default(false),
+    isHidden: boolean('is_hidden').default(false),
+    sortOrder: integer('sort_order').default(0),
+  },
+  (table) => ({
+    userCategoriesIdx: index('user_categories_idx').on(table.userId, table.categoryName),
+  }),
 );
 
 export const merchantMemory = pgTable(
-    'merchant_memory',
-    {
-        id: text('id').primaryKey(),
-        userId: text('user_id')
-            .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
-        merchantPattern: text('merchant_pattern').notNull(),
-        merchantDisplayName: text('merchant_display_name'),
-        category: text('category').notNull(),
-        gstApplicable: boolean('gst_applicable').default(false),
-        timesUsed: integer('times_used').default(1),
-        lastUsed: timestamp('last_used', { withTimezone: true }).defaultNow().notNull(),
-        isUserConfirmed: boolean('is_user_confirmed').default(false),
-        createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    },
-    (table) => ({
-        userPatternIdx: index('merchant_user_pattern_idx').on(
-            table.userId,
-            table.merchantPattern
-        ),
-        categoryIdx: index('merchant_category_idx').on(table.category),
-    })
+  'merchant_memory',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    merchantPattern: text('merchant_pattern').notNull(),
+    merchantDisplayName: text('merchant_display_name'),
+    category: text('category').notNull(),
+    gstApplicable: boolean('gst_applicable').default(false),
+    timesUsed: integer('times_used').default(1),
+    lastUsed: timestamp('last_used', { withTimezone: true }).defaultNow().notNull(),
+    isUserConfirmed: boolean('is_user_confirmed').default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    userPatternIdx: index('merchant_user_pattern_idx').on(table.userId, table.merchantPattern),
+    categoryIdx: index('merchant_category_idx').on(table.category),
+  }),
 );
 
 export const pendingCategorization = pgTable(
-    'pending_categorization',
-    {
-        id: text('id').primaryKey(),
-        userId: text('user_id')
-            .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
-        transactionId: text('transaction_id')
-            .notNull()
-            .references(() => transactions.id, { onDelete: 'cascade' }),
-        suggestedCategory: text('suggested_category'),
-        suggestedConfidence: real('suggested_confidence'),
-        aiReasoning: text('ai_reasoning'),
-        alternativeCategories: text('alternative_categories'), // JSON array
-        status: text('status').notNull().default('pending'), // 'pending', 'approved', 'rejected', 'skipped'
-        userSelectedCategory: text('user_selected_category'),
-        createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-        resolvedAt: timestamp('resolved_at', { withTimezone: true }),
-    },
-    (table) => ({
-        userStatusIdx: index('pending_cat_user_status_idx').on(table.userId, table.status),
-        transactionIdx: index('pending_cat_transaction_idx').on(table.transactionId),
-    })
+  'pending_categorization',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    transactionId: text('transaction_id')
+      .notNull()
+      .references(() => transactions.id, { onDelete: 'cascade' }),
+    suggestedCategory: text('suggested_category'),
+    suggestedConfidence: real('suggested_confidence'),
+    aiReasoning: text('ai_reasoning'),
+    alternativeCategories: text('alternative_categories'), // JSON array
+    status: text('status').notNull().default('pending'), // 'pending', 'approved', 'rejected', 'skipped'
+    userSelectedCategory: text('user_selected_category'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+  },
+  (table) => ({
+    userStatusIdx: index('pending_cat_user_status_idx').on(table.userId, table.status),
+    transactionIdx: index('pending_cat_transaction_idx').on(table.transactionId),
+  }),
 );
 
 // =============================================================================
@@ -350,31 +326,31 @@ export const pendingCategorization = pgTable(
 // =============================================================================
 
 export const reconciliationAlerts = pgTable(
-    'reconciliation_alerts',
-    {
-        id: text('id').primaryKey(),
-        userId: text('user_id')
-            .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
-        accountId: text('account_id')
-            .notNull()
-            .references(() => accounts.id, { onDelete: 'cascade' }),
-        alertType: text('alert_type').notNull(), // 'balance_mismatch', 'duplicate_transaction', 'missing_transaction', 'gap_detected'
-        // Values in cents
-        expectedValue: integer('expected_value'),
-        actualValue: integer('actual_value'),
-        difference: integer('difference'),
-        description: text('description').notNull(),
-        statementId: text('statement_id').references(() => statements.id),
-        isResolved: boolean('is_resolved').default(false),
-        resolvedAt: timestamp('resolved_at', { withTimezone: true }),
-        resolutionNotes: text('resolution_notes'),
-        createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    },
-    (table) => ({
-        userIdx: index('reconciliation_user_idx').on(table.userId, table.isResolved),
-        accountIdx: index('reconciliation_account_idx').on(table.accountId),
-    })
+  'reconciliation_alerts',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accountId: text('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    alertType: text('alert_type').notNull(), // 'balance_mismatch', 'duplicate_transaction', 'missing_transaction', 'gap_detected'
+    // Values in cents
+    expectedValue: integer('expected_value'),
+    actualValue: integer('actual_value'),
+    difference: integer('difference'),
+    description: text('description').notNull(),
+    statementId: text('statement_id').references(() => statements.id),
+    isResolved: boolean('is_resolved').default(false),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    resolutionNotes: text('resolution_notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdx: index('reconciliation_user_idx').on(table.userId, table.isResolved),
+    accountIdx: index('reconciliation_account_idx').on(table.accountId),
+  }),
 );
 
 // =============================================================================
@@ -382,37 +358,41 @@ export const reconciliationAlerts = pgTable(
 // =============================================================================
 
 export const debtPayoffScenarios = pgTable(
-    'debt_payoff_scenarios',
-    {
-        id: text('id').primaryKey(),
-        userId: text('user_id')
-            .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
-        name: text('name').notNull(),
-        strategy: text('strategy').notNull(), // 'avalanche', 'snowball', 'custom'
-        accountsIncluded: text('accounts_included').notNull(), // JSON array of account IDs
-        // Budget in cents
-        monthlyBudget: integer('monthly_budget'),
-        projectedPayoffDate: text('projected_payoff_date'),
-        // Costs in cents
-        totalInterestCost: integer('total_interest_cost'),
-        totalPayments: integer('total_payments'),
-        monthlyBreakdown: text('monthly_breakdown'), // JSON
-        createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-        updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-    },
-    (table) => ({
-        userIdx: index('debt_scenario_user_idx').on(table.userId),
-    })
+  'debt_payoff_scenarios',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    strategy: text('strategy').notNull(), // 'avalanche', 'snowball', 'custom'
+    accountsIncluded: text('accounts_included').notNull(), // JSON array of account IDs
+    // Budget in cents
+    monthlyBudget: integer('monthly_budget'),
+    projectedPayoffDate: text('projected_payoff_date'),
+    // Costs in cents
+    totalInterestCost: integer('total_interest_cost'),
+    totalPayments: integer('total_payments'),
+    monthlyBreakdown: text('monthly_breakdown'), // JSON
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdx: index('debt_scenario_user_idx').on(table.userId),
+  }),
 );
 
 // =============================================================================
 // COGNEE MULTI-USER
 // =============================================================================
 
-export const cogneeUserAccounts = pgTable('cognee_user_accounts', {
+export const cogneeUserAccounts = pgTable(
+  'cognee_user_accounts',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     cogneeEmail: text('cognee_email').notNull(),
     cogneeRefreshToken: text('cognee_refresh_token'), // Encrypted refresh token, NOT password (D02 CRIT-03)
     cogneeUserId: text('cognee_user_id'),
@@ -421,14 +401,20 @@ export const cogneeUserAccounts = pgTable('cognee_user_accounts', {
     lastSyncAt: timestamp('last_sync_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userIdIdx: uniqueIndex('cognee_user_accounts_user_id_unique').on(table.userId),
     emailIdx: uniqueIndex('cognee_user_accounts_email_unique').on(table.cogneeEmail),
-}));
+  }),
+);
 
-export const cogneeSessions = pgTable('cognee_sessions', {
+export const cogneeSessions = pgTable(
+  'cognee_sessions',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     sessionType: text('session_type').notNull().default('chat'),
     cogneeSessionId: text('cognee_session_id'),
     state: text('state').notNull().default('active'),
@@ -436,16 +422,20 @@ export const cogneeSessions = pgTable('cognee_sessions', {
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).defaultNow(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-}, (table) => ({
+  },
+  (table) => ({
     userStateIdx: index('cognee_sessions_user_state_idx').on(table.userId, table.state),
     expiresIdx: index('cognee_sessions_expires_idx').on(table.expiresAt),
-}));
+  }),
+);
 
 // =============================================================================
 // WAVE 2: Agent Sessions, Mutations & Audit Log
 // =============================================================================
 
-export const pgAgentSessions = pgTable('agent_sessions', {
+export const pgAgentSessions = pgTable(
+  'agent_sessions',
+  {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
     startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
@@ -458,15 +448,21 @@ export const pgAgentSessions = pgTable('agent_sessions', {
     queryCount: integer('query_count').notNull().default(0),
     agentTypesUsed: text('agent_types_used'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-}, (table) => ({
+  },
+  (table) => ({
     userIdx: index('idx_pg_agent_sessions_user').on(table.userId),
     statusIdx: index('idx_pg_agent_sessions_status').on(table.status),
     lastActivityIdx: index('idx_pg_agent_sessions_last_activity').on(table.lastActivityAt),
-}));
+  }),
+);
 
-export const pgAgentMutations = pgTable('agent_mutations', {
+export const pgAgentMutations = pgTable(
+  'agent_mutations',
+  {
     id: text('id').primaryKey(),
-    sessionId: text('session_id').notNull().references(() => pgAgentSessions.id),
+    sessionId: text('session_id')
+      .notNull()
+      .references(() => pgAgentSessions.id),
     agentType: text('agent_type').notNull(),
     mutationType: text('mutation_type').notNull(),
     targetTable: text('target_table').notNull(),
@@ -486,16 +482,20 @@ export const pgAgentMutations = pgTable('agent_mutations', {
     expiresAt: timestamp('expires_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-}, (table) => ({
+  },
+  (table) => ({
     sessionIdx: index('idx_pg_agent_mutations_session').on(table.sessionId),
     statusIdx: index('idx_pg_agent_mutations_status').on(table.status),
     agentIdx: index('idx_pg_agent_mutations_agent').on(table.agentType),
     targetIdx: index('idx_pg_agent_mutations_target').on(table.targetTable),
     createdIdx: index('idx_pg_agent_mutations_created').on(table.createdAt),
     expiryIdx: index('idx_pg_agent_mutations_expiry').on(table.status, table.expiresAt),
-}));
+  }),
+);
 
-export const pgAgentAuditLog = pgTable('agent_audit_log', {
+export const pgAgentAuditLog = pgTable(
+  'agent_audit_log',
+  {
     id: text('id').primaryKey(),
     mutationId: text('mutation_id').references(() => pgAgentMutations.id),
     sessionId: text('session_id').references(() => pgAgentSessions.id),
@@ -509,20 +509,24 @@ export const pgAgentAuditLog = pgTable('agent_audit_log', {
     userId: text('user_id'),
     ipAddress: text('ip_address'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-}, (table) => ({
+  },
+  (table) => ({
     mutationIdx: index('idx_pg_agent_audit_mutation').on(table.mutationId),
     sessionIdx: index('idx_pg_agent_audit_session').on(table.sessionId),
     agentIdx: index('idx_pg_agent_audit_agent').on(table.agentType),
     actionIdx: index('idx_pg_agent_audit_action').on(table.action),
     createdIdx: index('idx_pg_agent_audit_created').on(table.createdAt),
     targetIdx: index('idx_pg_agent_audit_target').on(table.targetTable),
-}));
+  }),
+);
 
 // =============================================================================
 // MULTI-TENANT (Wave 23)
 // =============================================================================
 
-export const tenants = pgTable('tenants', {
+export const tenants = pgTable(
+  'tenants',
+  {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     slug: text('slug').notNull().unique(),
@@ -537,14 +541,22 @@ export const tenants = pgTable('tenants', {
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     slugIdx: uniqueIndex('tenants_slug_unique').on(table.slug),
-}));
+  }),
+);
 
-export const tenantMembers = pgTable('tenant_members', {
+export const tenantMembers = pgTable(
+  'tenant_members',
+  {
     id: text('id').primaryKey(),
-    tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    tenantId: text('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     role: text('role').notNull().default('viewer'),
     displayName: text('display_name'),
     isPrimaryContact: boolean('is_primary_contact').notNull().default(false),
@@ -553,30 +565,42 @@ export const tenantMembers = pgTable('tenant_members', {
     lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     tenantIdx: index('idx_tenant_members_tenant').on(table.tenantId),
     userIdx: index('idx_tenant_members_user').on(table.userId),
     tenantRoleIdx: index('idx_tenant_members_role').on(table.tenantId, table.role),
-}));
+  }),
+);
 
-export const tenantInvitations = pgTable('tenant_invitations', {
+export const tenantInvitations = pgTable(
+  'tenant_invitations',
+  {
     id: text('id').primaryKey(),
-    tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    tenantId: text('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
     email: text('email').notNull(),
     role: text('role').notNull().default('viewer'),
-    invitedBy: text('invited_by').notNull().references(() => users.id),
+    invitedBy: text('invited_by')
+      .notNull()
+      .references(() => users.id),
     token: text('token').notNull().unique(),
     status: text('status').notNull().default('pending'),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     acceptedAt: timestamp('accepted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     emailIdx: index('idx_tenant_invitations_email').on(table.email),
     tokenIdx: uniqueIndex('idx_tenant_invitations_token').on(table.token),
     tenantStatusIdx: index('idx_tenant_invitations_status').on(table.tenantId, table.status),
-}));
+  }),
+);
 
-export const permissions = pgTable('permissions', {
+export const permissions = pgTable(
+  'permissions',
+  {
     id: text('id').primaryKey(),
     name: text('name').notNull().unique(),
     description: text('description'),
@@ -584,22 +608,34 @@ export const permissions = pgTable('permissions', {
     action: text('action').notNull(),
     isSystem: boolean('is_system').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     nameIdx: uniqueIndex('permissions_name_unique').on(table.name),
-}));
+  }),
+);
 
-export const rolePermissions = pgTable('role_permissions', {
+export const rolePermissions = pgTable(
+  'role_permissions',
+  {
     id: text('id').primaryKey(),
-    tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    tenantId: text('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
     role: text('role').notNull(),
-    permissionId: text('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+    permissionId: text('permission_id')
+      .notNull()
+      .references(() => permissions.id, { onDelete: 'cascade' }),
     grantedBy: text('granted_by').references(() => users.id),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     tenantRoleIdx: index('idx_role_permissions_tenant_role').on(table.tenantId, table.role),
-}));
+  }),
+);
 
-export const subscriptionPlans = pgTable('subscription_plans', {
+export const subscriptionPlans = pgTable(
+  'subscription_plans',
+  {
     id: text('id').primaryKey(),
     name: text('name').notNull().unique(),
     displayName: text('display_name').notNull(),
@@ -616,14 +652,22 @@ export const subscriptionPlans = pgTable('subscription_plans', {
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     nameIdx: uniqueIndex('subscription_plans_name_unique').on(table.name),
-}));
+  }),
+);
 
-export const subscriptionHistory = pgTable('subscription_history', {
+export const subscriptionHistory = pgTable(
+  'subscription_history',
+  {
     id: text('id').primaryKey(),
-    tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
-    planId: text('plan_id').notNull().references(() => subscriptionPlans.id),
+    tenantId: text('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
+    planId: text('plan_id')
+      .notNull()
+      .references(() => subscriptionPlans.id),
     status: text('status').notNull().default('active'),
     billingCycle: text('billing_cycle').notNull().default('monthly'),
     currentPeriodStart: timestamp('current_period_start', { withTimezone: true }).notNull(),
@@ -632,17 +676,25 @@ export const subscriptionHistory = pgTable('subscription_history', {
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
     trialEnd: timestamp('trial_end', { withTimezone: true }),
     paymentMethodJson: text('payment_method_json'),
-    usageJson: text('usage_json').default('{"members":0,"accounts":0,"transactions":0,"aiQueries":0,"storageMb":0}'),
+    usageJson: text('usage_json').default(
+      '{"members":0,"accounts":0,"transactions":0,"aiQueries":0,"storageMb":0}',
+    ),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     tenantIdx: index('idx_subscription_history_tenant').on(table.tenantId),
     tenantStatusIdx: index('idx_subscription_history_status').on(table.tenantId, table.status),
-}));
+  }),
+);
 
-export const apiRateLimits = pgTable('api_rate_limits', {
+export const apiRateLimits = pgTable(
+  'api_rate_limits',
+  {
     id: text('id').primaryKey(),
-    tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    tenantId: text('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
     endpointPattern: text('endpoint_pattern').notNull(),
     requestsPerMinute: integer('requests_per_minute').notNull().default(60),
     requestsPerHour: integer('requests_per_hour').notNull().default(1000),
@@ -651,17 +703,23 @@ export const apiRateLimits = pgTable('api_rate_limits', {
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     tenantIdx: index('idx_api_rate_limits_tenant').on(table.tenantId),
-}));
+  }),
+);
 
 // =============================================================================
 // ACCOUNTS PAYABLE & PURCHASE ORDERS (Wave 10)
 // =============================================================================
 
-export const suppliers = pgTable('suppliers', {
+export const suppliers = pgTable(
+  'suppliers',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     businessName: text('business_name').notNull(),
     contactName: text('contact_name'),
     email: text('email'),
@@ -675,15 +733,23 @@ export const suppliers = pgTable('suppliers', {
     notes: text('notes'),
     isActive: boolean('is_active').default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userActiveIdx: index('idx_suppliers_user_active').on(table.userId, table.isActive),
     userAbnIdx: index('idx_suppliers_user_abn').on(table.userId, table.abn),
-}));
+  }),
+);
 
-export const bills = pgTable('bills', {
+export const bills = pgTable(
+  'bills',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    supplierId: text('supplier_id').notNull().references(() => suppliers.id),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    supplierId: text('supplier_id')
+      .notNull()
+      .references(() => suppliers.id),
     billNumber: text('bill_number'),
     status: text('status').notNull().default('draft'),
     issueDate: text('issue_date').notNull(),
@@ -697,15 +763,21 @@ export const bills = pgTable('bills', {
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userStatusIdx: index('idx_bills_user_status').on(table.userId, table.status),
     supplierIdx: index('idx_bills_supplier').on(table.supplierId),
     dueDateIdx: index('idx_bills_due_date').on(table.dueDate),
-}));
+  }),
+);
 
-export const billLines = pgTable('bill_lines', {
+export const billLines = pgTable(
+  'bill_lines',
+  {
     id: text('id').primaryKey(),
-    billId: text('bill_id').notNull().references(() => bills.id, { onDelete: 'cascade' }),
+    billId: text('bill_id')
+      .notNull()
+      .references(() => bills.id, { onDelete: 'cascade' }),
     description: text('description').notNull(),
     quantity: real('quantity').notNull().default(1),
     unitPrice: integer('unit_price').notNull().default(0),
@@ -714,13 +786,19 @@ export const billLines = pgTable('bill_lines', {
     gstAmount: integer('gst_amount').default(0),
     accountCode: text('account_code'),
     taxCode: text('tax_code'),
-}, (table) => ({
+  },
+  (table) => ({
     billIdx: index('idx_bill_lines_bill').on(table.billId),
-}));
+  }),
+);
 
-export const billPayments = pgTable('bill_payments', {
+export const billPayments = pgTable(
+  'bill_payments',
+  {
     id: text('id').primaryKey(),
-    billId: text('bill_id').notNull().references(() => bills.id),
+    billId: text('bill_id')
+      .notNull()
+      .references(() => bills.id),
     paymentDate: text('payment_date').notNull(),
     amount: integer('amount').notNull(),
     paymentMethod: text('payment_method'),
@@ -728,15 +806,23 @@ export const billPayments = pgTable('bill_payments', {
     transactionId: text('transaction_id').references(() => transactions.id),
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     billIdx: index('idx_bill_payments_bill').on(table.billId),
     transactionIdx: index('idx_bill_payments_transaction').on(table.transactionId),
-}));
+  }),
+);
 
-export const purchaseOrders = pgTable('purchase_orders', {
+export const purchaseOrders = pgTable(
+  'purchase_orders',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    supplierId: text('supplier_id').notNull().references(() => suppliers.id),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    supplierId: text('supplier_id')
+      .notNull()
+      .references(() => suppliers.id),
     poNumber: text('po_number').notNull().unique(),
     status: text('status').notNull().default('draft'),
     issueDate: text('issue_date').notNull(),
@@ -747,76 +833,118 @@ export const purchaseOrders = pgTable('purchase_orders', {
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userStatusIdx: index('idx_purchase_orders_user_status').on(table.userId, table.status),
     supplierIdx: index('idx_purchase_orders_supplier').on(table.supplierId),
     poNumberIdx: uniqueIndex('idx_purchase_orders_po_number').on(table.poNumber),
-}));
+  }),
+);
 
-export const poLines = pgTable('po_lines', {
+export const poLines = pgTable(
+  'po_lines',
+  {
     id: text('id').primaryKey(),
-    purchaseOrderId: text('purchase_order_id').notNull().references(() => purchaseOrders.id, { onDelete: 'cascade' }),
+    purchaseOrderId: text('purchase_order_id')
+      .notNull()
+      .references(() => purchaseOrders.id, { onDelete: 'cascade' }),
     description: text('description').notNull(),
     quantity: real('quantity').notNull().default(1),
     unitPrice: integer('unit_price').notNull().default(0),
     amount: integer('amount').notNull().default(0),
     quantityReceived: real('quantity_received').notNull().default(0),
-}, (table) => ({
+  },
+  (table) => ({
     purchaseOrderIdx: index('idx_po_lines_purchase_order').on(table.purchaseOrderId),
-}));
+  }),
+);
 
-export const poReceipts = pgTable('po_receipts', {
+export const poReceipts = pgTable(
+  'po_receipts',
+  {
     id: text('id').primaryKey(),
-    purchaseOrderId: text('purchase_order_id').notNull().references(() => purchaseOrders.id),
+    purchaseOrderId: text('purchase_order_id')
+      .notNull()
+      .references(() => purchaseOrders.id),
     receiptDate: text('receipt_date').notNull(),
     receivedBy: text('received_by').references(() => users.id),
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     purchaseOrderIdx: index('idx_po_receipts_purchase_order').on(table.purchaseOrderId),
-}));
+  }),
+);
 
-export const poReceiptLines = pgTable('po_receipt_lines', {
+export const poReceiptLines = pgTable(
+  'po_receipt_lines',
+  {
     id: text('id').primaryKey(),
-    receiptId: text('receipt_id').notNull().references(() => poReceipts.id, { onDelete: 'cascade' }),
-    poLineId: text('po_line_id').notNull().references(() => poLines.id),
+    receiptId: text('receipt_id')
+      .notNull()
+      .references(() => poReceipts.id, { onDelete: 'cascade' }),
+    poLineId: text('po_line_id')
+      .notNull()
+      .references(() => poLines.id),
     quantityReceived: real('quantity_received').notNull(),
-}, (table) => ({
+  },
+  (table) => ({
     receiptIdx: index('idx_po_receipt_lines_receipt').on(table.receiptId),
     poLineIdx: index('idx_po_receipt_lines_po_line').on(table.poLineId),
-}));
+  }),
+);
 
-export const supplierPaymentRuns = pgTable('supplier_payment_runs', {
+export const supplierPaymentRuns = pgTable(
+  'supplier_payment_runs',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     paymentDate: text('payment_date').notNull(),
     status: text('status').notNull().default('draft'),
     totalAmount: integer('total_amount').notNull().default(0),
     bankReference: text('bank_reference'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userStatusIdx: index('idx_supplier_payment_runs_user_status').on(table.userId, table.status),
     dateIdx: index('idx_supplier_payment_runs_date').on(table.paymentDate),
-}));
+  }),
+);
 
-export const supplierPaymentRunItems = pgTable('supplier_payment_run_items', {
+export const supplierPaymentRunItems = pgTable(
+  'supplier_payment_run_items',
+  {
     id: text('id').primaryKey(),
-    paymentRunId: text('payment_run_id').notNull().references(() => supplierPaymentRuns.id, { onDelete: 'cascade' }),
-    billId: text('bill_id').notNull().references(() => bills.id),
+    paymentRunId: text('payment_run_id')
+      .notNull()
+      .references(() => supplierPaymentRuns.id, { onDelete: 'cascade' }),
+    billId: text('bill_id')
+      .notNull()
+      .references(() => bills.id),
     amount: integer('amount').notNull(),
-}, (table) => ({
+  },
+  (table) => ({
     runIdx: index('idx_supplier_payment_run_items_run').on(table.paymentRunId),
     billIdx: index('idx_supplier_payment_run_items_bill').on(table.billId),
-}));
+  }),
+);
 
 // =============================================================================
 // PWA SUPPORT (Wave 24)
 // =============================================================================
 
-export const pushSubscriptions = pgTable('push_subscriptions', {
+export const pushSubscriptions = pgTable(
+  'push_subscriptions',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tenantId: text('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
     endpoint: text('endpoint').notNull().unique(),
     keysJson: text('keys_json').notNull(),
     userAgent: text('user_agent'),
@@ -826,17 +954,25 @@ export const pushSubscriptions = pgTable('push_subscriptions', {
     errorCount: integer('error_count').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userIdx: index('idx_pg_push_subscriptions_user').on(table.userId),
     tenantIdx: index('idx_pg_push_subscriptions_tenant').on(table.tenantId),
     activeIdx: index('idx_pg_push_subscriptions_active').on(table.isActive),
     endpointIdx: uniqueIndex('pg_push_subscriptions_endpoint_unique').on(table.endpoint),
-}));
+  }),
+);
 
-export const notificationPreferences = pgTable('notification_preferences', {
+export const notificationPreferences = pgTable(
+  'notification_preferences',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tenantId: text('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
     transactionAlerts: boolean('transaction_alerts').notNull().default(true),
     basReminders: boolean('bas_reminders').notNull().default(true),
     budgetAlerts: boolean('budget_alerts').notNull().default(true),
@@ -845,7 +981,9 @@ export const notificationPreferences = pgTable('notification_preferences', {
     syncNotifications: boolean('sync_notifications').notNull().default(false),
     teamNotifications: boolean('team_notifications').notNull().default(true),
     systemNotifications: boolean('system_notifications').notNull().default(true),
-    largeTransactionThresholdCents: integer('large_transaction_threshold_cents').notNull().default(100000),
+    largeTransactionThresholdCents: integer('large_transaction_threshold_cents')
+      .notNull()
+      .default(100000),
     budgetAlertThresholdPercent: integer('budget_alert_threshold_percent').notNull().default(80),
     pushEnabled: boolean('push_enabled').notNull().default(true),
     emailEnabled: boolean('email_enabled').notNull().default(false),
@@ -854,15 +992,29 @@ export const notificationPreferences = pgTable('notification_preferences', {
     timezone: text('timezone').default('Australia/Sydney'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
-    userTenantIdx: index('idx_pg_notification_preferences_user_tenant').on(table.userId, table.tenantId),
-    userTenantUniqueIdx: uniqueIndex('pg_notification_preferences_user_tenant_unique').on(table.userId, table.tenantId),
-}));
+  },
+  (table) => ({
+    userTenantIdx: index('idx_pg_notification_preferences_user_tenant').on(
+      table.userId,
+      table.tenantId,
+    ),
+    userTenantUniqueIdx: uniqueIndex('pg_notification_preferences_user_tenant_unique').on(
+      table.userId,
+      table.tenantId,
+    ),
+  }),
+);
 
-export const offlineSyncLog = pgTable('offline_sync_log', {
+export const offlineSyncLog = pgTable(
+  'offline_sync_log',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tenantId: text('tenant_id')
+      .notNull()
+      .references(() => tenants.id, { onDelete: 'cascade' }),
     deviceId: text('device_id').notNull(),
     operation: text('operation').notNull(),
     resourceType: text('resource_type').notNull(),
@@ -877,20 +1029,26 @@ export const offlineSyncLog = pgTable('offline_sync_log', {
     errorMessage: text('error_message'),
     retryCount: integer('retry_count').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userIdx: index('idx_pg_offline_sync_user').on(table.userId),
     statusIdx: index('idx_pg_offline_sync_status').on(table.syncStatus),
     deviceIdx: index('idx_pg_offline_sync_device').on(table.deviceId),
     pendingIdx: index('idx_pg_offline_sync_pending').on(table.syncStatus, table.createdAt),
-}));
+  }),
+);
 
 // =============================================================================
 // EMPLOYEE MANAGEMENT (Wave 4)
 // =============================================================================
 
-export const pgEmployees = pgTable('employees', {
+export const pgEmployees = pgTable(
+  'employees',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     firstName: text('first_name').notNull(),
     lastName: text('last_name').notNull(),
     email: text('email'),
@@ -904,40 +1062,58 @@ export const pgEmployees = pgTable('employees', {
     employmentType: text('employment_type').notNull().default('full_time'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userStatusIdx: index('idx_employees_user_status').on(table.userId, table.status),
     userNameIdx: index('idx_employees_user_name').on(table.userId, table.lastName, table.firstName),
-}));
+  }),
+);
 
-export const pgEmployeeBankDetails = pgTable('employee_bank_details', {
+export const pgEmployeeBankDetails = pgTable(
+  'employee_bank_details',
+  {
     id: text('id').primaryKey(),
-    employeeId: text('employee_id').notNull().references(() => pgEmployees.id, { onDelete: 'cascade' }),
+    employeeId: text('employee_id')
+      .notNull()
+      .references(() => pgEmployees.id, { onDelete: 'cascade' }),
     bsb: text('bsb').notNull(), // AES-256-GCM encrypted
     accountNumber: text('account_number').notNull(), // AES-256-GCM encrypted
     accountName: text('account_name').notNull(),
     splitPercentage: real('split_percentage').notNull().default(100.0),
     isPrimary: boolean('is_primary').default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     employeeIdx: index('idx_employee_bank_details_employee').on(table.employeeId),
-}));
+  }),
+);
 
-export const pgEmployeeSuperFunds = pgTable('employee_super_funds', {
+export const pgEmployeeSuperFunds = pgTable(
+  'employee_super_funds',
+  {
     id: text('id').primaryKey(),
-    employeeId: text('employee_id').notNull().references(() => pgEmployees.id, { onDelete: 'cascade' }),
+    employeeId: text('employee_id')
+      .notNull()
+      .references(() => pgEmployees.id, { onDelete: 'cascade' }),
     fundName: text('fund_name').notNull(),
     fundABN: text('fund_abn'),
     usi: text('usi'),
     memberNumber: text('member_number'),
     contributionRate: real('contribution_rate').notNull().default(11.5),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     employeeIdx: index('idx_employee_super_funds_employee').on(table.employeeId),
-}));
+  }),
+);
 
-export const pgEmployeeTaxDeclarations = pgTable('employee_tax_declarations', {
+export const pgEmployeeTaxDeclarations = pgTable(
+  'employee_tax_declarations',
+  {
     id: text('id').primaryKey(),
-    employeeId: text('employee_id').notNull().references(() => pgEmployees.id, { onDelete: 'cascade' }),
+    employeeId: text('employee_id')
+      .notNull()
+      .references(() => pgEmployees.id, { onDelete: 'cascade' }),
     taxFreeThreshold: boolean('tax_free_threshold').default(true),
     helpDebt: boolean('help_debt').default(false),
     sfssDebt: boolean('sfss_debt').default(false),
@@ -945,13 +1121,22 @@ export const pgEmployeeTaxDeclarations = pgTable('employee_tax_declarations', {
     taxOffsetEstimated: integer('tax_offset_estimated').default(0),
     effectiveDate: text('effective_date').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
-    employeeDateIdx: index('idx_employee_tax_declarations_employee_date').on(table.employeeId, table.effectiveDate),
-}));
+  },
+  (table) => ({
+    employeeDateIdx: index('idx_employee_tax_declarations_employee_date').on(
+      table.employeeId,
+      table.effectiveDate,
+    ),
+  }),
+);
 
-export const pgPayCategories = pgTable('pay_categories', {
+export const pgPayCategories = pgTable(
+  'pay_categories',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     type: text('type').notNull(),
     rateType: text('rate_type').notNull().default('hourly'),
@@ -961,44 +1146,70 @@ export const pgPayCategories = pgTable('pay_categories', {
     isSuperBearing: boolean('is_super_bearing').default(true),
     isActive: boolean('is_active').default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userTypeIdx: index('idx_pay_categories_user_type').on(table.userId, table.type),
     userActiveIdx: index('idx_pay_categories_user_active').on(table.userId, table.isActive),
-}));
+  }),
+);
 
-export const pgPayStructures = pgTable('pay_structures', {
+export const pgPayStructures = pgTable(
+  'pay_structures',
+  {
     id: text('id').primaryKey(),
-    employeeId: text('employee_id').notNull().references(() => pgEmployees.id, { onDelete: 'cascade' }),
-    payCategoryId: text('pay_category_id').notNull().references(() => pgPayCategories.id),
+    employeeId: text('employee_id')
+      .notNull()
+      .references(() => pgEmployees.id, { onDelete: 'cascade' }),
+    payCategoryId: text('pay_category_id')
+      .notNull()
+      .references(() => pgPayCategories.id),
     rate: integer('rate').notNull(),
     hoursPerWeek: real('hours_per_week'),
     annualSalary: integer('annual_salary'),
     effectiveDate: text('effective_date').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
-    employeeDateIdx: index('idx_pay_structures_employee_date').on(table.employeeId, table.effectiveDate),
+  },
+  (table) => ({
+    employeeDateIdx: index('idx_pay_structures_employee_date').on(
+      table.employeeId,
+      table.effectiveDate,
+    ),
     payCategoryIdx: index('idx_pay_structures_pay_category').on(table.payCategoryId),
-}));
+  }),
+);
 
-export const pgEmployeeDocuments = pgTable('employee_documents', {
+export const pgEmployeeDocuments = pgTable(
+  'employee_documents',
+  {
     id: text('id').primaryKey(),
-    employeeId: text('employee_id').notNull().references(() => pgEmployees.id, { onDelete: 'cascade' }),
+    employeeId: text('employee_id')
+      .notNull()
+      .references(() => pgEmployees.id, { onDelete: 'cascade' }),
     documentType: text('document_type').notNull(),
     fileName: text('file_name').notNull(),
     filePath: text('file_path').notNull(),
     fileSize: integer('file_size'),
     uploadedAt: timestamp('uploaded_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
-    employeeTypeIdx: index('idx_employee_documents_employee_type').on(table.employeeId, table.documentType),
-}));
+  },
+  (table) => ({
+    employeeTypeIdx: index('idx_employee_documents_employee_type').on(
+      table.employeeId,
+      table.documentType,
+    ),
+  }),
+);
 
 // =============================================================================
 // CUSTOMER MANAGEMENT & INVOICING (Wave 7)
 // =============================================================================
 
-export const pgCustomers = pgTable('customers', {
+export const pgCustomers = pgTable(
+  'customers',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     businessName: text('business_name').notNull(),
     contactName: text('contact_name'),
     email: text('email'),
@@ -1013,29 +1224,43 @@ export const pgCustomers = pgTable('customers', {
     notes: text('notes'),
     isActive: boolean('is_active').default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userActiveIdx: index('idx_customers_user_active').on(table.userId, table.isActive),
     userAbnIdx: index('idx_customers_user_abn').on(table.userId, table.abn),
     userEmailIdx: index('idx_customers_user_email').on(table.userId, table.email),
-}));
+  }),
+);
 
-export const pgCustomerContacts = pgTable('customer_contacts', {
+export const pgCustomerContacts = pgTable(
+  'customer_contacts',
+  {
     id: text('id').primaryKey(),
-    customerId: text('customer_id').notNull().references(() => pgCustomers.id, { onDelete: 'cascade' }),
+    customerId: text('customer_id')
+      .notNull()
+      .references(() => pgCustomers.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     email: text('email'),
     phone: text('phone'),
     role: text('role'),
     isPrimary: boolean('is_primary').default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     customerIdx: index('idx_customer_contacts_customer').on(table.customerId),
-}));
+  }),
+);
 
-export const pgInvoices = pgTable('invoices', {
+export const pgInvoices = pgTable(
+  'invoices',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    customerId: text('customer_id').notNull().references(() => pgCustomers.id),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    customerId: text('customer_id')
+      .notNull()
+      .references(() => pgCustomers.id),
     invoiceNumber: text('invoice_number').notNull().unique(),
     type: text('type').notNull().default('tax_invoice'),
     status: text('status').notNull().default('draft'),
@@ -1052,15 +1277,21 @@ export const pgInvoices = pgTable('invoices', {
     pdfPath: text('pdf_path'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     userStatusIdx: index('idx_invoices_user_status').on(table.userId, table.status),
     customerIdx: index('idx_invoices_customer').on(table.customerId),
     dueDateIdx: index('idx_invoices_due_date').on(table.dueDate),
-}));
+  }),
+);
 
-export const pgInvoiceLines = pgTable('invoice_lines', {
+export const pgInvoiceLines = pgTable(
+  'invoice_lines',
+  {
     id: text('id').primaryKey(),
-    invoiceId: text('invoice_id').notNull().references(() => pgInvoices.id, { onDelete: 'cascade' }),
+    invoiceId: text('invoice_id')
+      .notNull()
+      .references(() => pgInvoices.id, { onDelete: 'cascade' }),
     description: text('description').notNull(),
     quantity: real('quantity').notNull().default(1),
     unitPrice: integer('unit_price').notNull().default(0),
@@ -1069,23 +1300,35 @@ export const pgInvoiceLines = pgTable('invoice_lines', {
     gstAmount: integer('gst_amount').notNull().default(0),
     accountCode: text('account_code'),
     taxCode: text('tax_code'),
-}, (table) => ({
+  },
+  (table) => ({
     invoiceIdx: index('idx_invoice_lines_invoice').on(table.invoiceId),
-}));
+  }),
+);
 
-export const pgInvoiceNumberSequences = pgTable('invoice_number_sequences', {
+export const pgInvoiceNumberSequences = pgTable(
+  'invoice_number_sequences',
+  {
     id: text('id').primaryKey(),
-    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     prefix: text('prefix').notNull().default('INV-'),
     nextNumber: integer('next_number').notNull().default(1),
     format: text('format').notNull().default('{prefix}{number:06d}'),
-}, (table) => ({
+  },
+  (table) => ({
     userIdx: uniqueIndex('idx_invoice_sequences_user').on(table.userId),
-}));
+  }),
+);
 
-export const pgInvoicePayments = pgTable('invoice_payments', {
+export const pgInvoicePayments = pgTable(
+  'invoice_payments',
+  {
     id: text('id').primaryKey(),
-    invoiceId: text('invoice_id').notNull().references(() => pgInvoices.id, { onDelete: 'cascade' }),
+    invoiceId: text('invoice_id')
+      .notNull()
+      .references(() => pgInvoices.id, { onDelete: 'cascade' }),
     paymentDate: text('payment_date').notNull(),
     amount: integer('amount').notNull(),
     paymentMethod: text('payment_method'),
@@ -1093,10 +1336,12 @@ export const pgInvoicePayments = pgTable('invoice_payments', {
     transactionId: text('transaction_id').references(() => transactions.id),
     notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-}, (table) => ({
+  },
+  (table) => ({
     invoiceIdx: index('idx_invoice_payments_invoice').on(table.invoiceId),
     transactionIdx: index('idx_invoice_payments_transaction').on(table.transactionId),
-}));
+  }),
+);
 
 // =============================================================================
 // TYPE EXPORTS FOR DRIZZLE

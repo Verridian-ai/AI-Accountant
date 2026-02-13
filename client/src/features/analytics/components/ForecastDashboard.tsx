@@ -54,7 +54,7 @@ function ForecastDashboardInner() {
   // Revenue forecast chart data
   const revenueChartData = useMemo(() => {
     if (!revenueData?.projections) return [];
-    return revenueData.projections.map(p => ({
+    return revenueData.projections.map((p: any) => ({
       month: p.month,
       projected: Math.round(p.projected / 100),
       upper95: Math.round(p.upperBound / 100),
@@ -67,10 +67,10 @@ function ForecastDashboardInner() {
   // Expense forecast chart data
   const expenseChartData = useMemo(() => {
     if (!expenseData?.projections) return [];
-    return expenseData.projections.map(p => ({
+    return expenseData.projections.map((p: any) => ({
       month: p.month,
-      recurring: Math.round(p.projected / 100 * 0.7),
-      variable: Math.round(p.projected / 100 * 0.3),
+      recurring: Math.round((p.projected / 100) * 0.7),
+      variable: Math.round((p.projected / 100) * 0.3),
       total: Math.round(p.projected / 100),
     }));
   }, [expenseData]);
@@ -78,7 +78,7 @@ function ForecastDashboardInner() {
   // Cash flow projection chart data
   const cashFlowChartData = useMemo(() => {
     if (cashFlowData.length === 0) return [];
-    return cashFlowData.map(cf => ({
+    return cashFlowData.map((cf) => ({
       month: cf.month,
       balance: Math.round(cf.projectedBalance / 100),
       upper: Math.round(cf.upperBound / 100),
@@ -110,7 +110,8 @@ function ForecastDashboardInner() {
     );
   }
 
-  const hasData = revenueChartData.length > 0 || expenseChartData.length > 0 || cashFlowChartData.length > 0;
+  const hasData =
+    revenueChartData.length > 0 || expenseChartData.length > 0 || cashFlowChartData.length > 0;
 
   return (
     <div className="space-y-4">
@@ -118,17 +119,19 @@ function ForecastDashboardInner() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Financial Forecast</span>
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            Financial Forecast
+          </span>
         </div>
         <div className="flex gap-1 neu-inset rounded-xl p-1">
-          {([3, 6, 12] as const).map(m => (
+          {([3, 6, 12] as const).map((m) => (
             <button
               key={m}
               type="button"
               onClick={() => setMonths(m)}
               className={cn(
-                "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
-                months === m ? "bg-[#FFCC00] text-[#0a0a0f]" : "text-zinc-500 hover:text-zinc-300"
+                'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
+                months === m ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'text-zinc-500 hover:text-zinc-300',
               )}
             >
               {m}mo
@@ -148,27 +151,42 @@ function ForecastDashboardInner() {
       {hasData && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="neu-raised rounded-xl p-4 border border-white/5">
-            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">Avg Monthly Revenue</p>
+            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
+              Avg Monthly Revenue
+            </p>
             <p className="text-lg font-black text-emerald-400 tabular-nums mt-1">
               {revenueData ? formatDollars(revenueData.averageMonthly / 100) : '—'}
             </p>
           </div>
           <div className="neu-raised rounded-xl p-4 border border-white/5">
-            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">Revenue Growth</p>
-            <p className={cn("text-lg font-black tabular-nums mt-1", (revenueData?.growthRate ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
+              Revenue Growth
+            </p>
+            <p
+              className={cn(
+                'text-lg font-black tabular-nums mt-1',
+                (revenueData?.growthRate ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400',
+              )}
+            >
               {revenueData ? `${(revenueData.growthRate * 100).toFixed(1)}%` : '—'}
             </p>
           </div>
           <div className="neu-raised rounded-xl p-4 border border-white/5">
-            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">Avg Monthly Expenses</p>
+            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
+              Avg Monthly Expenses
+            </p>
             <p className="text-lg font-black text-red-400 tabular-nums mt-1">
               {expenseData ? formatDollars(expenseData.averageMonthly / 100) : '—'}
             </p>
           </div>
           <div className="neu-raised rounded-xl p-4 border border-white/5">
-            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">Projected Cash Flow</p>
+            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
+              Projected Cash Flow
+            </p>
             <p className="text-lg font-black text-[#FFCC00] tabular-nums mt-1">
-              {cashFlowChartData.length > 0 ? formatDollars(cashFlowChartData[cashFlowChartData.length - 1]!.balance) : '—'}
+              {cashFlowChartData.length > 0
+                ? formatDollars(cashFlowChartData[cashFlowChartData.length - 1]!.balance)
+                : '—'}
             </p>
           </div>
         </div>
@@ -178,7 +196,9 @@ function ForecastDashboardInner() {
         <div className="neu-raised rounded-2xl p-12 border border-white/5 text-center">
           <TrendingUp className="w-10 h-10 mx-auto text-zinc-600 mb-3" />
           <p className="text-sm text-zinc-500">No forecast data available yet.</p>
-          <p className="text-xs text-zinc-600 mt-1">Upload statements and categorize transactions to enable projections.</p>
+          <p className="text-xs text-zinc-600 mt-1">
+            Upload statements and categorize transactions to enable projections.
+          </p>
         </div>
       ) : (
         <>
@@ -221,11 +241,26 @@ function ForecastDashboardInner() {
                 data={cashFlowChartData}
                 xAxisKey="month"
                 areas={[
-                  { dataKey: 'balance', color: CHART_COLORS.primary, opacity: 0.3, name: 'Projected Balance' },
+                  {
+                    dataKey: 'balance',
+                    color: CHART_COLORS.primary,
+                    opacity: 0.3,
+                    name: 'Projected Balance',
+                  },
                 ]}
                 lines={[
-                  { dataKey: 'upper', color: CHART_COLORS.revenue, dashed: true, name: 'Upper Bound' },
-                  { dataKey: 'lower', color: CHART_COLORS.expense, dashed: true, name: 'Lower Bound' },
+                  {
+                    dataKey: 'upper',
+                    color: CHART_COLORS.revenue,
+                    dashed: true,
+                    name: 'Upper Bound',
+                  },
+                  {
+                    dataKey: 'lower',
+                    color: CHART_COLORS.expense,
+                    dashed: true,
+                    name: 'Lower Bound',
+                  },
                 ]}
                 title="Cash Flow Projection"
                 subtitle="Projected balance with upper/lower confidence range"

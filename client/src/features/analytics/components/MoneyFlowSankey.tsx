@@ -1,12 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import {
-  Sankey as RechartsSankey,
-  Tooltip,
-  Layer,
-  Rectangle,
-} from 'recharts';
+import { Sankey as RechartsSankey, Tooltip, Layer, Rectangle } from 'recharts';
 import { ChartContainer, CHART_COLORS } from '../../../components/charts';
-import { getCategoryColor as getCatColor, isRevenueCategory } from '../../transactions/constants/categoryColors';
+import {
+  getCategoryColor as getCatColor,
+  isRevenueCategory,
+} from '../../transactions/constants/categoryColors';
 import { useMoneyFlow, type SankeyNode, type SankeyLink } from '../hooks/useMoneyFlow';
 import { FlowSummaryCards } from './FlowSummaryCards';
 import { MoneyFlowDetail } from './MoneyFlowDetail';
@@ -41,14 +39,33 @@ interface LinkPayload {
 
 /** Map Tailwind color name to hex for Sankey node fills */
 const COLOR_NAME_TO_HEX: Record<string, string> = {
-  orange: '#F97316', rose: '#F43F5E', pink: '#EC4899', fuchsia: '#D946EF',
-  purple: '#A855F7', violet: '#8B5CF6', indigo: '#6366F1', blue: '#3B82F6',
-  sky: '#0EA5E9', yellow: '#EAB308', stone: '#78716C', emerald: '#10B981',
-  green: '#22C55E', teal: '#14B8A6', lime: '#84CC16', cyan: '#06B6D4',
-  amber: '#F59E0B', zinc: '#71717A', slate: '#64748B',
+  orange: '#F97316',
+  rose: '#F43F5E',
+  pink: '#EC4899',
+  fuchsia: '#D946EF',
+  purple: '#A855F7',
+  violet: '#8B5CF6',
+  indigo: '#6366F1',
+  blue: '#3B82F6',
+  sky: '#0EA5E9',
+  yellow: '#EAB308',
+  stone: '#78716C',
+  emerald: '#10B981',
+  green: '#22C55E',
+  teal: '#14B8A6',
+  lime: '#84CC16',
+  cyan: '#06B6D4',
+  amber: '#F59E0B',
+  zinc: '#71717A',
+  slate: '#64748B',
 };
 
-function getNodeColor(name: string, index: number, incomeCount: number, accountCount: number): string {
+function getNodeColor(
+  name: string,
+  index: number,
+  incomeCount: number,
+  accountCount: number,
+): string {
   // Income sources (first batch) -- green family
   if (index < incomeCount) {
     if (isRevenueCategory(name)) {
@@ -63,15 +80,21 @@ function getNodeColor(name: string, index: number, incomeCount: number, accountC
   }
   // Expense categories (right side)
   const catColor = getCatColor(name);
-  return COLOR_NAME_TO_HEX[catColor.name] ?? CHART_COLORS.categories[index % CHART_COLORS.categories.length] ?? CHART_COLORS.primary;
+  return (
+    COLOR_NAME_TO_HEX[catColor.name] ??
+    CHART_COLORS.categories[index % CHART_COLORS.categories.length] ??
+    CHART_COLORS.primary
+  );
 }
 
-function SankeyNodeRenderer(props: {
-  incomeCount: number;
-  accountCount: number;
-  nodeCount: number;
-  onNodeClick: (node: SankeyNode, index: number) => void;
-} & Record<string, unknown>) {
+function SankeyNodeRenderer(
+  props: {
+    incomeCount: number;
+    accountCount: number;
+    nodeCount: number;
+    onNodeClick: (node: SankeyNode, index: number) => void;
+  } & Record<string, unknown>,
+) {
   const { x, y, width, height: h, index, payload } = props as unknown as NodePayload;
   const { incomeCount, accountCount, onNodeClick } = props;
   const name = payload?.name ?? '';
@@ -107,13 +130,24 @@ function SankeyNodeRenderer(props: {
   );
 }
 
-function SankeyLinkRenderer(props: {
-  incomeCount: number;
-  onLinkClick: (link: SankeyLink, index: number) => void;
-  highlightIndex: number | null;
-} & Record<string, unknown>) {
-  const { sourceX, sourceY, sourceControlX, targetX, targetY, targetControlX, linkWidth, index, payload } =
-    props as unknown as LinkPayload;
+function SankeyLinkRenderer(
+  props: {
+    incomeCount: number;
+    onLinkClick: (link: SankeyLink, index: number) => void;
+    highlightIndex: number | null;
+  } & Record<string, unknown>,
+) {
+  const {
+    sourceX,
+    sourceY,
+    sourceControlX,
+    targetX,
+    targetY,
+    targetControlX,
+    linkWidth,
+    index,
+    payload,
+  } = props as unknown as LinkPayload;
   const { incomeCount, onLinkClick, highlightIndex } = props;
   const isHighlighted = highlightIndex === index;
 
@@ -132,14 +166,20 @@ function SankeyLinkRenderer(props: {
         style={{ cursor: 'pointer', transition: 'stroke-opacity 0.2s' }}
         onClick={() => {
           if (payload) {
-            onLinkClick({ source: payload.source, target: payload.target, value: payload.value }, index);
+            onLinkClick(
+              { source: payload.source, target: payload.target, value: payload.value },
+              index,
+            );
           }
         }}
         onMouseEnter={(e) => {
           (e.target as SVGPathElement).setAttribute('stroke-opacity', '0.5');
         }}
         onMouseLeave={(e) => {
-          (e.target as SVGPathElement).setAttribute('stroke-opacity', isHighlighted ? '0.55' : '0.2');
+          (e.target as SVGPathElement).setAttribute(
+            'stroke-opacity',
+            isHighlighted ? '0.55' : '0.2',
+          );
         }}
       />
     </Layer>
@@ -218,7 +258,9 @@ function MoneyFlowSankeyInner() {
               className="bg-gray-800 border border-[#FFCC00]/30 rounded-lg px-3 py-1.5 text-sm text-gray-200 focus:border-[#FFCC00] focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
             >
               {PERIOD_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
           </div>
@@ -267,19 +309,23 @@ function MoneyFlowSankeyInner() {
                 nodeWidth={14}
                 nodePadding={28}
                 node={
-                  <SankeyNodeRenderer
-                    incomeCount={incomeCount}
-                    accountCount={accountCount}
-                    nodeCount={nodes.length}
-                    onNodeClick={handleNodeClick}
-                  />
+                  (
+                    <SankeyNodeRenderer
+                      incomeCount={incomeCount}
+                      accountCount={accountCount}
+                      nodeCount={nodes.length}
+                      onNodeClick={handleNodeClick}
+                    />
+                  ) as any
                 }
                 link={
-                  <SankeyLinkRenderer
-                    incomeCount={incomeCount}
-                    onLinkClick={handleLinkClick}
-                    highlightIndex={highlightLinkIndex}
-                  />
+                  (
+                    <SankeyLinkRenderer
+                      incomeCount={incomeCount}
+                      onLinkClick={handleLinkClick}
+                      highlightIndex={highlightLinkIndex}
+                    />
+                  ) as any
                 }
                 margin={{ top: 10, right: 160, bottom: 10, left: 160 }}
               >
@@ -302,10 +348,17 @@ function MoneyFlowSankeyInner() {
             ) : (
               <RechartsSankey
                 data={{ nodes: [{ name: '' }], links: [] }}
-                node={() => null}
-                link={() => null}
+                node={(() => null) as any}
+                link={(() => null) as any}
               >
-                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#9CA3AF" fontSize={14}>
+                <text
+                  x="50%"
+                  y="50%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="#9CA3AF"
+                  fontSize={14}
+                >
                   No flow data for this period
                 </text>
               </RechartsSankey>
@@ -328,7 +381,10 @@ function MoneyFlowSankeyInner() {
         <h4 className="text-xs text-gray-400 uppercase tracking-wider mb-3">Flow Legend</h4>
         <div className="flex flex-wrap gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-8 h-1 rounded" style={{ backgroundColor: CHART_COLORS.primary, opacity: 0.6 }} />
+            <div
+              className="w-8 h-1 rounded"
+              style={{ backgroundColor: CHART_COLORS.primary, opacity: 0.6 }}
+            />
             <span className="text-gray-300">Income flows</span>
           </div>
           <div className="flex items-center gap-1.5">

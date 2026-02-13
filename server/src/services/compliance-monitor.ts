@@ -61,11 +61,14 @@ export interface RiskFactor {
 }
 
 /** Australian financial year quarter offsets */
-const AU_QUARTER_CONFIG: Record<number, { startMonth: number; endMonth: number; startYear: 'start' | 'end' }> = {
-  1: { startMonth: 6, endMonth: 8, startYear: 'start' },  // Jul-Sep
+const AU_QUARTER_CONFIG: Record<
+  number,
+  { startMonth: number; endMonth: number; startYear: 'start' | 'end' }
+> = {
+  1: { startMonth: 6, endMonth: 8, startYear: 'start' }, // Jul-Sep
   2: { startMonth: 9, endMonth: 11, startYear: 'start' }, // Oct-Dec
-  3: { startMonth: 0, endMonth: 2, startYear: 'end' },    // Jan-Mar
-  4: { startMonth: 3, endMonth: 5, startYear: 'end' },    // Apr-Jun
+  3: { startMonth: 0, endMonth: 2, startYear: 'end' }, // Jan-Mar
+  4: { startMonth: 3, endMonth: 5, startYear: 'end' }, // Apr-Jun
 };
 
 /** Standard due dates: month offset from quarter start, day of month */
@@ -73,9 +76,9 @@ const STANDARD_DUE: Record<string, { monthOffset: number; day: number }> = {
   bas: { monthOffset: 3, day: 28 },
   payg: { monthOffset: 3, day: 28 },
   super: { monthOffset: 3, day: 28 },
-  fbt: { monthOffset: 1, day: 21 },       // Only Q4
+  fbt: { monthOffset: 1, day: 21 }, // Only Q4
   income_tax: { monthOffset: 0, day: 31 }, // Oct 31 (annual)
-  tpar: { monthOffset: 0, day: 28 },       // Aug 28 (annual)
+  tpar: { monthOffset: 0, day: 28 }, // Aug 28 (annual)
 };
 
 // ---------------------------------------------------------------------------
@@ -88,15 +91,19 @@ export class ComplianceMonitorService {
   // -----------------------------------------------------------------------
 
   /** Check all compliance obligations for a user, computing status + days until due. */
-  async checkObligations(userId: string, options?: {
-    obligationType?: ObligationType;
-    status?: ObligationStatus;
-    dateFrom?: string;
-    dateTo?: string;
-  }): Promise<ComplianceObligation[]> {
+  async checkObligations(
+    userId: string,
+    options?: {
+      obligationType?: ObligationType;
+      status?: ObligationStatus;
+      dateFrom?: string;
+      dateTo?: string;
+    },
+  ): Promise<ComplianceObligation[]> {
     const conditions: any[] = [eq(complianceChecks.userId, userId)];
 
-    if (options?.obligationType) conditions.push(eq(complianceChecks.obligationType, options.obligationType));
+    if (options?.obligationType)
+      conditions.push(eq(complianceChecks.obligationType, options.obligationType));
     if (options?.status) conditions.push(eq(complianceChecks.status, options.status));
     if (options?.dateFrom) conditions.push(gte(complianceChecks.dueDate, options.dateFrom));
     if (options?.dateTo) conditions.push(lte(complianceChecks.dueDate, options.dateTo));
@@ -148,13 +155,16 @@ export class ComplianceMonitorService {
   }
 
   /** Create a new compliance obligation record. */
-  async createObligation(userId: string, data: {
-    obligationType: ObligationType;
-    period: string;
-    dueDate: string;
-    amountDue?: number;
-    notes?: string;
-  }): Promise<string> {
+  async createObligation(
+    userId: string,
+    data: {
+      obligationType: ObligationType;
+      period: string;
+      dueDate: string;
+      amountDue?: number;
+      notes?: string;
+    },
+  ): Promise<string> {
     const id = crypto.randomUUID();
     await db
       .insert(complianceChecks)
@@ -183,7 +193,8 @@ export class ComplianceMonitorService {
   /** Generate compliance schedule for a financial year based on user's schedules. */
   async generateSchedule(userId: string, financialYear: string): Promise<ComplianceObligation[]> {
     const match = financialYear.match(/^(\d{4})-(\d{2})$/);
-    if (!match) throw new Error(`Invalid financial year format: ${financialYear}. Expected YYYY-YY.`);
+    if (!match)
+      throw new Error(`Invalid financial year format: ${financialYear}. Expected YYYY-YY.`);
     const startYear = parseInt(match[1], 10);
 
     // Get user's enabled schedules
@@ -238,9 +249,7 @@ export class ComplianceMonitorService {
           dueDate: period.dueDate,
           status: 'pending',
           riskLevel: 'low',
-          daysUntilDue: Math.ceil(
-            (new Date(period.dueDate).getTime() - Date.now()) / 86400000,
-          ),
+          daysUntilDue: Math.ceil((new Date(period.dueDate).getTime() - Date.now()) / 86400000),
         });
       }
     }
@@ -325,12 +334,15 @@ export class ComplianceMonitorService {
   // -----------------------------------------------------------------------
 
   /** Mark an obligation as lodged. */
-  async markLodged(obligationId: string, data: {
-    lodgedDate?: string;
-    amountPaid?: number;
-    referenceNumber?: string;
-    notes?: string;
-  }): Promise<void> {
+  async markLodged(
+    obligationId: string,
+    data: {
+      lodgedDate?: string;
+      amountPaid?: number;
+      referenceNumber?: string;
+      notes?: string;
+    },
+  ): Promise<void> {
     const now = new Date().toISOString();
 
     await db
@@ -348,7 +360,11 @@ export class ComplianceMonitorService {
   }
 
   /** Mark an obligation as paid. */
-  async markPaid(obligationId: string, amountPaid: number, referenceNumber?: string): Promise<void> {
+  async markPaid(
+    obligationId: string,
+    amountPaid: number,
+    referenceNumber?: string,
+  ): Promise<void> {
     await db
       .update(complianceChecks)
       .set({
@@ -382,7 +398,8 @@ export class ComplianceMonitorService {
     // Overdue obligations — highest weight
     for (const o of overdue) {
       const daysOverdue = Math.abs(o.daysUntilDue);
-      const severity: RiskLevel = daysOverdue > 56 ? 'critical' : daysOverdue > 28 ? 'high' : 'medium';
+      const severity: RiskLevel =
+        daysOverdue > 56 ? 'critical' : daysOverdue > 28 ? 'high' : 'medium';
       const weight = severity === 'critical' ? 25 : severity === 'high' ? 15 : 8;
       score += weight;
 
@@ -421,19 +438,16 @@ export class ComplianceMonitorService {
     const openAlerts: any[] = await db
       .select()
       .from(anomalyAlerts)
-      .where(
-        and(
-          eq(anomalyAlerts.userId, userId),
-          eq(anomalyAlerts.status, 'open'),
-        ),
-      )
+      .where(and(eq(anomalyAlerts.userId, userId), eq(anomalyAlerts.status, 'open')))
       .all();
 
     if (openAlerts.length > 0) {
       const alertScore = Math.min(openAlerts.length * 3, 20);
       score += alertScore;
 
-      const highSeverity = openAlerts.filter((a: any) => a.severity === 'high' || a.severity === 'critical').length;
+      const highSeverity = openAlerts.filter(
+        (a: any) => a.severity === 'high' || a.severity === 'critical',
+      ).length;
       const severity: RiskLevel = highSeverity > 0 ? 'high' : 'medium';
 
       factors.push({
@@ -478,7 +492,9 @@ export class ComplianceMonitorService {
 
     // Add general recommendations
     if (overallRisk === 'low' && recommendations.length === 0) {
-      recommendations.push('All compliance obligations appear current. Continue monitoring upcoming deadlines.');
+      recommendations.push(
+        'All compliance obligations appear current. Continue monitoring upcoming deadlines.',
+      );
     }
 
     return {
@@ -516,13 +532,16 @@ export class ComplianceMonitorService {
   }
 
   /** Create a new compliance schedule. */
-  async createSchedule(userId: string, data: {
-    obligationType: ObligationType;
-    frequency: ScheduleFrequency;
-    baseDueDay?: number;
-    reminderDaysBefore?: number;
-    autoGenerate?: boolean;
-  }): Promise<string> {
+  async createSchedule(
+    userId: string,
+    data: {
+      obligationType: ObligationType;
+      frequency: ScheduleFrequency;
+      baseDueDay?: number;
+      reminderDaysBefore?: number;
+      autoGenerate?: boolean;
+    },
+  ): Promise<string> {
     const id = crypto.randomUUID();
     const dueDay = data.baseDueDay ?? STANDARD_DUE[data.obligationType]?.day ?? 28;
 
@@ -555,10 +574,7 @@ export class ComplianceMonitorService {
 
   /** Delete a compliance schedule. */
   async deleteSchedule(scheduleId: string): Promise<void> {
-    await db
-      .delete(complianceSchedules)
-      .where(eq(complianceSchedules.id, scheduleId))
-      .run();
+    await db.delete(complianceSchedules).where(eq(complianceSchedules.id, scheduleId)).run();
   }
 
   // -----------------------------------------------------------------------

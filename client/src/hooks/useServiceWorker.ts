@@ -22,7 +22,7 @@ export function useServiceWorker(): ServiceWorkerState {
   const [isActive, setIsActive] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [isOnline, setIsOnline] = useState(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
   );
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
 

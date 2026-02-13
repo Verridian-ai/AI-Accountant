@@ -49,7 +49,7 @@ export function SplitTransactionModal({
       // Focus trap logic
       if (e.key === 'Tab') {
         const focusableElements = dialogRef.current?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         );
 
         if (!focusableElements || focusableElements.length === 0) return;
@@ -84,14 +84,17 @@ export function SplitTransactionModal({
     };
   }, [onCancel]);
 
-  const updateSplit = useCallback((index: number, updates: Partial<SplitEntry>) => {
-    const newSplits = [...splits];
-    const existingSplit = newSplits[index];
-    if (existingSplit) {
-      newSplits[index] = { ...existingSplit, ...updates };
-      onSplitsChange(newSplits);
-    }
-  }, [splits, onSplitsChange]);
+  const updateSplit = useCallback(
+    (index: number, updates: Partial<SplitEntry>) => {
+      const newSplits = [...splits];
+      const existingSplit = newSplits[index];
+      if (existingSplit) {
+        newSplits[index] = { ...existingSplit, ...updates };
+        onSplitsChange(newSplits);
+      }
+    },
+    [splits, onSplitsChange],
+  );
 
   const addSplit = useCallback(() => {
     onSplitsChange([
@@ -105,11 +108,14 @@ export function SplitTransactionModal({
     ]);
   }, [splits, onSplitsChange, transaction.description, transaction.gstApplicable]);
 
-  const removeSplit = useCallback((index: number) => {
-    if (splits.length > 2) {
-      onSplitsChange(splits.filter((_, i) => i !== index));
-    }
-  }, [splits, onSplitsChange]);
+  const removeSplit = useCallback(
+    (index: number) => {
+      if (splits.length > 2) {
+        onSplitsChange(splits.filter((_, i) => i !== index));
+      }
+    },
+    [splits, onSplitsChange],
+  );
 
   const formatCurrency = (amountInCents: number) => {
     return (amountInCents / 100).toFixed(2);
@@ -255,7 +261,7 @@ export function SplitTransactionModal({
                         'w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border',
                         split.gst
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                          : 'neu-inset text-zinc-600 border-zinc-800/50'
+                          : 'neu-inset text-zinc-600 border-zinc-800/50',
                       )}
                       aria-label={`GST for split part ${idx + 1}: ${split.gst ? 'included' : 'excluded'}`}
                     >
@@ -314,8 +320,8 @@ export function SplitTransactionModal({
               </span>
               <span
                 className={cn(
-                  "text-sm font-black tracking-tight",
-                  isBalanced ? "text-emerald-400" : "text-red-400"
+                  'text-sm font-black tracking-tight',
+                  isBalanced ? 'text-emerald-400' : 'text-red-400',
                 )}
                 aria-live="polite"
               >
@@ -342,7 +348,7 @@ export function SplitTransactionModal({
               onClick={onSave}
               disabled={!isBalanced || isSaving}
               className="flex-1 sm:flex-none px-10 py-4 rounded-2xl cba-gold-gradient text-[#0a0a0f] font-black text-xs uppercase tracking-[0.2em] cba-gold-glow btn-press disabled:opacity-30 disabled:grayscale"
-              aria-describedby={!isBalanced ? "split-error-message" : undefined}
+              aria-describedby={!isBalanced ? 'split-error-message' : undefined}
             >
               {isSaving ? 'Saving...' : 'Confirm Split'}
             </button>
@@ -352,8 +358,8 @@ export function SplitTransactionModal({
         {/* Screen reader only error message */}
         {!isBalanced && (
           <span id="split-error-message" className="sr-only">
-            Split amounts must equal the original transaction amount of ${formatCurrency(transaction.amount)}.
-            Current remaining: ${formatCurrency(remaining)}
+            Split amounts must equal the original transaction amount of $
+            {formatCurrency(transaction.amount)}. Current remaining: ${formatCurrency(remaining)}
           </span>
         )}
       </div>

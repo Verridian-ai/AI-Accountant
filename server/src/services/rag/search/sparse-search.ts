@@ -203,7 +203,10 @@ export class SparseSearchEngine {
    * Extract matched terms from content for highlighting
    */
   private extractMatchedTerms(query: string, content: string): string[] {
-    const queryTerms = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+    const queryTerms = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((t) => t.length > 2);
     const contentLower = content.toLowerCase();
     return queryTerms.filter((term) => contentLower.includes(term));
   }
@@ -214,7 +217,7 @@ export class SparseSearchEngine {
   async search(
     userId: string,
     query: string,
-    options: SparseSearchOptions = {}
+    options: SparseSearchOptions = {},
   ): Promise<SparseSearchResult[]> {
     const {
       topK = 20,
@@ -263,7 +266,7 @@ export class SparseSearchEngine {
   private async searchWithFTS5(
     userId: string,
     query: string,
-    options: SparseSearchOptions
+    options: SparseSearchOptions,
   ): Promise<SparseSearchResult[]> {
     const {
       topK = 20,
@@ -334,7 +337,7 @@ export class SparseSearchEngine {
 
       // Execute query with dynamic conditions
       // Note: In production, you'd want to properly parameterize this
-      const results = await db.all(sqlQuery) as Array<{
+      const results = (await db.all(sqlQuery)) as Array<{
         chunk_id: string;
         document_id: string;
         content: string;
@@ -415,7 +418,7 @@ export class SparseSearchEngine {
   private async searchWithLike(
     userId: string,
     query: string,
-    options: SparseSearchOptions
+    options: SparseSearchOptions,
   ): Promise<SparseSearchResult[]> {
     const { topK = 20, category, dateStart, dateEnd, accountId, namespaceId } = options;
 
@@ -439,7 +442,10 @@ export class SparseSearchEngine {
     }
 
     // Search for chunks containing query terms - sanitize for LIKE pattern
-    const queryTerms = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+    const queryTerms = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((t) => t.length > 2);
 
     // Build LIKE conditions for each term with proper escaping
     if (queryTerms.length > 0) {
@@ -528,7 +534,7 @@ export class SparseSearchEngine {
   async searchExpanded(
     userId: string,
     query: string,
-    options: SparseSearchOptions = {}
+    options: SparseSearchOptions = {},
   ): Promise<SparseSearchResult[]> {
     // Expand query with common financial synonyms
     const expansions = this.expandQuery(query);

@@ -12,7 +12,7 @@ import { DEFAULT_RETRY_CONFIG } from './config.js';
  */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  config: Partial<RetryConfig> = {}
+  config: Partial<RetryConfig> = {},
 ): Promise<T> {
   const cfg = { ...DEFAULT_RETRY_CONFIG, ...config };
   let lastError: Error | undefined;
@@ -24,11 +24,8 @@ export async function retryWithBackoff<T>(
       lastError = err instanceof Error ? err : new Error(String(err));
 
       // Check if error is retryable
-      const errorType = (err as Record<string, unknown>)?.type as
-        | string
-        | undefined;
-      const isRetryable =
-        errorType && cfg.retryableErrors.includes(errorType);
+      const errorType = (err as Record<string, unknown>)?.type as string | undefined;
+      const isRetryable = errorType && cfg.retryableErrors.includes(errorType);
 
       if (!isRetryable || attempt === cfg.maxRetries) {
         throw lastError;
@@ -37,13 +34,13 @@ export async function retryWithBackoff<T>(
       // Calculate delay with jitter
       const baseDelay = Math.min(
         cfg.initialDelayMs * Math.pow(cfg.backoffMultiplier, attempt),
-        cfg.maxDelayMs
+        cfg.maxDelayMs,
       );
       const jitter = baseDelay * 0.2 * Math.random();
       const delay = baseDelay + jitter;
 
       console.warn(
-        `[Retry] Attempt ${attempt + 1}/${cfg.maxRetries} failed (${errorType}), retrying in ${Math.round(delay)}ms`
+        `[Retry] Attempt ${attempt + 1}/${cfg.maxRetries} failed (${errorType}), retrying in ${Math.round(delay)}ms`,
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -68,15 +65,9 @@ export class AgentCircuitBreaker {
     this.recoveryTimeMs = recoveryTimeMs;
   }
 
-  async execute<T>(
-    fn: () => Promise<T>,
-    fallback: () => Promise<T>
-  ): Promise<T> {
+  async execute<T>(fn: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
     if (this.state === 'open') {
-      if (
-        this.lastFailure &&
-        Date.now() - this.lastFailure.getTime() > this.recoveryTimeMs
-      ) {
+      if (this.lastFailure && Date.now() - this.lastFailure.getTime() > this.recoveryTimeMs) {
         this.state = 'half-open';
       } else {
         return fallback();

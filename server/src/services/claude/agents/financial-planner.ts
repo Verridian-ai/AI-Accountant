@@ -16,7 +16,7 @@ const RISK_PROFILE_RETURNS: Record<string, number> = {
   conservative: 0.04,
   balanced: 0.06,
   growth: 0.08,
-  aggressive: 0.10,
+  aggressive: 0.1,
 };
 
 /** 50/30/20 budget rule variants by risk profile */
@@ -58,7 +58,8 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
   protected tools: Anthropic.Tool[] = [
     {
       name: 'analyze_spending_patterns',
-      description: 'Analyze transaction data to identify spending patterns, income sources, and category breakdowns.',
+      description:
+        'Analyze transaction data to identify spending patterns, income sources, and category breakdowns.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -82,13 +83,17 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
     },
     {
       name: 'project_wealth',
-      description: 'Project future net worth based on current savings rate, investment returns, and time horizon.',
+      description:
+        'Project future net worth based on current savings rate, investment returns, and time horizon.',
       input_schema: {
         type: 'object' as const,
         properties: {
           currentSavingsCents: { type: 'number' },
           monthlySavingsCents: { type: 'number' },
-          riskProfile: { type: 'string', enum: ['conservative', 'balanced', 'growth', 'aggressive'] },
+          riskProfile: {
+            type: 'string',
+            enum: ['conservative', 'balanced', 'growth', 'aggressive'],
+          },
           yearsToProject: { type: 'number' },
         },
         required: ['currentSavingsCents', 'monthlySavingsCents', 'riskProfile'],
@@ -96,7 +101,8 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
     },
     {
       name: 'compare_debt_strategies',
-      description: 'Compare avalanche (highest interest first) vs snowball (smallest balance first) debt repayment strategies.',
+      description:
+        'Compare avalanche (highest interest first) vs snowball (smallest balance first) debt repayment strategies.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -107,13 +113,19 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
               properties: {
                 name: { type: 'string' },
                 balanceCents: { type: 'number' },
-                interestRate: { type: 'number', description: 'Annual interest rate as decimal (e.g., 0.05 for 5%)' },
+                interestRate: {
+                  type: 'number',
+                  description: 'Annual interest rate as decimal (e.g., 0.05 for 5%)',
+                },
                 minimumPaymentCents: { type: 'number' },
               },
               required: ['name', 'balanceCents', 'interestRate', 'minimumPaymentCents'],
             },
           },
-          extraPaymentCents: { type: 'number', description: 'Extra monthly payment beyond minimums' },
+          extraPaymentCents: {
+            type: 'number',
+            description: 'Extra monthly payment beyond minimums',
+          },
         },
         required: ['debts'],
       },
@@ -129,26 +141,34 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
             type: 'object',
             additionalProperties: { type: 'number' },
           },
-          riskProfile: { type: 'string', enum: ['conservative', 'balanced', 'growth', 'aggressive'] },
+          riskProfile: {
+            type: 'string',
+            enum: ['conservative', 'balanced', 'growth', 'aggressive'],
+          },
         },
         required: ['monthlyIncomeCents', 'currentSpendingByCategory'],
       },
     },
     {
       name: 'search_financial_patterns',
-      description: 'Search knowledge graph for financial transaction patterns using DataPoint-structured entity matching. Finds similar spending patterns, income trends, and budget benchmarks.',
+      description:
+        'Search knowledge graph for financial transaction patterns using DataPoint-structured entity matching. Finds similar spending patterns, income trends, and budget benchmarks.',
       input_schema: {
         type: 'object' as const,
         properties: {
           query: { type: 'string', description: 'Search query for financial patterns' },
-          patternType: { type: 'string', description: 'Optional pattern type filter (e.g., "spending", "income", "savings")' },
+          patternType: {
+            type: 'string',
+            description: 'Optional pattern type filter (e.g., "spending", "income", "savings")',
+          },
         },
         required: ['query'],
       },
     },
     {
       name: 'temporal_financial_search',
-      description: 'Search financial patterns from specific time periods for planning context. Useful for seasonal comparisons and historical benchmarking.',
+      description:
+        'Search financial patterns from specific time periods for planning context. Useful for seasonal comparisons and historical benchmarking.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -168,7 +188,8 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
     },
     {
       name: 'cross_module_planning_context',
-      description: 'Gather comprehensive planning context from all relevant modules including transactions, forecasting, tax, and analytics.',
+      description:
+        'Gather comprehensive planning context from all relevant modules including transactions, forecasting, tax, and analytics.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -191,10 +212,7 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'analyze_spending_patterns',
       async (input) => {
@@ -238,14 +256,14 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
           .map(([category, totalCents]) => ({
             category,
             totalCents,
-            percentOfIncome: totalIncomeCents > 0
-              ? Math.round((totalCents / totalIncomeCents) * 10000) / 100
-              : 0,
+            percentOfIncome:
+              totalIncomeCents > 0 ? Math.round((totalCents / totalIncomeCents) * 10000) / 100 : 0,
           }));
 
-        const savingsRatePercent = totalIncomeCents > 0
-          ? Math.round(((totalIncomeCents - totalExpensesCents) / totalIncomeCents) * 10000) / 100
-          : 0;
+        const savingsRatePercent =
+          totalIncomeCents > 0
+            ? Math.round(((totalIncomeCents - totalExpensesCents) / totalIncomeCents) * 10000) / 100
+            : 0;
 
         return {
           totalIncomeCents,
@@ -323,10 +341,13 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
             payoffMonths: snowballResult.months,
             order: snowballResult.order,
           },
-          recommendation: avalancheResult.totalInterestCents <= snowballResult.totalInterestCents
-            ? 'avalanche'
-            : 'snowball',
-          interestSavedCents: Math.abs(snowballResult.totalInterestCents - avalancheResult.totalInterestCents),
+          recommendation:
+            avalancheResult.totalInterestCents <= snowballResult.totalInterestCents
+              ? 'avalanche'
+              : 'snowball',
+          interestSavedCents: Math.abs(
+            snowballResult.totalInterestCents - avalancheResult.totalInterestCents,
+          ),
         };
       },
     ],
@@ -345,8 +366,13 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
 
         // Classify current spending into needs/wants
         const needsCategories = new Set([
-          'Rent & Lease', 'Utilities', 'Insurance', 'Groceries',
-          'Communication & Internet', 'Motor Vehicle Expenses', 'Medical & Health',
+          'Rent & Lease',
+          'Utilities',
+          'Insurance',
+          'Groceries',
+          'Communication & Internet',
+          'Motor Vehicle Expenses',
+          'Medical & Health',
         ]);
 
         const monthlyTargets: Array<{
@@ -358,9 +384,7 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
         for (const [category, current] of Object.entries(spending)) {
           const isNeed = needsCategories.has(category);
           // Recommend reducing wants by 20%, maintaining needs
-          const recommended = isNeed
-            ? current
-            : Math.round(current * 0.8);
+          const recommended = isNeed ? current : Math.round(current * 0.8);
           monthlyTargets.push({
             category,
             currentCents: Math.abs(current),
@@ -386,7 +410,10 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
         const patternType = input.patternType as string | undefined;
         const searchQuery = patternType ? `${query} type:${patternType}` : query;
         try {
-          const results = await cogneeTools.searchWithDataPoint(searchQuery, 'FinancialTransaction');
+          const results = await cogneeTools.searchWithDataPoint(
+            searchQuery,
+            'FinancialTransaction',
+          );
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };
@@ -411,7 +438,12 @@ Return a JSON object matching the FinancialPlannerOutput schema with:
       async (input) => {
         const query = input.query as string;
         try {
-          const results = await cogneeTools.crossModuleSearch(query, ['transactions', 'forecasting', 'tax', 'analytics']);
+          const results = await cogneeTools.crossModuleSearch(query, [
+            'transactions',
+            'forecasting',
+            'tax',
+            'analytics',
+          ]);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cross-module search unavailable' };
@@ -450,20 +482,20 @@ function simulatePayoff(
     interestRate: number;
     minimumPaymentCents: number;
   }>,
-  extraPaymentCents: number
+  extraPaymentCents: number,
 ): {
   totalInterestCents: number;
   months: number;
   order: Array<{ debtName: string; payoffMonth: number }>;
 } {
   // Deep copy balances
-  const balances = debts.map(d => ({ ...d, remaining: d.balanceCents }));
+  const balances = debts.map((d) => ({ ...d, remaining: d.balanceCents }));
   let totalInterestCents = 0;
   let month = 0;
   const maxMonths = 360; // 30-year cap
   const order: Array<{ debtName: string; payoffMonth: number }> = [];
 
-  while (balances.some(d => d.remaining > 0) && month < maxMonths) {
+  while (balances.some((d) => d.remaining > 0) && month < maxMonths) {
     month++;
 
     // Apply interest
@@ -500,7 +532,7 @@ function simulatePayoff(
 
   // Deduplicate order entries (a debt might be added twice in same month)
   const seen = new Set<string>();
-  const uniqueOrder = order.filter(o => {
+  const uniqueOrder = order.filter((o) => {
     if (seen.has(o.debtName)) return false;
     seen.add(o.debtName);
     return true;

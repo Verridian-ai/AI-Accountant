@@ -19,89 +19,88 @@ import { eq, and, gte, lte, sql } from 'drizzle-orm';
 
 export interface BudgetCategoryEntry {
   category: string;
-  average: number;         // cents per month
-  median: number;          // cents per month
-  min: number;             // cents per month
-  max: number;             // cents per month
-  recommended: number;     // cents per month (adjusted)
+  average: number; // cents per month
+  median: number; // cents per month
+  min: number; // cents per month
+  max: number; // cents per month
+  recommended: number; // cents per month (adjusted)
   trend: 'increasing' | 'decreasing' | 'stable';
 }
 
 export interface SmartBudget {
   entityType: string;
   monthsAnalyzed: number;
-  totalMonthlyBudget: number;  // cents
+  totalMonthlyBudget: number; // cents
   categories: BudgetCategoryEntry[];
   generatedAt: string;
 }
 
 export interface RecurringBill {
   merchant: string;
-  averageAmount: number;    // cents
-  lastAmount: number;       // cents
+  averageAmount: number; // cents
+  lastAmount: number; // cents
   frequency: 'weekly' | 'fortnightly' | 'monthly' | 'quarterly' | 'annual';
-  nextDueDate: string;      // ISO date
-  lastPaidDate: string;     // ISO date
+  nextDueDate: string; // ISO date
+  lastPaidDate: string; // ISO date
   status: 'current' | 'overdue' | 'amount_changed';
   amountChangePercent?: number;
   occurrenceCount: number;
 }
 
 export interface RevenueProjection {
-  month: string;            // YYYY-MM
-  projected: number;        // cents
-  upperBound: number;       // cents (+ 1 std dev)
-  lowerBound: number;       // cents (- 1 std dev)
+  month: string; // YYYY-MM
+  projected: number; // cents
+  upperBound: number; // cents (+ 1 std dev)
+  lowerBound: number; // cents (- 1 std dev)
 }
 
 export interface ProjectionResult {
   entityType: string;
   monthsProjected: number;
   projections: RevenueProjection[];
-  averageMonthly: number;   // cents
-  growthRate: number;        // monthly percentage
+  averageMonthly: number; // cents
+  growthRate: number; // monthly percentage
 }
 
 export interface WealthProjectionParams {
-  currentSavings: number;    // cents
+  currentSavings: number; // cents
   monthlyContribution: number; // cents
-  inflationRate?: number;    // decimal, default 0.03
+  inflationRate?: number; // decimal, default 0.03
 }
 
 export interface WealthProjectionResult {
   profiles: Array<{
     name: string;
-    annualReturn: number;    // decimal
+    annualReturn: number; // decimal
     projections: Array<{
       years: number;
-      nominalValue: number;  // cents
-      realValue: number;     // cents (inflation-adjusted)
+      nominalValue: number; // cents
+      realValue: number; // cents (inflation-adjusted)
     }>;
   }>;
 }
 
 export interface DebtInfo {
   name: string;
-  balance: number;          // cents
-  rate: number;             // annual decimal
-  minPayment: number;       // cents per month
+  balance: number; // cents
+  rate: number; // annual decimal
+  minPayment: number; // cents per month
 }
 
 export interface DebtStrategyResult {
   avalanche: {
-    totalInterest: number;  // cents
+    totalInterest: number; // cents
     payoffMonths: number;
     order: string[];
   };
   snowball: {
-    totalInterest: number;  // cents
+    totalInterest: number; // cents
     payoffMonths: number;
     order: string[];
   };
-  interestSaved: number;    // cents (snowball - avalanche)
+  interestSaved: number; // cents (snowball - avalanche)
   recommendation: string;
 }
-
 
 // ============================================================================
 // INTERNAL HELPERS
@@ -122,7 +121,10 @@ function linearRegression(xs: number[], ys: number[]): { slope: number; intercep
   const n = xs.length;
   if (n < 2) return { slope: 0, intercept: ys[0] ?? 0 };
 
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0;
   for (let i = 0; i < n; i++) {
     sumX += xs[i];
     sumY += ys[i];
@@ -163,9 +165,9 @@ function detectFrequency(dates: string[]): RecurringBill['frequency'] | null {
   // Only classify if relatively regular (CV < 0.4)
   if (cv > 0.4) return null;
 
-  if (avgInterval <= 9)   return 'weekly';
-  if (avgInterval <= 18)  return 'fortnightly';
-  if (avgInterval <= 45)  return 'monthly';
+  if (avgInterval <= 9) return 'weekly';
+  if (avgInterval <= 18) return 'fortnightly';
+  if (avgInterval <= 45) return 'monthly';
   if (avgInterval <= 120) return 'quarterly';
   if (avgInterval <= 400) return 'annual';
   return null;
@@ -181,21 +183,24 @@ function addDays(dateStr: string, days: number): string {
 /** Frequency to average days */
 function frequencyToDays(freq: RecurringBill['frequency']): number {
   switch (freq) {
-    case 'weekly':      return 7;
-    case 'fortnightly': return 14;
-    case 'monthly':     return 30.44;
-    case 'quarterly':   return 91.31;
-    case 'annual':      return 365.25;
+    case 'weekly':
+      return 7;
+    case 'fortnightly':
+      return 14;
+    case 'monthly':
+      return 30.44;
+    case 'quarterly':
+      return 91.31;
+    case 'annual':
+      return 365.25;
   }
 }
-
 
 // ============================================================================
 // SERVICE CLASS
 // ============================================================================
 
 export class EnhancedBudgetService {
-
   /**
    * Generate a smart budget based on historical transaction data.
    * Analyzes the last N months by category, calculates statistics,
@@ -211,9 +216,10 @@ export class EnhancedBudgetService {
     startDate.setMonth(startDate.getMonth() - months);
 
     // Exclude personal accounts for business budgets
-    const ownershipFilter = entityType === 'personal'
-      ? sql`(${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} = 'personal')`
-      : sql`(${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} != 'personal')`;
+    const ownershipFilter =
+      entityType === 'personal'
+        ? sql`(${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} = 'personal')`
+        : sql`(${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} != 'personal')`;
 
     // Get monthly category totals
     const rows = await db
@@ -232,7 +238,7 @@ export class EnhancedBudgetService {
           sql`${transactions.amount} < 0`, // expenses only
           sql`${transactions.category} IS NOT NULL`,
           ownershipFilter,
-        )
+        ),
       )
       .groupBy(transactions.category, sql`SUBSTRING(${transactions.date}, 1, 7)`)
       .all();
@@ -257,7 +263,8 @@ export class EnhancedBudgetService {
       // Trend: compare first half vs second half
       const halfIdx = Math.floor(sorted.length / 2);
       const firstHalfAvg = sorted.slice(0, halfIdx).reduce((s, v) => s + v, 0) / (halfIdx || 1);
-      const secondHalfAvg = sorted.slice(halfIdx).reduce((s, v) => s + v, 0) / ((sorted.length - halfIdx) || 1);
+      const secondHalfAvg =
+        sorted.slice(halfIdx).reduce((s, v) => s + v, 0) / (sorted.length - halfIdx || 1);
       const changeRatio = firstHalfAvg > 0 ? (secondHalfAvg - firstHalfAvg) / firstHalfAvg : 0;
 
       let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
@@ -318,9 +325,11 @@ export class EnhancedBudgetService {
           gte(transactions.date, startDate.toISOString().slice(0, 10)),
           lte(transactions.date, endDate.toISOString().slice(0, 10)),
           sql`${transactions.amount} < 0`,
-        )
+        ),
       )
-      .orderBy(sql`COALESCE(${transactions.merchantNormalized}, ${transactions.description}), ${transactions.date}`)
+      .orderBy(
+        sql`COALESCE(${transactions.merchantNormalized}, ${transactions.description}), ${transactions.date}`,
+      )
       .all();
 
     // Group by merchant
@@ -343,8 +352,8 @@ export class EnhancedBudgetService {
 
       // Sort by date
       txs.sort((a, b) => a.date.localeCompare(b.date));
-      const dates = txs.map(t => t.date);
-      const amounts = txs.map(t => t.amount);
+      const dates = txs.map((t) => t.date);
+      const amounts = txs.map((t) => t.amount);
 
       // Check if amounts are similar (within 10% of average)
       const avgAmount = Math.round(amounts.reduce((s, v) => s + v, 0) / amounts.length);
@@ -428,28 +437,24 @@ export class EnhancedBudgetService {
    * where n = 12 (monthly compounding)
    */
   calculateWealthProjection(params: WealthProjectionParams): WealthProjectionResult {
-    const {
-      currentSavings,
-      monthlyContribution,
-      inflationRate = 0.03,
-    } = params;
+    const { currentSavings, monthlyContribution, inflationRate = 0.03 } = params;
 
     const profiles = [
-      { name: 'Conservative',  annualReturn: 0.04 },
-      { name: 'Balanced',      annualReturn: 0.06 },
-      { name: 'Growth',        annualReturn: 0.08 },
-      { name: 'Aggressive',    annualReturn: 0.10 },
+      { name: 'Conservative', annualReturn: 0.04 },
+      { name: 'Balanced', annualReturn: 0.06 },
+      { name: 'Growth', annualReturn: 0.08 },
+      { name: 'Aggressive', annualReturn: 0.1 },
     ];
 
     const horizons = [5, 10, 20, 30]; // years
 
     return {
-      profiles: profiles.map(profile => ({
+      profiles: profiles.map((profile) => ({
         name: profile.name,
         annualReturn: profile.annualReturn,
-        projections: horizons.map(years => {
+        projections: horizons.map((years) => {
           const r = profile.annualReturn / 12; // monthly rate
-          const n = years * 12;                // total months
+          const n = years * 12; // total months
 
           // Compound growth: PV component
           const pvGrowth = Math.round(currentSavings * Math.pow(1 + r, n));
@@ -457,7 +462,7 @@ export class EnhancedBudgetService {
           // Annuity component (regular contributions)
           let annuityGrowth = 0;
           if (r > 0) {
-            annuityGrowth = Math.round(monthlyContribution * (Math.pow(1 + r, n) - 1) / r);
+            annuityGrowth = Math.round((monthlyContribution * (Math.pow(1 + r, n) - 1)) / r);
           } else {
             annuityGrowth = monthlyContribution * n;
           }
@@ -496,20 +501,20 @@ export class EnhancedBudgetService {
       avalanche: {
         totalInterest: avalanche.totalInterest,
         payoffMonths: avalanche.payoffMonths,
-        order: avalancheOrder.map(d => d.name),
+        order: avalancheOrder.map((d) => d.name),
       },
       snowball: {
         totalInterest: snowball.totalInterest,
         payoffMonths: snowball.payoffMonths,
-        order: snowballOrder.map(d => d.name),
+        order: snowballOrder.map((d) => d.name),
       },
       interestSaved,
-      recommendation: interestSaved > 10000 // > $100 difference
-        ? `Avalanche saves ${(interestSaved / 100).toFixed(2)} in interest. Use avalanche if motivated by math.`
-        : `Both strategies are similar. Snowball may be better for motivation.`,
+      recommendation:
+        interestSaved > 10000 // > $100 difference
+          ? `Avalanche saves ${(interestSaved / 100).toFixed(2)} in interest. Use avalanche if motivated by math.`
+          : `Both strategies are similar. Snowball may be better for motivation.`,
     };
   }
-
 
   // ---------- Private Helpers ----------
 
@@ -528,13 +533,13 @@ export class EnhancedBudgetService {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - lookbackMonths);
 
-    const amountFilter = type === 'income'
-      ? sql`${transactions.amount} > 0`
-      : sql`${transactions.amount} < 0`;
+    const amountFilter =
+      type === 'income' ? sql`${transactions.amount} > 0` : sql`${transactions.amount} < 0`;
 
-    const ownershipFilter = entityType === 'personal'
-      ? sql`(${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} = 'personal')`
-      : sql`(${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} != 'personal')`;
+    const ownershipFilter =
+      entityType === 'personal'
+        ? sql`(${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} = 'personal')`
+        : sql`(${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} != 'personal')`;
 
     const rows = await db
       .select({
@@ -550,7 +555,7 @@ export class EnhancedBudgetService {
           lte(transactions.date, endDate.toISOString().slice(0, 10)),
           amountFilter,
           ownershipFilter,
-        )
+        ),
       )
       .groupBy(sql`SUBSTRING(${transactions.date}, 1, 7)`)
       .orderBy(sql`SUBSTRING(${transactions.date}, 1, 7)`)
@@ -573,8 +578,8 @@ export class EnhancedBudgetService {
     }
 
     // Linear regression
-    const xs = monthlyValues.map(v => v.index);
-    const ys = monthlyValues.map(v => v.total);
+    const xs = monthlyValues.map((v) => v.index);
+    const ys = monthlyValues.map((v) => v.total);
     const { slope, intercept } = linearRegression(xs, ys);
     const sd = stdDev(ys);
     const avgMonthly = Math.round(ys.reduce((s, v) => s + v, 0) / ys.length);
@@ -618,18 +623,18 @@ export class EnhancedBudgetService {
     extraMonthlyPayment: number,
   ): { totalInterest: number; payoffMonths: number } {
     // Clone balances
-    const balances = debts.map(d => d.balance);
+    const balances = debts.map((d) => d.balance);
     let totalInterest = 0;
     let month = 0;
     const maxMonths = 600; // 50 year safety cap
 
-    while (balances.some(b => b > 0) && month < maxMonths) {
+    while (balances.some((b) => b > 0) && month < maxMonths) {
       month++;
 
       // Calculate interest for each debt
       for (let i = 0; i < debts.length; i++) {
         if (balances[i] <= 0) continue;
-        const monthlyInterest = Math.round(balances[i] * debts[i].rate / 12);
+        const monthlyInterest = Math.round((balances[i] * debts[i].rate) / 12);
         balances[i] += monthlyInterest;
         totalInterest += monthlyInterest;
       }

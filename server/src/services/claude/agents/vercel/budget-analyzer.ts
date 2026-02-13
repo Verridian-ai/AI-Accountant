@@ -9,7 +9,11 @@ import { VercelAgent } from '../../vercel-agent.js';
 import { adaptLegacyTool } from '../../tool-adapter.js';
 import { BudgetAnalyzerOutputSchema } from '../../schemas/budget-output.js';
 import { cogneeTools } from '../../cognee-tools.js';
-import type { BudgetAnalyzerInput, BudgetAnalyzerOutput, VercelAgentExecutionResult } from '../../types.js';
+import type {
+  BudgetAnalyzerInput,
+  BudgetAnalyzerOutput,
+  VercelAgentExecutionResult,
+} from '../../types.js';
 import type { ToolSet } from 'ai';
 
 const SYSTEM_PROMPT = `You are a personal finance analyst specializing in Australian household and small business budgeting. Analyze transaction history to identify spending patterns, recurring expenses, unusual transactions, and savings opportunities. Provide actionable insights with specific dollar amounts and timeframes. Consider seasonal patterns, inflation, and the Australian cost of living.
@@ -139,16 +143,9 @@ export class VercelBudgetAnalyzer extends VercelAgent<BudgetAnalyzerInput, Budge
             for (let i = 1; i < sorted.length; i++) {
               const d1 = new Date(sorted[i - 1]);
               const d2 = new Date(sorted[i]);
-              gaps.push(
-                Math.round(
-                  (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24),
-                ),
-              );
+              gaps.push(Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
             }
-            const avgGap =
-              gaps.length > 0
-                ? gaps.reduce((s, g) => s + g, 0) / gaps.length
-                : 30;
+            const avgGap = gaps.length > 0 ? gaps.reduce((s, g) => s + g, 0) / gaps.length : 30;
 
             let frequency: 'weekly' | 'fortnightly' | 'monthly' | 'quarterly' | 'annual' =
               'monthly';
@@ -298,9 +295,7 @@ export class VercelBudgetAnalyzer extends VercelAgent<BudgetAnalyzerInput, Budge
         }
         const monthlyNets = Array.from(byMonth.values());
         const avgMonthlyNet =
-          monthlyNets.length > 0
-            ? monthlyNets.reduce((s, n) => s + n, 0) / monthlyNets.length
-            : 0;
+          monthlyNets.length > 0 ? monthlyNets.reduce((s, n) => s + n, 0) / monthlyNets.length : 0;
 
         const projections = [];
         let balance = currentBalance;
@@ -379,7 +374,9 @@ export class VercelBudgetAnalyzer extends VercelAgent<BudgetAnalyzerInput, Budge
 
   buildPrompt(input: BudgetAnalyzerInput): string {
     const parts: string[] = [];
-    parts.push(`Analyze the budget and spending patterns for accounts: ${JSON.stringify(input.accountIds)}`);
+    parts.push(
+      `Analyze the budget and spending patterns for accounts: ${JSON.stringify(input.accountIds)}`,
+    );
 
     if (input.dateRange) {
       parts.push(`Date range: ${input.dateRange.start} to ${input.dateRange.end}`);
@@ -414,7 +411,8 @@ export class VercelBudgetAnalyzer extends VercelAgent<BudgetAnalyzerInput, Budge
       recurringExpenses: [],
       projections: [],
       savingsRate: 0,
-      summary: 'Budget analysis unavailable: Vercel agent execution failed. Please try again later.',
+      summary:
+        'Budget analysis unavailable: Vercel agent execution failed. Please try again later.',
     };
   }
 }

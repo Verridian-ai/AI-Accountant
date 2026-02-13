@@ -5,7 +5,7 @@ import type { AutoMatchResult } from '@/api';
 
 export function AutoMatchView() {
   const [autoConfirmThreshold, setAutoConfirmThreshold] = useState(0.85);
-  const [suggestThreshold, setSuggestThreshold] = useState(0.60);
+  const [suggestThreshold, setSuggestThreshold] = useState(0.6);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<AutoMatchResult | null>(null);
   const [lastRunTime, setLastRunTime] = useState<Date | null>(null);
@@ -32,8 +32,8 @@ export function AutoMatchView() {
       if (result) {
         setResult({
           ...result,
-          details: result.details.map(d =>
-            d.matchId === matchId ? { ...d, status: 'matched' } : d
+          details: result.details.map((d: any) =>
+            d.matchId === matchId ? { ...d, status: 'matched' } : d,
           ),
           matched: result.matched + 1,
           suggested: result.suggested - 1,
@@ -50,8 +50,8 @@ export function AutoMatchView() {
       if (result) {
         setResult({
           ...result,
-          details: result.details.map(d =>
-            d.matchId === matchId ? { ...d, status: 'unmatched' } : d
+          details: result.details.map((d: any) =>
+            d.matchId === matchId ? { ...d, status: 'unmatched' } : d,
           ),
           suggested: result.suggested - 1,
           unmatched: result.unmatched + 1,
@@ -65,11 +65,26 @@ export function AutoMatchView() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'matched':
-        return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-400 text-[10px] font-bold"><CheckCircle2 className="h-3 w-3" />Matched</span>;
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-400 text-[10px] font-bold">
+            <CheckCircle2 className="h-3 w-3" />
+            Matched
+          </span>
+        );
       case 'suggested':
-        return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-bold"><AlertCircle className="h-3 w-3" />Suggested</span>;
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-400 text-[10px] font-bold">
+            <AlertCircle className="h-3 w-3" />
+            Suggested
+          </span>
+        );
       default:
-        return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-600/30 text-zinc-400 text-[10px] font-bold"><XCircle className="h-3 w-3" />Unmatched</span>;
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-600/30 text-zinc-400 text-[10px] font-bold">
+            <XCircle className="h-3 w-3" />
+            Unmatched
+          </span>
+        );
     }
   };
 
@@ -83,7 +98,9 @@ export function AutoMatchView() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs text-zinc-400">Auto-Confirm Threshold</label>
-                <span className="text-xs font-mono text-[#FFCC00]">{(autoConfirmThreshold * 100).toFixed(0)}%</span>
+                <span className="text-xs font-mono text-[#FFCC00]">
+                  {(autoConfirmThreshold * 100).toFixed(0)}%
+                </span>
               </div>
               <input
                 type="range"
@@ -91,7 +108,7 @@ export function AutoMatchView() {
                 max="1.00"
                 step="0.01"
                 value={autoConfirmThreshold}
-                onChange={e => setAutoConfirmThreshold(parseFloat(e.target.value))}
+                onChange={(e) => setAutoConfirmThreshold(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-[#FFCC00]"
               />
               <div className="flex justify-between text-[10px] text-zinc-600 mt-0.5">
@@ -102,7 +119,9 @@ export function AutoMatchView() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs text-zinc-400">Suggest Threshold</label>
-                <span className="text-xs font-mono text-amber-400">{(suggestThreshold * 100).toFixed(0)}%</span>
+                <span className="text-xs font-mono text-amber-400">
+                  {(suggestThreshold * 100).toFixed(0)}%
+                </span>
               </div>
               <input
                 type="range"
@@ -110,7 +129,7 @@ export function AutoMatchView() {
                 max="0.95"
                 step="0.01"
                 value={suggestThreshold}
-                onChange={e => setSuggestThreshold(parseFloat(e.target.value))}
+                onChange={(e) => setSuggestThreshold(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-amber-400"
               />
               <div className="flex justify-between text-[10px] text-zinc-600 mt-0.5">
@@ -186,24 +205,34 @@ export function AutoMatchView() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-white/5">
-                      <th className="text-left px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">Document</th>
-                      <th className="text-center px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">Status</th>
-                      <th className="text-right px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">Score</th>
-                      <th className="text-right px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">Actions</th>
+                      <th className="text-left px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                        Document
+                      </th>
+                      <th className="text-center px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                        Status
+                      </th>
+                      <th className="text-right px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                        Score
+                      </th>
+                      <th className="text-right px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {result.details.map((detail, i) => (
+                    {result.details.map((detail: any, i: number) => (
                       <tr key={i} className="hover:bg-white/5">
                         <td className="px-5 py-3">
-                          <span className="text-zinc-200 font-mono text-xs">{detail.documentId.slice(0, 12)}...</span>
+                          <span className="text-zinc-200 font-mono text-xs">
+                            {detail.documentId.slice(0, 12)}...
+                          </span>
                         </td>
-                        <td className="px-5 py-3 text-center">
-                          {getStatusBadge(detail.status)}
-                        </td>
+                        <td className="px-5 py-3 text-center">{getStatusBadge(detail.status)}</td>
                         <td className="px-5 py-3 text-right">
                           {detail.topScore != null ? (
-                            <span className={`font-mono text-xs ${detail.topScore > 0.85 ? 'text-emerald-400' : detail.topScore > 0.6 ? 'text-amber-400' : 'text-zinc-400'}`}>
+                            <span
+                              className={`font-mono text-xs ${detail.topScore > 0.85 ? 'text-emerald-400' : detail.topScore > 0.6 ? 'text-amber-400' : 'text-zinc-400'}`}
+                            >
                               {(detail.topScore * 100).toFixed(0)}%
                             </span>
                           ) : (
@@ -245,7 +274,9 @@ export function AutoMatchView() {
         <div className="neu-raised rounded-xl p-8 text-center">
           <Zap className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
           <p className="text-zinc-400">Run auto-match to pair documents with transactions</p>
-          <p className="text-xs text-zinc-500 mt-1">Adjust thresholds above to control match sensitivity</p>
+          <p className="text-xs text-zinc-500 mt-1">
+            Adjust thresholds above to control match sensitivity
+          </p>
         </div>
       )}
     </div>

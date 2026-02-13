@@ -45,7 +45,9 @@ function assertEqual<T>(actual: T, expected: T, message: string): void {
   } else {
     failed++;
     errors.push(`${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
-    console.error(`  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    console.error(
+      `  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+    );
   }
 }
 
@@ -71,10 +73,16 @@ describe('SentimentAnalysisService — Class instantiation', () => {
   assert(typeof service.researchTopic === 'function', 'researchTopic method exists');
   assert(typeof service.analyzeSentiment === 'function', 'analyzeSentiment method exists');
   assert(typeof service.getSentimentSnapshot === 'function', 'getSentimentSnapshot method exists');
-  assert(typeof service.getMultiTopicSentiment === 'function', 'getMultiTopicSentiment method exists');
+  assert(
+    typeof service.getMultiTopicSentiment === 'function',
+    'getMultiTopicSentiment method exists',
+  );
   assert(typeof service.getSentimentHistory === 'function', 'getSentimentHistory method exists');
   assert(typeof service.analyzeMarketImpact === 'function', 'analyzeMarketImpact method exists');
-  assert(typeof service.getTrendingFinancialTopics === 'function', 'getTrendingFinancialTopics method exists');
+  assert(
+    typeof service.getTrendingFinancialTopics === 'function',
+    'getTrendingFinancialTopics method exists',
+  );
 });
 
 describe('SentimentAnalysisService — Custom configuration', () => {
@@ -123,11 +131,16 @@ describe('SentimentAnalysisService — SentimentResult shape validation', () => 
     summary: 'Overall positive sentiment',
   };
 
-  assert(mockResult.sentimentScore >= -1 && mockResult.sentimentScore <= 1, 'Score is in [-1, 1] range');
+  assert(
+    mockResult.sentimentScore >= -1 && mockResult.sentimentScore <= 1,
+    'Score is in [-1, 1] range',
+  );
   assert(mockResult.confidence >= 0 && mockResult.confidence <= 1, 'Confidence is in [0, 1] range');
   assert(
-    ['very_positive', 'positive', 'neutral', 'negative', 'very_negative'].includes(mockResult.sentimentLabel),
-    'Label is a valid sentiment label'
+    ['very_positive', 'positive', 'neutral', 'negative', 'very_negative'].includes(
+      mockResult.sentimentLabel,
+    ),
+    'Label is a valid sentiment label',
   );
   assert(mockResult.topPositive.length <= 3, 'topPositive has at most 3 entries');
   assert(mockResult.topNegative.length <= 3, 'topNegative has at most 3 entries');
@@ -180,7 +193,10 @@ describe('SentimentAnalysisService — ArticleInfo type validation', () => {
   assert(typeof mockArticle.url === 'string', 'Article has url');
   assert(typeof mockArticle.source === 'string', 'Article has source');
   assert(typeof mockArticle.snippet === 'string', 'Article has snippet');
-  assert(mockArticle.publishedDate === null || typeof mockArticle.publishedDate === 'string', 'Article publishedDate is string or null');
+  assert(
+    mockArticle.publishedDate === null || typeof mockArticle.publishedDate === 'string',
+    'Article publishedDate is string or null',
+  );
 });
 
 describe('SentimentAnalysisService — ResearchResult type validation', () => {
@@ -229,7 +245,7 @@ describe('SentimentAnalysisService — ImpactAnalysis type validation', () => {
     assert(typeof sector.sector === 'string', 'Sector entry has sector name');
     assert(
       ['positive', 'negative', 'neutral'].includes(sector.impact),
-      `Sector impact is valid: ${sector.impact}`
+      `Sector impact is valid: ${sector.impact}`,
     );
     assert(typeof sector.reason === 'string', 'Sector entry has reason');
   }

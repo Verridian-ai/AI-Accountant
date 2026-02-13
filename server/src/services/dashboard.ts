@@ -23,11 +23,7 @@ export class DashboardService {
   }
 
   async getDashboard(dashboardId: string) {
-    return db
-      .select()
-      .from(dashboardLayouts)
-      .where(eq(dashboardLayouts.id, dashboardId))
-      .get();
+    return db.select().from(dashboardLayouts).where(eq(dashboardLayouts.id, dashboardId)).get();
   }
 
   async createDashboard(
@@ -35,7 +31,7 @@ export class DashboardService {
     name: string,
     description?: string,
     layoutJson?: any,
-    widgets?: any[]
+    widgets?: any[],
   ) {
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
@@ -68,7 +64,7 @@ export class DashboardService {
       widgets: any[];
       isDefault: boolean;
       sortOrder: number;
-    }>
+    }>,
   ) {
     const setValues: Record<string, any> = {
       updatedAt: new Date().toISOString(),
@@ -81,10 +77,7 @@ export class DashboardService {
     if (updates.isDefault !== undefined) setValues.isDefault = updates.isDefault;
     if (updates.sortOrder !== undefined) setValues.sortOrder = updates.sortOrder;
 
-    await db
-      .update(dashboardLayouts)
-      .set(setValues)
-      .where(eq(dashboardLayouts.id, dashboardId));
+    await db.update(dashboardLayouts).set(setValues).where(eq(dashboardLayouts.id, dashboardId));
 
     return this.getDashboard(dashboardId);
   }
@@ -118,12 +111,7 @@ export class DashboardService {
       return db
         .select()
         .from(savedCharts)
-        .where(
-          and(
-            eq(savedCharts.userId, userId),
-            eq(savedCharts.dashboardId, dashboardId)
-          )
-        )
+        .where(and(eq(savedCharts.userId, userId), eq(savedCharts.dashboardId, dashboardId)))
         .orderBy(savedCharts.sortOrder)
         .all();
     }
@@ -137,11 +125,7 @@ export class DashboardService {
   }
 
   async getChart(chartId: string) {
-    return db
-      .select()
-      .from(savedCharts)
-      .where(eq(savedCharts.id, chartId))
-      .get();
+    return db.select().from(savedCharts).where(eq(savedCharts.id, chartId)).get();
   }
 
   async saveChart(
@@ -154,7 +138,7 @@ export class DashboardService {
       filtersJson?: any;
       dashboardId?: string;
       description?: string;
-    }
+    },
   ) {
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
@@ -190,7 +174,7 @@ export class DashboardService {
       sortOrder: number;
       description: string;
       dashboardId: string;
-    }>
+    }>,
   ) {
     const setValues: Record<string, any> = {
       updatedAt: new Date().toISOString(),
@@ -198,16 +182,14 @@ export class DashboardService {
 
     if (updates.title !== undefined) setValues.title = updates.title;
     if (updates.configJson !== undefined) setValues.configJson = JSON.stringify(updates.configJson);
-    if (updates.filtersJson !== undefined) setValues.filtersJson = JSON.stringify(updates.filtersJson);
+    if (updates.filtersJson !== undefined)
+      setValues.filtersJson = JSON.stringify(updates.filtersJson);
     if (updates.pinned !== undefined) setValues.pinned = updates.pinned;
     if (updates.sortOrder !== undefined) setValues.sortOrder = updates.sortOrder;
     if (updates.description !== undefined) setValues.description = updates.description;
     if (updates.dashboardId !== undefined) setValues.dashboardId = updates.dashboardId;
 
-    await db
-      .update(savedCharts)
-      .set(setValues)
-      .where(eq(savedCharts.id, chartId));
+    await db.update(savedCharts).set(setValues).where(eq(savedCharts.id, chartId));
 
     return this.getChart(chartId);
   }

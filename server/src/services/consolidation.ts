@@ -163,7 +163,12 @@ export interface ConsolidationSnapshotLine {
 }
 
 interface RuleCriteria {
-  matchType: 'inter_entity_revenue' | 'inter_entity_loan' | 'inter_entity_dividend' | 'category_match' | 'amount_threshold';
+  matchType:
+    | 'inter_entity_revenue'
+    | 'inter_entity_loan'
+    | 'inter_entity_dividend'
+    | 'category_match'
+    | 'amount_threshold';
   matchEntities?: string[];
   matchCategories?: string[];
   amountThreshold?: number;
@@ -187,38 +192,38 @@ const CATEGORY_LINE_TYPE_MAP: Record<string, ConsolidationSnapshotLine['lineType
   'Cost of Goods Sold': 'expense',
   'Direct Labour': 'expense',
   'Freight Costs': 'expense',
-  'Materials': 'expense',
+  Materials: 'expense',
   'Advertising & Marketing': 'expense',
   'Bank Fees': 'expense',
   'Computer & IT': 'expense',
-  'Depreciation': 'expense',
-  'Entertainment': 'expense',
-  'Insurance': 'expense',
+  Depreciation: 'expense',
+  Entertainment: 'expense',
+  Insurance: 'expense',
   'Interest Expense': 'expense',
   'Motor Vehicle Expenses': 'expense',
   'Office Supplies': 'expense',
   'Professional Fees': 'expense',
-  'Rent': 'expense',
+  Rent: 'expense',
   'Repairs & Maintenance': 'expense',
-  'Subscriptions': 'expense',
+  Subscriptions: 'expense',
   'Telephone & Internet': 'expense',
-  'Travel': 'expense',
-  'Utilities': 'expense',
+  Travel: 'expense',
+  Utilities: 'expense',
   'Wages & Salaries': 'expense',
-  'Superannuation': 'expense',
+  Superannuation: 'expense',
   'Work from Home Expenses': 'expense',
-  'Miscellaneous': 'expense',
+  Miscellaneous: 'expense',
   'General Expenses': 'expense',
   'Dining & Takeaway': 'expense',
-  'Groceries': 'expense',
+  Groceries: 'expense',
   'Medical & Health': 'expense',
-  'Fuel': 'expense',
+  Fuel: 'expense',
   'Clothing & Personal': 'expense',
-  'Education': 'expense',
+  Education: 'expense',
   'Pet Care': 'expense',
   'Charity & Donations': 'expense',
   'Home & Garden': 'expense',
-  'Tax': 'expense',
+  Tax: 'expense',
   'Tax Payments': 'expense',
   'Software & Subscriptions': 'expense',
   'Travel & Accommodation': 'expense',
@@ -233,7 +238,6 @@ function getLineTypeForCategory(category: string): ConsolidationSnapshotLine['li
 // ============================================================================
 
 export class ConsolidationService {
-
   /**
    * Generate a consolidation snapshot for a parent entity and its children.
    * Aggregates transactions by category, applies elimination rules, and
@@ -254,14 +258,11 @@ export class ConsolidationService {
     }>;
   }> {
     // Verify parent entity is a consolidated parent
-    const parentEntity = await db
+    const parentEntity = (await db
       .select()
       .from(entities)
-      .where(and(
-        eq(entities.id, params.parentEntityId),
-        eq(entities.userId, params.userId)
-      ))
-      .get() as any;
+      .where(and(eq(entities.id, params.parentEntityId), eq(entities.userId, params.userId)))
+      .get()) as any;
 
     if (!parentEntity) {
       throw new Error('Parent entity not found');
@@ -273,7 +274,7 @@ export class ConsolidationService {
 
     // Recursively find all child entities
     const childEntities = await this.getDescendantEntities(params.parentEntityId, params.userId);
-    const allEntityIds = [params.parentEntityId, ...childEntities.map(e => e.id)];
+    const allEntityIds = [params.parentEntityId, ...childEntities.map((e) => e.id)];
 
     // Calculate FY date range
     const [startYear] = params.financialYear.split('-').map(Number);
@@ -286,31 +287,33 @@ export class ConsolidationService {
 
     for (const eid of allEntityIds) {
       // Get accounts linked to this entity
-      const linkedAccounts = await db
+      const linkedAccounts = (await db
         .select()
         .from(entityAccounts)
         .where(eq(entityAccounts.entityId, eid))
-        .all() as any[];
+        .all()) as any[];
 
       const accountIds = linkedAccounts.map((a: any) => a.accountId);
       if (accountIds.length === 0) continue;
 
       // Aggregate transactions for these accounts within the FY
       for (const accountId of accountIds) {
-        const txnAggregates = await db
+        const txnAggregates = (await db
           .select({
             category: transactions.category,
             totalAmount: sql<number>`COALESCE(SUM(${transactions.amount}), 0)`,
           })
           .from(transactions)
-          .where(and(
-            eq(transactions.accountId, accountId),
-            eq(transactions.userId, params.userId),
-            sql`${transactions.date} >= ${fyStart}`,
-            sql`${transactions.date} <= ${fyEnd}`
-          ))
+          .where(
+            and(
+              eq(transactions.accountId, accountId),
+              eq(transactions.userId, params.userId),
+              sql`${transactions.date} >= ${fyStart}`,
+              sql`${transactions.date} <= ${fyEnd}`,
+            ),
+          )
           .groupBy(transactions.category)
-          .all() as any[];
+          .all()) as any[];
 
         for (const agg of txnAggregates) {
           if (!agg.category || agg.totalAmount === 0) continue;
@@ -336,7 +339,14 @@ export class ConsolidationService {
 
     // Apply elimination rules
     const { eliminatedLines, totalEliminationsAmount, eliminationDetails } =
-      await this.applyEliminations(params.parentEntityId, snapshotId, lines, params.userId, fyStart, fyEnd);
+      await this.applyEliminations(
+        params.parentEntityId,
+        snapshotId,
+        lines,
+        params.userId,
+        fyStart,
+        fyEnd,
+      );
 
     const allLines = [...lines, ...eliminatedLines];
 
@@ -445,38 +455,52 @@ export class ConsolidationService {
     lines: ConsolidationSnapshotLine[],
     userId: string,
     fyStart: string,
-    fyEnd: string
+    fyEnd: string,
   ): Promise<{
     eliminatedLines: ConsolidationSnapshotLine[];
     totalEliminationsAmount: number;
-    eliminationDetails: Array<{ ruleId: string; ruleName: string; amount: number; description: string }>;
+    eliminationDetails: Array<{
+      ruleId: string;
+      ruleName: string;
+      amount: number;
+      description: string;
+    }>;
   }> {
     const eliminatedLines: ConsolidationSnapshotLine[] = [];
-    const eliminationDetails: Array<{ ruleId: string; ruleName: string; amount: number; description: string }> = [];
+    const eliminationDetails: Array<{
+      ruleId: string;
+      ruleName: string;
+      amount: number;
+      description: string;
+    }> = [];
     let totalEliminationsAmount = 0;
 
     // Fetch active rules for this parent entity, ordered by priority
-    const rules = await db
+    const rules = (await db
       .select()
       .from(consolidationRules)
-      .where(and(
-        eq(consolidationRules.parentEntityId, parentEntityId),
-        eq(consolidationRules.isActive, true)
-      ))
+      .where(
+        and(
+          eq(consolidationRules.parentEntityId, parentEntityId),
+          eq(consolidationRules.isActive, true),
+        ),
+      )
       .orderBy(consolidationRules.priority)
-      .all() as ConsolidationRule[];
+      .all()) as ConsolidationRule[];
 
     // Fetch confirmed inter-entity transactions for the FY
-    const confirmedIETs = await db
+    const confirmedIETs = (await db
       .select()
       .from(interEntityTransactions)
-      .where(and(
-        eq(interEntityTransactions.userId, userId),
-        eq(interEntityTransactions.status, 'confirmed'),
-        sql`${interEntityTransactions.transactionDate} >= ${fyStart}`,
-        sql`${interEntityTransactions.transactionDate} <= ${fyEnd}`
-      ))
-      .all() as any[];
+      .where(
+        and(
+          eq(interEntityTransactions.userId, userId),
+          eq(interEntityTransactions.status, 'confirmed'),
+          sql`${interEntityTransactions.transactionDate} >= ${fyStart}`,
+          sql`${interEntityTransactions.transactionDate} <= ${fyEnd}`,
+        ),
+      )
+      .all()) as any[];
 
     for (const rule of rules) {
       const criteria: RuleCriteria = JSON.parse(rule.criteriaJson);
@@ -485,16 +509,19 @@ export class ConsolidationService {
       switch (criteria.matchType) {
         case 'inter_entity_revenue': {
           // Eliminate matching inter-entity revenue/expense
-          const matchingIETs = confirmedIETs.filter(iet =>
-            iet.transactionType === 'management_fee' ||
-            iet.transactionType === 'service_fee' ||
-            iet.transactionType === 'rent'
+          const matchingIETs = confirmedIETs.filter(
+            (iet) =>
+              iet.transactionType === 'management_fee' ||
+              iet.transactionType === 'service_fee' ||
+              iet.transactionType === 'rent',
           );
 
           for (const iet of matchingIETs) {
             if (criteria.matchEntities && criteria.matchEntities.length > 0) {
-              if (!criteria.matchEntities.includes(iet.fromEntityId) &&
-                  !criteria.matchEntities.includes(iet.toEntityId)) {
+              if (
+                !criteria.matchEntities.includes(iet.fromEntityId) &&
+                !criteria.matchEntities.includes(iet.toEntityId)
+              ) {
                 continue;
               }
             }
@@ -532,7 +559,10 @@ export class ConsolidationService {
           }
 
           if (matchingIETs.length > 0) {
-            const totalEliminated = matchingIETs.reduce((sum: number, iet: any) => sum + Math.abs(iet.amount), 0);
+            const totalEliminated = matchingIETs.reduce(
+              (sum: number, iet: any) => sum + Math.abs(iet.amount),
+              0,
+            );
             eliminationDetails.push({
               ruleId: rule.id,
               ruleName: rule.ruleName,
@@ -545,12 +575,14 @@ export class ConsolidationService {
 
         case 'inter_entity_loan': {
           // Eliminate matching receivable/payable between entities
-          const loanIETs = confirmedIETs.filter(iet => iet.transactionType === 'loan');
+          const loanIETs = confirmedIETs.filter((iet) => iet.transactionType === 'loan');
 
           for (const iet of loanIETs) {
             if (criteria.matchEntities && criteria.matchEntities.length > 0) {
-              if (!criteria.matchEntities.includes(iet.fromEntityId) &&
-                  !criteria.matchEntities.includes(iet.toEntityId)) {
+              if (
+                !criteria.matchEntities.includes(iet.fromEntityId) &&
+                !criteria.matchEntities.includes(iet.toEntityId)
+              ) {
                 continue;
               }
             }
@@ -589,7 +621,10 @@ export class ConsolidationService {
           }
 
           if (loanIETs.length > 0) {
-            const totalEliminated = loanIETs.reduce((sum: number, iet: any) => sum + Math.abs(iet.amount), 0);
+            const totalEliminated = loanIETs.reduce(
+              (sum: number, iet: any) => sum + Math.abs(iet.amount),
+              0,
+            );
             eliminationDetails.push({
               ruleId: rule.id,
               ruleName: rule.ruleName,
@@ -602,8 +637,8 @@ export class ConsolidationService {
 
         case 'inter_entity_dividend': {
           // Eliminate dividend income against equity reduction
-          const dividendIETs = confirmedIETs.filter(iet =>
-            iet.transactionType === 'dividend' || iet.transactionType === 'distribution'
+          const dividendIETs = confirmedIETs.filter(
+            (iet) => iet.transactionType === 'dividend' || iet.transactionType === 'distribution',
           );
 
           for (const iet of dividendIETs) {
@@ -641,7 +676,10 @@ export class ConsolidationService {
           }
 
           if (dividendIETs.length > 0) {
-            const totalEliminated = dividendIETs.reduce((sum: number, iet: any) => sum + Math.abs(iet.amount), 0);
+            const totalEliminated = dividendIETs.reduce(
+              (sum: number, iet: any) => sum + Math.abs(iet.amount),
+              0,
+            );
             eliminationDetails.push({
               ruleId: rule.id,
               ruleName: rule.ruleName,
@@ -656,8 +694,8 @@ export class ConsolidationService {
           // Eliminate or adjust lines matching specific categories
           if (!criteria.matchCategories || criteria.matchCategories.length === 0) break;
 
-          const matchingLines = lines.filter(l =>
-            criteria.matchCategories!.includes(l.category) && !l.isElimination
+          const matchingLines = lines.filter(
+            (l) => criteria.matchCategories!.includes(l.category) && !l.isElimination,
           );
 
           for (const line of matchingLines) {
@@ -676,7 +714,7 @@ export class ConsolidationService {
               });
               totalEliminationsAmount += Math.abs(line.amount);
             } else if (action.actionType === 'adjust' && action.adjustmentPercent) {
-              const adjustedAmount = Math.round(line.amount * action.adjustmentPercent / 100);
+              const adjustedAmount = Math.round((line.amount * action.adjustmentPercent) / 100);
               eliminatedLines.push({
                 id: crypto.randomUUID(),
                 snapshotId,
@@ -707,8 +745,8 @@ export class ConsolidationService {
           if (!criteria.amountThreshold) break;
           const threshold = criteria.amountThreshold;
 
-          const matchingLines = lines.filter(l =>
-            Math.abs(l.amount) >= threshold && !l.isElimination
+          const matchingLines = lines.filter(
+            (l) => Math.abs(l.amount) >= threshold && !l.isElimination,
           );
 
           for (const line of matchingLines) {
@@ -796,14 +834,18 @@ export class ConsolidationService {
   /**
    * Partial update of a consolidation rule. Re-serializes JSON fields if changed.
    */
-  async updateConsolidationRule(ruleId: string, userId: string, updates: Partial<{
-    ruleName: string;
-    description: string;
-    criteria: RuleCriteria;
-    action: RuleAction;
-    priority: number;
-    isActive: boolean;
-  }>): Promise<ConsolidationRule> {
+  async updateConsolidationRule(
+    ruleId: string,
+    userId: string,
+    updates: Partial<{
+      ruleName: string;
+      description: string;
+      criteria: RuleCriteria;
+      action: RuleAction;
+      priority: number;
+      isActive: boolean;
+    }>,
+  ): Promise<ConsolidationRule> {
     const now = new Date().toISOString();
     const setValues: Record<string, any> = { updatedAt: now };
 
@@ -819,11 +861,11 @@ export class ConsolidationService {
       .set(setValues)
       .where(and(eq(consolidationRules.id, ruleId), eq(consolidationRules.userId, userId)));
 
-    const updated = await db
+    const updated = (await db
       .select()
       .from(consolidationRules)
       .where(eq(consolidationRules.id, ruleId))
-      .get() as ConsolidationRule;
+      .get()) as ConsolidationRule;
 
     if (!updated) {
       throw new Error('Consolidation rule not found');
@@ -846,11 +888,13 @@ export class ConsolidationService {
    * Finalize a consolidation snapshot. Prevents further modifications.
    */
   async finalizeSnapshot(snapshotId: string, userId: string): Promise<ConsolidationSnapshot> {
-    const existing = await db
+    const existing = (await db
       .select()
       .from(consolidationSnapshots)
-      .where(and(eq(consolidationSnapshots.id, snapshotId), eq(consolidationSnapshots.userId, userId)))
-      .get() as ConsolidationSnapshot | undefined;
+      .where(
+        and(eq(consolidationSnapshots.id, snapshotId), eq(consolidationSnapshots.userId, userId)),
+      )
+      .get()) as ConsolidationSnapshot | undefined;
 
     if (!existing) {
       throw new Error('Consolidation snapshot not found');
@@ -871,7 +915,11 @@ export class ConsolidationService {
   /**
    * Get consolidation history for a parent entity, optionally filtered by financial year.
    */
-  async getConsolidationHistory(parentEntityId: string, userId: string, financialYear?: string): Promise<{
+  async getConsolidationHistory(
+    parentEntityId: string,
+    userId: string,
+    financialYear?: string,
+  ): Promise<{
     snapshots: Array<ConsolidationSnapshot & { lineCount: number }>;
   }> {
     const conditions = [
@@ -883,21 +931,21 @@ export class ConsolidationService {
       conditions.push(eq(consolidationSnapshots.financialYear, financialYear));
     }
 
-    const snapshots = await db
+    const snapshots = (await db
       .select()
       .from(consolidationSnapshots)
       .where(and(...conditions))
       .orderBy(desc(consolidationSnapshots.createdAt))
-      .all() as ConsolidationSnapshot[];
+      .all()) as ConsolidationSnapshot[];
 
     // Get line counts for each snapshot
     const enriched = [];
     for (const snap of snapshots) {
-      const countResult = await db
+      const countResult = (await db
         .select({ count: sql<number>`COUNT(*)` })
         .from(consolidationSnapshotLines)
         .where(eq(consolidationSnapshotLines.snapshotId, snap.id))
-        .get() as any;
+        .get()) as any;
 
       enriched.push({
         ...snap,
@@ -912,17 +960,23 @@ export class ConsolidationService {
    * Get full detail of a consolidation snapshot including all lines,
    * entity-level breakdowns, and consolidated totals.
    */
-  async getSnapshotDetail(snapshotId: string, userId: string): Promise<{
+  async getSnapshotDetail(
+    snapshotId: string,
+    userId: string,
+  ): Promise<{
     snapshot: ConsolidationSnapshot;
     lines: ConsolidationSnapshotLine[];
-    byEntity: Record<string, {
-      entityName: string;
-      revenue: number;
-      expenses: number;
-      assets: number;
-      liabilities: number;
-      equity: number;
-    }>;
+    byEntity: Record<
+      string,
+      {
+        entityName: string;
+        revenue: number;
+        expenses: number;
+        assets: number;
+        liabilities: number;
+        equity: number;
+      }
+    >;
     eliminations: ConsolidationSnapshotLine[];
     consolidatedTotals: {
       revenue: number;
@@ -933,45 +987,46 @@ export class ConsolidationService {
       equity: number;
     };
   }> {
-    const snapshot = await db
+    const snapshot = (await db
       .select()
       .from(consolidationSnapshots)
-      .where(and(eq(consolidationSnapshots.id, snapshotId), eq(consolidationSnapshots.userId, userId)))
-      .get() as ConsolidationSnapshot | undefined;
+      .where(
+        and(eq(consolidationSnapshots.id, snapshotId), eq(consolidationSnapshots.userId, userId)),
+      )
+      .get()) as ConsolidationSnapshot | undefined;
 
     if (!snapshot) {
       throw new Error('Consolidation snapshot not found');
     }
 
-    const lines = await db
+    const lines = (await db
       .select()
       .from(consolidationSnapshotLines)
       .where(eq(consolidationSnapshotLines.snapshotId, snapshotId))
-      .all() as ConsolidationSnapshotLine[];
+      .all()) as ConsolidationSnapshotLine[];
 
     // Separate elimination lines
-    const eliminations = lines.filter(l => l.isElimination);
-    const regularLines = lines.filter(l => !l.isElimination);
+    const eliminations = lines.filter((l) => l.isElimination);
+    const regularLines = lines.filter((l) => !l.isElimination);
 
     // Build entity-level breakdown
-    const byEntity: Record<string, {
-      entityName: string;
-      revenue: number;
-      expenses: number;
-      assets: number;
-      liabilities: number;
-      equity: number;
-    }> = {};
+    const byEntity: Record<
+      string,
+      {
+        entityName: string;
+        revenue: number;
+        expenses: number;
+        assets: number;
+        liabilities: number;
+        equity: number;
+      }
+    > = {};
 
     // Fetch entity names
-    const entityIds = [...new Set(regularLines.map(l => l.entityId))];
+    const entityIds = [...new Set(regularLines.map((l) => l.entityId))];
     const entityNameMap = new Map<string, string>();
     for (const eid of entityIds) {
-      const entity = await db
-        .select()
-        .from(entities)
-        .where(eq(entities.id, eid))
-        .get() as any;
+      const entity = (await db.select().from(entities).where(eq(entities.id, eid)).get()) as any;
       if (entity) {
         entityNameMap.set(eid, entity.name);
       }
@@ -991,11 +1046,21 @@ export class ConsolidationService {
 
       const entry = byEntity[line.entityId];
       switch (line.lineType) {
-        case 'revenue': entry.revenue += line.amount; break;
-        case 'expense': entry.expenses += line.amount; break;
-        case 'asset': entry.assets += line.amount; break;
-        case 'liability': entry.liabilities += line.amount; break;
-        case 'equity': entry.equity += line.amount; break;
+        case 'revenue':
+          entry.revenue += line.amount;
+          break;
+        case 'expense':
+          entry.expenses += line.amount;
+          break;
+        case 'asset':
+          entry.assets += line.amount;
+          break;
+        case 'liability':
+          entry.liabilities += line.amount;
+          break;
+        case 'equity':
+          entry.equity += line.amount;
+          break;
       }
     }
 
@@ -1008,11 +1073,21 @@ export class ConsolidationService {
 
     for (const line of lines) {
       switch (line.lineType) {
-        case 'revenue': totalRevenue += line.amount; break;
-        case 'expense': totalExpenses += line.amount; break;
-        case 'asset': totalAssets += line.amount; break;
-        case 'liability': totalLiabilities += line.amount; break;
-        case 'equity': totalEquity += line.amount; break;
+        case 'revenue':
+          totalRevenue += line.amount;
+          break;
+        case 'expense':
+          totalExpenses += line.amount;
+          break;
+        case 'asset':
+          totalAssets += line.amount;
+          break;
+        case 'liability':
+          totalLiabilities += line.amount;
+          break;
+        case 'equity':
+          totalEquity += line.amount;
+          break;
         case 'elimination':
           // Elimination amounts are negative offsets — already signed correctly
           break;
@@ -1024,9 +1099,12 @@ export class ConsolidationService {
       // Elimination lines have signed amounts that offset the relevant totals
       if (elim.category.includes('Revenue')) totalRevenue += elim.amount;
       else if (elim.category.includes('Expense')) totalExpenses += elim.amount;
-      else if (elim.category.includes('Receivable') || elim.category.includes('Asset')) totalAssets += elim.amount;
-      else if (elim.category.includes('Payable') || elim.category.includes('Liability')) totalLiabilities += elim.amount;
-      else if (elim.category.includes('Equity') || elim.category.includes('Dividend')) totalEquity += elim.amount;
+      else if (elim.category.includes('Receivable') || elim.category.includes('Asset'))
+        totalAssets += elim.amount;
+      else if (elim.category.includes('Payable') || elim.category.includes('Liability'))
+        totalLiabilities += elim.amount;
+      else if (elim.category.includes('Equity') || elim.category.includes('Dividend'))
+        totalEquity += elim.amount;
     }
 
     return {
@@ -1053,14 +1131,11 @@ export class ConsolidationService {
    * Recursively fetch all descendant entities of a parent.
    */
   private async getDescendantEntities(parentId: string, userId: string): Promise<any[]> {
-    const children = await db
+    const children = (await db
       .select()
       .from(entities)
-      .where(and(
-        eq(entities.parentEntityId, parentId),
-        eq(entities.userId, userId)
-      ))
-      .all() as any[];
+      .where(and(eq(entities.parentEntityId, parentId), eq(entities.userId, userId)))
+      .all()) as any[];
 
     const descendants = [...children];
     for (const child of children) {

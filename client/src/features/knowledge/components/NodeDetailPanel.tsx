@@ -85,7 +85,9 @@ export function NodeDetailPanel({ node, onNavigate, onFeedback, onClose }: NodeD
           <div className="space-y-3">
             {Object.entries(grouped).map(([edgeType, nodes]) => (
               <div key={edgeType}>
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">{edgeType}</p>
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">
+                  {edgeType}
+                </p>
                 <div className="space-y-1">
                   {nodes.map((n) => (
                     <button

@@ -23,7 +23,20 @@ const TIMEZONES = [
   'Australia/Darwin',
   'Australia/Hobart',
 ];
-const FY_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const FY_MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 export function TenantSettings() {
   const [tenant, setTenant] = useState<TenantData | null>(null);
@@ -99,7 +112,9 @@ export function TenantSettings() {
       <div className="neu-raised rounded-2xl p-8 text-center">
         <AlertTriangle className="w-12 h-12 text-[#FFCC00] mx-auto mb-4" />
         <h3 className="text-lg font-bold text-zinc-200">No Permission</h3>
-        <p className="text-sm text-zinc-500 mt-2">You don't have permission to edit settings. Contact your workspace owner.</p>
+        <p className="text-sm text-zinc-500 mt-2">
+          You don't have permission to edit settings. Contact your workspace owner.
+        </p>
       </div>
     );
   }
@@ -121,7 +136,9 @@ export function TenantSettings() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Name</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              Name
+            </label>
             <input
               type="text"
               value={form.name}
@@ -130,7 +147,9 @@ export function TenantSettings() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Slug</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              Slug
+            </label>
             <input
               type="text"
               value={tenant?.slug ?? ''}
@@ -139,7 +158,9 @@ export function TenantSettings() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">ABN</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              ABN
+            </label>
             <input
               type="text"
               value={form.abn}
@@ -149,19 +170,25 @@ export function TenantSettings() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Entity Type</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              Entity Type
+            </label>
             <select
               value={form.entityType}
               onChange={(e) => setForm({ ...form, entityType: e.target.value })}
               className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {ENTITY_TYPES.map((t) => (
-                <option key={t} value={t} className="bg-[#16213e]">{t.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}</option>
+                <option key={t} value={t} className="bg-[#16213e]">
+                  {t.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Industry</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              Industry
+            </label>
             <input
               type="text"
               value={form.industry}
@@ -171,26 +198,34 @@ export function TenantSettings() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Financial Year End</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              Financial Year End
+            </label>
             <select
               value={form.financialYearEnd}
               onChange={(e) => setForm({ ...form, financialYearEnd: e.target.value })}
               className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {FY_MONTHS.map((m) => (
-                <option key={m} value={m} className="bg-[#16213e]">{m}</option>
+                <option key={m} value={m} className="bg-[#16213e]">
+                  {m}
+                </option>
               ))}
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">Timezone</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              Timezone
+            </label>
             <select
               value={form.timezone}
               onChange={(e) => setForm({ ...form, timezone: e.target.value })}
               className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {TIMEZONES.map((tz) => (
-                <option key={tz} value={tz} className="bg-[#16213e]">{tz}</option>
+                <option key={tz} value={tz} className="bg-[#16213e]">
+                  {tz}
+                </option>
               ))}
             </select>
           </div>
@@ -214,7 +249,10 @@ export function TenantSettings() {
       {/* Danger Zone */}
       <div className="neu-raised rounded-2xl border border-red-500/20 p-6 space-y-4">
         <h3 className="text-lg font-bold text-red-400">Danger Zone</h3>
-        <p className="text-sm text-zinc-400">Deactivating your workspace will remove access for all members. This action can be reversed by contacting support.</p>
+        <p className="text-sm text-zinc-400">
+          Deactivating your workspace will remove access for all members. This action can be
+          reversed by contacting support.
+        </p>
 
         {!showDeactivate ? (
           <button
@@ -246,7 +284,10 @@ export function TenantSettings() {
               </button>
               <button
                 type="button"
-                onClick={() => { setShowDeactivate(false); setDeactivateConfirm(''); }}
+                onClick={() => {
+                  setShowDeactivate(false);
+                  setDeactivateConfirm('');
+                }}
                 className="px-4 py-2 rounded-xl text-sm font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
               >
                 Cancel

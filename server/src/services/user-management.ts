@@ -125,10 +125,16 @@ const ROLES: RoleDefinition[] = [
   {
     role: 'super_admin',
     displayName: 'Super Admin',
-    description: 'Full system access — can manage all users, agents, Cognee, features, and system settings',
+    description:
+      'Full system access — can manage all users, agents, Cognee, features, and system settings',
     defaultPermissions: [
-      'manage_users', 'manage_agents', 'manage_cognee',
-      'view_metrics', 'manage_features', 'trigger_crawl', 'manage_scheduler',
+      'manage_users',
+      'manage_agents',
+      'manage_cognee',
+      'view_metrics',
+      'manage_features',
+      'trigger_crawl',
+      'manage_scheduler',
     ],
   },
   {
@@ -146,16 +152,51 @@ const ROLES: RoleDefinition[] = [
 ];
 
 const PERMISSIONS: PermissionDefinition[] = [
-  { permission: 'manage_users', displayName: 'Manage Users', description: 'Create, update, delete admin users and assign roles', category: 'User Management' },
-  { permission: 'manage_agents', displayName: 'Manage Agents', description: 'Configure, enable/disable, and monitor AI agents', category: 'Agent Management' },
-  { permission: 'manage_cognee', displayName: 'Manage Cognee', description: 'Manage knowledge graph, datasets, ontologies, and Cognee settings', category: 'Cognee Management' },
-  { permission: 'view_metrics', displayName: 'View Metrics', description: 'View system metrics, dashboards, and monitoring data', category: 'System Monitoring' },
-  { permission: 'manage_features', displayName: 'Manage Features', description: 'Toggle feature flags and manage rollout percentages', category: 'Feature Flags' },
-  { permission: 'trigger_crawl', displayName: 'Trigger Crawl', description: 'Trigger knowledge ingestion and data crawling operations', category: 'Data Operations' },
-  { permission: 'manage_scheduler', displayName: 'Manage Scheduler', description: 'Configure scheduled jobs and background task settings', category: 'Data Operations' },
+  {
+    permission: 'manage_users',
+    displayName: 'Manage Users',
+    description: 'Create, update, delete admin users and assign roles',
+    category: 'User Management',
+  },
+  {
+    permission: 'manage_agents',
+    displayName: 'Manage Agents',
+    description: 'Configure, enable/disable, and monitor AI agents',
+    category: 'Agent Management',
+  },
+  {
+    permission: 'manage_cognee',
+    displayName: 'Manage Cognee',
+    description: 'Manage knowledge graph, datasets, ontologies, and Cognee settings',
+    category: 'Cognee Management',
+  },
+  {
+    permission: 'view_metrics',
+    displayName: 'View Metrics',
+    description: 'View system metrics, dashboards, and monitoring data',
+    category: 'System Monitoring',
+  },
+  {
+    permission: 'manage_features',
+    displayName: 'Manage Features',
+    description: 'Toggle feature flags and manage rollout percentages',
+    category: 'Feature Flags',
+  },
+  {
+    permission: 'trigger_crawl',
+    displayName: 'Trigger Crawl',
+    description: 'Trigger knowledge ingestion and data crawling operations',
+    category: 'Data Operations',
+  },
+  {
+    permission: 'manage_scheduler',
+    displayName: 'Manage Scheduler',
+    description: 'Configure scheduled jobs and background task settings',
+    category: 'Data Operations',
+  },
 ];
 
-const VALID_PERMISSIONS = new Set(PERMISSIONS.map(p => p.permission));
+const VALID_PERMISSIONS = new Set(PERMISSIONS.map((p) => p.permission));
 
 // ============================================================================
 // SERVICE
@@ -178,7 +219,7 @@ export class UserManagementService {
   }
 
   private getDefaultPermissions(role: string): string[] {
-    const roleDef = ROLES.find(r => r.role === role);
+    const roleDef = ROLES.find((r) => r.role === role);
     return roleDef ? roleDef.defaultPermissions : [];
   }
 
@@ -186,7 +227,10 @@ export class UserManagementService {
   // Admin CRUD
   // --------------------------------------------------------------------------
 
-  async createAdmin(data: CreateAdminInput, createdBy: string): Promise<Omit<AdminUser, 'passwordHash' | 'mfaSecret'>> {
+  async createAdmin(
+    data: CreateAdminInput,
+    createdBy: string,
+  ): Promise<Omit<AdminUser, 'passwordHash' | 'mfaSecret'>> {
     // Validate password
     const validation = this.adminAuth.validatePassword(data.password);
     if (!validation.valid) {
@@ -194,7 +238,9 @@ export class UserManagementService {
     }
 
     // Check username uniqueness
-    const existingUsername = await db.select().from(adminUsers)
+    const existingUsername = await db
+      .select()
+      .from(adminUsers)
       .where(eq(adminUsers.username, data.username))
       .get();
     if (existingUsername) {
@@ -202,7 +248,9 @@ export class UserManagementService {
     }
 
     // Check email uniqueness
-    const existingEmail = await db.select().from(adminUsers)
+    const existingEmail = await db
+      .select()
+      .from(adminUsers)
       .where(eq(adminUsers.email, data.email))
       .get();
     if (existingEmail) {
@@ -214,21 +262,24 @@ export class UserManagementService {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    await db.insert(adminUsers).values({
-      id,
-      username: data.username,
-      email: data.email,
-      passwordHash,
-      displayName: data.displayName ?? null,
-      role: data.role,
-      permissions: JSON.stringify(permissions),
-      isActive: true,
-      loginCount: 0,
-      failedLoginCount: 0,
-      mfaEnabled: false,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await db
+      .insert(adminUsers)
+      .values({
+        id,
+        username: data.username,
+        email: data.email,
+        passwordHash,
+        displayName: data.displayName ?? null,
+        role: data.role,
+        permissions: JSON.stringify(permissions),
+        isActive: true,
+        loginCount: 0,
+        failedLoginCount: 0,
+        mfaEnabled: false,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
     // Log activity (fire and forget)
     this.logActivity({
@@ -240,23 +291,21 @@ export class UserManagementService {
       status: 'success',
     }).catch(() => {});
 
-    const created = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const created = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     return this.sanitizeAdmin(created!);
   }
 
   async getAdmin(id: string): Promise<Omit<AdminUser, 'passwordHash' | 'mfaSecret'> | null> {
-    const admin = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const admin = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     return admin ? this.sanitizeAdmin(admin) : null;
   }
 
-  async updateAdmin(id: string, data: UpdateAdminInput, updatedBy: string): Promise<Omit<AdminUser, 'passwordHash' | 'mfaSecret'>> {
-    const existing = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+  async updateAdmin(
+    id: string,
+    data: UpdateAdminInput,
+    updatedBy: string,
+  ): Promise<Omit<AdminUser, 'passwordHash' | 'mfaSecret'>> {
+    const existing = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     if (!existing) throw new Error('Admin not found');
 
     // Prevent self-role-change
@@ -271,7 +320,9 @@ export class UserManagementService {
 
     // Validate email uniqueness if changed
     if (data.email && data.email !== existing.email) {
-      const existingEmail = await db.select().from(adminUsers)
+      const existingEmail = await db
+        .select()
+        .from(adminUsers)
         .where(eq(adminUsers.email, data.email))
         .get();
       if (existingEmail) throw new Error('Email already exists');
@@ -284,23 +335,18 @@ export class UserManagementService {
     if (data.permissions !== undefined) updateData.permissions = JSON.stringify(data.permissions);
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
 
-    await db.update(adminUsers)
-      .set(updateData)
-      .where(eq(adminUsers.id, id))
-      .run();
+    await db.update(adminUsers).set(updateData).where(eq(adminUsers.id, id)).run();
 
     this.logActivity({
       userId: updatedBy,
       action: 'admin.update',
       resourceType: 'admin_user',
       resourceId: id,
-      details: { changes: Object.keys(data).filter(k => (data as any)[k] !== undefined) },
+      details: { changes: Object.keys(data).filter((k) => (data as any)[k] !== undefined) },
       status: 'success',
     }).catch(() => {});
 
-    const updated = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const updated = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     return this.sanitizeAdmin(updated!);
   }
 
@@ -309,14 +355,14 @@ export class UserManagementService {
       throw new Error('Cannot delete your own account');
     }
 
-    const admin = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, id))
-      .get();
+    const admin = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
     if (!admin) throw new Error('Admin not found');
 
     // Prevent deleting the last super_admin
     if (admin.role === 'super_admin') {
-      const superAdmins = await db.select().from(adminUsers)
+      const superAdmins = await db
+        .select()
+        .from(adminUsers)
         .where(and(eq(adminUsers.role, 'super_admin'), eq(adminUsers.isActive, true)))
         .all();
       if (superAdmins.length <= 1) {
@@ -325,7 +371,8 @@ export class UserManagementService {
     }
 
     // Soft delete
-    await db.update(adminUsers)
+    await db
+      .update(adminUsers)
       .set({ isActive: false, updatedAt: new Date().toISOString() })
       .where(eq(adminUsers.id, id))
       .run();
@@ -340,7 +387,9 @@ export class UserManagementService {
     }).catch(() => {});
   }
 
-  async listAdmins(filters?: AdminListFilters): Promise<PaginatedResult<Omit<AdminUser, 'passwordHash' | 'mfaSecret'>>> {
+  async listAdmins(
+    filters?: AdminListFilters,
+  ): Promise<PaginatedResult<Omit<AdminUser, 'passwordHash' | 'mfaSecret'>>> {
     const limit = filters?.limit ?? 50;
     const offset = filters?.offset ?? 0;
 
@@ -349,26 +398,34 @@ export class UserManagementService {
     if (filters?.role) conditions.push(eq(adminUsers.role, filters.role));
     if (filters?.isActive !== undefined) conditions.push(eq(adminUsers.isActive, filters.isActive));
     if (filters?.search) {
-      conditions.push(sql`(${adminUsers.username} LIKE ${'%' + filters.search + '%'} OR ${adminUsers.email} LIKE ${'%' + filters.search + '%'} OR ${adminUsers.displayName} LIKE ${'%' + filters.search + '%'})`);
+      conditions.push(
+        sql`(${adminUsers.username} LIKE ${'%' + filters.search + '%'} OR ${adminUsers.email} LIKE ${'%' + filters.search + '%'} OR ${adminUsers.displayName} LIKE ${'%' + filters.search + '%'})`,
+      );
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Count total
-    const countResult = await db.select({ count: sql<number>`count(*)` })
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
       .from(adminUsers)
       .where(whereClause)
       .get();
     const total = countResult?.count ?? 0;
 
     // Determine sort
-    const sortCol = filters?.sortBy === 'last_login_at' ? adminUsers.lastLoginAt
-      : filters?.sortBy === 'created_at' ? adminUsers.createdAt
-      : adminUsers.username;
+    const sortCol =
+      filters?.sortBy === 'last_login_at'
+        ? adminUsers.lastLoginAt
+        : filters?.sortBy === 'created_at'
+          ? adminUsers.createdAt
+          : adminUsers.username;
     const sortFn = filters?.sortOrder === 'desc' ? desc : asc;
 
     // Query
-    const rows = await db.select().from(adminUsers)
+    const rows = await db
+      .select()
+      .from(adminUsers)
       .where(whereClause)
       .orderBy(sortFn(sortCol))
       .limit(limit)
@@ -388,19 +445,18 @@ export class UserManagementService {
   // --------------------------------------------------------------------------
 
   async assignRole(adminId: string, role: string, assignedBy: string): Promise<void> {
-    const validRoles = ROLES.map(r => r.role);
+    const validRoles = ROLES.map((r) => r.role);
     if (!validRoles.includes(role)) {
       throw new Error(`Invalid role: ${role}. Valid roles: ${validRoles.join(', ')}`);
     }
 
-    const admin = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, adminId))
-      .get();
+    const admin = await db.select().from(adminUsers).where(eq(adminUsers.id, adminId)).get();
     if (!admin) throw new Error('Admin not found');
 
     const defaultPerms = this.getDefaultPermissions(role);
 
-    await db.update(adminUsers)
+    await db
+      .update(adminUsers)
       .set({
         role,
         permissions: JSON.stringify(defaultPerms),
@@ -419,19 +475,22 @@ export class UserManagementService {
     }).catch(() => {});
   }
 
-  async updatePermissions(adminId: string, permissions: string[], updatedBy: string): Promise<void> {
+  async updatePermissions(
+    adminId: string,
+    permissions: string[],
+    updatedBy: string,
+  ): Promise<void> {
     // Validate all permissions
-    const invalid = permissions.filter(p => !VALID_PERMISSIONS.has(p));
+    const invalid = permissions.filter((p) => !VALID_PERMISSIONS.has(p));
     if (invalid.length > 0) {
       throw new Error(`Invalid permissions: ${invalid.join(', ')}`);
     }
 
-    const admin = await db.select().from(adminUsers)
-      .where(eq(adminUsers.id, adminId))
-      .get();
+    const admin = await db.select().from(adminUsers).where(eq(adminUsers.id, adminId)).get();
     if (!admin) throw new Error('Admin not found');
 
-    await db.update(adminUsers)
+    await db
+      .update(adminUsers)
       .set({
         permissions: JSON.stringify(permissions),
         updatedAt: new Date().toISOString(),
@@ -464,20 +523,23 @@ export class UserManagementService {
   async logActivity(input: ActivityLogInput): Promise<void> {
     try {
       const id = crypto.randomUUID();
-      await db.insert(userActivityLog).values({
-        id,
-        userId: input.userId ?? null,
-        sessionId: input.sessionId ?? null,
-        action: input.action,
-        resourceType: input.resourceType ?? null,
-        resourceId: input.resourceId ?? null,
-        details: JSON.stringify(input.details ?? {}),
-        ipAddress: input.ipAddress ?? null,
-        userAgent: input.userAgent ?? null,
-        durationMs: input.durationMs ?? null,
-        status: input.status ?? 'success',
-        createdAt: new Date().toISOString(),
-      }).run();
+      await db
+        .insert(userActivityLog)
+        .values({
+          id,
+          userId: input.userId ?? null,
+          sessionId: input.sessionId ?? null,
+          action: input.action,
+          resourceType: input.resourceType ?? null,
+          resourceId: input.resourceId ?? null,
+          details: JSON.stringify(input.details ?? {}),
+          ipAddress: input.ipAddress ?? null,
+          userAgent: input.userAgent ?? null,
+          durationMs: input.durationMs ?? null,
+          status: input.status ?? 'success',
+          createdAt: new Date().toISOString(),
+        })
+        .run();
     } catch {
       // Non-blocking — don't fail if logging fails
     }
@@ -490,20 +552,24 @@ export class UserManagementService {
     const conditions: any[] = [];
     if (filters.userId) conditions.push(eq(userActivityLog.userId, filters.userId));
     if (filters.action) conditions.push(eq(userActivityLog.action, filters.action));
-    if (filters.resourceType) conditions.push(eq(userActivityLog.resourceType, filters.resourceType));
+    if (filters.resourceType)
+      conditions.push(eq(userActivityLog.resourceType, filters.resourceType));
     if (filters.status) conditions.push(eq(userActivityLog.status, filters.status));
     if (filters.from) conditions.push(gte(userActivityLog.createdAt, filters.from));
     if (filters.to) conditions.push(lte(userActivityLog.createdAt, filters.to));
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const countResult = await db.select({ count: sql<number>`count(*)` })
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
       .from(userActivityLog)
       .where(whereClause)
       .get();
     const total = countResult?.count ?? 0;
 
-    const rows = await db.select().from(userActivityLog)
+    const rows = await db
+      .select()
+      .from(userActivityLog)
       .where(whereClause)
       .orderBy(desc(userActivityLog.createdAt))
       .limit(limit)
@@ -520,7 +586,9 @@ export class UserManagementService {
     if (userId) conditions.push(eq(userActivityLog.userId, userId));
     const whereClause = and(...conditions);
 
-    const rows = await db.select().from(userActivityLog)
+    const rows = await db
+      .select()
+      .from(userActivityLog)
       .where(whereClause)
       .orderBy(desc(userActivityLog.createdAt))
       .all();
@@ -555,8 +623,8 @@ export class UserManagementService {
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    const mostActiveHour = Object.entries(hourlyCounts)
-      .sort(([, a], [, b]) => b - a)[0]?.[0] ?? '0';
+    const mostActiveHour =
+      Object.entries(hourlyCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ?? '0';
 
     const topResources = Object.entries(resourceCounts)
       .map(([type, count]) => ({ type, count }))
@@ -582,9 +650,7 @@ export class UserManagementService {
   }
 
   async getFeatureFlag(flagName: string): Promise<FeatureFlag | null> {
-    return db.select().from(featureFlags)
-      .where(eq(featureFlags.flagName, flagName))
-      .get() ?? null;
+    return db.select().from(featureFlags).where(eq(featureFlags.flagName, flagName)).get() ?? null;
   }
 
   async isFeatureEnabled(flagName: string): Promise<boolean> {
@@ -604,14 +670,18 @@ export class UserManagementService {
     if (enabled && flag.rolloutPercentage < 100) {
       // Simple deterministic rollout based on flag name hash
       const hash = Array.from(flagName).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-      enabled = (hash % 100) < flag.rolloutPercentage;
+      enabled = hash % 100 < flag.rolloutPercentage;
     }
 
     this.featureFlagCache.set(flagName, { value: enabled, expiresAt: Date.now() + 60_000 });
     return enabled;
   }
 
-  async updateFeatureFlag(flagName: string, updates: FeatureFlagUpdate, updatedBy: string): Promise<FeatureFlag> {
+  async updateFeatureFlag(
+    flagName: string,
+    updates: FeatureFlagUpdate,
+    updatedBy: string,
+  ): Promise<FeatureFlag> {
     const existing = await this.getFeatureFlag(flagName);
     if (!existing) throw new Error(`Feature flag '${flagName}' not found`);
 
@@ -620,13 +690,12 @@ export class UserManagementService {
       updatedAt: new Date().toISOString(),
     };
     if (updates.isEnabled !== undefined) updateData.isEnabled = updates.isEnabled;
-    if (updates.rolloutPercentage !== undefined) updateData.rolloutPercentage = updates.rolloutPercentage;
-    if (updates.conditions !== undefined) updateData.conditions = JSON.stringify(updates.conditions);
+    if (updates.rolloutPercentage !== undefined)
+      updateData.rolloutPercentage = updates.rolloutPercentage;
+    if (updates.conditions !== undefined)
+      updateData.conditions = JSON.stringify(updates.conditions);
 
-    await db.update(featureFlags)
-      .set(updateData)
-      .where(eq(featureFlags.flagName, flagName))
-      .run();
+    await db.update(featureFlags).set(updateData).where(eq(featureFlags.flagName, flagName)).run();
 
     // Clear cache
     this.featureFlagCache.delete(flagName);
@@ -650,20 +719,23 @@ export class UserManagementService {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
-    await db.insert(featureFlags).values({
-      id,
-      flagName: data.flagName,
-      displayName: data.displayName,
-      description: data.description ?? null,
-      isEnabled: data.isEnabled,
-      rolloutPercentage: data.rolloutPercentage ?? 0,
-      conditions: JSON.stringify({}),
-      category: data.category,
-      createdBy,
-      updatedBy: createdBy,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await db
+      .insert(featureFlags)
+      .values({
+        id,
+        flagName: data.flagName,
+        displayName: data.displayName,
+        description: data.description ?? null,
+        isEnabled: data.isEnabled,
+        rolloutPercentage: data.rolloutPercentage ?? 0,
+        conditions: JSON.stringify({}),
+        category: data.category,
+        createdBy,
+        updatedBy: createdBy,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
     this.logActivity({
       userId: createdBy,
@@ -685,16 +757,15 @@ export class UserManagementService {
     const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000).toISOString();
 
     // Count first
-    const countResult = await db.select({ count: sql<number>`count(*)` })
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
       .from(userActivityLog)
       .where(lte(userActivityLog.createdAt, cutoff))
       .get();
     const count = countResult?.count ?? 0;
 
     if (count > 0) {
-      await db.delete(userActivityLog)
-        .where(lte(userActivityLog.createdAt, cutoff))
-        .run();
+      await db.delete(userActivityLog).where(lte(userActivityLog.createdAt, cutoff)).run();
     }
 
     return count;

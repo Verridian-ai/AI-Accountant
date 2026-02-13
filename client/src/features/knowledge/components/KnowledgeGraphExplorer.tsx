@@ -88,7 +88,9 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
     }
   }, [datasetName, ontologyId]);
 
-  useEffect(() => { loadGraph(); }, [loadGraph]);
+  useEffect(() => {
+    loadGraph();
+  }, [loadGraph]);
 
   // Force-directed layout simulation
   useEffect(() => {
@@ -215,7 +217,7 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
       nodes
         .filter((n) => typeFilters.has(n.type))
         .filter((n) => !searchQuery || n.label.toLowerCase().includes(searchQuery.toLowerCase()))
-        .map((n) => n.id)
+        .map((n) => n.id),
     );
 
     // Draw edges
@@ -297,7 +299,9 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
     setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
   };
 
-  const handleMouseUp = () => { setDragging(false); };
+  const handleMouseUp = () => {
+    setDragging(false);
+  };
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -346,7 +350,13 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
     return (
       <div className="neu-inset rounded-xl p-6 text-center">
         <p className="text-sm text-red-400">Failed to load graph: {error}</p>
-        <button type="button" onClick={loadGraph} className="mt-3 text-xs text-[#FFCC00] hover:underline">Retry</button>
+        <button
+          type="button"
+          onClick={loadGraph}
+          className="mt-3 text-xs text-[#FFCC00] hover:underline"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -376,14 +386,18 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
               type="button"
               onClick={() => toggleTypeFilter(type)}
               className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                typeFilters.has(type)
-                  ? 'text-zinc-100 ring-1'
-                  : 'text-zinc-600 hover:text-zinc-400'
+                typeFilters.has(type) ? 'text-zinc-100 ring-1' : 'text-zinc-600 hover:text-zinc-400'
               }`}
               style={{
-                backgroundColor: typeFilters.has(type) ? `${TYPE_COLORS[type] ?? TYPE_COLORS.default}20` : undefined,
-                borderColor: typeFilters.has(type) ? `${TYPE_COLORS[type] ?? TYPE_COLORS.default}40` : undefined,
-                color: typeFilters.has(type) ? TYPE_COLORS[type] ?? TYPE_COLORS.default : undefined,
+                backgroundColor: typeFilters.has(type)
+                  ? `${TYPE_COLORS[type] ?? TYPE_COLORS.default}20`
+                  : undefined,
+                borderColor: typeFilters.has(type)
+                  ? `${TYPE_COLORS[type] ?? TYPE_COLORS.default}40`
+                  : undefined,
+                color: typeFilters.has(type)
+                  ? (TYPE_COLORS[type] ?? TYPE_COLORS.default)
+                  : undefined,
               }}
             >
               {type}
@@ -393,13 +407,28 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
 
         {/* Zoom Controls */}
         <div className="flex items-center gap-1">
-          <button type="button" onClick={() => setZoom((z) => Math.min(3, z + 0.2))} className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white">
+          <button
+            type="button"
+            onClick={() => setZoom((z) => Math.min(3, z + 0.2))}
+            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+          >
             <ZoomIn className="w-4 h-4" />
           </button>
-          <button type="button" onClick={() => setZoom((z) => Math.max(0.2, z - 0.2))} className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white">
+          <button
+            type="button"
+            onClick={() => setZoom((z) => Math.max(0.2, z - 0.2))}
+            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+          >
             <ZoomOut className="w-4 h-4" />
           </button>
-          <button type="button" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white">
+          <button
+            type="button"
+            onClick={() => {
+              setZoom(1);
+              setPan({ x: 0, y: 0 });
+            }}
+            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+          >
             <Maximize2 className="w-4 h-4" />
           </button>
         </div>
@@ -407,11 +436,18 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
 
       {/* Graph + Detail */}
       <div className="flex gap-4">
-        <div ref={containerRef} className="flex-1 neu-inset rounded-xl overflow-hidden" style={{ height: 500 }}>
+        <div
+          ref={containerRef}
+          className="flex-1 neu-inset rounded-xl overflow-hidden"
+          style={{ height: 500 }}
+        >
           <canvas
             ref={canvasRef}
             onClick={handleCanvasClick}
-            onContextMenu={(e) => { e.preventDefault(); handleMouseDown(e); }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              handleMouseDown(e);
+            }}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
@@ -433,7 +469,8 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
 
       {/* Node count info */}
       <p className="text-[10px] text-zinc-600 text-right">
-        {nodesRef.current.length} nodes, {edgesRef.current.length} edges | Zoom: {(zoom * 100).toFixed(0)}%
+        {nodesRef.current.length} nodes, {edgesRef.current.length} edges | Zoom:{' '}
+        {(zoom * 100).toFixed(0)}%
       </p>
     </div>
   );

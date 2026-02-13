@@ -61,7 +61,7 @@ export interface AuditQueryOptions {
   targetTable?: string;
   userId?: string;
   from?: string; // ISO date
-  to?: string;   // ISO date
+  to?: string; // ISO date
   limit?: number;
   offset?: number;
 }
@@ -91,7 +91,7 @@ export class AuditService {
     targetTable: string,
     targetId: string | null,
     afterState: unknown,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<string> {
     return this.log({
       mutationId,
@@ -113,7 +113,7 @@ export class AuditService {
     sessionId: string,
     agentType: AgentType,
     userId?: string,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<string> {
     return this.log({
       mutationId,
@@ -134,7 +134,7 @@ export class AuditService {
     agentType: AgentType,
     reason?: string,
     userId?: string,
-    ipAddress?: string
+    ipAddress?: string,
   ): Promise<string> {
     return this.log({
       mutationId,
@@ -158,7 +158,7 @@ export class AuditService {
     targetId: string | null,
     beforeState: unknown,
     afterState: unknown,
-    affectedRows?: number
+    affectedRows?: number,
   ): Promise<string> {
     return this.log({
       mutationId,
@@ -169,9 +169,7 @@ export class AuditService {
       targetId,
       beforeState: beforeState ? JSON.stringify(beforeState) : null,
       afterState: JSON.stringify(afterState),
-      metadata: affectedRows != null
-        ? JSON.stringify({ affectedRows })
-        : null,
+      metadata: affectedRows != null ? JSON.stringify({ affectedRows }) : null,
     });
   }
 
@@ -183,7 +181,7 @@ export class AuditService {
     sessionId: string,
     agentType: AgentType,
     error: string,
-    targetTable?: string
+    targetTable?: string,
   ): Promise<string> {
     return this.log({
       mutationId,
@@ -201,7 +199,7 @@ export class AuditService {
   async logMutationExpired(
     mutationId: string,
     sessionId: string,
-    agentType: AgentType
+    agentType: AgentType,
   ): Promise<string> {
     return this.log({
       mutationId,
@@ -220,7 +218,7 @@ export class AuditService {
     agentType: AgentType,
     targetTable: string,
     targetId: string | null,
-    confidence: number
+    confidence: number,
   ): Promise<string> {
     return this.log({
       mutationId,
@@ -242,7 +240,7 @@ export class AuditService {
     sessionId: string,
     agentType: AgentType,
     query: string,
-    durationMs?: number
+    durationMs?: number,
   ): Promise<string> {
     return this.log({
       sessionId,
@@ -264,7 +262,7 @@ export class AuditService {
     toolName: string,
     toolInput?: unknown,
     toolResult?: unknown,
-    durationMs?: number
+    durationMs?: number,
   ): Promise<string> {
     return this.log({
       sessionId,
@@ -273,9 +271,7 @@ export class AuditService {
       metadata: JSON.stringify({
         tool: toolName,
         input: toolInput,
-        result: typeof toolResult === 'string'
-          ? toolResult.substring(0, 1000)
-          : toolResult,
+        result: typeof toolResult === 'string' ? toolResult.substring(0, 1000) : toolResult,
         durationMs,
       }),
     });
@@ -288,7 +284,7 @@ export class AuditService {
     sessionId: string | null,
     agentType: AgentType,
     error: string,
-    context?: Record<string, unknown>
+    context?: Record<string, unknown>,
   ): Promise<string> {
     return this.log({
       sessionId,
@@ -350,9 +346,7 @@ export class AuditService {
    * REVISION NOTE (D02-SEC-07): Results are redacted to remove sensitive PII.
    * The `userId` filter is REQUIRED when called from the API endpoint (scoped to authenticated user).
    */
-  async queryAudit(
-    options?: AuditQueryOptions
-  ): Promise<{ entries: AuditEntry[]; total: number }> {
+  async queryAudit(options?: AuditQueryOptions): Promise<{ entries: AuditEntry[]; total: number }> {
     const conditions: string[] = [];
     const params: unknown[] = [];
 
@@ -389,8 +383,7 @@ export class AuditService {
       params.push(options.to);
     }
 
-    const whereClause =
-      conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const limit = options?.limit ?? 50;
     const offset = options?.offset ?? 0;
 
@@ -398,22 +391,17 @@ export class AuditService {
       const [entries, countResult] = await Promise.all([
         this.db.all(
           `SELECT id, mutation_id as "mutationId", session_id as "sessionId", ` +
-          `agent_type as "agentType", action, target_table as "targetTable", ` +
-          `target_id as "targetId", before_state as "beforeState", ` +
-          `after_state as "afterState", metadata, user_id as "userId", ` +
-          `ip_address as "ipAddress", created_at as "createdAt" ` +
-          `FROM agent_audit_log ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-          [...params, limit, offset]
+            `agent_type as "agentType", action, target_table as "targetTable", ` +
+            `target_id as "targetId", before_state as "beforeState", ` +
+            `after_state as "afterState", metadata, user_id as "userId", ` +
+            `ip_address as "ipAddress", created_at as "createdAt" ` +
+            `FROM agent_audit_log ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+          [...params, limit, offset],
         ),
-        this.db.all(
-          `SELECT COUNT(*) as count FROM agent_audit_log ${whereClause}`,
-          params
-        ),
+        this.db.all(`SELECT COUNT(*) as count FROM agent_audit_log ${whereClause}`, params),
       ]);
 
-      const redactedEntries = (entries as AuditEntry[]).map((e) =>
-        this.redactSensitiveFields(e)
-      );
+      const redactedEntries = (entries as AuditEntry[]).map((e) => this.redactSensitiveFields(e));
 
       return {
         entries: redactedEntries,
@@ -433,12 +421,12 @@ export class AuditService {
     try {
       const entries = (await this.db.all(
         `SELECT id, mutation_id as "mutationId", session_id as "sessionId", ` +
-        `agent_type as "agentType", action, target_table as "targetTable", ` +
-        `target_id as "targetId", before_state as "beforeState", ` +
-        `after_state as "afterState", metadata, user_id as "userId", ` +
-        `ip_address as "ipAddress", created_at as "createdAt" ` +
-        `FROM agent_audit_log WHERE mutation_id = ? ORDER BY created_at ASC`,
-        [mutationId]
+          `agent_type as "agentType", action, target_table as "targetTable", ` +
+          `target_id as "targetId", before_state as "beforeState", ` +
+          `after_state as "afterState", metadata, user_id as "userId", ` +
+          `ip_address as "ipAddress", created_at as "createdAt" ` +
+          `FROM agent_audit_log WHERE mutation_id = ? ORDER BY created_at ASC`,
+        [mutationId],
       )) as AuditEntry[];
       return entries.map((e) => this.redactSensitiveFields(e));
     } catch (error) {
@@ -455,12 +443,12 @@ export class AuditService {
     try {
       const entries = (await this.db.all(
         `SELECT id, mutation_id as "mutationId", session_id as "sessionId", ` +
-        `agent_type as "agentType", action, target_table as "targetTable", ` +
-        `target_id as "targetId", before_state as "beforeState", ` +
-        `after_state as "afterState", metadata, user_id as "userId", ` +
-        `ip_address as "ipAddress", created_at as "createdAt" ` +
-        `FROM agent_audit_log WHERE session_id = ? ORDER BY created_at ASC`,
-        [sessionId]
+          `agent_type as "agentType", action, target_table as "targetTable", ` +
+          `target_id as "targetId", before_state as "beforeState", ` +
+          `after_state as "afterState", metadata, user_id as "userId", ` +
+          `ip_address as "ipAddress", created_at as "createdAt" ` +
+          `FROM agent_audit_log WHERE session_id = ? ORDER BY created_at ASC`,
+        [sessionId],
       )) as AuditEntry[];
       return entries.map((e) => this.redactSensitiveFields(e));
     } catch (error) {
@@ -500,7 +488,7 @@ export class AuditService {
           entry.userId ?? null,
           entry.ipAddress ?? null,
           now,
-        ]
+        ],
       );
     } catch (error) {
       // Audit logging should NEVER throw — log the error and continue

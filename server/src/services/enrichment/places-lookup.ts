@@ -77,7 +77,7 @@ export class PlacesLookupService {
         return null;
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (!data.places || data.places.length === 0) {
         logger.debug(`[Places] No results for "${query}"`);
@@ -109,12 +109,7 @@ export class PlacesLookupService {
       const existing = await db
         .select()
         .from(merchantMemory)
-        .where(
-          and(
-            eq(merchantMemory.userId, userId),
-            eq(merchantMemory.merchantPattern, cacheKey)
-          )
-        )
+        .where(and(eq(merchantMemory.userId, userId), eq(merchantMemory.merchantPattern, cacheKey)))
         .get();
 
       if (existing) return; // Already cached
@@ -171,7 +166,7 @@ export class PlacesLookupService {
   private async throttle(): Promise<void> {
     const elapsed = Date.now() - this.lastRequestTime;
     if (elapsed < this.minInterval) {
-      await new Promise(resolve => setTimeout(resolve, this.minInterval - elapsed));
+      await new Promise((resolve) => setTimeout(resolve, this.minInterval - elapsed));
     }
   }
 

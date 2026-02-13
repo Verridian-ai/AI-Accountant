@@ -114,7 +114,18 @@ export function LedgerTable({
         bulkSelectRef: bulkSelect ? bulkSelectRef : undefined,
         onSelectAll,
       }),
-    [accounts, categories, setEditForm, handleEditStart, handleSave, handleDelete, handleSplitStart, setEditingId, !!bulkSelect, onSelectAll]
+    [
+      accounts,
+      categories,
+      setEditForm,
+      handleEditStart,
+      handleSave,
+      handleDelete,
+      handleSplitStart,
+      setEditingId,
+      !!bulkSelect,
+      onSelectAll,
+    ],
   );
 
   const table = useReactTable({
@@ -168,10 +179,7 @@ export function LedgerTable({
       <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-black/20 to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
       <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-black/20 to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
 
-      <div
-        ref={parentRef}
-        className="overflow-scroll max-h-[70vh]"
-      >
+      <div ref={parentRef} className="overflow-scroll max-h-[70vh]">
         <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 min-w-max">
           <table
             className="transaction-table w-full border-separate border-spacing-y-2 lg:border-spacing-y-3"
@@ -187,17 +195,14 @@ export function LedgerTable({
                   {hg.headers.map((h) => {
                     const isSticky = h.id === 'actions';
                     const isSorted = h.column.getIsSorted();
-                    const ariaSortValue:
-                      | 'ascending'
-                      | 'descending'
-                      | 'none'
-                      | undefined = !h.column.getCanSort()
-                      ? undefined
-                      : isSorted === 'asc'
-                        ? 'ascending'
-                        : isSorted === 'desc'
-                          ? 'descending'
-                          : 'none';
+                    const ariaSortValue: 'ascending' | 'descending' | 'none' | undefined =
+                      !h.column.getCanSort()
+                        ? undefined
+                        : isSorted === 'asc'
+                          ? 'ascending'
+                          : isSorted === 'desc'
+                            ? 'descending'
+                            : 'none';
 
                     return (
                       <DynamicTh
@@ -208,7 +213,7 @@ export function LedgerTable({
                           'px-3 lg:px-6 pb-2 text-left whitespace-nowrap dynamic-column-width',
                           h.id === 'gstApplicable' && 'hidden md:table-cell',
                           isSticky &&
-                            'lg:sticky lg:right-0 lg:bg-[#12121a] lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)]'
+                            'lg:sticky lg:right-0 lg:bg-[#12121a] lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)]',
                         )}
                         width={h.column.getSize() !== 150 ? h.column.getSize() : undefined}
                       >
@@ -258,7 +263,7 @@ export function LedgerTable({
                             cell.column.id === 'gstApplicable' && 'hidden md:table-cell',
                             cellIndex === 0 && `border-l-2 ${borderColor}`,
                             isSticky &&
-                              'lg:sticky lg:right-0 lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)] lg:border-l lg:border-white/5'
+                              'lg:sticky lg:right-0 lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)] lg:border-l lg:border-white/5',
                           )}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}

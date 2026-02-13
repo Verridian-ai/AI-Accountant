@@ -132,7 +132,7 @@ export class TenantService {
     name: string,
     slug: string,
     ownerId: string,
-    options: CreateTenantOptions = {}
+    options: CreateTenantOptions = {},
   ): Promise<Tenant> {
     const now = new Date().toISOString();
     const tenantId = crypto.randomUUID();
@@ -144,38 +144,44 @@ export class TenantService {
     }
 
     // Insert tenant
-    await db.insert(tenants).values({
-      id: tenantId,
-      name,
-      slug,
-      abn: options.abn ?? null,
-      entityType: options.entityType ?? null,
-      industry: options.industry ?? null,
-      financialYearEnd: options.financialYearEnd ?? '06-30',
-      timezone: options.timezone ?? 'Australia/Sydney',
-      primaryContactEmail: options.primaryContactEmail ?? null,
-      settingsJson: JSON.stringify(options.settingsJson ?? {}),
-      isActive: true,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await db
+      .insert(tenants)
+      .values({
+        id: tenantId,
+        name,
+        slug,
+        abn: options.abn ?? null,
+        entityType: options.entityType ?? null,
+        industry: options.industry ?? null,
+        financialYearEnd: options.financialYearEnd ?? '06-30',
+        timezone: options.timezone ?? 'Australia/Sydney',
+        primaryContactEmail: options.primaryContactEmail ?? null,
+        settingsJson: JSON.stringify(options.settingsJson ?? {}),
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
     // Seed default role-permissions for this tenant
     await seedDefaultPermissions(tenantId, ownerId);
 
     // Create the owner as the first member
-    await db.insert(tenantMembers).values({
-      id: crypto.randomUUID(),
-      tenantId,
-      userId: ownerId,
-      role: 'owner',
-      isPrimaryContact: true,
-      invitedBy: null,
-      joinedAt: now,
-      lastActiveAt: now,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await db
+      .insert(tenantMembers)
+      .values({
+        id: crypto.randomUUID(),
+        tenantId,
+        userId: ownerId,
+        role: 'owner',
+        isPrimaryContact: true,
+        invitedBy: null,
+        joinedAt: now,
+        lastActiveAt: now,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
     return this.getTenant(tenantId) as Promise<Tenant>;
   }
@@ -185,20 +191,36 @@ export class TenantService {
    */
   async updateTenant(
     tenantId: string,
-    updates: Partial<Pick<Tenant, 'name' | 'logoUrl' | 'primaryContactEmail' | 'abn' | 'entityType' | 'industry' | 'financialYearEnd' | 'timezone' | 'settingsJson'>>
+    updates: Partial<
+      Pick<
+        Tenant,
+        | 'name'
+        | 'logoUrl'
+        | 'primaryContactEmail'
+        | 'abn'
+        | 'entityType'
+        | 'industry'
+        | 'financialYearEnd'
+        | 'timezone'
+        | 'settingsJson'
+      >
+    >,
   ): Promise<Tenant> {
     const now = new Date().toISOString();
     const setValues: Record<string, any> = { updatedAt: now };
 
     if (updates.name !== undefined) setValues.name = updates.name;
     if (updates.logoUrl !== undefined) setValues.logoUrl = updates.logoUrl;
-    if (updates.primaryContactEmail !== undefined) setValues.primaryContactEmail = updates.primaryContactEmail;
+    if (updates.primaryContactEmail !== undefined)
+      setValues.primaryContactEmail = updates.primaryContactEmail;
     if (updates.abn !== undefined) setValues.abn = updates.abn;
     if (updates.entityType !== undefined) setValues.entityType = updates.entityType;
     if (updates.industry !== undefined) setValues.industry = updates.industry;
-    if (updates.financialYearEnd !== undefined) setValues.financialYearEnd = updates.financialYearEnd;
+    if (updates.financialYearEnd !== undefined)
+      setValues.financialYearEnd = updates.financialYearEnd;
     if (updates.timezone !== undefined) setValues.timezone = updates.timezone;
-    if (updates.settingsJson !== undefined) setValues.settingsJson = JSON.stringify(updates.settingsJson);
+    if (updates.settingsJson !== undefined)
+      setValues.settingsJson = JSON.stringify(updates.settingsJson);
 
     await db.update(tenants).set(setValues).where(eq(tenants.id, tenantId)).run();
 
@@ -229,10 +251,14 @@ export class TenantService {
    * Soft-delete a tenant by setting is_active=false.
    */
   async deactivateTenant(tenantId: string): Promise<void> {
-    await db.update(tenants).set({
-      isActive: false,
-      updatedAt: new Date().toISOString(),
-    }).where(eq(tenants.id, tenantId)).run();
+    await db
+      .update(tenants)
+      .set({
+        isActive: false,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(tenants.id, tenantId))
+      .run();
   }
 
   // --------------------------------------------------------------------------
@@ -247,7 +273,7 @@ export class TenantService {
     tenantId: string,
     userId: string,
     role: TenantRole,
-    invitedBy?: string
+    invitedBy?: string,
   ): Promise<TenantMember> {
     // Validate role
     if (!TENANT_ROLES.includes(role)) {
@@ -255,11 +281,11 @@ export class TenantService {
     }
 
     // Check if user is already a member
-    const existingMember = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.userId, userId)
-      )).get();
+    const existingMember = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .get();
     if (existingMember) {
       throw new Error('User is already a member of this tenant');
     }
@@ -270,28 +296,34 @@ export class TenantService {
     if (memberCount >= sub.maxMembers) {
       throw new Error(
         `Member limit reached (${sub.maxMembers} on ${sub.planName} plan). ` +
-        'Upgrade your subscription to add more members.'
+          'Upgrade your subscription to add more members.',
       );
     }
 
     const now = new Date().toISOString();
     const memberId = crypto.randomUUID();
 
-    await db.insert(tenantMembers).values({
-      id: memberId,
-      tenantId,
-      userId,
-      role,
-      isPrimaryContact: false,
-      invitedBy: invitedBy ?? null,
-      joinedAt: now,
-      lastActiveAt: now,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await db
+      .insert(tenantMembers)
+      .values({
+        id: memberId,
+        tenantId,
+        userId,
+        role,
+        isPrimaryContact: false,
+        invitedBy: invitedBy ?? null,
+        joinedAt: now,
+        lastActiveAt: now,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
-    const member = await db.select().from(tenantMembers)
-      .where(eq(tenantMembers.id, memberId)).get();
+    const member = await db
+      .select()
+      .from(tenantMembers)
+      .where(eq(tenantMembers.id, memberId))
+      .get();
     return rowToMember(member);
   }
 
@@ -301,11 +333,11 @@ export class TenantService {
    */
   async removeMember(tenantId: string, userId: string): Promise<void> {
     // Get the member being removed
-    const member = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.userId, userId)
-      )).get();
+    const member = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .get();
 
     if (!member) {
       throw new Error('Member not found in this tenant');
@@ -319,11 +351,10 @@ export class TenantService {
       }
     }
 
-    await db.delete(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.userId, userId)
-      )).run();
+    await db
+      .delete(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .run();
 
     // Invalidate RBAC cache for removed user
     rbacService.invalidateUserCache(tenantId, userId);
@@ -336,17 +367,17 @@ export class TenantService {
   async updateMemberRole(
     tenantId: string,
     userId: string,
-    newRole: TenantRole
+    newRole: TenantRole,
   ): Promise<TenantMember> {
     if (!TENANT_ROLES.includes(newRole)) {
       throw new Error(`Invalid role: ${newRole}. Must be one of: ${TENANT_ROLES.join(', ')}`);
     }
 
-    const member = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.userId, userId)
-      )).get();
+    const member = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .get();
 
     if (!member) {
       throw new Error('Member not found in this tenant');
@@ -361,22 +392,23 @@ export class TenantService {
     }
 
     const now = new Date().toISOString();
-    await db.update(tenantMembers).set({
-      role: newRole,
-      updatedAt: now,
-    }).where(and(
-      eq(tenantMembers.tenantId, tenantId),
-      eq(tenantMembers.userId, userId)
-    )).run();
+    await db
+      .update(tenantMembers)
+      .set({
+        role: newRole,
+        updatedAt: now,
+      })
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .run();
 
     // Invalidate RBAC cache for affected user
     rbacService.invalidateUserCache(tenantId, userId);
 
-    const updated = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.userId, userId)
-      )).get();
+    const updated = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .get();
     return rowToMember(updated);
   }
 
@@ -384,8 +416,11 @@ export class TenantService {
    * List all members of a tenant.
    */
   async getMembers(tenantId: string): Promise<TenantMember[]> {
-    const rows = await db.select().from(tenantMembers)
-      .where(eq(tenantMembers.tenantId, tenantId)).all();
+    const rows = await db
+      .select()
+      .from(tenantMembers)
+      .where(eq(tenantMembers.tenantId, tenantId))
+      .all();
     return (rows as any[]).map(rowToMember);
   }
 
@@ -393,8 +428,11 @@ export class TenantService {
    * List all tenants a user belongs to, with their role in each.
    */
   async getMemberTenants(userId: string): Promise<Array<{ tenant: Tenant; role: TenantRole }>> {
-    const memberships = await db.select().from(tenantMembers)
-      .where(eq(tenantMembers.userId, userId)).all();
+    const memberships = await db
+      .select()
+      .from(tenantMembers)
+      .where(eq(tenantMembers.userId, userId))
+      .all();
 
     const results: Array<{ tenant: Tenant; role: TenantRole }> = [];
     for (const m of memberships as any[]) {
@@ -418,19 +456,24 @@ export class TenantService {
     tenantId: string,
     email: string,
     role: TenantRole,
-    invitedBy: string
+    invitedBy: string,
   ): Promise<TenantInvitation> {
     if (!TENANT_ROLES.includes(role)) {
       throw new Error(`Invalid role: ${role}`);
     }
 
     // Check for existing pending invitation for same email+tenant
-    const existing = await db.select().from(tenantInvitations)
-      .where(and(
-        eq(tenantInvitations.tenantId, tenantId),
-        eq(tenantInvitations.email, email),
-        eq(tenantInvitations.status, 'pending')
-      )).get();
+    const existing = await db
+      .select()
+      .from(tenantInvitations)
+      .where(
+        and(
+          eq(tenantInvitations.tenantId, tenantId),
+          eq(tenantInvitations.email, email),
+          eq(tenantInvitations.status, 'pending'),
+        ),
+      )
+      .get();
     if (existing) {
       throw new Error(`A pending invitation already exists for ${email} in this tenant`);
     }
@@ -442,7 +485,7 @@ export class TenantService {
     if (memberCount + pendingCount >= sub.maxMembers) {
       throw new Error(
         `Member limit would be exceeded (${sub.maxMembers} on ${sub.planName} plan). ` +
-        'Upgrade your subscription to invite more members.'
+          'Upgrade your subscription to invite more members.',
       );
     }
 
@@ -451,20 +494,26 @@ export class TenantService {
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + INVITATION_EXPIRY_MS).toISOString();
 
-    await db.insert(tenantInvitations).values({
-      id: invitationId,
-      tenantId,
-      email,
-      role,
-      invitedBy,
-      token,
-      status: 'pending',
-      expiresAt,
-      createdAt: now,
-    }).run();
+    await db
+      .insert(tenantInvitations)
+      .values({
+        id: invitationId,
+        tenantId,
+        email,
+        role,
+        invitedBy,
+        token,
+        status: 'pending',
+        expiresAt,
+        createdAt: now,
+      })
+      .run();
 
-    const row = await db.select().from(tenantInvitations)
-      .where(eq(tenantInvitations.id, invitationId)).get();
+    const row = await db
+      .select()
+      .from(tenantInvitations)
+      .where(eq(tenantInvitations.id, invitationId))
+      .get();
     return rowToInvitation(row);
   }
 
@@ -476,10 +525,13 @@ export class TenantService {
    */
   async acceptInvitation(
     token: string,
-    userId: string
+    userId: string,
   ): Promise<{ tenant: Tenant; member: TenantMember }> {
-    const invitation = await db.select().from(tenantInvitations)
-      .where(eq(tenantInvitations.token, token)).get();
+    const invitation = await db
+      .select()
+      .from(tenantInvitations)
+      .where(eq(tenantInvitations.token, token))
+      .get();
 
     if (!invitation) {
       throw new Error('Invalid invitation token');
@@ -493,8 +545,11 @@ export class TenantService {
     const expiresAt = new Date(inv.expiresAt ?? inv.expires_at);
     if (expiresAt < new Date()) {
       // Mark as expired
-      await db.update(tenantInvitations).set({ status: 'expired' })
-        .where(eq(tenantInvitations.id, inv.id)).run();
+      await db
+        .update(tenantInvitations)
+        .set({ status: 'expired' })
+        .where(eq(tenantInvitations.id, inv.id))
+        .run();
       throw new Error('Invitation has expired');
     }
 
@@ -506,10 +561,14 @@ export class TenantService {
 
     // Mark invitation as accepted
     const now = new Date().toISOString();
-    await db.update(tenantInvitations).set({
-      status: 'accepted',
-      acceptedAt: now,
-    }).where(eq(tenantInvitations.id, inv.id)).run();
+    await db
+      .update(tenantInvitations)
+      .set({
+        status: 'accepted',
+        acceptedAt: now,
+      })
+      .where(eq(tenantInvitations.id, inv.id))
+      .run();
 
     const tenant = await this.getTenant(tenantId);
     if (!tenant) throw new Error('Tenant not found after accepting invitation');
@@ -521,8 +580,11 @@ export class TenantService {
    * Revoke a pending invitation.
    */
   async revokeInvitation(invitationId: string): Promise<void> {
-    const invitation = await db.select().from(tenantInvitations)
-      .where(eq(tenantInvitations.id, invitationId)).get();
+    const invitation = await db
+      .select()
+      .from(tenantInvitations)
+      .where(eq(tenantInvitations.id, invitationId))
+      .get();
 
     if (!invitation) {
       throw new Error('Invitation not found');
@@ -532,19 +594,22 @@ export class TenantService {
       throw new Error('Can only revoke pending invitations');
     }
 
-    await db.update(tenantInvitations).set({ status: 'revoked' })
-      .where(eq(tenantInvitations.id, invitationId)).run();
+    await db
+      .update(tenantInvitations)
+      .set({ status: 'revoked' })
+      .where(eq(tenantInvitations.id, invitationId))
+      .run();
   }
 
   /**
    * List all pending invitations for a tenant.
    */
   async getPendingInvitations(tenantId: string): Promise<TenantInvitation[]> {
-    const rows = await db.select().from(tenantInvitations)
-      .where(and(
-        eq(tenantInvitations.tenantId, tenantId),
-        eq(tenantInvitations.status, 'pending')
-      )).all();
+    const rows = await db
+      .select()
+      .from(tenantInvitations)
+      .where(and(eq(tenantInvitations.tenantId, tenantId), eq(tenantInvitations.status, 'pending')))
+      .all();
     return (rows as any[]).map(rowToInvitation);
   }
 
@@ -556,15 +621,21 @@ export class TenantService {
     const now = new Date().toISOString();
 
     // Fetch all pending invitations that have passed their expiry
-    const expired = await db.select().from(tenantInvitations)
-      .where(eq(tenantInvitations.status, 'pending')).all();
+    const expired = await db
+      .select()
+      .from(tenantInvitations)
+      .where(eq(tenantInvitations.status, 'pending'))
+      .all();
 
     let count = 0;
     for (const inv of expired as any[]) {
       const expiresAt = inv.expiresAt ?? inv.expires_at;
       if (expiresAt && new Date(expiresAt) < new Date(now)) {
-        await db.update(tenantInvitations).set({ status: 'expired' })
-          .where(eq(tenantInvitations.id, inv.id)).run();
+        await db
+          .update(tenantInvitations)
+          .set({ status: 'expired' })
+          .where(eq(tenantInvitations.id, inv.id))
+          .run();
         count++;
       }
     }
@@ -590,11 +661,11 @@ export class TenantService {
    */
   async getTenantContext(userId: string, tenantId: string): Promise<TenantContext> {
     // Validate the user is a member
-    const member = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.userId, userId)
-      )).get();
+    const member = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .get();
 
     if (!member) {
       throw new Error('User is not a member of this tenant');
@@ -618,12 +689,13 @@ export class TenantService {
     const subscription = await this._getSubscriptionInfo(tenantId);
 
     // Update last active timestamp
-    await db.update(tenantMembers).set({
-      lastActiveAt: new Date().toISOString(),
-    }).where(and(
-      eq(tenantMembers.tenantId, tenantId),
-      eq(tenantMembers.userId, userId)
-    )).run();
+    await db
+      .update(tenantMembers)
+      .set({
+        lastActiveAt: new Date().toISOString(),
+      })
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .run();
 
     return {
       tenant,
@@ -637,7 +709,9 @@ export class TenantService {
    * Get the default (first joined) tenant for a user.
    */
   async getDefaultTenant(userId: string): Promise<Tenant | null> {
-    const memberships = await db.select().from(tenantMembers)
+    const memberships = await db
+      .select()
+      .from(tenantMembers)
       .where(eq(tenantMembers.userId, userId))
       .orderBy(tenantMembers.joinedAt)
       .all();
@@ -655,41 +729,44 @@ export class TenantService {
 
   /** Get the count of members in a tenant */
   private async _getMemberCount(tenantId: string): Promise<number> {
-    const rows = await db.select().from(tenantMembers)
-      .where(eq(tenantMembers.tenantId, tenantId)).all();
+    const rows = await db
+      .select()
+      .from(tenantMembers)
+      .where(eq(tenantMembers.tenantId, tenantId))
+      .all();
     return (rows as any[]).length;
   }
 
   /** Get the count of pending invitations for a tenant */
   private async _getPendingInvitationCount(tenantId: string): Promise<number> {
-    const rows = await db.select().from(tenantInvitations)
-      .where(and(
-        eq(tenantInvitations.tenantId, tenantId),
-        eq(tenantInvitations.status, 'pending')
-      )).all();
+    const rows = await db
+      .select()
+      .from(tenantInvitations)
+      .where(and(eq(tenantInvitations.tenantId, tenantId), eq(tenantInvitations.status, 'pending')))
+      .all();
     return (rows as any[]).length;
   }
 
   /** Count members with a specific role in a tenant */
   private async _countMembersWithRole(tenantId: string, role: TenantRole): Promise<number> {
-    const rows = await db.select().from(tenantMembers)
-      .where(and(
-        eq(tenantMembers.tenantId, tenantId),
-        eq(tenantMembers.role, role)
-      )).all();
+    const rows = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.role, role)))
+      .all();
     return (rows as any[]).length;
   }
 
   /** Get the list of permission names for a role in a tenant */
   private async _getPermissionsForRole(tenantId: string, role: TenantRole): Promise<string[]> {
     // Join rolePermissions with permissions to get permission names
-    const rps = await db.select().from(rolePermissions)
-      .where(and(
-        eq(rolePermissions.tenantId, tenantId),
-        eq(rolePermissions.role, role)
-      )).all();
+    const rps = await db
+      .select()
+      .from(rolePermissions)
+      .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
+      .all();
 
-    const permIds = (rps as any[]).map(rp => rp.permissionId ?? rp.permission_id);
+    const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
     if (permIds.length === 0) return [];
 
     const allPerms = await db.select().from(permissions).all();
@@ -698,17 +775,19 @@ export class TenantService {
       permMap.set(p.id, p.name);
     }
 
-    return permIds.map(id => permMap.get(id)).filter((name): name is string => !!name);
+    return permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
   }
 
   /** Get subscription info for a tenant, with defaults for free tier */
   private async _getSubscriptionInfo(tenantId: string): Promise<SubscriptionInfo> {
     // Find the active subscription for this tenant
-    const sub = await db.select().from(subscriptionHistory)
-      .where(and(
-        eq(subscriptionHistory.tenantId, tenantId),
-        eq(subscriptionHistory.status, 'active')
-      )).get();
+    const sub = await db
+      .select()
+      .from(subscriptionHistory)
+      .where(
+        and(eq(subscriptionHistory.tenantId, tenantId), eq(subscriptionHistory.status, 'active')),
+      )
+      .get();
 
     if (!sub) return { ...DEFAULT_SUBSCRIPTION };
 
@@ -716,8 +795,11 @@ export class TenantService {
     const planId = subRow.planId ?? subRow.plan_id;
 
     // Fetch the plan details
-    const plan = await db.select().from(subscriptionPlans)
-      .where(eq(subscriptionPlans.id, planId)).get();
+    const plan = await db
+      .select()
+      .from(subscriptionPlans)
+      .where(eq(subscriptionPlans.id, planId))
+      .get();
 
     if (!plan) return { ...DEFAULT_SUBSCRIPTION };
 
@@ -729,10 +811,14 @@ export class TenantService {
       billingCycle: subRow.billingCycle ?? subRow.billing_cycle ?? 'monthly',
       maxMembers: planRow.maxMembers ?? planRow.max_members ?? 3,
       maxAccounts: planRow.maxAccounts ?? planRow.max_accounts ?? 2,
-      maxTransactionsPerMonth: planRow.maxTransactionsPerMonth ?? planRow.max_transactions_per_month ?? 500,
+      maxTransactionsPerMonth:
+        planRow.maxTransactionsPerMonth ?? planRow.max_transactions_per_month ?? 500,
       maxAiQueriesPerMonth: planRow.maxAiQueriesPerMonth ?? planRow.max_ai_queries_per_month ?? 50,
       maxStorageMb: planRow.maxStorageMb ?? planRow.max_storage_mb ?? 100,
-      currentPeriodEnd: subRow.currentPeriodEnd ?? subRow.current_period_end ?? DEFAULT_SUBSCRIPTION.currentPeriodEnd,
+      currentPeriodEnd:
+        subRow.currentPeriodEnd ??
+        subRow.current_period_end ??
+        DEFAULT_SUBSCRIPTION.currentPeriodEnd,
       features: parseJsonArray(planRow.featuresJson ?? planRow.features_json),
     };
   }

@@ -116,16 +116,16 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
 
   // Fetch data for widgets with data source URLs
   useEffect(() => {
-    widgets.forEach(w => {
+    widgets.forEach((w) => {
       if (w.dataSourceUrl && !widgetData[w.id]) {
         const url = w.dataSourceUrl.startsWith('http')
           ? w.dataSourceUrl
           : `${BASE_URL}${w.dataSourceUrl}`;
         fetch(url, { headers: getAuthHeaders() })
-          .then(res => res.json())
-          .then(data => {
-            const items = Array.isArray(data) ? data : data.transactions ?? data.data ?? [];
-            setWidgetData(prev => ({ ...prev, [w.id]: items }));
+          .then((res) => res.json())
+          .then((data) => {
+            const items = Array.isArray(data) ? data : (data.transactions ?? data.data ?? []);
+            setWidgetData((prev) => ({ ...prev, [w.id]: items }));
           })
           .catch(() => {
             // Silently fail - widget will show demo data
@@ -146,19 +146,25 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
     }
   };
 
-  const handleAddWidget = useCallback((widget: WidgetConfig) => {
-    // Auto-position: find the next available row
-    const maxRow = widgets.reduce((max, w) => Math.max(max, w.position.row + w.position.height), 0);
-    const positioned = {
-      ...widget,
-      position: {
-        ...widget.position,
-        row: maxRow,
-        col: 0,
-      },
-    };
-    addWidget(positioned);
-  }, [widgets, addWidget]);
+  const handleAddWidget = useCallback(
+    (widget: WidgetConfig) => {
+      // Auto-position: find the next available row
+      const maxRow = widgets.reduce(
+        (max, w) => Math.max(max, w.position.row + w.position.height),
+        0,
+      );
+      const positioned = {
+        ...widget,
+        position: {
+          ...widget.position,
+          row: maxRow,
+          col: 0,
+        },
+      };
+      addWidget(positioned);
+    },
+    [widgets, addWidget],
+  );
 
   const renderWidget = (widget: WidgetConfig) => {
     const data = widgetData[widget.id];
@@ -223,9 +229,13 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
         return (
           <ComposedChart
             data={(data as Record<string, unknown>[]) ?? DEMO_BAR_DATA}
-            bars={config.bars as Array<{ dataKey: string; color: string }> ?? [{ dataKey: 'value', color: CHART_COLORS.primary }]}
-            lines={config.lines as Array<{ dataKey: string; color: string }> ?? []}
-            areas={config.areas as Array<{ dataKey: string; color: string }> ?? []}
+            bars={
+              (config.bars as Array<{ dataKey: string; color: string }>) ?? [
+                { dataKey: 'value', color: CHART_COLORS.primary },
+              ]
+            }
+            lines={(config.lines as Array<{ dataKey: string; color: string }>) ?? []}
+            areas={(config.areas as Array<{ dataKey: string; color: string }>) ?? []}
             xAxisKey={(config.xAxisKey as string) ?? 'name'}
             title={widget.title}
             height={200}
@@ -234,14 +244,35 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
       case 'treemap':
         return (
           <TreeMap
-            data={(data as Array<{ name: string; value?: number; children?: Array<{ name: string; value?: number }> }>) ?? DEMO_TREEMAP_DATA}
+            data={
+              (data as Array<{
+                name: string;
+                value?: number;
+                children?: Array<{ name: string; value?: number }>;
+              }>) ?? DEMO_TREEMAP_DATA
+            }
             title={widget.title}
             height={200}
           />
         );
       case 'sankey': {
         const sankeyData = data
-          ? { nodes: (data as unknown as { nodes: Array<{ name: string }>; links: Array<{ source: number; target: number; value: number }> }).nodes ?? DEMO_SANKEY.nodes, links: (data as unknown as { nodes: Array<{ name: string }>; links: Array<{ source: number; target: number; value: number }> }).links ?? DEMO_SANKEY.links }
+          ? {
+              nodes:
+                (
+                  data as unknown as {
+                    nodes: Array<{ name: string }>;
+                    links: Array<{ source: number; target: number; value: number }>;
+                  }
+                ).nodes ?? DEMO_SANKEY.nodes,
+              links:
+                (
+                  data as unknown as {
+                    nodes: Array<{ name: string }>;
+                    links: Array<{ source: number; target: number; value: number }>;
+                  }
+                ).links ?? DEMO_SANKEY.links,
+            }
           : DEMO_SANKEY;
         return (
           <Sankey
@@ -291,9 +322,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-zinc-100">
-            {dashboard?.name ?? 'Dashboard'}
-          </h2>
+          <h2 className="text-xl font-bold text-zinc-100">{dashboard?.name ?? 'Dashboard'}</h2>
           {dashboard?.description && (
             <p className="text-sm text-zinc-500 mt-0.5">{dashboard.description}</p>
           )}
@@ -314,11 +343,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
               disabled={saving}
               className="flex items-center gap-2 px-4 py-2 bg-[#FFCC00] text-[#0a0a0f] rounded-xl font-bold text-sm hover:bg-[#FFE066] transition-colors btn-press"
             >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save
             </button>
           ) : (
@@ -361,12 +386,12 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
             gridTemplateColumns: 'repeat(12, 1fr)',
           }}
         >
-          {widgets.map(widget => (
+          {widgets.map((widget) => (
             <div
               key={widget.id}
               className={cn(
                 'neu-raised rounded-2xl overflow-hidden border border-white/5 transition-all duration-200',
-                editMode && 'hover:border-[#FFCC00]/30'
+                editMode && 'hover:border-[#FFCC00]/30',
               )}
               style={{
                 gridColumn: `span ${Math.min(widget.position.width, 12)}`,
@@ -376,9 +401,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
               {/* Widget Header (edit mode) */}
               {editMode && (
                 <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 bg-white/[0.02]">
-                  <span className="text-xs font-bold text-zinc-400 truncate">
-                    {widget.title}
-                  </span>
+                  <span className="text-xs font-bold text-zinc-400 truncate">{widget.title}</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setConfigWidget(widget)}
@@ -399,9 +422,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
               )}
 
               {/* Widget Content */}
-              <div className="p-3">
-                {renderWidget(widget)}
-              </div>
+              <div className="p-3">{renderWidget(widget)}</div>
             </div>
           ))}
         </div>
@@ -450,30 +471,30 @@ function KPICard({
     }
   };
 
-  const change = previousValue != null ? ((value - previousValue) / Math.abs(previousValue || 1)) * 100 : null;
+  const change =
+    previousValue != null ? ((value - previousValue) / Math.abs(previousValue || 1)) * 100 : null;
   const trend = change != null ? (change > 0 ? 'up' : change < 0 ? 'down' : 'flat') : null;
 
   const sparkData = [38, 42, 39, 44, 47, 45, 50, 48, 52, 55];
 
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 gap-2">
-      <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-        {label}
-      </span>
-      <span className="text-2xl font-bold text-zinc-100">
-        {formatValue(value)}
-      </span>
+      <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{label}</span>
+      <span className="text-2xl font-bold text-zinc-100">{formatValue(value)}</span>
       {change != null && (
-        <div className={cn(
-          'flex items-center gap-1 text-xs font-bold',
-          trend === 'up' && 'text-emerald-400',
-          trend === 'down' && 'text-red-400',
-          trend === 'flat' && 'text-zinc-400',
-        )}>
+        <div
+          className={cn(
+            'flex items-center gap-1 text-xs font-bold',
+            trend === 'up' && 'text-emerald-400',
+            trend === 'down' && 'text-red-400',
+            trend === 'flat' && 'text-zinc-400',
+          )}
+        >
           {trend === 'up' && <TrendingUp className="w-3 h-3" />}
           {trend === 'down' && <TrendingDown className="w-3 h-3" />}
           {trend === 'flat' && <Minus className="w-3 h-3" />}
-          {change > 0 ? '+' : ''}{change.toFixed(1)}%
+          {change > 0 ? '+' : ''}
+          {change.toFixed(1)}%
         </div>
       )}
       <Sparkline

@@ -271,9 +271,7 @@ export abstract class BaseBankParser implements BankParser {
         accountInfo: this.getDefaultAccountInfo(),
         transactions: [],
         parseWarnings: warnings,
-        parseErrors: [
-          `Parse failed: ${err instanceof Error ? err.message : String(err)}`,
-        ],
+        parseErrors: [`Parse failed: ${err instanceof Error ? err.message : String(err)}`],
         detectionConfidence: detection.confidence,
         parserUsed: this.config.bankId,
         processingTimeMs: Date.now() - startTime,
@@ -294,11 +292,7 @@ export abstract class BaseBankParser implements BankParser {
   /**
    * Extract text between two patterns
    */
-  protected extractBetween(
-    text: string,
-    startPattern: RegExp,
-    endPattern: RegExp
-  ): string | null {
+  protected extractBetween(text: string, startPattern: RegExp, endPattern: RegExp): string | null {
     const startMatch = text.match(startPattern);
     if (!startMatch) return null;
 
@@ -315,7 +309,10 @@ export abstract class BaseBankParser implements BankParser {
    * Split PDF text into lines, handling various line endings
    */
   protected splitLines(text: string): string[] {
-    return text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    return text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
   }
 
   /**

@@ -9,7 +9,12 @@ import {
   YAxis,
   CartesianGrid,
 } from 'recharts';
-import { fetchMarketPrices, fetchPriceHistory, searchSymbol, refreshMarketPrices } from '../../../api';
+import {
+  fetchMarketPrices,
+  fetchPriceHistory,
+  searchSymbol,
+  refreshMarketPrices,
+} from '../../../api';
 
 interface PriceItem {
   symbol: string;
@@ -58,16 +63,86 @@ export function PriceTracker() {
     } catch {
       // Fallback data
       setPrices([
-        { symbol: 'ASX:CBA', name: 'Commonwealth Bank', type: 'equity', price: 128.45, change: 1.23, changePercent: 0.97 },
-        { symbol: 'ASX:BHP', name: 'BHP Group', type: 'equity', price: 45.67, change: -0.45, changePercent: -0.98 },
-        { symbol: 'ASX:CSL', name: 'CSL Limited', type: 'equity', price: 298.50, change: 3.20, changePercent: 1.08 },
-        { symbol: 'ASX:WBC', name: 'Westpac Banking', type: 'equity', price: 28.90, change: 0.15, changePercent: 0.52 },
-        { symbol: 'ASX:NAB', name: 'National Australia Bank', type: 'equity', price: 35.60, change: -0.30, changePercent: -0.84 },
-        { symbol: 'ASX:ANZ', name: 'ANZ Banking Group', type: 'equity', price: 29.45, change: 0.22, changePercent: 0.75 },
-        { symbol: 'BTC-AUD', name: 'Bitcoin', type: 'crypto', price: 148523.00, change: 2456.00, changePercent: 1.68 },
-        { symbol: 'ETH-AUD', name: 'Ethereum', type: 'crypto', price: 5243.00, change: -87.00, changePercent: -1.63 },
-        { symbol: 'SOL-AUD', name: 'Solana', type: 'crypto', price: 245.80, change: 12.30, changePercent: 5.27 },
-        { symbol: 'XRP-AUD', name: 'Ripple', type: 'crypto', price: 3.82, change: 0.08, changePercent: 2.14 },
+        {
+          symbol: 'ASX:CBA',
+          name: 'Commonwealth Bank',
+          type: 'equity',
+          price: 128.45,
+          change: 1.23,
+          changePercent: 0.97,
+        },
+        {
+          symbol: 'ASX:BHP',
+          name: 'BHP Group',
+          type: 'equity',
+          price: 45.67,
+          change: -0.45,
+          changePercent: -0.98,
+        },
+        {
+          symbol: 'ASX:CSL',
+          name: 'CSL Limited',
+          type: 'equity',
+          price: 298.5,
+          change: 3.2,
+          changePercent: 1.08,
+        },
+        {
+          symbol: 'ASX:WBC',
+          name: 'Westpac Banking',
+          type: 'equity',
+          price: 28.9,
+          change: 0.15,
+          changePercent: 0.52,
+        },
+        {
+          symbol: 'ASX:NAB',
+          name: 'National Australia Bank',
+          type: 'equity',
+          price: 35.6,
+          change: -0.3,
+          changePercent: -0.84,
+        },
+        {
+          symbol: 'ASX:ANZ',
+          name: 'ANZ Banking Group',
+          type: 'equity',
+          price: 29.45,
+          change: 0.22,
+          changePercent: 0.75,
+        },
+        {
+          symbol: 'BTC-AUD',
+          name: 'Bitcoin',
+          type: 'crypto',
+          price: 148523.0,
+          change: 2456.0,
+          changePercent: 1.68,
+        },
+        {
+          symbol: 'ETH-AUD',
+          name: 'Ethereum',
+          type: 'crypto',
+          price: 5243.0,
+          change: -87.0,
+          changePercent: -1.63,
+        },
+        {
+          symbol: 'SOL-AUD',
+          name: 'Solana',
+          type: 'crypto',
+          price: 245.8,
+          change: 12.3,
+          changePercent: 5.27,
+        },
+        {
+          symbol: 'XRP-AUD',
+          name: 'Ripple',
+          type: 'crypto',
+          price: 3.82,
+          change: 0.08,
+          changePercent: 2.14,
+        },
       ]);
     } finally {
       setLoading(false);
@@ -83,7 +158,9 @@ export function PriceTracker() {
     setHistoryLoading(true);
     try {
       const data = await fetchPriceHistory(symbol, 30);
-      const points = Array.isArray(data) ? data : (data as { history: HistoryPoint[] }).history || [];
+      const points = Array.isArray(data)
+        ? data
+        : (data as { history: HistoryPoint[] }).history || [];
       setHistory(points);
     } catch {
       // Mock history
@@ -132,11 +209,12 @@ export function PriceTracker() {
     }
   }, [loadPrices]);
 
-  const filtered = activeTab === 'all' ? prices : prices.filter(p => p.type === activeTab);
+  const filtered = activeTab === 'all' ? prices : prices.filter((p) => p.type === activeTab);
   const displayPrices = searchResults.length > 0 ? searchResults : filtered;
 
   const formatPrice = (price: number) => {
-    if (price >= 1000) return price.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (price >= 1000)
+      return price.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return price.toFixed(price < 1 ? 4 : 2);
   };
 
@@ -148,7 +226,10 @@ export function PriceTracker() {
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => { setActiveTab(tab.id); setSearchResults([]); }}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setSearchResults([]);
+              }}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === tab.id
                   ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
@@ -196,7 +277,9 @@ export function PriceTracker() {
             </button>
           </div>
           {historyLoading ? (
-            <div className="h-48 flex items-center justify-center text-zinc-500 text-sm">Loading...</div>
+            <div className="h-48 flex items-center justify-center text-zinc-500 text-sm">
+              Loading...
+            </div>
           ) : (
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
@@ -231,70 +314,85 @@ export function PriceTracker() {
 
       {/* Price Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {loading
-          ? Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="neu-raised rounded-2xl p-4 animate-pulse">
-                <div className="h-4 w-20 bg-zinc-700 rounded mb-2" />
-                <div className="h-6 w-24 bg-zinc-700 rounded mb-1" />
-                <div className="h-3 w-16 bg-zinc-700 rounded" />
-              </div>
-            ))
-          : displayPrices.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-zinc-500 text-sm">
-                No prices available
-              </div>
-            )
-          : displayPrices.map((item) => {
-              const isUp = item.changePercent >= 0;
-              return (
-                <button
-                  key={item.symbol}
-                  onClick={() => loadHistory(item.symbol)}
-                  className={`neu-raised rounded-2xl p-4 text-left hover:scale-[1.02] transition-all border ${
-                    selectedSymbol === item.symbol
-                      ? 'border-[#FFCC00]/40'
-                      : isUp
+        {loading ? (
+          Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="neu-raised rounded-2xl p-4 animate-pulse">
+              <div className="h-4 w-20 bg-zinc-700 rounded mb-2" />
+              <div className="h-6 w-24 bg-zinc-700 rounded mb-1" />
+              <div className="h-3 w-16 bg-zinc-700 rounded" />
+            </div>
+          ))
+        ) : displayPrices.length === 0 ? (
+          <div className="col-span-full text-center py-8 text-zinc-500 text-sm">
+            No prices available
+          </div>
+        ) : (
+          displayPrices.map((item) => {
+            const isUp = item.changePercent >= 0;
+            return (
+              <button
+                key={item.symbol}
+                onClick={() => loadHistory(item.symbol)}
+                className={`neu-raised rounded-2xl p-4 text-left hover:scale-[1.02] transition-all border ${
+                  selectedSymbol === item.symbol
+                    ? 'border-[#FFCC00]/40'
+                    : isUp
                       ? 'border-emerald-500/10 hover:border-emerald-500/30'
                       : 'border-red-500/10 hover:border-red-500/30'
-                  }`}
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-[#FFCC00] uppercase tracking-wider">
+                    {item.symbol}
+                  </span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      item.type === 'equity'
+                        ? 'bg-blue-500/10 text-blue-400'
+                        : 'bg-purple-500/10 text-purple-400'
+                    }`}
+                  >
+                    {item.type}
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-500 truncate mb-1">{item.name}</p>
+                <p className="text-lg font-bold text-white">${formatPrice(item.price)}</p>
+                <div
+                  className={`flex items-center gap-1 mt-1 text-xs font-medium ${isUp ? 'text-emerald-400' : 'text-red-400'}`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[#FFCC00] uppercase tracking-wider">
-                      {item.symbol}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      item.type === 'equity' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'
-                    }`}>
-                      {item.type}
-                    </span>
-                  </div>
-                  <p className="text-xs text-zinc-500 truncate mb-1">{item.name}</p>
-                  <p className="text-lg font-bold text-white">${formatPrice(item.price)}</p>
-                  <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${isUp ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    <span>{isUp ? '+' : ''}{item.change.toFixed(2)}</span>
-                    <span className="text-zinc-600">|</span>
-                    <span>{isUp ? '+' : ''}{item.changePercent.toFixed(2)}%</span>
-                  </div>
-                  {/* Mini sparkline placeholder */}
-                  <div className="mt-2 h-6">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={Array.from({ length: 10 }, (_, i) => ({
+                  {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  <span>
+                    {isUp ? '+' : ''}
+                    {item.change.toFixed(2)}
+                  </span>
+                  <span className="text-zinc-600">|</span>
+                  <span>
+                    {isUp ? '+' : ''}
+                    {item.changePercent.toFixed(2)}%
+                  </span>
+                </div>
+                {/* Mini sparkline placeholder */}
+                <div className="mt-2 h-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={Array.from({ length: 10 }, (_, i) => ({
                         v: item.price + (Math.random() - 0.5) * item.price * 0.02 * (i + 1),
-                      }))}>
-                        <Line
-                          type="monotone"
-                          dataKey="v"
-                          stroke={isUp ? '#34d399' : '#f87171'}
-                          strokeWidth={1.5}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </button>
-              );
-            })}
+                      }))}
+                    >
+                      <Line
+                        type="monotone"
+                        dataKey="v"
+                        stroke={isUp ? '#34d399' : '#f87171'}
+                        strokeWidth={1.5}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </button>
+            );
+          })
+        )}
       </div>
     </div>
   );

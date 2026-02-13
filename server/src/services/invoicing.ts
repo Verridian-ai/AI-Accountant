@@ -109,7 +109,7 @@ function calculateLineAmounts(input: CreateLineItemInput) {
 /** Sum line amounts into invoice-level totals */
 function calculateInvoiceTotals(
   lines: Array<{ amount: number; gstAmount: number }>,
-  existingAmountPaid: number = 0
+  existingAmountPaid: number = 0,
 ) {
   const subtotal = lines.reduce((sum, l) => sum + l.amount, 0);
   const gstAmount = lines.reduce((sum, l) => sum + l.gstAmount, 0);
@@ -142,14 +142,17 @@ export class InvoicingService {
     if (!existing) {
       // Seed the sequence for a new user
       const id = randomUUID();
-      await (db as any).insert(invoiceNumberSequences).values({
-        id,
-        userId,
-        prefix: 'INV-',
-        nextNumber: 2, // We'll use 1 now and set next to 2
-        createdAt: nowISO(),
-        updatedAt: nowISO(),
-      }).run();
+      await (db as any)
+        .insert(invoiceNumberSequences)
+        .values({
+          id,
+          userId,
+          prefix: 'INV-',
+          nextNumber: 2, // We'll use 1 now and set next to 2
+          createdAt: nowISO(),
+          updatedAt: nowISO(),
+        })
+        .run();
 
       return 'INV-000001';
     }
@@ -176,10 +179,7 @@ export class InvoicingService {
   // Create Invoice
   // --------------------------------------------------------------------------
 
-  async createInvoice(
-    userId: string,
-    data: CreateInvoiceInput
-  ): Promise<InvoiceWithLines> {
+  async createInvoice(userId: string, data: CreateInvoiceInput): Promise<InvoiceWithLines> {
     const invoiceId = randomUUID();
     const invoiceNumber = await this.getNextInvoiceNumber(userId);
 
@@ -190,8 +190,10 @@ export class InvoicingService {
     });
 
     // Calculate invoice totals
-    const { subtotal, gstAmount, totalAmount, amountDue } =
-      calculateInvoiceTotals(calculatedLines, 0);
+    const { subtotal, gstAmount, totalAmount, amountDue } = calculateInvoiceTotals(
+      calculatedLines,
+      0,
+    );
 
     // Determine dates
     const issueDate = data.issueDate ?? today();
@@ -214,26 +216,29 @@ export class InvoicingService {
     const now = nowISO();
 
     // Insert invoice
-    await (db as any).insert(invoices).values({
-      id: invoiceId,
-      userId,
-      customerId: data.customerId,
-      invoiceNumber,
-      type: 'invoice',
-      status: 'draft',
-      issueDate,
-      dueDate,
-      subtotal,
-      gstAmount,
-      totalAmount,
-      amountPaid: 0,
-      amountDue,
-      currency: 'AUD',
-      notes: data.notes ?? null,
-      termsAndConditions: data.termsAndConditions ?? null,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await (db as any)
+      .insert(invoices)
+      .values({
+        id: invoiceId,
+        userId,
+        customerId: data.customerId,
+        invoiceNumber,
+        type: 'invoice',
+        status: 'draft',
+        issueDate,
+        dueDate,
+        subtotal,
+        gstAmount,
+        totalAmount,
+        amountPaid: 0,
+        amountDue,
+        currency: 'AUD',
+        notes: data.notes ?? null,
+        termsAndConditions: data.termsAndConditions ?? null,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
     // Insert line items
     const insertedLines: any[] = [];
@@ -286,10 +291,7 @@ export class InvoicingService {
   // Get Invoice (with lines + customer)
   // --------------------------------------------------------------------------
 
-  async getInvoice(
-    userId: string,
-    invoiceId: string
-  ): Promise<InvoiceWithLines | null> {
+  async getInvoice(userId: string, invoiceId: string): Promise<InvoiceWithLines | null> {
     const invoice = await (db as any)
       .select()
       .from(invoices)
@@ -329,7 +331,7 @@ export class InvoicingService {
       customerId?: string;
       dateFrom?: string;
       dateTo?: string;
-    } = {}
+    } = {},
   ): Promise<{ data: InvoiceWithCustomer[]; total: number }> {
     const offset = options.offset ?? 0;
     const limit = Math.min(options.limit ?? 50, 100);
@@ -388,7 +390,7 @@ export class InvoicingService {
   async updateInvoice(
     userId: string,
     invoiceId: string,
-    data: UpdateInvoiceInput
+    data: UpdateInvoiceInput,
   ): Promise<InvoiceWithLines> {
     const existing = await (db as any)
       .select()
@@ -401,7 +403,7 @@ export class InvoicingService {
     }
     if (existing.status !== 'draft') {
       throw new Error(
-        `Cannot update invoice with status '${existing.status}'. Only draft invoices can be edited.`
+        `Cannot update invoice with status '${existing.status}'. Only draft invoices can be edited.`,
       );
     }
 
@@ -410,16 +412,12 @@ export class InvoicingService {
     if (data.issueDate !== undefined) updates.issueDate = data.issueDate;
     if (data.dueDate !== undefined) updates.dueDate = data.dueDate;
     if (data.notes !== undefined) updates.notes = data.notes;
-    if (data.termsAndConditions !== undefined)
-      updates.termsAndConditions = data.termsAndConditions;
+    if (data.termsAndConditions !== undefined) updates.termsAndConditions = data.termsAndConditions;
 
     // If line items provided, delete + re-insert and recalculate totals
     if (data.lineItems && data.lineItems.length > 0) {
       // Delete existing lines
-      await (db as any)
-        .delete(invoiceLines)
-        .where(eq(invoiceLines.invoiceId, invoiceId))
-        .run();
+      await (db as any).delete(invoiceLines).where(eq(invoiceLines.invoiceId, invoiceId)).run();
 
       // Calculate new lines
       const calculatedLines = data.lineItems.map((li) => {
@@ -427,8 +425,10 @@ export class InvoicingService {
         return { ...li, amount, gstAmount, gstRate };
       });
 
-      const { subtotal, gstAmount, totalAmount, amountDue } =
-        calculateInvoiceTotals(calculatedLines, existing.amountPaid ?? 0);
+      const { subtotal, gstAmount, totalAmount, amountDue } = calculateInvoiceTotals(
+        calculatedLines,
+        existing.amountPaid ?? 0,
+      );
 
       updates.subtotal = subtotal;
       updates.gstAmount = gstAmount;
@@ -458,11 +458,7 @@ export class InvoicingService {
     }
 
     // Apply updates to invoice
-    await (db as any)
-      .update(invoices)
-      .set(updates)
-      .where(eq(invoices.id, invoiceId))
-      .run();
+    await (db as any).update(invoices).set(updates).where(eq(invoices.id, invoiceId)).run();
 
     // Return fresh invoice with lines
     return (await this.getInvoice(userId, invoiceId))!;
@@ -484,7 +480,7 @@ export class InvoicingService {
     }
     if (invoice.status !== 'draft') {
       throw new Error(
-        `Cannot send invoice with status '${invoice.status}'. Only draft invoices can be sent.`
+        `Cannot send invoice with status '${invoice.status}'. Only draft invoices can be sent.`,
       );
     }
 
@@ -498,11 +494,7 @@ export class InvoicingService {
       updates.issueDate = today();
     }
 
-    await (db as any)
-      .update(invoices)
-      .set(updates)
-      .where(eq(invoices.id, invoiceId))
-      .run();
+    await (db as any).update(invoices).set(updates).where(eq(invoices.id, invoiceId)).run();
 
     return {
       ...invoice,
@@ -553,11 +545,7 @@ export class InvoicingService {
   // Record Payment
   // --------------------------------------------------------------------------
 
-  async recordPayment(
-    userId: string,
-    invoiceId: string,
-    data: RecordPaymentInput
-  ): Promise<any> {
+  async recordPayment(userId: string, invoiceId: string, data: RecordPaymentInput): Promise<any> {
     const invoice = await (db as any)
       .select()
       .from(invoices)
@@ -575,17 +563,20 @@ export class InvoicingService {
     const paymentId = randomUUID();
     const now = nowISO();
 
-    await (db as any).insert(invoicePayments).values({
-      id: paymentId,
-      invoiceId,
-      paymentDate: data.paymentDate,
-      amount: data.amountCents,
-      paymentMethod: data.paymentMethod ?? null,
-      reference: data.reference ?? null,
-      transactionId: data.transactionId ?? null,
-      notes: data.notes ?? null,
-      createdAt: now,
-    }).run();
+    await (db as any)
+      .insert(invoicePayments)
+      .values({
+        id: paymentId,
+        invoiceId,
+        paymentDate: data.paymentDate,
+        amount: data.amountCents,
+        paymentMethod: data.paymentMethod ?? null,
+        reference: data.reference ?? null,
+        transactionId: data.transactionId ?? null,
+        notes: data.notes ?? null,
+        createdAt: now,
+      })
+      .run();
 
     // Update invoice amountPaid and amountDue
     const newAmountPaid = (invoice.amountPaid ?? 0) + data.amountCents;
@@ -602,11 +593,7 @@ export class InvoicingService {
       invoiceUpdates.status = 'paid';
     }
 
-    await (db as any)
-      .update(invoices)
-      .set(invoiceUpdates)
-      .where(eq(invoices.id, invoiceId))
-      .run();
+    await (db as any).update(invoices).set(invoiceUpdates).where(eq(invoices.id, invoiceId)).run();
 
     return {
       id: paymentId,
@@ -625,10 +612,7 @@ export class InvoicingService {
   // Create Credit Note
   // --------------------------------------------------------------------------
 
-  async createCreditNote(
-    userId: string,
-    data: CreateCreditNoteInput
-  ): Promise<InvoiceWithLines> {
+  async createCreditNote(userId: string, data: CreateCreditNoteInput): Promise<InvoiceWithLines> {
     const invoiceId = randomUUID();
     const invoiceNumber = await this.getNextInvoiceNumber(userId);
 
@@ -638,32 +622,34 @@ export class InvoicingService {
       return { ...li, amount, gstAmount, gstRate };
     });
 
-    const { subtotal, gstAmount, totalAmount } =
-      calculateInvoiceTotals(calculatedLines, 0);
+    const { subtotal, gstAmount, totalAmount } = calculateInvoiceTotals(calculatedLines, 0);
 
     const now = nowISO();
     const issueDateStr = today();
 
-    await (db as any).insert(invoices).values({
-      id: invoiceId,
-      userId,
-      customerId: data.customerId,
-      invoiceNumber,
-      type: 'credit_note',
-      status: 'draft',
-      issueDate: issueDateStr,
-      dueDate: issueDateStr,
-      subtotal,
-      gstAmount,
-      totalAmount,
-      amountPaid: 0,
-      amountDue: 0, // Credit notes don't have "due" amounts
-      currency: 'AUD',
-      notes: data.notes ?? null,
-      originalInvoiceId: data.originalInvoiceId ?? null,
-      createdAt: now,
-      updatedAt: now,
-    }).run();
+    await (db as any)
+      .insert(invoices)
+      .values({
+        id: invoiceId,
+        userId,
+        customerId: data.customerId,
+        invoiceNumber,
+        type: 'credit_note',
+        status: 'draft',
+        issueDate: issueDateStr,
+        dueDate: issueDateStr,
+        subtotal,
+        gstAmount,
+        totalAmount,
+        amountPaid: 0,
+        amountDue: 0, // Credit notes don't have "due" amounts
+        currency: 'AUD',
+        notes: data.notes ?? null,
+        originalInvoiceId: data.originalInvoiceId ?? null,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
     // Insert line items
     const insertedLines: any[] = [];
@@ -727,8 +713,8 @@ export class InvoicingService {
         and(
           eq(invoices.userId, userId),
           eq(invoices.status, 'sent'),
-          lte(invoices.dueDate, todayStr)
-        )
+          lte(invoices.dueDate, todayStr),
+        ),
       )
       .all();
 

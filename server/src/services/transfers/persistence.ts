@@ -21,7 +21,7 @@ export interface PersistResult {
 
 export async function persistTransferMatches(
   matches: TransferMatch[],
-  options: PersistTransferOptions
+  options: PersistTransferOptions,
 ): Promise<PersistResult> {
   const result: PersistResult = { created: 0, skipped: 0, errors: [], linkIds: [] };
 
@@ -31,11 +31,16 @@ export async function persistTransferMatches(
       const destId = String(match.targetTransaction.id);
 
       // Check if link already exists between these transactions
-      const existing = await db.select().from(transferLinks)
-        .where(and(
-          eq(transferLinks.sourceTransactionId, sourceId),
-          eq(transferLinks.destinationTransactionId, destId)
-        )).get();
+      const existing = await db
+        .select()
+        .from(transferLinks)
+        .where(
+          and(
+            eq(transferLinks.sourceTransactionId, sourceId),
+            eq(transferLinks.destinationTransactionId, destId),
+          ),
+        )
+        .get();
 
       if (existing) {
         result.skipped++;
@@ -65,31 +70,31 @@ export async function persistTransferMatches(
       });
 
       // Mark both transactions as transfers
-      await db.update(transactions)
+      await db
+        .update(transactions)
         .set({ isTransfer: true, transferLinkId: linkId, category: 'Transfer' })
         .where(eq(transactions.id, sourceId));
-      await db.update(transactions)
+      await db
+        .update(transactions)
         .set({ isTransfer: true, transferLinkId: linkId, category: 'Transfer' })
         .where(eq(transactions.id, destId));
 
       result.created++;
       result.linkIds.push(linkId);
     } catch (err: any) {
-      result.errors.push(`Failed to persist match ${match.sourceTransaction.id} → ${match.targetTransaction.id}: ${err.message}`);
+      result.errors.push(
+        `Failed to persist match ${match.sourceTransaction.id} → ${match.targetTransaction.id}: ${err.message}`,
+      );
     }
   }
 
   return result;
 }
 
-export async function markOwnerContributions(
-  transactionIds: string[],
-): Promise<number> {
+export async function markOwnerContributions(transactionIds: string[]): Promise<number> {
   let updated = 0;
   for (const id of transactionIds) {
-    await db.update(transactions)
-      .set({ isOwnerContribution: true })
-      .where(eq(transactions.id, id));
+    await db.update(transactions).set({ isOwnerContribution: true }).where(eq(transactions.id, id));
     updated++;
   }
   return updated;

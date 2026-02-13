@@ -42,10 +42,10 @@ function SummaryCard({ label, value, subValue, sparklineData, color, trend }: Su
   return (
     <div className="neu-raised rounded-xl p-4">
       <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</p>
-      <p className="text-lg font-bold mb-1" style={{ color }}>{value}</p>
-      {subValue && (
-        <p className="text-xs text-gray-500 mb-2">{subValue}</p>
-      )}
+      <p className="text-lg font-bold mb-1" style={{ color }}>
+        {value}
+      </p>
+      {subValue && <p className="text-xs text-gray-500 mb-2">{subValue}</p>}
       <div className="mt-1">
         <Sparkline
           data={sparklineData}
@@ -95,10 +95,7 @@ function SavingsRateCircle({ rate, color }: { rate: number; color: string }) {
           style={{ transition: 'stroke-dashoffset 0.5s ease' }}
         />
       </svg>
-      <span
-        className="absolute text-sm font-bold"
-        style={{ color }}
-      >
+      <span className="absolute text-sm font-bold" style={{ color }}>
         {rate.toFixed(1)}%
       </span>
     </div>
@@ -116,17 +113,19 @@ function FlowSummaryCardsInner({ summary, loading }: FlowSummaryCardsProps) {
     );
   }
 
-  const savingsColor = summary.savingsRate >= 20
-    ? CHART_COLORS.revenue
-    : summary.savingsRate >= 0
-      ? CHART_COLORS.primary
-      : CHART_COLORS.expense;
+  const savingsColor =
+    summary.savingsRate >= 20
+      ? CHART_COLORS.revenue
+      : summary.savingsRate >= 0
+        ? CHART_COLORS.primary
+        : CHART_COLORS.expense;
 
-  const savingsLabel = summary.savingsRate >= 20
-    ? 'Healthy'
-    : summary.savingsRate >= 0
-      ? 'Could improve'
-      : 'Spending exceeds income';
+  const savingsLabel =
+    summary.savingsRate >= 20
+      ? 'Healthy'
+      : summary.savingsRate >= 0
+        ? 'Could improve'
+        : 'Spending exceeds income';
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -161,9 +160,11 @@ function FlowSummaryCardsInner({ summary, loading }: FlowSummaryCardsProps) {
       <SummaryCard
         label="Largest Income Source"
         value={summary.largestIncomeSource.name}
-        subValue={summary.largestIncomeSource.amount > 0
-          ? formatAUD(summary.largestIncomeSource.amount)
-          : undefined}
+        subValue={
+          summary.largestIncomeSource.amount > 0
+            ? formatAUD(summary.largestIncomeSource.amount)
+            : undefined
+        }
         sparklineData={summary.monthlyIncome.map((v) => v * 0.4)}
         color="#22C55E"
       />
@@ -172,9 +173,11 @@ function FlowSummaryCardsInner({ summary, loading }: FlowSummaryCardsProps) {
       <SummaryCard
         label="Largest Expense"
         value={summary.largestExpenseCategory.name}
-        subValue={summary.largestExpenseCategory.amount > 0
-          ? formatAUD(summary.largestExpenseCategory.amount)
-          : undefined}
+        subValue={
+          summary.largestExpenseCategory.amount > 0
+            ? formatAUD(summary.largestExpenseCategory.amount)
+            : undefined
+        }
         sparklineData={summary.monthlyExpenses.map((v) => v * 0.3)}
         color="#F59E0B"
       />

@@ -82,7 +82,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       className,
       onSnapChange,
     },
-    ref
+    ref,
   ) => {
     const sheetRef = useRef<HTMLDivElement>(null);
     const dragRef = useRef<{
@@ -105,7 +105,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     // Sort snap points in ascending order - memoized to prevent infinite loops
     const sortedSnapPoints = useMemo(
       () => [...snapPoints].sort((a, b) => a - b),
-      [snapPoints.join(',')]
+      [snapPoints.join(',')],
     );
 
     // ========================================================================
@@ -149,7 +149,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           animationTimerRef.current = null;
         }, 300);
       },
-      [sortedSnapPoints, onSnapChange]
+      [sortedSnapPoints, onSnapChange],
     );
 
     const animateClose = useCallback(() => {
@@ -195,32 +195,29 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         };
         setIsDragging(true);
       },
-      [height, sortedSnapPoints]
+      [height, sortedSnapPoints],
     );
 
-    const handleDragMove = useCallback(
-      (clientY: number) => {
-        if (!dragRef.current) return;
+    const handleDragMove = useCallback((clientY: number) => {
+      if (!dragRef.current) return;
 
-        const { startY, startHeight, lastY, lastTime } = dragRef.current;
-        const deltaY = startY - clientY;
-        const deltaPercent = (deltaY / window.innerHeight) * 100;
-        const newHeight = Math.max(0, Math.min(100, startHeight + deltaPercent));
+      const { startY, startHeight, lastY, lastTime } = dragRef.current;
+      const deltaY = startY - clientY;
+      const deltaPercent = (deltaY / window.innerHeight) * 100;
+      const newHeight = Math.max(0, Math.min(100, startHeight + deltaPercent));
 
-        // Calculate velocity
-        const now = Date.now();
-        const timeDelta = now - lastTime;
-        if (timeDelta > 0) {
-          const velocity = (lastY - clientY) / timeDelta;
-          dragRef.current.velocity = velocity;
-          dragRef.current.lastY = clientY;
-          dragRef.current.lastTime = now;
-        }
+      // Calculate velocity
+      const now = Date.now();
+      const timeDelta = now - lastTime;
+      if (timeDelta > 0) {
+        const velocity = (lastY - clientY) / timeDelta;
+        dragRef.current.velocity = velocity;
+        dragRef.current.lastY = clientY;
+        dragRef.current.lastTime = now;
+      }
 
-        setHeight(newHeight);
-      },
-      []
-    );
+      setHeight(newHeight);
+    }, []);
 
     const handleDragEnd = useCallback(() => {
       if (!dragRef.current) return;
@@ -248,11 +245,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           if (currentHeight < firstSnap / 2) {
             animateClose();
           } else {
-            const prevSnap = [...sortedSnapPoints]
-              .reverse()
-              .findIndex((sp) => sp < currentHeight);
-            const actualIndex =
-              prevSnap !== -1 ? sortedSnapPoints.length - 1 - prevSnap : 0;
+            const prevSnap = [...sortedSnapPoints].reverse().findIndex((sp) => sp < currentHeight);
+            const actualIndex = prevSnap !== -1 ? sortedSnapPoints.length - 1 - prevSnap : 0;
             animateToSnap(actualIndex);
           }
         }
@@ -290,7 +284,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       (e: React.MouseEvent) => {
         handleDragStart(e.clientY);
       },
-      [handleDragStart]
+      [handleDragStart],
     );
 
     const handleTouchStart = useCallback(
@@ -299,7 +293,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         if (!touch) return;
         handleDragStart(touch.clientY);
       },
-      [handleDragStart]
+      [handleDragStart],
     );
 
     useEffect(() => {
@@ -384,19 +378,14 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     }
 
     const sheetContent = (
-      <div
-        className="fixed inset-0 z-50"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-      >
+      <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title}>
         {/* Backdrop */}
         {showBackdrop && (
           <div
             className={cn(
               'absolute inset-0 bg-black/50 backdrop-blur-sm',
               isAnimating && 'transition-opacity duration-300',
-              height === 0 ? 'opacity-0' : 'opacity-100'
+              height === 0 ? 'opacity-0' : 'opacity-100',
             )}
             onClick={closeOnBackdrop ? onClose : undefined}
             aria-hidden="true"
@@ -410,7 +399,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             'absolute bottom-0 left-0 right-0 bg-dark-surface rounded-t-3xl shadow-2xl',
             'flex flex-col overflow-hidden',
             isAnimating && !isDragging && 'transition-all duration-300 ease-out',
-            className
+            className,
           )}
           style={{
             height: `${height}vh`,
@@ -422,7 +411,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           <div
             className={cn(
               'flex-shrink-0 pt-3 pb-2 cursor-grab active:cursor-grabbing',
-              'touch-none select-none'
+              'touch-none select-none',
             )}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
@@ -438,15 +427,13 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           )}
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
-            {children}
-          </div>
+          <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-4">{children}</div>
         </div>
       </div>
     );
 
     return createPortal(sheetContent, document.body);
-  }
+  },
 );
 
 BottomSheet.displayName = 'BottomSheet';

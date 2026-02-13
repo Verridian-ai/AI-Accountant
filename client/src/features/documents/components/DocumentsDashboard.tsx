@@ -1,5 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, FileUp, Clock, CheckCircle, XCircle, AlertTriangle, Loader2, FileScan, Eye, Trash2 } from 'lucide-react';
+import {
+  FileText,
+  FileUp,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Loader2,
+  FileScan,
+  Eye,
+  Trash2,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { documentsApi } from '@/api';
 import type { OCRDocument } from '@/api';
@@ -9,23 +20,54 @@ import { ProcessingQueue } from './ProcessingQueue';
 
 type SubTab = 'all' | 'upload' | 'queue';
 
-const STATUS_FILTERS = ['', 'pending', 'processing', 'extracted', 'verified', 'matched', 'failed'] as const;
+const STATUS_FILTERS = [
+  '',
+  'pending',
+  'processing',
+  'extracted',
+  'verified',
+  'matched',
+  'failed',
+] as const;
 const DOC_TYPE_FILTERS = ['', 'invoice', 'receipt', 'bill', 'credit_note', 'statement'] as const;
 
 function statusBadge(status: string) {
   switch (status) {
-    case 'extracted': case 'verified':
-      return <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">{status}</span>;
+    case 'extracted':
+    case 'verified':
+      return (
+        <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">
+          {status}
+        </span>
+      );
     case 'processing':
-      return <span className="px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-400 animate-pulse">{status}</span>;
+      return (
+        <span className="px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-400 animate-pulse">
+          {status}
+        </span>
+      );
     case 'pending':
-      return <span className="px-2 py-1 rounded-full text-xs bg-zinc-500/20 text-zinc-400">{status}</span>;
+      return (
+        <span className="px-2 py-1 rounded-full text-xs bg-zinc-500/20 text-zinc-400">
+          {status}
+        </span>
+      );
     case 'matched':
-      return <span className="px-2 py-1 rounded-full text-xs bg-[#FFCC00]/20 text-[#FFCC00]">{status}</span>;
+      return (
+        <span className="px-2 py-1 rounded-full text-xs bg-[#FFCC00]/20 text-[#FFCC00]">
+          {status}
+        </span>
+      );
     case 'failed':
-      return <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400">{status}</span>;
+      return (
+        <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400">{status}</span>
+      );
     default:
-      return <span className="px-2 py-1 rounded-full text-xs bg-zinc-500/20 text-zinc-400">{status}</span>;
+      return (
+        <span className="px-2 py-1 rounded-full text-xs bg-zinc-500/20 text-zinc-400">
+          {status}
+        </span>
+      );
   }
 }
 
@@ -37,7 +79,9 @@ function formatBytes(bytes: number) {
 
 function formatCurrency(amount: number | undefined | null) {
   if (amount == null) return '-';
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(amount / 100);
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(
+    amount / 100,
+  );
 }
 
 export function DocumentsDashboard() {
@@ -61,7 +105,9 @@ export function DocumentsDashboard() {
     }
   }, [statusFilter, docTypeFilter]);
 
-  useEffect(() => { loadDocuments(); }, [loadDocuments]);
+  useEffect(() => {
+    loadDocuments();
+  }, [loadDocuments]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -73,13 +119,23 @@ export function DocumentsDashboard() {
   };
 
   if (selectedDocId) {
-    return <DocumentViewer documentId={selectedDocId} onBack={() => { setSelectedDocId(null); loadDocuments(); }} />;
+    return (
+      <DocumentViewer
+        documentId={selectedDocId}
+        onBack={() => {
+          setSelectedDocId(null);
+          loadDocuments();
+        }}
+      />
+    );
   }
 
   const totalDocs = documents.length;
-  const pendingCount = documents.filter(d => d.status === 'pending').length;
-  const extractedCount = documents.filter(d => d.status === 'extracted' || d.status === 'verified').length;
-  const matchedCount = documents.filter(d => d.status === 'matched').length;
+  const pendingCount = documents.filter((d) => d.status === 'pending').length;
+  const extractedCount = documents.filter(
+    (d) => d.status === 'extracted' || d.status === 'verified',
+  ).length;
+  const matchedCount = documents.filter((d) => d.status === 'matched').length;
 
   return (
     <div className="space-y-6">
@@ -116,11 +172,11 @@ export function DocumentsDashboard() {
 
       {/* Sub-tabs */}
       <div className="flex gap-2">
-        {([
+        {[
           { id: 'all' as SubTab, label: 'All Documents', icon: FileText },
           { id: 'upload' as SubTab, label: 'Upload', icon: FileUp },
           { id: 'queue' as SubTab, label: 'Queue', icon: Clock },
-        ]).map((tab) => (
+        ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setSubTab(tab.id)}
@@ -137,13 +193,9 @@ export function DocumentsDashboard() {
       </div>
 
       {/* Sub-tab content */}
-      {subTab === 'upload' && (
-        <DocumentUpload onUploadComplete={loadDocuments} />
-      )}
+      {subTab === 'upload' && <DocumentUpload onUploadComplete={loadDocuments} />}
 
-      {subTab === 'queue' && (
-        <ProcessingQueue />
-      )}
+      {subTab === 'queue' && <ProcessingQueue />}
 
       {subTab === 'all' && (
         <div className="space-y-4">
@@ -165,7 +217,9 @@ export function DocumentsDashboard() {
                 </button>
               ))}
             </div>
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wide ml-4">Type:</span>
+            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wide ml-4">
+              Type:
+            </span>
             <div className="flex gap-1 flex-wrap">
               {DOC_TYPE_FILTERS.map((t) => (
                 <button
@@ -192,7 +246,9 @@ export function DocumentsDashboard() {
             <div className="neu-raised rounded-xl p-12 text-center">
               <FileText className="h-12 w-12 text-zinc-600 mx-auto mb-3" />
               <p className="text-zinc-400 font-medium">No documents found</p>
-              <p className="text-zinc-600 text-sm mt-1">Upload invoices, receipts, or bills to get started</p>
+              <p className="text-zinc-600 text-sm mt-1">
+                Upload invoices, receipts, or bills to get started
+              </p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -224,23 +280,39 @@ export function DocumentsDashboard() {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       {doc.totalAmount != null && (
-                        <span className="text-sm font-bold text-zinc-200">{formatCurrency(doc.totalAmount)}</span>
+                        <span className="text-sm font-bold text-zinc-200">
+                          {formatCurrency(doc.totalAmount)}
+                        </span>
                       )}
                       {statusBadge(doc.status)}
                       {doc.confidenceScore > 0 && (
-                        <Badge variant={doc.confidenceScore > 80 ? 'success' : doc.confidenceScore > 50 ? 'warning' : 'destructive'}>
+                        <Badge
+                          variant={
+                            doc.confidenceScore > 80
+                              ? 'success'
+                              : doc.confidenceScore > 50
+                                ? 'warning'
+                                : 'destructive'
+                          }
+                        >
                           {doc.confidenceScore}%
                         </Badge>
                       )}
                       <button
-                        onClick={(e) => { e.stopPropagation(); setSelectedDocId(doc.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDocId(doc.id);
+                        }}
                         className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-zinc-200 transition-colors"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(doc.id);
+                        }}
                         className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-400 hover:text-red-400 transition-colors"
                         title="Delete"
                       >

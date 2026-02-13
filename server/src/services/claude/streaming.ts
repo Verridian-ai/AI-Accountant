@@ -30,14 +30,14 @@ import { stream as honoStream } from 'hono/streaming';
  * Types of SSE events sent during a streaming chat response.
  */
 export type StreamEventType =
-  | 'token'              // Progressive text token
-  | 'tool_start'         // Agent started executing a tool
-  | 'tool_end'           // Agent finished executing a tool
-  | 'mutation_proposed'  // Agent proposed a DB mutation
-  | 'agent_selected'     // Intent router selected an agent
-  | 'progress'           // Progress update (step count, etc.)
-  | 'error'              // Non-fatal error during processing
-  | 'complete';          // Final response with full ChatResponse
+  | 'token' // Progressive text token
+  | 'tool_start' // Agent started executing a tool
+  | 'tool_end' // Agent finished executing a tool
+  | 'mutation_proposed' // Agent proposed a DB mutation
+  | 'agent_selected' // Intent router selected an agent
+  | 'progress' // Progress update (step count, etc.)
+  | 'error' // Non-fatal error during processing
+  | 'complete'; // Final response with full ChatResponse
 
 /**
  * SSE event payload.
@@ -137,10 +137,7 @@ const HEARTBEAT_INTERVAL_MS = 30000;
  * Build a StreamWriter backed by a raw write function.
  * Used by both handleSSE() and createWriter().
  */
-function buildStreamWriter(
-  writeFn: (raw: string) => void,
-  onClose?: () => void,
-): StreamWriter {
+function buildStreamWriter(writeFn: (raw: string) => void, onClose?: () => void): StreamWriter {
   let open = true;
 
   const writeSSE = (eventType: string, data: unknown): void => {
@@ -264,10 +261,7 @@ export class StreamingService {
    * @param handler - Async function that receives the StreamWriter and sends events
    * @returns Hono streaming Response
    */
-  handleSSE(
-    c: Context,
-    handler: (writer: StreamWriter) => Promise<void>,
-  ): Response {
+  handleSSE(c: Context, handler: (writer: StreamWriter) => Promise<void>): Response {
     c.header('Content-Type', 'text/event-stream');
     c.header('Cache-Control', 'no-cache');
     c.header('Connection', 'keep-alive');
@@ -329,8 +323,7 @@ export class StreamingService {
         await handler(writer);
       } catch (err) {
         if (open) {
-          const message =
-            err instanceof Error ? err.message : 'Internal streaming error';
+          const message = err instanceof Error ? err.message : 'Internal streaming error';
           writer.sendError(message);
         }
       } finally {
@@ -411,10 +404,7 @@ export class StreamingService {
    * Useful for contexts where Hono's stream() helper is not available
    * (e.g., piping into an EventBus subscriber or unit testing).
    */
-  createWriter(
-    writeFn: (raw: string) => void,
-    onClose?: () => void,
-  ): StreamWriter {
+  createWriter(writeFn: (raw: string) => void, onClose?: () => void): StreamWriter {
     return buildStreamWriter(writeFn, onClose);
   }
 
@@ -425,10 +415,7 @@ export class StreamingService {
    * Uses SSE comment format (`: heartbeat\n\n`) matching the existing
    * `/api/events` endpoint pattern.
    */
-  startHeartbeat(
-    writer: StreamWriter,
-    intervalMs: number = HEARTBEAT_INTERVAL_MS,
-  ): () => void {
+  startHeartbeat(writer: StreamWriter, intervalMs: number = HEARTBEAT_INTERVAL_MS): () => void {
     const interval = setInterval(() => {
       if (writer.isOpen()) {
         // Use sendEvent for heartbeats — lightweight data
@@ -454,10 +441,7 @@ export class StreamingService {
    * Subscribe to events on a channel via the EventBus.
    * Returns an unsubscribe function.
    */
-  subscribe(
-    channel: string,
-    handler: (event: unknown) => void,
-  ): () => void {
+  subscribe(channel: string, handler: (event: unknown) => void): () => void {
     return this.eventBus.subscribe(channel, handler);
   }
 }

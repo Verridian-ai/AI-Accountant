@@ -103,7 +103,11 @@ export interface SearchTestResult {
     searchType: string;
     dataset: string;
     resultCount: number;
-    topResults: Array<{ content: string; score: number | undefined; metadata: Record<string, unknown> | undefined }>;
+    topResults: Array<{
+      content: string;
+      score: number | undefined;
+      metadata: Record<string, unknown> | undefined;
+    }>;
     latencyMs: number;
   }>;
   totalLatencyMs: number;
@@ -272,7 +276,7 @@ export class CogneeAdminService {
       // We use a raw fetch via the client's baseUrl pattern
       const res = await fetch(
         `${(this.cogneeClient as unknown as { baseUrl: string }).baseUrl ?? 'http://localhost:9010'}/api/v1/datasets/${encodeURIComponent(datasetName)}`,
-        { method: 'DELETE', signal: AbortSignal.timeout(30000) }
+        { method: 'DELETE', signal: AbortSignal.timeout(30000) },
       );
       if (res.ok) {
         return { deleted: true };
@@ -298,11 +302,7 @@ export class CogneeAdminService {
     const start = Date.now();
     try {
       const background = options?.runInBackground ?? true;
-      await this.cogneeClient.cognify(
-        [datasetName],
-        background,
-        options?.customPrompt,
-      );
+      await this.cogneeClient.cognify([datasetName], background, options?.customPrompt);
 
       // If background, we can't know actual node/edge counts yet
       if (background) {
@@ -441,7 +441,9 @@ export class CogneeAdminService {
    * Since Cognee doesn't expose node-level mutation, this triggers
    * a re-cognify which deduplicates during graph construction.
    */
-  async mergeDuplicateNodes(datasetName: string): Promise<{ mergesPerformed: number; duplicatesFound: number }> {
+  async mergeDuplicateNodes(
+    datasetName: string,
+  ): Promise<{ mergesPerformed: number; duplicatesFound: number }> {
     try {
       const graph = await this.cogneeClient.getDatasetGraph(datasetName);
       const nodes = (graph.nodes ?? []) as Array<Record<string, unknown>>;
@@ -501,7 +503,7 @@ export class CogneeAdminService {
         datasets.map(async (d) => {
           const graph = await this.cogneeClient.getDatasetGraph(d.id || d.name);
           return { dataset: d, graph };
-        })
+        }),
       );
 
       for (const { dataset, graph } of graphResults) {
@@ -548,7 +550,9 @@ export class CogneeAdminService {
               const matchNode = nodes.find((n) => String(n.id) === nodeId);
               nodeConnections.set(nodeId, {
                 name: matchNode ? String(matchNode.name ?? matchNode.label ?? nodeId) : nodeId,
-                type: matchNode ? String(matchNode.type ?? matchNode.entity_type ?? 'unknown') : 'unknown',
+                type: matchNode
+                  ? String(matchNode.type ?? matchNode.entity_type ?? 'unknown')
+                  : 'unknown',
                 count: 1,
               });
             }
@@ -615,7 +619,11 @@ export class CogneeAdminService {
         targetDatasets = allDatasets.map((d) => d.name);
       }
 
-      const searchTypes: CogneeSearchType[] = options.searchTypes ?? ['CHUNKS', 'CHUNKS_LEXICAL', 'GRAPH_COMPLETION'];
+      const searchTypes: CogneeSearchType[] = options.searchTypes ?? [
+        'CHUNKS',
+        'CHUNKS_LEXICAL',
+        'GRAPH_COMPLETION',
+      ];
       const topK = options.topK ?? 5;
 
       // Run all combinations in parallel
@@ -651,7 +659,7 @@ export class CogneeAdminService {
               latencyMs: Date.now() - start,
             };
           }
-        })
+        }),
       );
 
       searchResults.push(...results);
@@ -705,7 +713,8 @@ export class CogneeAdminService {
       const { componentCount, largestComponentSize } = this.findComponents(nodes, edges);
 
       // Graph metrics
-      const avgDegree = nodes.length > 0 ? Math.round((2 * edges.length) / nodes.length * 100) / 100 : 0;
+      const avgDegree =
+        nodes.length > 0 ? Math.round(((2 * edges.length) / nodes.length) * 100) / 100 : 0;
       const possibleEdges = nodes.length > 1 ? nodes.length * (nodes.length - 1) : 1;
       const graphDensity = Math.round((edges.length / possibleEdges) * 10000) / 10000;
 
@@ -715,37 +724,37 @@ export class CogneeAdminService {
       if (orphanedNodeCount > 0) {
         const pct = Math.round((orphanedNodeCount / Math.max(nodes.length, 1)) * 100);
         recommendations.push(
-          `${orphanedNodeCount} orphaned nodes found (${pct}% of graph). Run pruneStaleNodes() to clean up.`
+          `${orphanedNodeCount} orphaned nodes found (${pct}% of graph). Run pruneStaleNodes() to clean up.`,
         );
       }
 
       if (duplicateNodeCount > 0) {
         recommendations.push(
-          `${duplicateNodeCount} duplicate nodes detected. Run mergeDuplicateNodes() to consolidate.`
+          `${duplicateNodeCount} duplicate nodes detected. Run mergeDuplicateNodes() to consolidate.`,
         );
       }
 
       if (componentCount > 1) {
         recommendations.push(
-          `Graph has ${componentCount} disconnected components. Consider adding cross-references or re-cognifying with a broader prompt.`
+          `Graph has ${componentCount} disconnected components. Consider adding cross-references or re-cognifying with a broader prompt.`,
         );
       }
 
       if (avgDegree < 1.5 && nodes.length > 10) {
         recommendations.push(
-          `Low average degree (${avgDegree}). The graph may be sparsely connected. Re-cognify with a more specific entity extraction prompt.`
+          `Low average degree (${avgDegree}). The graph may be sparsely connected. Re-cognify with a more specific entity extraction prompt.`,
         );
       }
 
       if (graphDensity > 0.5 && nodes.length > 20) {
         recommendations.push(
-          `High graph density (${graphDensity}). Many nodes are connected to many others — consider using ontology constraints to refine relationships.`
+          `High graph density (${graphDensity}). Many nodes are connected to many others — consider using ontology constraints to refine relationships.`,
         );
       }
 
       if (nodes.length === 0) {
         recommendations.push(
-          'Dataset has no graph nodes. Add data and run cognify to build the knowledge graph.'
+          'Dataset has no graph nodes. Add data and run cognify to build the knowledge graph.',
         );
       }
 
@@ -777,7 +786,9 @@ export class CogneeAdminService {
         largestComponent: 0,
         graphDensity: 0,
         avgDegree: 0,
-        recommendations: [`Error generating report: ${err instanceof Error ? err.message : String(err)}`],
+        recommendations: [
+          `Error generating report: ${err instanceof Error ? err.message : String(err)}`,
+        ],
       };
     }
   }
@@ -810,7 +821,7 @@ export class CogneeAdminService {
    */
   private findComponents(
     nodes: Array<Record<string, unknown>>,
-    edges: Array<Record<string, unknown>>
+    edges: Array<Record<string, unknown>>,
   ): { componentCount: number; largestComponentSize: number } {
     if (nodes.length === 0) return { componentCount: 0, largestComponentSize: 0 };
 

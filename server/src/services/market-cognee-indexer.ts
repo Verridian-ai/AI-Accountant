@@ -11,12 +11,7 @@
  */
 
 import { gt } from 'drizzle-orm';
-import {
-  db,
-  economicIndicators,
-  marketPrices,
-  sentimentSnapshots,
-} from '../schema.js';
+import { db, economicIndicators, marketPrices, sentimentSnapshots } from '../schema.js';
 import { cogneeTools, COGNEE_DATASETS } from './claude/cognee-tools.js';
 import { cogneeClient, type CogneeSearchType } from './cognee_client.js';
 
@@ -51,7 +46,7 @@ export class MarketCogneeIndexer {
       observationDate: string;
       indicators?: Array<{ name: string; value: number; unit: string; changePct: number | null }>;
       prices?: Array<{ symbol: string; name: string; price: number; changePct: number | null }>;
-    }>
+    }>,
   ): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
@@ -71,7 +66,9 @@ export class MarketCogneeIndexer {
             .map(
               (i) =>
                 `${i.name}: ${i.value} ${i.unit}` +
-                (i.changePct != null ? ` (${i.changePct >= 0 ? '+' : ''}${i.changePct.toFixed(2)}%)` : '')
+                (i.changePct != null
+                  ? ` (${i.changePct >= 0 ? '+' : ''}${i.changePct.toFixed(2)}%)`
+                  : ''),
             )
             .join('; ');
           text += `Key Indicators: ${indicatorText}. `;
@@ -82,7 +79,9 @@ export class MarketCogneeIndexer {
             .map(
               (p) =>
                 `${p.symbol} (${p.name}): $${p.price.toFixed(2)}` +
-                (p.changePct != null ? ` (${p.changePct >= 0 ? '+' : ''}${p.changePct.toFixed(2)}%)` : '')
+                (p.changePct != null
+                  ? ` (${p.changePct >= 0 ? '+' : ''}${p.changePct.toFixed(2)}%)`
+                  : ''),
             )
             .join('; ');
           text += `Market Prices: ${priceText}. `;
@@ -106,9 +105,7 @@ export class MarketCogneeIndexer {
    * Index sentiment snapshot documents into the market_sentiment dataset.
    * Captures sentiment scores, labels, source counts, and summaries.
    */
-  async indexSentimentData(
-    sentiments: any[]
-  ): Promise<{ count: number; errors: string[] }> {
+  async indexSentimentData(sentiments: any[]): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
     try {
@@ -122,7 +119,9 @@ export class MarketCogneeIndexer {
           `Query: "${s.query}". ` +
           (s.sentimentLabel ? `Label: ${s.sentimentLabel}. ` : '') +
           (s.sentimentScore != null ? `Score: ${Number(s.sentimentScore).toFixed(2)}. ` : '') +
-          (s.confidence != null ? `Confidence: ${(Number(s.confidence) * 100).toFixed(0)}%. ` : '') +
+          (s.confidence != null
+            ? `Confidence: ${(Number(s.confidence) * 100).toFixed(0)}%. `
+            : '') +
           `Posts: ${s.totalPosts ?? 0} (positive: ${s.positiveCount ?? 0}, negative: ${s.negativeCount ?? 0}, neutral: ${s.neutralCount ?? 0}). ` +
           (s.summary ? `Summary: ${s.summary}. ` : '') +
           (s.analysisModel ? `Model: ${s.analysisModel}. ` : '');
@@ -145,9 +144,7 @@ export class MarketCogneeIndexer {
    * Index RBA indicator documents into the rba_statistics dataset.
    * Groups indicators by category for structured retrieval.
    */
-  async indexRbaData(
-    indicators: any[]
-  ): Promise<{ count: number; errors: string[] }> {
+  async indexRbaData(indicators: any[]): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
     try {
@@ -168,14 +165,16 @@ export class MarketCogneeIndexer {
           .map(
             (i: any) =>
               `${i.indicatorName} (${i.indicatorCode}): ${i.value} ${i.unit}` +
-              (i.changePct != null ? ` (${Number(i.changePct) >= 0 ? '+' : ''}${Number(i.changePct).toFixed(2)}%)` : '') +
-              ` [${i.referencePeriod}]`
+              (i.changePct != null
+                ? ` (${Number(i.changePct) >= 0 ? '+' : ''}${Number(i.changePct).toFixed(2)}%)`
+                : '') +
+              ` [${i.referencePeriod}]`,
           )
           .join('; ');
 
         const latestDate = items.reduce(
           (max: string, i: any) => (i.observationDate > max ? i.observationDate : max),
-          items[0].observationDate
+          items[0].observationDate,
         );
 
         const text =
@@ -193,7 +192,9 @@ export class MarketCogneeIndexer {
           `Category: ${ind.category}. ` +
           `Value: ${ind.value} ${ind.unit}. ` +
           (ind.previousValue != null ? `Previous: ${ind.previousValue} ${ind.unit}. ` : '') +
-          (ind.changePct != null ? `Change: ${Number(ind.changePct) >= 0 ? '+' : ''}${Number(ind.changePct).toFixed(2)}%. ` : '') +
+          (ind.changePct != null
+            ? `Change: ${Number(ind.changePct) >= 0 ? '+' : ''}${Number(ind.changePct).toFixed(2)}%. `
+            : '') +
           `Period: ${ind.referencePeriod}. ` +
           `Frequency: ${ind.frequency}. ` +
           `Date: ${ind.observationDate}.`;
@@ -216,9 +217,7 @@ export class MarketCogneeIndexer {
    * Index ABS indicator documents into the abs_statistics dataset.
    * Groups indicators by category/dataflow for structured retrieval.
    */
-  async indexAbsData(
-    indicators: any[]
-  ): Promise<{ count: number; errors: string[] }> {
+  async indexAbsData(indicators: any[]): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
     try {
@@ -239,14 +238,16 @@ export class MarketCogneeIndexer {
           .map(
             (i: any) =>
               `${i.indicatorName} (${i.indicatorCode}): ${i.value} ${i.unit}` +
-              (i.changePct != null ? ` (${Number(i.changePct) >= 0 ? '+' : ''}${Number(i.changePct).toFixed(2)}%)` : '') +
-              ` [${i.referencePeriod}]`
+              (i.changePct != null
+                ? ` (${Number(i.changePct) >= 0 ? '+' : ''}${Number(i.changePct).toFixed(2)}%)`
+                : '') +
+              ` [${i.referencePeriod}]`,
           )
           .join('; ');
 
         const latestDate = items.reduce(
           (max: string, i: any) => (i.observationDate > max ? i.observationDate : max),
-          items[0].observationDate
+          items[0].observationDate,
         );
 
         const text =
@@ -264,7 +265,9 @@ export class MarketCogneeIndexer {
           `Category: ${ind.category}. ` +
           `Value: ${ind.value} ${ind.unit}. ` +
           (ind.previousValue != null ? `Previous: ${ind.previousValue} ${ind.unit}. ` : '') +
-          (ind.changePct != null ? `Change: ${Number(ind.changePct) >= 0 ? '+' : ''}${Number(ind.changePct).toFixed(2)}%. ` : '') +
+          (ind.changePct != null
+            ? `Change: ${Number(ind.changePct) >= 0 ? '+' : ''}${Number(ind.changePct).toFixed(2)}%. `
+            : '') +
           `Period: ${ind.referencePeriod}. ` +
           `Frequency: ${ind.frequency}. ` +
           `Date: ${ind.observationDate}.`;
@@ -287,9 +290,7 @@ export class MarketCogneeIndexer {
    * Index ASX/crypto market price documents into the asx_market_data dataset.
    * Captures symbol, name, price, change, volume, and market cap.
    */
-  async indexMarketPrices(
-    prices: any[]
-  ): Promise<{ count: number; errors: string[] }> {
+  async indexMarketPrices(prices: any[]): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
     try {
@@ -302,8 +303,12 @@ export class MarketCogneeIndexer {
           `Market Price: ${p.symbol} — ${p.name}. ` +
           `Type: ${p.assetType}. ` +
           `Price: $${Number(p.price).toFixed(2)} ${p.currency ?? 'AUD'}. ` +
-          (p.previousClose != null ? `Previous Close: $${Number(p.previousClose).toFixed(2)}. ` : '') +
-          (p.changePct != null ? `Change: ${Number(p.changePct) >= 0 ? '+' : ''}${Number(p.changePct).toFixed(2)}%. ` : '') +
+          (p.previousClose != null
+            ? `Previous Close: $${Number(p.previousClose).toFixed(2)}. `
+            : '') +
+          (p.changePct != null
+            ? `Change: ${Number(p.changePct) >= 0 ? '+' : ''}${Number(p.changePct).toFixed(2)}%. `
+            : '') +
           (p.dayHigh != null && p.dayLow != null
             ? `Range: $${Number(p.dayLow).toFixed(2)} – $${Number(p.dayHigh).toFixed(2)}. `
             : '') +
@@ -339,10 +344,10 @@ export class MarketCogneeIndexer {
     // 1. Fetch all indicators from DB, split by source (RBA vs ABS)
     const allIndicators = await db.select().from(economicIndicators).all();
     const rbaIndicators = (allIndicators as any[]).filter(
-      (i: any) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia'
+      (i: any) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
     );
     const absIndicators = (allIndicators as any[]).filter(
-      (i: any) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics'
+      (i: any) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
     );
 
     // 2. Fetch all sentiment snapshots
@@ -376,7 +381,7 @@ export class MarketCogneeIndexer {
       rbaIndicators,
       absIndicators,
       allSentiment as any[],
-      allPrices as any[]
+      allPrices as any[],
     );
     const intelligenceResult = await this.indexMarketIntelligence(intelligenceSnapshots);
     allErrors.push(...intelligenceResult.errors);
@@ -405,7 +410,7 @@ export class MarketCogneeIndexer {
       `[Market-Indexer] Complete: ` +
         `${rbaResult.count} RBA, ${absResult.count} ABS, ` +
         `${sentimentResult.count} sentiment, ${priceResult.count} prices, ` +
-        `${intelligenceResult.count} intelligence docs in ${durationMs}ms`
+        `${intelligenceResult.count} intelligence docs in ${durationMs}ms`,
     );
 
     return {
@@ -437,10 +442,10 @@ export class MarketCogneeIndexer {
       .all();
 
     const rbaIndicators = (newIndicators as any[]).filter(
-      (i: any) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia'
+      (i: any) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
     );
     const absIndicators = (newIndicators as any[]).filter(
-      (i: any) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics'
+      (i: any) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
     );
 
     // Fetch only new sentiment
@@ -457,7 +462,12 @@ export class MarketCogneeIndexer {
       .where(gt(marketPrices.createdAt, since))
       .all();
 
-    if (!rbaIndicators.length && !absIndicators.length && !(newSentiment as any[]).length && !(newPrices as any[]).length) {
+    if (
+      !rbaIndicators.length &&
+      !absIndicators.length &&
+      !(newSentiment as any[]).length &&
+      !(newPrices as any[]).length
+    ) {
       console.log('[Market-Indexer] No updated market data found');
       return {
         intelligenceIndexed: 0,
@@ -508,7 +518,7 @@ export class MarketCogneeIndexer {
       rbaIndicators,
       absIndicators,
       newSentiment as any[],
-      newPrices as any[]
+      newPrices as any[],
     );
     if (intelligenceSnapshots.length) {
       const intelligenceResult = await this.indexMarketIntelligence(intelligenceSnapshots);
@@ -536,7 +546,7 @@ export class MarketCogneeIndexer {
     console.log(
       `[Market-Indexer] Incremental: ${rbaCount} RBA, ${absCount} ABS, ` +
         `${sentimentCount} sentiment, ${priceCount} prices, ` +
-        `${intelligenceCount} intelligence docs in ${durationMs}ms`
+        `${intelligenceCount} intelligence docs in ${durationMs}ms`,
     );
 
     return {
@@ -563,7 +573,7 @@ export class MarketCogneeIndexer {
   async searchMarketKnowledge(
     query: string,
     datasets?: string[],
-    searchType?: CogneeSearchType
+    searchType?: CogneeSearchType,
   ): Promise<string[]> {
     const targetDatasets = datasets ?? [
       COGNEE_DATASETS.marketIntelligence,
@@ -578,7 +588,7 @@ export class MarketCogneeIndexer {
       topK: 5,
       mergeResults: true,
     });
-    return results.map((r: any) => typeof r === 'string' ? r : r.content ?? JSON.stringify(r));
+    return results.map((r: any) => (typeof r === 'string' ? r : (r.content ?? JSON.stringify(r))));
   }
 
   // --- Private helpers ---
@@ -591,7 +601,7 @@ export class MarketCogneeIndexer {
     rbaIndicators: any[],
     absIndicators: any[],
     sentiments: any[],
-    prices: any[]
+    prices: any[],
   ): Array<{
     topic: string;
     summary: string;

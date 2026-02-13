@@ -15,10 +15,10 @@ export { CompletionStep } from './steps/CompletionStep';
 // Types and utilities
 export type { OnboardingData, OnboardingStepProps } from './types';
 export {
-    ENTITY_TYPES,
-    INDUSTRIES,
-    DEFAULT_CATEGORIES,
-    FINANCIAL_GOALS,
-    ONBOARDING_STORAGE_KEY,
-    createInitialOnboardingData,
+  ENTITY_TYPES,
+  INDUSTRIES,
+  DEFAULT_CATEGORIES,
+  FINANCIAL_GOALS,
+  ONBOARDING_STORAGE_KEY,
+  createInitialOnboardingData,
 } from './types';

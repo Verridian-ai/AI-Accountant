@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Lightbulb, Zap, AlertCircle, Brain, Eye, CheckCircle, X, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Lightbulb,
+  Zap,
+  AlertCircle,
+  Brain,
+  Eye,
+  CheckCircle,
+  X,
+  Filter,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { intelligenceApi } from '../../../api';
 import { cn } from '../../../lib/utils';
 
@@ -22,8 +33,18 @@ interface Insight {
 
 const severityConfig = {
   info: { icon: Lightbulb, color: 'border-blue-500', bg: 'bg-blue-500/10', text: 'text-blue-400' },
-  suggestion: { icon: Zap, color: 'border-emerald-500', bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
-  warning: { icon: AlertCircle, color: 'border-yellow-500', bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
+  suggestion: {
+    icon: Zap,
+    color: 'border-emerald-500',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-400',
+  },
+  warning: {
+    icon: AlertCircle,
+    color: 'border-yellow-500',
+    bg: 'bg-yellow-500/10',
+    text: 'text-yellow-400',
+  },
   critical: { icon: Brain, color: 'border-red-500', bg: 'bg-red-500/10', text: 'text-red-400' },
 };
 
@@ -60,7 +81,7 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
       if (filters.status) params.status = filters.status;
       if (filters.minConfidence > 0) params.minConfidence = String(filters.minConfidence);
       const data = await intelligenceApi.listInsights(userId, params);
-      setInsights(Array.isArray(data) ? data : data.insights ?? []);
+      setInsights(Array.isArray(data) ? data : (data.insights ?? []));
       setError(null);
     } catch (e) {
       setError('Failed to load insights');
@@ -72,7 +93,9 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
   const updateStatus = async (insightId: string, status: string) => {
     try {
       await intelligenceApi.updateInsightStatus(insightId, status);
-      setInsights(prev => prev.map(i => i.id === insightId ? { ...i, status: status as Insight['status'] } : i));
+      setInsights((prev) =>
+        prev.map((i) => (i.id === insightId ? { ...i, status: status as Insight['status'] } : i)),
+      );
     } catch {
       // silent
     }
@@ -106,7 +129,7 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
         <div className="neu-inset p-4 rounded-lg grid grid-cols-1 sm:grid-cols-3 gap-3">
           <select
             value={filters.severity}
-            onChange={e => setFilters(f => ({ ...f, severity: e.target.value }))}
+            onChange={(e) => setFilters((f) => ({ ...f, severity: e.target.value }))}
             className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
           >
             <option value="">All Severities</option>
@@ -117,7 +140,7 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
           </select>
           <select
             value={filters.status}
-            onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
+            onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
             className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
           >
             <option value="">All Statuses</option>
@@ -133,7 +156,7 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
               min={0}
               max={100}
               value={filters.minConfidence}
-              onChange={e => setFilters(f => ({ ...f, minConfidence: Number(e.target.value) }))}
+              onChange={(e) => setFilters((f) => ({ ...f, minConfidence: Number(e.target.value) }))}
               className="flex-1 accent-[#FFCC00]"
             />
             <span className="text-xs text-zinc-400 w-8">{filters.minConfidence}%</span>
@@ -149,7 +172,7 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
         </div>
       ) : (
         <div className="space-y-3">
-          {insights.map(insight => {
+          {insights.map((insight) => {
             const config = severityConfig[insight.severity] || severityConfig.info;
             const Icon = config.icon;
             const isExpanded = expandedId === insight.id;
@@ -159,7 +182,7 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
                 key={insight.id}
                 className={cn(
                   'neu-raised rounded-lg overflow-hidden border-l-4 transition-all',
-                  config.color
+                  config.color,
                 )}
               >
                 <div
@@ -173,14 +196,22 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-semibold text-zinc-100 truncate">{insight.title}</h4>
-                        <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', statusStyles[insight.status])}>
+                        <span
+                          className={cn(
+                            'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase',
+                            statusStyles[insight.status],
+                          )}
+                        >
                           {insight.status.replace('_', ' ')}
                         </span>
                       </div>
                       {/* Source modules */}
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        {insight.sourceModules?.map(mod => (
-                          <span key={mod} className="px-2 py-0.5 rounded-full text-[10px] bg-zinc-800 text-zinc-400 border border-zinc-700">
+                        {insight.sourceModules?.map((mod) => (
+                          <span
+                            key={mod}
+                            className="px-2 py-0.5 rounded-full text-[10px] bg-zinc-800 text-zinc-400 border border-zinc-700"
+                          >
                             {mod}
                           </span>
                         ))}
@@ -193,16 +224,24 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
                             style={{ width: `${insight.confidence}%` }}
                           />
                         </div>
-                        <span className="text-[10px] text-zinc-500 font-mono">{insight.confidence}%</span>
+                        <span className="text-[10px] text-zinc-500 font-mono">
+                          {insight.confidence}%
+                        </span>
                       </div>
                     </div>
-                    {isExpanded ? <ChevronUp className="w-4 h-4 text-zinc-500 shrink-0" /> : <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />}
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-zinc-500 shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />
+                    )}
                   </div>
                 </div>
 
                 {isExpanded && (
                   <div className="px-4 pb-4 border-t border-white/5">
-                    <p className="text-sm text-zinc-400 mt-3 leading-relaxed">{insight.description}</p>
+                    <p className="text-sm text-zinc-400 mt-3 leading-relaxed">
+                      {insight.description}
+                    </p>
                     <div className="flex items-center gap-2 mt-3">
                       <button
                         onClick={() => updateStatus(insight.id, 'viewed')}

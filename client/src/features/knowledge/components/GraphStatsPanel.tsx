@@ -26,9 +26,10 @@ export function GraphStatsPanel({ datasetName }: GraphStatsPanelProps) {
     if (!datasetName) return;
     setLoading(true);
     setError(null);
-    knowledgeApi.graphStats(datasetName)
+    knowledgeApi
+      .graphStats(datasetName)
       .then(setStats)
-      .catch((e) => setError(e.message))
+      .catch((e: any) => setError(e.message))
       .finally(() => setLoading(false));
   }, [datasetName]);
 
@@ -60,7 +61,12 @@ export function GraphStatsPanel({ datasetName }: GraphStatsPanelProps) {
     { label: 'Nodes', value: stats.nodeCount, icon: CircleDot, color: 'text-[#FFCC00]' },
     { label: 'Edges', value: stats.edgeCount, icon: Minus, color: 'text-blue-400' },
     { label: 'Density', value: stats.density.toFixed(4), icon: Layers, color: 'text-emerald-400' },
-    { label: 'Avg Degree', value: stats.avgDegree.toFixed(2), icon: Network, color: 'text-purple-400' },
+    {
+      label: 'Avg Degree',
+      value: stats.avgDegree.toFixed(2),
+      icon: Network,
+      color: 'text-purple-400',
+    },
     { label: 'Components', value: stats.components, icon: BarChart3, color: 'text-amber-400' },
   ];
 
@@ -72,7 +78,9 @@ export function GraphStatsPanel({ datasetName }: GraphStatsPanelProps) {
           <div key={card.label} className="neu-raised rounded-xl p-4 text-center">
             <card.icon className={`w-5 h-5 mx-auto mb-2 ${card.color}`} />
             <p className="text-lg font-bold text-zinc-100">{card.value}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{card.label}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              {card.label}
+            </p>
           </div>
         ))}
       </div>
@@ -82,21 +90,23 @@ export function GraphStatsPanel({ datasetName }: GraphStatsPanelProps) {
         <div className="neu-raised rounded-xl p-4">
           <h4 className="text-sm font-bold text-zinc-200 mb-3">Node Types</h4>
           <div className="space-y-2">
-            {Object.entries(stats.nodeTypes).sort(([, a], [, b]) => b - a).map(([type, count]) => {
-              const pct = stats.nodeCount > 0 ? (count / stats.nodeCount) * 100 : 0;
-              return (
-                <div key={type} className="flex items-center gap-3">
-                  <span className="text-xs text-zinc-400 w-24 truncate">{type}</span>
-                  <div className="flex-1 neu-inset rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-[#FFCC00]"
-                      style={{ width: `${pct}%` }}
-                    />
+            {Object.entries(stats.nodeTypes)
+              .sort(([, a], [, b]) => b - a)
+              .map(([type, count]) => {
+                const pct = stats.nodeCount > 0 ? (count / stats.nodeCount) * 100 : 0;
+                return (
+                  <div key={type} className="flex items-center gap-3">
+                    <span className="text-xs text-zinc-400 w-24 truncate">{type}</span>
+                    <div className="flex-1 neu-inset rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#FFCC00]"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-zinc-300 w-12 text-right">{count}</span>
                   </div>
-                  <span className="text-xs text-zinc-300 w-12 text-right">{count}</span>
-                </div>
-              );
-            })}
+                );
+              })}
             {Object.keys(stats.nodeTypes).length === 0 && (
               <p className="text-xs text-zinc-500">No node types found</p>
             )}
@@ -107,21 +117,23 @@ export function GraphStatsPanel({ datasetName }: GraphStatsPanelProps) {
         <div className="neu-raised rounded-xl p-4">
           <h4 className="text-sm font-bold text-zinc-200 mb-3">Edge Types</h4>
           <div className="space-y-2">
-            {Object.entries(stats.edgeTypes).sort(([, a], [, b]) => b - a).map(([type, count]) => {
-              const pct = stats.edgeCount > 0 ? (count / stats.edgeCount) * 100 : 0;
-              return (
-                <div key={type} className="flex items-center gap-3">
-                  <span className="text-xs text-zinc-400 w-24 truncate">{type}</span>
-                  <div className="flex-1 neu-inset rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-blue-400"
-                      style={{ width: `${pct}%` }}
-                    />
+            {Object.entries(stats.edgeTypes)
+              .sort(([, a], [, b]) => b - a)
+              .map(([type, count]) => {
+                const pct = stats.edgeCount > 0 ? (count / stats.edgeCount) * 100 : 0;
+                return (
+                  <div key={type} className="flex items-center gap-3">
+                    <span className="text-xs text-zinc-400 w-24 truncate">{type}</span>
+                    <div className="flex-1 neu-inset rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-blue-400"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-zinc-300 w-12 text-right">{count}</span>
                   </div>
-                  <span className="text-xs text-zinc-300 w-12 text-right">{count}</span>
-                </div>
-              );
-            })}
+                );
+              })}
             {Object.keys(stats.edgeTypes).length === 0 && (
               <p className="text-xs text-zinc-500">No edge types found</p>
             )}
@@ -145,7 +157,9 @@ export function GraphStatsPanel({ datasetName }: GraphStatsPanelProps) {
               <tbody className="divide-y divide-white/5">
                 {stats.topConnected.slice(0, 10).map((node) => (
                   <tr key={node.id}>
-                    <td className="py-2 pr-3 text-zinc-300 font-medium truncate max-w-[200px]">{node.label || node.id}</td>
+                    <td className="py-2 pr-3 text-zinc-300 font-medium truncate max-w-[200px]">
+                      {node.label || node.id}
+                    </td>
                     <td className="py-2 pr-3">
                       <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-zinc-400">
                         {node.type}

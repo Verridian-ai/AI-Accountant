@@ -16,10 +16,7 @@ import { cogneeTools } from '../cognee-tools.js';
 import { CashFlowForecastService } from '../../cash-flow-forecast.js';
 import type { ForecastingInput, ForecastingOutput } from '../types.js';
 
-export class ForecastingAgent extends ClaudeAgent<
-  ForecastingInput,
-  ForecastingOutput
-> {
+export class ForecastingAgent extends ClaudeAgent<ForecastingInput, ForecastingOutput> {
   private forecastService = new CashFlowForecastService();
 
   protected systemPrompt = `You are an Australian financial forecasting AI agent. Your role is to:
@@ -53,7 +50,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
   protected tools: Anthropic.Tool[] = [
     {
       name: 'analyze_historical_patterns',
-      description: 'Analyze historical transaction data to identify income/expense trends and patterns.',
+      description:
+        'Analyze historical transaction data to identify income/expense trends and patterns.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -95,7 +93,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
     },
     {
       name: 'generate_forecast',
-      description: 'Generate a quick cash flow forecast for future months based on averages and seasonal adjustments. For a more accurate DB-persisted forecast, use generate_service_forecast instead.',
+      description:
+        'Generate a quick cash flow forecast for future months based on averages and seasonal adjustments. For a more accurate DB-persisted forecast, use generate_service_forecast instead.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -113,16 +112,25 @@ Return a JSON object matching the ForecastingOutput schema.`;
     },
     {
       name: 'generate_service_forecast',
-      description: 'Generate a DB-persisted cash flow forecast using the CashFlowForecastService. Supports 3 model types: linear (trend extrapolation), seasonal (additive decomposition), ml_weighted (ensemble). Returns forecast periods with confidence bands.',
+      description:
+        'Generate a DB-persisted cash flow forecast using the CashFlowForecastService. Supports 3 model types: linear (trend extrapolation), seasonal (additive decomposition), ml_weighted (ensemble). Returns forecast periods with confidence bands.',
       input_schema: {
         type: 'object' as const,
         properties: {
           userId: { type: 'string', description: 'User ID to fetch historical transactions for' },
           accountId: { type: 'string', description: 'Optional account ID to scope the forecast' },
-          type: { type: 'string', enum: ['linear', 'seasonal', 'ml_weighted'], description: 'Forecast model type' },
+          type: {
+            type: 'string',
+            enum: ['linear', 'seasonal', 'ml_weighted'],
+            description: 'Forecast model type',
+          },
           startDate: { type: 'string', description: 'Forecast start date (ISO format YYYY-MM-DD)' },
           endDate: { type: 'string', description: 'Forecast end date (ISO format YYYY-MM-DD)' },
-          granularity: { type: 'string', enum: ['daily', 'weekly', 'monthly', 'quarterly'], description: 'Period granularity' },
+          granularity: {
+            type: 'string',
+            enum: ['daily', 'weekly', 'monthly', 'quarterly'],
+            description: 'Period granularity',
+          },
           confidenceLevel: { type: 'number', description: 'Confidence level 0-1 (default 0.85)' },
           categoryBreakdown: { type: 'boolean', description: 'Include per-category breakdown' },
         },
@@ -131,7 +139,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
     },
     {
       name: 'compare_forecasts',
-      description: 'Compare multiple forecasts side-by-side with accuracy metrics (MAE, RMSE, MAPE) and a recommendation for the best model.',
+      description:
+        'Compare multiple forecasts side-by-side with accuracy metrics (MAE, RMSE, MAPE) and a recommendation for the best model.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -146,7 +155,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
     },
     {
       name: 'get_forecast_accuracy',
-      description: 'Calculate accuracy metrics for a forecast by comparing predicted vs actual values for completed periods.',
+      description:
+        'Calculate accuracy metrics for a forecast by comparing predicted vs actual values for completed periods.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -169,21 +179,26 @@ Return a JSON object matching the ForecastingOutput schema.`;
     },
     {
       name: 'temporal_forecast_search',
-      description: 'Search historical forecast patterns for specific time periods. Useful for finding how similar periods performed historically.',
+      description:
+        'Search historical forecast patterns for specific time periods. Useful for finding how similar periods performed historically.',
       input_schema: {
         type: 'object' as const,
         properties: {
           query: { type: 'string', description: 'Search query for forecast patterns' },
           timeStart: { type: 'string', description: 'Start date (ISO format)' },
           timeEnd: { type: 'string', description: 'End date (ISO format)' },
-          granularity: { type: 'string', description: 'Optional granularity (daily, weekly, monthly)' },
+          granularity: {
+            type: 'string',
+            description: 'Optional granularity (daily, weekly, monthly)',
+          },
         },
         required: ['query', 'timeStart'],
       },
     },
     {
       name: 'cross_module_forecast_context',
-      description: 'Gather context from multiple modules (transactions, compliance, tax) that might affect forecast accuracy.',
+      description:
+        'Gather context from multiple modules (transactions, compliance, tax) that might affect forecast accuracy.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -210,10 +225,7 @@ Return a JSON object matching the ForecastingOutput schema.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'analyze_historical_patterns',
       async (input) => {
@@ -260,7 +272,10 @@ Return a JSON object matching the ForecastingOutput schema.`;
     [
       'detect_seasonality',
       async (input) => {
-        const monthlyTotals = input.monthlyTotals as Record<string, { income: number; expenses: number }>;
+        const monthlyTotals = input.monthlyTotals as Record<
+          string,
+          { income: number; expenses: number }
+        >;
 
         // Group by calendar month (1-12) to find seasonal patterns
         const monthGroups: Record<number, { income: number[]; expenses: number[] }> = {};
@@ -280,20 +295,20 @@ Return a JSON object matching the ForecastingOutput schema.`;
         }));
         const overallAvg = allAvgs.reduce((s, v) => s + v.avgExpense, 0) / allAvgs.length;
 
-        const highMonths = allAvgs.filter(m => m.avgExpense > overallAvg * 1.2);
+        const highMonths = allAvgs.filter((m) => m.avgExpense > overallAvg * 1.2);
         if (highMonths.length > 0) {
           patterns.push({
             pattern: 'High spending months',
-            months: highMonths.map(m => m.month),
+            months: highMonths.map((m) => m.month),
             impact: `Spending ${Math.round((highMonths[0].avgExpense / overallAvg - 1) * 100)}% above average`,
           });
         }
 
-        const lowMonths = allAvgs.filter(m => m.avgExpense < overallAvg * 0.8);
+        const lowMonths = allAvgs.filter((m) => m.avgExpense < overallAvg * 0.8);
         if (lowMonths.length > 0) {
           patterns.push({
             pattern: 'Low spending months',
-            months: lowMonths.map(m => m.month),
+            months: lowMonths.map((m) => m.month),
             impact: `Spending ${Math.round((1 - lowMonths[0].avgExpense / overallAvg) * 100)}% below average`,
           });
         }
@@ -332,7 +347,7 @@ Return a JSON object matching the ForecastingOutput schema.`;
           balance += income - expenses;
 
           // Confidence decreases with distance
-          const confidence = Math.max(0.3, 1.0 - (i * 0.1));
+          const confidence = Math.max(0.3, 1.0 - i * 0.1);
 
           forecasts.push({
             month: monthKey,
@@ -354,7 +369,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
         const type = (input.type as 'linear' | 'seasonal' | 'ml_weighted') ?? 'seasonal';
         const startDate = input.startDate as string;
         const endDate = input.endDate as string;
-        const granularity = (input.granularity as 'daily' | 'weekly' | 'monthly' | 'quarterly') ?? 'monthly';
+        const granularity =
+          (input.granularity as 'daily' | 'weekly' | 'monthly' | 'quarterly') ?? 'monthly';
         const confidenceLevel = input.confidenceLevel as number | undefined;
         const categoryBreakdown = input.categoryBreakdown as boolean | undefined;
 
@@ -429,11 +445,10 @@ Return a JSON object matching the ForecastingOutput schema.`;
         const timeStart = input.timeStart as string;
         const timeEnd = input.timeEnd as string | undefined;
         try {
-          const results = await cogneeTools.temporalSearch(
-            query,
-            'budget_patterns',
-            { start: timeStart, end: timeEnd ?? '' }
-          );
+          const results = await cogneeTools.temporalSearch(query, 'budget_patterns', {
+            start: timeStart,
+            end: timeEnd ?? '',
+          });
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Temporal search unavailable' };

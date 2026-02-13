@@ -118,23 +118,26 @@ export function MarketAlerts() {
             createdAt: new Date().toISOString(),
             description: `${formTarget} ${formCondition}${formThreshold ? ` ${formThreshold}` : ''}`,
           };
-      setAlerts(prev => [created, ...prev]);
+      setAlerts((prev) => [created, ...prev]);
       setFormTarget('');
       setFormThreshold('');
       setShowForm(false);
     } catch {
       // Add locally anyway
-      setAlerts(prev => [{
-        id: Date.now().toString(),
-        userId: 'default',
-        type: formType,
-        target: formTarget,
-        condition: formCondition,
-        threshold: formThreshold ? Number(formThreshold) : undefined,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        description: `${formTarget} ${formCondition}${formThreshold ? ` ${formThreshold}` : ''}`,
-      }, ...prev]);
+      setAlerts((prev) => [
+        {
+          id: Date.now().toString(),
+          userId: 'default',
+          type: formType,
+          target: formTarget,
+          condition: formCondition,
+          threshold: formThreshold ? Number(formThreshold) : undefined,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          description: `${formTarget} ${formCondition}${formThreshold ? ` ${formThreshold}` : ''}`,
+        },
+        ...prev,
+      ]);
       setFormTarget('');
       setFormThreshold('');
       setShowForm(false);
@@ -144,21 +147,23 @@ export function MarketAlerts() {
   }, [formType, formTarget, formCondition, formThreshold]);
 
   const toggleAlert = useCallback((id: string) => {
-    setAlerts(prev =>
-      prev.map(a => a.id === id ? { ...a, isActive: !a.isActive } : a)
-    );
+    setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, isActive: !a.isActive } : a)));
   }, []);
 
   const deleteAlert = useCallback((id: string) => {
-    setAlerts(prev => prev.filter(a => a.id !== id));
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
   }, []);
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'indicator': return 'bg-blue-500/10 text-blue-400';
-      case 'price': return 'bg-emerald-500/10 text-emerald-400';
-      case 'sentiment': return 'bg-purple-500/10 text-purple-400';
-      default: return 'bg-zinc-500/10 text-zinc-400';
+      case 'indicator':
+        return 'bg-blue-500/10 text-blue-400';
+      case 'price':
+        return 'bg-emerald-500/10 text-emerald-400';
+      case 'sentiment':
+        return 'bg-purple-500/10 text-purple-400';
+      default:
+        return 'bg-zinc-500/10 text-zinc-400';
     }
   };
 
@@ -169,7 +174,7 @@ export function MarketAlerts() {
         <div className="flex items-center gap-2">
           <Bell className="w-4 h-4 text-[#FFCC00]" />
           <span className="text-sm font-bold text-white">
-            {alerts.filter(a => a.isActive).length} Active Alerts
+            {alerts.filter((a) => a.isActive).length} Active Alerts
           </span>
         </div>
         <button
@@ -214,7 +219,13 @@ export function MarketAlerts() {
               <label className="text-xs text-zinc-500 font-medium block mb-1">Target</label>
               <input
                 type="text"
-                placeholder={formType === 'indicator' ? 'e.g., Cash Rate, CPI' : formType === 'price' ? 'e.g., ASX:CBA, BTC-AUD' : 'e.g., Property Market'}
+                placeholder={
+                  formType === 'indicator'
+                    ? 'e.g., Cash Rate, CPI'
+                    : formType === 'price'
+                      ? 'e.g., ASX:CBA, BTC-AUD'
+                      : 'e.g., Property Market'
+                }
                 value={formTarget}
                 onChange={(e) => setFormTarget(e.target.value)}
                 className="w-full neu-inset px-3 py-1.5 rounded-lg text-xs text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -267,7 +278,11 @@ export function MarketAlerts() {
               disabled={creating || !formTarget.trim()}
               className="neu-raised-sm px-4 py-1.5 rounded-lg text-xs font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 disabled:opacity-50 transition-all flex items-center gap-1.5"
             >
-              {creating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+              {creating ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Plus className="w-3 h-3" />
+              )}
               Create
             </button>
           </div>
@@ -305,21 +320,28 @@ export function MarketAlerts() {
               }`}
             >
               <div className={`p-2 rounded-lg ${getTypeColor(alert.type)}`}>
-                {alert.type === 'indicator' ? <AlertCircle className="w-4 h-4" /> :
-                 alert.type === 'price' ? <Bell className="w-4 h-4" /> :
-                 <AlertCircle className="w-4 h-4" />}
+                {alert.type === 'indicator' ? (
+                  <AlertCircle className="w-4 h-4" />
+                ) : alert.type === 'price' ? (
+                  <Bell className="w-4 h-4" />
+                ) : (
+                  <AlertCircle className="w-4 h-4" />
+                )}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-bold text-white truncate">{alert.target}</h4>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${getTypeColor(alert.type)}`}>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${getTypeColor(alert.type)}`}
+                  >
                     {alert.type}
                   </span>
                 </div>
                 <p className="text-xs text-zinc-500">
-                  {alert.condition === 'changes' ? 'Notify on any change' :
-                   `${alert.condition} ${alert.threshold ?? ''}`}
+                  {alert.condition === 'changes'
+                    ? 'Notify on any change'
+                    : `${alert.condition} ${alert.threshold ?? ''}`}
                   {alert.description ? ` - ${alert.description}` : ''}
                 </p>
                 {alert.lastTriggered && (

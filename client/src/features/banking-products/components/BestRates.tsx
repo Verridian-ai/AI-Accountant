@@ -66,7 +66,11 @@ export function BestRates() {
   const renderLeaderboard = (title: string, items: RateEntry[], isLending: boolean) => (
     <div className="neu-raised rounded-2xl p-5 space-y-3">
       <h3 className="text-sm font-bold text-zinc-300 flex items-center gap-2">
-        {isLending ? <ArrowDown className="h-4 w-4 text-emerald-400" /> : <ArrowUp className="h-4 w-4 text-cyan-400" />}
+        {isLending ? (
+          <ArrowDown className="h-4 w-4 text-emerald-400" />
+        ) : (
+          <ArrowUp className="h-4 w-4 text-cyan-400" />
+        )}
         {title}
       </h3>
       {loading ? (
@@ -83,14 +87,16 @@ export function BestRates() {
             <div
               key={item.id}
               className={cn(
-                "flex items-center gap-3 p-3 rounded-xl transition-colors",
-                idx < 3 ? MEDAL_BG[idx] : "hover:bg-white/5"
+                'flex items-center gap-3 p-3 rounded-xl transition-colors',
+                idx < 3 ? MEDAL_BG[idx] : 'hover:bg-white/5',
               )}
             >
-              <div className={cn(
-                "w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm",
-                idx < 3 ? cn(MEDAL_COLORS[idx], "neu-inset") : "text-zinc-600"
-              )}>
+              <div
+                className={cn(
+                  'w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm',
+                  idx < 3 ? cn(MEDAL_COLORS[idx], 'neu-inset') : 'text-zinc-600',
+                )}
+              >
                 {idx < 3 ? <Trophy className="h-4 w-4" /> : idx + 1}
               </div>
               <div className="flex-1 min-w-0">
@@ -98,11 +104,18 @@ export function BestRates() {
                 <p className="text-xs text-zinc-500 truncate">{item.dataHolderBrand}</p>
               </div>
               <div className="text-right shrink-0">
-                <p className={cn("text-lg font-black", idx < 3 ? MEDAL_COLORS[idx] : "text-zinc-300")}>
+                <p
+                  className={cn(
+                    'text-lg font-black',
+                    idx < 3 ? MEDAL_COLORS[idx] : 'text-zinc-300',
+                  )}
+                >
                   {formatRate(item.baseRate)}
                 </p>
                 {item.comparisonRate != null && (
-                  <p className="text-[10px] text-zinc-500">{formatRate(item.comparisonRate)} comp</p>
+                  <p className="text-[10px] text-zinc-500">
+                    {formatRate(item.comparisonRate)} comp
+                  </p>
                 )}
               </div>
               <button
@@ -111,7 +124,7 @@ export function BestRates() {
                 className="shrink-0 p-2 rounded-lg text-zinc-500 hover:text-[#FFCC00] transition-colors disabled:opacity-50"
                 title="Set rate alert"
               >
-                <Bell className={cn("h-4 w-4", alertingId === item.id && "animate-pulse")} />
+                <Bell className={cn('h-4 w-4', alertingId === item.id && 'animate-pulse')} />
               </button>
             </div>
           ))}
@@ -124,15 +137,15 @@ export function BestRates() {
     <div className="space-y-6">
       {/* Category Selector */}
       <div className="flex flex-wrap gap-2">
-        {CATEGORIES.map(c => (
+        {CATEGORIES.map((c) => (
           <button
             key={c}
             onClick={() => setCategory(c)}
             className={cn(
-              "px-4 py-2 rounded-xl text-sm font-bold transition-all",
+              'px-4 py-2 rounded-xl text-sm font-bold transition-all',
               category === c
-                ? "bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_15px_rgba(255,204,0,0.2)]"
-                : "neu-raised-sm text-zinc-400 hover:text-zinc-200"
+                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_15px_rgba(255,204,0,0.2)]'
+                : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
             )}
           >
             {c.replace(/_/g, ' ')}

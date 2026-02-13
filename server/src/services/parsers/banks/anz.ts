@@ -5,12 +5,7 @@
  * ANZ uses "DD MMM YYYY" date format and has running balance column.
  */
 
-import {
-  BankParserConfig,
-  ParsedTransaction,
-  AccountInfo,
-  AccountType,
-} from '../types';
+import { BankParserConfig, ParsedTransaction, AccountInfo, AccountType } from '../types';
 import { BaseBankParser, parseDate, parseAmount } from '../base-parser';
 
 /**
@@ -55,21 +50,19 @@ const ANZ_CONFIG: BankParserConfig = {
     'Online Saver': 'savings',
     'Progress Saver': 'savings',
     'Premium Cash': 'savings',
-    'Visa': 'credit',
-    'Rewards': 'credit',
-    'Platinum': 'credit',
-    'Business': 'business',
-    'Offset': 'offset',
+    Visa: 'credit',
+    Rewards: 'credit',
+    Platinum: 'credit',
+    Business: 'business',
+    Offset: 'offset',
   },
 
   periodPatterns: [
     /Statement\s+Period[\s:]*(\d{1,2}\s+\w{3}\s+\d{2,4})\s*(?:to|-)\s*(\d{1,2}\s+\w{3}\s+\d{2,4})/i,
   ],
 
-  openingBalancePattern:
-    /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
-  closingBalancePattern:
-    /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  openingBalancePattern: /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  closingBalancePattern: /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
 };
 
 /**
@@ -123,14 +116,11 @@ export class ANZParser extends BaseBankParser {
   /**
    * Parse a single transaction line
    */
-  private parseTransactionLine(
-    line: string,
-    lineNumber: number
-  ): ParsedTransaction | null {
+  private parseTransactionLine(line: string, lineNumber: number): ParsedTransaction | null {
     // ANZ format: DD MMM YYYY Description Amount Balance
     // Or with separate debit/credit: DD MMM YYYY Description Debit Credit Balance
     const match = line.match(
-      /(\d{1,2}\s+\w{3}\s+\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})(?:\s+(-?\$?[\d,]+\.\d{2}))?(?:\s+(-?\$?[\d,]+\.\d{2}))?$/
+      /(\d{1,2}\s+\w{3}\s+\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})(?:\s+(-?\$?[\d,]+\.\d{2}))?(?:\s+(-?\$?[\d,]+\.\d{2}))?$/,
     );
 
     if (!match) {
@@ -152,7 +142,7 @@ export class ANZParser extends BaseBankParser {
       const credit = parseAmount(val2);
       balance = parseAmount(val3) ?? undefined;
       // Use whichever is non-zero
-      amount = debit && debit !== 0 ? -Math.abs(debit) : credit ?? 0;
+      amount = debit && debit !== 0 ? -Math.abs(debit) : (credit ?? 0);
     } else if (val2) {
       // Two values: amount, balance
       amount = parseAmount(val1);
@@ -190,9 +180,7 @@ export class ANZParser extends BaseBankParser {
     let periodEnd: string | undefined;
 
     // Extract BSB and account number
-    const bsbMatch = pdfText.match(
-      /BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i
-    );
+    const bsbMatch = pdfText.match(/BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i);
     if (bsbMatch) {
       bsb = bsbMatch[1].replace(/\s|-/g, '');
       accountNumber = bsbMatch[2];
@@ -248,9 +236,7 @@ export class ANZParser extends BaseBankParser {
       openingBalance,
       closingBalance,
       statementPeriod:
-        periodStart && periodEnd
-          ? { start: periodStart, end: periodEnd }
-          : undefined,
+        periodStart && periodEnd ? { start: periodStart, end: periodEnd } : undefined,
     };
   }
 }

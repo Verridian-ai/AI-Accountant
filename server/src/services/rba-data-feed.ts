@@ -41,52 +41,132 @@ const RBA_TABLES: Record<string, RbaTableDef> = {
     url: '/csv/a2-reserve-bank-interest-rates.csv',
     name: 'Reserve Bank Interest Rates',
     indicators: [
-      { column: 'Cash Rate Target', code: 'RBA_CASH_RATE', category: 'interest_rates', unit: 'percent' },
-      { column: 'Interbank Overnight Cash Rate', code: 'RBA_OVERNIGHT_RATE', category: 'interest_rates', unit: 'percent' },
+      {
+        column: 'Cash Rate Target',
+        code: 'RBA_CASH_RATE',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
+      {
+        column: 'Interbank Overnight Cash Rate',
+        code: 'RBA_OVERNIGHT_RATE',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
     ],
   },
   F5: {
     url: '/csv/f5-indicator-lending-rates.csv',
     name: 'Indicator Lending Rates',
     indicators: [
-      { column: 'Housing loans; Variable; Standard', code: 'RBA_HOME_LOAN_VARIABLE', category: 'interest_rates', unit: 'percent' },
-      { column: 'Housing loans; Variable; Discounted', code: 'RBA_HOME_LOAN_DISCOUNTED', category: 'interest_rates', unit: 'percent' },
-      { column: 'Personal loans; Variable', code: 'RBA_PERSONAL_LOAN', category: 'interest_rates', unit: 'percent' },
-      { column: 'Term deposits; 1 year', code: 'RBA_TERM_DEPOSIT_1YR', category: 'interest_rates', unit: 'percent' },
+      {
+        column: 'Housing loans; Variable; Standard',
+        code: 'RBA_HOME_LOAN_VARIABLE',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
+      {
+        column: 'Housing loans; Variable; Discounted',
+        code: 'RBA_HOME_LOAN_DISCOUNTED',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
+      {
+        column: 'Personal loans; Variable',
+        code: 'RBA_PERSONAL_LOAN',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
+      {
+        column: 'Term deposits; 1 year',
+        code: 'RBA_TERM_DEPOSIT_1YR',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
     ],
   },
   F11: {
     url: '/csv/f11-housing-lending-rates.csv',
     name: 'Housing Lending Rates',
     indicators: [
-      { column: 'Owner-occupier; Variable rate', code: 'RBA_OO_VARIABLE', category: 'interest_rates', unit: 'percent' },
-      { column: 'Investor; Variable rate', code: 'RBA_INV_VARIABLE', category: 'interest_rates', unit: 'percent' },
-      { column: 'Owner-occupier; Fixed rate; 3 year', code: 'RBA_OO_FIXED_3YR', category: 'interest_rates', unit: 'percent' },
+      {
+        column: 'Owner-occupier; Variable rate',
+        code: 'RBA_OO_VARIABLE',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
+      {
+        column: 'Investor; Variable rate',
+        code: 'RBA_INV_VARIABLE',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
+      {
+        column: 'Owner-occupier; Fixed rate; 3 year',
+        code: 'RBA_OO_FIXED_3YR',
+        category: 'interest_rates',
+        unit: 'percent',
+      },
     ],
   },
   G1: {
     url: '/csv/g1-consumer-price-inflation.csv',
     name: 'Consumer Price Inflation',
     indicators: [
-      { column: 'All groups CPI; Percentage change; Quarterly', code: 'RBA_CPI_QUARTERLY', category: 'inflation', unit: 'percent' },
-      { column: 'All groups CPI; Percentage change; Annual', code: 'RBA_CPI_ANNUAL', category: 'inflation', unit: 'percent' },
-      { column: 'Trimmed mean; Percentage change; Annual', code: 'RBA_TRIMMED_MEAN', category: 'inflation', unit: 'percent' },
+      {
+        column: 'All groups CPI; Percentage change; Quarterly',
+        code: 'RBA_CPI_QUARTERLY',
+        category: 'inflation',
+        unit: 'percent',
+      },
+      {
+        column: 'All groups CPI; Percentage change; Annual',
+        code: 'RBA_CPI_ANNUAL',
+        category: 'inflation',
+        unit: 'percent',
+      },
+      {
+        column: 'Trimmed mean; Percentage change; Annual',
+        code: 'RBA_TRIMMED_MEAN',
+        category: 'inflation',
+        unit: 'percent',
+      },
     ],
   },
   H1: {
     url: '/csv/h1-housing-price-indices.csv',
     name: 'Housing Price Indices',
     indicators: [
-      { column: 'Sydney; Percentage change; Quarterly', code: 'RBA_HOUSE_PRICE_SYD_Q', category: 'housing', unit: 'percent' },
-      { column: 'Australia; Percentage change; Quarterly', code: 'RBA_HOUSE_PRICE_AU_Q', category: 'housing', unit: 'percent' },
+      {
+        column: 'Sydney; Percentage change; Quarterly',
+        code: 'RBA_HOUSE_PRICE_SYD_Q',
+        category: 'housing',
+        unit: 'percent',
+      },
+      {
+        column: 'Australia; Percentage change; Quarterly',
+        code: 'RBA_HOUSE_PRICE_AU_Q',
+        category: 'housing',
+        unit: 'percent',
+      },
     ],
   },
 };
 
 // Month name → 0-based index lookup for DD-MMM-YYYY parsing
 const MONTH_MAP: Record<string, number> = {
-  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+  Jan: 0,
+  Feb: 1,
+  Mar: 2,
+  Apr: 3,
+  May: 4,
+  Jun: 5,
+  Jul: 6,
+  Aug: 7,
+  Sep: 8,
+  Oct: 9,
+  Nov: 10,
+  Dec: 11,
 };
 
 // In-memory cache of raw CSV strings (keyed by table key)
@@ -97,7 +177,6 @@ const csvCache = new Map<string, { csv: string; fetchedAt: number }>();
 // ============================================================================
 
 export class RbaDataFeed {
-
   // ---------- Public API ----------
 
   /**
@@ -137,7 +216,7 @@ export class RbaDataFeed {
     if (headerIndex < 0) return [];
 
     const headers = this.parseCsvRow(lines[headerIndex]);
-    const dataLines = lines.slice(headerIndex + 1).filter(l => l.trim().length > 0);
+    const dataLines = lines.slice(headerIndex + 1).filter((l) => l.trim().length > 0);
 
     if (dataLines.length === 0) return [];
 
@@ -173,9 +252,10 @@ export class RbaDataFeed {
 
       if (latestValue === null) continue;
 
-      const changePct = previousValue !== null && previousValue !== 0
-        ? Math.round(((latestValue - previousValue) / Math.abs(previousValue)) * 10000) / 100
-        : null;
+      const changePct =
+        previousValue !== null && previousValue !== 0
+          ? Math.round(((latestValue - previousValue) / Math.abs(previousValue)) * 10000) / 100
+          : null;
 
       results.push({
         id: crypto.randomUUID(),
@@ -257,7 +337,7 @@ export class RbaDataFeed {
     // Live fetch
     const csv = await this.fetchTable('A2');
     const indicators = await this.parseTable('A2', csv);
-    const cashRate = indicators.find(i => i.indicatorCode === 'RBA_CASH_RATE');
+    const cashRate = indicators.find((i) => i.indicatorCode === 'RBA_CASH_RATE');
 
     if (cashRate) {
       await this.upsertIndicator(cashRate);
@@ -389,12 +469,18 @@ export class RbaDataFeed {
    */
   private inferFrequency(tableKey: string): string {
     switch (tableKey) {
-      case 'A2': return 'daily';
-      case 'F5': return 'monthly';
-      case 'F11': return 'monthly';
-      case 'G1': return 'quarterly';
-      case 'H1': return 'quarterly';
-      default: return 'monthly';
+      case 'A2':
+        return 'daily';
+      case 'F5':
+        return 'monthly';
+      case 'F11':
+        return 'monthly';
+      case 'G1':
+        return 'quarterly';
+      case 'H1':
+        return 'quarterly';
+      default:
+        return 'monthly';
     }
   }
 
@@ -411,18 +497,21 @@ export class RbaDataFeed {
         .all();
 
       if (existing.length === 0) {
-        await db.insert(marketDataFeeds).values({
-          id: feedId,
-          feedName: `RBA ${tableKey}: ${tableDef.name}`,
-          feedType: 'csv',
-          sourceUrl: `${RBA_BASE_URL}${tableDef.url}`,
-          sourceName: 'Reserve Bank of Australia',
-          description: tableDef.name,
-          refreshFrequency: this.inferFrequency(tableKey) === 'daily' ? 'daily' : 'weekly',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }).run();
+        await db
+          .insert(marketDataFeeds)
+          .values({
+            id: feedId,
+            feedName: `RBA ${tableKey}: ${tableDef.name}`,
+            feedType: 'csv',
+            sourceUrl: `${RBA_BASE_URL}${tableDef.url}`,
+            sourceName: 'Reserve Bank of Australia',
+            description: tableDef.name,
+            refreshFrequency: this.inferFrequency(tableKey) === 'daily' ? 'daily' : 'weekly',
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          })
+          .run();
       }
     } catch {
       // If table doesn't exist yet, silently continue
@@ -460,23 +549,26 @@ export class RbaDataFeed {
           .where(eq(economicIndicators.id, existing[0].id))
           .run();
       } else {
-        await db.insert(economicIndicators).values({
-          id: ind.id,
-          feedId: ind.feedId,
-          indicatorCode: ind.indicatorCode,
-          indicatorName: ind.indicatorName,
-          category: ind.category,
-          value: ind.value,
-          previousValue: ind.previousValue,
-          changePct: ind.changePct,
-          unit: ind.unit,
-          frequency: ind.frequency,
-          referencePeriod: ind.referencePeriod,
-          source: ind.source,
-          notes: ind.notes,
-          observationDate: ind.observationDate,
-          createdAt: new Date().toISOString(),
-        }).run();
+        await db
+          .insert(economicIndicators)
+          .values({
+            id: ind.id,
+            feedId: ind.feedId,
+            indicatorCode: ind.indicatorCode,
+            indicatorName: ind.indicatorName,
+            category: ind.category,
+            value: ind.value,
+            previousValue: ind.previousValue,
+            changePct: ind.changePct,
+            unit: ind.unit,
+            frequency: ind.frequency,
+            referencePeriod: ind.referencePeriod,
+            source: ind.source,
+            notes: ind.notes,
+            observationDate: ind.observationDate,
+            createdAt: new Date().toISOString(),
+          })
+          .run();
       }
     } catch (err) {
       console.error(`[RBA] Failed to upsert indicator ${ind.indicatorCode}:`, err);
@@ -486,7 +578,11 @@ export class RbaDataFeed {
   /**
    * Update a feed's last-fetched status in market_data_feeds.
    */
-  private async updateFeedStatus(tableKey: string, success: boolean, error?: string): Promise<void> {
+  private async updateFeedStatus(
+    tableKey: string,
+    success: boolean,
+    error?: string,
+  ): Promise<void> {
     const feedId = `rba-${tableKey.toLowerCase()}`;
     const now = new Date().toISOString();
     try {

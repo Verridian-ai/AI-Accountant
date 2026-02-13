@@ -89,7 +89,10 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
   if (loading) {
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
-        <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to bills
         </button>
         <div className="neu-raised rounded-2xl p-6 animate-pulse">
@@ -103,7 +106,10 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
   if (!bill) {
     return (
       <div className="space-y-6">
-        <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to bills
         </button>
         <div className="neu-raised rounded-2xl p-8 text-center">
@@ -159,9 +165,13 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-white/5">
-              <th className="text-left px-3 py-2 text-xs font-semibold text-zinc-400">Description</th>
+              <th className="text-left px-3 py-2 text-xs font-semibold text-zinc-400">
+                Description
+              </th>
               <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">Qty</th>
-              <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">Unit Price</th>
+              <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">
+                Unit Price
+              </th>
               <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">GST</th>
               <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">Amount</th>
             </tr>
@@ -223,11 +233,7 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
               amount={threeWayMatch.receiptAmount}
               matched={threeWayMatch.receiptAmount === threeWayMatch.billAmount}
             />
-            <MatchColumn
-              label="Bill"
-              amount={threeWayMatch.billAmount}
-              matched={true}
-            />
+            <MatchColumn label="Bill" amount={threeWayMatch.billAmount} matched={true} />
           </div>
 
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-400/5 border border-emerald-400/10">
@@ -283,7 +289,10 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
               />
               <div className="flex gap-2 justify-end">
                 <button
-                  onClick={() => { setShowRejectForm(false); setRejectReason(''); }}
+                  onClick={() => {
+                    setShowRejectForm(false);
+                    setRejectReason('');
+                  }}
                   className="px-4 py-2 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium hover:bg-white/10 transition-all"
                 >
                   Cancel
@@ -325,7 +334,8 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
           <div className="neu-raised rounded-2xl p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-bold text-white mb-2">Approve Bill?</h3>
             <p className="text-sm text-zinc-400 mb-4">
-              This will approve bill <strong className="text-white font-mono">{bill.billNumber}</strong> for{' '}
+              This will approve bill{' '}
+              <strong className="text-white font-mono">{bill.billNumber}</strong> for{' '}
               <strong className="text-[#FFCC00]">{formatCurrency(bill.total)}</strong>.
             </p>
             <div className="flex gap-3 justify-end">
@@ -360,7 +370,15 @@ function DetailField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MatchColumn({ label, amount, matched }: { label: string; amount: number; matched: boolean }) {
+function MatchColumn({
+  label,
+  amount,
+  matched,
+}: {
+  label: string;
+  amount: number;
+  matched: boolean;
+}) {
   return (
     <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
       <p className="text-xs text-zinc-500 mb-1">{label}</p>
@@ -394,7 +412,9 @@ function StatusBadge({ status }: { status: string }) {
     void: 'Void',
   };
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${styles[status] ?? styles.draft}`}>
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${styles[status] ?? styles.draft}`}
+    >
       {labels[status] ?? status}
     </span>
   );

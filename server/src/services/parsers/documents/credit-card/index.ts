@@ -8,10 +8,7 @@
 import { CBACreditCardParser } from './cba-credit';
 
 // Import types
-import type {
-  CreditCardParser,
-  CreditCardStatementParseResult,
-} from './base-credit-parser';
+import type { CreditCardParser, CreditCardStatementParseResult } from './base-credit-parser';
 
 // Base credit card parser and types
 export {

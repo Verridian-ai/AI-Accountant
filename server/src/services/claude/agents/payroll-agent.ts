@@ -11,11 +11,7 @@ import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
 import { employeeService } from '../../employee.js';
 import { payStructureService } from '../../pay-structures.js';
-import type {
-  PayrollAgentInput,
-  PayrollAgentOutput,
-  WagePaymentDetection,
-} from '../types.js';
+import type { PayrollAgentInput, PayrollAgentOutput, WagePaymentDetection } from '../types.js';
 
 /**
  * Determine the current Australian financial year string.
@@ -49,14 +45,18 @@ const WAGE_PATTERNS: Array<{ pattern: RegExp; type: string }> = [
 /** Known employee name patterns for Amica Beauty */
 const KNOWN_EMPLOYEES: Record<string, { fullName: string; tfnDeclared: boolean }> = {
   'bree perry': { fullName: 'Bree Perry', tfnDeclared: true },
-  'christina': { fullName: 'Christina', tfnDeclared: true },
-  'josevski': { fullName: 'Josevski', tfnDeclared: true },
+  christina: { fullName: 'Christina', tfnDeclared: true },
+  josevski: { fullName: 'Josevski', tfnDeclared: true },
 };
 
 /**
  * Detect if a transaction description matches a wage payment pattern.
  */
-function detectWagePattern(description: string): { isWage: boolean; type: string; confidence: number } {
+function detectWagePattern(description: string): {
+  isWage: boolean;
+  type: string;
+  confidence: number;
+} {
   const desc = description.toLowerCase();
   for (const { pattern, type } of WAGE_PATTERNS) {
     if (pattern.test(desc)) {
@@ -86,10 +86,7 @@ function extractEmployeeName(description: string): string | undefined {
   return undefined;
 }
 
-export class PayrollAgent extends ClaudeAgent<
-  PayrollAgentInput,
-  PayrollAgentOutput
-> {
+export class PayrollAgent extends ClaudeAgent<PayrollAgentInput, PayrollAgentOutput> {
   protected systemPrompt = `You are an Australian payroll specialist AI agent for a small business (Amica Beauty — a beauty salon). Your job is to:
 
 1. Detect wage payments from bank transaction descriptions
@@ -131,7 +128,8 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
   protected tools: Anthropic.Tool[] = [
     {
       name: 'detect_wage_payment',
-      description: 'Analyze a transaction to determine if it is a wage payment and extract details.',
+      description:
+        'Analyze a transaction to determine if it is a wage payment and extract details.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -146,13 +144,17 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
     },
     {
       name: 'calculate_payg_withholding',
-      description: 'Calculate PAYG withholding for an employee given their net pay and financial year.',
+      description:
+        'Calculate PAYG withholding for an employee given their net pay and financial year.',
       input_schema: {
         type: 'object' as const,
         properties: {
           employeeName: { type: 'string' },
           netPayCents: { type: 'number', description: 'Net pay in cents for this payment' },
-          annualNetCents: { type: 'number', description: 'Total annual net pay in cents for this employee' },
+          annualNetCents: {
+            type: 'number',
+            description: 'Total annual net pay in cents for this employee',
+          },
           financialYear: { type: 'string', description: 'e.g. 2024-25' },
           payFrequency: { type: 'string', enum: ['weekly', 'fortnightly', 'monthly', 'irregular'] },
         },
@@ -161,7 +163,8 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
     },
     {
       name: 'search_payroll_history',
-      description: 'Search Cognee for previously learned payroll patterns and employee information.',
+      description:
+        'Search Cognee for previously learned payroll patterns and employee information.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -185,20 +188,26 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
     },
     {
       name: 'lookup_employee',
-      description: 'Search for employees by name, email, or status. Use when the user asks about a specific employee or wants to list employees.',
+      description:
+        'Search for employees by name, email, or status. Use when the user asks about a specific employee or wants to list employees.',
       input_schema: {
         type: 'object' as const,
         properties: {
           userId: { type: 'string', description: 'The user/business owner ID' },
           search: { type: 'string', description: 'Search term (name or email)' },
-          status: { type: 'string', enum: ['active', 'terminated', 'on_leave'], description: 'Filter by status' },
+          status: {
+            type: 'string',
+            enum: ['active', 'terminated', 'on_leave'],
+            description: 'Filter by status',
+          },
         },
         required: ['userId'],
       },
     },
     {
       name: 'get_employee_pay_details',
-      description: 'Get the full pay structure for an employee including rate, hours, and salary. Use when asked about pay rates or compensation.',
+      description:
+        'Get the full pay structure for an employee including rate, hours, and salary. Use when asked about pay rates or compensation.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -209,7 +218,8 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
     },
     {
       name: 'calculate_gross_pay',
-      description: 'Calculate gross pay for an employee given hours worked. Returns breakdown by pay category.',
+      description:
+        'Calculate gross pay for an employee given hours worked. Returns breakdown by pay category.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -221,22 +231,23 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
     },
     {
       name: 'check_super_compliance',
-      description: 'Check if an employee\'s super guarantee rate meets the minimum requirement. Rate is configurable via SUPER_GUARANTEE_RATE env var (changes annually). Use when asked about superannuation compliance.',
+      description:
+        "Check if an employee's super guarantee rate meets the minimum requirement. Rate is configurable via SUPER_GUARANTEE_RATE env var (changes annually). Use when asked about superannuation compliance.",
       input_schema: {
         type: 'object' as const,
         properties: {
           employeeId: { type: 'string', description: 'The employee ID' },
-          financialYear: { type: 'string', description: 'Financial year to check (e.g. "2025-26"). Defaults to current FY.' },
+          financialYear: {
+            type: 'string',
+            description: 'Financial year to check (e.g. "2025-26"). Defaults to current FY.',
+          },
         },
         required: ['employeeId'],
       },
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'detect_wage_payment',
       async (input) => {
@@ -302,9 +313,7 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
         const annualNetDollars = annualNetCents / 100;
         const annualGrossDollars = grossFromNet(annualNetDollars, fyStartYear);
         const annualTaxDollars = annualGrossDollars - annualNetDollars;
-        const effectiveRate = annualGrossDollars > 0
-          ? annualTaxDollars / annualGrossDollars
-          : 0;
+        const effectiveRate = annualGrossDollars > 0 ? annualTaxDollars / annualGrossDollars : 0;
 
         // Apply effective rate to this payment
         const netPayDollars = netPayCents / 100;
@@ -388,11 +397,13 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
         const taxDecl = await employeeService.getTaxDeclaration(employeeId);
 
         return {
-          employee: employee ? {
-            name: `${employee.firstName} ${employee.lastName}`,
-            type: employee.employmentType,
-            status: employee.status,
-          } : null,
+          employee: employee
+            ? {
+                name: `${employee.firstName} ${employee.lastName}`,
+                type: employee.employmentType,
+                status: employee.status,
+              }
+            : null,
           payStructure,
           superFund,
           taxDeclaration: taxDecl,
@@ -408,7 +419,7 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
         return {
           grossPayCents: result.grossPay,
           grossPayDollars: (result.grossPay / 100).toFixed(2),
-          breakdown: result.breakdown.map(b => ({
+          breakdown: result.breakdown.map((b) => ({
             category: b.category,
             amountCents: b.amount,
             amountDollars: (b.amount / 100).toFixed(2),
@@ -432,9 +443,10 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
           minimumRequired: MINIMUM_SUPER_RATE,
           financialYear: fy,
           isCompliant: fund.contributionRate >= MINIMUM_SUPER_RATE,
-          shortfall: fund.contributionRate < MINIMUM_SUPER_RATE
-            ? (MINIMUM_SUPER_RATE - fund.contributionRate).toFixed(1) + '%'
-            : null,
+          shortfall:
+            fund.contributionRate < MINIMUM_SUPER_RATE
+              ? (MINIMUM_SUPER_RATE - fund.contributionRate).toFixed(1) + '%'
+              : null,
         }));
 
         return {
@@ -451,4 +463,3 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
     super('payroll_agent');
   }
 }
-

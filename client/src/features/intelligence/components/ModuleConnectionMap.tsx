@@ -17,8 +17,15 @@ interface Connection {
 }
 
 const MODULES = [
-  'transactions', 'analytics', 'tax', 'bas', 'gst',
-  'knowledge', 'documents', 'matching', 'intelligence',
+  'transactions',
+  'analytics',
+  'tax',
+  'bas',
+  'gst',
+  'knowledge',
+  'documents',
+  'matching',
+  'intelligence',
 ];
 
 const CONNECTION_COLORS: Record<string, string> = {
@@ -57,7 +64,7 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
     try {
       setLoading(true);
       const data = await intelligenceApi.getConnections();
-      setConnections(Array.isArray(data) ? data : data.connections ?? []);
+      setConnections(Array.isArray(data) ? data : (data.connections ?? []));
       setError(null);
     } catch {
       setError('Failed to load connections');
@@ -73,18 +80,21 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
   const cy = height / 2;
   const radius = 180;
 
-  const modulePositions = MODULES.reduce<Record<string, { x: number; y: number }>>((acc, mod, i) => {
-    const angle = (2 * Math.PI * i) / MODULES.length - Math.PI / 2;
-    acc[mod] = {
-      x: cx + radius * Math.cos(angle),
-      y: cy + radius * Math.sin(angle),
-    };
-    return acc;
-  }, {});
+  const modulePositions = MODULES.reduce<Record<string, { x: number; y: number }>>(
+    (acc, mod, i) => {
+      const angle = (2 * Math.PI * i) / MODULES.length - Math.PI / 2;
+      acc[mod] = {
+        x: cx + radius * Math.cos(angle),
+        y: cy + radius * Math.sin(angle),
+      };
+      return acc;
+    },
+    {},
+  );
 
   const getModuleConnections = (mod: string) => {
-    const incoming = connections.filter(c => c.targetModule === mod);
-    const outgoing = connections.filter(c => c.sourceModule === mod);
+    const incoming = connections.filter((c) => c.targetModule === mod);
+    const outgoing = connections.filter((c) => c.sourceModule === mod);
     return { incoming, outgoing };
   };
 
@@ -111,7 +121,7 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
             className="w-full h-auto max-h-[500px]"
           >
             {/* Connections */}
-            {connections.map(conn => {
+            {connections.map((conn) => {
               const src = modulePositions[conn.sourceModule];
               const tgt = modulePositions[conn.targetModule];
               if (!src || !tgt) return null;
@@ -145,7 +155,7 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
             })}
 
             {/* Module nodes */}
-            {MODULES.map(mod => {
+            {MODULES.map((mod) => {
               const pos = modulePositions[mod];
               const color = MODULE_COLORS[mod] ?? '#888';
               const isSelected = selectedModule === mod;
@@ -187,7 +197,9 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
             {Object.entries(CONNECTION_COLORS).map(([type, color]) => (
               <div key={type} className="flex items-center gap-1.5">
                 <div className="w-4 h-1 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-[10px] text-zinc-500 uppercase font-medium">{type.replace('_', ' ')}</span>
+                <span className="text-[10px] text-zinc-500 uppercase font-medium">
+                  {type.replace('_', ' ')}
+                </span>
               </div>
             ))}
           </div>
@@ -201,38 +213,48 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
                 {selectedModule ? `Module: ${selectedModule}` : 'Connection Detail'}
               </h4>
               <button
-                onClick={() => { setSelectedModule(null); setSelectedConnection(null); }}
+                onClick={() => {
+                  setSelectedModule(null);
+                  setSelectedConnection(null);
+                }}
                 className="text-zinc-500 hover:text-zinc-300"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {selectedModule && (() => {
-              const { incoming, outgoing } = getModuleConnections(selectedModule);
-              return (
-                <>
-                  <div>
-                    <p className="text-xs text-zinc-500 font-medium mb-1">Incoming ({incoming.length})</p>
-                    {incoming.map(c => (
-                      <div key={c.id} className="text-xs text-zinc-400 py-0.5">
-                        ← {c.sourceModule} <span className="text-zinc-600">({c.connectionType})</span>
-                      </div>
-                    ))}
-                    {incoming.length === 0 && <p className="text-xs text-zinc-600">None</p>}
-                  </div>
-                  <div>
-                    <p className="text-xs text-zinc-500 font-medium mb-1">Outgoing ({outgoing.length})</p>
-                    {outgoing.map(c => (
-                      <div key={c.id} className="text-xs text-zinc-400 py-0.5">
-                        → {c.targetModule} <span className="text-zinc-600">({c.connectionType})</span>
-                      </div>
-                    ))}
-                    {outgoing.length === 0 && <p className="text-xs text-zinc-600">None</p>}
-                  </div>
-                </>
-              );
-            })()}
+            {selectedModule &&
+              (() => {
+                const { incoming, outgoing } = getModuleConnections(selectedModule);
+                return (
+                  <>
+                    <div>
+                      <p className="text-xs text-zinc-500 font-medium mb-1">
+                        Incoming ({incoming.length})
+                      </p>
+                      {incoming.map((c) => (
+                        <div key={c.id} className="text-xs text-zinc-400 py-0.5">
+                          ← {c.sourceModule}{' '}
+                          <span className="text-zinc-600">({c.connectionType})</span>
+                        </div>
+                      ))}
+                      {incoming.length === 0 && <p className="text-xs text-zinc-600">None</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500 font-medium mb-1">
+                        Outgoing ({outgoing.length})
+                      </p>
+                      {outgoing.map((c) => (
+                        <div key={c.id} className="text-xs text-zinc-400 py-0.5">
+                          → {c.targetModule}{' '}
+                          <span className="text-zinc-600">({c.connectionType})</span>
+                        </div>
+                      ))}
+                      {outgoing.length === 0 && <p className="text-xs text-zinc-600">None</p>}
+                    </div>
+                  </>
+                );
+              })()}
 
             {selectedConnection && (
               <>

@@ -40,7 +40,9 @@ function assertEqual<T>(actual: T, expected: T, message: string): void {
   } else {
     failed++;
     errors.push(`${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
-    console.error(`  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    console.error(
+      `  FAIL: ${message} — expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`,
+    );
   }
 }
 
@@ -103,7 +105,10 @@ describe('MarketPriceService — Alpha Vantage rate limiting', () => {
 
   // Without an API key, fetchASXQuote should return null (not throw)
   // The rate limiter is still tracked
-  assert(typeof service.alphaVantageCallsRemaining === 'number', 'alphaVantageCallsRemaining is a number');
+  assert(
+    typeof service.alphaVantageCallsRemaining === 'number',
+    'alphaVantageCallsRemaining is a number',
+  );
 });
 
 describe('MarketPriceService — fetchASXQuote returns null without API key', async () => {
@@ -137,7 +142,10 @@ describe('MarketPriceService — fetchCryptoPrice returns null without API', asy
     // This will try to hit the real CoinGecko API
     // If rate limited or offline, should return null not throw
     const price = await service.fetchCryptoPrice('nonexistent-coin-xyz');
-    assert(price === null || price !== null, 'fetchCryptoPrice handles nonexistent coins gracefully');
+    assert(
+      price === null || price !== null,
+      'fetchCryptoPrice handles nonexistent coins gracefully',
+    );
   } catch (err: any) {
     // Even network errors should be caught internally
     assert(true, 'fetchCryptoPrice caught error internally');
@@ -146,7 +154,7 @@ describe('MarketPriceService — fetchCryptoPrice returns null without API', asy
 
 describe('MarketPriceService — fetchASXBatch stops at daily limit', async () => {
   const service = new MarketPriceService({
-    alphaVantageApiKey: '',  // No key = returns null immediately
+    alphaVantageApiKey: '', // No key = returns null immediately
     alphaVantageDailyLimit: 2,
   });
 
@@ -183,7 +191,16 @@ describe('MarketPriceService — Default ASX watchlist coverage', () => {
 });
 
 describe('MarketPriceService — Default crypto watchlist coverage', () => {
-  const expectedCoins = ['bitcoin', 'ethereum', 'solana', 'ripple', 'cardano', 'polkadot', 'chainlink', 'avalanche-2'];
+  const expectedCoins = [
+    'bitcoin',
+    'ethereum',
+    'solana',
+    'ripple',
+    'cardano',
+    'polkadot',
+    'chainlink',
+    'avalanche-2',
+  ];
   assertEqual(expectedCoins.length, 8, 'Expected 8 default crypto coins');
 });
 

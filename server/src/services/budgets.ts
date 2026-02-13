@@ -74,7 +74,13 @@ export class BudgetService {
     let lines: any[] = [];
     if (params.autoGenerate) {
       const lookback = params.lookbackMonths ?? 12;
-      lines = await this.generateFromHistory(userId, params.periodStart, params.periodEnd, lookback, budgetId);
+      lines = await this.generateFromHistory(
+        userId,
+        params.periodStart,
+        params.periodEnd,
+        lookback,
+        budgetId,
+      );
 
       // Update total from generated lines
       const total = lines.reduce((sum: number, l: any) => sum + Math.abs(l.budgetedAmount), 0);
@@ -88,11 +94,7 @@ export class BudgetService {
   }
 
   async getBudget(budgetId: string) {
-    const budget = await db
-      .select()
-      .from(budgets)
-      .where(eq(budgets.id, budgetId))
-      .get();
+    const budget = await db.select().from(budgets).where(eq(budgets.id, budgetId)).get();
 
     if (!budget) return null;
 
@@ -134,7 +136,10 @@ export class BudgetService {
       .all();
   }
 
-  async updateBudget(budgetId: string, updates: Partial<{ name: string; status: string; periodStart: string; periodEnd: string }>) {
+  async updateBudget(
+    budgetId: string,
+    updates: Partial<{ name: string; status: string; periodStart: string; periodEnd: string }>,
+  ) {
     const now = new Date().toISOString();
 
     await db
@@ -150,10 +155,7 @@ export class BudgetService {
       .all();
 
     const total = lines.reduce((sum: number, l: any) => sum + Math.abs(l.budgetedAmount), 0);
-    await db
-      .update(budgets)
-      .set({ totalAmount: total })
-      .where(eq(budgets.id, budgetId));
+    await db.update(budgets).set({ totalAmount: total }).where(eq(budgets.id, budgetId));
 
     return this.getBudget(budgetId);
   }
@@ -190,18 +192,14 @@ export class BudgetService {
     return newLine;
   }
 
-  async updateBudgetLine(lineId: string, updates: Partial<{ budgetedAmount: number; notes: string }>) {
-    await db
-      .update(budgetLines)
-      .set(updates)
-      .where(eq(budgetLines.id, lineId));
+  async updateBudgetLine(
+    lineId: string,
+    updates: Partial<{ budgetedAmount: number; notes: string }>,
+  ) {
+    await db.update(budgetLines).set(updates).where(eq(budgetLines.id, lineId));
 
     // Get line to find parent budget
-    const line = await db
-      .select()
-      .from(budgetLines)
-      .where(eq(budgetLines.id, lineId))
-      .get();
+    const line = await db.select().from(budgetLines).where(eq(budgetLines.id, lineId)).get();
 
     if (line) {
       await this.recalculateBudgetTotal(line.budgetId);
@@ -212,11 +210,7 @@ export class BudgetService {
 
   async deleteBudgetLine(lineId: string): Promise<void> {
     // Get line to find parent budget before deleting
-    const line = await db
-      .select()
-      .from(budgetLines)
-      .where(eq(budgetLines.id, lineId))
-      .get();
+    const line = await db.select().from(budgetLines).where(eq(budgetLines.id, lineId)).get();
 
     await db.delete(budgetLines).where(eq(budgetLines.id, lineId));
 
@@ -234,7 +228,7 @@ export class BudgetService {
     periodStart: string,
     periodEnd: string,
     lookbackMonths: number,
-    budgetId?: string
+    budgetId?: string,
   ) {
     // Calculate lookback window
     const startDate = new Date(periodStart);
@@ -257,8 +251,8 @@ export class BudgetService {
           eq(transactions.userId, userId),
           gte(transactions.date, lookbackStartStr),
           lte(transactions.date, lookbackEndStr),
-          sql`${transactions.category} IS NOT NULL`
-        )
+          sql`${transactions.category} IS NOT NULL`,
+        ),
       )
       .groupBy(transactions.category, sql`SUBSTR(${transactions.date}, 1, 7)`)
       .all();
@@ -332,7 +326,11 @@ export class BudgetService {
     const budget = await db.select().from(budgets).where(eq(budgets.id, budgetId)).get();
     if (!budget) throw new Error(`Budget not found: ${budgetId}`);
 
-    const lines = await db.select().from(budgetLines).where(eq(budgetLines.budgetId, budgetId)).all();
+    const lines = await db
+      .select()
+      .from(budgetLines)
+      .where(eq(budgetLines.budgetId, budgetId))
+      .all();
     const results: any[] = [];
 
     for (const line of lines) {
@@ -351,16 +349,15 @@ export class BudgetService {
             eq(transactions.userId, budget.userId),
             eq(transactions.category, line.category),
             gte(transactions.date, startDate),
-            lte(transactions.date, endDate)
-          )
+            lte(transactions.date, endDate),
+          ),
         )
         .get();
 
       const actualAmount = Number(actualResult?.totalAmount ?? 0);
       const varianceAmount = actualAmount - line.budgetedAmount;
-      const variancePercent = line.budgetedAmount !== 0
-        ? (varianceAmount / Math.abs(line.budgetedAmount)) * 100
-        : 0;
+      const variancePercent =
+        line.budgetedAmount !== 0 ? (varianceAmount / Math.abs(line.budgetedAmount)) * 100 : 0;
 
       const now = new Date().toISOString();
 
@@ -380,10 +377,7 @@ export class BudgetService {
       };
 
       if (existing) {
-        await db
-          .update(budgetVsActual)
-          .set(record)
-          .where(eq(budgetVsActual.id, existing.id));
+        await db.update(budgetVsActual).set(record).where(eq(budgetVsActual.id, existing.id));
         results.push({ ...existing, ...record, budgetLine: line });
       } else {
         const newRecord = {
@@ -405,7 +399,13 @@ export class BudgetService {
 
     let totalBudgeted = 0;
     let totalActual = 0;
-    const categoryVariances: Array<{ category: string; budgeted: number; actual: number; variance: number; percent: number }> = [];
+    const categoryVariances: Array<{
+      category: string;
+      budgeted: number;
+      actual: number;
+      variance: number;
+      percent: number;
+    }> = [];
 
     // Aggregate by category
     const categoryMap = new Map<string, { budgeted: number; actual: number }>();
@@ -424,33 +424,44 @@ export class BudgetService {
       const percent = data.budgeted !== 0 ? (variance / Math.abs(data.budgeted)) * 100 : 0;
       totalBudgeted += data.budgeted;
       totalActual += data.actual;
-      categoryVariances.push({ category, budgeted: data.budgeted, actual: data.actual, variance, percent });
+      categoryVariances.push({
+        category,
+        budgeted: data.budgeted,
+        actual: data.actual,
+        variance,
+        percent,
+      });
     }
 
     const totalVariance = totalActual - totalBudgeted;
 
     // Classify categories
     const overBudgetCategories = categoryVariances
-      .filter(c => c.variance > 0)
-      .map(c => ({ category: c.category, variance: c.variance, percent: c.percent }))
+      .filter((c) => c.variance > 0)
+      .map((c) => ({ category: c.category, variance: c.variance, percent: c.percent }))
       .sort((a, b) => b.variance - a.variance);
 
     const underBudgetCategories = categoryVariances
-      .filter(c => c.variance < 0)
-      .map(c => ({ category: c.category, variance: c.variance, percent: c.percent }))
+      .filter((c) => c.variance < 0)
+      .map((c) => ({ category: c.category, variance: c.variance, percent: c.percent }))
       .sort((a, b) => a.variance - b.variance);
 
     // Top 5 largest absolute variances
     const topVariances = [...categoryVariances]
       .sort((a, b) => Math.abs(b.variance) - Math.abs(a.variance))
       .slice(0, 5)
-      .map(c => ({ category: c.category, budgeted: c.budgeted, actual: c.actual, variance: c.variance }));
+      .map((c) => ({
+        category: c.category,
+        budgeted: c.budgeted,
+        actual: c.actual,
+        variance: c.variance,
+      }));
 
     // Health: on_track if |totalVariance| < 10% of totalBudgeted
     let health: 'on_track' | 'over_budget' | 'under_budget';
     if (totalBudgeted === 0) {
       health = 'on_track';
-    } else if (Math.abs(totalVariance) < Math.abs(totalBudgeted) * 0.10) {
+    } else if (Math.abs(totalVariance) < Math.abs(totalBudgeted) * 0.1) {
       health = 'on_track';
     } else if (totalActual > totalBudgeted) {
       health = 'over_budget';

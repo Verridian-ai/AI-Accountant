@@ -11,15 +11,9 @@ import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
 import { billService } from '../../bills.js';
 import { purchaseOrderService } from '../../purchase-orders.js';
-import type {
-  AccountsPayableInput,
-  AccountsPayableOutput,
-} from '../types.js';
+import type { AccountsPayableInput, AccountsPayableOutput } from '../types.js';
 
-export class AccountsPayableAgent extends ClaudeAgent<
-  AccountsPayableInput,
-  AccountsPayableOutput
-> {
+export class AccountsPayableAgent extends ClaudeAgent<AccountsPayableInput, AccountsPayableOutput> {
   protected systemPrompt = `You are an Accounts Payable specialist for an Australian small business accounting platform.
 You help manage supplier bills, purchase orders, and payment scheduling.
 
@@ -49,7 +43,10 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
         type: 'object' as const,
         properties: {
           supplierId: { type: 'string', description: 'Supplier UUID' },
-          billNumber: { type: 'string', description: 'Optional bill/invoice number from the supplier' },
+          billNumber: {
+            type: 'string',
+            description: 'Optional bill/invoice number from the supplier',
+          },
           issueDate: { type: 'string', description: 'Bill issue date (ISO format YYYY-MM-DD)' },
           dueDate: { type: 'string', description: 'Payment due date (ISO format YYYY-MM-DD)' },
           lineItems: {
@@ -97,7 +94,8 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     },
     {
       name: 'match_po_to_bill',
-      description: 'Perform three-way matching between a purchase order, its receipts, and a supplier bill. Reports quantity, price, and total discrepancies.',
+      description:
+        'Perform three-way matching between a purchase order, its receipts, and a supplier bill. Reports quantity, price, and total discrepancies.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -109,7 +107,8 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     },
     {
       name: 'schedule_payment',
-      description: 'Create a payment run for a batch of approved bills. Groups multiple bills into a single bank transfer batch.',
+      description:
+        'Create a payment run for a batch of approved bills. Groups multiple bills into a single bank transfer batch.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -125,7 +124,8 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     },
     {
       name: 'generate_aging_report',
-      description: 'Generate an AP aging report showing outstanding bills grouped by days past due (current, 1-30, 31-60, 61-90, 90+ days).',
+      description:
+        'Generate an AP aging report showing outstanding bills grouped by days past due (current, 1-30, 31-60, 61-90, 90+ days).',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -136,7 +136,8 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     },
     {
       name: 'approve_payment_batch',
-      description: 'Process an existing payment run, recording payments against each bill in the batch.',
+      description:
+        'Process an existing payment run, recording payments against each bill in the batch.',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -147,7 +148,8 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     },
     {
       name: 'search_vendor_bills',
-      description: 'Search historical vendor bills and spending patterns using Cognee knowledge graph. Good for questions like "What do we usually spend with supplier X?" or "Show recurring bill patterns".',
+      description:
+        'Search historical vendor bills and spending patterns using Cognee knowledge graph. Good for questions like "What do we usually spend with supplier X?" or "Show recurring bill patterns".',
       input_schema: {
         type: 'object' as const,
         properties: {
@@ -159,10 +161,7 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'enter_bill',
       async (input) => {
@@ -297,9 +296,7 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     [
       'approve_payment_batch',
       async (input) => {
-        const result = await purchaseOrderService.processPaymentRun(
-          input.paymentRunId as string,
-        );
+        const result = await purchaseOrderService.processPaymentRun(input.paymentRunId as string);
         return {
           id: result.id,
           status: result.status,

@@ -4,12 +4,7 @@
  * Handles NAB transaction account, savings, and credit card statements.
  */
 
-import {
-  BankParserConfig,
-  ParsedTransaction,
-  AccountInfo,
-  AccountType,
-} from '../types';
+import { BankParserConfig, ParsedTransaction, AccountInfo, AccountType } from '../types';
 import { BaseBankParser, parseDate, parseAmount } from '../base-parser';
 
 /**
@@ -40,8 +35,7 @@ const NAB_CONFIG: BankParserConfig = {
   transactionPatterns: {
     datePattern: /(\d{1,2}\/\d{1,2}\/\d{2,4})/,
     amountPattern: /\$?([\d,]+\.\d{2})/,
-    transactionLinePattern:
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})/,
+    transactionLinePattern: /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})/,
     debitIndicators: ['-', 'DR'],
     creditIndicators: ['+', 'CR'],
     separateDebitCreditColumns: false,
@@ -49,23 +43,21 @@ const NAB_CONFIG: BankParserConfig = {
 
   accountTypes: {
     'Classic Banking': 'transaction',
-    'iSaver': 'savings',
+    iSaver: 'savings',
     'Reward Saver': 'savings',
-    'Qantas': 'credit',
-    'Rewards': 'credit',
+    Qantas: 'credit',
+    Rewards: 'credit',
     'Low Rate': 'credit',
-    'Business': 'business',
-    'Offset': 'offset',
+    Business: 'business',
+    Offset: 'offset',
   },
 
   periodPatterns: [
     /Statement\s+Period[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})\s*(?:to|-)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i,
   ],
 
-  openingBalancePattern:
-    /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
-  closingBalancePattern:
-    /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  openingBalancePattern: /(?:Opening|Beginning)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
+  closingBalancePattern: /(?:Closing|Ending)\s*Balance[\s:]*\$?([\d,]+\.\d{2})/i,
 };
 
 /**
@@ -93,10 +85,7 @@ export class NABParser extends BaseBankParser {
         continue;
       }
 
-      if (
-        inTransactionSection &&
-        /^\s*(?:Closing|Total)\s+/i.test(line)
-      ) {
+      if (inTransactionSection && /^\s*(?:Closing|Total)\s+/i.test(line)) {
         inTransactionSection = false;
         continue;
       }
@@ -117,13 +106,10 @@ export class NABParser extends BaseBankParser {
   /**
    * Parse a single transaction line
    */
-  private parseTransactionLine(
-    line: string,
-    lineNumber: number
-  ): ParsedTransaction | null {
+  private parseTransactionLine(line: string, lineNumber: number): ParsedTransaction | null {
     // NAB format: DD/MM/YYYY Description Amount Balance
     const match = line.match(
-      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})(?:\s+(-?\$?[\d,]+\.\d{2}))?$/
+      /(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(.+?)\s+(-?\$?[\d,]+\.\d{2})(?:\s+(-?\$?[\d,]+\.\d{2}))?$/,
     );
 
     if (!match) {
@@ -166,9 +152,7 @@ export class NABParser extends BaseBankParser {
     let periodEnd: string | undefined;
 
     // Extract BSB and account number
-    const bsbMatch = pdfText.match(
-      /BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i
-    );
+    const bsbMatch = pdfText.match(/BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s#:]*(\d+)/i);
     if (bsbMatch) {
       bsb = bsbMatch[1].replace(/\s|-/g, '');
       accountNumber = bsbMatch[2];
@@ -176,9 +160,7 @@ export class NABParser extends BaseBankParser {
 
     // NAB account number format
     if (!accountNumber) {
-      const accMatch = pdfText.match(
-        /Account\s*(?:Number|No\.?)[\s:]*(\d{10,})/i
-      );
+      const accMatch = pdfText.match(/Account\s*(?:Number|No\.?)[\s:]*(\d{10,})/i);
       if (accMatch) {
         accountNumber = accMatch[1];
       }
@@ -226,9 +208,7 @@ export class NABParser extends BaseBankParser {
       openingBalance,
       closingBalance,
       statementPeriod:
-        periodStart && periodEnd
-          ? { start: periodStart, end: periodEnd }
-          : undefined,
+        periodStart && periodEnd ? { start: periodStart, end: periodEnd } : undefined,
     };
   }
 }

@@ -111,7 +111,13 @@ Return a JSON object matching the CdrProductOutput schema with "analysis", "reco
         properties: {
           scenarioType: {
             type: 'string',
-            enum: ['home_loan', 'personal_loan', 'business_loan', 'refinance', 'borrowing_capacity'],
+            enum: [
+              'home_loan',
+              'personal_loan',
+              'business_loan',
+              'refinance',
+              'borrowing_capacity',
+            ],
             description: 'Type of loan scenario to calculate',
           },
           principal: {
@@ -236,10 +242,7 @@ Return a JSON object matching the CdrProductOutput schema with "analysis", "reco
     },
   ];
 
-  protected toolHandlers = new Map<
-    string,
-    (input: Record<string, unknown>) => Promise<unknown>
-  >([
+  protected toolHandlers = new Map<string, (input: Record<string, unknown>) => Promise<unknown>>([
     [
       'search_products',
       async (input) => {
@@ -342,7 +345,7 @@ Return a JSON object matching the CdrProductOutput schema with "analysis", "reco
               principal: input.principal as number,
               annualRate: input.annualRate as number,
               termMonths: input.termMonths as number,
-              marginalTaxRate: (input.marginalTaxRate as number) ?? 0.30,
+              marginalTaxRate: (input.marginalTaxRate as number) ?? 0.3,
             });
             return {
               type: 'business_loan',

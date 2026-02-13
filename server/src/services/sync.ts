@@ -13,11 +13,7 @@
  */
 
 import crypto from 'crypto';
-import {
-  db,
-  offlineSyncLog,
-  transactions,
-} from '../schema.js';
+import { db, offlineSyncLog, transactions } from '../schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
 
 // ============================================================================
@@ -141,7 +137,7 @@ export class SyncService {
   async processSync(
     userId: string,
     tenantId: string,
-    operations: SyncOperation[]
+    operations: SyncOperation[],
   ): Promise<SyncResult> {
     const result: SyncResult = {
       processed: 0,
@@ -279,16 +275,19 @@ export class SyncService {
     switch (op.operation) {
       case 'create': {
         const newId = (payload.id as string) ?? crypto.randomUUID();
-        await db.insert(transactions).values({
-          id: newId,
-          description: (payload.description as string) ?? '',
-          amount: (payload.amount as number) ?? 0,
-          date: (payload.date as string) ?? now,
-          category: (payload.category as string) ?? 'Uncategorised',
-          statementId: payload.statementId != null ? String(payload.statementId) : null,
-          balance: payload.balance != null ? Number(payload.balance) : null,
-          accountId: payload.accountId != null ? String(payload.accountId) : null,
-        }).run();
+        await db
+          .insert(transactions)
+          .values({
+            id: newId,
+            description: (payload.description as string) ?? '',
+            amount: (payload.amount as number) ?? 0,
+            date: (payload.date as string) ?? now,
+            category: (payload.category as string) ?? 'Uncategorised',
+            statementId: payload.statementId != null ? String(payload.statementId) : null,
+            balance: payload.balance != null ? Number(payload.balance) : null,
+            accountId: payload.accountId != null ? String(payload.accountId) : null,
+          })
+          .run();
 
         return { success: true, resourceId: newId };
       }
@@ -319,10 +318,7 @@ export class SyncService {
       case 'delete': {
         if (!op.resourceId) return { success: false, error: 'resourceId required for delete' };
 
-        await db
-          .delete(transactions)
-          .where(eq(transactions.id, op.resourceId!))
-          .run();
+        await db.delete(transactions).where(eq(transactions.id, op.resourceId!)).run();
 
         return { success: true, resourceId: op.resourceId };
       }
@@ -343,8 +339,8 @@ export class SyncService {
         and(
           eq(offlineSyncLog.userId, userId),
           eq(offlineSyncLog.tenantId, tenantId),
-          eq(offlineSyncLog.syncStatus, 'conflict')
-        )
+          eq(offlineSyncLog.syncStatus, 'conflict'),
+        ),
       )
       .orderBy(desc(offlineSyncLog.createdAt))
       .all();
@@ -357,7 +353,7 @@ export class SyncService {
    */
   async resolveConflict(
     conflictId: string,
-    resolution: 'client_wins' | 'server_wins'
+    resolution: 'client_wins' | 'server_wins',
   ): Promise<void> {
     const conflict = await db
       .select()
@@ -402,16 +398,16 @@ export class SyncService {
   /**
    * Get paginated sync history for a user.
    */
-  async getSyncLog(userId: string, tenantId: string, limit = 20, offset = 0): Promise<SyncLogEntry[]> {
+  async getSyncLog(
+    userId: string,
+    tenantId: string,
+    limit = 20,
+    offset = 0,
+  ): Promise<SyncLogEntry[]> {
     const rows = await db
       .select()
       .from(offlineSyncLog)
-      .where(
-        and(
-          eq(offlineSyncLog.userId, userId),
-          eq(offlineSyncLog.tenantId, tenantId)
-        )
-      )
+      .where(and(eq(offlineSyncLog.userId, userId), eq(offlineSyncLog.tenantId, tenantId)))
       .orderBy(desc(offlineSyncLog.createdAt))
       .all();
 
@@ -429,24 +425,27 @@ export class SyncService {
     tenantId: string,
     op: SyncOperation,
     status: string,
-    errorMessage?: string
+    errorMessage?: string,
   ): Promise<void> {
-    await db.insert(offlineSyncLog).values({
-      id: crypto.randomUUID(),
-      userId,
-      tenantId,
-      deviceId: op.deviceId,
-      operation: op.operation,
-      resourceType: op.resourceType,
-      resourceId: op.resourceId ?? null,
-      payloadJson: JSON.stringify(op.payload),
-      syncStatus: status,
-      syncedAt: new Date().toISOString(),
-      errorMessage: errorMessage ?? null,
-      clientVersion: op.clientVersion ?? null,
-      retryCount: 0,
-      createdAt: new Date().toISOString(),
-    }).run();
+    await db
+      .insert(offlineSyncLog)
+      .values({
+        id: crypto.randomUUID(),
+        userId,
+        tenantId,
+        deviceId: op.deviceId,
+        operation: op.operation,
+        resourceType: op.resourceType,
+        resourceId: op.resourceId ?? null,
+        payloadJson: JSON.stringify(op.payload),
+        syncStatus: status,
+        syncedAt: new Date().toISOString(),
+        errorMessage: errorMessage ?? null,
+        clientVersion: op.clientVersion ?? null,
+        retryCount: 0,
+        createdAt: new Date().toISOString(),
+      })
+      .run();
   }
 
   /** Log a conflict for later resolution */
@@ -454,28 +453,31 @@ export class SyncService {
     userId: string,
     tenantId: string,
     op: SyncOperation,
-    serverVersion: number
+    serverVersion: number,
   ): Promise<void> {
-    await db.insert(offlineSyncLog).values({
-      id: crypto.randomUUID(),
-      userId,
-      tenantId,
-      deviceId: op.deviceId,
-      operation: op.operation,
-      resourceType: op.resourceType,
-      resourceId: op.resourceId ?? null,
-      payloadJson: JSON.stringify(op.payload),
-      syncStatus: 'conflict',
-      conflictDetails: JSON.stringify({
-        reason: 'version_mismatch',
-        clientVersion: op.clientVersion,
+    await db
+      .insert(offlineSyncLog)
+      .values({
+        id: crypto.randomUUID(),
+        userId,
+        tenantId,
+        deviceId: op.deviceId,
+        operation: op.operation,
+        resourceType: op.resourceType,
+        resourceId: op.resourceId ?? null,
+        payloadJson: JSON.stringify(op.payload),
+        syncStatus: 'conflict',
+        conflictDetails: JSON.stringify({
+          reason: 'version_mismatch',
+          clientVersion: op.clientVersion,
+          serverVersion,
+        }),
         serverVersion,
-      }),
-      serverVersion,
-      clientVersion: op.clientVersion ?? null,
-      retryCount: 0,
-      createdAt: new Date().toISOString(),
-    }).run();
+        clientVersion: op.clientVersion ?? null,
+        retryCount: 0,
+        createdAt: new Date().toISOString(),
+      })
+      .run();
   }
 }
 
