@@ -190,7 +190,7 @@ Rules:
           messages: [
             {
               role: 'user',
-              content: [{ type: 'text', text: prompt }, ...contentImages] as any,
+              content: [{ type: 'text', text: prompt }, ...contentImages],
             },
           ],
           response_format: { type: 'json_object' },
