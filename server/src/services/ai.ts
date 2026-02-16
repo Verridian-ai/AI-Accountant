@@ -309,7 +309,7 @@ Matches the indices of the input array.
     }
   }
 
-  async generateInsight(query: string, context: any, model?: string): Promise<string> {
+  async generateInsight(query: string, context: unknown, model?: string): Promise<string> {
     console.log(`[AI Insight] Query: ${query}`);
     const modelId = model || 'google/gemini-3-flash-preview';
 
