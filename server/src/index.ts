@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { cors } from 'hono/cors';
 import { bodyLimit } from 'hono/body-limit';
 import { rateLimiter } from 'hono-rate-limiter';
@@ -134,7 +134,7 @@ app.use(
 );
 
 // Rate limiter key: prefer real IP from trusted proxy, fall back to connection addr
-const getRateLimitKey = (c: any) => {
+const getRateLimitKey = (c: Context) => {
   // x-real-ip is typically set by a trusted reverse proxy (nginx)
   const realIp = c.req.header('x-real-ip');
   // conninfo is set by Hono's node adapter with the socket remote address
@@ -260,7 +260,7 @@ app.get('/api/vertex-ai/test', async (c) => {
     return c.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: error instanceof Error ? getErrorMessage(error) : String(error),
       },
       500,
     );
@@ -354,7 +354,7 @@ app.post('/api/transactions/:id/split', async (c) => {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
     const id = c.req.param('id');
-    const { splits } = await c.req.json();
+    const { splits } = validateBody(transactionSplitSchema, await c.req.json());
 
     const original = await db
       .select()
@@ -364,7 +364,7 @@ app.post('/api/transactions/:id/split', async (c) => {
 
     if (!original) return c.json({ error: 'Not found' }, 404);
 
-    const newTransactions = splits.map((split: any) => ({
+    const newTransactions = splits.map((split) => ({
       id: crypto.randomUUID(),
       date: original.date,
       description: split.description || original.description,
@@ -452,7 +452,7 @@ app.get('/api/transactions/export', async (c) => {
     const category = c.req.query('category');
     const search = c.req.query('search');
 
-    const filters = [eq(transactions.userId, userId)];
+    const filters: SQL[] = [eq(transactions.userId, userId)];
 
     if (startDate) {
       filters.push(gte(transactions.date, startDate));
@@ -473,7 +473,7 @@ app.get('/api/transactions/export', async (c) => {
       .where(and(...filters))
       .orderBy(desc(transactions.date));
 
-    const exportData = data.map((t: any) => {
+    const exportData = data.map((t) => {
       // Ensure date is in DD/MM/YYYY format for Australia
       const dateParts = t.date.split('-'); // Assuming YYYY-MM-DD
       const formattedDate =
@@ -1401,7 +1401,7 @@ app.get('/api/events', (c) => {
   c.header('Connection', 'keep-alive');
 
   return stream(c, async (stream) => {
-    const listener = (data: any) => {
+    const listener = (data) => {
       const payload = JSON.stringify(data);
       // Always send on 'update' channel for legacy listeners
       stream.write(`event: update\ndata: ${payload}\n\n`);
@@ -1463,7 +1463,7 @@ app.get('/api/statements/gap-analysis', async (c) => {
       .from(statementAccounts)
       .all();
 
-    const stmtAccountMap = new Map(stmtAccounts.map((sa: any) => [sa.statementId, sa.accountId]));
+    const stmtAccountMap = new Map(stmtAccounts.map((sa) => [sa.statementId, sa.accountId]));
 
     // Group statements by account
     const accountStatements = new Map<string, typeof stmts>();
@@ -1584,8 +1584,8 @@ app.get('/api/statements/gap-analysis', async (c) => {
 
     // Calculate coverage summary
     const allDates = stmts
-      .filter((s: any) => s.periodStartDate && s.periodEndDate)
-      .flatMap((s: any) => [s.periodStartDate!, s.periodEndDate!])
+      .filter((s) => s.periodStartDate && s.periodEndDate)
+      .flatMap((s) => [s.periodStartDate!, s.periodEndDate!])
       .sort();
 
     const coverage = {
@@ -1603,7 +1603,7 @@ app.get('/api/statements/gap-analysis', async (c) => {
       gaps,
       overlaps,
       balanceMismatches,
-      statements: stmts.map((s: any) => ({
+      statements: stmts.map((s) => ({
         ...s,
         accountId: stmtAccountMap.get(s.id) || null,
       })),
@@ -1625,7 +1625,7 @@ app.get('/api/accounts', async (c) => {
   let userAccounts = await accountService.getUserAccounts(userId);
 
   if (ownershipTag) {
-    userAccounts = userAccounts.filter((a: any) => a.ownershipTag === ownershipTag);
+    userAccounts = userAccounts.filter((a) => a.ownershipTag === ownershipTag);
   }
 
   return c.json(userAccounts);
@@ -1726,7 +1726,7 @@ app.get('/api/pending-categorizations', async (c) => {
     )
     .all();
 
-  const results = rows.map((row: any) => ({
+  const results = rows.map((row) => ({
     ...row.pending_categorization,
     transaction: row.transactions,
   }));
@@ -2092,7 +2092,7 @@ app.get('/api/accounts/:id/credit-analytics', async (c) => {
 
   // Calculate interest and fees
   const interestTransactions = txs.filter(
-    (t: any) =>
+    (t) =>
       t.category === 'Interest & Fees' ||
       t.description.toLowerCase().includes('interest') ||
       t.description.toLowerCase().includes('fee'),
@@ -2103,15 +2103,15 @@ app.get('/api/accounts/:id/credit-analytics', async (c) => {
   );
 
   // Find payment transactions (credits to the card)
-  const payments = txs.filter((t: any) => t.amount > 0 && !t.isTransfer);
+  const payments = txs.filter((t) => t.amount > 0 && !t.isTransfer);
   const totalPayments = payments.reduce((sum: any, t: any) => sum + t.amount, 0);
 
   // Calculate average monthly spending
-  const purchases = txs.filter((t: any) => t.amount < 0 && !t.isTransfer);
+  const purchases = txs.filter((t) => t.amount < 0 && !t.isTransfer);
   const totalSpending = purchases.reduce((sum: any, t: any) => sum + Math.abs(t.amount), 0);
 
   // Get unique months
-  const months = new Set(txs.map((t: any) => t.date.substring(0, 7)));
+  const months = new Set(txs.map((t) => t.date.substring(0, 7)));
   const avgMonthlySpending = months.size > 0 ? totalSpending / months.size : 0;
 
   // Calculate utilization if credit limit is set
@@ -2134,7 +2134,7 @@ app.get('/api/accounts/:id/credit-analytics', async (c) => {
     utilization: utilization ? Math.round(utilization * 10) / 10 : null,
     transactionCount: txs.length,
     interestTransactionCount: interestTransactions.length,
-    recentInterestCharges: interestTransactions.slice(0, 5).map((t: any) => ({
+    recentInterestCharges: interestTransactions.slice(0, 5).map((t) => ({
       date: t.date,
       amount: t.amount,
       description: t.description,
@@ -2162,7 +2162,7 @@ app.post('/api/debt-recommendations', async (c) => {
 
   // Filter to only accounts with debt (negative balance or credit cards/loans)
   const accountsWithDebt = debtAccounts.filter(
-    (a: any) =>
+    (a) =>
       (a.accountType === 'credit_card' || a.accountType === 'loan') &&
       a.currentBalance !== null &&
       a.currentBalance < 0,
@@ -2178,10 +2178,10 @@ app.post('/api/debt-recommendations', async (c) => {
   }
 
   // Create a map of account IDs to account info for easy lookup
-  const accountMap = new Map(accountsWithDebt.map((a: any) => [a.id, a]));
+  const accountMap = new Map(accountsWithDebt.map((a) => [a.id, a]));
 
   // Prepare accounts for AI analysis
-  const accountsForAnalysis = accountsWithDebt.map((a: any) => ({
+  const accountsForAnalysis = accountsWithDebt.map((a) => ({
     id: a.id,
     name: a.accountName,
     type: a.accountType,
@@ -2834,7 +2834,7 @@ app.get('/api/gst/review-queue', async (c) => {
       .limit(50)
       .all();
 
-    const items = reviewItems.map((tx: any) => {
+    const items = reviewItems.map((tx) => {
       const absAmount = Math.abs(tx.amount);
       // Auto-suggest category based on amount direction and category
       let suggestedCategory = 'taxable_10';
@@ -3210,7 +3210,7 @@ app.get('/api/bas/:quarter/drill-down/:label', async (c) => {
       .all();
 
     // Filter by BAS label
-    const filtered = txns.filter((tx: any) => {
+    const filtered = txns.filter((tx) => {
       const cat = tx.gstCategory || 'taxable_10';
       switch (label) {
         case 'G1':
@@ -3233,7 +3233,7 @@ app.get('/api/bas/:quarter/drill-down/:label', async (c) => {
     });
 
     return c.json(
-      filtered.map((tx: any) => ({
+      filtered.map((tx) => ({
         id: tx.id,
         date: tx.date,
         description: tx.description,
@@ -3659,7 +3659,7 @@ app.get('/api/tax/summary/:year', async (c) => {
 
     // Sum up values
     const totalIncome = userTransactions
-      .filter((t: any) => t.amount > 0 && !t.isTransfer)
+      .filter((t) => t.amount > 0 && !t.isTransfer)
       .reduce((sum: any, t: any) => sum + t.amount, 0);
 
     const totalDeductionsAmount = userDeductions.reduce((sum: any, d: any) => sum + d.amount, 0);
@@ -3758,19 +3758,19 @@ app.get('/api/accounts/consolidated', async (c) => {
       .all();
 
     // Calculate totals per account
-    const accountSummaries = userAccounts.map((account: any) => {
-      const accountTxs = userTransactions.filter((t: any) => t.accountId === account.id);
+    const accountSummaries = userAccounts.map((account) => {
+      const accountTxs = userTransactions.filter((t) => t.accountId === account.id);
       const totalIncome = accountTxs
-        .filter((t: any) => t.amount > 0 && !t.isTransfer)
+        .filter((t) => t.amount > 0 && !t.isTransfer)
         .reduce((sum: any, t: any) => sum + t.amount, 0);
       const totalExpenses = accountTxs
-        .filter((t: any) => t.amount < 0 && !t.isTransfer)
+        .filter((t) => t.amount < 0 && !t.isTransfer)
         .reduce((sum: any, t: any) => sum + Math.abs(t.amount), 0);
       const transfersIn = accountTxs
-        .filter((t: any) => t.amount > 0 && t.isTransfer)
+        .filter((t) => t.amount > 0 && t.isTransfer)
         .reduce((sum: any, t: any) => sum + t.amount, 0);
       const transfersOut = accountTxs
-        .filter((t: any) => t.amount < 0 && t.isTransfer)
+        .filter((t) => t.amount < 0 && t.isTransfer)
         .reduce((sum: any, t: any) => sum + Math.abs(t.amount), 0);
 
       return {
@@ -3787,7 +3787,7 @@ app.get('/api/accounts/consolidated', async (c) => {
     // Calculate overall totals (excluding transfers to avoid double-counting)
     const overallTotals = {
       totalAccounts: userAccounts.length,
-      totalTransactions: userTransactions.filter((t: any) => !t.isTransfer).length,
+      totalTransactions: userTransactions.filter((t) => !t.isTransfer).length,
       totalIncome: accountSummaries.reduce((sum: any, a: any) => sum + a.totalIncome, 0),
       totalExpenses: accountSummaries.reduce((sum: any, a: any) => sum + a.totalExpenses, 0),
       netWorth: userAccounts.reduce((sum: any, a: any) => sum + (a.currentBalance || 0), 0),
@@ -4044,8 +4044,8 @@ app.get('/api/transfers/summary', async (c) => {
       period,
       totalTransfers: links.length,
       totalAmount: links.reduce((sum: any, l: any) => sum + (l.amount || 0), 0),
-      confirmedCount: links.filter((l: any) => l.isUserConfirmed).length,
-      pendingCount: links.filter((l: any) => !l.isUserConfirmed).length,
+      confirmedCount: links.filter((l) => l.isUserConfirmed).length,
+      pendingCount: links.filter((l) => !l.isUserConfirmed).length,
       byPeriod: Object.entries(byPeriod)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([key, data]) => ({
@@ -4098,7 +4098,7 @@ app.get('/api/reports/consolidated/:period', async (c) => {
       .all();
 
     // Exclude transfers from calculations
-    const nonTransferTxs = userTransactions.filter((t: any) => !t.isTransfer);
+    const nonTransferTxs = userTransactions.filter((t) => !t.isTransfer);
 
     // Category breakdown
     const categoryTotals: Record<string, { income: number; expenses: number; count: number }> = {};
@@ -4117,7 +4117,7 @@ app.get('/api/reports/consolidated/:period', async (c) => {
     }
 
     // GST summary
-    const gstTransactions = nonTransferTxs.filter((t: any) => t.gstApplicable);
+    const gstTransactions = nonTransferTxs.filter((t) => t.gstApplicable);
     const totalGST = gstTransactions.reduce((sum: any, t: any) => {
       return sum + (t.gstAmount || Math.round(Math.abs(t.amount) / 11));
     }, 0);
@@ -4128,10 +4128,10 @@ app.get('/api/reports/consolidated/:period', async (c) => {
       endDate,
       summary: {
         totalIncome: nonTransferTxs
-          .filter((t: any) => t.amount > 0)
+          .filter((t) => t.amount > 0)
           .reduce((sum: any, t: any) => sum + t.amount, 0),
         totalExpenses: nonTransferTxs
-          .filter((t: any) => t.amount < 0)
+          .filter((t) => t.amount < 0)
           .reduce((sum: any, t: any) => sum + Math.abs(t.amount), 0),
         netFlow: nonTransferTxs.reduce((sum: any, t: any) => sum + t.amount, 0),
         transactionCount: nonTransferTxs.length,
@@ -4140,10 +4140,10 @@ app.get('/api/reports/consolidated/:period', async (c) => {
       gst: {
         gstTransactionCount: gstTransactions.length,
         totalGSTCollected: gstTransactions
-          .filter((t: any) => t.amount > 0)
+          .filter((t) => t.amount > 0)
           .reduce((sum: any, t: any) => sum + (t.gstAmount || Math.round(t.amount / 11)), 0),
         totalGSTPaid: gstTransactions
-          .filter((t: any) => t.amount < 0)
+          .filter((t) => t.amount < 0)
           .reduce(
             (sum: any, t: any) => sum + (t.gstAmount || Math.round(Math.abs(t.amount) / 11)),
             0,
@@ -4274,7 +4274,7 @@ app.get('/api/analytics/category-breakdown', async (c) => {
       )
       .all();
 
-    const filtered = txns.filter((t: any) => (isExpense ? t.amount < 0 : t.amount > 0));
+    const filtered = txns.filter((t) => (isExpense ? t.amount < 0 : t.amount > 0));
     const totalAbs = filtered.reduce((s: any, t: any) => s + Math.abs(t.amount), 0);
 
     const byCategory: Record<string, { total: number; count: number }> = {};
@@ -5018,7 +5018,7 @@ app.get('/api/migration/benchmarks', async (c) => {
             avg_latency_legacy_ms as "avgLatencyLegacyMs", avg_latency_vercel_ms as "avgLatencyVercelMs"
             FROM agent_migration_status ORDER BY agent_type`);
 
-    const benchmarks = statuses.map((s: any) => {
+    const benchmarks = statuses.map((s) => {
       const latencyImprovement =
         s.avgLatencyLegacyMs && s.avgLatencyVercelMs
           ? Math.round(((s.avgLatencyLegacyMs - s.avgLatencyVercelMs) / s.avgLatencyLegacyMs) * 100)
@@ -5747,9 +5747,9 @@ app.post('/api/cognee/init-user', zValidator('json', initCogneeUserSchema), asyn
       },
       201,
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Init Cognee user error:', error);
-    return c.json({ error: error.message ?? 'Failed to initialize Cognee user' }, 500);
+    return c.json({ error: getErrorMessage(error) ?? 'Failed to initialize Cognee user' }, 500);
   }
 });
 
@@ -5783,7 +5783,7 @@ app.post('/api/cognee/reindex', zValidator('json', reindexSchema), async (c) => 
       // Reindex all user datasets — list and filter by prefix
       const allDatasets = await cogneeClient.listDatasets(userId);
       const userDatasets = Array.isArray(allDatasets)
-        ? allDatasets.filter((d: any) => (d.name ?? d).toString().startsWith(prefix))
+        ? allDatasets.filter((d) => (d.name ?? d).toString().startsWith(prefix))
         : [];
       for (const ds of userDatasets) {
         await cogneeClient.cognify([ds.name ?? ds], true, undefined, userId);
@@ -5799,9 +5799,9 @@ app.post('/api/cognee/reindex', zValidator('json', reindexSchema), async (c) => 
     ).run();
 
     return c.json({ message: 'Reindex triggered', userId, prefix });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Cognee reindex error:', error);
-    return c.json({ error: error.message ?? 'Reindex failed' }, 500);
+    return c.json({ error: getErrorMessage(error) ?? 'Reindex failed' }, 500);
   }
 });
 
@@ -5842,9 +5842,9 @@ app.get('/api/cognee/session', async (c) => {
       isNew: session.isNew,
       context: session.context,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Cognee session error:', error);
-    return c.json({ error: error.message ?? 'Session creation failed' }, 500);
+    return c.json({ error: getErrorMessage(error) ?? 'Session creation failed' }, 500);
   }
 });
 
@@ -5873,7 +5873,7 @@ app.get('/api/cognee/graph/:userId', async (c) => {
     // Get user's datasets and their graphs
     const allDatasets = await cogneeClient.listDatasets(userId);
     const userDatasets = Array.isArray(allDatasets)
-      ? allDatasets.filter((d: any) => (d.name ?? d).toString().startsWith(prefix))
+      ? allDatasets.filter((d) => (d.name ?? d).toString().startsWith(prefix))
       : [];
 
     // Fetch graph for each user dataset (limit to 10 to avoid timeout)
@@ -5893,9 +5893,9 @@ app.get('/api/cognee/graph/:userId', async (c) => {
       datasetCount: userDatasets.length,
       graphs,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Cognee graph error:', error);
-    return c.json({ error: error.message ?? 'Graph retrieval failed' }, 500);
+    return c.json({ error: getErrorMessage(error) ?? 'Graph retrieval failed' }, 500);
   }
 });
 
@@ -5903,7 +5903,7 @@ app.get('/api/cognee/graph/:userId', async (c) => {
 // WAVE 23 — Multi-Tenant & Access Control Routes (26 endpoints)
 // =========================================================================
 
-function getUserId(c: any): string {
+function getUserId(c: Context): string {
   const userId = c.get('userId');
   if (userId) return userId;
   const payload = c.get('jwtPayload');
@@ -6933,8 +6933,8 @@ app.get('/api/payroll/employees', async (c) => {
     const page = Math.floor(offset / limit) + 1;
     const result = await employeeService.listEmployees(userId, { page, limit, status, search });
     return c.json(result);
-  } catch (error: any) {
-    return c.json({ error: error.message ?? 'Failed to list employees' }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) ?? 'Failed to list employees' }, 500);
   }
 });
 
@@ -6957,8 +6957,8 @@ app.post('/api/payroll/employees', zValidator('json', createEmployeeSchema), asy
 
     const employee = await employeeService.createEmployee(data);
     return c.json(employee, 201);
-  } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500);
   }
 });
 
@@ -6969,8 +6969,8 @@ app.get('/api/payroll/employees/:id', async (c) => {
     const employee = await employeeService.getEmployee(id);
     if (!employee) return c.json({ error: 'Employee not found' }, 404);
     return c.json(employee);
-  } catch (error: any) {
-    return c.json({ error: error.message ?? 'Failed to get employee' }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) ?? 'Failed to get employee' }, 500);
   }
 });
 
@@ -6987,8 +6987,8 @@ app.patch('/api/payroll/employees/:id', zValidator('json', updateEmployeeSchema)
     const employee = await employeeService.updateEmployee(id, data);
     if (!employee) return c.json({ error: 'Employee not found' }, 404);
     return c.json(employee);
-  } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500);
   }
 });
 
@@ -6999,8 +6999,8 @@ app.delete('/api/payroll/employees/:id', async (c) => {
     const employee = await employeeService.terminateEmployee(id);
     if (!employee) return c.json({ error: 'Employee not found' }, 404);
     return c.json(employee);
-  } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500);
   }
 });
 
@@ -7012,8 +7012,8 @@ app.get('/api/payroll/employees/:id/bank-details', async (c) => {
     const employeeId = c.req.param('id');
     const details = await employeeService.getBankDetails(employeeId);
     return c.json({ data: details });
-  } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500);
   }
 });
 
@@ -7042,8 +7042,8 @@ app.post(
 
       const details = await employeeService.addBankDetails(employeeId, data);
       return c.json({ data: details }, 201);
-    } catch (error: any) {
-      return c.json({ error: error.message }, 500);
+    } catch (error) {
+      return c.json({ error: getErrorMessage(error) }, 500);
     }
   },
 );
@@ -7056,8 +7056,8 @@ app.get('/api/payroll/employees/:id/super', async (c) => {
     const employeeId = c.req.param('id');
     const funds = await employeeService.getSuperFund(employeeId);
     return c.json({ data: funds });
-  } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500);
   }
 });
 
@@ -7068,8 +7068,8 @@ app.post('/api/payroll/employees/:id/super', zValidator('json', superFundSchema)
     const data = c.req.valid('json');
     const funds = await employeeService.addSuperFund(employeeId, data);
     return c.json({ data: funds }, 201);
-  } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500);
   }
 });
 
@@ -7081,8 +7081,8 @@ app.get('/api/payroll/employees/:id/tax-declaration', async (c) => {
     const employeeId = c.req.param('id');
     const decl = await employeeService.getTaxDeclaration(employeeId);
     return c.json(decl ?? { message: 'No tax declaration on file' });
-  } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500);
   }
 });
 
@@ -7096,8 +7096,8 @@ app.post(
       const data = c.req.valid('json');
       const decl = await employeeService.submitTaxDeclaration(employeeId, data);
       return c.json(decl, 201);
-    } catch (error: any) {
-      return c.json({ error: error.message }, 500);
+    } catch (error) {
+      return c.json({ error: getErrorMessage(error) }, 500);
     }
   },
 );
@@ -7117,8 +7117,8 @@ app.get('/api/payroll/pay-categories', async (c) => {
     const page = Math.floor(offset / limit) + 1;
     const result = await payStructureService.listPayCategories(userId, { page, limit });
     return c.json(result);
-  } catch (error: any) {
-    return c.json({ error: error.message ?? 'Failed to list pay categories' }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) ?? 'Failed to list pay categories' }, 500);
   }
 });
 
@@ -7128,8 +7128,8 @@ app.post('/api/payroll/pay-categories', zValidator('json', payCategorySchema), a
     const data = c.req.valid('json');
     const category = await payStructureService.createPayCategory(data);
     return c.json(category, 201);
-  } catch (error: any) {
-    return c.json({ error: error.message }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500);
   }
 });
 
@@ -7141,8 +7141,8 @@ app.get('/api/payroll/employees/:id/pay-structure', async (c) => {
     const employeeId = c.req.param('id');
     const structure = await payStructureService.getPayStructure(employeeId);
     return c.json({ data: structure });
-  } catch (error: any) {
-    return c.json({ error: error.message ?? 'Failed to get pay structure' }, 500);
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) ?? 'Failed to get pay structure' }, 500);
   }
 });
 
@@ -7159,8 +7159,8 @@ app.post(
         ...data,
       });
       return c.json({ data: structure }, 201);
-    } catch (error: any) {
-      return c.json({ error: error.message ?? 'Failed to set pay structure' }, 500);
+    } catch (error) {
+      return c.json({ error: getErrorMessage(error) ?? 'Failed to set pay structure' }, 500);
     }
   },
 );
