@@ -79,7 +79,7 @@ export class AIService {
               url: `data:image/jpeg;base64,${b64}`,
               detail: 'high',
             },
-          } as any;
+          } as unknown as OpenAI;
         }),
       );
 
