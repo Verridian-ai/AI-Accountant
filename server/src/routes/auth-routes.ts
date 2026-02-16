@@ -9,54 +9,46 @@ const authRoutes = new Hono();
 
 // POST /auth/login
 authRoutes.post('/login', async (c) => {
-  try {
-    const { username, password, tenantId } = await c.req.json();
-    if (!username || !password) return c.json({ error: 'username and password are required' }, 400);
+  const { username, password, tenantId } = await c.req.json();
+  if (!username || !password) return c.json({ error: 'username and password are required' }, 400);
 
-    // First level authentication (Username/Password)
-    const authResult = await authService.login(username, password);
-    const user = authResult.user;
+  // First level authentication (Username/Password)
+  const authResult = await authService.login(username, password);
+  const user = authResult.user;
 
-    // Multi-tenant check
-    const memberTenants = await tenantService.getMemberTenants(user.id);
+  // Multi-tenant check
+  const memberTenants = await tenantService.getMemberTenants(user.id);
 
-    if (memberTenants.length === 0) {
-      // User has no tenants (legacy or new user)
-      return c.json({ token: authResult.token, user, tenants: [], activeTenant: null });
-    }
-
-    // Determine target tenant
-    const targetTenantId = tenantId ?? memberTenants[0].tenant.id;
-    const match = memberTenants.find((mt) => mt.tenant.id === targetTenantId);
-
-    if (!match) return c.json({ error: 'Not a member of specify tenant' }, 403);
-
-    // Generate Tenant-scoped Token
-    const token = await adminAuthService.generateTenantToken(user.id, targetTenantId);
-    const context = await tenantService.getTenantContext(user.id, targetTenantId);
-
-    return c.json({ token, user, tenants: memberTenants, activeTenant: context });
-  } catch (err) {
-    return c.json({ error: err instanceof Error ? err.message : 'Login failed' }, 401);
+  if (memberTenants.length === 0) {
+    // User has no tenants (legacy or new user)
+    return c.json({ token: authResult.token, user, tenants: [], activeTenant: null });
   }
+
+  // Determine target tenant
+  const targetTenantId = tenantId ?? memberTenants[0].tenant.id;
+  const match = memberTenants.find((mt) => mt.tenant.id === targetTenantId);
+
+  if (!match) return c.json({ error: 'Not a member of specify tenant' }, 403);
+
+  // Generate Tenant-scoped Token
+  const token = await adminAuthService.generateTenantToken(user.id, targetTenantId);
+  const context = await tenantService.getTenantContext(user.id, targetTenantId);
+
+  return c.json({ token, user, tenants: memberTenants, activeTenant: context });
 });
 
 // POST /auth/register
 authRoutes.post('/register', async (c) => {
-  try {
-    const { username, password, tenantName, tenantSlug } = await c.req.json();
-    if (!username || !password) return c.json({ error: 'username and password required' }, 400);
+  const { username, password, tenantName, tenantSlug } = await c.req.json();
+  if (!username || !password) return c.json({ error: 'username and password required' }, 400);
 
-    const result = await authService.register(username, password);
+  const result = await authService.register(username, password);
 
-    if (tenantName && tenantSlug) {
-      await tenantService.createTenant(tenantName, tenantSlug, result.user.id);
-    }
-
-    return c.json(result, 201);
-  } catch (err) {
-    return c.json({ error: err instanceof Error ? err.message : 'Registration failed' }, 400);
+  if (tenantName && tenantSlug) {
+    await tenantService.createTenant(tenantName, tenantSlug, result.user.id);
   }
+
+  return c.json(result, 201);
 });
 
 // POST /auth/refresh

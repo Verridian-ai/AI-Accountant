@@ -5,6 +5,7 @@ import { mkdir, writeFile } from 'fs/promises';
 import crypto from 'crypto';
 import { pipeline } from '../pipeline.js';
 import { events } from '../../events.js';
+import { DuplicateError, NotFoundError } from '../../errors.js';
 
 export class StatementService {
   async getAll(userId: string) {
@@ -17,7 +18,7 @@ export class StatementService {
 
     const existing = await statementRepository.findByHash(hash);
     if (existing) {
-      throw new Error(`Duplicate file: ${existing.id}`);
+      throw new DuplicateError('Statement', 'hash', hash);
     }
 
     const id = crypto.randomUUID();
@@ -44,37 +45,19 @@ export class StatementService {
   async reprocess(userId: string, statementId: string) {
     const stmt = await statementRepository.getById(statementId);
     if (!stmt || stmt.userId !== userId) {
-      throw new Error('Statement not found');
+      throw new NotFoundError('Statement', statementId);
     }
 
     await transactionRepository.deleteByStatementId(statementId);
     await statementRepository.update(statementId, { parsingStatus: 'PENDING' });
 
-    // Assuming filename in DB is original filename, but file on disk is safeFilename.
-    // Wait, the original code used 'filename' from DB to resolve path.
-    // But in upload it saved safeFilename.
-    // Looking at upload: `filename: file.name` is stored in DB.
-    // `filePath` on disk is `safeFilename`.
-    // So reprocess in original code `path.resolve(..., stmt.filename)` might be wrong if stmt.filename is original name?
-    // Let's check original code.
-    // Original: `const safeFilename = ...; const filePath = ...; await writeFile(filePath...); await db.insert(...).values({ filename: file.name ...})`
-    // Original reprocess: `pipeline.processStatement(stmt.id, path.resolve(process.cwd(), '../statements', stmt.filename));`
-    // This looks like a bug in the original code if stmt.filename is just `file.name`.
-    // However, for now I will replicate the logic but maybe I should fix it?
-    // If I fix it I need to know what the file on disk is.
-    // The ID is in the filename on disk.
-    // Let's assume the file on disk starts with ID.
-    // Actually, pipeline.processStatement likely expects the full path.
-    // I'll search for the file in the directory that starts with the ID.
-
     const uploadDir = path.resolve(process.cwd(), '../statements');
-    // Simple fix: find file starting with ID
     const fs = await import('fs/promises');
     const files = await fs.readdir(uploadDir);
     const diskFilename = files.find((f) => f.startsWith(statementId));
 
     if (!diskFilename) {
-      throw new Error('File not found on disk');
+      throw new NotFoundError('Statement file on disk', statementId);
     }
 
     pipeline.processStatement(statementId, path.join(uploadDir, diskFilename));
