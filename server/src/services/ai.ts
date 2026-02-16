@@ -9,6 +9,15 @@ export interface AIModelResponse {
   usage?: number;
 }
 
+export interface VisionParseResult {
+  transactions: Array<{
+    date: string;
+    description: string;
+    amount_cents: number;
+    balance_cents?: number;
+  }>;
+}
+
 export type VisionModel = 'gpt-5.2-vision' | 'gemini-3.0-pro';
 export type ReasoningModel = 'o1' | 'o3-mini' | 'gemini-3.0-thinking';
 
@@ -37,7 +46,7 @@ export class AIService {
   async parseWithVision(
     imagePaths: string[],
     model: string = 'google/gemini-3-flash-preview',
-  ): Promise<any> {
+  ): Promise<VisionParseResult> {
     console.log(`[AI Vision] Processing ${imagePaths.length} images with ${model}...`);
     const modelId = model || 'google/gemini-3-flash-preview';
 
@@ -530,9 +539,18 @@ Return JSON:
       });
 
       const raw = response.choices[0].message.content;
-      const parsed = JSON.parse(raw || '{"categorizations": []}');
+      const parsed = JSON.parse(raw || '{"categorizations": []}') as {
+        categorizations: {
+          category?: string;
+          gst?: boolean;
+          notes?: string;
+          confidence?: number;
+          merchant_normalized?: string;
+          needs_review?: boolean;
+        }[];
+      };
 
-      return (parsed.categorizations || []).map((c: any) => ({
+      return (parsed.categorizations || []).map((c) => ({
         category: c.category || 'Uncategorized',
         gst: c.gst || false,
         notes: c.notes || '',
@@ -608,9 +626,16 @@ Only include transfers you're reasonably confident about (> 0.6).
       });
 
       const raw = response.choices[0].message.content;
-      const parsed = JSON.parse(raw || '{"transfers": []}');
+      const parsed = JSON.parse(raw || '{"transfers": []}') as {
+        transfers: {
+          source_transaction_id?: string;
+          destination_transaction_id?: string;
+          confidence?: number;
+          reasoning?: string;
+        }[];
+      };
 
-      return (parsed.transfers || []).map((t: any) => ({
+      return (parsed.transfers || []).map((t) => ({
         sourceTransactionId: t.source_transaction_id,
         destinationTransactionId: t.destination_transaction_id,
         confidence: t.confidence || 0.5,
@@ -691,9 +716,43 @@ Return JSON:
       });
 
       const raw = response.choices[0].message.content;
-      const parsed = JSON.parse(raw || '{}');
+      const parsed = JSON.parse(raw || '{}') as {
+        aggressive?: {
+          total_months?: number;
+          total_interest_cents?: number;
+          total_paid_cents?: number;
+          monthly_payments?: Array<{ account_id: string; payment_cents: number }>;
+          monthly_breakdown?: Array<{
+            month: number;
+            balances: Record<string, number>;
+            interest_paid: number;
+          }>;
+        };
+        moderate?: {
+          total_months?: number;
+          total_interest_cents?: number;
+          total_paid_cents?: number;
+          monthly_payments?: Array<{ account_id: string; payment_cents: number }>;
+          monthly_breakdown?: Array<{
+            month: number;
+            balances: Record<string, number>;
+            interest_paid: number;
+          }>;
+        };
+        minimum?: {
+          total_months?: number;
+          total_interest_cents?: number;
+          total_paid_cents?: number;
+          monthly_payments?: Array<{ account_id: string; payment_cents: number }>;
+          monthly_breakdown?: Array<{
+            month: number;
+            balances: Record<string, number>;
+            interest_paid: number;
+          }>;
+        };
+      };
 
-      const mapStrategy = (s: any): DebtStrategy => ({
+      const mapStrategy = (s: NonNullable<typeof parsed.aggressive>): DebtStrategy => ({
         totalMonths: s?.total_months || 0,
         totalInterestCents: s?.total_interest_cents || 0,
         totalPaidCents: s?.total_paid_cents || 0,

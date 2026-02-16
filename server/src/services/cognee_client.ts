@@ -738,9 +738,14 @@ export class CogneeClient {
         console.warn(`[CogneeClient] List datasets failed: ${res.status}`);
         return [];
       }
-      const data = await res.json();
+      const data = (await res.json()) as {
+        id?: string;
+        dataset_id?: string;
+        name?: string;
+        dataset_name?: string;
+      }[];
       if (Array.isArray(data)) {
-        let datasets = data.map((d: any) => ({
+        let datasets = data.map((d) => ({
           id: d.id || d.dataset_id || '',
           name: d.name || d.dataset_name || '',
         }));

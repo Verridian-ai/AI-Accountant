@@ -361,9 +361,9 @@ export class VertexAIClient {
     error?: string;
   }> {
     try {
-      const token = await this.getAccessToken();
+      const _token = await this.getAccessToken();
       // Test with a simple Gemini request
-      const response = await this.generate({
+      const _response = await this.generate({
         model: 'gemini-2.5-flash',
         messages: [{ role: 'user', content: 'Reply with "OK" only.' }],
         maxTokens: 10,
@@ -451,9 +451,10 @@ export class VertexAIClient {
     };
   }
 
-  private parseGeminiResponse(data: any, model: string): VertexAIResponse {
-    const candidate = data.candidates?.[0];
-    const content = candidate?.content?.parts?.map((p: any) => p.text).join('') ?? '';
+  private parseGeminiResponse(data: unknown, model: string): VertexAIResponse {
+    const d = data as { candidates?: { content?: { parts?: { text: string }[] } }[] };
+    const candidate = d.candidates?.[0];
+    const content = candidate?.content?.parts?.map((p) => p.text).join('') ?? '';
 
     return {
       content,
@@ -467,8 +468,9 @@ export class VertexAIClient {
     };
   }
 
-  private parseClaudeResponse(data: any, model: string): VertexAIResponse {
-    const content = data.content?.map((c: any) => c.text).join('') ?? '';
+  private parseClaudeResponse(data: unknown, model: string): VertexAIResponse {
+    const d = data as { content?: { text: string }[] };
+    const content = d.content?.map((c) => c.text).join('') ?? '';
 
     return {
       content,
@@ -482,8 +484,9 @@ export class VertexAIClient {
     };
   }
 
-  private parseGenericResponse(data: any, model: string): VertexAIResponse {
-    const prediction = data.predictions?.[0];
+  private parseGenericResponse(data: unknown, model: string): VertexAIResponse {
+    const d = data as { predictions?: { content?: string }[] };
+    const prediction = d.predictions?.[0];
     const content =
       typeof prediction === 'string'
         ? prediction
