@@ -74,6 +74,7 @@ import {
   chatMessageSchema,
   transactionUpdateSchema,
   ValidationError,
+  transactionSplitSchema,
 } from './validation/index.js';
 import { StreamingService } from './services/claude/streaming.js';
 import { ConfirmationFlowService } from './services/claude/confirmation-flow.js';
@@ -473,7 +474,7 @@ app.get('/api/transactions/export', async (c) => {
       .where(and(...filters))
       .orderBy(desc(transactions.date));
 
-    const exportData = data.map((t) => {
+    const exportData = data.map((t: typeof transactions.$inferSelect) => {
       // Ensure date is in DD/MM/YYYY format for Australia
       const dateParts = t.date.split('-'); // Assuming YYYY-MM-DD
       const formattedDate =
@@ -1401,7 +1402,7 @@ app.get('/api/events', (c) => {
   c.header('Connection', 'keep-alive');
 
   return stream(c, async (stream) => {
-    const listener = (data) => {
+    const listener = (data: { step: number; total: number; message: string }) => {
       const payload = JSON.stringify(data);
       // Always send on 'update' channel for legacy listeners
       stream.write(`event: update\ndata: ${payload}\n\n`);
@@ -1463,7 +1464,9 @@ app.get('/api/statements/gap-analysis', async (c) => {
       .from(statementAccounts)
       .all();
 
-    const stmtAccountMap = new Map(stmtAccounts.map((sa) => [sa.statementId, sa.accountId]));
+    const stmtAccountMap = new Map(
+      stmtAccounts.map((sa: (typeof stmtAccounts)[number]) => [sa.statementId, sa.accountId]),
+    );
 
     // Group statements by account
     const accountStatements = new Map<string, typeof stmts>();
@@ -2083,7 +2086,7 @@ app.get('/api/accounts/:id/credit-analytics', async (c) => {
   }
 
   // Get all transactions for this account
-  const txs = await db
+  const txs: (typeof transactions.$inferSelect)[] = await db
     .select()
     .from(transactions)
     .where(and(eq(transactions.accountId, accountId), eq(transactions.userId, userId)))

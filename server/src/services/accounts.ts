@@ -66,7 +66,7 @@ export class AccountService {
   }
 
   // Get all accounts for a user
-  async getUserAccounts(userId: string) {
+  async getUserAccounts(userId: string): Promise<(typeof accounts.$inferSelect)[]> {
     return db.select().from(accounts).where(eq(accounts.userId, userId)).all();
   }
 
