@@ -102,6 +102,16 @@ export class TransactionRepository {
   async createHistory(data: typeof transactionHistory.$inferInsert) {
     await db.insert(transactionHistory).values(data);
   }
+  async findByStatementId(statementId: string) {
+    return db.select().from(transactions).where(eq(transactions.statementId, statementId)).all();
+  }
+
+  /**
+   * Delete transactions by statement ID.
+   */
+  async deleteByStatementId(statementId: string) {
+    await db.delete(transactions).where(eq(transactions.statementId, statementId));
+  }
 }
 
 export const transactionRepository = new TransactionRepository();

@@ -1,73 +1,87 @@
 import { Hono } from 'hono';
-import { db, users } from '../schema.js';
-import { eq } from 'drizzle-orm';
-import crypto from 'crypto';
-import { hashPassword, comparePassword, generateToken, verifyToken } from '../auth.js';
-import { validateBody, loginSchema, registerSchema, ValidationError } from '../validation/index.js';
+import { authService } from '../services/auth/auth-service.js';
+import { tenantService } from '../services/tenant.js';
+import { adminAuthService } from '../services/admin-auth.js';
+import { getUserId } from '../utils/auth-helpers.js';
+import { generateToken } from '../auth.js';
 
 const authRoutes = new Hono();
 
-// Auth routes
-authRoutes.post('/register', async (c) => {
-  let validated;
-  try {
-    validated = validateBody(registerSchema, await c.req.json());
-  } catch (e) {
-    if (e instanceof ValidationError) return c.json({ error: e.message, details: e.errors }, 400);
-    return c.json({ error: 'Invalid request body' }, 400);
-  }
-  const { username, password } = validated;
-
-  const passwordHash = await hashPassword(password);
-  const id = crypto.randomUUID();
-
-  try {
-    await db.insert(users).values({ id, username, passwordHash });
-    const token = await generateToken(id);
-    return c.json({ token, user: { id, username } });
-  } catch (_err) {
-    return c.json({ error: 'Username already exists' }, 400);
-  }
-});
-
+// POST /auth/login
 authRoutes.post('/login', async (c) => {
-  let validated;
   try {
-    validated = validateBody(loginSchema, await c.req.json());
-  } catch (e) {
-    if (e instanceof ValidationError) return c.json({ error: e.message, details: e.errors }, 400);
-    return c.json({ error: 'Invalid request body' }, 400);
-  }
-  const { username, password } = validated;
-  const user = await db.select().from(users).where(eq(users.username, username)).get();
+    const { username, password, tenantId } = await c.req.json();
+    if (!username || !password) return c.json({ error: 'username and password are required' }, 400);
 
-  if (!user || !(await comparePassword(password, user.passwordHash))) {
-    return c.json({ error: 'Invalid credentials' }, 401);
-  }
+    // First level authentication (Username/Password)
+    const authResult = await authService.login(username, password);
+    const user = authResult.user;
 
-  const token = await generateToken(user.id);
-  return c.json({ token, user: { id: user.id, username: user.username } });
+    // Multi-tenant check
+    const memberTenants = await tenantService.getMemberTenants(user.id);
+
+    if (memberTenants.length === 0) {
+      // User has no tenants (legacy or new user)
+      return c.json({ token: authResult.token, user, tenants: [], activeTenant: null });
+    }
+
+    // Determine target tenant
+    const targetTenantId = tenantId ?? memberTenants[0].tenant.id;
+    const match = memberTenants.find((mt) => mt.tenant.id === targetTenantId);
+
+    if (!match) return c.json({ error: 'Not a member of specify tenant' }, 403);
+
+    // Generate Tenant-scoped Token
+    const token = await adminAuthService.generateTenantToken(user.id, targetTenantId);
+    const context = await tenantService.getTenantContext(user.id, targetTenantId);
+
+    return c.json({ token, user, tenants: memberTenants, activeTenant: context });
+  } catch (err) {
+    return c.json({ error: err instanceof Error ? err.message : 'Login failed' }, 401);
+  }
 });
 
-authRoutes.get('/me', async (c) => {
-  const authHeader = c.req.header('Authorization');
-  if (!authHeader) return c.json({ error: 'No token' }, 401);
-
-  const token = authHeader.replace('Bearer ', '');
+// POST /auth/register
+authRoutes.post('/register', async (c) => {
   try {
-    const payload = await verifyToken(token);
-    if (!payload) return c.json({ error: 'Invalid token' }, 401);
+    const { username, password, tenantName, tenantSlug } = await c.req.json();
+    if (!username || !password) return c.json({ error: 'username and password required' }, 400);
 
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, payload.userId as string))
-      .get();
-    if (!user) return c.json({ error: 'User not found' }, 404);
+    const result = await authService.register(username, password);
 
-    return c.json({ user: { id: user.id, username: user.username } });
-  } catch (_err) {
-    return c.json({ error: 'Invalid or expired token' }, 401);
+    if (tenantName && tenantSlug) {
+      await tenantService.createTenant(tenantName, tenantSlug, result.user.id);
+    }
+
+    return c.json(result, 201);
+  } catch (err) {
+    return c.json({ error: err instanceof Error ? err.message : 'Registration failed' }, 400);
+  }
+});
+
+// POST /auth/refresh
+authRoutes.post('/refresh', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const tenantId = c.req.query('tenantId');
+    const token = tenantId
+      ? await adminAuthService.generateTenantToken(userId, tenantId)
+      : await generateToken(userId);
+    return c.json({ token });
+  } catch {
+    return c.json({ error: 'Refresh failed' }, 401);
+  }
+});
+
+// GET /auth/me
+authRoutes.get('/me', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const { user } = await authService.getCurrentUser(userId);
+    const memberTenants = await tenantService.getMemberTenants(userId);
+    return c.json({ user, tenants: memberTenants });
+  } catch {
+    return c.json({ error: 'Auth context failed' }, 500);
   }
 });
 
