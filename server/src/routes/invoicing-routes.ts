@@ -5,7 +5,6 @@
 
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
 import { CustomerService } from '../services/customers.js';
 import { InvoicingService } from '../services/invoicing.js';
 import { InvoicePDFService } from '../services/invoice-pdf.js';
@@ -23,83 +22,19 @@ const invoicePDFService = new InvoicePDFService();
 // Zod Schemas
 // ============================================================================
 
-const paginationSchema = z.object({
-  offset: z.coerce.number().int().min(0).default(0),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-});
-
-const createCustomerSchema = z.object({
-  businessName: z.string().min(1),
-  contactName: z.string().optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  postcode: z.string().optional(),
-  country: z.string().default('AU'),
-  abn: z
-    .string()
-    .regex(/^\d{11}$/)
-    .optional(),
-  paymentTermsDays: z.number().int().min(0).max(365).default(30),
-  notes: z.string().optional(),
-});
-
-const updateCustomerSchema = createCustomerSchema.partial();
-
-const createContactSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  role: z.string().optional(),
-  isPrimary: z.boolean().optional(),
-});
-
-const lineItemSchema = z.object({
-  description: z.string().min(1),
-  quantity: z.number().positive(),
-  unitPriceCents: z.number().int().min(0),
-  gstRate: z.number().min(0).max(1).default(0.1),
-  accountCode: z.string().optional(),
-  taxCode: z.string().optional(),
-});
-
-const createInvoiceSchema = z.object({
-  customerId: z.string().min(1),
-  issueDate: z.string().optional(),
-  dueDate: z.string().optional(),
-  notes: z.string().optional(),
-  termsAndConditions: z.string().optional(),
-  lineItems: z.array(lineItemSchema).min(1),
-});
-
-const updateInvoiceSchema = z.object({
-  customerId: z.string().optional(),
-  issueDate: z.string().optional(),
-  dueDate: z.string().optional(),
-  notes: z.string().optional(),
-  termsAndConditions: z.string().optional(),
-  lineItems: z.array(lineItemSchema).min(1).optional(),
-});
-
-const recordPaymentSchema = z.object({
-  paymentDate: z.string().min(1),
-  amountCents: z.number().int().positive(),
-  paymentMethod: z.string().optional(),
-  reference: z.string().optional(),
-  transactionId: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-const createCreditNoteSchema = z.object({
-  customerId: z.string().min(1),
-  originalInvoiceId: z.string().optional(),
-  lineItems: z.array(lineItemSchema).min(1),
-  notes: z.string().optional(),
-});
+import {
+  paginationSchema,
+  createCustomerSchema,
+  updateCustomerSchema,
+  createContactSchema,
+  createInvoiceSchema,
+  updateInvoiceSchema,
+  recordPaymentSchema,
+  createCreditNoteSchema,
+} from '../validation/features/invoicing.js';
 
 // Helper: extract userId from JWT payload
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getUserId(c: any): string {
   const payload = c.get('jwtPayload');
   return payload?.userId ?? 'default-user';
@@ -110,21 +45,17 @@ function getUserId(c: any): string {
 // ============================================================================
 
 // 1. GET /customers — paginated list
-invoicingRoutes.get('/customers', async (c) => {
-  try {
-    const userId = getUserId(c);
-    const offset = Math.max(0, parseInt(c.req.query('offset') || '0', 10));
-    const limit = Math.min(Math.max(1, parseInt(c.req.query('limit') || '50', 10)), 100);
-    const search = c.req.query('search') || undefined;
-    const isActiveParam = c.req.query('isActive');
-    const isActive =
-      isActiveParam === 'false' ? false : isActiveParam === 'true' ? true : undefined;
+invoicingRoutes.get('/customers', zValidator('query', paginationSchema), async (c) => {
+  const userId = getUserId(c);
+  const { page, limit } = c.req.valid('query');
+  const offset = (page - 1) * limit;
 
-    const result = await customerService.listCustomers(userId, { offset, limit, search, isActive });
-    return c.json(result);
-  } catch (err: any) {
-    return c.json({ error: err.message ?? 'Failed to list customers' }, 500);
-  }
+  const search = c.req.query('search') || undefined;
+  const isActiveParam = c.req.query('isActive');
+  const isActive = isActiveParam === 'false' ? false : isActiveParam === 'true' ? true : undefined;
+
+  const result = await customerService.listCustomers(userId, { offset, limit, search, isActive });
+  return c.json(result);
 });
 
 // 2. POST /customers — create customer
@@ -135,6 +66,7 @@ invoicingRoutes.post('/customers', zValidator('json', createCustomerSchema), asy
     const customer = await customerService.createCustomer(userId, data);
     return c.json(customer, 201);
   } catch (err: any) {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     const status = err.message?.includes('ABN') ? 400 : 500;
     return c.json({ error: err.message ?? 'Failed to create customer' }, status);
   }
@@ -148,6 +80,7 @@ invoicingRoutes.get('/customers/:id', async (c) => {
     const result = await customerService.getCustomerWithBalance(userId, customerId);
     return c.json(result);
   } catch (err: any) {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (err.message?.includes('not found')) {
       return c.json({ error: err.message }, 404);
     }
@@ -164,6 +97,7 @@ invoicingRoutes.patch('/customers/:id', zValidator('json', updateCustomerSchema)
     const customer = await customerService.updateCustomer(userId, customerId, data);
     return c.json(customer);
   } catch (err: any) {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (err.message?.includes('not found')) {
       return c.json({ error: err.message }, 404);
     }
@@ -180,6 +114,7 @@ invoicingRoutes.delete('/customers/:id', async (c) => {
     await customerService.archiveCustomer(userId, customerId);
     return c.json({ success: true });
   } catch (err: any) {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (err.message?.includes('not found')) {
       return c.json({ error: err.message }, 404);
     }
@@ -189,13 +124,9 @@ invoicingRoutes.delete('/customers/:id', async (c) => {
 
 // 6. GET /customers/:id/contacts — list contacts
 invoicingRoutes.get('/customers/:id/contacts', async (c) => {
-  try {
-    const customerId = c.req.param('id');
-    const contacts = await customerService.listContacts(customerId);
-    return c.json(contacts);
-  } catch (err: any) {
-    return c.json({ error: err.message ?? 'Failed to list contacts' }, 500);
-  }
+  const customerId = c.req.param('id');
+  const contacts = await customerService.listContacts(customerId);
+  return c.json(contacts);
 });
 
 // 7. POST /customers/:id/contacts — add contact
@@ -203,14 +134,10 @@ invoicingRoutes.post(
   '/customers/:id/contacts',
   zValidator('json', createContactSchema),
   async (c) => {
-    try {
-      const customerId = c.req.param('id');
-      const data = c.req.valid('json');
-      const contact = await customerService.addContact(customerId, data);
-      return c.json(contact, 201);
-    } catch (err: any) {
-      return c.json({ error: err.message ?? 'Failed to add contact' }, 500);
-    }
+    const customerId = c.req.param('id');
+    const data = c.req.valid('json');
+    const contact = await customerService.addContact(customerId, data);
+    return c.json(contact, 201);
   },
 );
 
@@ -219,51 +146,40 @@ invoicingRoutes.post(
 // ============================================================================
 
 // 8. GET /invoices — paginated list with filters
-invoicingRoutes.get('/invoices', async (c) => {
-  try {
-    const userId = getUserId(c);
-    const offset = Math.max(0, parseInt(c.req.query('offset') || '0', 10));
-    const limit = Math.min(Math.max(1, parseInt(c.req.query('limit') || '50', 10)), 100);
-    const status = c.req.query('status') || undefined;
-    const customerId = c.req.query('customerId') || undefined;
-    const dateFrom = c.req.query('dateFrom') || undefined;
-    const dateTo = c.req.query('dateTo') || undefined;
+invoicingRoutes.get('/invoices', zValidator('query', paginationSchema), async (c) => {
+  const userId = getUserId(c);
+  const { page, limit } = c.req.valid('query');
+  const offset = (page - 1) * limit;
 
-    const result = await invoicingService.listInvoices(userId, {
-      offset,
-      limit,
-      status,
-      customerId,
-      dateFrom,
-      dateTo,
-    });
-    return c.json(result);
-  } catch (err: any) {
-    return c.json({ error: err.message ?? 'Failed to list invoices' }, 500);
-  }
+  const status = c.req.query('status') || undefined;
+  const customerId = c.req.query('customerId') || undefined;
+  const dateFrom = c.req.query('dateFrom') || undefined;
+  const dateTo = c.req.query('dateTo') || undefined;
+
+  const result = await invoicingService.listInvoices(userId, {
+    offset,
+    limit,
+    status,
+    customerId,
+    dateFrom,
+    dateTo,
+  });
+  return c.json(result);
 });
 
 // 9. POST /invoices — create invoice with line items
 invoicingRoutes.post('/invoices', zValidator('json', createInvoiceSchema), async (c) => {
-  try {
-    const userId = getUserId(c);
-    const data = c.req.valid('json');
-    const invoice = await invoicingService.createInvoice(userId, data);
-    return c.json(invoice, 201);
-  } catch (err: any) {
-    return c.json({ error: err.message ?? 'Failed to create invoice' }, 500);
-  }
+  const userId = getUserId(c);
+  const data = c.req.valid('json');
+  const invoice = await invoicingService.createInvoice(userId, data);
+  return c.json(invoice, 201);
 });
 
 // 10. GET /invoices/next-number — MUST be BEFORE /invoices/:id to avoid route conflict
 invoicingRoutes.get('/invoices/next-number', async (c) => {
-  try {
-    const userId = getUserId(c);
-    const nextNumber = await invoicingService.getNextInvoiceNumber(userId);
-    return c.json({ nextNumber });
-  } catch (err: any) {
-    return c.json({ error: err.message ?? 'Failed to get next invoice number' }, 500);
-  }
+  const userId = getUserId(c);
+  const nextNumber = await invoicingService.getNextInvoiceNumber(userId);
+  return c.json({ nextNumber });
 });
 
 // 11. POST /invoices/credit-note — create credit note (BEFORE :id routes)
@@ -271,30 +187,22 @@ invoicingRoutes.post(
   '/invoices/credit-note',
   zValidator('json', createCreditNoteSchema),
   async (c) => {
-    try {
-      const userId = getUserId(c);
-      const data = c.req.valid('json');
-      const creditNote = await invoicingService.createCreditNote(userId, data);
-      return c.json(creditNote, 201);
-    } catch (err: any) {
-      return c.json({ error: err.message ?? 'Failed to create credit note' }, 500);
-    }
+    const userId = getUserId(c);
+    const data = c.req.valid('json');
+    const creditNote = await invoicingService.createCreditNote(userId, data);
+    return c.json(creditNote, 201);
   },
 );
 
 // 12. GET /invoices/:id — get invoice with lines + customer
 invoicingRoutes.get('/invoices/:id', async (c) => {
-  try {
-    const userId = getUserId(c);
-    const invoiceId = c.req.param('id');
-    const result = await invoicingService.getInvoice(userId, invoiceId);
-    if (!result) {
-      return c.json({ error: 'Invoice not found' }, 404);
-    }
-    return c.json(result);
-  } catch (err: any) {
-    return c.json({ error: err.message ?? 'Failed to get invoice' }, 500);
+  const userId = getUserId(c);
+  const invoiceId = c.req.param('id');
+  const result = await invoicingService.getInvoice(userId, invoiceId);
+  if (!result) {
+    return c.json({ error: 'Invoice not found' }, 404);
   }
+  return c.json(result);
 });
 
 // 13. PATCH /invoices/:id — update draft invoice

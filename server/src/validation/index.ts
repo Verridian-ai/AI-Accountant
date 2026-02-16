@@ -397,6 +397,8 @@ export const inviteTeamMemberSchema = z.object({
 // VALIDATION HELPER
 // ============================================================================
 
+import { ValidationError } from '../errors.js';
+
 /**
  * Validate request body against a Zod schema
  */
@@ -405,7 +407,7 @@ export function validateBody<T extends z.ZodType>(schema: T, data: unknown): z.i
 
   if (!result.success) {
     const errors = result.error.issues.map((issue) => ({
-      path: issue.path.join('.'),
+      field: issue.path.join('.'),
       message: issue.message,
     }));
 
@@ -413,19 +415,6 @@ export function validateBody<T extends z.ZodType>(schema: T, data: unknown): z.i
   }
 
   return result.data;
-}
-
-/**
- * Validation error class
- */
-export class ValidationError extends Error {
-  errors: Array<{ path: string; message: string }>;
-
-  constructor(message: string, errors: Array<{ path: string; message: string }>) {
-    super(message);
-    this.name = 'ValidationError';
-    this.errors = errors;
-  }
 }
 
 // ============================================================================
