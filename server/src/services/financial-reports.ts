@@ -7,19 +7,7 @@
  * Amounts are stored in cents (integers). Percentages and ratios use decimals.
  */
 
-import {
-  db,
-  transactions,
-  accounts,
-  chartOfAccounts,
-  ownerEquityEvents,
-  reportSnapshots,
-  kpiMetrics,
-  journalEntryLines,
-  journalEntries,
-  accountBalances,
-  accountingPeriods,
-} from '../schema.js';
+import { db, transactions, journalEntries, journalEntryLines, accounts } from '../schema.js';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
@@ -169,11 +157,6 @@ const FINANCING_CATEGORIES = ['Loan Repayment', 'Mortgage'];
 // ============================================================================
 // HELPERS
 // ============================================================================
-
-/** Convert cents to dollars for display */
-function centsToDollars(cents: number): number {
-  return Math.round(cents) / 100;
-}
 
 /** Safe division avoiding divide-by-zero */
 function safeDivide(numerator: number, denominator: number): number {

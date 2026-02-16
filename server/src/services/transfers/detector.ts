@@ -453,7 +453,7 @@ export class TransferDetector {
     }
 
     // Find recurring same-amount debits (at least 2 occurrences)
-    for (const [amount, debits] of debitsByAmount) {
+    for (const [_amount, debits] of debitsByAmount) {
       if (debits.length < 2) continue;
 
       // Check if the interval is regular

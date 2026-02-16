@@ -29,7 +29,7 @@ import {
 } from '../schema.js';
 import { eq, and, gte, lte, sql, desc, asc } from 'drizzle-orm';
 import crypto from 'crypto';
-import { BillService, billService } from './bills.js';
+import { billService } from './bills.js';
 
 // ============================================================================
 // TOLERANCE CONFIGURATION
@@ -844,7 +844,6 @@ export class PurchaseOrderService {
       const receivedQty = Number(row.totalReceived) || Number(row.polQuantityReceived) || 0;
       const polUnitPrice = Number(row.polUnitPrice) || 0;
       const billUnitPrice = Number(row.billUnitPrice);
-      const billQty = Number(row.billQuantity);
 
       // Check for missing receipt
       if (receivedQty === 0 && polQty > 0) {

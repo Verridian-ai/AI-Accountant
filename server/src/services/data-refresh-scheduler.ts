@@ -18,7 +18,6 @@
 
 import crypto from 'crypto';
 import { db, economicCalendar } from '../schema.js';
-import { eq } from 'drizzle-orm';
 
 // ============================================================================
 // TYPE DEFINITIONS
