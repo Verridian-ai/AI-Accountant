@@ -18,6 +18,7 @@ import {
   FinancialContext,
   DocumentFinancialMetadata,
   FinancialBoostResult,
+  BoostOutput,
 } from './financial-boost.js';
 
 // ============================================================================

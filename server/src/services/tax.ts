@@ -3,7 +3,15 @@
  * TypeScript service for Australian income tax calculations and management
  */
 
-import { db } from '../schema.js';
+import {
+  db,
+  deductions,
+  cgtAssets,
+  cgtEvents,
+  taxYearSummary,
+  transactions,
+  accounts,
+} from '../schema.js';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 

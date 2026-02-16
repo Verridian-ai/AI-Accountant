@@ -5,9 +5,43 @@ import { bodyLimit } from 'hono/body-limit';
 import { rateLimiter } from 'hono-rate-limiter';
 import { jwt, verify } from 'hono/jwt';
 import { stream } from 'hono/streaming';
-import { db, transactions, statements, users, userSettings, transactionHistory, accounts, merchantMemory, pendingCategorization, transferLinks, accountBalanceHistory, reconciliationAlerts, statementAccounts, businessProfiles, marketDataFeeds, economicIndicators, marketPrices, marketAlerts, economicCalendar, cogneeUserAccounts, notificationPreferences } from './schema.js'
-import { validateABN, normalizeABN, formatABN, validateEntityType, validateBasFrequency, validateAnzsicCode, validateTaxAgentNumber, ENTITY_TYPES, BAS_FREQUENCIES, COMMON_ANZSIC_CODES } from './utils/abn.js'
-import { desc, eq, and, gte, lte, like, aliasedTable, sql } from 'drizzle-orm'
+import { getErrorMessage } from './utils/error.js';
+import {
+  db,
+  transactions,
+  statements,
+  users,
+  userSettings,
+  transactionHistory,
+  accounts,
+  merchantMemory,
+  pendingCategorization,
+  transferLinks,
+  accountBalanceHistory,
+  reconciliationAlerts,
+  statementAccounts,
+  businessProfiles,
+  marketDataFeeds,
+  economicIndicators,
+  marketPrices,
+  marketAlerts,
+  economicCalendar,
+  cogneeUserAccounts,
+  notificationPreferences,
+} from './schema.js';
+import {
+  validateABN,
+  normalizeABN,
+  formatABN,
+  validateEntityType,
+  validateBasFrequency,
+  validateAnzsicCode,
+  validateTaxAgentNumber,
+  ENTITY_TYPES,
+  BAS_FREQUENCIES,
+  COMMON_ANZSIC_CODES,
+} from './utils/abn.js';
+import { desc, eq, and, gte, lte, like, aliasedTable, sql } from 'drizzle-orm';
 
 import { pipeline } from './services/pipeline.js';
 import { bulkUploadQueue } from './services/queue.js';
@@ -22,7 +56,11 @@ import { ragService } from './services/rag.js';
 import { accountService } from './services/accounts.js';
 import { agentService, type PythonAgentType } from './services/agents.js';
 import type { AgentType } from './services/claude/types.js';
-import { getVertexAIClient, VERTEX_AI_MODELS, FINTECH_MODEL_PRESETS } from './services/vertex-ai.js';
+import {
+  getVertexAIClient,
+  VERTEX_AI_MODELS,
+  FINTECH_MODEL_PRESETS,
+} from './services/vertex-ai.js';
 import agentRoutes from './routes/agents.js';
 import pipelineRoutes from './routes/pipeline.js';
 import invoicingRoutes from './routes/invoicing-routes.js';
@@ -30,7 +68,12 @@ import authRoutes from './routes/auth-routes.js';
 import { orchestrator } from './services/claude/orchestrator.js';
 import { securityHeaders } from './middleware/security.js';
 import { auditMiddleware } from './middleware/audit.js';
-import { validateBody, chatMessageSchema, transactionUpdateSchema, ValidationError } from './validation/index.js';
+import {
+  validateBody,
+  chatMessageSchema,
+  transactionUpdateSchema,
+  ValidationError,
+} from './validation/index.js';
 import { StreamingService } from './services/claude/streaming.js';
 import { ConfirmationFlowService } from './services/claude/confirmation-flow.js';
 import { AuditService } from './services/claude/audit.js';
@@ -181,8 +224,8 @@ app.use('/api/*', async (c, next) => {
       const payload = await verify(token, JWT_SECRET);
       c.set('jwtPayload', payload);
       return next();
-    } catch (_e) {
-      // If query token is invalid, let jwt middleware handle it (will likely 401)
+    } catch {
+      // Ignore
     }
   }
   const middleware = jwt({ secret: JWT_SECRET });
@@ -261,7 +304,8 @@ app.patch('/api/transactions/:id', async (c) => {
     try {
       body = validateBody(transactionUpdateSchema, await c.req.json());
     } catch (e) {
-      if (e instanceof ValidationError) return c.json({ error: e.message, details: e.errors }, 400);
+      if (e instanceof ValidationError)
+        return c.json({ error: getErrorMessage(e), details: e.errors }, 400);
       return c.json({ error: 'Invalid request body' }, 400);
     }
 
@@ -656,12 +700,15 @@ app.post('/api/statements/batch', async (c) => {
         state: f.state,
       })),
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Batch Upload Error]', err);
-    if (err.code === 'BATCH_SIZE_EXCEEDED') {
-      return c.json({ error: err.message }, 400);
+    if ((err as any).code === 'BATCH_SIZE_EXCEEDED') {
+      return c.json({ error: getErrorMessage(err) }, 400);
     }
-    return c.json({ error: 'Batch upload failed: ' + (err.message || 'Unknown error') }, 500);
+    return c.json(
+      { error: 'Batch upload failed: ' + (getErrorMessage(err) || 'Unknown error') },
+      500,
+    );
   }
 });
 
@@ -770,7 +817,7 @@ app.get('/api/business-profile', async (c) => {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
 
-    let profile = await db
+    const profile = await db
       .select()
       .from(businessProfiles)
       .where(eq(businessProfiles.userId, userId))
@@ -956,7 +1003,7 @@ app.post('/api/chat', async (c) => {
       chatBody = validateBody(chatMessageSchema, await c.req.json());
     } catch (e) {
       if (e instanceof ValidationError)
-        return c.json({ answer: e.errors.map((err) => err.message).join('; ') }, 400);
+        return c.json({ answer: e.errors.map((err) => getErrorMessage(err)).join('; ') }, 400);
       return c.json({ answer: 'Invalid request body' }, 400);
     }
     const { query, sessionId: requestSessionId } = chatBody;
@@ -1207,7 +1254,7 @@ app.post('/api/chat/confirm/:actionId', async (c) => {
 
     return c.json({ success: true, mutation });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Confirmation failed';
+    const message = err instanceof Error ? getErrorMessage(err) : 'Confirmation failed';
     return c.json({ error: message, code: 400 }, 400);
   }
 });
@@ -1234,7 +1281,7 @@ app.post('/api/chat/reject/:actionId', async (c) => {
 
     return c.json({ success: true, mutation });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Rejection failed';
+    const message = err instanceof Error ? getErrorMessage(err) : 'Rejection failed';
     return c.json({ error: message, code: 400 }, 400);
   }
 });
@@ -1622,8 +1669,8 @@ app.post('/api/accounts', async (c) => {
     events.emit('update', { type: 'accounts_updated' });
 
     return c.json(result, 201);
-  } catch (err: any) {
-    return c.json({ error: err.message }, 500);
+  } catch (err: unknown) {
+    return c.json({ error: getErrorMessage(err) }, 500);
   }
 });
 
@@ -2427,10 +2474,7 @@ app.post('/api/agents/reconcile', async (c) => {
 
 import { BASService } from './services/bas.js';
 import { TaxService } from './services/tax.js';
-import {
-  getSupportedBanks,
-  analyzeStatement,
-} from './services/parsers/index.js';
+import { getSupportedBanks, analyzeStatement } from './services/parsers/index.js';
 import {
   detectTransfers,
   persistTransferMatches,
@@ -4505,7 +4549,7 @@ app.get('/api/analytics/budgets', async (c) => {
     url.pathname = '/api/analytics/budget-vs-actual';
     const response = await app.fetch(new Request(url.toString(), { headers: c.req.raw.headers }));
     return response;
-  } catch (err) {
+  } catch {
     return c.json([], 200);
   }
 });
@@ -4514,7 +4558,7 @@ app.post('/api/analytics/budgets', async (c) => {
   try {
     // Budget save - placeholder for now
     return c.json({ success: true });
-  } catch (err) {
+  } catch {
     return c.json({ error: 'Failed' }, 500);
   }
 });
@@ -4762,11 +4806,11 @@ app.post(
           } catch {
             // Session tracking is best-effort
           }
-        } catch (err: any) {
-          writer.sendError(err.message || 'Stream failed');
+        } catch (err: unknown) {
+          writer.sendError(getErrorMessage(err) || 'Stream failed');
           try {
             await db.run(sql`UPDATE agent_stream_sessions
-                        SET session_status = 'failed', error_message = ${err.message || 'Stream failed'}, updated_at = NOW()
+                        SET session_status = 'failed', error_message = ${getErrorMessage(err) || 'Stream failed'}, updated_at = NOW()
                         WHERE id = ${sessionId}`);
           } catch {
             // Session tracking is best-effort
@@ -5170,7 +5214,7 @@ app.get('/api/market/feeds', async (c) => {
   try {
     const feeds = await db.select().from(marketDataFeeds).all();
     return c.json(feeds);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Failed to list feeds:', err);
     return c.json({ error: 'Failed to list feeds' }, 500);
   }
@@ -5182,21 +5226,21 @@ app.post('/api/market/feeds/refresh', async (c) => {
     const results: any = {};
     try {
       results.rba = await rbaDataFeed.fetchAllTables();
-    } catch (e: any) {
-      results.rba = { error: e.message };
+    } catch (e: unknown) {
+      results.rba = { error: getErrorMessage(e) };
     }
     try {
       results.abs = await absDataFeed.fetchAllIndicators();
-    } catch (e: any) {
-      results.abs = { error: e.message };
+    } catch (e: unknown) {
+      results.abs = { error: getErrorMessage(e) };
     }
     try {
       results.prices = await marketPriceService.refreshPrices();
-    } catch (e: any) {
-      results.prices = { error: e.message };
+    } catch (e: unknown) {
+      results.prices = { error: getErrorMessage(e) };
     }
     return c.json(results);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Feed refresh failed:', err);
     return c.json({ error: 'Feed refresh failed' }, 500);
   }
@@ -5222,9 +5266,9 @@ app.post('/api/market/feeds/:feedId/refresh', async (c) => {
     }
 
     return c.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Feed refresh failed:', err);
-    return c.json({ error: err.message || 'Feed refresh failed' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Feed refresh failed' }, 500);
   }
 });
 
@@ -5241,7 +5285,7 @@ app.get('/api/market/feeds/:feedId/status', async (c) => {
       return c.json({ error: 'Feed not found' }, 404);
     }
     return c.json(rows[0]);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Feed status failed:', err);
     return c.json({ error: 'Failed to get feed status' }, 500);
   }
@@ -5265,7 +5309,7 @@ app.get('/api/market/indicators/snapshot', async (c) => {
       count: latestMap.size,
       lastUpdated: new Date().toISOString(),
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Snapshot failed:', err);
     return c.json({ error: 'Failed to get snapshot' }, 500);
   }
@@ -5276,7 +5320,7 @@ app.get('/api/market/indicators/cash-rate', async (c) => {
   try {
     const cashRate = await rbaDataFeed.getCashRate();
     return c.json(cashRate);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Cash rate failed:', err);
     return c.json({ error: 'Failed to get cash rate' }, 500);
   }
@@ -5294,7 +5338,7 @@ app.get('/api/market/indicators/cpi', async (c) => {
       rba: { quarterly: rbaCpiQ, annual: rbaCpiA },
       lastUpdated: new Date().toISOString(),
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] CPI failed:', err);
     return c.json({ error: 'Failed to get CPI data' }, 500);
   }
@@ -5320,7 +5364,7 @@ app.get('/api/market/indicators', async (c) => {
       .limit(limitParam)
       .all();
     return c.json({ indicators: rows, count: rows.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Indicators list failed:', err);
     return c.json({ error: 'Failed to list indicators' }, 500);
   }
@@ -5340,7 +5384,7 @@ app.get('/api/market/indicators/:code/history', async (c) => {
     ].sort((a, b) => b.date.localeCompare(a.date));
 
     return c.json({ code, history: combined, count: combined.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Indicator history failed:', err);
     return c.json({ error: 'Failed to get indicator history' }, 500);
   }
@@ -5354,7 +5398,7 @@ app.get('/api/market/prices/search/:query', async (c) => {
     const query = c.req.param('query');
     const results = await marketPriceService.searchSymbol(query);
     return c.json({ results, count: results.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Symbol search failed:', err);
     return c.json({ error: 'Symbol search failed' }, 500);
   }
@@ -5365,7 +5409,7 @@ app.post('/api/market/prices/refresh', async (c) => {
   try {
     const result = await marketPriceService.refreshPrices();
     return c.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Price refresh failed:', err);
     return c.json({ error: 'Price refresh failed' }, 500);
   }
@@ -5377,7 +5421,7 @@ app.get('/api/market/prices', async (c) => {
     const assetType = c.req.query('assetType');
     const prices = await marketPriceService.getLatestPrices(assetType ?? undefined);
     return c.json({ prices, count: prices.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Prices list failed:', err);
     return c.json({ error: 'Failed to list prices' }, 500);
   }
@@ -5399,7 +5443,7 @@ app.get('/api/market/prices/:symbol', async (c) => {
       return c.json({ error: `No price data for symbol: ${symbol}` }, 404);
     }
     return c.json(rows[0]);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Symbol price failed:', err);
     return c.json({ error: 'Failed to get symbol price' }, 500);
   }
@@ -5412,7 +5456,7 @@ app.get('/api/market/prices/:symbol/history', async (c) => {
     const days = parseInt(c.req.query('days') ?? '30', 10);
     const history = await marketPriceService.getPriceHistory(symbol, days);
     return c.json({ symbol, history, count: history.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Price history failed:', err);
     return c.json({ error: 'Failed to get price history' }, 500);
   }
@@ -5426,7 +5470,7 @@ app.get('/api/market/sentiment/:topic', async (c) => {
     const topic = decodeURIComponent(c.req.param('topic'));
     const snapshot = await sentimentAnalysisService.getSentimentSnapshot(topic);
     return c.json(snapshot);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Sentiment failed:', err);
     return c.json({ error: 'Sentiment analysis failed' }, 500);
   }
@@ -5439,7 +5483,7 @@ app.post('/api/market/sentiment/batch', async (c) => {
     const topics = body.topics;
     const snapshots = await sentimentAnalysisService.getMultiTopicSentiment(topics);
     return c.json({ snapshots, count: snapshots.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Batch sentiment failed:', err);
     return c.json({ error: 'Batch sentiment analysis failed' }, 500);
   }
@@ -5452,7 +5496,7 @@ app.get('/api/market/sentiment/:topic/history', async (c) => {
     const days = parseInt(c.req.query('days') ?? '30', 10);
     const history = await sentimentAnalysisService.getSentimentHistory(topic, days);
     return c.json({ topic, history, count: history.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Sentiment history failed:', err);
     return c.json({ error: 'Sentiment history failed' }, 500);
   }
@@ -5470,7 +5514,7 @@ app.post('/api/market/sentiment/impact', async (c) => {
       body.context || '',
     );
     return c.json(analysis);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Impact analysis failed:', err);
     return c.json({ error: 'Impact analysis failed' }, 500);
   }
@@ -5496,7 +5540,7 @@ app.get('/api/market/calendar', async (c) => {
     }
     const events = await (query as any).orderBy(economicCalendar.scheduledDate).all();
     return c.json({ events, count: events.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Calendar query failed:', err);
     return c.json({ error: 'Failed to query calendar' }, 500);
   }
@@ -5544,7 +5588,7 @@ app.post('/api/market/calendar', async (c) => {
       .run();
 
     return c.json({ id, message: 'Calendar event created' }, 201);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Calendar event creation failed:', err);
     return c.json({ error: 'Failed to create calendar event' }, 500);
   }
@@ -5592,7 +5636,7 @@ app.post('/api/market/alerts', async (c) => {
       .run();
 
     return c.json({ id, message: 'Alert created' }, 201);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Alert creation failed:', err);
     return c.json({ error: 'Failed to create alert' }, 500);
   }
@@ -5608,7 +5652,7 @@ app.get('/api/market/alerts', async (c) => {
     }
     const alerts = await (query as any).orderBy(desc(marketAlerts.createdAt)).all();
     return c.json({ alerts, count: alerts.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Market] Alerts list failed:', err);
     return c.json({ error: 'Failed to list alerts' }, 500);
   }
@@ -5846,7 +5890,7 @@ app.get('/api/cognee/graph/:userId', async (c) => {
       try {
         const graph = await cogneeClient.getDatasetGraph(ds.id ?? ds.name ?? ds, userId);
         graphs.push({ dataset: ds.name ?? ds, graph });
-      } catch (_err) {
+      } catch {
         // Skip datasets without graphs
       }
     }
@@ -5901,9 +5945,9 @@ app.post('/api/tenants', async (c) => {
       primaryContactEmail: body.primaryContactEmail,
     });
     return c.json(tenant, 201);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Tenant] Create failed:', err);
-    return c.json({ error: err.message || 'Failed to create tenant' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to create tenant' }, 400);
   }
 });
 
@@ -5912,9 +5956,9 @@ app.get('/api/tenants', async (c) => {
     const userId = getUserId(c);
     const list = await tenantService.getMemberTenants(userId);
     return c.json({ tenants: list, count: list.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Tenant] List failed:', err);
-    return c.json({ error: err.message || 'Failed to list tenants' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to list tenants' }, 500);
   }
 });
 
@@ -5923,9 +5967,9 @@ app.get('/api/tenants/:id', async (c) => {
     const tenant = await tenantService.getTenant(c.req.param('id'));
     if (!tenant) return c.json({ error: 'Tenant not found' }, 404);
     return c.json(tenant);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Tenant] Get failed:', err);
-    return c.json({ error: err.message || 'Failed to get tenant' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to get tenant' }, 500);
   }
 });
 
@@ -5936,10 +5980,10 @@ app.put('/api/tenants/:id', async (c) => {
     await rbacService.requirePermission(tenantId, userId, 'settings.manage');
     const body = await c.req.json();
     return c.json(await tenantService.updateTenant(tenantId, body));
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Tenant] Update failed:', err);
-    return c.json({ error: err.message || 'Failed to update tenant' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to update tenant' }, 400);
   }
 });
 
@@ -5950,9 +5994,9 @@ app.post('/api/tenants/:id/switch', async (c) => {
     const context = await tenantService.switchTenant(userId, tenantId);
     const token = await adminAuthService.generateTenantToken(userId, tenantId);
     return c.json({ ...context, token });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Tenant] Switch failed:', err);
-    return c.json({ error: err.message || 'Failed to switch tenant' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to switch tenant' }, 400);
   }
 });
 
@@ -5965,9 +6009,9 @@ app.delete('/api/tenants/:id', async (c) => {
       return c.json({ error: 'Only the tenant owner can deactivate a tenant' }, 403);
     await tenantService.deactivateTenant(tenantId);
     return c.json({ message: 'Tenant deactivated successfully' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Tenant] Deactivate failed:', err);
-    return c.json({ error: err.message || 'Failed to deactivate tenant' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to deactivate tenant' }, 500);
   }
 });
 
@@ -5986,10 +6030,10 @@ app.get('/api/tenants/:tenantId/members', async (c) => {
       memberCount: members.length,
       pendingCount: invitations.length,
     });
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Members] List failed:', err);
-    return c.json({ error: err.message || 'Failed to list members' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to list members' }, 500);
   }
 });
 
@@ -6002,10 +6046,10 @@ app.post('/api/tenants/:tenantId/members', async (c) => {
     if (!body.userId || !body.role) return c.json({ error: 'userId and role are required' }, 400);
     const member = await tenantService.addMember(tenantId, body.userId, body.role as any, userId);
     return c.json(member, 201);
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Members] Add failed:', err);
-    return c.json({ error: err.message || 'Failed to add member' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to add member' }, 400);
   }
 });
 
@@ -6018,10 +6062,10 @@ app.put('/api/tenants/:tenantId/members/:userId/role', async (c) => {
     const body = (await c.req.json()) as { role: string };
     if (!body.role) return c.json({ error: 'role is required' }, 400);
     return c.json(await tenantService.updateMemberRole(tenantId, targetUserId, body.role as any));
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Members] Update role failed:', err);
-    return c.json({ error: err.message || 'Failed to update member role' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to update member role' }, 400);
   }
 });
 
@@ -6033,10 +6077,10 @@ app.delete('/api/tenants/:tenantId/members/:userId', async (c) => {
     await rbacService.requirePermission(tenantId, currentUserId, 'members.manage');
     await tenantService.removeMember(tenantId, targetUserId);
     return c.json({ message: 'Member removed successfully' });
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Members] Remove failed:', err);
-    return c.json({ error: err.message || 'Failed to remove member' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to remove member' }, 400);
   }
 });
 
@@ -6054,10 +6098,10 @@ app.post('/api/tenants/:tenantId/invitations', async (c) => {
       userId,
     );
     return c.json(invitation, 201);
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Invitations] Send failed:', err);
-    return c.json({ error: err.message || 'Failed to send invitation' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to send invitation' }, 400);
   }
 });
 
@@ -6073,9 +6117,9 @@ app.post('/api/invitations/accept', async (c) => {
     }
     if (!userId) return c.json({ error: 'userId is required (via auth or body)' }, 400);
     return c.json(await tenantService.acceptInvitation(body.token, userId));
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Invitations] Accept failed:', err);
-    return c.json({ error: err.message || 'Failed to accept invitation' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to accept invitation' }, 400);
   }
 });
 
@@ -6086,18 +6130,18 @@ app.get('/api/tenants/:tenantId/permissions', async (c) => {
     const tenantId = c.req.param('tenantId');
     const userId = getUserId(c);
     return c.json({ permissions: await rbacService.getUserPermissions(tenantId, userId) });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Permissions] List failed:', err);
-    return c.json({ error: err.message || 'Failed to list permissions' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to list permissions' }, 500);
   }
 });
 
 app.get('/api/tenants/:tenantId/permissions/matrix', async (c) => {
   try {
     return c.json({ matrix: await rbacService.getPermissionMatrix(c.req.param('tenantId')) });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Permissions] Matrix failed:', err);
-    return c.json({ error: err.message || 'Failed to get permission matrix' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to get permission matrix' }, 500);
   }
 });
 
@@ -6111,10 +6155,10 @@ app.put('/api/tenants/:tenantId/permissions/:role', async (c) => {
       return c.json({ error: 'permissions array is required' }, 400);
     await rbacService.updateRolePermissions(tenantId, role as any, body.permissions, userId);
     return c.json({ message: `Permissions updated for role '${role}'` });
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Permissions] Update role failed:', err);
-    return c.json({ error: err.message || 'Failed to update permissions' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to update permissions' }, 400);
   }
 });
 
@@ -6126,9 +6170,9 @@ app.post('/api/tenants/:tenantId/permissions/reset', async (c) => {
     if (role !== 'owner') return c.json({ error: 'Only tenant owners can reset permissions' }, 403);
     await rbacService.resetToDefaults(tenantId);
     return c.json({ message: 'Permissions reset to defaults' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Permissions] Reset failed:', err);
-    return c.json({ error: err.message || 'Failed to reset permissions' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to reset permissions' }, 500);
   }
 });
 
@@ -6138,9 +6182,9 @@ app.get('/api/subscriptions/plans', async (c) => {
   try {
     const plans = await subscriptionService.getPlans();
     return c.json({ plans, count: plans.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Subscriptions] List plans failed:', err);
-    return c.json({ error: err.message || 'Failed to list plans' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to list plans' }, 500);
   }
 });
 
@@ -6150,9 +6194,9 @@ app.get('/api/tenants/:tenantId/subscription', async (c) => {
     const subscription = await subscriptionService.getCurrentSubscription(tenantId);
     const usage = await subscriptionService.getUsage(tenantId);
     return c.json({ subscription, usage });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Subscriptions] Get current failed:', err);
-    return c.json({ error: err.message || 'Failed to get subscription' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Failed to get subscription' }, 500);
   }
 });
 
@@ -6167,10 +6211,10 @@ app.post('/api/tenants/:tenantId/subscription', async (c) => {
       await subscriptionService.subscribe(tenantId, body.planName, body.billingCycle),
       201,
     );
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Subscriptions] Subscribe failed:', err);
-    return c.json({ error: err.message || 'Failed to subscribe' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to subscribe' }, 400);
   }
 });
 
@@ -6182,10 +6226,10 @@ app.put('/api/tenants/:tenantId/subscription/upgrade', async (c) => {
     const body = (await c.req.json()) as { newPlanName: string };
     if (!body.newPlanName) return c.json({ error: 'newPlanName is required' }, 400);
     return c.json(await subscriptionService.upgrade(tenantId, body.newPlanName));
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Subscriptions] Upgrade failed:', err);
-    return c.json({ error: err.message || 'Failed to upgrade' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to upgrade' }, 400);
   }
 });
 
@@ -6197,10 +6241,10 @@ app.put('/api/tenants/:tenantId/subscription/downgrade', async (c) => {
     const body = (await c.req.json()) as { newPlanName: string };
     if (!body.newPlanName) return c.json({ error: 'newPlanName is required' }, 400);
     return c.json(await subscriptionService.downgrade(tenantId, body.newPlanName));
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Subscriptions] Downgrade failed:', err);
-    return c.json({ error: err.message || 'Failed to downgrade' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to downgrade' }, 400);
   }
 });
 
@@ -6210,10 +6254,10 @@ app.delete('/api/tenants/:tenantId/subscription', async (c) => {
     const userId = getUserId(c);
     await rbacService.requirePermission(tenantId, userId, 'settings.manage');
     return c.json(await subscriptionService.cancel(tenantId));
-  } catch (err: any) {
-    if (err instanceof ForbiddenError) return c.json({ error: err.message }, 403);
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Subscriptions] Cancel failed:', err);
-    return c.json({ error: err.message || 'Failed to cancel subscription' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Failed to cancel subscription' }, 400);
   }
 });
 
@@ -6248,9 +6292,9 @@ app.post('/api/auth/login', async (c) => {
       tenants: memberTenants,
       activeTenant: context,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Auth] Login failed:', err);
-    return c.json({ error: err.message || 'Login failed' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Login failed' }, 500);
   }
 });
 
@@ -6280,9 +6324,9 @@ app.post('/api/auth/register', async (c) => {
       token = await generateToken(userId);
     }
     return c.json({ token, user: { id: userId, username: body.username }, tenant }, 201);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Auth] Register failed:', err);
-    return c.json({ error: err.message || 'Registration failed' }, 400);
+    return c.json({ error: getErrorMessage(err) || 'Registration failed' }, 400);
   }
 });
 
@@ -6296,9 +6340,9 @@ app.post('/api/auth/refresh', async (c) => {
     const result = await adminAuthService.refreshTenantToken(currentToken, body.tenantId);
     if (!result) return c.json({ error: 'Token refresh failed' }, 401);
     return c.json({ token: result.token, payload: result.payload });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Auth] Refresh failed:', err);
-    return c.json({ error: err.message || 'Token refresh failed' }, 500);
+    return c.json({ error: getErrorMessage(err) || 'Token refresh failed' }, 500);
   }
 });
 
@@ -6345,7 +6389,7 @@ app.get('/api/auth/me', async (c) => {
       role: null,
       permissions: [],
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Auth] Me failed:', err);
     return c.json({ error: 'Verification failed' }, 401);
   }
@@ -6499,9 +6543,9 @@ app.get('/api/suppliers', async (c) => {
     const search = c.req.query('search') || undefined;
     const result = await supplierService.listSuppliers(userId, { page, limit, isActive, search });
     return c.json({ data: result.data, total: result.total });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Suppliers] List failed:', err);
-    return c.json({ error: err.message ?? 'Failed to list suppliers' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to list suppliers' }, 500);
   }
 });
 
@@ -6511,9 +6555,9 @@ app.post('/api/suppliers', zValidator('json', createSupplierSchema), async (c) =
     const body = c.req.valid('json');
     const supplier = await supplierService.createSupplier(userId, body);
     return c.json({ data: supplier }, 201);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Suppliers] Create failed:', err);
-    return c.json({ error: err.message ?? 'Failed to create supplier' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to create supplier' }, 400);
   }
 });
 
@@ -6523,9 +6567,9 @@ app.get('/api/suppliers/:id', async (c) => {
     const supplier = await supplierService.getSupplier(id);
     if (!supplier) return c.json({ error: 'Supplier not found' }, 404);
     return c.json({ data: supplier });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Suppliers] Get failed:', err);
-    return c.json({ error: err.message ?? 'Failed to get supplier' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to get supplier' }, 500);
   }
 });
 
@@ -6535,9 +6579,9 @@ app.patch('/api/suppliers/:id', zValidator('json', updateSupplierSchema), async 
     const body = c.req.valid('json');
     const supplier = await supplierService.updateSupplier(id, body);
     return c.json({ data: supplier });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Suppliers] Update failed:', err);
-    return c.json({ error: err.message ?? 'Failed to update supplier' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to update supplier' }, 400);
   }
 });
 
@@ -6546,9 +6590,9 @@ app.delete('/api/suppliers/:id', async (c) => {
     const id = c.req.param('id');
     const result = await supplierService.archiveSupplier(id);
     return c.json({ success: true, warning: result.warning });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Suppliers] Archive failed:', err);
-    return c.json({ error: err.message ?? 'Failed to archive supplier' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to archive supplier' }, 500);
   }
 });
 
@@ -6572,9 +6616,9 @@ app.get('/api/bills', async (c) => {
       dateTo,
     });
     return c.json({ data: result.data, total: result.total });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Bills] List failed:', err);
-    return c.json({ error: err.message ?? 'Failed to list bills' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to list bills' }, 500);
   }
 });
 
@@ -6584,9 +6628,9 @@ app.post('/api/bills', zValidator('json', createBillSchema), async (c) => {
     const body = c.req.valid('json');
     const bill = await billService.createBill(userId, body);
     return c.json({ data: bill }, 201);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Bills] Create failed:', err);
-    return c.json({ error: err.message ?? 'Failed to create bill' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to create bill' }, 400);
   }
 });
 
@@ -6595,10 +6639,11 @@ app.get('/api/bills/:id', async (c) => {
     const id = c.req.param('id');
     const bill = await billService.getBill(id);
     return c.json({ data: bill });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Bills] Get failed:', err);
-    if (err.message?.includes('not found')) return c.json({ error: err.message }, 404);
-    return c.json({ error: err.message ?? 'Failed to get bill' }, 500);
+    if (getErrorMessage(err)?.includes('not found'))
+      return c.json({ error: getErrorMessage(err) }, 404);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to get bill' }, 500);
   }
 });
 
@@ -6608,9 +6653,9 @@ app.patch('/api/bills/:id', zValidator('json', updateBillSchema), async (c) => {
     const body = c.req.valid('json');
     const bill = await billService.updateBill(id, body);
     return c.json({ data: bill });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Bills] Update failed:', err);
-    return c.json({ error: err.message ?? 'Failed to update bill' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to update bill' }, 400);
   }
 });
 
@@ -6620,9 +6665,9 @@ app.post('/api/bills/:id/approve', async (c) => {
     const userId = getUserId(c);
     const bill = await billService.approveBill(id, userId);
     return c.json({ data: bill });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Bills] Approve failed:', err);
-    return c.json({ error: err.message ?? 'Failed to approve bill' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to approve bill' }, 400);
   }
 });
 
@@ -6632,9 +6677,9 @@ app.post('/api/bills/:id/pay', zValidator('json', billPaymentSchema), async (c) 
     const body = c.req.valid('json');
     const payment = await billService.recordPayment(id, body);
     return c.json({ data: payment });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Bills] Payment failed:', err);
-    return c.json({ error: err.message ?? 'Failed to record payment' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to record payment' }, 400);
   }
 });
 
@@ -6643,9 +6688,9 @@ app.post('/api/bills/:id/void', async (c) => {
     const id = c.req.param('id');
     const bill = await billService.voidBill(id);
     return c.json({ data: bill });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Bills] Void failed:', err);
-    return c.json({ error: err.message ?? 'Failed to void bill' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to void bill' }, 400);
   }
 });
 
@@ -6669,9 +6714,9 @@ app.get('/api/purchase-orders', async (c) => {
       dateTo,
     });
     return c.json({ data: result.data, total: result.total });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PurchaseOrders] List failed:', err);
-    return c.json({ error: err.message ?? 'Failed to list purchase orders' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to list purchase orders' }, 500);
   }
 });
 
@@ -6681,9 +6726,9 @@ app.post('/api/purchase-orders', zValidator('json', createPOSchema), async (c) =
     const body = c.req.valid('json');
     const po = await purchaseOrderService.createPurchaseOrder(userId, body);
     return c.json({ data: po }, 201);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PurchaseOrders] Create failed:', err);
-    return c.json({ error: err.message ?? 'Failed to create purchase order' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to create purchase order' }, 400);
   }
 });
 
@@ -6692,10 +6737,11 @@ app.get('/api/purchase-orders/:id', async (c) => {
     const id = c.req.param('id');
     const po = await purchaseOrderService.getPurchaseOrder(id);
     return c.json({ data: po });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PurchaseOrders] Get failed:', err);
-    if (err.message?.includes('not found')) return c.json({ error: err.message }, 404);
-    return c.json({ error: err.message ?? 'Failed to get purchase order' }, 500);
+    if (getErrorMessage(err)?.includes('not found'))
+      return c.json({ error: getErrorMessage(err) }, 404);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to get purchase order' }, 500);
   }
 });
 
@@ -6705,9 +6751,9 @@ app.patch('/api/purchase-orders/:id', zValidator('json', updatePOSchema), async 
     const body = c.req.valid('json');
     const po = await purchaseOrderService.updatePurchaseOrder(id, body);
     return c.json({ data: po });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PurchaseOrders] Update failed:', err);
-    return c.json({ error: err.message ?? 'Failed to update purchase order' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to update purchase order' }, 400);
   }
 });
 
@@ -6716,9 +6762,9 @@ app.post('/api/purchase-orders/:id/send', async (c) => {
     const id = c.req.param('id');
     const po = await purchaseOrderService.sendPurchaseOrder(id);
     return c.json({ data: po });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PurchaseOrders] Send failed:', err);
-    return c.json({ error: err.message ?? 'Failed to send purchase order' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to send purchase order' }, 400);
   }
 });
 
@@ -6728,9 +6774,9 @@ app.post('/api/purchase-orders/:id/receive', zValidator('json', receiveGoodsSche
     const body = c.req.valid('json');
     const receipt = await purchaseOrderService.receiveGoods(id, body);
     return c.json({ data: receipt });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PurchaseOrders] Receive failed:', err);
-    return c.json({ error: err.message ?? 'Failed to record receipt' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to record receipt' }, 400);
   }
 });
 
@@ -6739,9 +6785,9 @@ app.post('/api/purchase-orders/:id/cancel', async (c) => {
     const id = c.req.param('id');
     const po = await purchaseOrderService.cancelPurchaseOrder(id);
     return c.json({ data: po });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PurchaseOrders] Cancel failed:', err);
-    return c.json({ error: err.message ?? 'Failed to cancel purchase order' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to cancel purchase order' }, 400);
   }
 });
 
@@ -6753,9 +6799,9 @@ app.post('/api/supplier-payments', zValidator('json', createPaymentRunSchema), a
     const body = c.req.valid('json');
     const run = await purchaseOrderService.createPaymentRun(userId, body);
     return c.json({ data: run }, 201);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PaymentRun] Create failed:', err);
-    return c.json({ error: err.message ?? 'Failed to create payment run' }, 400);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to create payment run' }, 400);
   }
 });
 
@@ -6764,10 +6810,11 @@ app.get('/api/supplier-payments/:id', async (c) => {
     const id = c.req.param('id');
     const run = await purchaseOrderService.getPaymentRun(id);
     return c.json({ data: run });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[PaymentRun] Get failed:', err);
-    if (err.message?.includes('not found')) return c.json({ error: err.message }, 404);
-    return c.json({ error: err.message ?? 'Failed to get payment run' }, 500);
+    if (getErrorMessage(err)?.includes('not found'))
+      return c.json({ error: getErrorMessage(err) }, 404);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to get payment run' }, 500);
   }
 });
 
@@ -6779,9 +6826,9 @@ app.get('/api/ap/aging', async (c) => {
     const asOfDate = c.req.query('asOfDate') || undefined;
     const report = await billService.getAPAging(userId, asOfDate);
     return c.json({ data: report });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[APAging] Report failed:', err);
-    return c.json({ error: err.message ?? 'Failed to generate AP aging report' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to generate AP aging report' }, 500);
   }
 });
 
@@ -7144,9 +7191,9 @@ app.post('/api/push/subscribe', async (c) => {
     }
     await pushNotificationService.subscribe(userId, tenantId, body.subscription, body.deviceName);
     return c.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Push] Subscribe failed:', err);
-    return c.json({ error: err.message ?? 'Subscribe failed' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Subscribe failed' }, 500);
   }
 });
 
@@ -7159,9 +7206,9 @@ app.delete('/api/push/subscribe', async (c) => {
     }
     await pushNotificationService.unsubscribe(userId, body.endpoint);
     return c.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Push] Unsubscribe failed:', err);
-    return c.json({ error: err.message ?? 'Unsubscribe failed' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Unsubscribe failed' }, 500);
   }
 });
 
@@ -7178,9 +7225,9 @@ app.get('/api/push/subscriptions', async (c) => {
     const tenantId = c.req.query('tenantId') ?? 'default';
     const subscriptions = await pushNotificationService.getSubscriptions(userId, tenantId);
     return c.json({ subscriptions, count: subscriptions.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Push] List subscriptions failed:', err);
-    return c.json({ error: err.message ?? 'Failed to list subscriptions' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to list subscriptions' }, 500);
   }
 });
 
@@ -7220,9 +7267,9 @@ app.get('/api/notifications/preferences', async (c) => {
       });
     }
     return c.json(prefs);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Notifications] Get preferences failed:', err);
-    return c.json({ error: err.message ?? 'Failed to get preferences' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to get preferences' }, 500);
   }
 });
 
@@ -7302,9 +7349,9 @@ app.put('/api/notifications/preferences', async (c) => {
         .run();
     }
     return c.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Notifications] Update preferences failed:', err);
-    return c.json({ error: err.message ?? 'Failed to update preferences' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to update preferences' }, 500);
   }
 });
 
@@ -7320,9 +7367,9 @@ app.post('/api/sync', async (c) => {
     }
     const result = await syncService.processSync(userId, tenantId, body.operations);
     return c.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Sync] Process failed:', err);
-    return c.json({ error: err.message ?? 'Sync processing failed' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Sync processing failed' }, 500);
   }
 });
 
@@ -7332,9 +7379,9 @@ app.get('/api/sync/conflicts', async (c) => {
     const tenantId = c.req.query('tenantId') ?? 'default';
     const conflicts = await syncService.getConflicts(userId, tenantId);
     return c.json({ conflicts, count: conflicts.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Sync] Get conflicts failed:', err);
-    return c.json({ error: err.message ?? 'Failed to get conflicts' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to get conflicts' }, 500);
   }
 });
 
@@ -7347,9 +7394,9 @@ app.post('/api/sync/resolve/:conflictId', async (c) => {
     }
     await syncService.resolveConflict(conflictId, body.resolution);
     return c.json({ success: true, conflictId, resolution: body.resolution });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Sync] Resolve conflict failed:', err);
-    return c.json({ error: err.message ?? 'Failed to resolve conflict' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to resolve conflict' }, 500);
   }
 });
 
@@ -7361,9 +7408,9 @@ app.get('/api/sync/log', async (c) => {
     const offset = parseInt(c.req.query('offset') ?? '0', 10);
     const log = await syncService.getSyncLog(userId, tenantId, limit, offset);
     return c.json({ log, count: log.length });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[Sync] Get log failed:', err);
-    return c.json({ error: err.message ?? 'Failed to get sync log' }, 500);
+    return c.json({ error: getErrorMessage(err) ?? 'Failed to get sync log' }, 500);
   }
 });
 
