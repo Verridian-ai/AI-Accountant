@@ -12,8 +12,12 @@ import {
   invoicePayments,
   customers,
 } from '../schema.js';
-import { eq, and, sql, desc, gte, lte } from 'drizzle-orm';
+import { eq, and, sql, desc, gte, lte, type SQL } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+
+export type Invoice = typeof invoices.$inferSelect;
+export type InvoiceLine = typeof invoiceLines.$inferSelect;
+export type Customer = typeof customers.$inferSelect;
 
 // ============================================================================
 // Types
@@ -63,13 +67,13 @@ export interface CreateCreditNoteInput {
 }
 
 export interface InvoiceWithLines {
-  invoice: any;
-  lines: any[];
-  customer?: any;
+  invoice: Invoice;
+  lines: InvoiceLine[];
+  customer?: Customer;
 }
 
 export interface InvoiceWithCustomer {
-  invoice: any;
+  invoice: Invoice;
   customerName: string;
 }
 
@@ -133,7 +137,7 @@ export class InvoicingService {
    */
   async getNextInvoiceNumber(userId: string): Promise<string> {
     // Attempt atomic increment. If no row exists, create one first.
-    const existing = await (db as any)
+    const existing = await db
       .select()
       .from(invoiceNumberSequences)
       .where(eq(invoiceNumberSequences.userId, userId))
@@ -142,7 +146,7 @@ export class InvoicingService {
     if (!existing) {
       // Seed the sequence for a new user
       const id = randomUUID();
-      await (db as any)
+      await db
         .insert(invoiceNumberSequences)
         .values({
           id,
@@ -161,7 +165,7 @@ export class InvoicingService {
     const prefix: string = existing.prefix ?? 'INV-';
 
     // Increment atomically
-    await (db as any)
+    await db
       .update(invoiceNumberSequences)
       .set({
         nextNumber: currentNumber + 1,
@@ -201,7 +205,7 @@ export class InvoicingService {
 
     if (!dueDate) {
       // Attempt to get customer paymentTermsDays
-      const customer = await (db as any)
+      const customer = await db
         .select()
         .from(customers)
         .where(eq(customers.id, data.customerId))
@@ -216,7 +220,7 @@ export class InvoicingService {
     const now = nowISO();
 
     // Insert invoice
-    await (db as any)
+    await db
       .insert(invoices)
       .values({
         id: invoiceId,
@@ -241,7 +245,7 @@ export class InvoicingService {
       .run();
 
     // Insert line items
-    const insertedLines: any[] = [];
+    const insertedLines: InvoiceLine[] = [];
     for (let i = 0; i < calculatedLines.length; i++) {
       const li = calculatedLines[i];
       const lineId = randomUUID();
@@ -258,7 +262,7 @@ export class InvoicingService {
         accountCode: li.accountCode ?? null,
         taxCode: li.taxCode ?? null,
       };
-      await (db as any).insert(invoiceLines).values(lineValues).run();
+      await db.insert(invoiceLines).values(lineValues).run();
       insertedLines.push(lineValues);
     }
 
@@ -280,6 +284,7 @@ export class InvoicingService {
         currency: 'AUD',
         notes: data.notes ?? null,
         termsAndConditions: data.termsAndConditions ?? null,
+        pdfPath: null,
         createdAt: now,
         updatedAt: now,
       },
@@ -292,7 +297,7 @@ export class InvoicingService {
   // --------------------------------------------------------------------------
 
   async getInvoice(userId: string, invoiceId: string): Promise<InvoiceWithLines | null> {
-    const invoice = await (db as any)
+    const invoice = await db
       .select()
       .from(invoices)
       .where(and(eq(invoices.id, invoiceId), eq(invoices.userId, userId)))
@@ -300,15 +305,15 @@ export class InvoicingService {
 
     if (!invoice) return null;
 
-    const lines = await (db as any)
+    const lines = await db
       .select()
       .from(invoiceLines)
       .where(eq(invoiceLines.invoiceId, invoiceId))
       .all();
 
-    let customer: any = undefined;
+    let customer: Customer | undefined = undefined;
     if (invoice.customerId) {
-      customer = await (db as any)
+      customer = await db
         .select()
         .from(customers)
         .where(eq(customers.id, invoice.customerId))
@@ -337,7 +342,7 @@ export class InvoicingService {
     const limit = Math.min(options.limit ?? 50, 100);
 
     // Build conditions
-    const conditions: any[] = [eq(invoices.userId, userId)];
+    const conditions: SQL[] = [eq(invoices.userId, userId)];
     if (options.status) {
       conditions.push(eq(invoices.status, options.status));
     }
@@ -354,7 +359,7 @@ export class InvoicingService {
     const whereClause = conditions.length === 1 ? conditions[0] : and(...conditions);
 
     // Count total
-    const countResult = await (db as any)
+    const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(invoices)
       .where(whereClause)
@@ -362,7 +367,7 @@ export class InvoicingService {
     const total: number = countResult?.count ?? 0;
 
     // Fetch page with customer join
-    const rows = await (db as any)
+    const rows = await db
       .select({
         invoice: invoices,
         customerName: customers.businessName,
@@ -375,10 +380,12 @@ export class InvoicingService {
       .offset(offset)
       .all();
 
-    const data: InvoiceWithCustomer[] = (rows ?? []).map((r: any) => ({
-      invoice: r.invoice ?? r,
-      customerName: r.customerName ?? 'Unknown',
-    }));
+    const data: InvoiceWithCustomer[] = (rows ?? []).map(
+      (r: { invoice: Invoice | null; customerName: string | null }) => ({
+        invoice: r.invoice ?? r,
+        customerName: r.customerName ?? 'Unknown',
+      }),
+    );
 
     return { data, total };
   }
@@ -392,7 +399,7 @@ export class InvoicingService {
     invoiceId: string,
     data: UpdateInvoiceInput,
   ): Promise<InvoiceWithLines> {
-    const existing = await (db as any)
+    const existing = await db
       .select()
       .from(invoices)
       .where(and(eq(invoices.id, invoiceId), eq(invoices.userId, userId)))
@@ -417,7 +424,7 @@ export class InvoicingService {
     // If line items provided, delete + re-insert and recalculate totals
     if (data.lineItems && data.lineItems.length > 0) {
       // Delete existing lines
-      await (db as any).delete(invoiceLines).where(eq(invoiceLines.invoiceId, invoiceId)).run();
+      await db.delete(invoiceLines).where(eq(invoiceLines.invoiceId, invoiceId)).run();
 
       // Calculate new lines
       const calculatedLines = data.lineItems.map((li) => {
@@ -438,7 +445,7 @@ export class InvoicingService {
       // Insert new lines
       for (let i = 0; i < calculatedLines.length; i++) {
         const li = calculatedLines[i];
-        await (db as any)
+        await db
           .insert(invoiceLines)
           .values({
             id: randomUUID(),
@@ -458,7 +465,7 @@ export class InvoicingService {
     }
 
     // Apply updates to invoice
-    await (db as any).update(invoices).set(updates).where(eq(invoices.id, invoiceId)).run();
+    await db.update(invoices).set(updates).where(eq(invoices.id, invoiceId)).run();
 
     // Return fresh invoice with lines
     return (await this.getInvoice(userId, invoiceId))!;
@@ -469,7 +476,7 @@ export class InvoicingService {
   // --------------------------------------------------------------------------
 
   async sendInvoice(userId: string, invoiceId: string): Promise<any> {
-    const invoice = await (db as any)
+    const invoice = await db
       .select()
       .from(invoices)
       .where(and(eq(invoices.id, invoiceId), eq(invoices.userId, userId)))
@@ -494,7 +501,7 @@ export class InvoicingService {
       updates.issueDate = today();
     }
 
-    await (db as any).update(invoices).set(updates).where(eq(invoices.id, invoiceId)).run();
+    await db.update(invoices).set(updates).where(eq(invoices.id, invoiceId)).run();
 
     return {
       ...invoice,
@@ -507,7 +514,7 @@ export class InvoicingService {
   // --------------------------------------------------------------------------
 
   async voidInvoice(userId: string, invoiceId: string): Promise<any> {
-    const invoice = await (db as any)
+    const invoice = await db
       .select()
       .from(invoices)
       .where(and(eq(invoices.id, invoiceId), eq(invoices.userId, userId)))
@@ -523,7 +530,7 @@ export class InvoicingService {
       throw new Error('Invoice is already void');
     }
 
-    await (db as any)
+    await db
       .update(invoices)
       .set({
         status: 'void',
@@ -546,7 +553,7 @@ export class InvoicingService {
   // --------------------------------------------------------------------------
 
   async recordPayment(userId: string, invoiceId: string, data: RecordPaymentInput): Promise<any> {
-    const invoice = await (db as any)
+    const invoice = await db
       .select()
       .from(invoices)
       .where(and(eq(invoices.id, invoiceId), eq(invoices.userId, userId)))
@@ -563,7 +570,7 @@ export class InvoicingService {
     const paymentId = randomUUID();
     const now = nowISO();
 
-    await (db as any)
+    await db
       .insert(invoicePayments)
       .values({
         id: paymentId,
@@ -593,7 +600,7 @@ export class InvoicingService {
       invoiceUpdates.status = 'paid';
     }
 
-    await (db as any).update(invoices).set(invoiceUpdates).where(eq(invoices.id, invoiceId)).run();
+    await db.update(invoices).set(invoiceUpdates).where(eq(invoices.id, invoiceId)).run();
 
     return {
       id: paymentId,
@@ -627,7 +634,7 @@ export class InvoicingService {
     const now = nowISO();
     const issueDateStr = today();
 
-    await (db as any)
+    await db
       .insert(invoices)
       .values({
         id: invoiceId,
@@ -645,14 +652,15 @@ export class InvoicingService {
         amountDue: 0, // Credit notes don't have "due" amounts
         currency: 'AUD',
         notes: data.notes ?? null,
-        originalInvoiceId: data.originalInvoiceId ?? null,
+        // TODO: Add originalInvoiceId to schema
+        // originalInvoiceId: data.originalInvoiceId ?? null,
         createdAt: now,
         updatedAt: now,
       })
       .run();
 
     // Insert line items
-    const insertedLines: any[] = [];
+    const insertedLines: InvoiceLine[] = [];
     for (let i = 0; i < calculatedLines.length; i++) {
       const li = calculatedLines[i];
       const lineId = randomUUID();
@@ -669,7 +677,7 @@ export class InvoicingService {
         accountCode: li.accountCode ?? null,
         taxCode: li.taxCode ?? null,
       };
-      await (db as any).insert(invoiceLines).values(lineValues).run();
+      await db.insert(invoiceLines).values(lineValues).run();
       insertedLines.push(lineValues);
     }
 
@@ -690,7 +698,10 @@ export class InvoicingService {
         amountDue: 0,
         currency: 'AUD',
         notes: data.notes ?? null,
-        originalInvoiceId: data.originalInvoiceId ?? null,
+        pdfPath: null,
+        termsAndConditions: null,
+        // TODO: Add originalInvoiceId to schema
+        // originalInvoiceId: data.originalInvoiceId ?? null,
         createdAt: now,
         updatedAt: now,
       },
@@ -706,7 +717,7 @@ export class InvoicingService {
     const todayStr = today();
 
     // Find sent invoices past due date
-    const overdueInvoices = await (db as any)
+    const overdueInvoices = await db
       .select()
       .from(invoices)
       .where(
@@ -725,7 +736,7 @@ export class InvoicingService {
     // Update each to 'overdue'
     const now = nowISO();
     for (const inv of overdueInvoices) {
-      await (db as any)
+      await db
         .update(invoices)
         .set({ status: 'overdue', updatedAt: now })
         .where(eq(invoices.id, inv.id))
@@ -745,11 +756,7 @@ export class InvoicingService {
 
   async getInvoiceSummary(userId: string): Promise<InvoiceSummary> {
     // Get all invoices for user (non-void for totals)
-    const allInvoices = await (db as any)
-      .select()
-      .from(invoices)
-      .where(eq(invoices.userId, userId))
-      .all();
+    const allInvoices = await db.select().from(invoices).where(eq(invoices.userId, userId)).all();
 
     const list: any[] = allInvoices ?? [];
 

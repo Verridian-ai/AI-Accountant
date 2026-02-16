@@ -1008,7 +1008,7 @@ export class TaxService {
         createdAt: now,
         updatedAt: now,
       };
-      await db.insert(taxYearSummary).values(newSummary as any);
+      await db.insert(taxYearSummary).values(newSummary);
       return newSummary;
     }
   }
@@ -1054,7 +1054,10 @@ export class TaxService {
 
     // Get saved deductions
     const savedDeductions = await this.getDeductions(userId, taxYear);
-    const totalDeductions = savedDeductions.reduce((sum: number, d: any) => sum + d.amount, 0);
+    const totalDeductions = savedDeductions.reduce(
+      (sum: number, d: typeof deductions.$inferSelect) => sum + d.amount,
+      0,
+    );
 
     // Calculate tax
     const result = this.calculateFullTax(

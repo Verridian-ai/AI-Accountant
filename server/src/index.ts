@@ -1402,7 +1402,7 @@ app.get('/api/events', (c) => {
   c.header('Connection', 'keep-alive');
 
   return stream(c, async (stream) => {
-    const listener = (data: { step: number; total: number; message: string }) => {
+    const listener = (data: Record<string, any>) => {
       const payload = JSON.stringify(data);
       // Always send on 'update' channel for legacy listeners
       stream.write(`event: update\ndata: ${payload}\n\n`);
