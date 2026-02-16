@@ -3,7 +3,7 @@
  * Plan management, subscription lifecycle, usage tracking, and limit enforcement.
  */
 
-import { db, subscriptionPlans, subscriptionHistory, tenants } from '../schema.js';
+import { db, subscriptionPlans, subscriptionHistory } from '../schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import crypto from 'crypto';
 import type {

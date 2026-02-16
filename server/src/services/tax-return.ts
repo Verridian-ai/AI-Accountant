@@ -9,14 +9,13 @@
  * when calling tax.ts functions (which operate in dollars).
  */
 
-import { db, transactions, accounts, businessProfiles } from '../schema.js';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { db, transactions, businessProfiles } from '../schema.js';
+import { eq, and, gte, lte } from 'drizzle-orm';
 import {
   calculateIncomeTax,
   calculateMedicareLevy,
   calculateLITO,
   getFinancialYearDates,
-  type TaxCalculationResult,
 } from './tax.js';
 
 /** Deduction rates re-exported for agent consumption */
@@ -34,42 +33,6 @@ function calculateSBITO(netSmallBusinessIncomeCents: number): number {
   const offset = Math.round(netSmallBusinessIncomeCents * 0.16);
   return Math.min(offset, 100_000); // $1,000 = 100,000 cents
 }
-
-/** Category sets for classifying transactions */
-const INCOME_CATEGORIES = new Set([
-  'Business Revenue',
-  'Sales Revenue',
-  'Service Revenue',
-  'Interest Income',
-  'Rental Income',
-  'Dividend Income',
-  'Other Income',
-  'Government Payments',
-  'Salary & Wages',
-]);
-
-const EXPENSE_CATEGORIES = new Set([
-  'Advertising & Marketing',
-  'Bank Fees & Charges',
-  'Communication & Internet',
-  'Depreciation',
-  'Education & Training',
-  'Equipment & Tools',
-  'Insurance',
-  'Interest Expense',
-  'Legal & Professional Fees',
-  'Motor Vehicle Expenses',
-  'Office Supplies',
-  'Rent & Lease',
-  'Repairs & Maintenance',
-  'Subscriptions',
-  'Travel & Accommodation',
-  'Utilities',
-  'Wages & Salaries',
-  'Superannuation',
-  'Contractor Payments',
-  'Other Expense',
-]);
 
 export interface TaxReturnResult {
   entityType: string;

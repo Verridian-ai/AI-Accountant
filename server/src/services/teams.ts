@@ -8,19 +8,8 @@
  * - Comprehensive audit logging
  */
 
-import {
-  db,
-  teams,
-  teamMembers,
-  teamInvitations,
-  accounts,
-  auditLog,
-  users,
-  transactions,
-  statements,
-  basPeriods,
-} from '../schema.js';
-import { eq, and, or, inArray, gte, lte, desc, isNull } from 'drizzle-orm';
+import { db, teams, teamMembers, teamInvitations, accounts, auditLog, users } from '../schema.js';
+import { eq, and, inArray, lte, desc } from 'drizzle-orm';
 import crypto from 'crypto';
 
 // ============================================================================
@@ -1148,7 +1137,7 @@ export class TeamService {
     const memberIds = members.map((m: typeof teamMembers.$inferSelect) => m.userId);
 
     // Build query
-    let query = db
+    const query = db
       .select()
       .from(auditLog)
       .where(inArray(auditLog.userId, memberIds))
