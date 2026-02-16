@@ -4,16 +4,13 @@
  * Supports rule-based, AI-assisted, and manual matching with scoring and learning.
  */
 
-import {
-  db,
-  ocrDocuments,
-  ocrLineItems,
-  paymentMatchRules,
-  paymentMatches,
-  transactions,
-} from '../schema.js';
-import { eq, and, desc, asc, sql, like, between, or, ne } from 'drizzle-orm';
+import { db, ocrDocuments, paymentMatchRules, paymentMatches, transactions } from '../schema.js';
+import { eq, and, desc, asc, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+
+type OcrDocument = typeof ocrDocuments.$inferSelect;
+type Transaction = typeof transactions.$inferSelect;
+type PaymentMatchRule = typeof paymentMatchRules.$inferSelect;
 
 // ============================================================================
 // Type Definitions
@@ -238,7 +235,7 @@ export class PaymentMatchingService {
   // Match Scoring
   // --------------------------------------------------------------------------
 
-  async scoreMatch(document: any, transaction: any): Promise<MatchScore> {
+  async scoreMatch(document: OcrDocument, transaction: Transaction): Promise<MatchScore> {
     const docAmount = document.totalAmount ?? 0;
     const txAmount = Math.abs(transaction.amount ?? 0);
 
@@ -267,7 +264,7 @@ export class PaymentMatchingService {
     // Vendor factor (20%)
     const docVendor = document.vendorName ?? '';
     const txDesc = transaction.description ?? '';
-    let vendorFactor = docVendor ? this.calculateSimilarity(docVendor, txDesc) : 0.5;
+    const vendorFactor = docVendor ? this.calculateSimilarity(docVendor, txDesc) : 0.5;
 
     // Rule factor (15%)
     let ruleFactor = 0;
@@ -501,7 +498,7 @@ export class PaymentMatchingService {
   // Match Confirmation / Rejection
   // --------------------------------------------------------------------------
 
-  async confirmMatch(matchId: string, confirmedBy?: string): Promise<any> {
+  async confirmMatch(matchId: string, confirmedBy?: string): Promise<void> {
     const match = await db
       .select()
       .from(paymentMatches)
@@ -553,7 +550,7 @@ export class PaymentMatchingService {
     return updated;
   }
 
-  async rejectMatch(matchId: string, reason?: string): Promise<any> {
+  async rejectMatch(matchId: string, reason?: string): Promise<void> {
     const match = await db
       .select()
       .from(paymentMatches)
@@ -593,7 +590,7 @@ export class PaymentMatchingService {
   // Rule Management
   // --------------------------------------------------------------------------
 
-  async createRule(userId: string, params: CreateRuleParams): Promise<any> {
+  async createRule(userId: string, params: CreateRuleParams): Promise<PaymentMatchRule> {
     const id = randomUUID();
 
     // Validate: amount rules need amount_exact or range
@@ -636,7 +633,7 @@ export class PaymentMatchingService {
     return created;
   }
 
-  async listRules(userId: string, isActive?: boolean): Promise<any[]> {
+  async listRules(userId: string, isActive?: boolean): Promise<PaymentMatchRule[]> {
     let query = db.select().from(paymentMatchRules).where(eq(paymentMatchRules.userId, userId));
 
     if (isActive !== undefined) {
@@ -649,9 +646,9 @@ export class PaymentMatchingService {
     return query.orderBy(asc(paymentMatchRules.priority)).all();
   }
 
-  async updateRule(ruleId: string, updates: Record<string, any>): Promise<any> {
+  async updateRule(ruleId: string, updates: Record<string, unknown>): Promise<PaymentMatchRule> {
     // Only allow safe fields to be updated
-    const allowedFields: Record<string, any> = {};
+    const allowedFields: Partial<PaymentMatchRule> = {};
     const safeKeys = [
       'name',
       'ruleType',
@@ -741,7 +738,7 @@ export class PaymentMatchingService {
     return null;
   }
 
-  private documentMatchesRule(doc: any, rule: any): boolean {
+  private documentMatchesRule(doc: OcrDocument, rule: PaymentMatchRule): boolean {
     const docAmount = doc.totalAmount ?? 0;
     const docVendor = doc.vendorName ?? '';
 
@@ -793,7 +790,10 @@ export class PaymentMatchingService {
     }
   }
 
-  private async findTransactionsForRule(doc: any, rule: any): Promise<any[]> {
+  private async findTransactionsForRule(
+    doc: OcrDocument,
+    rule: PaymentMatchRule,
+  ): Promise<Transaction[]> {
     const docAmount = doc.totalAmount ?? 0;
     const docDate = doc.documentDate ?? '';
     const dateTolerance = rule.dateToleranceDays ?? DEFAULT_DATE_TOLERANCE;
@@ -946,11 +946,11 @@ export class PaymentMatchingService {
       .all();
 
     const totalDocuments = allDocs.length;
-    const matched = allDocs.filter((d: any) => d.status === 'matched').length;
-    const pending = allDocs.filter((d: any) =>
+    const matched = allDocs.filter((d) => d.status === 'matched').length;
+    const pending = allDocs.filter((d) =>
       ['pending', 'processing', 'extracted'].includes(d.status),
     ).length;
-    const failed = allDocs.filter((d: any) => d.status === 'failed').length;
+    const failed = allDocs.filter((d) => d.status === 'failed').length;
     const matchRate = totalDocuments > 0 ? Math.round((matched / totalDocuments) * 10000) / 100 : 0;
 
     // Average confidence of confirmed matches
@@ -961,12 +961,12 @@ export class PaymentMatchingService {
       .all();
 
     // Filter to user's documents
-    const userDocIds = new Set(allDocs.map((d: any) => d.id));
-    const userMatches = confirmedMatches.filter((m: any) => userDocIds.has(m.documentId));
+    const userDocIds = new Set(allDocs.map((d) => d.id));
+    const userMatches = confirmedMatches.filter((m) => userDocIds.has(m.documentId));
     const averageConfidence =
       userMatches.length > 0
         ? Math.round(
-            (userMatches.reduce((sum: number, m: any) => sum + (m.matchScore ?? 0), 0) /
+            (userMatches.reduce((sum: number, m) => sum + (m.matchScore ?? 0), 0) /
               userMatches.length) *
               1000,
           ) / 1000
@@ -974,7 +974,7 @@ export class PaymentMatchingService {
 
     // Top vendors
     const vendorCounts = new Map<string, number>();
-    for (const doc of allDocs.filter((d: any) => d.status === 'matched')) {
+    for (const doc of allDocs.filter((d) => d.status === 'matched')) {
       const vendor = doc.vendorName ?? 'Unknown';
       vendorCounts.set(vendor, (vendorCounts.get(vendor) ?? 0) + 1);
     }
@@ -990,7 +990,7 @@ export class PaymentMatchingService {
       .where(eq(paymentMatchRules.userId, userId))
       .all();
 
-    const ruleEffectiveness = rules.map((r: any) => ({
+    const ruleEffectiveness = rules.map((r) => ({
       ruleId: r.id,
       name: r.name,
       matchCount: r.matchCount ?? 0,
@@ -1013,7 +1013,7 @@ export class PaymentMatchingService {
   // Private Helpers
   // --------------------------------------------------------------------------
 
-  private async findMatchingRule(doc: any): Promise<any | null> {
+  private async findMatchingRule(doc: OcrDocument): Promise<PaymentMatchRule | null> {
     if (!doc.userId) return null;
 
     const rules = await db
