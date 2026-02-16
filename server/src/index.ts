@@ -5,7 +5,8 @@ import { bodyLimit } from 'hono/body-limit';
 import { rateLimiter } from 'hono-rate-limiter';
 import { jwt, verify } from 'hono/jwt';
 import { stream } from 'hono/streaming';
-import { getErrorMessage } from './utils/error.js';
+import { getErrorMessage, hasCode } from './utils/error.js';
+import type { TenantRole } from './services/tenant-types.js';
 import {
   db,
   transactions,
@@ -41,7 +42,7 @@ import {
   BAS_FREQUENCIES,
   COMMON_ANZSIC_CODES,
 } from './utils/abn.js';
-import { desc, eq, and, gte, lte, like, aliasedTable, sql } from 'drizzle-orm';
+import { desc, eq, and, gte, lte, like, aliasedTable, sql, type SQL } from 'drizzle-orm';
 
 import { pipeline } from './services/pipeline.js';
 import { bulkUploadQueue } from './services/queue.js';
@@ -318,10 +319,10 @@ app.patch('/api/transactions/:id', async (c) => {
     if (!oldData) return c.json({ error: 'Not found' }, 404);
 
     const updateData = {
-      description: (body as any).description ?? oldData.description,
-      amount: (body as any).amount ?? oldData.amount,
-      category: (body as any).category ?? oldData.category,
-      gstApplicable: (body as any).gstApplicable ?? oldData.gstApplicable,
+      description: body.description ?? oldData.description,
+      amount: body.amount ?? oldData.amount,
+      category: body.category ?? oldData.category,
+      gstApplicable: body.gstApplicable ?? oldData.gstApplicable,
       isEdited: true,
     };
 
@@ -532,7 +533,7 @@ app.get('/api/transactions/export', async (c) => {
 
       c.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       c.header('Content-Disposition', 'attachment; filename="transactions.xlsx"');
-      return c.body(buf as any); // Hono types might strictly expect string | ArrayBuffer
+      return c.body(buf as unknown as ArrayBuffer); // Hono types might strictly expect string | ArrayBuffer
     } else {
       const csv = generateCSV(exportData);
       c.header('Content-Type', 'text/csv; charset=utf-8');
@@ -702,7 +703,7 @@ app.post('/api/statements/batch', async (c) => {
     });
   } catch (err: unknown) {
     console.error('[Batch Upload Error]', err);
-    if ((err as any).code === 'BATCH_SIZE_EXCEEDED') {
+    if (hasCode(err) && err.code === 'BATCH_SIZE_EXCEEDED') {
       return c.json({ error: getErrorMessage(err) }, 400);
     }
     return c.json(
@@ -1024,9 +1025,7 @@ app.post('/api/chat', async (c) => {
         .where(eq(cogneeUserAccounts.userId, userId))
         .limit(1);
       datasetPrefix =
-        account.length > 0
-          ? ((account[0] as any).datasetPrefix ?? `user_${userId}`)
-          : `user_${userId}`;
+        account.length > 0 ? (account[0]?.datasetPrefix ?? `user_${userId}`) : `user_${userId}`;
 
       // Get or create Cognee session for conversation memory
       if (!cogneeSessionId) {
@@ -1202,11 +1201,11 @@ app.post('/api/chat/stream', chatLimiter, async (c) => {
     const answer = await aiService.generateInsight(query, combinedContext, settings.modelChat);
 
     // Record agent usage (chat is essentially the "budget_analyzer" or general agent)
-    await confirmationFlow.recordAgentUsage(activeSessionId, 'budget_analyzer' as any);
+    await confirmationFlow.recordAgentUsage(activeSessionId, 'budget_analyzer');
 
     // Log query execution (non-blocking)
     auditService
-      .logQueryExecuted(activeSessionId, 'budget_analyzer' as any, query)
+      .logQueryExecuted(activeSessionId, 'budget_analyzer', query)
       .catch((err: unknown) => console.warn('[Audit] Log query failed:', err));
 
     // Step 3: Complete
@@ -1888,12 +1887,11 @@ app.get('/api/transfers', async (c) => {
     .where(eq(transferLinks.userId, userId))
     .all();
 
-  const results = rows.map((row: any) => {
-    const r = row as any;
+  const results = rows.map((row) => {
     return {
-      ...r.transfer_links,
-      sourceTransaction: r.source_tx,
-      destinationTransaction: r.dest_tx,
+      ...row.transfer_links,
+      sourceTransaction: row.source_tx,
+      destinationTransaction: row.dest_tx,
     };
   });
 
@@ -2214,7 +2212,7 @@ app.post('/api/debt-recommendations', async (c) => {
 
       // Build payoff order from monthly payments
       const payoffOrder = strategy.monthlyPayments.map((p) => {
-        const account = accountMap.get(p.account_id) as any;
+        const account = accountMap.get(p.account_id);
         return {
           accountId: p.account_id,
           accountName: account?.accountName || 'Unknown Account',
@@ -3828,7 +3826,7 @@ app.post('/api/transfers/auto-detect', async (c) => {
       .all();
 
     // Convert to transfer candidate format
-    const candidates = userTransactions.map((t: any) => ({
+    const candidates = userTransactions.map((t) => ({
       id: parseInt(t.id) || 0,
       accountId: parseInt(t.accountId || '0') || 0,
       date: t.date,
@@ -3838,16 +3836,16 @@ app.post('/api/transfers/auto-detect', async (c) => {
       linkedTransactionId: t.transferLinkId ? parseInt(t.transferLinkId) : undefined,
     }));
 
-    const accountContexts = userAccounts.map((a: any) => ({
+    const accountContexts = userAccounts.map((a) => ({
       id: parseInt(a.id) || 0,
       accountNumber: a.accountNumber,
       bankId: a.bankName || 'unknown',
       accountName: a.accountName,
       accountType: a.accountType,
-      ownershipTag: (a as any).ownershipTag || 'business',
+      ownershipTag: a.ownershipTag || 'business',
     }));
 
-    const existingLinkPairs = existingLinks.map((l: any) => ({
+    const existingLinkPairs = existingLinks.map((l) => ({
       sourceId: parseInt(l.sourceTransactionId) || 0,
       targetId: parseInt(l.destinationTransactionId) || 0,
     }));
@@ -3863,15 +3861,12 @@ app.post('/api/transfers/auto-detect', async (c) => {
       const ownerContribIds: string[] = [];
       for (const match of matches) {
         const srcAcct = userAccounts.find(
-          (a: any) => (parseInt(a.id) || 0) === match.sourceTransaction.accountId,
+          (a) => (parseInt(a.id) || 0) === match.sourceTransaction.accountId,
         );
         const dstAcct = userAccounts.find(
-          (a: any) => (parseInt(a.id) || 0) === match.targetTransaction.accountId,
+          (a) => (parseInt(a.id) || 0) === match.targetTransaction.accountId,
         );
-        if (
-          (srcAcct as any)?.ownershipTag === 'personal' &&
-          (dstAcct as any)?.ownershipTag === 'business'
-        ) {
+        if (srcAcct?.ownershipTag === 'personal' && dstAcct?.ownershipTag === 'business') {
           ownerContribIds.push(String(match.targetTransaction.id));
         }
       }
@@ -5298,7 +5293,7 @@ app.get('/api/market/indicators/snapshot', async (c) => {
   try {
     const indicators = await db.select().from(economicIndicators).all();
     const latestMap = new Map<string, any>();
-    for (const ind of indicators as any[]) {
+    for (const ind of indicators) {
       const existing = latestMap.get(ind.indicatorCode);
       if (!existing || ind.observationDate > existing.observationDate) {
         latestMap.set(ind.indicatorCode, ind);
@@ -5351,15 +5346,14 @@ app.get('/api/market/indicators', async (c) => {
     const source = c.req.query('source');
     const limitParam = parseInt(c.req.query('limit') ?? '100', 10);
 
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
     if (category) conditions.push(eq(economicIndicators.category, category));
     if (source) conditions.push(like(economicIndicators.source, `%${source}%`));
 
-    let query = db.select().from(economicIndicators);
-    if (conditions.length > 0) {
-      query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions)) as any;
-    }
-    const rows = await (query as any)
+    const rows = await db
+      .select()
+      .from(economicIndicators)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(economicIndicators.observationDate))
       .limit(limitParam)
       .all();
@@ -5529,16 +5523,17 @@ app.get('/api/market/calendar', async (c) => {
     const endDate = c.req.query('endDate');
     const importance = c.req.query('importance');
 
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
     if (startDate) conditions.push(gte(economicCalendar.scheduledDate, startDate));
     if (endDate) conditions.push(lte(economicCalendar.scheduledDate, endDate));
     if (importance) conditions.push(eq(economicCalendar.importance, importance));
 
-    let query = db.select().from(economicCalendar);
-    if (conditions.length > 0) {
-      query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions)) as any;
-    }
-    const events = await (query as any).orderBy(economicCalendar.scheduledDate).all();
+    const events = await db
+      .select()
+      .from(economicCalendar)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(economicCalendar.scheduledDate)
+      .all();
     return c.json({ events, count: events.length });
   } catch (err: unknown) {
     console.error('[Market] Calendar query failed:', err);
@@ -5646,11 +5641,12 @@ app.post('/api/market/alerts', async (c) => {
 app.get('/api/market/alerts', async (c) => {
   try {
     const activeOnly = c.req.query('activeOnly') === 'true';
-    let query = db.select().from(marketAlerts);
-    if (activeOnly) {
-      query = query.where(eq(marketAlerts.isActive, true)) as any;
-    }
-    const alerts = await (query as any).orderBy(desc(marketAlerts.createdAt)).all();
+    const alerts = await db
+      .select()
+      .from(marketAlerts)
+      .where(activeOnly ? eq(marketAlerts.isActive, true) : undefined)
+      .orderBy(desc(marketAlerts.createdAt))
+      .all();
     return c.json({ alerts, count: alerts.length });
   } catch (err: unknown) {
     console.error('[Market] Alerts list failed:', err);
@@ -5683,13 +5679,12 @@ app.post('/api/cognee/init-user', zValidator('json', initCogneeUserSchema), asyn
     const { userId, email } = c.req.valid('json');
 
     // Check if user already has a Cognee account
-    const existing = await (
-      db
-        .select()
-        .from(cogneeUserAccounts)
-        .where(eq(cogneeUserAccounts.userId, userId))
-        .limit(1) as any
-    ).all();
+    const existing = await db
+      .select()
+      .from(cogneeUserAccounts)
+      .where(eq(cogneeUserAccounts.userId, userId))
+      .limit(1)
+      .all();
 
     if (existing.length > 0) {
       return c.json({ message: 'User already initialized', account: existing[0] });
@@ -5767,13 +5762,12 @@ app.post('/api/cognee/reindex', zValidator('json', reindexSchema), async (c) => 
     const { userId, datasets } = c.req.valid('json');
 
     // Get user's Cognee account
-    const account = await (
-      db
-        .select()
-        .from(cogneeUserAccounts)
-        .where(eq(cogneeUserAccounts.userId, userId))
-        .limit(1) as any
-    ).all();
+    const account = await db
+      .select()
+      .from(cogneeUserAccounts)
+      .where(eq(cogneeUserAccounts.userId, userId))
+      .limit(1)
+      .all();
 
     if (account.length === 0) {
       return c.json({ error: 'User not initialized. Call POST /api/cognee/init-user first.' }, 404);
@@ -5823,13 +5817,12 @@ app.get('/api/cognee/session', async (c) => {
     }
 
     // Get user's dataset prefix
-    const account = await (
-      db
-        .select()
-        .from(cogneeUserAccounts)
-        .where(eq(cogneeUserAccounts.userId, userId))
-        .limit(1) as any
-    ).all();
+    const account = await db
+      .select()
+      .from(cogneeUserAccounts)
+      .where(eq(cogneeUserAccounts.userId, userId))
+      .limit(1)
+      .all();
 
     const datasetPrefix = account.length > 0 ? account[0].datasetPrefix : `user_${userId}`;
 
@@ -5864,13 +5857,12 @@ app.get('/api/cognee/graph/:userId', async (c) => {
     const userId = c.req.param('userId');
 
     // Get user's dataset prefix
-    const account = await (
-      db
-        .select()
-        .from(cogneeUserAccounts)
-        .where(eq(cogneeUserAccounts.userId, userId))
-        .limit(1) as any
-    ).all();
+    const account = await db
+      .select()
+      .from(cogneeUserAccounts)
+      .where(eq(cogneeUserAccounts.userId, userId))
+      .limit(1)
+      .all();
 
     if (account.length === 0) {
       return c.json({ error: 'User not initialized' }, 404);
@@ -6044,7 +6036,12 @@ app.post('/api/tenants/:tenantId/members', async (c) => {
     await rbacService.requirePermission(tenantId, userId, 'members.manage');
     const body = (await c.req.json()) as { userId: string; role: string };
     if (!body.userId || !body.role) return c.json({ error: 'userId and role are required' }, 400);
-    const member = await tenantService.addMember(tenantId, body.userId, body.role as any, userId);
+    const member = await tenantService.addMember(
+      tenantId,
+      body.userId,
+      body.role as TenantRole,
+      userId,
+    );
     return c.json(member, 201);
   } catch (err: unknown) {
     if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
@@ -6061,7 +6058,9 @@ app.put('/api/tenants/:tenantId/members/:userId/role', async (c) => {
     await rbacService.requirePermission(tenantId, currentUserId, 'members.manage');
     const body = (await c.req.json()) as { role: string };
     if (!body.role) return c.json({ error: 'role is required' }, 400);
-    return c.json(await tenantService.updateMemberRole(tenantId, targetUserId, body.role as any));
+    return c.json(
+      await tenantService.updateMemberRole(tenantId, targetUserId, body.role as TenantRole),
+    );
   } catch (err: unknown) {
     if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     console.error('[Members] Update role failed:', err);
@@ -6094,7 +6093,7 @@ app.post('/api/tenants/:tenantId/invitations', async (c) => {
     const invitation = await tenantService.inviteMember(
       tenantId,
       body.email,
-      body.role as any,
+      body.role as TenantRole,
       userId,
     );
     return c.json(invitation, 201);
@@ -6153,7 +6152,7 @@ app.put('/api/tenants/:tenantId/permissions/:role', async (c) => {
     const body = (await c.req.json()) as { permissions: string[] };
     if (!Array.isArray(body.permissions))
       return c.json({ error: 'permissions array is required' }, 400);
-    await rbacService.updateRolePermissions(tenantId, role as any, body.permissions, userId);
+    await rbacService.updateRolePermissions(tenantId, role as TenantRole, body.permissions, userId);
     return c.json({ message: `Permissions updated for role '${role}'` });
   } catch (err: unknown) {
     if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);

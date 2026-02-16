@@ -15,11 +15,9 @@ import { z } from 'zod';
 export const uuidSchema = z.string().uuid('Invalid UUID format');
 
 // Date validation (ISO 8601)
-export const dateSchema = z
-  .string()
-  .refine((val) => !isNaN(Date.parse(val)), {
-    message: 'Invalid date format. Use ISO 8601 format (YYYY-MM-DD or full ISO string)',
-  });
+export const dateSchema = z.string().refine((val) => !isNaN(Date.parse(val)), {
+  message: 'Invalid date format. Use ISO 8601 format (YYYY-MM-DD or full ISO string)',
+});
 
 // Optional date schema
 export const optionalDateSchema = dateSchema.optional().nullable();
@@ -108,6 +106,7 @@ export const mfaVerifySchema = z.object({
 export const transactionUpdateSchema = z.object({
   category: z.string().max(100, 'Category too long').optional(),
   description: z.string().max(500, 'Description too long').optional(),
+  amount: amountCentsSchema.optional(),
   gstApplicable: z.boolean().optional(),
   gstAmount: amountCentsSchema.optional(),
   gstCategory: z.enum(['taxable_10', 'gst_free', 'input_taxed', 'export', 'capital']).optional(),
