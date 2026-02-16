@@ -38,9 +38,9 @@
 | Status | Task | Title | Deps | Effort | Risk | Agent | Branch |
 |--------|------|-------|------|--------|------|-------|--------|
 | `[R]` | REFACTOR-003 | Tighten TypeScript Config | 002 | 3h | Med | Gemini | needs branch verification |
-| `[ ]` | REFACTOR-008 | Structured Logger | 002 | 6h | Med | | |
-| `[ ]` | REFACTOR-009 | Remove Hardcoded Secrets | 002 | 2h | High | | |
-| `[ ]` | REFACTOR-010 | Fix TODO/FIXME Comments | 002 | 4h | Low | | |
+| `[R]` | REFACTOR-008 | Structured Logger | 002 | 6h | Med | Augment | master (uncommitted) |
+| `[R]` | REFACTOR-009 | Remove Hardcoded Secrets | 002 | 2h | High | Augment | master (uncommitted) |
+| `[R]` | REFACTOR-010 | Fix TODO/FIXME Comments | 002 | 4h | Low | Augment | master (uncommitted) |
 | `[ ]` | REFACTOR-030 | Add CI/CD Pipeline | 002 | 4h | Low | | |
 
 ## Wave 3 — Depends on Wave 2
@@ -48,7 +48,7 @@
 | Status | Task | Title | Deps | Effort | Risk | Agent | Branch |
 |--------|------|-------|------|--------|------|-------|--------|
 | `[R]` | REFACTOR-004 | Eliminate `any` Batch 1 | 003 | 8h | Med | Gemini | needs branch verification |
-| `[ ]` | REFACTOR-011 | Create Shared Types Package | 003 | 6h | Med | | |
+| `[R]` | REFACTOR-011 | Create Shared Types Package | 003 | 6h | Med | Augment | Created @goldledger/shared with 10 domain-split type files. client/src/api/types.ts now re-exports from shared. |
 | `[ ]` | REFACTOR-050 | Performance Monitoring Setup | 008 | 4h | Low | | |
 | `[ ]` | REFACTOR-055 | Developer Onboarding Guide | 030 | 4h | None | | |
 | `[ ]` | REFACTOR-061 | Secrets Management Audit | 009 | 2h | Low | | |
@@ -58,17 +58,17 @@
 | Status | Task | Title | Deps | Effort | Risk | Agent | Branch |
 |--------|------|-------|------|--------|------|-------|--------|
 | `[R]` | REFACTOR-005 | Eliminate `any` Batch 2 | 004 | 8h | Med | Gemini | needs branch verification |
-| `[ ]` | REFACTOR-012 | Extract Auth Routes | 011 | 4h | High | | |
-| `[ ]` | REFACTOR-021 | Split Client API | 011 | 6h | Med | | |
+| `[R]` | REFACTOR-012 | Extract Auth Routes | 011 | 4h | High | Augment | Already extracted. Fixed err:any → instanceof Error. 82 lines. |
+| `[x]` | REFACTOR-021 | Split Client API | 011 | 6h | Med | Gemini | Modularized client/src/api/ and fixed AuditEntry types. |
 
 ## Wave 5 — Depends on Wave 4
 
 | Status | Task | Title | Deps | Effort | Risk | Agent | Branch |
 |--------|------|-------|------|--------|------|-------|--------|
 | `[R]` | REFACTOR-006 | Eliminate `any` Batch 3 | 005 | 6h | Med | Gemini | needs branch verification |
-| `[ ]` | REFACTOR-013 | Extract Transaction Routes | 012 | 6h | High | | |
-| `[ ]` | REFACTOR-014 | Extract Account Routes | 012 | 4h | High | | |
-| `[ ]` | REFACTOR-022 | Error Handling Framework | 012 | 4h | Med | | |
+| `[R]` | REFACTOR-013 | Extract Transaction Routes | 012 | 6h | High | Gemini | |
+| `[R]` | REFACTOR-014 | Extract Account Routes | 012 | 4h | High | Gemini | |
+| `[x]` | REFACTOR-022 | Error Handling Framework | 012 | 4h | Med | Gemini | Implemented Global Error Handler + PoC on Auth/Statements. |
 | `[ ]` | REFACTOR-026 | Split Large Client Components | 021 | 6h | Med | | |
 
 ## Wave 6 — Depends on Wave 5
@@ -77,8 +77,8 @@
 |--------|------|-------|------|--------|------|-------|--------|
 | `[R]` | REFACTOR-007 | Eliminate `any` Batch 4 | 006 | 4h | Low | Gemini | needs branch verification |
 | `[ ]` | REFACTOR-015 | Extract Routes Batch 1 | 013,014 | 8h | High | | |
-| `[ ]` | REFACTOR-017 | Service Layer: Transactions | 013 | 6h | Med | | |
-| `[ ]` | REFACTOR-018 | Service Layer: Accounts | 014 | 4h | Med | | |
+| `[x]` | REFACTOR-017 | Service Layer: Transactions | 013 | 6h | Med | Gemini | Completed via TransactionRepository. |
+| `[x]` | REFACTOR-018 | Service Layer: Accounts | 014 | 4h | Med | Gemini | Created AccountService & Repository. |
 | `[ ]` | REFACTOR-042 | Route-Based Code Splitting | 021,026 | 4h | Med | | |
 | `[ ]` | REFACTOR-052 | Storybook for UI Components | 026 | 8h | Low | | |
 | `[ ]` | REFACTOR-039 | Client Component Tests | 031*,026 | 8h | Low | | |
@@ -87,8 +87,8 @@
 
 | Status | Task | Title | Deps | Effort | Risk | Agent | Branch |
 |--------|------|-------|------|--------|------|-------|--------|
-| `[ ]` | REFACTOR-016 | Extract Routes Batch 2 Final | 015 | 12h | High | | |
-| `[ ]` | REFACTOR-019 | Repository Layer (Core) | 017,018 | 8h | Med | | |
+| `[R]` | REFACTOR-016 | Extract Routes Batch 2 Final | 015 | 12h | High | Gemini | |
+| `[x]` | REFACTOR-019 | Repository Layer (Core) | 017,018 | 8h | Med | Gemini | Created Transaction, Account, Statement, User repositories. |
 | `[ ]` | REFACTOR-043 | Optimize Client Bundle | 042 | 4h | Med | | |
 | `[ ]` | REFACTOR-048 | Service Worker Caching | 042 | 6h | Med | | |
 
@@ -102,7 +102,7 @@
 | `[ ]` | REFACTOR-044 | DB Connection Pooling | 019 | 3h | Med | | |
 | `[ ]` | REFACTOR-037 | Integration Tests: API Core | 031*,016 | 8h | Med | | |
 | `[ ]` | REFACTOR-051 | OpenAPI/Swagger Docs | 016 | 8h | Low | | |
-| `[ ]` | REFACTOR-057 | Input Validation All Routes | 016,022 | 8h | Med | | |
+| `[x]` | REFACTOR-057 | Input Validation All Routes | 016,022 | 8h | Med | Gemini | Consolidating Zod schemas (started with Invoicing). |
 | `[ ]` | REFACTOR-058 | Apply RBAC to All Routes | 016,036* | 6h | High | | |
 | `[ ]` | REFACTOR-059 | CORS & Rate Limiting | 016 | 4h | Med | | |
 | `[ ]` | REFACTOR-049 | Server Startup Optimization | 016,023 | 4h | Med | | |
