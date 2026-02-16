@@ -1,8 +1,8 @@
 # GoldLedger Enterprise-Grade Refactoring Plan
 
-**Version**: 1.0
-**Date**: 2026-02-13
-**Status**: Draft
+**Version**: 1.1
+**Date**: 2026-02-16 (updated from 2026-02-13)
+**Status**: In Progress — REFACTOR-001 through REFACTOR-004 reported complete; see notes below
 **Author**: Augment Agent (Automated Audit)
 
 ---
@@ -25,8 +25,8 @@ GoldLedger is a full-stack accounting platform (React + Hono/Drizzle) built acro
 | TODO/FIXME comments | 34 | 0 (all ticketed) |
 | `console.log/warn/error` calls | 894 | 0 (use structured logger) |
 | Files >300 lines | 178 | 0 |
-| `server/src/index.ts` lines | 5,987 | <300 (route mounting only) |
-| `client/src/api.ts` lines | 2,546 | <300 (split per feature) |
+| `server/src/index.ts` lines | 7,458 | <300 (route mounting only) |
+| `client/src/api.ts` lines | 2,763 | <300 (split per feature) |
 | Test files | 12 | >200 |
 | Test coverage (estimated) | <5% | >80% |
 | Agent-done marker files | 248 | 0 (removed) |
@@ -105,26 +105,26 @@ GoldLedger is a full-stack accounting platform (React + Hono/Drizzle) built acro
 
 | File | Lines | Recommended Action |
 |------|-------|--------------------|
-| `server/src/index.ts` | 5,987 | **CRITICAL**: Split into route modules |
-| `client/src/api.ts` | 2,546 | Split into per-feature API modules |
-| `server/src/schema.ts` | 1,906 | Split into per-domain schema files |
-| `server/src/services/cross-module-intelligence.ts` | 1,279 | Extract sub-services |
-| `server/src/services/teams.ts` | 1,262 | Extract into team sub-modules |
-| `server/src/services/cognee_client.ts` | 1,254 | Extract into cognee sub-modules |
-| `server/src/services/sbr-export.ts` | 1,190 | Extract report generators |
-| `server/src/services/purchase-orders.ts` | 1,141 | Extract into PO sub-services |
-| `server/src/db/postgres-schema.ts` | 1,133 | Split into per-domain schemas |
-| `client/src/features/transactions/TransactionTable.tsx` | 1,024 | Extract columns, filters, hooks |
-| `server/src/services/loan-calculator.ts` | 1,004 | Extract calculation modules |
-| `client/src/features/bas/BASDashboard.tsx` | 993 | Extract sub-components |
-| `server/src/services/payment-matching.ts` | 984 | Extract matching strategies |
-| `server/src/services/pipeline.ts` | 977 | Extract pipeline stages |
-| `server/src/services/bank-reconciliation.ts` | 969 | Extract recon sub-services |
-| `server/src/services/consolidation.ts` | 967 | Extract consolidation steps |
-| `server/src/services/tax.ts` | 956 | Extract tax calculators |
-| `server/src/services/cdr-crawler.ts` | 917 | Extract crawler strategies |
-| `server/src/services/bills.ts` | 913 | Extract bill sub-services |
-| `server/src/services/financial-reports.ts` | 897 | Extract report generators |
+| `server/src/index.ts` | 7,458 | **CRITICAL**: Split into route modules |
+| `client/src/api.ts` | 2,763 | Split into per-feature API modules |
+| `server/src/schema.ts` | 2,145 | Split into per-domain schema files |
+| `server/src/db/postgres-schema.ts` | 1,378 | Split into per-domain schemas |
+| `server/src/services/cognee_client.ts` | 1,369 | Extract into cognee sub-modules |
+| `server/src/services/cross-module-intelligence.ts` | 1,328 | Extract sub-services |
+| `server/src/services/teams.ts` | 1,282 | Extract into team sub-modules |
+| `server/src/services/sbr-export.ts` | 1,238 | Extract report generators |
+| `server/src/services/pipeline.ts` | 1,206 | Extract pipeline stages |
+| `client/src/features/transactions/components/TransactionTable.tsx` | 1,260 | Extract columns, filters, hooks |
+| `server/src/services/purchase-orders.ts` | 1,067 | Extract into PO sub-services |
+| `server/src/services/consolidation.ts` | 1,043 | Extract consolidation steps |
+| `server/src/services/bank-reconciliation.ts` | 1,039 | Extract recon sub-services |
+| `server/src/services/loan-calculator.ts` | 1,001 | Extract calculation modules |
+| `client/src/features/bas/components/BASDashboard.tsx` | 997 | Extract sub-components |
+| `server/src/services/tax.ts` | 962 | Extract tax calculators |
+| `server/src/services/payment-matching.ts` | 892 | Extract matching strategies |
+| `server/src/services/cdr-crawler.ts` | 886 | Extract crawler strategies |
+| `server/src/services/bills.ts` | 844 | Extract bill sub-services |
+| `server/src/services/financial-reports.ts` | 835 | Extract report generators |
 
 **Total files >300 lines**: 178 (30.5% of source files)
 
@@ -148,23 +148,23 @@ The application follows a **monolith-in-monorepo** pattern:
 - **Client**: React 19 + Vite + Tailwind CSS v4 + React Router v7
   - Feature-based directory structure under `client/src/features/` (35 feature dirs)
   - Shared components under `client/src/components/` (charts, common, layout, pwa, ui)
-  - Centralized API layer in single `api.ts` (2,546 lines — anti-pattern)
+  - Centralized API layer in single `api.ts` (2,763 lines — anti-pattern)
   - State management: Local state + React Router (no global state manager)
 
 - **Server**: Hono v4 + Drizzle ORM + TypeScript
-  - **Monolithic entry point**: `server/src/index.ts` (5,987 lines) contains ALL route definitions inline
+  - **Monolithic entry point**: `server/src/index.ts` (7,458 lines) contains most route definitions inline (some routes partially extracted to `server/src/routes/`)
   - Services directory with 100+ service files (flat structure, no feature grouping)
   - Claude AI agents under `server/src/services/claude/agents/`
   - RAG pipeline under `server/src/services/rag/`
   - Parsers under `server/src/services/parsers/`
 
 - **Database**: Dual-schema (SQLite dev + PostgreSQL prod) via Drizzle ORM
-  - Schema in `server/src/schema.ts` (1,906 lines) + `server/src/db/postgres-schema.ts` (1,133 lines)
+  - Schema in `server/src/schema.ts` (2,145 lines) + `server/src/db/postgres-schema.ts` (1,378 lines)
   - Migrations in `docker/migrations/`
 
 #### Critical Layering Violations
 
-1. **Route handlers contain business logic**: `server/src/index.ts` has ~5,700 lines of inline route handlers with business logic, DB queries, and response formatting all mixed together
+1. **Route handlers contain business logic**: `server/src/index.ts` has ~7,200 lines of inline route handlers with business logic, DB queries, and response formatting all mixed together (5 route files partially extracted to `server/src/routes/` but the bulk remains)
 2. **No repository pattern**: Database queries are scattered across services and route handlers
 3. **No dependency injection**: Services instantiate their own dependencies, making testing difficult
 4. **Client API monolith**: All 200+ API calls in a single `api.ts` file
@@ -179,7 +179,7 @@ The application follows a **monolith-in-monorepo** pattern:
 
 #### Database Access Patterns
 
-- **Direct queries in routes**: The 5,987-line `index.ts` contains direct Drizzle queries
+- **Direct queries in routes**: The 7,458-line `index.ts` contains direct Drizzle queries
 - **Services with mixed concerns**: Services both contain business logic AND database access
 - **No repository abstraction**: No consistent data access layer
 

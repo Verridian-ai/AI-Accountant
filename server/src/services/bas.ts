@@ -197,7 +197,7 @@ export class BASService {
     userId: string,
     financialYear: string,
     quarter: number,
-    accountingMethod: string = 'accrual',
+    _accountingMethod: string = 'accrual',
   ): Promise<BASResult> {
     const dates = getQuarterDates(financialYear, quarter);
 
@@ -404,14 +404,11 @@ export class BASService {
     status: 'draft' | 'ready' | 'lodged' | 'amended',
     lodgementDate?: string,
   ) {
-    const updateData: any = {
+    const updateData = {
       status,
       updatedAt: new Date().toISOString(),
+      ...(lodgementDate ? { lodgementDate } : {}),
     };
-
-    if (lodgementDate) {
-      updateData.lodgementDate = lodgementDate;
-    }
 
     await db.update(basPeriods).set(updateData).where(eq(basPeriods.id, periodId));
   }
@@ -470,7 +467,7 @@ export class BASService {
     const maxDate = new Date(result.maxDate);
 
     // Iterate through each quarter from min to max date
-    let current = new Date(minDate);
+    const current = new Date(minDate);
     while (current <= maxDate) {
       const month = current.getMonth() + 1;
       const year = current.getFullYear();

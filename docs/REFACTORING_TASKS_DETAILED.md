@@ -1,6 +1,6 @@
 # GoldLedger — Atomic Refactoring Implementation Guide
 
-> **Version**: 1.0 | **Last Updated**: 2026-02-13
+> **Version**: 1.1 | **Last Updated**: 2026-02-16
 > **Audience**: Junior-to-mid developers executing refactoring tasks
 > **Companion Document**: `docs/REFACTORING_PLAN.md` (high-level plan with dependency graph)
 
@@ -249,7 +249,7 @@ export default tseslint.config(
     files: ['client/src/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     languageOptions: {
-      globals: { ...globals.browser },
+      globals: { ...globals.browser },u
       parserOptions: { project: './client/tsconfig.app.json' },
     },
     rules: {

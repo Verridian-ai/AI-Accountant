@@ -6,17 +6,28 @@
  */
 
 import { db, transactions } from '../schema.js';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 
 // ============================================================================
 // LOCAL TYPE FALLBACKS
 // Schema tables (bankReconSessions, bankReconMatches, bankReconRules) may not
 // exist yet — Agent 1 creates them. We define local interfaces so this service
-// compiles independently.
+// compiles. When tables exist, these should be replaced with drizzle-orm types.
 // ============================================================================
 
-interface BankReconSession {
+interface LedgerEntryCandidate {
+  id: string;
+  entryId: string;
+  debit: number;
+  credit: number;
+  description: string;
+  entryDate: string;
+  reference: string;
+  journalDescription: string;
+}
+
+export interface BankReconSession {
   id: string;
   userId: string;
   accountId: string;
@@ -139,7 +150,7 @@ const rawQuery = {
   ): Promise<void> {
     const now = new Date().toISOString();
     // Build SET clause dynamically
-    const setClauses: any[] = [];
+    const setClauses: SQL[] = [];
     if (updates.status !== undefined) setClauses.push(sql`status = ${updates.status}`);
     if (updates.totalMatched !== undefined)
       setClauses.push(sql`total_matched = ${updates.totalMatched}`);
@@ -205,7 +216,7 @@ const rawQuery = {
   },
 
   async updateMatch(matchId: string, updates: Partial<BankReconMatch>): Promise<void> {
-    const setClauses: any[] = [];
+    const setClauses: SQL[] = [];
     if (updates.status !== undefined) setClauses.push(sql`status = ${updates.status}`);
     if (updates.confirmedBy !== undefined)
       setClauses.push(sql`confirmed_by = ${updates.confirmedBy}`);
@@ -217,17 +228,21 @@ const rawQuery = {
   },
 
   async getMatchedBankTxIds(sessionId: string): Promise<string[]> {
-    const rows: any[] = (await db.all(sql`SELECT bank_transaction_id as "bankTransactionId"
+    const rows = (await db.all(sql`SELECT bank_transaction_id as "bankTransactionId"
       FROM bank_recon_matches
-      WHERE session_id = ${sessionId} AND status IN ('confirmed', 'pending')`)) as any[];
-    return rows.map((r: any) => r.bankTransactionId);
+      WHERE session_id = ${sessionId} AND status IN ('confirmed', 'pending')`)) as {
+      bankTransactionId: string;
+    }[];
+    return rows.map((r) => r.bankTransactionId);
   },
 
   async getMatchedLedgerIds(sessionId: string): Promise<string[]> {
-    const rows: any[] = (await db.all(sql`SELECT ledger_entry_id as "ledgerEntryId"
+    const rows = (await db.all(sql`SELECT ledger_entry_id as "ledgerEntryId"
       FROM bank_recon_matches
-      WHERE session_id = ${sessionId} AND status IN ('confirmed', 'pending')`)) as any[];
-    return rows.map((r: any) => r.ledgerEntryId);
+      WHERE session_id = ${sessionId} AND status IN ('confirmed', 'pending')`)) as {
+      ledgerEntryId: string;
+    }[];
+    return rows.map((r) => r.ledgerEntryId);
   },
 
   // Rule queries
@@ -264,7 +279,7 @@ const rawQuery = {
   },
 
   async updateRule(ruleId: string, userId: string, updates: Partial<BankReconRule>): Promise<void> {
-    const setClauses: any[] = [];
+    const setClauses: SQL[] = [];
     const now = new Date().toISOString();
     if (updates.name !== undefined) setClauses.push(sql`name = ${updates.name}`);
     if (updates.description !== undefined)
@@ -329,7 +344,7 @@ export class BankReconciliationService {
     const now = new Date().toISOString();
 
     // Count unmatched transactions for the account in date range
-    const txRows: any[] = await db
+    const txRows = await db
       .select({ id: transactions.id })
       .from(transactions)
       .where(
@@ -345,7 +360,7 @@ export class BankReconciliationService {
     // Calculate ledger balance from journal entry lines for the account's period
     let ledgerBalanceCents: number | null = null;
     try {
-      const balanceRow: any = await db.get(sql`
+      const balanceRow = (await db.get(sql`
         SELECT COALESCE(SUM(jel.debit - jel.credit), 0) as balance
         FROM journal_entry_lines jel
         INNER JOIN journal_entries je ON je.id = jel.entry_id
@@ -353,7 +368,7 @@ export class BankReconciliationService {
           AND je.entry_date >= ${periodStart}
           AND je.entry_date <= ${periodEnd}
           AND je.status = 'posted'
-      `);
+      `)) as { balance: number };
       ledgerBalanceCents = balanceRow?.balance ?? 0;
     } catch {
       // Journal entries table may not have data yet
@@ -463,7 +478,7 @@ export class BankReconciliationService {
 
     // 1. Load unmatched bank transactions for the session's account and date range
     const alreadyMatchedBankTxIds = await rawQuery.getMatchedBankTxIds(sessionId);
-    const allBankTx: any[] = await db
+    const allBankTx = await db
       .select()
       .from(transactions)
       .where(
@@ -474,11 +489,11 @@ export class BankReconciliationService {
         ),
       )
       .all();
-    const unmatchedBankTx = allBankTx.filter((tx: any) => !alreadyMatchedBankTxIds.includes(tx.id));
+    const unmatchedBankTx = allBankTx.filter((tx) => !alreadyMatchedBankTxIds.includes(tx.id));
 
     // 2. Load unmatched ledger entries (journal_entry_lines with journal_entries)
     const alreadyMatchedLedgerIds = await rawQuery.getMatchedLedgerIds(sessionId);
-    let allLedgerEntries: any[] = [];
+    let allLedgerEntries: LedgerEntryCandidate[] = [];
     try {
       allLedgerEntries = (await db.all(sql`
         SELECT
@@ -492,17 +507,14 @@ export class BankReconciliationService {
           je.description as "journalDescription"
         FROM journal_entry_lines jel
         INNER JOIN journal_entries je ON je.id = jel.entry_id
-        WHERE je.user_id = ${userId}
-          AND je.entry_date >= ${session.periodStart}
-          AND je.entry_date <= ${session.periodEnd}
           AND je.status = 'posted'
-      `)) as any[];
+      `)) as LedgerEntryCandidate[];
     } catch {
       // If journal tables don't exist or are empty, no ledger entries to match
       allLedgerEntries = [];
     }
     const unmatchedLedger = allLedgerEntries.filter(
-      (le: any) => !alreadyMatchedLedgerIds.includes(le.id),
+      (le) => !alreadyMatchedLedgerIds.includes(le.id),
     );
 
     // 3. Load active match rules
@@ -625,7 +637,7 @@ export class BankReconciliationService {
 
     const alreadyMatchedLedgerIds = await rawQuery.getMatchedLedgerIds(sessionId);
 
-    let ledgerEntries: any[] = [];
+    let ledgerEntries: LedgerEntryCandidate[] = [];
     try {
       ledgerEntries = (await db.all(sql`
         SELECT
@@ -643,7 +655,7 @@ export class BankReconciliationService {
           AND je.entry_date >= ${session.periodStart}
           AND je.entry_date <= ${session.periodEnd}
           AND je.status = 'posted'
-      `)) as any[];
+      `)) as LedgerEntryCandidate[];
     } catch {
       return [];
     }
