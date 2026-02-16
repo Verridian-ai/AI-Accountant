@@ -8,6 +8,7 @@
 import { db, transactions } from '../schema.js';
 import { eq, and, gte, lte, sql, type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
+import { getErrorMessage } from '../utils/error.js';
 
 // ============================================================================
 // LOCAL TYPE FALLBACKS
@@ -299,9 +300,9 @@ const rawQuery = {
   },
 
   async countRules(userId: string): Promise<number> {
-    const row: any = await db.get(
+    const row = (await db.get(
       sql`SELECT COUNT(*) as count FROM bank_recon_rules WHERE user_id = ${userId}`,
-    );
+    )) as { count: number };
     return row?.count ?? 0;
   },
 };
@@ -538,7 +539,7 @@ export class BankReconciliationService {
     // 4. For each bank transaction, run rules in priority order
     for (const bankTx of unmatchedBankTx) {
       let bestMatch: {
-        ledgerEntry: any;
+        ledgerEntry: LedgerEntryCandidate;
         confidence: number;
         reasons: string[];
         ruleId: string | null;
@@ -757,11 +758,11 @@ export class BankReconciliationService {
   // RULE EVALUATION (private)
   // --------------------------------------------------------------------------
 
-  private evaluateRule(
+  evaluateRule(
     matchType: MatchType,
-    bankTx: any,
-    ledgerEntry: any,
-    config: Record<string, any>,
+    bankTx: typeof transactions.$inferSelect,
+    ledgerEntry: LedgerEntryCandidate,
+    config: Record<string, unknown>,
   ): { confidence: number; reasons: string[] } {
     const ledgerAmountCents = (ledgerEntry.debit ?? 0) - (ledgerEntry.credit ?? 0);
     const reasons: string[] = [];
@@ -852,7 +853,7 @@ export class BankReconciliationService {
     }
   }
 
-  private parseConfig(configStr: string): Record<string, any> {
+  private parseConfig(configStr: string): Record<string, unknown> {
     try {
       return JSON.parse(configStr);
     } catch {
@@ -993,7 +994,7 @@ export class BankReconciliationService {
 
     // ReDoS prevention for description_pattern rules
     if (data.matchType === 'description_pattern') {
-      const config = data.matchConfig as Record<string, any>;
+      const config = data.matchConfig as Record<string, unknown>;
       const pattern = config?.pattern as string;
       if (pattern) {
         if (pattern.length > MAX_REGEX_LENGTH) {
@@ -1007,8 +1008,8 @@ export class BankReconciliationService {
         // Validate that the regex compiles
         try {
           new RegExp(pattern);
-        } catch (e: any) {
-          throw new Error(`Invalid regex pattern: ${e.message}`);
+        } catch (e: unknown) {
+          throw new Error(`Invalid regex pattern: ${getErrorMessage(e)}`);
         }
       }
     }

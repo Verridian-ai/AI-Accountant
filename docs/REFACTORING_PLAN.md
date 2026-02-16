@@ -430,7 +430,7 @@ The application follows a **monolith-in-monorepo** pattern:
 - **Dependencies**: REFACTOR-001
 - **Description**: Create root-level ESLint flat config and Prettier config. Enforce consistent rules across client and server. Add `lint-staged` + `husky` pre-commit hooks.
 - **Acceptance Criteria**:
-  - [ ] Root `eslint.config.js` with shared rules
+  - [ ] Root `eslint.config.mjs` with shared rules
   - [ ] Root `.prettierrc` with consistent formatting
   - [ ] `husky` pre-commit hook runs lint-staged
   - [ ] `npm run lint` passes (with auto-fixable warnings allowed initially)
@@ -718,7 +718,7 @@ The application follows a **monolith-in-monorepo** pattern:
 - **Priority**: P1
 - **Estimated Lines Changed**: ~400
 - **Dependencies**: REFACTOR-021
-- **Description**: Split `TransactionTable.tsx` (1,024 lines) and `BASDashboard.tsx` (993 lines) into sub-components, custom hooks, and utility files.
+- **Description**: Split `TransactionTable.tsx` (1,260 lines) and `BASDashboard.tsx` (997 lines) into sub-components, custom hooks, and utility files.
 - **Acceptance Criteria**:
   - [ ] `TransactionTable` split into: columns, filters, hooks, table shell
   - [ ] `BASDashboard` split into: sections, calculations, summary

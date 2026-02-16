@@ -2196,7 +2196,7 @@ Create, mount, verify, commit.
 
 ```bash
 wc -l server/src/index.ts
-# Target: < 2,000 lines (was 6,869 originally)
+# Target: < 2,000 lines (was 7,458 as of 2026-02-16)
 ```
 
 #### COMMON MISTAKES
@@ -3339,15 +3339,20 @@ git reset --hard HEAD~N
 
 #### WHY This Matters
 
-Five service files exceed 1,000 lines each. Files this large are impossible to review, test in isolation, or reason about. Enterprise standard: **no file over 300 lines**. These are the worst offenders:
+Multiple service files exceed 1,000 lines each. Files this large are impossible to review, test in isolation, or reason about. Enterprise standard: **no file over 300 lines**. These are the worst offenders:
 
 | File | Lines | What It Contains |
 |------|-------|-----------------|
-| `cross-module-intelligence.ts` | ~1,279 | 6 scanner methods + correlation engine + types |
-| `teams.ts` | ~1,262 | Team CRUD + invitations + permissions + audit logging |
-| `cognee_client.ts` | ~1,254 | Cognee REST client + caching + retry logic |
-| `sbr-export.ts` | ~1,190 | SBR XML generation + CSV export + PDF report + validation |
-| `purchase-orders.ts` | ~1,141 | PO CRUD + approval workflow + PDF generation |
+| `cognee_client.ts` | ~1,369 | Cognee REST client + caching + retry logic |
+| `cross-module-intelligence.ts` | ~1,328 | 6 scanner methods + correlation engine + types |
+| `teams.ts` | ~1,282 | Team CRUD + invitations + permissions + audit logging |
+| `sbr-export.ts` | ~1,238 | SBR XML generation + CSV export + PDF report + validation |
+| `pipeline.ts` | ~1,206 | Pipeline stages + orchestrator + error handling |
+| `purchase-orders.ts` | ~1,067 | PO CRUD + approval workflow + PDF generation |
+| `consolidation.ts` | ~1,043 | Consolidation steps + elimination rules + report generation |
+| `bank-reconciliation.ts` | ~1,039 | Matching + suggestions + balance check |
+
+> **NOTE (2026-02-16):** File sizes have changed significantly since the original plan. `pipeline.ts` grew from ~977 to ~1,206 lines and now qualifies for Batch 1. `consolidation.ts` (~1,043) and `bank-reconciliation.ts` (~1,039) also now exceed 1,000 lines. Consider splitting all 8 files in this batch, or move the 3 new additions to REFACTOR-025.
 
 #### BEFORE YOU START
 
@@ -3492,17 +3497,19 @@ git reset --hard HEAD~5  # One commit per file split
 
 After Batch 1, these files remain over 700 lines. Same principle: split until every file is under 300 lines.
 
+> **NOTE (2026-02-16):** File sizes updated to current counts. `pipeline.ts` (~1,206), `consolidation.ts` (~1,043), and `bank-reconciliation.ts` (~1,039) now exceed 1,000 lines and were noted in REFACTOR-024 as potential Batch 1 candidates. If they are handled in Batch 1, remove them from this table. `loan-calculator.ts` also crossed 1,000 lines (~1,001).
+
 | File | Lines | Split Strategy |
 |------|-------|---------------|
-| `loan-calculator.ts` | ~900+ | Separate amortization, comparison, scenarios |
-| `payment-matching.ts` | ~850+ | Separate matching algorithm, scoring, rules |
-| `pipeline.ts` | ~800+ | Separate stages, orchestrator, error handling |
-| `bank-reconciliation.ts` | ~800+ | Separate matching, suggestions, balance check |
-| `consolidation.ts` | ~750+ | Separate elimination rules, report generation |
-| `tax.ts` | ~750+ | Separate GST calc, income tax, brackets |
-| `cdr-crawler.ts` | ~750+ | Separate API client, data mapping, storage |
-| `bills.ts` | ~750+ | Separate CRUD, approval, payment tracking |
-| `financial-reports.ts` | ~700+ | Separate P&L, balance sheet, cash flow |
+| `pipeline.ts` | ~1,206 | Separate stages, orchestrator, error handling *(may move to Batch 1)* |
+| `consolidation.ts` | ~1,043 | Separate elimination rules, report generation *(may move to Batch 1)* |
+| `bank-reconciliation.ts` | ~1,039 | Separate matching, suggestions, balance check *(may move to Batch 1)* |
+| `loan-calculator.ts` | ~1,001 | Separate amortization, comparison, scenarios |
+| `tax.ts` | ~962 | Separate GST calc, income tax, brackets |
+| `payment-matching.ts` | ~892 | Separate matching algorithm, scoring, rules |
+| `cdr-crawler.ts` | ~886 | Separate API client, data mapping, storage |
+| `bills.ts` | ~844 | Separate CRUD, approval, payment tracking |
+| `financial-reports.ts` | ~835 | Separate P&L, balance sheet, cash flow |
 
 #### BEFORE YOU START
 
@@ -3567,7 +3574,7 @@ git reset --hard <commit-before-this-task>
 
 #### WHY This Matters
 
-Two client components exceed 900 lines: `TransactionTable.tsx` (~1,024 lines) and `BASDashboard.tsx` (~993 lines). Components this large are impossible to test, slow to re-render, and violate React best practices. The fix: extract sub-components, custom hooks, and utility functions.
+Two client components exceed 900 lines: `TransactionTable.tsx` (~1,260 lines) and `BASDashboard.tsx` (~997 lines). Components this large are impossible to test, slow to re-render, and violate React best practices. The fix: extract sub-components, custom hooks, and utility functions.
 
 #### BEFORE YOU START
 
@@ -3681,11 +3688,11 @@ git reset --hard HEAD~N
 
 #### WHY This Matters
 
-The codebase uses THREE different AI SDK approaches:
+The codebase uses THREE different AI SDK approaches (FIVE packages total):
 
-1. **Vercel AI SDK** (`ai`, `@ai-sdk/anthropic`, `@ai-sdk/openai`) — the standard
-2. **Direct Anthropic SDK** (`@anthropic-ai/sdk`) — used by Claude agents
-3. **Direct OpenAI SDK** (`openai`) — legacy, from early waves
+1. **Vercel AI SDK** (`ai@^6.0.85`, `@ai-sdk/anthropic@^3.0.43`, `@ai-sdk/openai@^3.0.28`) — the standard
+2. **Direct Anthropic SDK** (`@anthropic-ai/sdk@^0.74.0`) — used by Claude agents
+3. **Direct OpenAI SDK** (`openai@^4.28.0`) — legacy, from early waves
 
 Having multiple SDKs means: duplicate configuration, inconsistent error handling, and confusion about which to use. Standardize on Vercel AI SDK and use the direct Anthropic SDK only where tool-use loops require it.
 
