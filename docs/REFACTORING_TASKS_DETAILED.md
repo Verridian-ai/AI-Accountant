@@ -48,6 +48,8 @@ Each task below is written as a **self-contained work unit**. Before starting AN
 
 **Priority**: P0 — Critical | **Effort**: 2 hours | **Risk**: Low
 
+> **⚠️ STATUS (2026-02-16):** Reported as COMPLETE, but the `_archive/` directory does NOT exist in the current codebase. Either deprecated files were deleted outright instead of archived, or the task was completed differently than described below. Verify with the team before re-executing. If files were deleted (not archived), this task can be considered done — the goal (remove dead code from active codebase) was achieved.
+
 #### WHY This Matters
 
 The codebase contains ~50 files that are no longer used: old migration scripts, `.agent-done-*` marker files, backup copies, and deprecated utilities. These files:
@@ -182,13 +184,27 @@ git add -A && git commit -m "refactor(REFACTOR-001): rollback — restored the-f
 **Priority**: P0 — Critical | **Effort**: 4 hours | **Risk**: Low
 **Depends On**: REFACTOR-001
 
+> **⚠️ STATUS (2026-02-16):** Reported as COMPLETE. ESLint and Prettier ARE configured, but with issues:
+>
+> - Root config exists as `eslint.config.mjs` (not `.js` as described below)
+> - `.prettierrc` and `.prettierignore` exist at root with correct settings
+> - `.husky/pre-commit` exists with `npx lint-staged`
+> - Root `package.json` has lint scripts and `lint-staged` config
+>
+> **⚠️ REMAINING ISSUES to clean up:**
+>
+> - **THREE separate ESLint configs exist**: root `eslint.config.mjs`, `server/eslint.config.js` (34 lines, different rules), and `client/eslint.config.js` (24 lines, different structure). The doc's COMMON MISTAKES table warns against this exact scenario ("Installing ESLint in both server/ and client/ → Version conflicts").
+> - **Duplicate `lint-staged` configs**: Both root `package.json` and `client/package.json` have `lint-staged` entries, which may cause double-running of lint on client files.
+> - **ESLint installed at all 3 levels**: Root, server, and client each have their own ESLint devDependencies. The doc says "Install at root only."
+> - Consider a follow-up task to remove the server and client ESLint configs and consolidate to root only.
+
 #### WHY This Matters
 
-Right now the codebase has inconsistent formatting and no enforced code style. The server has `@eslint/js` in devDependencies but no config file. The client has no linting at all. This means:
+The codebase now has ESLint and Prettier configured, but the setup is fragmented across three levels (root, server, client) instead of unified at root. This means:
 
-- Every developer formats code differently → noisy git diffs
-- Common bugs (unused variables, implicit `any`, unreachable code) go undetected
-- Code reviews waste time on style issues instead of logic
+- Three different ESLint configs may apply conflicting rules
+- Duplicate `lint-staged` configs may cause double-linting on client files
+- Version drift between root, server, and client ESLint installations
 
 #### BEFORE YOU START
 

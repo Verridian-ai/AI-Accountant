@@ -5,7 +5,7 @@
  */
 
 import { db, ocrDocuments, paymentMatchRules, paymentMatches, transactions } from '../schema.js';
-import { eq, and, desc, asc, sql } from 'drizzle-orm';
+import { eq, and, desc, asc, sql, type SQL } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 
 type OcrDocument = typeof ocrDocuments.$inferSelect;
@@ -147,7 +147,7 @@ export class PaymentMatchingService {
     const docVendor = doc.vendorName ?? '';
 
     // Multi-pass candidate discovery — collect unique transaction IDs
-    const candidateMap = new Map<string, any>();
+    const candidateMap = new Map<string, MatchCandidate>();
 
     // Pass 1: Amount match (within tolerance)
     if (docAmount > 0) {
@@ -798,7 +798,7 @@ export class PaymentMatchingService {
     const docDate = doc.documentDate ?? '';
     const dateTolerance = rule.dateToleranceDays ?? DEFAULT_DATE_TOLERANCE;
 
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
 
     // Amount filtering
     if (rule.amountExact != null) {
@@ -913,7 +913,7 @@ export class PaymentMatchingService {
         )
         .all();
 
-      const alreadyExists = existingRules.some((r: any) => {
+      const alreadyExists = existingRules.some((r) => {
         const rulePattern = this.normalizeString(r.vendorPattern ?? '');
         return rulePattern === vendorNorm;
       });
