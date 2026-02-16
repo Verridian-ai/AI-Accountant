@@ -1,16 +1,5 @@
-import {
-  db,
-  accounts,
-  accountBalanceHistory,
-  pendingCategorization,
-  transactions,
-  merchantMemory,
-  transferLinks,
-  reconciliationAlerts,
-  chartOfAccounts,
-  statementAccounts,
-} from '../schema.js';
-import { eq, and, desc, aliasedTable, like } from 'drizzle-orm';
+import { accountRepository } from '../repositories/account-repository.js';
+import { transactionRepository } from '../repositories/transaction-repository.js'; // Use the repo for transactions
 import crypto from 'crypto';
 
 interface CreateAccountInput {
@@ -54,51 +43,22 @@ export class AccountService {
   }
 
   async findAccountByHash(userId: string, accountHash: string) {
-    return db
-      .select()
-      .from(accounts)
-      .where(and(eq(accounts.userId, userId), eq(accounts.accountNumberHash, accountHash)))
-      .get();
+    return accountRepository.findByHash(userId, accountHash);
   }
 
   async getUserAccounts(
     userId: string,
     filters?: { ownershipTag?: string; type?: string; search?: string },
   ) {
-    const conditions = [eq(accounts.userId, userId)];
-
-    if (filters?.ownershipTag) {
-      conditions.push(eq(accounts.ownershipTag, filters.ownershipTag));
-    }
-    if (filters?.type) {
-      conditions.push(eq(accounts.accountType, filters.type));
-    }
-    if (filters?.search) {
-      conditions.push(like(accounts.accountName, `%${filters.search}%`));
-    }
-
-    return db
-      .select()
-      .from(accounts)
-      .where(and(...conditions))
-      .all();
+    return accountRepository.findAll(userId, filters);
   }
 
   async getAccount(userId: string, accountId: string) {
-    return db
-      .select()
-      .from(accounts)
-      .where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)))
-      .get();
+    return accountRepository.findById(userId, accountId);
   }
 
   async getChartOfAccounts(userId: string) {
-    return db
-      .select()
-      .from(chartOfAccounts)
-      .where(eq(chartOfAccounts.userId, userId))
-      .orderBy(chartOfAccounts.accountCode)
-      .all();
+    return accountRepository.getChartOfAccounts(userId);
   }
 
   async createAccount(input: CreateAccountInput) {
@@ -110,7 +70,7 @@ export class AccountService {
     }
 
     const id = crypto.randomUUID();
-    await db.insert(accounts).values({
+    await accountRepository.create({
       id,
       userId: input.userId,
       accountNumber: input.accountNumber,
@@ -143,17 +103,17 @@ export class AccountService {
     const existing = await this.getAccount(userId, accountId);
     if (!existing) return null;
 
-    await db
-      .update(accounts)
-      .set({ ...data, updatedAt: new Date().toISOString() })
-      .where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)));
+    await accountRepository.update(userId, accountId, {
+      ...data,
+      updatedAt: new Date().toISOString(),
+    });
     return { success: true };
   }
 
   async deleteAccount(userId: string, accountId: string) {
     const existing = await this.getAccount(userId, accountId);
     if (!existing) return null;
-    await db.delete(accounts).where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)));
+    await accountRepository.delete(userId, accountId);
     return { success: true };
   }
 
@@ -164,45 +124,36 @@ export class AccountService {
   }
 
   async updateAccountBalance(accountId: string, newBalance: number) {
-    await db.update(accounts).set({ currentBalance: newBalance }).where(eq(accounts.id, accountId));
+    await accountRepository.updateBalance(accountId, newBalance);
   }
 
   async linkStatementToAccount(statementId: string, accountId: string) {
-    await db.insert(statementAccounts).values({ statementId, accountId }).onConflictDoNothing();
+    await accountRepository.linkStatement(statementId, accountId);
   }
 
   // --- Merchant Memory ---
 
   async getMerchantMemory(userId: string) {
-    return db.select().from(merchantMemory).where(eq(merchantMemory.userId, userId)).all();
+    return accountRepository.findMerchantMemory(userId);
   }
 
   async updateMerchantMemory(input: UpdateMerchantMemoryInput) {
-    const existing = await db
-      .select()
-      .from(merchantMemory)
-      .where(
-        and(
-          eq(merchantMemory.userId, input.userId),
-          eq(merchantMemory.merchantPattern, input.merchantPattern),
-        ),
-      )
-      .get();
+    const existing = await accountRepository.findMerchantMemoryByPattern(
+      input.userId,
+      input.merchantPattern,
+    );
 
     if (existing) {
-      await db
-        .update(merchantMemory)
-        .set({
-          category: input.category,
-          gstApplicable: input.gstApplicable,
-          merchantDisplayName: input.merchantDisplayName,
-          isUserConfirmed: input.isUserConfirmed,
-          timesUsed: (existing.timesUsed || 0) + 1,
-          lastUsed: new Date().toISOString(),
-        })
-        .where(eq(merchantMemory.id, existing.id));
+      await accountRepository.updateMerchantMemory(existing.id, {
+        category: input.category,
+        gstApplicable: input.gstApplicable,
+        merchantDisplayName: input.merchantDisplayName,
+        isUserConfirmed: input.isUserConfirmed,
+        timesUsed: (existing.timesUsed || 0) + 1,
+        lastUsed: new Date().toISOString(),
+      });
     } else {
-      await db.insert(merchantMemory).values({
+      await accountRepository.createMerchantMemory({
         id: crypto.randomUUID(),
         userId: input.userId,
         merchantPattern: input.merchantPattern,
@@ -230,89 +181,75 @@ export class AccountService {
     id: string,
     data: Partial<UpdateMerchantMemoryInput>,
   ) {
-    const existing = await db
-      .select()
-      .from(merchantMemory)
-      .where(and(eq(merchantMemory.id, id), eq(merchantMemory.userId, userId)))
-      .get();
+    const existing = await accountRepository.findMerchantMemoryById(userId, id);
     if (!existing) return null;
 
-    await db
-      .update(merchantMemory)
-      .set({
-        category: data.category ?? existing.category,
-        gstApplicable: data.gstApplicable ?? existing.gstApplicable,
-        merchantDisplayName: data.merchantDisplayName ?? existing.merchantDisplayName,
-        isUserConfirmed: true,
-      })
-      .where(eq(merchantMemory.id, id));
+    await accountRepository.updateMerchantMemory(id, {
+      category: data.category ?? existing.category,
+      gstApplicable: data.gstApplicable ?? existing.gstApplicable,
+      merchantDisplayName: data.merchantDisplayName ?? existing.merchantDisplayName,
+      isUserConfirmed: true,
+    });
 
     return { success: true };
   }
 
   async deleteMerchantMemory(userId: string, id: string) {
-    const existing = await db
-      .select()
-      .from(merchantMemory)
-      .where(and(eq(merchantMemory.id, id), eq(merchantMemory.userId, userId)))
-      .get();
+    const existing = await accountRepository.findMerchantMemoryById(userId, id);
     if (!existing) return null;
-    await db.delete(merchantMemory).where(eq(merchantMemory.id, id));
+    await accountRepository.deleteMerchantMemory(id);
     return { success: true };
   }
 
   // --- Pending Categorization ---
 
   async getPendingCategorizations(userId: string) {
-    const rows = await db
-      .select()
-      .from(pendingCategorization)
-      .leftJoin(transactions, eq(pendingCategorization.transactionId, transactions.id))
-      .where(
-        and(eq(pendingCategorization.userId, userId), eq(pendingCategorization.status, 'pending')),
-      )
-      .all();
+    // This is where things get tricky with the repository pattern and joins.
+    // Ideally, the repository returns joined data, OR the service fetches separately.
+    // The previous implementation did a join.
+    // For now, let's fetch pending items, then fetch transactions.
+    // This is "N+1" ish but for "pending" items it's usually small.
+    // OR we can add `findPendingCategorizationsWithTransactions` to repository.
+    // But `AccountRepository` shouldn't know about `transactions` table details ideally?
+    // Actually, it's fine if they are in the same schema.
+    // But I defined `findPendingCategorizations` to return just the rows.
+    // Let's iterate.
+    const pendingItems = await accountRepository.findPendingCategorizations(userId);
 
-    return rows.map((row) => ({
-      ...row.pending_categorization,
-      transaction: row.transactions,
-    }));
+    // Enrich with transactions
+    // We can use transactionRepository.findByIds if we implement it, or loop.
+    const results = [];
+    for (const item of pendingItems) {
+      const transaction = await transactionRepository.findById(userId, item.transactionId);
+      results.push({
+        ...item,
+        transaction,
+      });
+    }
+    return results;
   }
 
   async resolveCategorization(input: ResolveCategorizationInput) {
-    const pending = await db
-      .select()
-      .from(pendingCategorization)
-      .where(
-        and(
-          eq(pendingCategorization.id, input.pendingId),
-          eq(pendingCategorization.userId, input.userId),
-        ),
-      )
-      .get();
+    const pending = await accountRepository.findPendingCategorizationById(
+      input.userId,
+      input.pendingId,
+    );
 
     if (!pending) return null;
 
     if (input.action === 'approve') {
-      await db
-        .update(transactions)
-        .set({ category: pending.suggestedCategory, confidenceScore: 1.0 })
-        .where(eq(transactions.id, pending.transactionId));
+      await transactionRepository.update(input.userId, pending.transactionId, {
+        category: pending.suggestedCategory,
+        confidenceScore: 1.0,
+      });
     } else if (input.action === 'modify' && input.category) {
-      await db
-        .update(transactions)
-        .set({
-          category: input.category,
-          gstApplicable: input.gstApplicable ?? false,
-          confidenceScore: 1.0,
-        })
-        .where(eq(transactions.id, pending.transactionId));
+      await transactionRepository.update(input.userId, pending.transactionId, {
+        category: input.category,
+        gstApplicable: input.gstApplicable ?? false,
+        confidenceScore: 1.0,
+      });
 
-      const tx = await db
-        .select()
-        .from(transactions)
-        .where(eq(transactions.id, pending.transactionId))
-        .get();
+      const tx = await transactionRepository.findById(input.userId, pending.transactionId);
       if (tx?.merchantNormalized) {
         await this.updateMerchantMemory({
           userId: input.userId,
@@ -325,15 +262,11 @@ export class AccountService {
       }
     }
 
-    await db
-      .update(pendingCategorization)
-      .set({
-        status: input.action,
-        userSelectedCategory:
-          input.action === 'modify' ? input.category : pending.suggestedCategory,
-        resolvedAt: new Date().toISOString(),
-      })
-      .where(eq(pendingCategorization.id, input.pendingId));
+    await accountRepository.updatePendingCategorization(input.pendingId, {
+      status: input.action,
+      userSelectedCategory: input.action === 'modify' ? input.category : pending.suggestedCategory,
+      resolvedAt: new Date().toISOString(),
+    });
 
     return { success: true };
   }
@@ -341,47 +274,38 @@ export class AccountService {
   // --- Transfers ---
 
   async getTransfers(userId: string) {
-    const sourceTx = aliasedTable(transactions, 'source_tx');
-    const destTx = aliasedTable(transactions, 'dest_tx');
-
-    const rows = await db
-      .select()
-      .from(transferLinks)
-      .leftJoin(sourceTx, eq(transferLinks.sourceTransactionId, sourceTx.id))
-      .leftJoin(destTx, eq(transferLinks.destinationTransactionId, destTx.id))
-      .where(eq(transferLinks.userId, userId))
-      .all();
-
-    return rows.map((row) => ({
-      ...row.transfer_links,
-      sourceTransaction: row.source_tx,
-      destinationTransaction: row.dest_tx,
-    }));
+    // Similar join issue. Fetch links, then fetch transactions.
+    const links = await accountRepository.findTransferLinks(userId);
+    const results = [];
+    for (const link of links) {
+      const sourceTransaction = await transactionRepository.findById(
+        userId,
+        link.sourceTransactionId,
+      );
+      const destinationTransaction = await transactionRepository.findById(
+        userId,
+        link.destinationTransactionId,
+      );
+      results.push({
+        ...link,
+        sourceTransaction,
+        destinationTransaction,
+      });
+    }
+    return results;
   }
 
   async createTransfer(input: CreateTransferInput) {
-    const sourceTx = await db
-      .select()
-      .from(transactions)
-      .where(
-        and(eq(transactions.id, input.sourceTransactionId), eq(transactions.userId, input.userId)),
-      )
-      .get();
-    const destTx = await db
-      .select()
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.id, input.destinationTransactionId),
-          eq(transactions.userId, input.userId),
-        ),
-      )
-      .get();
+    const sourceTx = await transactionRepository.findById(input.userId, input.sourceTransactionId);
+    const destTx = await transactionRepository.findById(
+      input.userId,
+      input.destinationTransactionId,
+    );
 
     if (!sourceTx || !destTx) return null;
 
     const linkId = crypto.randomUUID();
-    await db.insert(transferLinks).values({
+    await accountRepository.createTransferLink({
       id: linkId,
       userId: input.userId,
       sourceTransactionId: input.sourceTransactionId,
@@ -395,35 +319,36 @@ export class AccountService {
       createdAt: new Date().toISOString(),
     });
 
-    await db
-      .update(transactions)
-      .set({ isTransfer: true, transferLinkId: linkId, category: 'Transfer' })
-      .where(eq(transactions.id, input.sourceTransactionId));
-    await db
-      .update(transactions)
-      .set({ isTransfer: true, transferLinkId: linkId, category: 'Transfer' })
-      .where(eq(transactions.id, input.destinationTransactionId));
+    await transactionRepository.update(input.userId, input.sourceTransactionId, {
+      isTransfer: true,
+      transferLinkId: linkId,
+      category: 'Transfer',
+    });
+
+    await transactionRepository.update(input.userId, input.destinationTransactionId, {
+      isTransfer: true,
+      transferLinkId: linkId,
+      category: 'Transfer',
+    });
 
     return { id: linkId, success: true };
   }
 
   async deleteTransfer(userId: string, transferId: string) {
-    const link = await db
-      .select()
-      .from(transferLinks)
-      .where(and(eq(transferLinks.id, transferId), eq(transferLinks.userId, userId)))
-      .get();
+    const link = await accountRepository.findTransferLinkById(userId, transferId);
     if (!link) return null;
 
-    await db
-      .update(transactions)
-      .set({ isTransfer: false, transferLinkId: null })
-      .where(eq(transactions.id, link.sourceTransactionId));
-    await db
-      .update(transactions)
-      .set({ isTransfer: false, transferLinkId: null })
-      .where(eq(transactions.id, link.destinationTransactionId));
-    await db.delete(transferLinks).where(eq(transferLinks.id, transferId));
+    await transactionRepository.update(userId, link.sourceTransactionId, {
+      isTransfer: false,
+      transferLinkId: null,
+    });
+
+    await transactionRepository.update(userId, link.destinationTransactionId, {
+      isTransfer: false,
+      transferLinkId: null,
+    });
+
+    await accountRepository.deleteTransferLink(transferId);
 
     return { success: true };
   }
@@ -433,44 +358,22 @@ export class AccountService {
   async getBalanceHistory(userId: string, accountId: string) {
     const account = await this.getAccount(userId, accountId);
     if (!account) return null;
-    return db
-      .select()
-      .from(accountBalanceHistory)
-      .where(eq(accountBalanceHistory.accountId, accountId))
-      .orderBy(desc(accountBalanceHistory.balanceDate))
-      .all();
+    return accountRepository.findBalanceHistory(accountId);
   }
 
   async getReconciliationAlerts(userId: string, showResolved: boolean) {
-    return db
-      .select()
-      .from(reconciliationAlerts)
-      .where(
-        and(
-          eq(reconciliationAlerts.userId, userId),
-          showResolved ? undefined : eq(reconciliationAlerts.isResolved, false),
-        ),
-      )
-      .orderBy(desc(reconciliationAlerts.createdAt))
-      .all();
+    return accountRepository.findReconciliationAlerts(userId, showResolved);
   }
 
   async resolveReconciliationAlert(userId: string, alertId: string, notes?: string) {
-    const alert = await db
-      .select()
-      .from(reconciliationAlerts)
-      .where(and(eq(reconciliationAlerts.id, alertId), eq(reconciliationAlerts.userId, userId)))
-      .get();
+    const alert = await accountRepository.findReconciliationAlertById(userId, alertId);
     if (!alert) return null;
 
-    await db
-      .update(reconciliationAlerts)
-      .set({
-        isResolved: true,
-        resolvedAt: new Date().toISOString(),
-        resolutionNotes: notes || null,
-      })
-      .where(eq(reconciliationAlerts.id, alertId));
+    await accountRepository.updateReconciliationAlert(alertId, {
+      isResolved: true,
+      resolvedAt: new Date().toISOString(),
+      resolutionNotes: notes || null,
+    });
     return { success: true };
   }
 
@@ -481,12 +384,14 @@ export class AccountService {
     if (!account) return null;
     if (account.accountType !== 'credit_card') throw new Error('Not a credit card');
 
-    const txs = await db
-      .select()
-      .from(transactions)
-      .where(and(eq(transactions.accountId, accountId), eq(transactions.userId, userId)))
-      .orderBy(desc(transactions.date))
-      .all();
+    // Fetch all transactions for this account
+    // transactionRepository.findMany supports filtering by accountId
+    const txsResult = await transactionRepository.findMany({
+      userId,
+      accountId,
+      limit: 10000, // Fetch all reasonably
+    });
+    const txs = txsResult.data;
 
     const interestTransactions = txs.filter(
       (t) =>
@@ -531,12 +436,10 @@ export class AccountService {
   }
 
   async getConsolidatedSummary(userId: string) {
-    const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId)).all();
-    const userTransactions = await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.userId, userId))
-      .all();
+    const userAccounts = await accountRepository.findAll(userId);
+    // Fetch all user transactions
+    const txsResult = await transactionRepository.findMany({ userId, limit: 100000 });
+    const userTransactions = txsResult.data;
 
     const accountSummaries = userAccounts.map((account) => {
       const accountTxs = userTransactions.filter((t) => t.accountId === account.id);
