@@ -175,7 +175,6 @@ Return your final result as a JSON object matching the StatementParserOutput sch
         if (dates.length > 0) {
           const sorted = [...dates].sort();
           const start = sorted[0];
-          const end = sorted[sorted.length - 1];
           // Basic sanity: check dates exist in text
           if (!text.includes((start || '').replace(/-/g, '/').substring(5))) {
             issues.push(`Start date ${start} not found in source text`);

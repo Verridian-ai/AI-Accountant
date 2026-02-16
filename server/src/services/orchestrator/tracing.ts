@@ -5,7 +5,7 @@
  * Tracks requests, tool calls, token usage, and performance metrics.
  */
 
-import { AgentType, TraceSpan, TraceEvent, TokenUsage } from './types.js';
+import { AgentType, TokenUsage } from './types.js';
 
 // ============================================================================
 // LANGFUSE CLIENT (Optional dependency)
@@ -167,7 +167,7 @@ export class AgentTracer {
         baseUrl: this.config.baseUrl,
       }) as LangfuseClient;
       console.log('Langfuse tracing initialized');
-    } catch (error) {
+    } catch {
       console.log('Langfuse not available, using local tracing');
       this.langfuse = null;
     }
@@ -263,7 +263,7 @@ export class AgentTracer {
   /**
    * End a span
    */
-  endSpan(traceId: string, spanId: string, output?: unknown): void {
+  endSpan(traceId: string, _spanId: string, _output?: unknown): void {
     const trace = this.activeTraces.get(traceId);
     if (!trace) return;
 

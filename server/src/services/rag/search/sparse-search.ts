@@ -8,7 +8,7 @@
  */
 
 import { db, ragChunks } from '../../../schema.js';
-import { eq, and, sql, inArray } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 
 // ============================================================================
 // TYPES
@@ -286,7 +286,7 @@ export class SparseSearchEngine {
       // bm25() returns negative scores (more negative = better match)
       // We negate it to get positive scores where higher = better
 
-      let sqlQuery = sql`
+      const sqlQuery = sql`
         SELECT
           c.id as chunk_id,
           c.document_id,
@@ -353,7 +353,7 @@ export class SparseSearchEngine {
       }>;
 
       // Filter and sort results
-      let filteredResults = results;
+      const filteredResults = results;
 
       // Apply additional filters that couldn't be done in SQL
       if (namespaceId) {
@@ -491,7 +491,7 @@ export class SparseSearchEngine {
             score += matches * (1 / Math.sqrt(chunk.content.length));
             matchedTerms.push(term);
           }
-        } catch (error) {
+        } catch {
           // Skip invalid regex patterns (shouldn't happen with escaping, but be safe)
           console.warn(`[SparseSearch] Invalid regex pattern for term: ${term}`);
         }

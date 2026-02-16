@@ -9,11 +9,7 @@ import { VercelAgent } from '../../vercel-agent.js';
 import { adaptLegacyTool } from '../../tool-adapter.js';
 import { BudgetAnalyzerOutputSchema } from '../../schemas/budget-output.js';
 import { cogneeTools } from '../../cognee-tools.js';
-import type {
-  BudgetAnalyzerInput,
-  BudgetAnalyzerOutput,
-  VercelAgentExecutionResult,
-} from '../../types.js';
+import type { BudgetAnalyzerInput, BudgetAnalyzerOutput } from '../../types.js';
 import type { ToolSet } from 'ai';
 
 const SYSTEM_PROMPT = `You are a personal finance analyst specializing in Australian household and small business budgeting. Analyze transaction history to identify spending patterns, recurring expenses, unusual transactions, and savings opportunities. Provide actionable insights with specific dollar amounts and timeframes. Consider seasonal patterns, inflation, and the Australian cost of living.
@@ -122,7 +118,7 @@ export class VercelBudgetAnalyzer extends VercelAgent<BudgetAnalyzerInput, Budge
           // Normalize: lowercase, remove numbers/dates, trim
           const key = tx.description
             .toLowerCase()
-            .replace(/\d{1,2}[\/\-]\d{1,2}[\/\-]?\d{0,4}/g, '')
+            .replace(/\d{1,2}[/-]\d{1,2}[/-]?\d{0,4}/g, '')
             .replace(/\s+/g, ' ')
             .trim()
             .substring(0, 30);

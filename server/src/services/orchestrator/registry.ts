@@ -12,9 +12,7 @@ import {
   AgentConfig,
   AgentHealth,
   HealthState,
-  HealthMetrics,
   ErrorCode,
-  ErrorSummary,
   HEALTH_THRESHOLDS,
 } from './types.js';
 
@@ -155,7 +153,7 @@ export class AgentRegistry {
 
   constructor() {
     // Initialize with default configs
-    for (const [id, config] of Object.entries(AGENT_CONFIGS)) {
+    for (const config of Object.values(AGENT_CONFIGS)) {
       this.register(config);
     }
   }

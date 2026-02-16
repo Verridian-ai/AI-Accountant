@@ -7,8 +7,8 @@
  * Multi-tenant isolation is enforced by filtering chunks by userId.
  */
 
-import { db, ragChunks, ragNamespaces } from '../../../schema.js';
-import { eq, and, sql, inArray } from 'drizzle-orm';
+import { db, ragChunks } from '../../../schema.js';
+import { eq, and, sql } from 'drizzle-orm';
 
 // ============================================================================
 // TYPES

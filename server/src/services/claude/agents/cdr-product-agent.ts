@@ -12,7 +12,7 @@ import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools, COGNEE_DATASETS } from '../cognee-tools.js';
 import { cdrProductService } from '../../cdr-products.js';
 import { loanCalculatorService } from '../../loan-calculator.js';
-import type { CdrProductInput, CdrProductOutput, TokenUsage } from '../types.js';
+import type { CdrProductInput, CdrProductOutput } from '../types.js';
 
 export class CdrProductAgent extends ClaudeAgent<CdrProductInput, CdrProductOutput> {
   protected systemPrompt = `You are an Australian banking product specialist with deep knowledge of Consumer Data Right (CDR) Open Banking data. You help users find the best banking products, compare rates, model loan scenarios, and identify savings opportunities.

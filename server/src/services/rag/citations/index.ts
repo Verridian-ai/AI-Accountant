@@ -14,7 +14,7 @@ import {
   transactions,
   accounts,
 } from '../../../schema.js';
-import { eq, and, inArray, desc, sql } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
 // ============================================================================
@@ -687,7 +687,7 @@ export class CitationManager {
   /**
    * Extract a relevant snippet from chunk content
    */
-  private extractSnippet(chunkContent: string, answerText: string): string {
+  private extractSnippet(chunkContent: string, _answerText: string): string {
     // Try to find overlapping content between chunk and answer
     const maxSnippetLength = 200;
 

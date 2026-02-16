@@ -243,7 +243,6 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         const purchaseDate = input.purchaseDate as string;
         const entityType = input.entityType as string;
         const aggregatedTurnover = (input.aggregatedTurnover as number) ?? 0;
-        const isNewAsset = (input.isNewAsset as boolean) ?? true;
 
         const purchaseDateObj = new Date(purchaseDate);
         const purchaseYear = purchaseDateObj.getFullYear();
@@ -378,7 +377,7 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
               status: 'disposed',
               entityId,
             });
-            const totalProceeds = 0; // Disposal records aren't queried directly here
+            // Disposal records aren't queried directly here
             return {
               reportType: 'disposal_summary',
               disposedAssets: disposed.assets,

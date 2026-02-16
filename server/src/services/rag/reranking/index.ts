@@ -11,16 +11,13 @@ import {
   RerankInput,
   RerankOutput,
   CrossEncoderResult,
-  crossEncoderReranker,
 } from './cross-encoder.js';
 import {
   FinancialBooster,
   FinancialBoostConfig,
   FinancialContext,
   DocumentFinancialMetadata,
-  BoostOutput,
   FinancialBoostResult,
-  financialBooster,
 } from './financial-boost.js';
 
 // ============================================================================

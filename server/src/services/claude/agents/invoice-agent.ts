@@ -316,16 +316,8 @@ Key rules:
     ],
   ]);
 
-  /** Stash the current input so tool handlers can read userId */
-  private _currentInput?: InvoiceAgentInput;
-
   async invoke(input: InvoiceAgentInput): Promise<InvoiceAgentOutput & { usage: any }> {
-    this._currentInput = input;
-    try {
-      return await super.invoke(input);
-    } finally {
-      this._currentInput = undefined;
-    }
+    return await super.invoke(input);
   }
 
   constructor() {

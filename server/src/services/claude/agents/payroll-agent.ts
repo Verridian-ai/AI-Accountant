@@ -11,7 +11,7 @@ import { ClaudeAgent } from '../base-agent.js';
 import { cogneeTools } from '../cognee-tools.js';
 import { employeeService } from '../../employee.js';
 import { payStructureService } from '../../pay-structures.js';
-import type { PayrollAgentInput, PayrollAgentOutput, WagePaymentDetection } from '../types.js';
+import type { PayrollAgentInput, PayrollAgentOutput } from '../types.js';
 
 /**
  * Determine the current Australian financial year string.

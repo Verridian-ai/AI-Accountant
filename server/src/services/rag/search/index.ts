@@ -214,7 +214,6 @@ export class HybridSearchEngine {
     };
 
     // Run dense and sparse searches in parallel with accurate timing
-    const searchStartTime = Date.now();
 
     // Wrap searches to capture individual timings
     let denseSearchTimeMs = 0;

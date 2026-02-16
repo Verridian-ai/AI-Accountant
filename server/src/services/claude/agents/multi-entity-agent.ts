@@ -9,25 +9,10 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeAgent } from '../base-agent.js';
-import { cogneeTools, COGNEE_DATASETS } from '../cognee-tools.js';
+import { cogneeTools } from '../cognee-tools.js';
 import { multiEntityService } from '../../multi-entity.js';
 import { consolidationService } from '../../consolidation.js';
 import type { MultiEntityInput, MultiEntityOutput } from '../types.js';
-
-/** Known inter-entity transaction description patterns */
-const INTER_ENTITY_PATTERNS: Array<{ pattern: RegExp; type: string }> = [
-  { pattern: /\bMANAGEMENT\s*FEE\b/i, type: 'management_fee' },
-  { pattern: /\bDIVIDEND\b/i, type: 'dividend' },
-  { pattern: /\bDISTRIBUTION\b/i, type: 'distribution' },
-  { pattern: /\bLOAN\b/i, type: 'loan' },
-  { pattern: /\bRENT\b/i, type: 'rent' },
-  { pattern: /\bSERVICE\s*FEE\b/i, type: 'service_fee' },
-  { pattern: /\bASS(?:ET)?\s*TRANSFER\b/i, type: 'asset_transfer' },
-  { pattern: /\bCAPITAL\s*CONTRIB/i, type: 'capital_contribution' },
-  { pattern: /\bINTER[\s-]?COMPANY\b/i, type: 'management_fee' },
-  { pattern: /\bINTER[\s-]?ENTITY\b/i, type: 'management_fee' },
-  { pattern: /\bRELATED\s*PARTY\b/i, type: 'management_fee' },
-];
 
 /** Division 7A benchmark interest rate by FY start year */
 const DIV7A_BENCHMARK_RATES: Record<number, number> = {
@@ -38,21 +23,8 @@ const DIV7A_BENCHMARK_RATES: Record<number, number> = {
 };
 
 /**
- * Match a transaction description against known inter-entity patterns.
+ * Multi-Entity Agent Service
  */
-function detectInterEntityPattern(description: string): {
-  isMatch: boolean;
-  type: string;
-  confidence: number;
-} {
-  const desc = description.toLowerCase();
-  for (const { pattern, type } of INTER_ENTITY_PATTERNS) {
-    if (pattern.test(desc)) {
-      return { isMatch: true, type, confidence: 0.85 };
-    }
-  }
-  return { isMatch: false, type: 'none', confidence: 0 };
-}
 
 export class MultiEntityAgent extends ClaudeAgent<MultiEntityInput, MultiEntityOutput> {
   protected systemPrompt = `You are an Australian multi-entity financial management specialist. You help businesses that operate through multiple legal entities (companies, trusts, partnerships, sole traders, SMSFs). Your expertise includes:
@@ -153,7 +125,6 @@ Use Australian financial year (July 1 - June 30). All amounts in cents.`;
         const userId = input.userId as string;
         const accountId = input.accountId as string;
         const transactionDescription = input.transactionDescription as string | undefined;
-        const amount = input.amount as number | undefined;
 
         // 1. Look up entity accounts for the given accountId to find linked entity
         const hierarchy = await multiEntityService.getEntityHierarchy(userId);

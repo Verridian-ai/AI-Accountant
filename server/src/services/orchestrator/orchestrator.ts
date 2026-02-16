@@ -21,7 +21,7 @@ import {
   CacheStats,
   AgentHealth,
 } from './types.js';
-import { agentRegistry, AGENT_CONFIGS } from './registry.js';
+import { agentRegistry } from './registry.js';
 import { agentCache, generateCacheKey, hashContext } from './cache.js';
 import { agentTracer } from './tracing.js';
 
@@ -204,13 +204,11 @@ export class AgentOrchestrator implements IAgentOrchestrator {
       agentRegistry.incrementActiveRequests(request.agentType);
 
       const startTime = Date.now();
-      let success = false;
 
       try {
         const result = await this.executeAgent(request, config, timeoutMs);
         const executionTime = Date.now() - startTime;
 
-        success = true;
         agentRegistry.recordSuccess(request.agentType, executionTime);
 
         return {

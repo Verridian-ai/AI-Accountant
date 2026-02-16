@@ -335,11 +335,7 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     ],
   ]);
 
-  /** Store the current user ID for tool handlers that need it. */
-  private _currentUserId?: string;
-
   async invoke(input: AccountsPayableInput): Promise<AccountsPayableOutput & { usage: any }> {
-    this._currentUserId = input.userId;
     return super.invoke(input);
   }
 

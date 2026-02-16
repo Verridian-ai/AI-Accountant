@@ -5,15 +5,7 @@
  * Each user has their own namespace with isolated documents and chunks.
  */
 
-import {
-  db,
-  ragNamespaces,
-  ragDocuments,
-  ragChunks,
-  ragCitations,
-  transactions,
-  accounts,
-} from '../../schema.js';
+import { db, ragNamespaces, ragChunks, ragCitations, ragDocuments } from '../../schema.js';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import crypto from 'crypto';
 import path from 'path';
@@ -510,7 +502,7 @@ export class NamespaceManager {
     },
   ): Promise<(typeof ragChunks.$inferSelect)[]> {
     // Build base query
-    let conditions = [eq(ragChunks.namespaceId, namespaceId)];
+    const conditions = [eq(ragChunks.namespaceId, namespaceId)];
 
     if (filters?.userId) {
       conditions.push(eq(ragChunks.userId, filters.userId));
