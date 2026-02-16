@@ -18,6 +18,7 @@ import { randomUUID } from 'crypto';
 export type Invoice = typeof invoices.$inferSelect;
 export type InvoiceLine = typeof invoiceLines.$inferSelect;
 export type Customer = typeof customers.$inferSelect;
+export type InvoicePayment = typeof invoicePayments.$inferSelect;
 
 // ============================================================================
 // Types
@@ -414,7 +415,7 @@ export class InvoicingService {
       );
     }
 
-    const updates: Record<string, any> = { updatedAt: nowISO() };
+    const updates: Record<string, unknown> = { updatedAt: nowISO() };
     if (data.customerId !== undefined) updates.customerId = data.customerId;
     if (data.issueDate !== undefined) updates.issueDate = data.issueDate;
     if (data.dueDate !== undefined) updates.dueDate = data.dueDate;
@@ -475,7 +476,7 @@ export class InvoicingService {
   // Send Invoice (draft → sent)
   // --------------------------------------------------------------------------
 
-  async sendInvoice(userId: string, invoiceId: string): Promise<any> {
+  async sendInvoice(userId: string, invoiceId: string): Promise<void> {
     const invoice = await db
       .select()
       .from(invoices)
@@ -491,7 +492,7 @@ export class InvoicingService {
       );
     }
 
-    const updates: Record<string, any> = {
+    const updates: Record<string, unknown> = {
       status: 'sent',
       updatedAt: nowISO(),
     };
@@ -513,7 +514,7 @@ export class InvoicingService {
   // Void Invoice (NOT allowed if paid)
   // --------------------------------------------------------------------------
 
-  async voidInvoice(userId: string, invoiceId: string): Promise<any> {
+  async voidInvoice(userId: string, invoiceId: string): Promise<InvoiceWithLines> {
     const invoice = await db
       .select()
       .from(invoices)
@@ -552,7 +553,11 @@ export class InvoicingService {
   // Record Payment
   // --------------------------------------------------------------------------
 
-  async recordPayment(userId: string, invoiceId: string, data: RecordPaymentInput): Promise<any> {
+  async recordPayment(
+    userId: string,
+    invoiceId: string,
+    data: RecordPaymentInput,
+  ): Promise<InvoicePayment> {
     const invoice = await db
       .select()
       .from(invoices)
@@ -589,7 +594,7 @@ export class InvoicingService {
     const newAmountPaid = (invoice.amountPaid ?? 0) + data.amountCents;
     const newAmountDue = (invoice.totalAmount ?? 0) - newAmountPaid;
 
-    const invoiceUpdates: Record<string, any> = {
+    const invoiceUpdates: Record<string, unknown> = {
       amountPaid: newAmountPaid,
       amountDue: newAmountDue,
       updatedAt: now,
@@ -713,7 +718,9 @@ export class InvoicingService {
   // Check Overdue Invoices
   // --------------------------------------------------------------------------
 
-  async checkOverdueInvoices(userId: string): Promise<any[]> {
+  async checkOverdueInvoices(
+    userId: string,
+  ): Promise<{ id: string; invoiceNumber: string; amountDue: number; daysOverdue: number }[]> {
     const todayStr = today();
 
     // Find sent invoices past due date
@@ -743,7 +750,7 @@ export class InvoicingService {
         .run();
     }
 
-    return overdueInvoices.map((inv: any) => ({
+    return overdueInvoices.map((inv) => ({
       ...inv,
       status: 'overdue',
       updatedAt: now,
@@ -758,7 +765,7 @@ export class InvoicingService {
     // Get all invoices for user (non-void for totals)
     const allInvoices = await db.select().from(invoices).where(eq(invoices.userId, userId)).all();
 
-    const list: any[] = allInvoices ?? [];
+    const list = allInvoices ?? [];
 
     // Count by status
     const counts = {

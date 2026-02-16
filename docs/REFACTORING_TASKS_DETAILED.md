@@ -227,7 +227,7 @@ npm install -D eslint @eslint/js typescript-eslint prettier eslint-config-pretti
 
 **Step 2: Create the ESLint flat config at the project root**
 
-Create file: `eslint.config.js`
+Create file: `eslint.config.js` *(Note: the actual file created was `eslint.config.mjs` — use `.mjs` extension for ESM compatibility)*
 
 ```javascript
 import js from '@eslint/js';
@@ -405,7 +405,7 @@ git reset HEAD~1 --hard   # Undo test commit
 
 ```bash
 # Remove all ESLint/Prettier config
-rm eslint.config.js .prettierrc .prettierignore
+rm eslint.config.mjs .prettierrc .prettierignore  # Note: actual file is .mjs not .js
 rm -rf .husky
 # Remove from package.json: lint, lint:fix, format, format:check scripts, lint-staged config
 npm uninstall eslint @eslint/js typescript-eslint prettier eslint-config-prettier eslint-plugin-react-hooks eslint-plugin-react-refresh globals husky lint-staged
@@ -418,6 +418,12 @@ git checkout -- .  # Restore all formatted files to original
 
 **Priority**: P0 — Critical | **Effort**: 3 hours | **Risk**: Medium
 **Depends On**: REFACTOR-002
+
+> **⚠️ STATUS (2026-02-16):** Reported as COMPLETE, but audit shows the flags described below are **STILL NOT APPLIED**:
+>
+> - `server/tsconfig.json`: Still MISSING `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `noUncheckedIndexedAccess`
+> - `client/tsconfig.app.json`: Still has `noUnusedLocals: false`, `noUnusedParameters: false`, `noImplicitReturns: false`, `noUncheckedIndexedAccess: false` (only `noFallthroughCasesInSwitch: true` is enabled)
+> - **This task needs to be re-executed.** The instructions below remain accurate.
 
 #### WHY This Matters
 
@@ -636,6 +642,8 @@ git reset --hard HEAD~1
 
 **Priority**: P1 — High | **Effort**: 8 hours | **Risk**: Medium
 **Depends On**: REFACTOR-003
+
+> **⚠️ STATUS (2026-02-16):** Reported as COMPLETE. Note: `server/src/index.ts` is now **7,458 lines** (not ~5,987 as originally estimated) and `server/src/schema.ts` is now **2,145 lines** (not ~1,906). If this task was completed against the earlier file sizes, additional `any` types may have been introduced since then. Consider re-running the baseline count to verify.
 
 #### WHY This Matters
 
@@ -894,7 +902,7 @@ git reset --hard HEAD~N
 
 #### WHY This Matters
 
-The client's `api.ts` (2,848 lines) is the bridge between frontend and backend. `any` types here mean the UI can silently display wrong data or crash on unexpected API responses.
+The client's `api.ts` (2,763 lines) is the bridge between frontend and backend. `any` types here mean the UI can silently display wrong data or crash on unexpected API responses.
 
 #### BEFORE YOU START
 
@@ -1027,7 +1035,7 @@ const pdfData: any = await pdfParse(buffer);
 
 **Step 5: Upgrade ESLint rule from `warn` to `error`**
 
-In `eslint.config.js`, change:
+In `eslint.config.mjs`, change:
 
 ```javascript
 '@typescript-eslint/no-explicit-any': 'error',  // Was 'warn'
@@ -1092,6 +1100,8 @@ npm install -D @types/pino  # If needed
 > **WHY pino?** It's the fastest Node.js logger, outputs JSON by default, and has zero-overhead when log level is disabled. Used by Fastify, Hono ecosystem, and most enterprise Node apps.
 
 **Step 2: Create the logger module**
+
+> **NOTE (2026-02-16):** A basic logger already exists at `server/src/utils/logger.ts` (15 lines) — it's a simple console wrapper with `[INFO]`/`[ERROR]`/`[WARN]`/`[DEBUG]` prefixes. This is NOT a structured logger. Replace it with the pino-based implementation below. You may choose to place the new logger at `server/src/lib/logger.ts` (as described) or upgrade the existing file at `server/src/utils/logger.ts` — either way, update all imports accordingly.
 
 Create file: `server/src/lib/logger.ts`
 
@@ -1198,7 +1208,7 @@ Work through services in order of importance:
 
 **Step 6: Upgrade ESLint `no-console` rule to `error`**
 
-In `eslint.config.js`:
+In `eslint.config.mjs`:
 
 ```javascript
 'no-console': 'error',  // Was 'warn'
@@ -1480,7 +1490,7 @@ const name = user.name?.toUpperCase() ?? 'UNKNOWN';
 
 **Step 6: Add ESLint rule to track remaining TODOs**
 
-In `eslint.config.js`, add:
+In `eslint.config.mjs`, add:
 
 ```javascript
 'no-warning-comments': ['warn', { terms: ['FIXME', 'HACK', 'XXX'], location: 'start' }],
@@ -1731,7 +1741,7 @@ git checkout -- server/tsconfig.json client/tsconfig.app.json
 
 #### WHY This Matters
 
-`server/src/index.ts` is 6,869 lines — a massive monolith containing ALL route definitions. This is the single biggest architectural problem. We'll extract routes domain-by-domain, starting with auth because:
+`server/src/index.ts` is **7,458 lines** — a massive monolith containing most route definitions. This is the single biggest architectural problem. We'll extract routes domain-by-domain, starting with auth because:
 
 - Auth routes are self-contained (no complex dependencies on other routes)
 - They're the first routes in the file (lines ~149-230)
@@ -1776,7 +1786,9 @@ import invoicingRoutes from './routes/invoicing-routes.js';
 app.route('/api/invoicing', invoicingRoutes);
 ```
 
-**Step 2: Create `server/src/routes/auth.ts`**
+> **NOTE (2026-02-16):** `server/src/routes/auth-routes.ts` already exists (62 lines) with some auth routes partially extracted. Review this file first — you may need to extend it rather than create a new `auth.ts`. The existing file follows the Hono pattern described above.
+
+**Step 2: Create `server/src/routes/auth.ts`** *(or extend existing `auth-routes.ts`)*
 
 ```typescript
 import { Hono } from 'hono';
@@ -1875,7 +1887,7 @@ curl -X POST http://localhost:3501/auth/login \
 cd server && npx tsc --noEmit && npm test
 # Manual test all auth endpoints
 # Check index.ts line count decreased by ~80 lines
-wc -l server/src/index.ts  # Should be ~6,789 (was 6,869)
+wc -l server/src/index.ts  # Should decrease by ~80 lines from current 7,458
 ```
 
 ---
@@ -2084,6 +2096,16 @@ git reset --hard HEAD~N
 
 **Priority**: P0 — Critical | **Effort**: 8 hours | **Risk**: High
 **Depends On**: REFACTOR-013, REFACTOR-014
+
+> **NOTE (2026-02-16):** Five route files already exist in `server/src/routes/`:
+>
+> - `auth-routes.ts` (62 lines) — partial auth extraction
+> - `agents.ts` (129 lines) — agent routes
+> - `pipeline.ts` (365 lines) — pipeline routes
+> - `invoicing-routes.ts` (375 lines) — invoicing routes
+> - `agent-routes-extended.ts` (477 lines) — extended agent routes
+>
+> Despite these extractions, `index.ts` is still **7,458 lines**. Account for existing route files when planning extractions — some domains listed below may already be partially extracted. Check `server/src/routes/` before creating new files.
 
 #### WHY This Matters
 
@@ -8315,7 +8337,7 @@ export interface Transaction {
 **Step 5: Add ESLint rule to enforce JSDoc on exports**
 
 ```javascript
-// In ESLint config (eslint.config.js):
+// In ESLint config (eslint.config.mjs):
 import jsdoc from 'eslint-plugin-jsdoc';
 
 export default [
