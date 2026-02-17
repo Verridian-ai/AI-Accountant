@@ -17,10 +17,14 @@ import { ConfirmationFlowService } from '../services/claude/confirmation-flow.js
 import { StreamingService } from '../services/claude/streaming.js';
 import { streamingRateLimiter } from '../services/streaming-middleware.js';
 import { logger } from '../lib/logger.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const chatRoutes = new Hono();
 const streamingService = new StreamingService();
 const confirmationFlow = new ConfirmationFlowService(db);
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+chatRoutes.use('/*', tenantAuthMiddleware());
 
 chatRoutes.post('/', zValidator('json', chatMessageSchema), async (c) => {
   const userId = c.get('jwtPayload').userId;

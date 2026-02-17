@@ -6,8 +6,12 @@ import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 import { cogneeClient } from '../services/cognee_client.js';
 import { cogneeSessionService } from '../services/cognee-sessions.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const cogneeRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+cogneeRoutes.use('/*', tenantAuthMiddleware());
 
 const initCogneeUserSchema = z.object({ userId: z.string().min(1), email: z.string().email().optional() });
 const reindexSchema = z.object({ userId: z.string().min(1), datasets: z.array(z.string()).optional() });

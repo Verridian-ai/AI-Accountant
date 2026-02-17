@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { DashboardService } from '../services/dashboard.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const createDashboardSchema = z.object({
   name: z.string().min(1),
@@ -24,6 +25,9 @@ const saveChartSchema = z.object({
 
 const dashboardRoutes = new Hono();
 const dashboardService = new DashboardService();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+dashboardRoutes.use('/*', tenantAuthMiddleware());
 
 // 1. GET /dashboards — list all dashboards for a user
 dashboardRoutes.get('/', async (c) => {

@@ -5,12 +5,16 @@ import { db, transactions } from '../schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { agentService } from '../services/agents.js';
 import { getVertexAIClient, VERTEX_AI_MODELS, FINTECH_MODEL_PRESETS } from '../services/vertex-ai.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const runAgentSchema = z.object({
   query: z.string().min(1),
 });
 
 const agentRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+agentRoutes.use('/*', tenantAuthMiddleware());
 
 agentRoutes.get('/vertex-ai/models', (c) => {
   return c.json({ models: VERTEX_AI_MODELS, presets: FINTECH_MODEL_PRESETS });

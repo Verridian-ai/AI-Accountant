@@ -11,8 +11,12 @@ import { orchestrator } from '../services/claude/orchestrator.js';
 import { db, transactions } from '../schema.js';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { getQuarterDates } from '../services/bas.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const agents = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+agents.use('/*', tenantAuthMiddleware());
 
 const analyzeSchema = z.object({
   query: z.string().min(1),
