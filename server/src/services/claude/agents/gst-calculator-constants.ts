@@ -1,0 +1,128 @@
+/**
+ * GST Calculator constants — ATO GST category classification rules,
+ * keyword sets, and category-based GST mappings.
+ *
+ * Extracted from gst-calculator.ts to comply with the 300-line enterprise standard.
+ */
+
+/** ATO GST category classification rules — GST-free keywords */
+export const GST_FREE_KEYWORDS = new Set([
+  'medical',
+  'health',
+  'doctor',
+  'hospital',
+  'pharmacy',
+  'pathology',
+  'education',
+  'school',
+  'university',
+  'tafe',
+  'childcare',
+  'daycare',
+  'medicare',
+  'centrelink',
+  'government',
+  'ato',
+  'council rates',
+  'water',
+  'sewerage',
+  'charity',
+  'donation',
+  'dgr',
+]);
+
+/** Input-taxed (financial supplies) keywords */
+export const INPUT_TAXED_KEYWORDS = new Set([
+  'interest',
+  'bank fee',
+  'bank charge',
+  'loan',
+  'credit card fee',
+  'annual fee',
+  'account fee',
+  'brokerage',
+  'financial advice',
+  'residential rent',
+  'superannuation fee',
+  'life insurance',
+  'health insurance',
+  'income protection',
+]);
+
+/** Private/out-of-scope keywords */
+export const PRIVATE_KEYWORDS = new Set([
+  'atm',
+  'cash withdrawal',
+  'transfer',
+  'internal transfer',
+  'bpay',
+  'direct debit',
+  'pay anyone',
+  'osko',
+  'superannuation',
+  'super contribution',
+  'salary',
+  'wages',
+  'dividend',
+  'depreciation',
+]);
+
+/** Capital acquisition keywords */
+export const CAPITAL_KEYWORDS = new Set([
+  'equipment',
+  'vehicle',
+  'machinery',
+  'computer',
+  'laptop',
+  'furniture',
+  'fit-out',
+  'fitout',
+  'plant',
+  'motor vehicle',
+  'office equipment',
+  'server',
+  'printer',
+]);
+
+/** Category-based GST classification mapping per ATO rules */
+export const CATEGORY_GST_MAP: Record<
+  string,
+  { gstCategory: string; claimable: boolean; basLabel: string }
+> = {
+  'Sales Revenue': { gstCategory: 'taxable_10', claimable: false, basLabel: 'G1' },
+  'Service Revenue': { gstCategory: 'taxable_10', claimable: false, basLabel: 'G1' },
+  'Interest & Dividends': { gstCategory: 'input_taxed', claimable: false, basLabel: 'none' },
+  'Interest Income': { gstCategory: 'input_taxed', claimable: false, basLabel: 'none' },
+  'Export Revenue': { gstCategory: 'export', claimable: false, basLabel: 'G2' },
+  'Cost of Goods Sold': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Advertising & Marketing': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Bank Fees': { gstCategory: 'input_taxed', claimable: false, basLabel: 'none' },
+  'Financial Services': { gstCategory: 'input_taxed', claimable: false, basLabel: 'none' },
+  'Computer & IT': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G10_or_G11' },
+  Entertainment: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Insurance: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Motor Vehicle Expenses': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Fuel & Auto': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Office Supplies': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Professional Fees': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Rent: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Repairs & Maintenance': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Subscriptions & Streaming': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Phone & Internet': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Travel: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  Utilities: { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Wages & Salaries': { gstCategory: 'private', claimable: false, basLabel: 'W1' },
+  'Employment Income': { gstCategory: 'private', claimable: false, basLabel: 'W1' },
+  Superannuation: { gstCategory: 'private', claimable: false, basLabel: 'none' },
+  'Government & Tax': { gstCategory: 'gst_free', claimable: false, basLabel: 'none' },
+  'Internal Transfer': { gstCategory: 'private', claimable: false, basLabel: 'none' },
+  Transfer: { gstCategory: 'private', claimable: false, basLabel: 'none' },
+  'Medical & Health': { gstCategory: 'gst_free', claimable: false, basLabel: 'G3' },
+  'Education & Childcare': { gstCategory: 'gst_free', claimable: false, basLabel: 'G3' },
+  'Donations & Charity': { gstCategory: 'gst_free', claimable: false, basLabel: 'G3' },
+  'Groceries & Supermarkets': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+  'Dining & Restaurants': { gstCategory: 'taxable_10', claimable: true, basLabel: 'G11' },
+};
+
+/** Motor vehicle GST credit cap (2024-25) */
+export const CAR_COST_LIMIT_CENTS = 6810800; // $68,108

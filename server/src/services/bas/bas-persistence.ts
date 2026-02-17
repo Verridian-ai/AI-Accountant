@@ -1,5 +1,5 @@
 /**
- * BAS persistence operations.
+ * BAS persistence operations — self-contained implementation.
  *
  * bas-service.ts calls:
  *   _saveBASCalculation(periodId, result)       — 2 args
@@ -8,19 +8,61 @@
  *   getTaxCodes()                                — 0 args
  *   batchUpdateGSTCategories(updates)            — 1 arg
  */
-import { BASService, type BASResult, GSTCategory } from '../bas.js';
+import { db, basCalculations, basPeriods, transactions, taxCodes } from '../../schema.js';
+import { eq, and } from 'drizzle-orm';
+import crypto from 'crypto';
+import { GSTCategory } from './types.js';
+import type { BASResult } from './types.js';
 
-const _svc = new BASService();
+export async function saveBASCalculation(periodId: string, result: BASResult) {
+  const now = new Date().toISOString();
 
-export async function saveBASCalculation(
-  periodId: string,
-  result: BASResult,
-) {
-  // The parent BASService.saveBASCalculation needs userId/fy/quarter,
-  // but bas-service.ts calls _saveBASCalculation(period.id, result).
-  // We store the calculation against the periodId using the parent's lower-level logic.
-  // For now, return the result as-is since the parent handles its own persistence.
-  return { periodId, ...result };
+  // Check for existing calculation
+  const existing = await db
+    .select()
+    .from(basCalculations)
+    .where(eq(basCalculations.basPeriodId, periodId))
+    .get();
+
+  const calculationData = {
+    labelG1: result.labels.G1,
+    labelG2: result.labels.G2,
+    labelG3: result.labels.G3,
+    labelG10: result.labels.G10,
+    labelG11: result.labels.G11,
+    label1A: result.labels['1A'],
+    label1B: result.labels['1B'],
+    labelW1: result.labels.W1,
+    labelW2: result.labels.W2,
+    label5A: result.labels['5A'],
+    label7C: result.labels['7C'],
+    label7D: result.labels['7D'],
+    netGst: result.netGst,
+    fuelTaxCredit: result.fuelTaxCredits,
+    totalPayable: result.totalPayable,
+    calculationNotes: JSON.stringify({
+      transactionCount: result.transactionCount,
+      calculatedAt: now,
+    }),
+    updatedAt: now,
+  };
+
+  if (existing) {
+    await db
+      .update(basCalculations)
+      .set(calculationData)
+      .where(eq(basCalculations.id, existing.id));
+    return { ...existing, ...calculationData };
+  } else {
+    const newCalc = {
+      id: crypto.randomUUID(),
+      basPeriodId: periodId,
+      ...calculationData,
+      createdAt: now,
+    };
+    await db.insert(basCalculations).values(newCalc);
+    return newCalc;
+  }
 }
 
 export async function getSavedBASCalculation(
@@ -28,7 +70,27 @@ export async function getSavedBASCalculation(
   financialYear: string,
   quarter: number,
 ) {
-  return _svc.getSavedBASCalculation(userId, financialYear, quarter);
+  const period = await db
+    .select()
+    .from(basPeriods)
+    .where(
+      and(
+        eq(basPeriods.userId, userId),
+        eq(basPeriods.financialYear, financialYear),
+        eq(basPeriods.quarter, quarter),
+      ),
+    )
+    .get();
+
+  if (!period) return null;
+
+  const calculation = await db
+    .select()
+    .from(basCalculations)
+    .where(eq(basCalculations.basPeriodId, period.id))
+    .get();
+
+  return calculation ? { period, calculation } : null;
 }
 
 export async function updatePeriodStatus(
@@ -36,11 +98,17 @@ export async function updatePeriodStatus(
   status: 'draft' | 'ready' | 'lodged' | 'amended',
   lodgementDate?: string,
 ) {
-  return _svc.updatePeriodStatus(periodId, status, lodgementDate);
+  const updateData = {
+    status,
+    updatedAt: new Date().toISOString(),
+    ...(lodgementDate ? { lodgementDate } : {}),
+  };
+
+  await db.update(basPeriods).set(updateData).where(eq(basPeriods.id, periodId));
 }
 
 export async function getTaxCodes() {
-  return _svc.getTaxCodes();
+  return db.select().from(taxCodes).all();
 }
 
 export async function batchUpdateGSTCategories(
@@ -50,5 +118,14 @@ export async function batchUpdateGSTCategories(
     gstAmount: number;
   }>,
 ) {
-  return _svc.batchUpdateGSTCategories(updates);
+  for (const update of updates) {
+    await db
+      .update(transactions)
+      .set({
+        gstCategory: update.gstCategory,
+        gstAmount: update.gstAmount,
+        isEdited: true,
+      })
+      .where(eq(transactions.id, update.transactionId));
+  }
 }

@@ -1,9 +1,28 @@
 /**
  * Bank reconciliation types.
- * BankReconSession is re-exported from parent; others are defined here
- * since the parent does not export them.
+ * BankReconSession and all types defined locally (no circular dependency on parent monolith).
  */
-export type { BankReconSession } from '../bank-reconciliation.js';
+
+export interface BankReconSession {
+  id: string;
+  userId: string;
+  accountId: string;
+  periodStart: string;
+  periodEnd: string;
+  status: string; // 'open' | 'completed' | 'abandoned'
+  statementBalanceCents: number | null;
+  ledgerBalanceCents: number | null;
+  differenceCents: number | null;
+  totalTransactions: number;
+  totalMatched: number;
+  autoMatched: number;
+  manualMatched: number;
+  totalUnmatched: number;
+  totalSuggested: number;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+}
 
 export interface BankReconMatch {
   id: string;

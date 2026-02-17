@@ -7,3 +7,6 @@ export type { ABNLookupResult } from './abn-lookup.js';
 
 export { PlacesLookupService } from './places-lookup.js';
 export type { PlacesResult } from './places-lookup.js';
+
+export { EnrichmentService, enrichmentService } from './enrichment-service.js';
+export type { EnrichmentStatus } from './types.js';
