@@ -4,6 +4,7 @@ import { db, economicIndicators } from '../schema.js';
 import { eq, and, desc, like, type SQL } from 'drizzle-orm';
 import { rbaDataFeed } from '../services/rba-data-feed.js';
 import { absDataFeed } from '../services/abs-data-feed.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 // All routes are GETs with query params only — no JSON request body validation needed
 const _indicatorQueryShape = z.object({
@@ -12,6 +13,9 @@ const _indicatorQueryShape = z.object({
 });
 
 const indicatorRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+indicatorRoutes.use('/*', tenantAuthMiddleware());
 
 indicatorRoutes.get('/snapshot', async (c) => {
   const indicators = await db.select().from(economicIndicators).all();

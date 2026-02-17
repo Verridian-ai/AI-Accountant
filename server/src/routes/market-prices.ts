@@ -3,11 +3,15 @@ import { z } from 'zod';
 import { db, marketPrices } from '../schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { marketPriceService } from '../services/market-prices.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 // POST /refresh reads no JSON body — triggers external price refresh only
 const _priceRefreshShape = z.object({ symbols: z.array(z.string()).optional() });
 
 const priceRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+priceRoutes.use('/*', tenantAuthMiddleware());
 
 priceRoutes.get('/search/:query', async (c) => {
   return c.json({ results: await marketPriceService.searchSymbol(c.req.param('query')) });

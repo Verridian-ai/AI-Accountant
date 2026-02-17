@@ -6,11 +6,15 @@ import { rbaDataFeed } from '../services/rba-data-feed.js';
 import { absDataFeed } from '../services/abs-data-feed.js';
 import { marketPriceService } from '../services/market-prices.js';
 import { getErrorMessage } from '../utils/error.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 // POST /refresh endpoints read no JSON body — trigger external data fetches only
 const _feedRefreshShape = z.object({ force: z.boolean().optional() });
 
 const feedRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+feedRoutes.use('/*', tenantAuthMiddleware());
 
 feedRoutes.get('/', async (c) => {
   return c.json(await db.select().from(marketDataFeeds).all());

@@ -4,6 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 import { db, marketAlerts } from '../schema.js';
 import { eq, desc } from 'drizzle-orm';
 import crypto from 'crypto';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const createAlertSchema = z.object({
   alertType: z.string().min(1),
@@ -13,6 +14,9 @@ const createAlertSchema = z.object({
 }).passthrough();
 
 const alertRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+alertRoutes.use('/*', tenantAuthMiddleware());
 
 alertRoutes.post('/', zValidator('json', createAlertSchema), async (c) => {
   const body = c.req.valid('json');

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { sentimentAnalysisService } from '../services/sentiment-analysis.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const batchSentimentSchema = z.object({
   topics: z.array(z.string()).min(1),
@@ -13,6 +14,9 @@ const impactAnalysisSchema = z.object({
 });
 
 const sentimentRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+sentimentRoutes.use('/*', tenantAuthMiddleware());
 
 sentimentRoutes.get('/:topic', async (c) => {
   return c.json(await sentimentAnalysisService.getSentimentSnapshot(decodeURIComponent(c.req.param('topic'))));

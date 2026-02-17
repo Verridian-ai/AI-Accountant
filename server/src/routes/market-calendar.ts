@@ -4,6 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 import { db, economicCalendar } from '../schema.js';
 import { and, gte, lte, type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const createCalendarEventSchema = z.object({
   eventName: z.string().min(1),
@@ -13,6 +14,9 @@ const createCalendarEventSchema = z.object({
 }).passthrough();
 
 const calendarRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+calendarRoutes.use('/*', tenantAuthMiddleware());
 
 calendarRoutes.get('/', async (c) => {
   const conditions: SQL[] = [];
