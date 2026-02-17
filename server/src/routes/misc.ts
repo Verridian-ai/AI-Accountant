@@ -6,6 +6,7 @@ import { db, notificationPreferences } from '../schema.js';
 import { eq } from 'drizzle-orm';
 import { events } from '../events.js';
 import { getUserId } from '../utils/auth-helpers.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const notificationPrefsSchema = z.object({
   emailAlerts: z.boolean().optional(),
@@ -15,6 +16,9 @@ const notificationPrefsSchema = z.object({
 }).passthrough();
 
 const miscRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+miscRoutes.use('/*', tenantAuthMiddleware());
 
 // Events (SSE)
 miscRoutes.get('/events', (c) => {

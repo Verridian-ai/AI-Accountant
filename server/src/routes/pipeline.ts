@@ -22,9 +22,13 @@ import { enrichmentService } from '../services/enrichment.js';
 import { orchestrator } from '../services/claude/orchestrator.js';
 import { BASService } from '../services/bas.js';
 import { events } from '../events.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const pipelineRoutes = new Hono();
 const basService = new BASService();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+pipelineRoutes.use('/*', tenantAuthMiddleware());
 
 const enrichmentBatchSchema = z.object({
   transactionIds: z.array(z.string()).min(1),

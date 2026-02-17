@@ -5,11 +5,15 @@ import { eq } from 'drizzle-orm';
 import { TransferDetector } from '../services/transfers/index.js';
 import { persistTransferMatches, markOwnerContributions } from '../services/transfers/persistence.js';
 import { events } from '../events.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 // POST /detect has no body — validates nothing from request, reads DB only
 const _transferDetectSchema = z.object({}).optional();
 
 const transferRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+transferRoutes.use('/*', tenantAuthMiddleware());
 
 transferRoutes.post('/detect', async (c) => {
   const payload = c.get('jwtPayload');

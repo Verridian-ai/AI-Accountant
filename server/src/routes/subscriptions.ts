@@ -6,6 +6,7 @@ import { rbacService } from '../services/rbac.js';
 import { ForbiddenError } from '../services/rbac-errors.js';
 import { getErrorMessage } from '../utils/error.js';
 import { getUserId } from '../utils/auth-helpers.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const subscribeSchema = z.object({
   planName: z.string().min(1),
@@ -17,6 +18,9 @@ const changePlanSchema = z.object({
 });
 
 const subscriptionRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+subscriptionRoutes.use('/*', tenantAuthMiddleware());
 
 // --- SUBSCRIPTION ROUTES ---
 

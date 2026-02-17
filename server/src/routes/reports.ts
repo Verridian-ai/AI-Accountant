@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { db, transactions } from '../schema.js';
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 // Zod used for type inference in report response types
 const _periodQuerySchema = z.object({
@@ -11,6 +12,9 @@ const _periodQuerySchema = z.object({
 });
 
 const reportRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+reportRoutes.use('/*', tenantAuthMiddleware());
 
 // Get consolidated report for a period
 reportRoutes.get('/consolidated/:period', async (c) => {

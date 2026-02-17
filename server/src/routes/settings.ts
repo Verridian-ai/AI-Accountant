@@ -16,6 +16,7 @@ import {
   BAS_FREQUENCIES,
   COMMON_ANZSIC_CODES,
 } from '../utils/abn.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const updateSettingsSchema = z.object({
   modelParsingText: z.string().optional(),
@@ -37,6 +38,9 @@ const businessProfileSchema = z.object({
 
 
 const settingsRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+settingsRoutes.use('/*', tenantAuthMiddleware());
 
 // Get user settings
 settingsRoutes.get('/settings', async (c) => {
