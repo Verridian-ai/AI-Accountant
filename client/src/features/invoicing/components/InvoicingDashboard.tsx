@@ -44,7 +44,7 @@ export function InvoicingDashboard() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<any>(null);
+  const [editingCustomer, setEditingCustomer] = useState<Record<string, unknown> | null>(null);
 
   // Invoice state
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
@@ -64,10 +64,10 @@ export function InvoicingDashboard() {
         .catch(() => ({ customers: [], total: 0 }));
       const customers = customersRes?.customers ?? [];
       const totalOutstanding = customers.reduce(
-        (sum: number, c: any) => sum + (c.outstandingBalance ?? 0),
+        (sum: number, c: Record<string, unknown>) => sum + ((c.outstandingBalance as number) ?? 0),
         0,
       );
-      const overdueCount = customers.filter((c: any) => (c.overdueAmount ?? 0) > 0).length;
+      const overdueCount = customers.filter((c: Record<string, unknown>) => ((c.overdueAmount as number) ?? 0) > 0).length;
 
       setStats({
         totalOutstanding,
@@ -92,7 +92,7 @@ export function InvoicingDashboard() {
     setEditingCustomer(null);
   };
 
-  const handleEditCustomer = (customer: any) => {
+  const handleEditCustomer = (customer: Record<string, unknown>) => {
     setEditingCustomer(customer);
     setShowCustomerForm(true);
   };
@@ -199,7 +199,7 @@ export function InvoicingDashboard() {
           <InvoicePreview
             invoice={{
               ...viewingInvoice,
-              lineItems: (viewingInvoice.lineItems ?? []).map((li: any) => ({
+              lineItems: (viewingInvoice.lineItems as Array<Record<string, unknown>> ?? []).map((li) => ({
                 description: li.description ?? '',
                 quantity: li.quantity ?? 1,
                 unitPrice: li.unitPrice ?? 0,

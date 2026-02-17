@@ -37,7 +37,7 @@ export interface RouteConfig {
   /** Whether this route appears in sidebar/mobile navigation */
   showInNav: boolean;
   /** Lazy-loaded component */
-  component: React.LazyExoticComponent<ComponentType>;
+  component: React.LazyExoticComponent<ComponentType<Record<string, unknown>>>;
 }
 
 // Lazy-loaded page wrappers
@@ -167,7 +167,7 @@ export const routes: RouteConfig[] = [
     icon: FileText,
     section: 'transactions',
     showInNav: true,
-    component: LedgerPage as any,
+    component: LedgerPage,
   },
 
   // Accounts

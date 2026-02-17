@@ -126,7 +126,7 @@ export function SchemaExplorer() {
                 <p className="text-xs text-zinc-500 mb-2">Schema: {schema.schemaName}</p>
                 {schema.jsonSchema && (
                   <pre className="text-[11px] text-zinc-400 bg-black/30 rounded-lg p-3 overflow-x-auto max-h-48">
-                    {JSON.stringify(schema.jsonSchema, null, 2) as any as React.ReactNode}
+                    {JSON.stringify(schema.jsonSchema, null, 2)}
                   </pre>
                 )}
               </div>

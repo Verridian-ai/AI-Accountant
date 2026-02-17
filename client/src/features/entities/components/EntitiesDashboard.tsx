@@ -46,8 +46,8 @@ export function EntitiesDashboard() {
 
   const entities = hierarchy?.entities ?? [];
   const totalEntities = hierarchy?.totalEntities ?? 0;
-  const linkedAccounts = entities.reduce((sum: number, e: any) => sum + e.accounts.length, 0);
-  const consolidatedParents = entities.filter((e: any) => e.isConsolidatedParent).length;
+  const linkedAccounts = entities.reduce((sum: number, e: Record<string, unknown>) => sum + ((e.accounts as unknown[])?.length ?? 0), 0);
+  const consolidatedParents = entities.filter((e: Record<string, unknown>) => e.isConsolidatedParent).length;
 
   return (
     <div className="space-y-6">
@@ -66,7 +66,7 @@ export function EntitiesDashboard() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Entities</SelectItem>
-              {entities.map((e: any) => (
+              {entities.map((e: Record<string, unknown>) => (
                 <SelectItem key={e.id} value={e.id}>
                   {e.name}
                 </SelectItem>

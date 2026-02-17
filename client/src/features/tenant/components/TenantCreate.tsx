@@ -69,8 +69,8 @@ export function TenantCreate() {
         localStorage.setItem('tenantId', result.id);
       }
       setDone(true);
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to create workspace');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create workspace');
     } finally {
       setCreating(false);
     }

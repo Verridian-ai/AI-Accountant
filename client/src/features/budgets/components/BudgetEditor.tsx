@@ -100,7 +100,7 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
   const totalBudgeted = lines.reduce((sum, l) => sum + (l.budgetedAmount ?? 0), 0);
 
   const statusFlow: Array<'draft' | 'active' | 'closed'> = ['draft', 'active', 'closed'];
-  const currentIndex = statusFlow.indexOf(budget?.status as any);
+  const currentIndex = statusFlow.indexOf(budget?.status as 'draft' | 'active' | 'closed');
 
   if (loading) {
     return (

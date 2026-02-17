@@ -365,7 +365,7 @@ class OfflineSyncManager {
       try {
         const swRegistration = await navigator.serviceWorker.ready;
         if ('sync' in swRegistration) {
-          await (swRegistration as any).sync.register(`sync-${operation.entityType}s`);
+          await (swRegistration as unknown as { sync: { register: (tag: string) => Promise<void> } }).sync.register(`sync-${operation.entityType}s`);
         }
       } catch (error) {
         console.warn('Background sync registration failed:', error);

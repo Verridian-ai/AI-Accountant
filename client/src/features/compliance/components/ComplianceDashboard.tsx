@@ -52,10 +52,10 @@ export function ComplianceDashboard() {
       const risk = riskData.status === 'fulfilled' ? riskData.value : { overallScore: 100 };
 
       setStats({
-        overdue: Array.isArray(obs) ? obs.filter((o: any) => o.status === 'overdue').length : 0,
-        dueSoon: Array.isArray(obs) ? obs.filter((o: any) => o.status === 'pending').length : 0,
+        overdue: Array.isArray(obs) ? obs.filter((o: Record<string, unknown>) => o.status === 'overdue').length : 0,
+        dueSoon: Array.isArray(obs) ? obs.filter((o: Record<string, unknown>) => o.status === 'pending').length : 0,
         compliant: Array.isArray(obs)
-          ? obs.filter((o: any) => o.status === 'compliant' || o.status === 'lodged').length
+          ? obs.filter((o: Record<string, unknown>) => o.status === 'compliant' || o.status === 'lodged').length
           : 0,
         totalAlerts: aStats.total ?? aStats.open ?? 0,
         healthScore: Math.max(0, 100 - (risk.overallScore ?? 0)),

@@ -81,7 +81,7 @@ export function ProfitAndLoss({ periodStart, periodEnd, accountId }: Props) {
     reportsApi
       .fetchPnL(periodStart, periodEnd, accountId)
       .then(setData)
-      .catch((e: any) => setError(e.message))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
       .finally(() => setLoading(false));
   }, [periodStart, periodEnd, accountId]);
 

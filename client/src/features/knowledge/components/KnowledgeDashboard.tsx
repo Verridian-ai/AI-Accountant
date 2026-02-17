@@ -38,12 +38,12 @@ export function KnowledgeDashboard() {
       .getGraph('', { maxNodes: 0 })
       .then(() => {
         // Attempt to load dataset list — fallback to placeholder if the endpoint doesn't exist yet
-        return fetch(`${(window as any).__BASE_URL || ''}/api/knowledge/datasets`)
+        return fetch(`${(window as unknown as Record<string, string>).__BASE_URL || ''}/api/knowledge/datasets`)
           .then((r) => (r.ok ? r.json() : []))
           .catch(() => []);
       })
-      .then((list: any[]) => {
-        const names = list.map((d: any) => d.name || d.datasetName || d).filter(Boolean);
+      .then((list: Array<Record<string, unknown> | string>) => {
+        const names = list.map((d) => (typeof d === 'string' ? d : (d.name || d.datasetName || '')) as string).filter(Boolean);
         setDatasets(names.length > 0 ? names : ['transactions', 'gst-rulings', 'merchants']);
         if (names.length > 0) setSelectedDataset(names[0]);
         else setSelectedDataset('transactions');
@@ -60,7 +60,7 @@ export function KnowledgeDashboard() {
     if (!selectedDataset) return;
     knowledgeApi
       .graphStats(selectedDataset)
-      .then((stats: any) => {
+      .then((stats: Record<string, unknown>) => {
         setQuickStats([
           { label: 'Total Nodes', value: stats.nodeCount ?? 0, color: 'text-[#FFCC00]' },
           { label: 'Total Edges', value: stats.edgeCount ?? 0, color: 'text-blue-400' },

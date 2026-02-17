@@ -219,7 +219,7 @@ export function TaxDashboard() {
                 </div>
                 <div className="space-y-2">
                   <Label>Entity Type</Label>
-                  <Select value={entityType} onValueChange={(v) => setEntityType(v as any)}>
+                  <Select value={entityType} onValueChange={(v) => setEntityType(v as 'individual' | 'company' | 'trust' | 'super_fund')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

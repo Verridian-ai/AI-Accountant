@@ -116,8 +116,8 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
         bills: selectedBills,
       });
       setRunStatus('draft');
-    } catch (e: any) {
-      setError(e.message ?? 'Failed to create payment run');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to create payment run');
     } finally {
       setSaving(false);
     }
@@ -132,8 +132,8 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
       await apApi.processPaymentRun(paymentRun.id);
       setRunStatus('completed');
       setPaymentRun((prev) => (prev ? { ...prev, status: 'completed' } : prev));
-    } catch (e: any) {
-      setError(e.message ?? 'Failed to process payment');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to process payment');
       setRunStatus('draft');
     } finally {
       setProcessing(false);

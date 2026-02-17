@@ -21,7 +21,7 @@ const formatAUD = (cents: number) =>
 const PAGE_SIZE = 20;
 
 export function CustomerList({ onSelectCustomer, onAddCustomer }: CustomerListProps) {
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<Array<Record<string, unknown>>>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -134,7 +134,7 @@ export function CustomerList({ onSelectCustomer, onAddCustomer }: CustomerListPr
                 </tr>
               </thead>
               <tbody>
-                {customers.map((c: any) => (
+                {customers.map((c) => (
                   <tr
                     key={c.id}
                     onClick={() => onSelectCustomer(c.id)}

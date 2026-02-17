@@ -162,8 +162,8 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
       }
 
       onComplete();
-    } catch (err: any) {
-      setError(err.message || 'Failed to create employee');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create employee');
     } finally {
       setSubmitting(false);
     }

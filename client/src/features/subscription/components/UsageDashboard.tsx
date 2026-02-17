@@ -22,7 +22,7 @@ export function UsageDashboard() {
     if (!tenantId) return;
     tenantApi
       .getSubscription(tenantId)
-      .then((data: any) => {
+      .then((data: Record<string, unknown>) => {
         const usage = data.usage ?? {};
         const limits = data.limits ?? {};
         setMetrics([

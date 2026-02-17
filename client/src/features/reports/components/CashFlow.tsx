@@ -88,7 +88,7 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
     reportsApi
       .fetchCashFlow(periodStart, periodEnd)
       .then(setData)
-      .catch((e: any) => setError(e.message))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
       .finally(() => setLoading(false));
   }, [periodStart, periodEnd]);
 

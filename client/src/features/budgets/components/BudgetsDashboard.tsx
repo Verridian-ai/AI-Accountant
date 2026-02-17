@@ -265,7 +265,7 @@ export function BudgetsDashboard() {
                 <label className="block text-xs text-zinc-500 mb-1">Budget Type</label>
                 <select
                   value={createType}
-                  onChange={(e) => setCreateType(e.target.value as any)}
+                  onChange={(e) => setCreateType(e.target.value as 'annual' | 'quarterly' | 'monthly' | 'project')}
                   className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
                 >
                   <option value="annual">Annual</option>

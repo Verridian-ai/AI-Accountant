@@ -3,8 +3,24 @@ import { invoicingApi } from '@/api';
 import { Save, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+interface CustomerRecord {
+  id: string;
+  businessName?: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+  abn?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postcode?: string;
+  country?: string;
+  paymentTermsDays?: number;
+  notes?: string;
+}
+
 interface CustomerFormProps {
-  customer?: any;
+  customer?: CustomerRecord;
   onSave: () => void;
   onCancel: () => void;
 }
@@ -105,8 +121,8 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
         await invoicingApi.createCustomer(payload);
       }
       onSave();
-    } catch (err: any) {
-      setSaveError(err.message ?? 'Failed to save customer');
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save customer');
     } finally {
       setSaving(false);
     }

@@ -60,8 +60,8 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
     try {
       const result = await forecastApi.calculateAccuracy(forecastId);
       setMetrics(result);
-    } catch (err: any) {
-      setError(err.message || 'Failed to calculate accuracy');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to calculate accuracy');
     } finally {
       setLoading(false);
     }
@@ -76,8 +76,8 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
     try {
       await forecastApi.updateActuals(forecastId);
       await loadAccuracy();
-    } catch (err: any) {
-      setError(err.message || 'Failed to update actuals');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update actuals');
     } finally {
       setLoading(false);
     }

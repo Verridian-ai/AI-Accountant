@@ -49,7 +49,7 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
     knowledgeApi
       .feedbackStats(userId)
       .then(setStats)
-      .catch((e: any) => setError(e.message))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
       .finally(() => setLoading(false));
   };
 
@@ -67,8 +67,8 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
       });
       setMemifyResult(result.message || 'Memify triggered successfully');
       loadStats();
-    } catch (e: any) {
-      setMemifyResult(`Error: ${e.message}`);
+    } catch (e: unknown) {
+      setMemifyResult(`Error: ${e instanceof Error ? e.message : 'Unknown error'}`);
     } finally {
       setMemifying(false);
     }

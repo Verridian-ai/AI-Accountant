@@ -305,7 +305,7 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           { label: 'Agent Monitor', section: 'agents' as AdminSection, icon: Bot },
           { label: 'System Health', section: 'health' as AdminSection, icon: Server },
           { label: 'Cognee Search', section: 'search' as AdminSection, icon: Database },
-          { label: 'Feature Flags', section: 'features' as AdminSection, icon: Flag as any },
+          { label: 'Feature Flags', section: 'features' as AdminSection, icon: Flag },
         ].map((action) => (
           <button
             key={action.label}

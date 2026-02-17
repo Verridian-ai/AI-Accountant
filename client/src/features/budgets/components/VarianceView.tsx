@@ -129,7 +129,7 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
       {/* Top Variances Alert */}
       {summary && summary.topVariances.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {summary.topVariances.slice(0, 5).map((tv: any, i: number) => (
+          {(summary.topVariances as Array<Record<string, unknown>>).slice(0, 5).map((tv, i: number) => (
             <div key={i} className="neu-inset rounded-xl p-3 flex items-center gap-3">
               <div
                 className={`p-2 rounded-lg ${tv.variance < 0 ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}

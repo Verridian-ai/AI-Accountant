@@ -250,7 +250,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
                   </thead>
                   <tbody>
                     {Object.entries(detail.byEntity).map(([entityId, rawData]) => {
-                      const data = rawData as any;
+                      const data = rawData as Record<string, unknown>;
                       const net = data.revenue - data.expenses;
                       return (
                         <tr key={entityId} className="border-b border-white/5">
@@ -285,7 +285,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {detail.eliminations.map((elim: any, idx: number) => (
+                  {(detail.eliminations as Array<Record<string, unknown>>).map((elim, idx: number) => (
                     <div
                       key={idx}
                       className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"

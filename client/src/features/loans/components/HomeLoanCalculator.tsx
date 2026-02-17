@@ -235,7 +235,7 @@ export function HomeLoanCalculator() {
                       </tr>
                     </thead>
                     <tbody>
-                      {result.schedule.slice(0, 12).map((row: any) => (
+                      {(result.schedule as Array<Record<string, unknown>>).slice(0, 12).map((row) => (
                         <tr key={row.period} className="border-b border-white/5 last:border-0">
                           <td className="py-2 pr-4 text-zinc-400">{row.period}</td>
                           <td className="text-right py-2 px-2">{formatCurrency(row.payment)}</td>

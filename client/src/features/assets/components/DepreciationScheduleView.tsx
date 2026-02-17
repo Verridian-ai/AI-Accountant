@@ -94,7 +94,7 @@ export function DepreciationScheduleView({
                   </tr>
                 </thead>
                 <tbody>
-                  {schedule.assets.map((item: any) => (
+                  {(schedule.assets as Array<Record<string, unknown>>).map((item) => (
                     <tr
                       key={item.assetId}
                       className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
@@ -177,7 +177,7 @@ export function DepreciationScheduleView({
                   <AlertTriangle className="w-4 h-4" />
                   {batchResult.errors.length} error(s)
                 </p>
-                {batchResult.errors.map((e: any, i: number) => (
+                {(batchResult.errors as Array<Record<string, unknown>>).map((e, i: number) => (
                   <p key={i} className="text-xs text-zinc-500">
                     Asset {e.assetId}: {e.error}
                   </p>

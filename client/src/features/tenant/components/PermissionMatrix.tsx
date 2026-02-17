@@ -113,8 +113,8 @@ export function PermissionMatrix() {
       setModified(new Set());
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to save permissions');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save permissions');
     } finally {
       setSaving(false);
     }

@@ -54,7 +54,7 @@ function ForecastDashboardInner() {
   // Revenue forecast chart data
   const revenueChartData = useMemo(() => {
     if (!revenueData?.projections) return [];
-    return revenueData.projections.map((p: any) => ({
+    return revenueData.projections.map((p: Record<string, unknown>) => ({
       month: p.month,
       projected: Math.round(p.projected / 100),
       upper95: Math.round(p.upperBound / 100),
@@ -67,7 +67,7 @@ function ForecastDashboardInner() {
   // Expense forecast chart data
   const expenseChartData = useMemo(() => {
     if (!expenseData?.projections) return [];
-    return expenseData.projections.map((p: any) => ({
+    return expenseData.projections.map((p: Record<string, unknown>) => ({
       month: p.month,
       recurring: Math.round((p.projected / 100) * 0.7),
       variable: Math.round((p.projected / 100) * 0.3),

@@ -72,7 +72,7 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       setPO(poData);
 
       // Build receiving lines from PO line items
-      const receivingLines: ReceivingLine[] = (poData.lineItems ?? []).map((li: any) => {
+      const receivingLines: ReceivingLine[] = (poData.lineItems ?? []).map((li: Record<string, unknown>) => {
         const prevReceived = li.receivedQuantity ?? 0;
         return {
           lineId: li.id ?? li.lineId ?? '',
@@ -150,8 +150,8 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
           })),
       });
       onReceived();
-    } catch (e: any) {
-      setError(e.message ?? 'Failed to record receipt');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to record receipt');
     } finally {
       setSaving(false);
     }

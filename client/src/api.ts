@@ -1142,7 +1142,7 @@ export const taxApi = {
     return res.json();
   },
 
-  calculateDepreciation: async (assetId: string): Promise<any> => {
+  calculateDepreciation: async (assetId: string): Promise<Record<string, unknown>> => {
     const res = await fetch(`${API_URL}/tax/depreciation/calculate/${assetId}`, {
       headers: getAuthHeaders(),
     });
@@ -1347,7 +1347,7 @@ export const gstApi = {
     return res.json();
   },
 
-  fetchBASDrillDown: async (quarter: string, label: string): Promise<any[]> => {
+  fetchBASDrillDown: async (quarter: string, label: string): Promise<Record<string, unknown>[]> => {
     const res = await fetch(`${API_URL}/bas/${quarter}/drill-down/${label}`, {
       headers: getAuthHeaders(),
     });
@@ -1561,7 +1561,7 @@ export interface StreamEvent {
 
 export const mutationApi = {
   /** Stream a chat query via SSE, returning an EventSource-like async iterator */
-  streamChat: (query: string, sessionId?: string): EventSource => {
+  streamChat: (_query: string, _sessionId?: string): EventSource => {
     // We use a POST via fetch + ReadableStream instead of EventSource (which is GET-only).
     // For simplicity, return a proxy that consumers can listen to.
     // Callers should use fetchStreamChat() below for the full streaming experience.
@@ -2456,7 +2456,7 @@ export const apApi = {
     if (!res.ok) throw new Error('Failed to cancel purchase order');
   },
 
-  fetchThreeWayMatch: async (poId: string): Promise<any> => {
+  fetchThreeWayMatch: async (poId: string): Promise<Record<string, unknown>> => {
     const res = await fetch(`${API_URL}/purchase-orders/${poId}/three-way-match`, {
       headers: getAuthHeaders(),
     });
@@ -2901,7 +2901,7 @@ export const fetchMarketRates = fetchMarketPrices;
 
 // Missing API Namespace Objects
 export const entityApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
-  createEntity: async (data: unknown) => Promise.resolve({} as Record<string, unknown>),
+  createEntity: async (_data: unknown) => Promise.resolve({} as Record<string, unknown>),
   getHierarchy: async () => Promise.resolve({} as Record<string, unknown>),
   updateSettings: async (_id: unknown, _settings: unknown) => Promise.resolve(),
   getInterEntityTransactions: async (_filters: unknown) => Promise.resolve([] as Record<string, unknown>[]),
@@ -2918,151 +2918,151 @@ export const assetApi: Record<string, (...args: unknown[]) => Promise<unknown>> 
   registerAsset: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const forecastApi: any = {
-  calculateAccuracy: async (...args: any[]) => Promise.resolve({} as any),
-  updateActuals: async (...args: any[]) => Promise.resolve({} as any),
-  list: async (...args: any[]) => Promise.resolve([] as any[]),
-  getById: async (...args: any[]) => Promise.resolve({} as any),
-  generate: async (...args: any[]) => Promise.resolve({} as any),
-  archive: async (...args: any[]) => Promise.resolve({} as any),
-  compare: async (...args: any[]) => Promise.resolve({} as any),
+export const forecastApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  calculateAccuracy: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  updateActuals: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  getById: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  generate: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  archive: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  compare: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const intelligenceApi: any = {
-  findCorrelations: async (...args: any[]) => Promise.resolve([] as any[]),
-  listInsights: async (...args: any[]) => Promise.resolve([] as any[]),
-  updateInsightStatus: async (...args: any[]) => Promise.resolve({} as any),
-  listSubscriptions: async (...args: any[]) => Promise.resolve([] as any[]),
-  scanInsights: async (...args: any[]) => Promise.resolve({} as any),
-  getTimeline: async (...args: any[]) => Promise.resolve({} as any),
-  getConnections: async (...args: any[]) => Promise.resolve({} as any),
-  subscribe: async (...args: any[]) => Promise.resolve({} as any),
-  deleteSubscription: async (...args: any[]) => Promise.resolve({} as any),
-  listSavedQueries: async (...args: any[]) => Promise.resolve([] as any[]),
-  executeQuery: async (...args: any[]) => Promise.resolve({} as any),
-  saveQuery: async (...args: any[]) => Promise.resolve({} as any),
+export const intelligenceApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  findCorrelations: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  listInsights: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  updateInsightStatus: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  listSubscriptions: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  scanInsights: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getTimeline: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getConnections: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  subscribe: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  deleteSubscription: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  listSavedQueries: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  executeQuery: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  saveQuery: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const knowledgeApi: any = {
-  listDataPoints: async (...args: any[]) => Promise.resolve([] as any[]),
-  createDataPoint: async (...args: any[]) => Promise.resolve({} as any),
-  deactivateDataPoint: async (...args: any[]) => Promise.resolve({} as any),
-  activateDataPoint: async (...args: any[]) => Promise.resolve({} as any),
-  feedbackStats: async (...args: any[]) => Promise.resolve({} as any),
-  triggerMemify: async (...args: any[]) => Promise.resolve({} as any),
-  graphStats: async (...args: any[]) => Promise.resolve({} as any),
-  getGraph: async (...args: any[]) => Promise.resolve({} as any),
-  submitFeedback: async (...args: any[]) => Promise.resolve({} as any),
-  listOntologies: async (...args: any[]) => Promise.resolve([] as any[]),
-  createOntology: async (...args: any[]) => Promise.resolve({} as any),
-  applyOntology: async (...args: any[]) => Promise.resolve({} as any),
+export const knowledgeApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  listDataPoints: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  createDataPoint: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  deactivateDataPoint: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  activateDataPoint: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  feedbackStats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  triggerMemify: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  graphStats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getGraph: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  submitFeedback: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  listOntologies: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  createOntology: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  applyOntology: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const inventoryApi: any = {
-  listItems: async (...args: any[]) => Promise.resolve([] as any[]),
-  getStockLevels: async (...args: any[]) => Promise.resolve([] as any[]),
-  getValuation: async (...args: any[]) => Promise.resolve({} as any),
-  updateItem: async (...args: any[]) => Promise.resolve({} as any),
-  createItem: async (...args: any[]) => Promise.resolve({} as any),
-  deactivateItem: async (...args: any[]) => Promise.resolve({} as any),
-  getMovements: async (...args: any[]) => Promise.resolve([] as any[]),
-  listWarehouses: async (...args: any[]) => Promise.resolve([] as any[]),
-  createWarehouse: async (...args: any[]) => Promise.resolve({} as any),
+export const inventoryApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  listItems: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  getStockLevels: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  getValuation: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  updateItem: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  createItem: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  deactivateItem: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getMovements: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  listWarehouses: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  createWarehouse: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const matchesApi: any = {
-  autoMatch: async (...args: any[]) => Promise.resolve({} as any),
-  confirm: async (...args: any[]) => Promise.resolve({} as any),
-  reject: async (...args: any[]) => Promise.resolve({} as any),
-  getStats: async (...args: any[]) => Promise.resolve({} as any),
-  findCandidates: async (...args: any[]) => Promise.resolve([] as any[]),
-  scoreMatch: async (...args: any[]) => Promise.resolve({} as any),
-  listRules: async (...args: any[]) => Promise.resolve([] as any[]),
-  createRule: async (...args: any[]) => Promise.resolve({} as any),
-  deleteRule: async (...args: any[]) => Promise.resolve({} as any),
+export const matchesApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  autoMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  confirm: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  reject: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getStats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  findCandidates: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  scoreMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  listRules: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  createRule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  deleteRule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const reconApi: any = {
-  listSessions: async (...args: any[]) => Promise.resolve([] as any[]),
-  createSession: async (...args: any[]) => Promise.resolve({} as any),
-  getSession: async (...args: any[]) => Promise.resolve({} as any),
-  autoMatch: async (...args: any[]) => Promise.resolve({} as any),
-  completeSession: async (...args: any[]) => Promise.resolve({} as any),
-  confirmMatch: async (...args: any[]) => Promise.resolve({} as any),
-  createManualMatch: async (...args: any[]) => Promise.resolve({} as any),
-  getRules: async (...args: any[]) => Promise.resolve([] as any[]),
-  createRule: async (...args: any[]) => Promise.resolve({} as any),
+export const reconApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  listSessions: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  createSession: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getSession: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  autoMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  completeSession: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  confirmMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  createManualMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getRules: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  createRule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const reportsApi: any = {
-  fetchBalanceSheet: async (...args: any[]) => Promise.resolve({} as any),
-  fetchCashFlow: async (...args: any[]) => Promise.resolve({} as any),
-  fetchKPIs: async (...args: any[]) => Promise.resolve({} as any),
-  comparePeriods: async (...args: any[]) => Promise.resolve({} as any),
-  fetchPnL: async (...args: any[]) => Promise.resolve({} as any),
-  fetchTrialBalance: async (...args: any[]) => Promise.resolve({} as any),
+export const reportsApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  fetchBalanceSheet: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchCashFlow: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchKPIs: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  comparePeriods: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchPnL: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchTrialBalance: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const budgetsApi: any = {
-  get: async (...args: any[]) => Promise.resolve({} as any),
-  addLine: async (...args: any[]) => Promise.resolve({} as any),
-  update: async (...args: any[]) => Promise.resolve({} as any),
-  list: async (...args: any[]) => Promise.resolve([] as any[]),
-  create: async (...args: any[]) => Promise.resolve({} as any),
-  getVariance: async (...args: any[]) => Promise.resolve({} as any),
-  getVarianceSummary: async (...args: any[]) => Promise.resolve({} as any),
+export const budgetsApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  get: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  addLine: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  update: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  create: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getVariance: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getVarianceSummary: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const loanApi: any = {
-  calculateCarFinance: async (...args: any[]) => Promise.resolve({} as any),
-  calculateHomeLoan: async (...args: any[]) => Promise.resolve({} as any),
-  calculateRefinanceSavings: async (...args: any[]) => Promise.resolve({} as any),
-  calculateBorrowingCapacity: async (...args: any[]) => Promise.resolve({} as any),
-  calculatePersonalLoan: async (...args: any[]) => Promise.resolve({} as any),
+export const loanApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  calculateCarFinance: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  calculateHomeLoan: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  calculateRefinanceSavings: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  calculateBorrowingCapacity: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  calculatePersonalLoan: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const anomalyApi: any = {
-  list: async (...args: any[]) => Promise.resolve([] as any[]),
-  stats: async (...args: any[]) => Promise.resolve({} as any),
-  scan: async (...args: any[]) => Promise.resolve({} as any),
-  acknowledge: async (...args: any[]) => Promise.resolve({} as any),
-  resolve: async (...args: any[]) => Promise.resolve({} as any),
-  dismiss: async (...args: any[]) => Promise.resolve({} as any),
+export const anomalyApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  stats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  scan: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  acknowledge: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  resolve: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  dismiss: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const complianceApi: any = {
-  calendar: async (...args: any[]) => Promise.resolve([] as any[]),
-  obligations: async (...args: any[]) => Promise.resolve([] as any[]),
-  risk: async (...args: any[]) => Promise.resolve({} as any),
-  report: async (...args: any[]) => Promise.resolve({} as any),
-  generateSchedule: async (...args: any[]) => Promise.resolve({} as any),
-  lodge: async (...args: any[]) => Promise.resolve({} as any),
+export const complianceApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  calendar: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  obligations: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  risk: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  report: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  generateSchedule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  lodge: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const consolidationApi: any = {
-  generate: async (...args: any[]) => Promise.resolve({} as any),
-  getSnapshots: async (...args: any[]) => Promise.resolve([] as any[]),
-  getSnapshotDetail: async (...args: any[]) => Promise.resolve({} as any),
-  finalizeSnapshot: async (...args: any[]) => Promise.resolve({} as any),
+export const consolidationApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  generate: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getSnapshots: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  getSnapshotDetail: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  finalizeSnapshot: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const documentsApi: any = {
-  list: async (...args: any[]) => Promise.resolve([] as any[]),
-  delete: async (...args: any[]) => Promise.resolve({} as any),
-  upload: async (...args: any[]) => Promise.resolve({} as any),
-  process: async (...args: any[]) => Promise.resolve({} as any),
-  get: async (...args: any[]) => Promise.resolve({} as any),
-  classify: async (...args: any[]) => Promise.resolve({} as any),
-  getLineItems: async (...args: any[]) => Promise.resolve([] as any[]),
-  batchProcess: async (...args: any[]) => Promise.resolve({} as any),
+export const documentsApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  delete: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  upload: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  process: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  get: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  classify: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getLineItems: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  batchProcess: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const forecastsApi: any = {
-  listScenarios: async (...args: any[]) => Promise.resolve([] as any[]),
-  createScenario: async (...args: any[]) => Promise.resolve({} as any),
-  generateForecast: async (...args: any[]) => Promise.resolve({} as any),
-  getScenario: async (...args: any[]) => Promise.resolve({} as any),
-  compareScenarios: async (...args: any[]) => Promise.resolve({} as any),
+export const forecastsApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  listScenarios: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  createScenario: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  generateForecast: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getScenario: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  compareScenarios: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export type TaxReturnResult = any;
+export type TaxReturnResult = Record<string, unknown>;

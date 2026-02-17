@@ -1,8 +1,16 @@
 import React from 'react';
 import { X, ThumbsUp, ThumbsDown, Navigation, Tag, Link2 } from 'lucide-react';
 
+interface GraphNode {
+  id: string;
+  label?: string;
+  type?: string;
+  neighbors?: Array<{ id: string; label: string; edgeType: string }>;
+  properties?: Record<string, unknown>;
+}
+
 interface NodeDetailPanelProps {
-  node: any;
+  node: GraphNode;
   onNavigate: (nodeId: string) => void;
   onFeedback: (nodeId: string, type: string) => void;
   onClose: () => void;

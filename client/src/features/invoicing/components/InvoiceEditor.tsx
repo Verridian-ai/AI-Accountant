@@ -74,7 +74,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
         }
         if (inv.lineItems?.length) {
           setLineItems(
-            inv.lineItems.map((li: any) => ({
+            (inv.lineItems as Array<Record<string, unknown>>).map((li) => ({
               id: nextLineId(),
               description: li.description ?? '',
               quantity: li.quantity ?? 1,

@@ -29,7 +29,7 @@ export function GraphStatsPanel({ datasetName }: GraphStatsPanelProps) {
     knowledgeApi
       .graphStats(datasetName)
       .then(setStats)
-      .catch((e: any) => setError(e.message))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
       .finally(() => setLoading(false));
   }, [datasetName]);
 

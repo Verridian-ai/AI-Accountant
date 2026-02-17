@@ -60,8 +60,8 @@ export function KPIDashboard({ period }: Props) {
     setError(null);
     reportsApi
       .fetchKPIs(period)
-      .then((data: any) => setKpis(Array.isArray(data) ? data : []))
-      .catch((e: any) => setError(e.message))
+      .then((data: unknown) => setKpis(Array.isArray(data) ? data : []))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
       .finally(() => setLoading(false));
   }, [period]);
 

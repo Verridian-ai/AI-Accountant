@@ -89,8 +89,8 @@ export function TenantSettings() {
       await tenantApi.updateTenant(tenantId, form);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to save');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setSaving(false);
     }
@@ -102,8 +102,8 @@ export function TenantSettings() {
       await tenantApi.deactivateTenant(tenantId);
       localStorage.removeItem('tenantId');
       window.location.reload();
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to deactivate');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to deactivate');
     }
   };
 

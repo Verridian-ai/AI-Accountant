@@ -41,8 +41,8 @@ export function CancelConfirmation({
       await tenantApi.cancelSubscription(tenantId);
       onCancelled?.();
       onClose();
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to cancel subscription');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel subscription');
     } finally {
       setCancelling(false);
     }

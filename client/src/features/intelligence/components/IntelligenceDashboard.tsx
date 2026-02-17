@@ -44,14 +44,14 @@ export function IntelligenceDashboard() {
         intelligenceApi.listInsights(userId).catch(() => []),
         intelligenceApi.listSubscriptions(userId).catch(() => []),
       ]);
-      const insightList = Array.isArray(insights) ? insights : ((insights as any).insights ?? []);
-      const subList = Array.isArray(subs) ? subs : ((subs as any).subscriptions ?? []);
+      const insightList = Array.isArray(insights) ? insights : ((insights as Record<string, unknown>).insights ?? []) as Array<Record<string, unknown>>;
+      const subList = Array.isArray(subs) ? subs : ((subs as Record<string, unknown>).subscriptions ?? []) as Array<Record<string, unknown>>;
       setStats({
         insightCount: insightList.length,
         criticalAlerts: insightList.filter(
-          (i: any) => i.severity === 'critical' && i.status === 'new',
+          (i: Record<string, unknown>) => i.severity === 'critical' && i.status === 'new',
         ).length,
-        activeSubscriptions: subList.filter((s: any) => s.isActive).length,
+        activeSubscriptions: subList.filter((s: Record<string, unknown>) => s.isActive).length,
       });
     } catch {
       setStats({ insightCount: 0, criticalAlerts: 0, activeSubscriptions: 0 });

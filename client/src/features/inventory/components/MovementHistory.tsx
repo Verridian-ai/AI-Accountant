@@ -46,7 +46,7 @@ export function MovementHistory() {
       if (typeFilter) filters.movementType = typeFilter;
       if (startDate) filters.startDate = startDate;
       if (endDate) filters.endDate = endDate;
-      const data = await inventoryApi.getMovements(filters as any);
+      const data = await inventoryApi.getMovements(filters);
       const items = Array.isArray(data) ? data : (data.movements ?? []);
       setMovements(items);
       setHasMore(items.length === PAGE_SIZE);

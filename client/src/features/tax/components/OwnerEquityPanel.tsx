@@ -251,7 +251,7 @@ export function OwnerEquityPanel({ year }: { year: string }) {
                 <span className="text-right">Drawings</span>
                 <span className="text-right">Net</span>
               </div>
-              {summary.monthlyBreakdown.map((m: any) => (
+              {(summary.monthlyBreakdown as Array<Record<string, unknown>>).map((m) => (
                 <div
                   key={m.month}
                   className="grid grid-cols-4 text-sm py-1.5 border-b border-white/5 last:border-0"

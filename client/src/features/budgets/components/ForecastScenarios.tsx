@@ -55,7 +55,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
     if (!name) return;
     setCreating(true);
     try {
-      const assumptions: Record<string, any> = {};
+      const assumptions: Record<string, unknown> = {};
       if (growthRate) assumptions.growthRate = parseFloat(growthRate);
       if (seasonalWeight) assumptions.seasonalWeight = parseFloat(seasonalWeight);
 
@@ -169,7 +169,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
               <label className="block text-xs text-zinc-500 mb-1">Scenario Type</label>
               <select
                 value={scenarioType}
-                onChange={(e) => setScenarioType(e.target.value as any)}
+                onChange={(e) => setScenarioType(e.target.value as 'optimistic' | 'realistic' | 'pessimistic' | 'custom')}
                 className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
               >
                 <option value="optimistic">Optimistic</option>
