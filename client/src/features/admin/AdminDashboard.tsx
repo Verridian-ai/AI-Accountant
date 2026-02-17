@@ -58,51 +58,42 @@ export function AdminDashboard({ className }: AdminDashboardProps) {
   }, []);
 
   // User management handlers
-  const handleViewUser = useCallback((userId: string) => {
-    console.log('View user:', userId);
-    // In production, navigate to user detail page or open modal
+  const handleViewUser = useCallback((_userId: string) => {
+    // TODO: navigate to user detail page or open modal
   }, []);
 
-  const handleSuspendUser = useCallback(async (userId: string) => {
+  const handleSuspendUser = useCallback(async (_userId: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log('Suspend/unsuspend user:', userId);
   }, []);
 
-  const handleDeleteUser = useCallback(async (userId: string) => {
+  const handleDeleteUser = useCallback(async (_userId: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log('Delete user:', userId);
   }, []);
 
   // Parser health handlers
-  const handleRetryParsing = useCallback(async (statementId: string) => {
+  const handleRetryParsing = useCallback(async (_statementId: string) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log('Retry parsing:', statementId);
   }, []);
 
-  const handleViewError = useCallback((error: ParserError) => {
-    console.log('View error:', error);
-    // In production, open error detail modal
+  const handleViewError = useCallback((_error: ParserError) => {
+    // TODO: open error detail modal
   }, []);
 
   // Feedback handlers
-  const handleApproveFeedback = useCallback(async (id: string) => {
+  const handleApproveFeedback = useCallback(async (_id: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log('Approve feedback:', id);
   }, []);
 
-  const handleRejectFeedback = useCallback(async (id: string, reason?: string) => {
+  const handleRejectFeedback = useCallback(async (_id: string, _reason?: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log('Reject feedback:', id, reason);
   }, []);
 
-  const handleApplyCorrection = useCallback(async (id: string) => {
+  const handleApplyCorrection = useCallback(async (_id: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log('Apply correction:', id);
   }, []);
 
-  const handleViewTransaction = useCallback((transactionId: string) => {
-    console.log('View transaction:', transactionId);
-    // In production, navigate to transaction or open modal
+  const handleViewTransaction = useCallback((_transactionId: string) => {
+    // TODO: navigate to transaction or open modal
   }, []);
 
   return (

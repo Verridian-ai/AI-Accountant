@@ -67,14 +67,12 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
       const es = new EventSource(`${BASE_URL}/api/events?token=${token}`);
 
       es.onopen = () => {
-        console.log('SSE connection opened');
         setConnected(true);
         setError(false);
       };
 
       // Legacy 'update' listener — backward compatibility
       es.addEventListener('update', () => {
-        console.log('SSE update received, notifying listeners');
         listenersRef.current.forEach((listener) => listener());
       });
 

@@ -2,7 +2,7 @@ import { db } from '../db/index.js';
 import { statements, statementAccounts } from '../schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
-import { selectOne, selectMany, insert, update as typedUpdate, deleteRows } from '../db/typed-queries.js';
+import { selectOne, insert, update as typedUpdate, deleteRows } from '../db/typed-queries.js';
 
 /**
  * Repository for Statements

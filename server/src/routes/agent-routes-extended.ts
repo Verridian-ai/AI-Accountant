@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { orchestrator } from '../services/claude/orchestrator.js';
 import { isClaudeAgentsEnabled, isAgentEnabled, AGENT_MODELS } from '../services/claude/config.js';
 import type { AgentType } from '../services/claude/types.js';
+import { logger } from '../lib/logger.js';
 
 const agentRoutes = new Hono();
 
@@ -187,7 +188,7 @@ agentRoutes.post('/agents/parse', async (c) => {
   if (!body.ok) return c.json(body.body, body.status as 400);
 
   const startTime = Date.now();
-  console.log('[Agent Route] statement_parser invoked');
+  logger.info('[Agent Route] statement_parser invoked');
 
   try {
     const result = await orchestrator.invoke('statement_parser', {
@@ -227,7 +228,7 @@ agentRoutes.post('/agents/categorize', async (c) => {
   if (!body.ok) return c.json(body.body, body.status as 400);
 
   const startTime = Date.now();
-  console.log('[Agent Route] transaction_categorizer invoked');
+  logger.info('[Agent Route] transaction_categorizer invoked');
 
   try {
     const txs = (body.data.transactions ?? []).map((tx) => ({
@@ -271,7 +272,7 @@ agentRoutes.post('/agents/merchant-intel', async (c) => {
   if (!body.ok) return c.json(body.body, body.status as 400);
 
   const startTime = Date.now();
-  console.log('[Agent Route] merchant_intelligence invoked');
+  logger.info('[Agent Route] merchant_intelligence invoked');
 
   try {
     const merchants = body.data.merchants ?? [
@@ -317,7 +318,7 @@ agentRoutes.post('/agents/payroll/calculate', async (c) => {
   if (!body.ok) return c.json(body.body, body.status as 400);
 
   const startTime = Date.now();
-  console.log('[Agent Route] payroll_agent invoked');
+  logger.info('[Agent Route] payroll_agent invoked');
 
   try {
     const result = await orchestrator.invoke('payroll_agent', {
@@ -358,7 +359,7 @@ agentRoutes.post('/agents/tax/strategy', async (c) => {
   if (!body.ok) return c.json(body.body, body.status as 400);
 
   const startTime = Date.now();
-  console.log('[Agent Route] tax_strategy invoked');
+  logger.info('[Agent Route] tax_strategy invoked');
 
   try {
     const result = await orchestrator.invoke('tax_strategy', {
@@ -399,7 +400,7 @@ agentRoutes.post('/agents/tax/claims', async (c) => {
   if (!body.ok) return c.json(body.body, body.status as 400);
 
   const startTime = Date.now();
-  console.log('[Agent Route] personal_tax_claims invoked');
+  logger.info('[Agent Route] personal_tax_claims invoked');
 
   try {
     const result = await orchestrator.invoke('personal_tax_claims', {
@@ -442,7 +443,7 @@ agentRoutes.post('/agents/financial-plan', async (c) => {
   if (!body.ok) return c.json(body.body, body.status as 400);
 
   const startTime = Date.now();
-  console.log('[Agent Route] financial_planner invoked');
+  logger.info('[Agent Route] financial_planner invoked');
 
   try {
     const result = await orchestrator.invoke('financial_planner', {

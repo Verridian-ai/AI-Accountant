@@ -18,14 +18,12 @@ export function useEventSource(onEvent: (event: SSEEvent) => void) {
     // Use token in query param for standard EventSource
     const url = `${BASE_URL}/api/events?token=${token}`;
 
-    console.log('[SSE] Connecting to', url);
     const es = new EventSource(url);
     eventSourceRef.current = es;
 
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
-        console.log('[SSE] Event received:', data);
         onEvent(data);
       } catch (err) {
         console.error('[SSE] Failed to parse event data:', err);
@@ -38,7 +36,6 @@ export function useEventSource(onEvent: (event: SSEEvent) => void) {
     };
 
     return () => {
-      console.log('[SSE] Closing connection');
       es.close();
       eventSourceRef.current = null;
     };
