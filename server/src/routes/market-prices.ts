@@ -23,12 +23,21 @@ priceRoutes.get('/', async (c) => {
 });
 
 priceRoutes.get('/:symbol', async (c) => {
-  const rows = await db.select().from(marketPrices).where(eq(marketPrices.symbol, c.req.param('symbol'))).orderBy(desc(marketPrices.observationDate)).limit(1).all();
+  const rows = await db
+    .select()
+    .from(marketPrices)
+    .where(eq(marketPrices.symbol, c.req.param('symbol')))
+    .orderBy(desc(marketPrices.observationDate))
+    .limit(1)
+    .all();
   return rows.length ? c.json(rows[0]) : c.json({ error: 'Not found' }, 404);
 });
 
 priceRoutes.get('/:symbol/history', async (c) => {
-  const history = await marketPriceService.getPriceHistory(c.req.param('symbol'), parseInt(c.req.query('days') ?? '30'));
+  const history = await marketPriceService.getPriceHistory(
+    c.req.param('symbol'),
+    parseInt(c.req.query('days') ?? '30'),
+  );
   return c.json({ symbol: c.req.param('symbol'), history, count: history.length });
 });
 

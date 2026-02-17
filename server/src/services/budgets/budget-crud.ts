@@ -34,7 +34,7 @@ export class BudgetCrud {
 
     await db.insert(budgets).values(newBudget);
 
-    let lines: any[] = [];
+    let lines: Array<typeof budgetLines.$inferSelect> = [];
     if (params.autoGenerate) {
       const lookback = params.lookbackMonths ?? 12;
       lines = await generateFromHistory(
@@ -46,7 +46,7 @@ export class BudgetCrud {
       );
 
       // Update total from generated lines
-      const total = lines.reduce((sum: number, l: any) => sum + Math.abs(l.budgetedAmount), 0);
+      const total = lines.reduce((sum: number, l: typeof budgetLines.$inferSelect) => sum + Math.abs(l.budgetedAmount), 0);
       await db
         .update(budgets)
         .set({ totalAmount: total, updatedAt: new Date().toISOString() })
@@ -117,7 +117,7 @@ export class BudgetCrud {
       .where(eq(budgetLines.budgetId, budgetId))
       .all();
 
-    const total = lines.reduce((sum: number, l: any) => sum + Math.abs(l.budgetedAmount), 0);
+    const total = lines.reduce((sum: number, l: typeof budgetLines.$inferSelect) => sum + Math.abs(l.budgetedAmount), 0);
     await db.update(budgets).set({ totalAmount: total }).where(eq(budgets.id, budgetId));
 
     return this.getBudget(budgetId);
@@ -185,7 +185,7 @@ export class BudgetCrud {
   async recalculateBudgetTotal(budgetId: string): Promise<void> {
     const lines = await selectMany(db, budgetLines, eq(budgetLines.budgetId, budgetId));
 
-    const total = lines.reduce((sum, l) => sum + Math.abs(l.budgetedAmount), 0);
+    const total = lines.reduce((sum: number, l: typeof budgetLines.$inferSelect) => sum + Math.abs(l.budgetedAmount), 0);
 
     await typedUpdate(
       db,

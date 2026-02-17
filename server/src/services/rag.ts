@@ -116,7 +116,9 @@ export class RAGService {
   ): Promise<{ chunks: string[]; summary: string[] }> {
     if (!USE_COGNEE) return { chunks: [], summary: [] };
 
-    logger.info(`[RAG] Multi-search Cognee: "${query}"${sessionId ? ` (session: ${sessionId})` : ''}`);
+    logger.info(
+      `[RAG] Multi-search Cognee: "${query}"${sessionId ? ` (session: ${sessionId})` : ''}`,
+    );
 
     if (userId) {
       const tools = CogneeTools.forUser(userId);
@@ -131,7 +133,13 @@ export class RAGService {
     if (sessionId) {
       const [chunks, summary] = await Promise.all([
         cogneeClient.searchWithSession(query, 'bank_transactions', sessionId, 5, 'CHUNKS'),
-        cogneeClient.searchWithSession(query, 'bank_transactions', sessionId, 3, 'GRAPH_SUMMARY_COMPLETION'),
+        cogneeClient.searchWithSession(
+          query,
+          'bank_transactions',
+          sessionId,
+          3,
+          'GRAPH_SUMMARY_COMPLETION',
+        ),
       ]);
       return { chunks, summary };
     }
