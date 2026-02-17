@@ -7,7 +7,7 @@
  * Amounts are stored in cents (integers). Percentages and ratios use decimals.
  */
 
-import { db, transactions, journalEntries, journalEntryLines, accounts } from '../schema.js';
+import { db, transactions, journalEntries, journalEntryLines, accounts, ownerEquityEvents, chartOfAccounts, reportSnapshots, kpiMetrics } from '../schema.js';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
