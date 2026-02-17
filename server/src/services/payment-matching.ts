@@ -146,8 +146,8 @@ export class PaymentMatchingService {
     const docDate = doc.documentDate ?? '';
     const docVendor = doc.vendorName ?? '';
 
-    // Multi-pass candidate discovery — collect unique transaction IDs
-    const candidateMap = new Map<string, MatchCandidate>();
+    // Multi-pass candidate discovery — collect unique transaction
+    const candidateMap = new Map<string, Transaction>();
 
     // Pass 1: Amount match (within tolerance)
     if (docAmount > 0) {
@@ -665,7 +665,7 @@ export class PaymentMatchingService {
 
     for (const key of safeKeys) {
       if (key in updates) {
-        allowedFields[key] = updates[key];
+        (allowedFields as Record<string, unknown>)[key] = updates[key];
       }
     }
 
@@ -913,7 +913,7 @@ export class PaymentMatchingService {
         )
         .all();
 
-      const alreadyExists = existingRules.some((r) => {
+      const alreadyExists = existingRules.some((r: PaymentMatchRule) => {
         const rulePattern = this.normalizeString(r.vendorPattern ?? '');
         return rulePattern === vendorNorm;
       });
@@ -946,11 +946,11 @@ export class PaymentMatchingService {
       .all();
 
     const totalDocuments = allDocs.length;
-    const matched = allDocs.filter((d) => d.status === 'matched').length;
-    const pending = allDocs.filter((d) =>
+    const matched = allDocs.filter((d: OcrDocument) => d.status === 'matched').length;
+    const pending = allDocs.filter((d: OcrDocument) =>
       ['pending', 'processing', 'extracted'].includes(d.status),
     ).length;
-    const failed = allDocs.filter((d) => d.status === 'failed').length;
+    const failed = allDocs.filter((d: OcrDocument) => d.status === 'failed').length;
     const matchRate = totalDocuments > 0 ? Math.round((matched / totalDocuments) * 10000) / 100 : 0;
 
     // Average confidence of confirmed matches
@@ -961,12 +961,12 @@ export class PaymentMatchingService {
       .all();
 
     // Filter to user's documents
-    const userDocIds = new Set(allDocs.map((d) => d.id));
-    const userMatches = confirmedMatches.filter((m) => userDocIds.has(m.documentId));
+    const userDocIds = new Set(allDocs.map((d: OcrDocument) => d.id));
+    const userMatches = confirmedMatches.filter((m: typeof paymentMatches.$inferSelect) => userDocIds.has(m.documentId));
     const averageConfidence =
       userMatches.length > 0
         ? Math.round(
-            (userMatches.reduce((sum: number, m) => sum + (m.matchScore ?? 0), 0) /
+            (userMatches.reduce((sum: number, m: typeof paymentMatches.$inferSelect) => sum + (m.matchScore ?? 0), 0) /
               userMatches.length) *
               1000,
           ) / 1000
@@ -974,7 +974,7 @@ export class PaymentMatchingService {
 
     // Top vendors
     const vendorCounts = new Map<string, number>();
-    for (const doc of allDocs.filter((d) => d.status === 'matched')) {
+    for (const doc of allDocs.filter((d: OcrDocument) => d.status === 'matched')) {
       const vendor = doc.vendorName ?? 'Unknown';
       vendorCounts.set(vendor, (vendorCounts.get(vendor) ?? 0) + 1);
     }
@@ -990,7 +990,7 @@ export class PaymentMatchingService {
       .where(eq(paymentMatchRules.userId, userId))
       .all();
 
-    const ruleEffectiveness = rules.map((r) => ({
+    const ruleEffectiveness = rules.map((r: PaymentMatchRule) => ({
       ruleId: r.id,
       name: r.name,
       matchCount: r.matchCount ?? 0,
