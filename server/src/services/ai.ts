@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import type { ChatCompletionContentPart } from 'openai/resources/index';
 import dotenv from 'dotenv';
 import { readFile } from 'fs/promises';
 
@@ -79,7 +80,7 @@ export class AIService {
               url: `data:image/jpeg;base64,${b64}`,
               detail: 'high',
             },
-          } as unknown as OpenAI;
+          } as ChatCompletionContentPart;
         }),
       );
 
@@ -761,9 +762,9 @@ Return JSON:
       });
 
       return {
-        aggressive: mapStrategy(parsed.aggressive),
-        moderate: mapStrategy(parsed.moderate),
-        minimum: mapStrategy(parsed.minimum),
+        aggressive: mapStrategy(parsed.aggressive ?? {}),
+        moderate: mapStrategy(parsed.moderate ?? {}),
+        minimum: mapStrategy(parsed.minimum ?? {}),
       };
     } catch (err) {
       console.error('[AI Debt Error]', err);

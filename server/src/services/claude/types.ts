@@ -392,7 +392,6 @@ export interface TaxStrategyInput {
   personalIncome?: number; // cents
   // F10: Session context for conversational memory and feedback
   sessionId?: string;
-  userId?: string;
 }
 
 export interface TaxStrategyOutput {
@@ -439,7 +438,6 @@ export interface FinancialPlannerInput {
   }>;
   // F10: Session context for conversational memory and feedback
   sessionId?: string;
-  userId?: string;
 }
 
 export interface FinancialPlannerOutput {

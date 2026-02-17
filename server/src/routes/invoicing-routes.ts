@@ -6,7 +6,12 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { CustomerService } from '../services/customers.js';
-import { InvoicingService } from '../services/invoicing.js';
+import {
+  InvoicingService,
+  type CreateInvoiceInput,
+  type CreateCreditNoteInput,
+  type RecordPaymentInput,
+} from '../services/invoicing.js';
 import { InvoicePDFService } from '../services/invoice-pdf.js';
 import { db, businessProfiles } from '../schema.js';
 import { eq } from 'drizzle-orm';
@@ -70,7 +75,6 @@ invoicingRoutes.post('/customers', zValidator('json', createCustomerSchema), asy
     const customer = await customerService.createCustomer(userId, data);
     return c.json(customer, 201);
   } catch (err: any) {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     const status = err.message?.includes('ABN') ? 400 : 500;
     return c.json({ error: err.message ?? 'Failed to create customer' }, status);
   }
@@ -84,7 +88,6 @@ invoicingRoutes.get('/customers/:id', async (c) => {
     const result = await customerService.getCustomerWithBalance(userId, customerId);
     return c.json(result);
   } catch (err: any) {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (err.message?.includes('not found')) {
       return c.json({ error: err.message }, 404);
     }
@@ -101,7 +104,6 @@ invoicingRoutes.patch('/customers/:id', zValidator('json', updateCustomerSchema)
     const customer = await customerService.updateCustomer(userId, customerId, data);
     return c.json(customer);
   } catch (err: any) {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (err.message?.includes('not found')) {
       return c.json({ error: err.message }, 404);
     }
@@ -118,7 +120,6 @@ invoicingRoutes.delete('/customers/:id', async (c) => {
     await customerService.archiveCustomer(userId, customerId);
     return c.json({ success: true });
   } catch (err: any) {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (err.message?.includes('not found')) {
       return c.json({ error: err.message }, 404);
     }
@@ -175,7 +176,10 @@ invoicingRoutes.get('/invoices', zValidator('query', paginationSchema), async (c
 invoicingRoutes.post('/invoices', zValidator('json', createInvoiceSchema), async (c) => {
   const userId = getUserId(c);
   const data = c.req.valid('json');
-  const invoice = await invoicingService.createInvoice(userId, data);
+  const invoice = await invoicingService.createInvoice(
+    userId,
+    data as unknown as CreateInvoiceInput,
+  );
   return c.json(invoice, 201);
 });
 
@@ -193,7 +197,10 @@ invoicingRoutes.post(
   async (c) => {
     const userId = getUserId(c);
     const data = c.req.valid('json');
-    const creditNote = await invoicingService.createCreditNote(userId, data);
+    const creditNote = await invoicingService.createCreditNote(
+      userId,
+      data as unknown as CreateCreditNoteInput,
+    );
     return c.json(creditNote, 201);
   },
 );
@@ -311,7 +318,11 @@ invoicingRoutes.post(
       const userId = getUserId(c);
       const invoiceId = c.req.param('id');
       const data = c.req.valid('json');
-      const payment = await invoicingService.recordPayment(userId, invoiceId, data);
+      const payment = await invoicingService.recordPayment(
+        userId,
+        invoiceId,
+        data as unknown as RecordPaymentInput,
+      );
       return c.json(payment, 201);
     } catch (err: any) {
       if (err.message?.includes('not found')) {

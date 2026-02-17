@@ -145,8 +145,8 @@ export class RAGService {
     }
 
     const [chunks, summary] = await Promise.all([
-      cogneeClient.search(query, 'bank_transactions', 5, 'CHUNKS'),
-      cogneeClient.search(query, 'bank_transactions', 3, 'GRAPH_SUMMARY_COMPLETION'),
+      cogneeClient.searchRich(query, 'bank_transactions', 5, 'CHUNKS'),
+      cogneeClient.searchRich(query, 'bank_transactions', 3, 'GRAPH_SUMMARY_COMPLETION'),
     ]);
 
     return { chunks, summary };

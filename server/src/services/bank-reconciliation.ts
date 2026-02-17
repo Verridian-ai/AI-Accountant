@@ -490,7 +490,9 @@ export class BankReconciliationService {
         ),
       )
       .all();
-    const unmatchedBankTx = allBankTx.filter((tx) => !alreadyMatchedBankTxIds.includes(tx.id));
+    const unmatchedBankTx = allBankTx.filter(
+      (tx: typeof transactions.$inferSelect) => !alreadyMatchedBankTxIds.includes(tx.id),
+    );
 
     // 2. Load unmatched ledger entries (journal_entry_lines with journal_entries)
     const alreadyMatchedLedgerIds = await rawQuery.getMatchedLedgerIds(sessionId);
@@ -778,7 +780,7 @@ export class BankReconciliationService {
       }
 
       case 'amount_date': {
-        const windowDays = config.date_window_days ?? 3;
+        const windowDays = Number(config.date_window_days ?? 3);
         const amountScore = this.scoreAmountMatch(bankTx.amount, ledgerAmountCents, 0);
         if (amountScore < 1.0) return { confidence: 0, reasons }; // amounts must be exact
 
@@ -823,12 +825,12 @@ export class BankReconciliationService {
 
       case 'combined': {
         const weights = {
-          amount: config.weight_amount ?? 0.4,
-          date: config.weight_date ?? 0.3,
-          description: config.weight_description ?? 0.3,
+          amount: Number(config.weight_amount ?? 0.4),
+          date: Number(config.weight_date ?? 0.3),
+          description: Number(config.weight_description ?? 0.3),
         };
-        const tolerance = config.amount_tolerance_cents ?? 100;
-        const windowDays = config.date_window_days ?? 7;
+        const tolerance = Number(config.amount_tolerance_cents ?? 100);
+        const windowDays = Number(config.date_window_days ?? 7);
 
         const amtScore = this.scoreAmountMatch(bankTx.amount, ledgerAmountCents, tolerance);
         const dateScore = this.scoreDateMatch(bankTx.date, ledgerEntry.entryDate, windowDays);

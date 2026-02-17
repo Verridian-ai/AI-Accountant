@@ -750,9 +750,9 @@ export class InvoicingService {
         .run();
     }
 
-    return overdueInvoices.map((inv) => ({
+    return overdueInvoices.map((inv: typeof invoices.$inferSelect) => ({
       ...inv,
-      status: 'overdue',
+      status: 'overdue' as const,
       updatedAt: now,
     }));
   }

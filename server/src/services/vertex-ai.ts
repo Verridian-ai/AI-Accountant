@@ -452,7 +452,14 @@ export class VertexAIClient {
   }
 
   private parseGeminiResponse(data: unknown, model: string): VertexAIResponse {
-    const d = data as { candidates?: { content?: { parts?: { text: string }[] } }[] };
+    const d = data as {
+      candidates?: { content?: { parts?: { text: string }[] }; finishReason?: string }[];
+      usageMetadata?: {
+        promptTokenCount?: number;
+        candidatesTokenCount?: number;
+        totalTokenCount?: number;
+      };
+    };
     const candidate = d.candidates?.[0];
     const content = candidate?.content?.parts?.map((p) => p.text).join('') ?? '';
 
@@ -460,27 +467,31 @@ export class VertexAIClient {
       content,
       model,
       usage: {
-        promptTokens: data.usageMetadata?.promptTokenCount ?? 0,
-        completionTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
-        totalTokens: data.usageMetadata?.totalTokenCount ?? 0,
+        promptTokens: d.usageMetadata?.promptTokenCount ?? 0,
+        completionTokens: d.usageMetadata?.candidatesTokenCount ?? 0,
+        totalTokens: d.usageMetadata?.totalTokenCount ?? 0,
       },
       finishReason: candidate?.finishReason ?? 'unknown',
     };
   }
 
   private parseClaudeResponse(data: unknown, model: string): VertexAIResponse {
-    const d = data as { content?: { text: string }[] };
+    const d = data as {
+      content?: { text: string }[];
+      usage?: { input_tokens?: number; output_tokens?: number };
+      stop_reason?: string;
+    };
     const content = d.content?.map((c) => c.text).join('') ?? '';
 
     return {
       content,
       model,
       usage: {
-        promptTokens: data.usage?.input_tokens ?? 0,
-        completionTokens: data.usage?.output_tokens ?? 0,
-        totalTokens: (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0),
+        promptTokens: d.usage?.input_tokens ?? 0,
+        completionTokens: d.usage?.output_tokens ?? 0,
+        totalTokens: (d.usage?.input_tokens ?? 0) + (d.usage?.output_tokens ?? 0),
       },
-      finishReason: data.stop_reason ?? 'unknown',
+      finishReason: d.stop_reason ?? 'unknown',
     };
   }
 
