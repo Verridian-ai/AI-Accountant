@@ -1,5 +1,6 @@
 import { db, transactions, transactionHistory } from '../schema.js';
 import { eq, and, desc, gte, lte, like, sql, type SQL } from 'drizzle-orm';
+import { selectOne, selectMany, insert, update as typedUpdate, deleteRows } from '../db/typed-queries.js';
 
 export interface TransactionFilters {
   limit?: number;
@@ -13,7 +14,10 @@ export interface TransactionFilters {
 }
 
 export class TransactionRepository {
-  async findMany(filters: TransactionFilters) {
+  async findMany(filters: TransactionFilters): Promise<{
+    data: Array<typeof transactions.$inferSelect>;
+    total: number;
+  }> {
     const {
       limit = 100,
       offset = 0,
@@ -41,18 +45,18 @@ export class TransactionRepository {
         .orderBy(desc(transactions.date))
         .limit(limit)
         .offset(offset)
-        .all(),
+        .all() as Promise<Array<typeof transactions.$inferSelect>>,
       db
         .select({ count: sql<number>`count(*)` })
         .from(transactions)
         .where(and(...conditions))
-        .get(),
+        .get() as Promise<{ count: number } | undefined>,
     ]);
 
     return { data: result, total: countResult?.count ?? 0 };
   }
 
-  async findAll(filters: Omit<TransactionFilters, 'limit' | 'offset'>) {
+  async findAll(filters: Omit<TransactionFilters, 'limit' | 'offset'>): Promise<Array<typeof transactions.$inferSelect>> {
     const { accountId, startDate, endDate, category, search, userId } = filters;
     const conditions: SQL[] = [eq(transactions.userId, userId)];
 
@@ -62,55 +66,61 @@ export class TransactionRepository {
     if (category && category !== 'All') conditions.push(eq(transactions.category, category));
     if (search) conditions.push(like(transactions.description, `%${search}%`));
 
-    return db
+    const results: Array<typeof transactions.$inferSelect> = await db
       .select()
       .from(transactions)
       .where(and(...conditions))
       .orderBy(desc(transactions.date))
       .all();
+    return results;
   }
 
-  async findById(userId: string, transactionId: string) {
-    return db
-      .select()
-      .from(transactions)
-      .where(and(eq(transactions.id, transactionId), eq(transactions.userId, userId)))
-      .get();
+  async findById(userId: string, transactionId: string): Promise<typeof transactions.$inferSelect | undefined> {
+    return selectOne(
+      db,
+      transactions,
+      and(eq(transactions.id, transactionId), eq(transactions.userId, userId))
+    );
   }
 
   async update(
     userId: string,
     transactionId: string,
-    data: Partial<typeof transactions.$inferInsert>,
-  ) {
-    await db
-      .update(transactions)
-      .set(data)
-      .where(and(eq(transactions.id, transactionId), eq(transactions.userId, userId)));
+    data: Partial<typeof transactions.$inferInsert>
+  ): Promise<void> {
+    await typedUpdate(
+      db,
+      transactions,
+      data,
+      and(eq(transactions.id, transactionId), eq(transactions.userId, userId))
+    );
   }
 
-  async createMany(data: (typeof transactions.$inferInsert)[]) {
-    await db.insert(transactions).values(data);
+  async createMany(data: (typeof transactions.$inferInsert)[]): Promise<void> {
+    await insert(db, transactions, data);
   }
 
-  async delete(userId: string, transactionId: string) {
-    await db
-      .delete(transactions)
-      .where(and(eq(transactions.id, transactionId), eq(transactions.userId, userId)));
+  async delete(userId: string, transactionId: string): Promise<void> {
+    await deleteRows(
+      db,
+      transactions,
+      and(eq(transactions.id, transactionId), eq(transactions.userId, userId))
+    );
   }
 
-  async createHistory(data: typeof transactionHistory.$inferInsert) {
-    await db.insert(transactionHistory).values(data);
+  async createHistory(data: typeof transactionHistory.$inferInsert): Promise<void> {
+    await insert(db, transactionHistory, data);
   }
-  async findByStatementId(statementId: string) {
-    return db.select().from(transactions).where(eq(transactions.statementId, statementId)).all();
+
+  async findByStatementId(statementId: string): Promise<Array<typeof transactions.$inferSelect>> {
+    return selectMany(db, transactions, eq(transactions.statementId, statementId));
   }
 
   /**
    * Delete transactions by statement ID.
    */
-  async deleteByStatementId(statementId: string) {
-    await db.delete(transactions).where(eq(transactions.statementId, statementId));
+  async deleteByStatementId(statementId: string): Promise<void> {
+    await deleteRows(db, transactions, eq(transactions.statementId, statementId));
   }
 }
 
