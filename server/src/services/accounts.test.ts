@@ -1,33 +1,57 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Use vi.hoisted to define mocks before they are used in vi.mock
-const { mockGet, mockAll, mockInsert, mockUpdate, mockSelect } = vi.hoisted(() => {
-  const mockGet = vi.fn();
-  const mockAll = vi.fn();
-  const mockWhere = vi.fn();
-  const mockFrom = vi.fn();
-  const mockSet = vi.fn();
-  const mockValues = vi.fn();
+// Use vi.hoisted to define ALL mocks before they are used in vi.mock
+const {
+  mockFindByHash,
+  mockFindAll,
+  mockCreate,
+  mockUpdateBalance,
+  mockSelect,
+  mockDbInsert,
+  mockDbUpdate,
+  mockDbDelete,
+} = vi.hoisted(() => {
+  // AccountRepository mocks
+  const mockFindByHash = vi.fn();
+  const mockFindAll = vi.fn();
+  const mockCreate = vi.fn();
+  const mockUpdateBalance = vi.fn();
 
-  // Create chainable mock structure
-  mockWhere.mockReturnValue({ get: mockGet, all: mockAll });
-  mockFrom.mockReturnValue({ where: mockWhere });
-  mockSet.mockReturnValue({ where: vi.fn().mockResolvedValue({}) });
-  mockValues.mockResolvedValue({});
+  // DB chaining mocks (for repository internal use)
+  const mockSelect = vi.fn(() => ({ from: vi.fn(() => ({ where: vi.fn(), get: vi.fn(), all: vi.fn() })) }));
+  const mockDbInsert = vi.fn(() => ({ values: vi.fn(() => ({ run: vi.fn() })) }));
+  const mockDbUpdate = vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn(), run: vi.fn() })) }));
+  const mockDbDelete = vi.fn(() => ({ where: vi.fn(() => ({ run: vi.fn() })) }));
 
-  const mockSelect = vi.fn().mockReturnValue({ from: mockFrom });
-  const mockUpdate = vi.fn().mockReturnValue({ set: mockSet });
-  const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
-
-  return { mockGet, mockAll, mockInsert, mockUpdate, mockSelect };
+  return {
+    mockFindByHash,
+    mockFindAll,
+    mockCreate,
+    mockUpdateBalance,
+    mockSelect,
+    mockDbInsert,
+    mockDbUpdate,
+    mockDbDelete,
+  };
 });
 
-// Mock schema module
+// Mock AccountRepository (AccountService uses this)
+vi.mock('../repositories/account-repository', () => ({
+  accountRepository: {
+    findByHash: mockFindByHash,
+    findAll: mockFindAll,
+    create: mockCreate,
+    updateBalance: mockUpdateBalance,
+  },
+}));
+
+// Mock schema module - db must have chaining methods for typed-queries
 vi.mock('../schema', () => ({
   db: {
     select: mockSelect,
-    update: mockUpdate,
-    insert: mockInsert,
+    insert: mockDbInsert,
+    update: mockDbUpdate,
+    delete: mockDbDelete,
   },
   accounts: {
     id: 'accounts.id',
@@ -51,6 +75,7 @@ vi.mock('../schema', () => ({
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((a, b) => ({ type: 'eq', a, b })),
   and: vi.fn((...args) => ({ type: 'and', args })),
+  desc: vi.fn((col) => ({ type: 'desc', col })),
 }));
 
 import { AccountService } from './accounts';
@@ -85,16 +110,16 @@ describe('AccountService', () => {
 
   describe('findAccountByHash', () => {
     it('should query database with correct parameters', async () => {
-      mockGet.mockResolvedValue({ id: 'acc1', accountName: 'Test Account' });
+      mockFindByHash.mockResolvedValue({ id: 'acc1', accountName: 'Test Account' });
 
       const result = await accountService.findAccountByHash('user1', 'hash123');
 
-      expect(mockSelect).toHaveBeenCalled();
+      expect(mockFindByHash).toHaveBeenCalled();
       expect(result).toEqual({ id: 'acc1', accountName: 'Test Account' });
     });
 
     it('should return undefined when account not found', async () => {
-      mockGet.mockResolvedValue(undefined);
+      mockFindByHash.mockResolvedValue(undefined);
 
       const result = await accountService.findAccountByHash('user1', 'nonexistent');
 
@@ -104,6 +129,9 @@ describe('AccountService', () => {
 
   describe('createAccount', () => {
     it('should create account with masked account number', async () => {
+      mockFindByHash.mockResolvedValue(undefined); // Account doesn't exist
+      mockCreate.mockResolvedValue({ id: 'acc1', accountNumber: 'XXXX-7890' });
+
       await accountService.createAccount({
         userId: 'user1',
         accountNumber: '1234567890',
@@ -111,10 +139,13 @@ describe('AccountService', () => {
         accountType: 'savings',
       });
 
-      expect(mockInsert).toHaveBeenCalled();
+      expect(mockCreate).toHaveBeenCalled();
     });
 
     it('should mask account number showing last 4 digits', async () => {
+      mockFindByHash.mockResolvedValue(undefined);
+      mockCreate.mockResolvedValue({ id: 'acc1', accountNumber: 'XXXX-7890' });
+
       const result = await accountService.createAccount({
         userId: 'user1',
         accountNumber: '1234567890',
@@ -126,6 +157,9 @@ describe('AccountService', () => {
     });
 
     it('should not mask short account numbers', async () => {
+      mockFindByHash.mockResolvedValue(undefined);
+      mockCreate.mockResolvedValue({ id: 'acc1', accountNumber: '1234' });
+
       const result = await accountService.createAccount({
         userId: 'user1',
         accountNumber: '1234',
@@ -143,20 +177,22 @@ describe('AccountService', () => {
         { id: 'acc1', accountName: 'Savings' },
         { id: 'acc2', accountName: 'Checking' },
       ];
-      mockAll.mockResolvedValue(mockAccounts);
+      mockFindAll.mockResolvedValue(mockAccounts);
 
       const result = await accountService.getUserAccounts('user1');
 
-      expect(mockSelect).toHaveBeenCalled();
+      expect(mockFindAll).toHaveBeenCalled();
       expect(result).toEqual(mockAccounts);
     });
   });
 
   describe('updateAccountBalance', () => {
     it('should update account balance', async () => {
+      mockUpdateBalance.mockResolvedValue(undefined);
+
       await accountService.updateAccountBalance('acc1', 150000);
 
-      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockUpdateBalance).toHaveBeenCalled();
     });
   });
 });
