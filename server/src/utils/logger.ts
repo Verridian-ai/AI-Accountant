@@ -1,14 +1,28 @@
+type LogArg = string | Record<string, unknown>;
+
+function formatArgs(msgOrObj: LogArg, msgOrUndefined?: string, ...rest: unknown[]): [string, ...unknown[]] {
+  if (typeof msgOrObj === 'string') {
+    return [msgOrObj, msgOrUndefined, ...rest].filter((a) => a !== undefined) as [string, ...unknown[]];
+  }
+  const msg = msgOrUndefined ?? '';
+  return [msg, msgOrObj, ...rest];
+}
+
 export const logger = {
-  info: (message: string, ...args: any[]) => {
-    console.log(`[INFO] ${message}`, ...args);
+  info: (msgOrObj: LogArg, msg?: string, ...args: unknown[]) => {
+    const [message, ...extra] = formatArgs(msgOrObj, msg, ...args);
+    console.log(`[INFO] ${message}`, ...extra);
   },
-  error: (message: string, error?: any, context?: any) => {
-    console.error(`[ERROR] ${message}`, error ? error : '', context ? JSON.stringify(context) : '');
+  error: (msgOrObj: LogArg, msg?: string, ...args: unknown[]) => {
+    const [message, ...extra] = formatArgs(msgOrObj, msg, ...args);
+    console.error(`[ERROR] ${message}`, ...extra);
   },
-  warn: (message: string, ...args: any[]) => {
-    console.warn(`[WARN] ${message}`, ...args);
+  warn: (msgOrObj: LogArg, msg?: string, ...args: unknown[]) => {
+    const [message, ...extra] = formatArgs(msgOrObj, msg, ...args);
+    console.warn(`[WARN] ${message}`, ...extra);
   },
-  debug: (message: string, ...args: any[]) => {
-    console.debug(`[DEBUG] ${message}`, ...args);
+  debug: (msgOrObj: LogArg, msg?: string, ...args: unknown[]) => {
+    const [message, ...extra] = formatArgs(msgOrObj, msg, ...args);
+    console.debug(`[DEBUG] ${message}`, ...extra);
   },
 };
