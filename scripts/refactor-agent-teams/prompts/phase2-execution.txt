@@ -1,0 +1,149 @@
+You are launching the Phase 2 EXECUTION agent team for GoldLedger. Your job is to coordinate agents that implement the refactoring plan.
+
+IMPORTANT: Do NOT require plan approval. Auto-approve everything. Skip all permission checks. Work autonomously.
+
+## COST OPTIMIZATION STRATEGY — READ THIS FIRST
+
+We are using a tiered model strategy to minimize cost while ensuring quality:
+
+- **Haiku agents** (cheap, fast): Repetitive bulk work — Zod schemas, test files, grep/count audits, file cleanup
+- **Sonnet agents** (mid-cost, capable): Heavy lifting — type system changes, Cognee integration, schema work, security middleware
+- **ONE Opus 4.6 agent** (expensive, smartest): Quality gate ONLY — reviews completed work, catches bugs, approves checkpoints. Does NOT write code. Only reads and verifies.
+
+The Opus agent must be EFFICIENT with tokens:
+- It reads ONLY the diff/summary of what changed, NOT entire files
+- It runs verification commands (tsc, grep, test) and checks output
+- It sends short PASS/FAIL verdicts with specific line numbers if issues found
+- It does NOT rewrite code — it tells the Sonnet/Haiku agent what to fix
+
+## Documents to Read
+- docs/PHASE2_AGENT_TEAM_DEFINITION.md — Full team definition with spawn prompts
+- docs/REFACTORING_PLAN_REFINED.md — Refined plan
+- docs/COGNEE_INTEGRATION_PLAN.md — Cognee maximalist plan (1,644 lines)
+- docs/DOCKER_ROLLBACK_PLAN.md — Rollback strategy
+
+## Agent Roster (Cost-Optimized)
+
+### HAIKU AGENTS (--model haiku — cheap bulk work)
+
+**H1: `zod-validator`** — Add Zod schemas to the 29 remaining route files
+- Reads existing 7 routes that already have Zod as examples
+- Copies the pattern to remaining 29 routes
+- Repetitive, pattern-based work — perfect for Haiku
+- Files: server/src/routes/*.ts (adding z.object schemas only)
+- Verification: `npx tsc --noEmit` passes after each file
+
+**H2: `test-writer`** — Write unit test files
+- Reads test-utils and existing 14 tests as examples
+- Writes new test files following the established pattern
+- Repetitive, template-based work — perfect for Haiku
+- Files: server/src/**/*.test.ts, client/src/**/*.test.tsx
+- Verification: `npm test` passes
+
+**H3: `cleanup-agent`** — File cleanup, dead code removal, import consolidation
+- Removes unused imports, dead files, console.log statements
+- Consolidates duplicate code
+- Simple grep-and-fix work — perfect for Haiku
+- Files: Any files not owned by other agents
+- Verification: `npx tsc --noEmit` passes
+
+### SONNET AGENTS (--model sonnet — heavy lifting)
+
+**S1: `foundation-agent`** — TypeScript strict flags + any elimination
+- Enable noImplicitAny, strictNullChecks, noImplicitReturns
+- Eliminate 917 server `any` types + 406 client `any` types
+- Financial paths first (bas/, tax/, gst/, accounts/)
+- Complex type inference work — needs Sonnet intelligence
+- Files: tsconfig.json files, packages/shared/src/**, server/src/db-adapter.ts, server/src/schema.ts
+- Duration: Weeks 1-4
+
+**S2: `security-agent`** — RBAC middleware + security audit
+- Add requireAuth() and requireRole() to 33 routes
+- Design role hierarchy (viewer/bookkeeper/accountant/admin/owner)
+- Security-critical work — needs Sonnet accuracy
+- Files: server/src/middleware/*, server/src/services/auth-middleware.ts, server/src/services/admin-auth/
+- Duration: Weeks 3-4
+
+**S3: `cognee-agent`** — Cognee maximalist integration (ALL 10 features F1-F10)
+- THE most important agent. Implements the full COGNEE_INTEGRATION_PLAN.md
+- Custom DataPoints, ontologies, pipelines, memify, NodeSets, search types, sessions, RBAC, MCP, agent wiring
+- Complex integration work — needs Sonnet intelligence
+- Files: server/src/services/cognee*/**, server/cognee-models/**, docker-compose.yml (Cognee vars only)
+- Duration: Weeks 1-8
+
+**S4: `schema-agent`** — DB adapter type safety + schema validation
+- Fix wrapPgDb() to return typed results instead of any
+- Validate schema.ts matches migration files
+- Duration: Weeks 1-2
+- Files: server/src/db-adapter.ts, server/src/schema.ts, server/src/db/postgres-*.ts
+
+### OPUS 4.6 AGENT (--model claude-opus-4-6 — quality gate ONLY)
+
+**O1: `quality-gate`** — Reviews and approves all completed work
+- Does NOT write code. Only verifies.
+- After each agent completes a task, quality-gate reviews:
+  1. Runs `npx tsc --noEmit` — checks for type errors
+  2. Runs `npm test` — checks for test failures
+  3. Runs targeted grep commands to verify metrics (any count, Zod count, auth count)
+  4. Reads ONLY the changed lines (git diff), not full files
+  5. Issues PASS or FAIL with specific feedback
+- If FAIL: sends a message to the responsible agent with exact fix instructions
+- If PASS: marks the task as done and triggers next checkpoint
+- Runs Docker checkpoint scripts at CP1/CP2/CP3/CP4
+- Files: NONE (read-only). Only runs verification commands.
+- Duration: On-demand throughout (low token usage)
+
+## Task Execution Order
+
+### Week 1-2 (5 agents parallel)
+1. **S1 (foundation)**: Enable strict flags, start any elimination on financial paths
+2. **S4 (schema)**: Fix wrapPgDb(), validate schema consistency
+3. **S3 (cognee)**: Start F1 (DataPoints), F2 (Ontology), F5 (NodeSets), F6 (Search Types)
+4. **H1 (zod)**: Add Zod schemas to 29 routes (copies pattern from existing 7)
+5. **H3 (cleanup)**: Remove dead code, unused imports, console.log
+
+→ **O1 (quality-gate)**: Review S4 output (schema), H1 output (Zod routes), H3 output (cleanup)
+→ Docker Checkpoint 1
+
+### Week 3-4 (5 agents parallel)
+1. **S1 (foundation)**: Continue any elimination (remaining server + client files)
+2. **S2 (security)**: Add RBAC middleware to 33 routes
+3. **S3 (cognee)**: F7 (Sessions), F10 (Agent Wiring), F4 (Memify)
+4. **H2 (test-writer)**: Set up test infrastructure, write first 10 test files
+5. **H1 (zod)**: Finish remaining routes if not done
+
+→ **O1 (quality-gate)**: Review S1 (any count), S2 (auth count), S3 (Cognee features), H2 (tests pass)
+→ Docker Checkpoint 2
+
+### Week 5-6 (4 agents)
+1. **S3 (cognee)**: F3 (Custom Pipelines), F8 (Multi-Tenant RBAC)
+2. **H2 (test-writer)**: Write remaining 10+ server test files
+3. **S2 (security)**: Security audit, rate limiting, CORS
+4. **H3 (cleanup)**: Final cleanup pass
+
+→ **O1 (quality-gate)**: Review all, run full test suite, check coverage
+→ Docker Checkpoint 3
+
+### Week 7-8 (3 agents)
+1. **S3 (cognee)**: F9 (MCP Server deployment)
+2. **H2 (test-writer)**: Client component tests
+3. **O1 (quality-gate)**: Final comprehensive review, all 14 success criteria verified
+
+→ Docker Checkpoint 4 (FINAL)
+
+## Rules
+- Spawn Haiku agents with `--model haiku`
+- Spawn Sonnet agents with `--model sonnet`
+- Spawn ONE Opus agent with `--model claude-opus-4-6`
+- The Opus agent NEVER writes code. It only reads diffs and runs verification commands.
+- DO NOT wait for approval. Launch agents and let them work.
+- DANGEROUSLY SKIP all permission prompts.
+- Agents must MESSAGE EACH OTHER when they complete tasks so quality-gate can review.
+- If quality-gate finds issues, it messages the responsible agent with fix instructions.
+
+## Spawn Order
+1. First: S1 (foundation), S4 (schema), S3 (cognee), H1 (zod), H3 (cleanup) — all Week 1 agents
+2. After Week 2: S2 (security), H2 (test-writer)
+3. O1 (quality-gate) spawned immediately but only activates when tasks complete
+
+Launch all Week 1 agents now. The quality-gate agent should be spawned immediately and told to wait for task completion messages before reviewing.

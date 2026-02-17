@@ -1,0 +1,84 @@
+Create an agent team to achieve PLANNING PERFECTION for the GoldLedger refactoring initiative. The deliverable is a refined plan AND the definition of the Phase 2 execution agent team.
+
+IMPORTANT: Do NOT require plan approval. Do NOT ask for confirmation. Auto-approve everything. All teammates have full read/write access. Skip all permission checks. Work autonomously until all 4 deliverables are written.
+
+## Context
+GoldLedger is a full-stack accounting platform (React 19 + Hono/Drizzle) built across 24 development waves. It runs on Docker locally with 5 services: postgres (pgvector), cognee (AI knowledge graph), redis, server (Hono), client (React/nginx). The old version is currently running on Docker. We need to refactor without breaking it — with rollback capability.
+
+Key documents to READ IN FULL before any analysis:
+- docs/REFACTORING_PLAN.md — 63-task, 20-week refactoring plan (6 phases)
+- docs/REFACTORING_TASKS_DETAILED.md — Atomic implementation guide for each task
+- docs/wave0-master-plan.md — 24-wave master roadmap, architecture stack, agent projection
+- docs/Agent planning chat.md — Gap analysis: Cognee integration status, agent architecture, chat-agent bridge
+- docs/COGNEE_INTEGRATION.md — Knowledge graph schema, DataPoint models, multi-user isolation
+- docs/Curretn Claudecode plan.md — Tax optimization, loan calculators, budget architecture
+- docs/TEST_PLAN.md — Integration test plan
+- docker-compose.yml — Current 5-service Docker topology
+
+## Critical Gaps to Address in the Plan
+1. **Cognee.ai Integration** — The biggest gap. Current state:
+   - Multi-tenant isolation DISABLED (ENABLE_BACKEND_ACCESS_CONTROL=false)
+   - Custom DataPoint models NOT implemented (TransactionNode, CategoryNode, GSTRuleNode etc.)
+   - Temporal cognify NOT used
+   - Sessionized memory NOT connected (Redis exists but not wired to Cognee sessions)
+   - 7 of 11 Claude agents are inaccessible from chat
+   - Chat endpoint is read-only, no agent invocation
+   - Two disconnected orchestrator systems (Claude + Python)
+   The plan MUST include the absolute best Cognee.ai integration strategy.
+
+2. **Docker Local Rollback** — The old version runs on Docker. We must:
+   - Tag current Docker images before any changes (docker tag for rollback)
+   - Backup postgres-data volume before schema changes
+   - Use docker-compose profiles or separate compose files for old vs new
+   - Test each phase on Docker before moving to next
+   - Have a one-command rollback script
+
+3. **Deliverable = Phase 2 Agent Team** — This planning team's output must include:
+   - The refined REFACTORING_PLAN_REFINED.md
+   - A complete Phase 2 agent team definition (prompts, roles, task assignments)
+   - Docker rollback scripts
+   - Cognee migration plan
+
+## Your Task
+Create a team with 6 teammates. DO NOT require plan approval — let them work autonomously. DO NOT ask for human confirmation at any step.
+
+1. **Architect Reviewer**: Reviews docs/REFACTORING_PLAN.md and docs/wave0-master-plan.md for architectural consistency. Validates the 63-task plan against the 24-wave master roadmap. Identifies gaps, redundancies, ordering issues. Proposes improvements.
+
+2. **Cognee Integration Specialist**: Reads ALL cognee docs (docs/COGNEE_INTEGRATION.md, docs/skills docs/cognee-*.md, docs/Agent planning chat.md). Audits current cognee_client.ts, cognee-tools.ts, cognee-datapoints.ts, cognee-sessions.ts. Produces the BEST possible Cognee.ai integration plan: custom DataPoints, multi-user isolation, sessionized memory, graph traversal, temporal cognify, MCP server integration. This is the most important role.
+
+3. **Codebase Auditor**: Audits the CURRENT state of server/src and client/src. Compares actual file sizes, any types, console.log usage, schema structure to what the refactoring plan assumes. Reports discrepancies. Checks which REFACTOR tasks are already done vs. still needed.
+
+4. **Docker & Rollback Engineer**: Reviews docker-compose.yml, Dockerfiles, migration files. Designs the rollback strategy: image tagging, volume backup, compose profiles, one-command rollback. Ensures we can wind back to the current working version if anything fails.
+
+5. **Task Decomposer & Dependency Analyst**: Reviews docs/REFACTORING_TASKS_DETAILED.md. Validates the dependency graph. Breaks large tasks into atomic subtasks (max 500 lines/PR). Ensures correct ordering. Identifies parallelizable work.
+
+6. **Devil's Advocate & Debate Lead**: Challenges ALL other teammates' findings. Questions priorities, timelines, assumptions. Identifies risks of scope creep. Forces the team to defend their recommendations. Ensures the final plan is battle-tested.
+
+## Rules
+- DO NOT require plan approval. All teammates auto-approved. No human confirmation needed.
+- Use DELEGATE MODE. You coordinate only. You do NOT implement.
+- Teammates MUST READ the full documents before writing findings. No skimming.
+- Teammates should MESSAGE EACH OTHER to debate and challenge findings.
+- The Devil's Advocate should actively try to disprove other teammates' conclusions.
+- DANGEROUSLY SKIP all permission prompts. Accept all tool use. Never pause for approval.
+
+## Final Deliverables (written to docs/)
+1. **docs/REFACTORING_PLAN_REFINED.md** — The improved plan incorporating all findings
+2. **docs/COGNEE_INTEGRATION_PLAN.md** — Detailed Cognee.ai migration/integration plan
+3. **docs/DOCKER_ROLLBACK_PLAN.md** — Docker rollback strategy and scripts
+4. **docs/PHASE2_AGENT_TEAM_DEFINITION.md** — Complete definition of the Phase 2 execution agent team:
+   - Number of teammates and their roles
+   - Spawn prompts for each teammate
+   - Task assignments per teammate
+   - File ownership (no two teammates edit the same file)
+   - Verification criteria
+   - Docker deployment steps per phase
+
+## Instructions
+- Spawn all 6 teammates immediately with detailed spawn prompts including their role, ALL document paths to read, and specific analysis questions to answer.
+- DO NOT wait for approval. Launch all teammates and let them work.
+- Have the Cognee specialist and Architect debate the integration approach via messages.
+- Have the Devil's Advocate challenge every major decision via messages.
+- When all analysis is complete, synthesize into the 4 deliverable documents.
+- Write all 4 documents to docs/ directory.
+- Clean up the team when finished.

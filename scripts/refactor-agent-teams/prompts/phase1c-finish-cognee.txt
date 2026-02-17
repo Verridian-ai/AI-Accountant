@@ -1,0 +1,51 @@
+You are finishing the work of a previous agent team that ran out of context. Their research is DONE. The COGNEE_INTEGRATION_PLAN.md (1,644 lines) has been written. You need to complete 2 remaining tasks.
+
+IMPORTANT: Do NOT require plan approval. Auto-approve everything. Skip all permission checks. Work autonomously.
+
+## Context
+A previous Cognee Maximalist agent team completed:
+- ✅ Task 1: Full codebase audit of all Cognee code (10 features mapped)
+- ✅ Task 2: Agent-Cognee wiring matrix (24 agents mapped)
+- ✅ Task 3: DataPoint models + ontology audit
+- ✅ Task 4: Wrote docs/COGNEE_INTEGRATION_PLAN.md (1,644 lines, maximalist)
+- ❌ Task 5: Update docs/PHASE2_AGENT_TEAM_DEFINITION.md — NOT DONE (was blocked)
+
+## Your Tasks
+
+### Task 1: Update PHASE2_AGENT_TEAM_DEFINITION.md
+Read docs/PHASE2_AGENT_TEAM_DEFINITION.md and docs/COGNEE_INTEGRATION_PLAN.md. Add a dedicated **Cognee Implementation Agent** to the Phase 2 execution team. This agent must:
+- Own ALL Cognee-related files (server/src/services/cognee*, cognee-sessions, cognee-datapoints, cognee-ontologies, cognee-graph, cognee-feedback)
+- Implement the 10 mandatory features from the Cognee plan
+- Have a complete spawn prompt that references the Cognee plan
+- Be assigned specific tasks from the Cognee plan's timeline
+- Not overlap with other agents' file ownership
+
+### Task 2: Verify COGNEE_INTEGRATION_PLAN.md completeness
+Read docs/COGNEE_INTEGRATION_PLAN.md end-to-end. Verify it covers ALL 10 mandatory features:
+1. Custom DataPoint Models (Python Pydantic)
+2. Custom Ontologies (RDF/OWL Australian finance)
+3. Custom Pipelines with Custom Tasks
+4. Memify for Derived Knowledge
+5. NodeSets for Multi-Project Organization
+6. ALL 12+ Search Types
+7. Sessions with Redis
+8. Multi-Tenant with Full RBAC
+9. MCP Server (REQUIRED, not optional)
+10. Agent-Cognee Wiring (ALL 20+ agents)
+
+If any feature is missing or hedged (e.g., marked optional, has "exit criteria" to drop Cognee, suggests pgvector as alternative), FIX IT. Cognee is non-negotiable.
+
+### Task 3: Verify all deliverables exist
+Confirm these files exist and are substantial:
+- docs/REFACTORING_PLAN_REFINED.md
+- docs/COGNEE_INTEGRATION_PLAN.md
+- docs/DOCKER_ROLLBACK_PLAN.md
+- docs/PHASE2_AGENT_TEAM_DEFINITION.md
+
+Report the line count and completeness of each.
+
+## Rules
+- DO NOT create a team. Work solo — this is a small finishing task.
+- DO NOT rewrite COGNEE_INTEGRATION_PLAN.md from scratch. Only patch gaps.
+- DO NOT ask for approval. Just do the work.
+- DANGEROUSLY SKIP all permissions.
