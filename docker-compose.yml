@@ -128,6 +128,8 @@ services:
       # Wave 3: Admin credentials (used by CogneeClient for admin operations)
       - COGNEE_ADMIN_EMAIL=${COGNEE_ADMIN_EMAIL:-admin@cognee-cba.dev}
       - COGNEE_ADMIN_PASSWORD=${COGNEE_ADMIN_PASSWORD:-CbaAdmin2026}
+      # F4 Memify: Custom enrichment rules path
+      - MEMIFY_CUSTOM_RULES_PATH=/app/custom_models/tasks/memify_enrichment.py
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/settings"]
       interval: 30s

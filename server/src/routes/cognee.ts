@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { cogneeClient } from '../services/cognee_client.js';
 import { cogneeSessionService } from '../services/cognee-sessions.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { triggerMemifyEnrichment } from '../services/cognee/memify-rules.js';
 
 const cogneeRoutes = new Hono();
 
@@ -15,6 +16,7 @@ cogneeRoutes.use('/*', tenantAuthMiddleware());
 
 const initCogneeUserSchema = z.object({ userId: z.string().min(1), email: z.string().email().optional() });
 const reindexSchema = z.object({ userId: z.string().min(1), datasets: z.array(z.string()).optional() });
+const memifyTriggerSchema = z.object({ datasets: z.array(z.string()).min(1) });
 
 cogneeRoutes.post('/init-user', zValidator('json', initCogneeUserSchema), async (c) => {
   const { userId, email } = c.req.valid('json');
@@ -47,6 +49,14 @@ cogneeRoutes.get('/graph/:userId', async (c) => {
   if (account.length === 0) return c.json({ error: 'Not init' }, 404);
   const allDatasets = await cogneeClient.listDatasets(userId);
   return c.json({ userId, datasets: allDatasets });
+});
+
+cogneeRoutes.post('/memify/trigger', zValidator('json', memifyTriggerSchema), async (c) => {
+  const { datasets } = c.req.valid('json');
+  const userId = c.get('jwtPayload')?.userId;
+  const tenantId = c.get('jwtPayload')?.tenantId;
+  await triggerMemifyEnrichment(datasets, userId, tenantId);
+  return c.json({ status: 'triggered', datasets, background: true });
 });
 
 export default cogneeRoutes;
