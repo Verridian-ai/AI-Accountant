@@ -5,6 +5,8 @@
  */
 
 import { Hono } from 'hono';
+import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { db, transactions, accounts, transferLinks, merchantMemory } from '../schema.js';
 import { eq, and, gte, lte, like } from 'drizzle-orm';
 import {
@@ -23,6 +25,14 @@ import { events } from '../events.js';
 
 const pipelineRoutes = new Hono();
 const basService = new BASService();
+
+const enrichmentBatchSchema = z.object({
+  transactionIds: z.array(z.string()).min(1),
+});
+
+const merchantBatchResolveSchema = z.object({
+  descriptions: z.array(z.string()).min(1),
+});
 
 // ============================================================================
 // TRANSFER DETECTION
@@ -183,16 +193,11 @@ pipelineRoutes.post('/enrichment/run', async (c) => {
  * POST /api/enrichment/batch
  * Enrich specific transaction IDs.
  */
-pipelineRoutes.post('/enrichment/batch', async (c) => {
+pipelineRoutes.post('/enrichment/batch', zValidator('json', enrichmentBatchSchema), async (c) => {
   try {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
-    const body = await c.req.json();
-    const { transactionIds } = body;
-
-    if (!transactionIds || !Array.isArray(transactionIds) || transactionIds.length === 0) {
-      return c.json({ error: 'transactionIds array is required' }, 400);
-    }
+    const { transactionIds } = c.req.valid('json');
 
     const result = await enrichmentService.enrichTransactions(transactionIds, userId);
 
@@ -370,51 +375,50 @@ pipelineRoutes.get('/merchants', async (c) => {
  * POST /api/merchants/batch-resolve
  * Batch-resolve merchant descriptions using the Merchant Intelligence agent.
  */
-pipelineRoutes.post('/merchants/batch-resolve', async (c) => {
-  try {
-    const payload = c.get('jwtPayload');
-    const userId = payload.userId;
-    const body = await c.req.json();
-    const { descriptions } = body;
+pipelineRoutes.post(
+  '/merchants/batch-resolve',
+  zValidator('json', merchantBatchResolveSchema),
+  async (c) => {
+    try {
+      const payload = c.get('jwtPayload');
+      const userId = payload.userId;
+      const { descriptions } = c.req.valid('json');
 
-    if (!descriptions || !Array.isArray(descriptions) || descriptions.length === 0) {
-      return c.json({ error: 'descriptions array is required' }, 400);
+      if (!orchestrator.isEnabled()) {
+        return c.json({ error: 'Claude agents are not enabled' }, 503);
+      }
+
+      // Get existing merchant mappings for context
+      const existingMappings = await db
+        .select()
+        .from(merchantMemory)
+        .where(eq(merchantMemory.userId, userId))
+        .all();
+
+      const result = await orchestrator.invoke('merchant_intelligence', {
+        merchants: descriptions.map((desc: string, i: number) => ({
+          transactionId: i,
+          description: desc,
+          amount: 0,
+        })),
+        existingMappings: existingMappings.map((m: any) => ({
+          pattern: m.merchantPattern,
+          displayName: m.merchantDisplayName || m.merchantPattern,
+          gstRegistered: m.gstApplicable || false,
+          category: m.category,
+        })),
+      });
+
+      return c.json({
+        message: `Resolved ${result.results.length} merchants`,
+        results: result.results,
+        newMappings: result.newMappings,
+      });
+    } catch (err) {
+      console.error('Merchant batch-resolve failed:', err);
+      return c.json({ error: 'Merchant batch resolution failed' }, 500);
     }
-
-    if (!orchestrator.isEnabled()) {
-      return c.json({ error: 'Claude agents are not enabled' }, 503);
-    }
-
-    // Get existing merchant mappings for context
-    const existingMappings = await db
-      .select()
-      .from(merchantMemory)
-      .where(eq(merchantMemory.userId, userId))
-      .all();
-
-    const result = await orchestrator.invoke('merchant_intelligence', {
-      merchants: descriptions.map((desc: string, i: number) => ({
-        transactionId: i,
-        description: desc,
-        amount: 0,
-      })),
-      existingMappings: existingMappings.map((m: any) => ({
-        pattern: m.merchantPattern,
-        displayName: m.merchantDisplayName || m.merchantPattern,
-        gstRegistered: m.gstApplicable || false,
-        category: m.category,
-      })),
-    });
-
-    return c.json({
-      message: `Resolved ${result.results.length} merchants`,
-      results: result.results,
-      newMappings: result.newMappings,
-    });
-  } catch (err) {
-    console.error('Merchant batch-resolve failed:', err);
-    return c.json({ error: 'Merchant batch resolution failed' }, 500);
-  }
-});
+  },
+);
 
 export default pipelineRoutes;

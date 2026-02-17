@@ -103,22 +103,35 @@ export class RAGService {
    * Multi-type search: combines CHUNKS (direct matches) + GRAPH_SUMMARY_COMPLETION
    * (contextual analysis) for richer chat context.
    *
+   * F7: Now accepts sessionId for conversational memory
+   *
    * @param query - Search query string
    * @param userId - Optional user ID for per-user dataset isolation (Wave 3)
+   * @param sessionId - Optional Cognee session ID for conversational context (F7)
    */
   async searchMulti(
     query: string,
     userId?: string,
+    sessionId?: string,
   ): Promise<{ chunks: string[]; summary: string[] }> {
     if (!USE_COGNEE) return { chunks: [], summary: [] };
 
-    logger.info(`[RAG] Multi-search Cognee: "${query}"`);
+    logger.info(`[RAG] Multi-search Cognee: "${query}"${sessionId ? ` (session: ${sessionId})` : ''}`);
 
     if (userId) {
       const tools = CogneeTools.forUser(userId);
       const [chunks, summary] = await Promise.all([
-        tools.search(query, 'bank_transactions', 'CHUNKS'),
-        tools.search(query, 'bank_transactions', 'GRAPH_SUMMARY_COMPLETION'),
+        tools.search(query, 'bank_transactions', 'CHUNKS', sessionId),
+        tools.search(query, 'bank_transactions', 'GRAPH_SUMMARY_COMPLETION', sessionId),
+      ]);
+      return { chunks, summary };
+    }
+
+    // F7: Pass sessionId to cogneeClient.searchWithSession if sessionId is provided
+    if (sessionId) {
+      const [chunks, summary] = await Promise.all([
+        cogneeClient.searchWithSession(query, 'bank_transactions', sessionId, 5, 'CHUNKS'),
+        cogneeClient.searchWithSession(query, 'bank_transactions', sessionId, 3, 'GRAPH_SUMMARY_COMPLETION'),
       ]);
       return { chunks, summary };
     }

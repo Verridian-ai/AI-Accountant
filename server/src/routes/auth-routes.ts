@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { authService } from '../services/auth/auth-service.js';
 import { tenantService } from '../services/tenant.js';
 import { adminAuthService } from '../services/admin-auth.js';
@@ -7,9 +9,22 @@ import { generateToken } from '../auth.js';
 
 const authRoutes = new Hono();
 
+const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+  tenantId: z.string().optional(),
+});
+
+const registerSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+  tenantName: z.string().optional(),
+  tenantSlug: z.string().optional(),
+});
+
 // POST /auth/login
-authRoutes.post('/login', async (c) => {
-  const { username, password, tenantId } = await c.req.json();
+authRoutes.post('/login', zValidator('json', loginSchema), async (c) => {
+  const { username, password, tenantId } = c.req.valid('json');
   if (!username || !password) return c.json({ error: 'username and password are required' }, 400);
 
   // First level authentication (Username/Password)
@@ -38,8 +53,8 @@ authRoutes.post('/login', async (c) => {
 });
 
 // POST /auth/register
-authRoutes.post('/register', async (c) => {
-  const { username, password, tenantName, tenantSlug } = await c.req.json();
+authRoutes.post('/register', zValidator('json', registerSchema), async (c) => {
+  const { username, password, tenantName, tenantSlug } = c.req.valid('json');
   if (!username || !password) return c.json({ error: 'username and password required' }, 400);
 
   const result = await authService.register(username, password);

@@ -121,12 +121,27 @@ export class CogneeTools {
   /**
    * Search Cognee knowledge graph for relevant context.
    * Supports configurable search type for different use cases.
+   * F7: Now accepts sessionId for conversational memory
    */
   async search(
     query: string,
     dataset: string,
     searchType: CogneeSearchType = 'GRAPH_COMPLETION',
+    sessionId?: string,
   ): Promise<string[]> {
+    // F7: Use searchWithSession if sessionId provided
+    if (sessionId) {
+      return this.client.searchWithSession(
+        query,
+        this.prefixDataset(dataset),
+        sessionId,
+        this.config.searchTopK,
+        searchType,
+        this.config.userId,
+        this.config.tenantId,
+      );
+    }
+
     return this.client.search(
       query,
       this.prefixDataset(dataset),
