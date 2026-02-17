@@ -4,6 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 import { db, transactions } from '../schema.js';
 import { eq, and, gte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const analyticsQuerySchema = z.object({
   months: z.string().regex(/^\d+$/).optional(),
@@ -15,6 +16,9 @@ const analyticsQuerySchema = z.object({
 const analyticsQuery = zValidator('query', analyticsQuerySchema);
 
 const analyticsRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+analyticsRoutes.use('/*', tenantAuthMiddleware());
 
 // Helper: get cutoff date relative to the user's latest transaction
 async function getRelativeCutoff(userId: string, months: number): Promise<string> {

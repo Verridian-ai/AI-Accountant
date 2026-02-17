@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { bulkUploadQueue } from '../services/queue.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 // batch-uploads uses multipart/form-data, not JSON — z import for type definitions
 const _batchOptionsSchema = z.object({
@@ -8,6 +9,9 @@ const _batchOptionsSchema = z.object({
 });
 
 const batchRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+batchRoutes.use('/*', tenantAuthMiddleware());
 
 // Batch Upload
 batchRoutes.post('/', async (c) => {

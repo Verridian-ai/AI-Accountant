@@ -12,8 +12,12 @@ import { orchestrator } from '../services/claude/orchestrator.js';
 import { isClaudeAgentsEnabled, isAgentEnabled, AGENT_MODELS } from '../services/claude/config.js';
 import type { AgentType } from '../services/claude/types.js';
 import { logger } from '../lib/logger.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const agentRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+agentRoutes.use('/*', tenantAuthMiddleware());
 
 // ---------------------------------------------------------------------------
 // Zod schemas for each route

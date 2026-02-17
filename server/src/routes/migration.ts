@@ -3,12 +3,16 @@ import { z } from 'zod';
 import { db } from '../schema.js';
 import { sql } from 'drizzle-orm';
 import { SchemaRegistry } from '../services/claude/schemas/schema-registry.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 // Zod type reference for migration status response shape
 const _migrationStatusShape = z.object({ agentType: z.string(), status: z.string() });
 
 const migrationRoutes = new Hono();
 const schemaRegistry = new SchemaRegistry();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+migrationRoutes.use('/*', tenantAuthMiddleware());
 
 migrationRoutes.get('/schemas', async (c) => {
   return c.json(schemaRegistry.listSchemas());

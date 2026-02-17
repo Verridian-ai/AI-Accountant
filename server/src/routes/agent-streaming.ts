@@ -12,6 +12,7 @@ import { SchemaRegistry } from '../services/claude/schemas/schema-registry.js';
 import { AuditService } from '../services/claude/audit.js';
 import { ConfirmationFlowService } from '../services/claude/confirmation-flow.js';
 import type { AgentType } from '../services/claude/types.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const streamingRoutes = new Hono();
 const streamingService = new StreamingService();
@@ -19,6 +20,9 @@ const streamingRegistry = new StreamingRegistry();
 const _schemaRegistry = new SchemaRegistry();
 const _auditService = new AuditService(db);
 const confirmationFlow = new ConfirmationFlowService(db);
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+streamingRoutes.use('/*', tenantAuthMiddleware());
 
 streamingRoutes.post('/agent/:agentType', sseStreamMiddleware(), streamingRateLimiter(), zValidator('json', agentStreamInputSchema), async (c) => {
   const agentType = c.req.param('agentType') as AgentType;

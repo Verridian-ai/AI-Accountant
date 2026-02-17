@@ -7,6 +7,7 @@ import { ForbiddenError } from '../services/rbac-errors.js';
 import { getErrorMessage } from '../utils/error.js';
 import { getUserId } from '../utils/auth-helpers.js';
 import type { TenantRole } from '../services/tenant-types.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const addMemberSchema = z.object({
   userId: z.string().min(1),
@@ -18,6 +19,9 @@ const updateRoleSchema = z.object({
 });
 
 const memberRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+memberRoutes.use('/*', tenantAuthMiddleware());
 
 // --- MEMBER ROUTES ---
 
