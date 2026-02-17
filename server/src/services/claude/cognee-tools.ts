@@ -203,7 +203,7 @@ export class CogneeTools {
    * Search using a DataPoint-structured entity query.
    * Delegates to CHUNKS search on the datapoint-specific dataset.
    */
-  async searchWithDataPoint(query: string, dataPointType: string): Promise<string[]> {
+  async searchWithDataPoint(query: string, dataPointType: string, sessionId?: string): Promise<string[]> {
     const dataset = `datapoint_${dataPointType.toLowerCase()}`;
     return this.search(query, dataset, 'CHUNKS');
   }
@@ -212,7 +212,7 @@ export class CogneeTools {
    * Search with ontology-based context.
    * Uses GRAPH_COMPLETION for ontology-aware results.
    */
-  async searchWithOntology(query: string, ontologyType: string): Promise<string[]> {
+  async searchWithOntology(query: string, ontologyType: string, sessionId?: string): Promise<string[]> {
     const dataset = `ontology_${ontologyType.toLowerCase()}`;
     return this.search(query, dataset, 'GRAPH_COMPLETION');
   }

@@ -395,9 +395,8 @@ export class VercelFinancialPlanner extends VercelAgent<
         const searchQuery = patternType ? `${query} type:${patternType}` : query;
         try {
           const results = await cogneeTools.searchWithDataPoint(
-            searchQuery,
-            'FinancialTransaction',
-          );
+            searchQuery, 'FinancialTransaction',
+          , sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };
@@ -423,7 +422,7 @@ export class VercelFinancialPlanner extends VercelAgent<
         const query = input.query as string;
         const timeRange = input.timeRange as { start: string; end: string };
         try {
-          const results = await cogneeTools.temporalSearch(query, 'financial_insights', timeRange);
+          const results = await cogneeTools.temporalSearch(query, 'financial_insights', timeRange, sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Temporal search unavailable' };
@@ -473,7 +472,7 @@ export class VercelFinancialPlanner extends VercelAgent<
         const userId = input.userId as string | undefined;
         const dataset = userId ? `financial_user_${userId}` : 'financial_advice';
         try {
-          const results = await cogneeTools.search(query, dataset, 'RAG_COMPLETION');
+          const results = await cogneeTools.search(query, dataset, 'RAG_COMPLETION', sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };

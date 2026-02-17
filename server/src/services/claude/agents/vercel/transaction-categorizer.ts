@@ -182,7 +182,7 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
       },
       async (input) => {
         const description = input.description as string;
-        return cogneeTools.search(description, 'bank_transactions', 'CHUNKS');
+        return cogneeTools.search(description, 'bank_transactions', 'CHUNKS', sessionId);
       },
     );
 
@@ -214,7 +214,7 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
         const query = input.query as string;
         const category = input.category as string | undefined;
         const searchQuery = category ? `${query} category:${category}` : query;
-        const results = await cogneeTools.searchWithDataPoint(searchQuery, 'FinancialTransaction');
+        const results = await cogneeTools.searchWithDataPoint(searchQuery, 'FinancialTransaction', sessionId);
         return { patterns: results.length > 0 ? results : [], count: results.length };
       },
     );
@@ -249,7 +249,7 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
           end: now.toISOString().slice(0, 10),
         };
         try {
-          const results = await cogneeTools.temporalSearch(query, 'transaction_patterns', range);
+          const results = await cogneeTools.temporalSearch(query, 'transaction_patterns', range, sessionId);
           return { patterns: results.length > 0 ? results : [], count: results.length };
         } catch {
           return { patterns: [], count: 0, error: 'Temporal search unavailable' };
@@ -424,6 +424,7 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
   async executeWithMemory(
     input: CategorizerInput,
   ): Promise<VercelAgentExecutionResult<CategorizerOutput>> {
+    const { sessionId, userId } = input;
     this.merchantMemory = input.existingMerchantMemory ?? [];
     const result = await this.execute(input);
 

@@ -358,12 +358,12 @@ export class VercelBudgetAnalyzer extends VercelAgent<BudgetAnalyzerInput, Budge
       async (input) => {
         const query = input.query as string;
         try {
-          return await cogneeTools.search(query, 'financial_insights');
+          return await cogneeTools.search(query, 'financial_insights', "GRAPH_COMPLETION", sessionId);
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };
         }
       },
-    );
+    , sessionId);
 
     return tools;
   }

@@ -230,10 +230,8 @@ export class VercelMerchantIntelligence extends VercelAgent<
       async (input) => {
         const name = input.merchantName as string;
         const results = await cogneeTools.search(
-          `merchant mapping for "${name}"`,
-          'merchant_mappings',
-          'CHUNKS_LEXICAL',
-        );
+          `merchant mapping for "${name}"`, 'merchant_mappings', 'CHUNKS_LEXICAL',
+        , sessionId);
         return { found: results.length > 0, results };
       },
     );
@@ -465,7 +463,7 @@ export class VercelMerchantIntelligence extends VercelAgent<
       },
       async (input) => {
         const merchantName = input.merchantName as string;
-        const results = await cogneeTools.searchWithDataPoint(merchantName, 'BusinessRelationship');
+        const results = await cogneeTools.searchWithDataPoint(merchantName, 'BusinessRelationship', sessionId);
         return { relationships: results.length > 0 ? results : [], count: results.length };
       },
     );
@@ -482,7 +480,7 @@ export class VercelMerchantIntelligence extends VercelAgent<
       },
       async (input) => {
         const merchantName = input.merchantName as string;
-        const results = await cogneeTools.searchWithOntology(merchantName, 'relationship');
+        const results = await cogneeTools.searchWithOntology(merchantName, 'relationship', sessionId);
         return { context: results.length > 0 ? results : [], count: results.length };
       },
     );

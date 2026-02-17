@@ -127,7 +127,7 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
       async (input) => {
         const query = input.query as string;
         try {
-          const results = await cogneeTools.search(query, 'tax_rulings', 'GRAPH_COMPLETION');
+          const results = await cogneeTools.search(query, 'tax_rulings', 'GRAPH_COMPLETION', sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };
@@ -180,7 +180,7 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
       async (input) => {
         const query = input.query as string;
         try {
-          const results = await cogneeTools.searchWithOntology(query, 'tax');
+          const results = await cogneeTools.searchWithOntology(query, 'tax', sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };
@@ -210,9 +210,8 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
         const entityType = input.entityType as string;
         try {
           const results = await cogneeTools.searchWithDataPoint(
-            `${deductionType} ${entityType}`,
-            'TaxEvent',
-          );
+            `${deductionType} ${entityType}`, 'TaxEvent',
+          , sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };
@@ -245,7 +244,7 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
         const startYear = parseInt(match[1], 10);
         const timeRange = { start: `${startYear}-07-01`, end: `${startYear + 1}-06-30` };
         try {
-          const results = await cogneeTools.temporalSearch(query, 'tax_strategies', timeRange);
+          const results = await cogneeTools.temporalSearch(query, 'tax_strategies', timeRange, sessionId);
           return { found: results.length > 0, results, period: timeRange };
         } catch {
           return { found: false, results: [], error: 'Temporal search unavailable' };
@@ -295,7 +294,7 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
         const userId = input.userId as string | undefined;
         const dataset = userId ? `transactions_user_${userId}` : 'financial_context';
         try {
-          const results = await cogneeTools.search(query, dataset, 'CHUNKS');
+          const results = await cogneeTools.search(query, dataset, 'CHUNKS', sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };
