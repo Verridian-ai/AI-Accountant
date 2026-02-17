@@ -5,7 +5,7 @@
  * Handles journal entries, chart of accounts, and transaction-to-journal mapping.
  */
 
-import { db, journalEntries, journalEntryLines, chartOfAccounts } from '../schema.js';
+import { db, journalEntries, journalEntryLines, chartOfAccounts, transactions } from '../schema.js';
 import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
