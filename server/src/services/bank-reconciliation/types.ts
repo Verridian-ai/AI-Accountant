@@ -45,9 +45,18 @@ export interface LedgerEntryCandidate {
   journalDescription: string;
 }
 
-export type MatchType =
-  | 'amount_exact'
-  | 'amount_date'
-  | 'reference_number'
-  | 'description_pattern'
-  | 'combined';
+export const VALID_MATCH_TYPES = [
+  'amount_exact',
+  'amount_date',
+  'reference_number',
+  'description_pattern',
+  'combined',
+] as const;
+
+export type MatchType = (typeof VALID_MATCH_TYPES)[number];
+
+/** ReDoS prevention: max regex pattern length */
+export const MAX_REGEX_LENGTH = 256;
+
+/** Patterns with nested quantifiers that could cause catastrophic backtracking */
+export const NESTED_QUANTIFIER_PATTERN = /(\+|\*|\?|\{)\s*(\+|\*|\?|\{)/;

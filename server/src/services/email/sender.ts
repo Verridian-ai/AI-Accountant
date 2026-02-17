@@ -1,11 +1,13 @@
 /**
- * Email sender — core send functions and user-preference checking.
- * Re-exports the config and BRAND objects for use by other email modules.
+ * Email sender — core send function, config, branding, and user-preference checking.
  *
- * email-service.ts calls these with a trailing RateLimiter argument.
+ * Extracted from the email monolith. Other modules import config/BRAND from here.
  */
-import type { NotificationType } from './types.js';
-import { RateLimiter } from './templates.js';
+import type { NotificationType, EmailOptions } from './types.js';
+
+// ---------------------------------------------------------------------------
+// CONFIGURATION
+// ---------------------------------------------------------------------------
 
 export const config = {
   apiKey: process.env.RESEND_API_KEY || '',
@@ -16,6 +18,10 @@ export const config = {
   retryAttempts: 3,
   retryDelayMs: 1000,
 };
+
+// ---------------------------------------------------------------------------
+// BRANDING
+// ---------------------------------------------------------------------------
 
 export const BRAND = {
   primaryColor: '#FFCC00',
@@ -29,6 +35,67 @@ export const BRAND = {
   supportEmail: 'support@goldledger.com.au',
 };
 
+// ---------------------------------------------------------------------------
+// CORE SEND
+// ---------------------------------------------------------------------------
+
+interface RateLimiterLike {
+  waitForSlot(): Promise<void>;
+}
+
+/**
+ * Send an email via the Resend API.
+ * Accepts an optional rate limiter (used by sender-methods and sender-weekly).
+ */
+export async function sendEmail(
+  options: EmailOptions,
+  rateLimiter?: RateLimiterLike,
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  if (!config.apiKey) {
+    console.warn('[EmailService] RESEND_API_KEY not configured, skipping email send');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  if (rateLimiter) {
+    await rateLimiter.waitForSlot();
+  }
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: config.from,
+        to: Array.isArray(options.to) ? options.to : [options.to],
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+        reply_to: options.replyTo,
+        tags: options.tags,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error((errorData as Record<string, string>).message || `HTTP ${response.status}`);
+    }
+
+    const data = (await response.json()) as { id: string };
+    return { success: true, messageId: data.id };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[EmailService] Send failed:', errorMessage);
+    return { success: false, error: errorMessage };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// USER PREFERENCES
+// ---------------------------------------------------------------------------
+
 export async function checkUserPreferences(
   _userId: string,
   notificationType: NotificationType,
@@ -37,41 +104,13 @@ export async function checkUserPreferences(
   return true;
 }
 
-export async function sendWelcomeEmail(
-  _to: string,
-  _name: string,
-  _rateLimiter: RateLimiter,
-): Promise<{ success: boolean; error?: string }> {
-  if (!config.apiKey) return { success: false, error: 'Email service not configured' };
-  return { success: true };
-}
+// ---------------------------------------------------------------------------
+// RE-EXPORTS from sender-methods (email-service.ts imports these from sender)
+// ---------------------------------------------------------------------------
 
-export async function sendPasswordReset(
-  _to: string,
-  _resetToken: string,
-  _rateLimiter: RateLimiter,
-): Promise<{ success: boolean; error?: string }> {
-  if (!config.apiKey) return { success: false, error: 'Email service not configured' };
-  return { success: true };
-}
-
-export async function sendTeamInvitation(
-  _to: string,
-  _teamName: string,
-  _inviterName: string,
-  _inviteLink: string,
-  _rateLimiter: RateLimiter,
-): Promise<{ success: boolean; error?: string }> {
-  if (!config.apiKey) return { success: false, error: 'Email service not configured' };
-  return { success: true };
-}
-
-export async function sendBASReminder(
-  _to: string,
-  _period: string,
-  _dueDate: string,
-  _rateLimiter: RateLimiter,
-): Promise<{ success: boolean; error?: string }> {
-  if (!config.apiKey) return { success: false, error: 'Email service not configured' };
-  return { success: true };
-}
+export {
+  sendWelcomeEmail,
+  sendPasswordReset,
+  sendTeamInvitation,
+  sendBASReminder,
+} from './sender-methods.js';

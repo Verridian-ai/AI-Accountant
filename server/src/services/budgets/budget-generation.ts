@@ -14,10 +14,8 @@ export async function generateFromHistory(
   periodStart: string,
   periodEnd: string,
   lookbackMonths: number,
-  budgetId: string,
+  budgetId?: string,
 ) {
-  // generateFromHistory is a private method on BudgetService.
-  // Access it via bracket notation with unknown intermediate cast.
-  const svc = _svc as unknown as Record<string, Function>;
-  return svc.generateFromHistory(userId, periodStart, periodEnd, lookbackMonths, budgetId);
+  // Delegate to the BudgetService instance method
+  return _svc.generateFromHistory(userId, periodStart, periodEnd, lookbackMonths, budgetId);
 }
