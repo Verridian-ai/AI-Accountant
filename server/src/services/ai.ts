@@ -636,10 +636,10 @@ Only include transfers you're reasonably confident about (> 0.6).
       };
 
       return (parsed.transfers || []).map((t) => ({
-        sourceTransactionId: t.source_transaction_id,
-        destinationTransactionId: t.destination_transaction_id,
-        confidence: t.confidence || 0.5,
-        reasoning: t.reasoning || '',
+        sourceTransactionId: t.source_transaction_id ?? '',
+        destinationTransactionId: t.destination_transaction_id ?? '',
+        confidence: t.confidence ?? 0.5,
+        reasoning: t.reasoning ?? '',
       }));
     } catch (err) {
       console.error('[AI Transfer Error]', err);

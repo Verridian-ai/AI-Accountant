@@ -12,7 +12,7 @@
 import { logger } from '../utils/logger.js';
 import { cogneeClient } from './cognee_client.js';
 import { CogneeTools } from './claude/cognee-tools.js';
-import type { CogneeSearchType } from './cognee_client.js';
+import type { CogneeSearchType, CogneeSearchResult } from './cognee_client.js';
 
 const USE_COGNEE = process.env.USE_COGNEE === 'true';
 
@@ -113,7 +113,7 @@ export class RAGService {
     query: string,
     userId?: string,
     sessionId?: string,
-  ): Promise<{ chunks: string[]; summary: string[] }> {
+  ): Promise<{ chunks: CogneeSearchResult[]; summary: CogneeSearchResult[] }> {
     if (!USE_COGNEE) return { chunks: [], summary: [] };
 
     logger.info(
