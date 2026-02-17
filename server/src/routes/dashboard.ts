@@ -63,7 +63,7 @@ dashboardRoutes.get('/charts', async (c) => {
 
 dashboardRoutes.post('/charts', zValidator('json', saveChartSchema), async (c) => {
   const body = c.req.valid('json');
-  return c.json(await dashboardService.saveChart(body.userId || 'default', body), 201);
+  return c.json(await dashboardService.saveChart(body.userId || 'default', body as any), 201);
 });
 
 dashboardRoutes.delete('/charts/:id', async (c) => {

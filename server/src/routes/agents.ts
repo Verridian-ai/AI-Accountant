@@ -88,7 +88,7 @@ agents.post('/bas/calculate', zValidator('json', basCalculateSchema), async (c) 
       conditions.push(eq(transactions.userId, userId));
     }
     if (accountId) {
-      conditions.push(eq(transactions.accountId, accountId as number));
+      conditions.push(eq(transactions.accountId, String(accountId)));
     }
 
     const quarterTxs = await db

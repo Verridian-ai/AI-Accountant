@@ -9,7 +9,7 @@ import { getUserId } from '../utils/auth-helpers.js';
 
 const subscribeSchema = z.object({
   planName: z.string().min(1),
-  billingCycle: z.enum(['monthly', 'annually']).optional(),
+  billingCycle: z.enum(['monthly', 'annual']).optional(),
 });
 
 const changePlanSchema = z.object({
