@@ -82,17 +82,17 @@ export function validateSchema(): ValidationResult {
     join(process.cwd(), '..', 'docker', 'migrations')
   );
 
-  result.info.push(\`📊 Schema Statistics:\`);
-  result.info.push(\`  - schema.ts: \${sqliteTables.size} tables\`);
-  result.info.push(\`  - postgres-schema.ts: \${pgTables.size} tables\`);
-  result.info.push(\`  - Migration files: \${migrationTables.size} tables\`);
+  result.info.push(`📊 Schema Statistics:`);
+  result.info.push(`  - schema.ts: ${sqliteTables.size} tables`);
+  result.info.push(`  - postgres-schema.ts: ${pgTables.size} tables`);
+  result.info.push(`  - Migration files: ${migrationTables.size} tables`);
   result.info.push('');
 
   // Check: Tables in SQLite schema but not in PostgreSQL schema
   const missingInPg = Array.from(sqliteTables).filter(t => !pgTables.has(t));
   if (missingInPg.length > 0) {
-    result.warnings.push(\`⚠️  Tables in schema.ts but not in postgres-schema.ts:\`);
-    missingInPg.forEach(t => result.warnings.push(\`   - \${t}\`));
+    result.warnings.push(`⚠️  Tables in schema.ts but not in postgres-schema.ts:`);
+    missingInPg.forEach(t => result.warnings.push(`   - ${t}`));
     result.warnings.push('');
   }
 
@@ -105,8 +105,9 @@ export function validateSchema(): ValidationResult {
 }
 
 // Run validation if executed directly
-if (import.meta.url === \`file://\${process.argv[1]}\`) {
-  console.log('\\n🔍 GoldLedger Schema Validation Report\\n');
+const isMainModule = import.meta.url === 'file://' + process.argv[1];
+if (isMainModule) {
+  console.log('\n🔍 GoldLedger Schema Validation Report\n');
   const schemaResult = validateSchema();
   schemaResult.info.forEach(msg => console.log(msg));
   schemaResult.warnings.forEach(msg => console.log(msg));
