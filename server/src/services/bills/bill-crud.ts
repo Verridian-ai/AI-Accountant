@@ -3,7 +3,7 @@
  */
 
 import { db, bills, billLines, billPayments, suppliers, purchaseOrders } from '../../schema.js';
-import { eq, and, gte, lte, sql, asc } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, asc, type SQL } from 'drizzle-orm';
 import type {
   BillWithSupplier,
   BillLine,
@@ -37,7 +37,7 @@ export async function listBills(
   const offset = (page - 1) * limit;
 
   // Build WHERE conditions
-  const conditions: any[] = [eq(bills.userId, userId)];
+  const conditions: SQL<unknown>[] = [eq(bills.userId, userId)];
   if (status) {
     conditions.push(eq(bills.status, status));
   }
@@ -221,7 +221,7 @@ export async function getBill(billId: string): Promise<BillDetail> {
     notes: row.notes,
     createdAt: String(row.createdAt),
     updatedAt: String(row.updatedAt),
-    supplierName: (row as any).supplierName ?? 'Unknown Supplier',
+    supplierName: row.supplierName ?? 'Unknown Supplier',
     lineItems,
     payments: paymentList,
   };
