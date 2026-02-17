@@ -18,7 +18,9 @@ const {
   const mockUpdateBalance = vi.fn();
 
   // DB chaining mocks (for repository internal use)
-  const mockSelect = vi.fn(() => ({ from: vi.fn(() => ({ where: vi.fn(), get: vi.fn(), all: vi.fn() })) }));
+  const mockSelect = vi.fn(() => ({
+    from: vi.fn(() => ({ where: vi.fn(), get: vi.fn(), all: vi.fn() })),
+  }));
   const mockDbInsert = vi.fn(() => ({ values: vi.fn(() => ({ run: vi.fn() })) }));
   const mockDbUpdate = vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn(), run: vi.fn() })) }));
   const mockDbDelete = vi.fn(() => ({ where: vi.fn(() => ({ run: vi.fn() })) }));

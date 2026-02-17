@@ -27,7 +27,7 @@ export function sseStreamMiddleware() {
     c.header('Cache-Control', 'no-cache');
     c.header('Connection', 'keep-alive');
     c.header('X-Accel-Buffering', 'no');
-    await next();
+    return next();
   });
 }
 
@@ -76,7 +76,7 @@ export function streamingRateLimiter() {
     activeStreams.set(userId, current + 1);
 
     try {
-      await next();
+      return next();
     } finally {
       // Decrement (ensure it never goes below 0)
       const after = activeStreams.get(userId) ?? 1;

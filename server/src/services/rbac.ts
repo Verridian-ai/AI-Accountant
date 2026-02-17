@@ -320,7 +320,7 @@ export class RBACService {
 
       try {
         await self.requirePermission(tenantId, userId, permission);
-        await next();
+        return next();
       } catch (err) {
         if (err instanceof ForbiddenError) {
           return c.json(
@@ -374,7 +374,7 @@ export class RBACService {
         );
       }
 
-      await next();
+      return next();
     };
   }
 

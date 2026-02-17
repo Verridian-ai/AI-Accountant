@@ -19,6 +19,7 @@ import bcrypt from 'bcryptjs';
 import { sign, verify } from 'hono/jwt';
 import { createMiddleware } from 'hono/factory';
 import crypto from 'crypto';
+import { logger } from '../lib/logger.js';
 import { db, tenantMembers, tenants, rolePermissions, permissions } from '../schema.js';
 import { adminUsers, type AdminUser } from '../db/admin-schema.js';
 import { eq, and } from 'drizzle-orm';
@@ -630,7 +631,7 @@ export class AdminAuthService {
     try {
       const existing = await db.select().from(adminUsers).all();
       if (existing.length > 0) {
-        console.log('[AdminAuth] Admin users already exist, skipping seed.');
+        logger.info('[AdminAuth] Admin users already exist, skipping seed.');
         return;
       }
 
@@ -668,20 +669,14 @@ export class AdminAuthService {
         .run();
 
       if (process.env.ADMIN_DEFAULT_PASSWORD) {
-        console.log(
-          '[AdminAuth] Default admin seeded (username: admin, password from ADMIN_DEFAULT_PASSWORD env)',
-        );
+        logger.info('[AdminAuth] Default admin seeded (username: admin, password from ADMIN_DEFAULT_PASSWORD env)');
       } else {
-        console.log(
-          `[AdminAuth] Default admin seeded (username: admin, password: ${defaultPassword})`,
-        );
-        console.log(
-          '[AdminAuth] IMPORTANT: Save this password! Set ADMIN_DEFAULT_PASSWORD env var for production.',
-        );
+        logger.info(`[AdminAuth] Default admin seeded (username: admin, password: ${defaultPassword})`);
+        logger.warn('[AdminAuth] IMPORTANT: Save this password! Set ADMIN_DEFAULT_PASSWORD env var for production.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Table might not exist yet — don't crash the server
-      console.warn('[AdminAuth] Could not seed default admin:', err.message || err);
+      logger.warn({ err }, '[AdminAuth] Could not seed default admin');
     }
   }
 }
@@ -722,7 +717,7 @@ export function adminAuthMiddleware(requiredPermission?: string) {
 
     // Attach admin payload to context
     c.set('admin', payload);
-    await next();
+    return next();
   });
 }
 

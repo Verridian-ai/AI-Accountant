@@ -94,7 +94,7 @@ export function tenantAuthMiddleware() {
     c.set('role', payload.role);
     c.set('permissions', payload.permissions);
 
-    await next();
+    return next();
   });
 }
 
@@ -135,7 +135,7 @@ export function optionalTenantAuth() {
       c.set('permissions', payload.permissions);
     }
 
-    await next();
+    return next();
   });
 }
 
@@ -172,6 +172,6 @@ export function requireRole(minRole: TenantRole) {
       );
     }
 
-    await next();
+    return next();
   });
 }
