@@ -102,6 +102,9 @@ export interface CategorizerInput {
     category: string;
     gst: boolean;
   }>;
+  // F10: Session context for conversational memory and feedback
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface CategorizerOutput {
@@ -132,6 +135,9 @@ export interface GSTCalculatorInput {
   quarter: { year: number; quarter: 1 | 2 | 3 | 4 };
   accountId?: number;
   includePayg?: boolean;
+  // F10: Session context for conversational memory and feedback
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface GSTCalculatorOutput {
@@ -217,6 +223,9 @@ export interface BudgetAnalyzerInput {
   dateRange?: { start: string; end: string };
   focusAreas?: ('spending' | 'income' | 'savings' | 'recurring' | 'anomalies')[];
   includeProjections?: boolean;
+  // F10: Session context for conversational memory and feedback
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface BudgetAnalyzerOutput {
@@ -302,6 +311,9 @@ export interface MerchantIntelligenceInput {
     gstRegistered?: boolean;
     category?: string;
   }>;
+  // F10: Session context for conversational memory and feedback
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface MerchantIntelligenceOutput {
@@ -378,6 +390,9 @@ export interface TaxStrategyInput {
   businessIncome?: number; // cents
   businessExpenses?: number; // cents
   personalIncome?: number; // cents
+  // F10: Session context for conversational memory and feedback
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface TaxStrategyOutput {
@@ -422,6 +437,9 @@ export interface FinancialPlannerInput {
     interestRate: number;
     minimumPaymentCents: number;
   }>;
+  // F10: Session context for conversational memory and feedback
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface FinancialPlannerOutput {
