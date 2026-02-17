@@ -4,6 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 import { accountService } from '../services/accounts.js';
 import { events } from '../events.js';
 import { getSupportedBanks, analyzeStatement } from '../services/parsers/index.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const createAccountSchema = z.object({
   accountNumber: z.string().min(1),
@@ -54,6 +55,9 @@ const updateMerchantMemorySchema = z.object({
 });
 
 const accountRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+accountRoutes.use('/*', tenantAuthMiddleware());
 
 // Get all accounts
 accountRoutes.get('/', async (c) => {

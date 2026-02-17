@@ -1,11 +1,15 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { statementService } from '../services/statements/statement-service.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 // Upload uses multipart/form-data — no JSON body; reprocess takes no body
 const _statementReprocessShape = z.object({ force: z.boolean().optional() });
 
 const statementRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+statementRoutes.use('/*', tenantAuthMiddleware());
 
 // Get all statements
 statementRoutes.get('/', async (c) => {

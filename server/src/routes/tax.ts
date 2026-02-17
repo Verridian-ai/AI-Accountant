@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { TaxService } from '../services/tax.js';
 import { BASService } from '../services/bas.js';
 import { events } from '../events.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const categorizeGSTSchema = z.object({
   updates: z
@@ -37,6 +38,9 @@ const createDeductionSchema = z
 const taxRoutes = new Hono();
 const taxService = new TaxService();
 const basService = new BASService();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+taxRoutes.use('/*', tenantAuthMiddleware());
 
 // Helper: resolve period string to quarter dates
 function resolvePeriod(period: string): { financialYear: string; quarter: number } {

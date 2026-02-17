@@ -5,6 +5,7 @@ import { db, transactions, taxCodes } from '../schema.js';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { BASService } from '../services/bas.js';
 import { events } from '../events.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const saveBASSchema = z.record(z.unknown());
 
@@ -14,6 +15,9 @@ const updateBASStatusSchema = z.object({
 
 const basRoutes = new Hono();
 const basService = new BASService();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+basRoutes.use('/*', tenantAuthMiddleware());
 
 // Helper: resolve period string to quarter dates
 function resolvePeriod(period: string): { financialYear: string; quarter: number } {

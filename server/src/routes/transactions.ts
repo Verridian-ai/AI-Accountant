@@ -1,10 +1,13 @@
 import { Hono } from 'hono';
-import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { transactionService } from '../services/transaction-service.js';
 import { transactionUpdateSchema, transactionSplitSchema } from '../validation/index.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const transactionRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+transactionRoutes.use('/*', tenantAuthMiddleware());
 
 // Get transactions list
 transactionRoutes.get('/', async (c) => {
