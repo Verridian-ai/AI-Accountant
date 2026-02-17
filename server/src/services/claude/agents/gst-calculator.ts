@@ -705,10 +705,9 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
       'lookup_gst_ruling',
       async (input) => {
         const query = input.query as string;
-        return cogneeTools.search(query, 'gst_rules');
-      },
-    ],
-  ]);
+        return cogneeTools.search(query, 'gst_rules', "GRAPH_COMPLETION", sessionId);
+      }, ],
+  ], sessionId);
 
   constructor() {
     super('gst_calculator');
