@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+  xmlns:owl="http://www.w3.org/2002/07/owl#"
+  xmlns:gl="http://goldledger.app/ontology#"
+  xmlns:fibo="https://spec.edmcouncil.org/fibo/ontology#">
+
+  <owl:Ontology rdf:about="http://goldledger.app/ontology">
+    <rdfs:label>GoldLedger Australian Financial Ontology</rdfs:label>
+    <rdfs:comment>Domain ontology for Australian financial entities, GST, BAS, and tax deductions</rdfs:comment>
+  </owl:Ontology>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- Core Financial Classes                                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <owl:Class rdf:about="gl:Transaction">
+    <rdfs:label>Financial Transaction</rdfs:label>
+    <rdfs:comment>A monetary transaction from a bank statement</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:Account">
+    <rdfs:label>Bank Account</rdfs:label>
+    <rdfs:comment>A bank or financial account</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:Merchant">
+    <rdfs:label>Merchant</rdfs:label>
+    <rdfs:comment>A business entity that receives or sends payments</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:Category">
+    <rdfs:label>Transaction Category</rdfs:label>
+    <rdfs:comment>A classification for transactions</rdfs:comment>
+  </owl:Class>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- Australian Tax Classes                                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <owl:Class rdf:about="gl:GSTClassification">
+    <rdfs:label>GST Classification</rdfs:label>
+    <rdfs:comment>GST treatment: standard (10%), GST-free, input-taxed, export</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:BASPeriod">
+    <rdfs:label>BAS Period</rdfs:label>
+    <rdfs:comment>A Business Activity Statement reporting period (quarterly: Q1=Jul-Sep, Q2=Oct-Dec, Q3=Jan-Mar, Q4=Apr-Jun)</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:FinancialYear">
+    <rdfs:label>Australian Financial Year</rdfs:label>
+    <rdfs:comment>Australian financial year running July 1 to June 30</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:TaxDeduction">
+    <rdfs:label>Tax Deduction</rdfs:label>
+    <rdfs:comment>An ATO-allowed tax deduction (D1-D15 categories)</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:ATORuling">
+    <rdfs:label>ATO Ruling</rdfs:label>
+    <rdfs:comment>An Australian Tax Office ruling or determination</rdfs:comment>
+  </owl:Class>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- Entity Type Classes                                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <owl:Class rdf:about="gl:SoleTrader">
+    <rdfs:subClassOf rdf:resource="gl:TaxEntity"/>
+    <rdfs:label>Sole Trader</rdfs:label>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:Company">
+    <rdfs:subClassOf rdf:resource="gl:TaxEntity"/>
+    <rdfs:label>Company</rdfs:label>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:Trust">
+    <rdfs:subClassOf rdf:resource="gl:TaxEntity"/>
+    <rdfs:label>Trust</rdfs:label>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:Partnership">
+    <rdfs:subClassOf rdf:resource="gl:TaxEntity"/>
+    <rdfs:label>Partnership</rdfs:label>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:SMSF">
+    <rdfs:subClassOf rdf:resource="gl:TaxEntity"/>
+    <rdfs:label>Self-Managed Super Fund</rdfs:label>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:TaxEntity">
+    <rdfs:label>Tax Entity</rdfs:label>
+    <rdfs:comment>A taxable entity registered with the ATO</rdfs:comment>
+  </owl:Class>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- Pattern Classes                                                         -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <owl:Class rdf:about="gl:SpendingPattern">
+    <rdfs:label>Spending Pattern</rdfs:label>
+    <rdfs:comment>A recurring or seasonal spending pattern</rdfs:comment>
+  </owl:Class>
+
+  <owl:Class rdf:about="gl:Transfer">
+    <rdfs:label>Inter-Account Transfer</rdfs:label>
+    <rdfs:comment>A transfer between two accounts owned by the same entity</rdfs:comment>
+  </owl:Class>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- Object Properties (Relationships)                                       -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <owl:ObjectProperty rdf:about="gl:belongsTo">
+    <rdfs:domain rdf:resource="gl:Transaction"/>
+    <rdfs:range rdf:resource="gl:Account"/>
+    <rdfs:label>belongs to</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:paidTo">
+    <rdfs:domain rdf:resource="gl:Transaction"/>
+    <rdfs:range rdf:resource="gl:Merchant"/>
+    <rdfs:label>paid to</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:categorizedAs">
+    <rdfs:domain rdf:resource="gl:Transaction"/>
+    <rdfs:range rdf:resource="gl:Category"/>
+    <rdfs:label>categorized as</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:hasGSTClassification">
+    <rdfs:domain rdf:resource="gl:Transaction"/>
+    <rdfs:range rdf:resource="gl:GSTClassification"/>
+    <rdfs:label>has GST classification</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:inBASPeriod">
+    <rdfs:domain rdf:resource="gl:Transaction"/>
+    <rdfs:range rdf:resource="gl:BASPeriod"/>
+    <rdfs:label>in BAS period</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:inFinancialYear">
+    <rdfs:domain rdf:resource="gl:Transaction"/>
+    <rdfs:range rdf:resource="gl:FinancialYear"/>
+    <rdfs:label>in financial year</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:governedBy">
+    <rdfs:domain rdf:resource="gl:TaxDeduction"/>
+    <rdfs:range rdf:resource="gl:ATORuling"/>
+    <rdfs:label>governed by</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:claims">
+    <rdfs:domain rdf:resource="gl:TaxEntity"/>
+    <rdfs:range rdf:resource="gl:TaxDeduction"/>
+    <rdfs:label>claims</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:operatesIn">
+    <rdfs:domain rdf:resource="gl:Merchant"/>
+    <rdfs:range rdf:resource="gl:Category"/>
+    <rdfs:label>operates in</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:fromAccount">
+    <rdfs:domain rdf:resource="gl:Transfer"/>
+    <rdfs:range rdf:resource="gl:Account"/>
+    <rdfs:label>from account</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:toAccount">
+    <rdfs:domain rdf:resource="gl:Transfer"/>
+    <rdfs:range rdf:resource="gl:Account"/>
+    <rdfs:label>to account</rdfs:label>
+  </owl:ObjectProperty>
+
+  <owl:ObjectProperty rdf:about="gl:observedIn">
+    <rdfs:domain rdf:resource="gl:SpendingPattern"/>
+    <rdfs:range rdf:resource="gl:Account"/>
+    <rdfs:label>observed in</rdfs:label>
+  </owl:ObjectProperty>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- GST Classification Individuals                                          -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <gl:GSTClassification rdf:about="gl:StandardRated">
+    <rdfs:label>Standard Rated (10%)</rdfs:label>
+    <gl:rate>0.1</gl:rate>
+  </gl:GSTClassification>
+
+  <gl:GSTClassification rdf:about="gl:GSTFree">
+    <rdfs:label>GST-Free</rdfs:label>
+    <gl:rate>0.0</gl:rate>
+  </gl:GSTClassification>
+
+  <gl:GSTClassification rdf:about="gl:InputTaxed">
+    <rdfs:label>Input Taxed</rdfs:label>
+    <gl:rate>0.0</gl:rate>
+  </gl:GSTClassification>
+
+  <gl:GSTClassification rdf:about="gl:ExportGSTFree">
+    <rdfs:label>Export (GST-Free)</rdfs:label>
+    <gl:rate>0.0</gl:rate>
+  </gl:GSTClassification>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- ATO Deduction Category Individuals (D1-D15)                             -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <gl:TaxDeduction rdf:about="gl:D1_WorkRelatedCarExpenses">
+    <rdfs:label>D1: Work-related car expenses</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D2_WorkRelatedTravelExpenses">
+    <rdfs:label>D2: Work-related travel expenses</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D3_WorkRelatedClothing">
+    <rdfs:label>D3: Work-related clothing, laundry, and dry-cleaning</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D4_WorkRelatedSelfEducation">
+    <rdfs:label>D4: Work-related self-education expenses</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D5_OtherWorkRelated">
+    <rdfs:label>D5: Other work-related expenses</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D6_LowValuePoolDeduction">
+    <rdfs:label>D6: Low-value pool deduction</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D7_InterestDeductions">
+    <rdfs:label>D7: Interest deductions</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D8_DividendDeductions">
+    <rdfs:label>D8: Dividend deductions</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D9_GiftsOrDonations">
+    <rdfs:label>D9: Gifts or donations</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D10_CostOfManagingTaxAffairs">
+    <rdfs:label>D10: Cost of managing tax affairs</rdfs:label>
+  </gl:TaxDeduction>
+
+  <gl:TaxDeduction rdf:about="gl:D15_WorkFromHomeExpenses">
+    <rdfs:label>D15: Working from home expenses</rdfs:label>
+  </gl:TaxDeduction>
+
+  <!-- BAS Quarter Individuals -->
+  <gl:BASPeriod rdf:about="gl:BAS_Q1">
+    <rdfs:label>Q1: July-September</rdfs:label>
+    <gl:startMonth>7</gl:startMonth>
+    <gl:endMonth>9</gl:endMonth>
+  </gl:BASPeriod>
+
+  <gl:BASPeriod rdf:about="gl:BAS_Q2">
+    <rdfs:label>Q2: October-December</rdfs:label>
+    <gl:startMonth>10</gl:startMonth>
+    <gl:endMonth>12</gl:endMonth>
+  </gl:BASPeriod>
+
+  <gl:BASPeriod rdf:about="gl:BAS_Q3">
+    <rdfs:label>Q3: January-March</rdfs:label>
+    <gl:startMonth>1</gl:startMonth>
+    <gl:endMonth>3</gl:endMonth>
+  </gl:BASPeriod>
+
+  <gl:BASPeriod rdf:about="gl:BAS_Q4">
+    <rdfs:label>Q4: April-June</rdfs:label>
+    <gl:startMonth>4</gl:startMonth>
+    <gl:endMonth>6</gl:endMonth>
+  </gl:BASPeriod>
+
+</rdf:RDF>

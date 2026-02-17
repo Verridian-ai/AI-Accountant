@@ -136,6 +136,7 @@ services:
       start_period: 60s
     volumes:
       - cognee-data:/app/.cognee_system
+      - ./server/cognee-models:/app/custom_models:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
