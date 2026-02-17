@@ -67,7 +67,7 @@ export class StatementService {
   async getGapAnalysis(userId: string) {
     const stmts = await statementRepository.getByUserId(userId);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const completedStmts = stmts.filter((s: any) => s.parsingStatus === 'COMPLETED');
+    const completedStmts = stmts.filter((s: Record<string, unknown>) => s.parsingStatus === 'COMPLETED');
     return { totalStatements: completedStmts.length };
   }
 }

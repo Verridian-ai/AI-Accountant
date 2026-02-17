@@ -51,7 +51,7 @@ export class BudgetCrud {
       );
 
       // Update total from generated lines
-      const total = lines.reduce((sum: number, l) => sum + Math.abs(l.budgetedAmount), 0);
+      const total = lines.reduce((sum: number, l: { budgetedAmount: number }) => sum + Math.abs(l.budgetedAmount), 0);
       await db
         .update(budgets)
         .set({ totalAmount: total, updatedAt: new Date().toISOString() })

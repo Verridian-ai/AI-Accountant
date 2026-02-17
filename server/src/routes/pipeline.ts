@@ -74,13 +74,13 @@ pipelineRoutes.post('/transfers/detect', async (c) => {
       .from(transferLinks)
       .where(eq(transferLinks.userId, userId))
       .all();
-    const existingPairs = existingLinks.map((l: any) => ({
-      sourceId: l.sourceTransactionId as any,
-      targetId: l.destinationTransactionId as any,
+    const existingPairs = existingLinks.map((l: Record<string, unknown>) => ({
+      sourceId: l.sourceTransactionId as string,
+      targetId: l.destinationTransactionId as string,
     }));
 
     // Convert to transfer detection format
-    const candidates: TransferCandidate[] = allTxs.map((t: any) => ({
+    const candidates: TransferCandidate[] = allTxs.map((t: Record<string, unknown>) => ({
       id: t.id,
       accountId: t.accountId || '',
       date: t.date,
@@ -90,7 +90,7 @@ pipelineRoutes.post('/transfers/detect', async (c) => {
       linkedTransactionId: t.transferLinkId || undefined,
     }));
 
-    const accountContexts: AccountContext[] = userAccounts.map((a: any) => ({
+    const accountContexts: AccountContext[] = userAccounts.map((a: Record<string, unknown>) => ({
       id: a.id,
       accountNumber: a.accountNumber,
       bankId: a.bankName || '',
@@ -128,18 +128,18 @@ pipelineRoutes.post('/transfers/detect', async (c) => {
     const ownerContribIds: string[] = [];
     for (const m of matches) {
       const srcAcct = userAccounts.find(
-        (a: any) =>
+        (a: Record<string, unknown>) =>
           a.id === m.sourceTransaction.accountId ||
           String(a.id) === String(m.sourceTransaction.accountId),
       );
       const dstAcct = userAccounts.find(
-        (a: any) =>
+        (a: Record<string, unknown>) =>
           a.id === m.targetTransaction.accountId ||
           String(a.id) === String(m.targetTransaction.accountId),
       );
       if (
-        (srcAcct as any)?.ownershipTag === 'personal' &&
-        (dstAcct as any)?.ownershipTag !== 'personal'
+        (srcAcct as Record<string, unknown> | undefined)?.ownershipTag === 'personal' &&
+        (dstAcct as Record<string, unknown> | undefined)?.ownershipTag !== 'personal'
       ) {
         ownerContribIds.push(String(m.targetTransaction.id));
       }
@@ -351,13 +351,13 @@ pipelineRoutes.get('/merchants', async (c) => {
         .from(merchantMemory)
         .where(
           and(eq(merchantMemory.userId, userId), like(merchantMemory.merchantPattern, pattern)),
-        ) as any;
+        ) as Record<string, unknown>;
     }
 
     const mappings = await query.all();
 
     return c.json({
-      merchants: mappings.map((m: any) => ({
+      merchants: mappings.map((m: Record<string, unknown>) => ({
         id: m.id,
         pattern: m.merchantPattern,
         displayName: m.merchantDisplayName,
@@ -405,7 +405,7 @@ pipelineRoutes.post(
           description: desc,
           amount: 0,
         })),
-        existingMappings: existingMappings.map((m: any) => ({
+        existingMappings: existingMappings.map((m: Record<string, unknown>) => ({
           pattern: m.merchantPattern,
           displayName: m.merchantDisplayName || m.merchantPattern,
           gstRegistered: m.gstApplicable || false,

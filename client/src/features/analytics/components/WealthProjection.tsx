@@ -109,7 +109,7 @@ export function WealthProjection() {
         <>
           {/* Profile Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {result.profiles.map((profile: any) => {
+            {result.profiles.map((profile: { name: string; annualReturn: number; projections: Array<{ nominalValue: number; realValue: number; years: number }> }) => {
               const lastProjection = profile.projections[profile.projections.length - 1];
               const colorClass = PROFILE_COLORS[profile.name] ?? 'text-zinc-400 border-white/10';
               return (
@@ -152,7 +152,7 @@ export function WealthProjection() {
                   <thead>
                     <tr className="text-xs text-zinc-500 uppercase border-b border-white/5">
                       <th className="text-left py-2 pr-4">Years</th>
-                      {result.profiles.map((p: any) => (
+                      {result.profiles.map((p: { name: string; projections: Array<{ nominalValue: number; realValue: number; years: number }> }) => (
                         <th key={p.name} className="text-right py-2 px-2" colSpan={2}>
                           {p.name}
                         </th>
@@ -160,7 +160,7 @@ export function WealthProjection() {
                     </tr>
                     <tr className="text-xs text-zinc-600 border-b border-white/5">
                       <th className="py-1"></th>
-                      {result.profiles.map((p: any) => (
+                      {result.profiles.map((p: { name: string }) => (
                         <th key={`${p.name}-sub`} className="text-right py-1 px-1" colSpan={2}>
                           <span className="mr-3">Nominal</span>
                           <span>Real</span>
@@ -169,12 +169,12 @@ export function WealthProjection() {
                     </tr>
                   </thead>
                   <tbody>
-                    {result.profiles[0]?.projections.map((_: any, idx: number) => (
+                    {result.profiles[0]?.projections.map((_: { nominalValue: number; realValue: number; years: number }, idx: number) => (
                       <tr key={idx} className="border-b border-white/5 last:border-0">
                         <td className="py-2 pr-4 text-zinc-400">
                           {result.profiles[0]?.projections[idx]?.years}
                         </td>
-                        {result.profiles.map((p: any) => (
+                        {result.profiles.map((p: { name: string; projections: Array<{ nominalValue: number; realValue: number; years: number }> }) => (
                           <td key={p.name} className="text-right py-2 px-1" colSpan={2}>
                             <span className="mr-3 font-medium">
                               {formatCurrency(p.projections[idx]?.nominalValue ?? 0)}

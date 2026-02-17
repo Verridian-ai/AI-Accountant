@@ -9,7 +9,8 @@
  */
 
 import { db } from '../schema.js';
-import { eq, and, desc, gte, lte, like, sql } from 'drizzle-orm';
+import { eq, and, desc, gte, lte, like, sql, type SQL } from 'drizzle-orm';
+import type { SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core';
 import crypto from 'crypto';
 
 // ---------------------------------------------------------------------------
@@ -79,20 +80,21 @@ export interface InventoryStockRecord {
 // even if the symbols don't exist in schema.ts at compile time.
 // All DB operations go through the `any`-typed `db` anyway (wrapPgDb proxy).
 
-let _inventoryItems: any;
-let _inventoryStock: any;
-let _inventoryMovements: any;
-let _warehouses: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamically imported schema tables
+let _inventoryItems: SQLiteTableWithColumns<any> | null = null;
+let _inventoryStock: SQLiteTableWithColumns<any> | null = null;
+let _inventoryMovements: SQLiteTableWithColumns<any> | null = null;
+let _warehouses: SQLiteTableWithColumns<any> | null = null;
 let _tablesLoaded = false;
 
 async function ensureTables() {
   if (_tablesLoaded) return;
   try {
-    const schema = await import('../schema.js');
-    _inventoryItems = (schema as any).inventoryItems;
-    _inventoryStock = (schema as any).inventoryStock;
-    _inventoryMovements = (schema as any).inventoryMovements;
-    _warehouses = (schema as any).warehouses;
+    const schema = await import('../schema.js') as Record<string, unknown>;
+    _inventoryItems = (schema.inventoryItems as SQLiteTableWithColumns<any>) ?? null;
+    _inventoryStock = (schema.inventoryStock as SQLiteTableWithColumns<any>) ?? null;
+    _inventoryMovements = (schema.inventoryMovements as SQLiteTableWithColumns<any>) ?? null;
+    _warehouses = (schema.warehouses as SQLiteTableWithColumns<any>) ?? null;
     _tablesLoaded = true;
   } catch {
     // Schema tables not yet available — will use raw SQL fallbacks
@@ -230,7 +232,7 @@ export class InventoryService {
     await ensureTables();
     if (!_inventoryItems) return [];
 
-    const conditions: any[] = [eq(_inventoryItems.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(_inventoryItems.userId, userId)];
 
     if (filters?.category) {
       conditions.push(eq(_inventoryItems.category, filters.category));
@@ -540,7 +542,7 @@ export class InventoryService {
     if (!_inventoryStock || !_inventoryItems || !_warehouses) return [];
 
     // Build conditions for items belonging to this user
-    const itemConditions: any[] = [eq(_inventoryItems.userId, userId)];
+    const itemConditions: (SQL | undefined)[] = [eq(_inventoryItems.userId, userId)];
     if (filters?.itemId) {
       itemConditions.push(eq(_inventoryItems.id, filters.itemId));
     }
@@ -564,7 +566,7 @@ export class InventoryService {
 
     // Fetch all stock records for these items
     for (const item of items) {
-      const stockConditions: any[] = [eq(_inventoryStock.itemId, item.id)];
+      const stockConditions: (SQL | undefined)[] = [eq(_inventoryStock.itemId, item.id)];
       if (filters?.warehouseId) {
         stockConditions.push(eq(_inventoryStock.warehouseId, filters.warehouseId));
       }
@@ -676,7 +678,7 @@ export class InventoryService {
     await ensureTables();
     if (!_inventoryMovements) return { movements: [], total: 0 };
 
-    const conditions: any[] = [eq(_inventoryMovements.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(_inventoryMovements.userId, userId)];
 
     if (filters?.itemId) {
       conditions.push(eq(_inventoryMovements.itemId, filters.itemId));
@@ -703,7 +705,7 @@ export class InventoryService {
       .where(whereClause)
       .get();
 
-    const total = (countResult as any)?.count ?? 0;
+    const total = Number((countResult as Record<string, unknown> | undefined)?.count ?? 0);
 
     // Get paginated results
     const limit = filters?.limit ?? 50;

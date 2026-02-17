@@ -47,13 +47,19 @@ export interface AgentSession {
 
 // ── Service ─────────────────────────────────────────────────────────────────
 
+interface ConfirmationDb {
+  all(sql: string, params?: unknown[]): Promise<Array<Record<string, unknown>>>;
+  run(sql: string, params?: unknown[]): Promise<{ changes?: number } | undefined>;
+  get(sql: string, params?: unknown[]): Promise<Record<string, unknown> | undefined>;
+}
+
 export class ConfirmationFlowService {
-  private db: any;
+  private db: ConfirmationDb;
   private authService: MutationAuthService;
   private readonly DEFAULT_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
 
-  constructor(db: any) {
-    this.db = db;
+  constructor(db: ConfirmationDb | Record<string, unknown>) {
+    this.db = db as ConfirmationDb;
     this.authService = new MutationAuthService();
   }
 
@@ -77,7 +83,7 @@ export class ConfirmationFlowService {
             new Date().toISOString(),
             existing[0].id,
           ]);
-          return existing[0] as AgentSession;
+          return existing[0] as unknown as AgentSession;
         }
       } catch (error) {
         console.error('[ConfirmationFlow] Error finding existing session:', error);
@@ -222,7 +228,7 @@ export class ConfirmationFlowService {
         confidence: proposal.confidence,
       },
       timestamp: new Date().toISOString(),
-    } as any);
+    } as Record<string, unknown>);
 
     return { mutation, autoExecuted: canAutoExec };
   }
@@ -291,7 +297,7 @@ export class ConfirmationFlowService {
       type: 'mutation_confirmed',
       data: { mutationId, agentType: mutation.agentType, userId },
       timestamp: now,
-    } as any);
+    } as Record<string, unknown>);
 
     return { ...mutation, status: 'executed' as MutationStatus, confirmedAt: now, executedAt: now };
   }
@@ -341,7 +347,7 @@ export class ConfirmationFlowService {
       type: 'mutation_rejected',
       data: { mutationId, agentType: mutation.agentType, userId, reason },
       timestamp: now,
-    } as any);
+    } as Record<string, unknown>);
 
     return {
       ...mutation,
@@ -377,7 +383,7 @@ export class ConfirmationFlowService {
         type: 'mutations_expired',
         data: { count },
         timestamp: now,
-      } as any);
+      } as Record<string, unknown>);
     }
 
     return count;
@@ -394,7 +400,7 @@ export class ConfirmationFlowService {
        WHERE session_id = ? AND status = 'pending_confirmation'
        ORDER BY created_at DESC`,
       [sessionId],
-    )) as AgentMutation[];
+    )) as unknown as AgentMutation[];
   }
 
   /**
@@ -424,8 +430,8 @@ export class ConfirmationFlowService {
     ]);
 
     return {
-      sessions: sessions as AgentSession[],
-      total: countResult[0]?.count ?? 0,
+      sessions: sessions as unknown as AgentSession[],
+      total: (countResult[0]?.count as number) ?? 0,
     };
   }
 
@@ -434,7 +440,7 @@ export class ConfirmationFlowService {
    */
   async getSession(sessionId: string): Promise<AgentSession | null> {
     const rows = await this.db.all('SELECT * FROM agent_sessions WHERE id = ?', [sessionId]);
-    return rows.length > 0 ? (rows[0] as AgentSession) : null;
+    return rows.length > 0 ? (rows[0] as unknown as AgentSession) : null;
   }
 
   // ── Session Activity Tracking ───────────────────────────────────────────
@@ -460,7 +466,7 @@ export class ConfirmationFlowService {
     if (session.length === 0) return;
 
     const existing: string[] = session[0].agent_types_used
-      ? JSON.parse(session[0].agent_types_used)
+      ? JSON.parse(session[0].agent_types_used as string)
       : [];
 
     if (!existing.includes(agentType)) {

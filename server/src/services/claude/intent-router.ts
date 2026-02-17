@@ -122,9 +122,9 @@ const KEYWORD_RULES: KeywordRule[] = [
 
 export class IntentRouter {
   private client: Anthropic;
-  private orchestrator: any;
+  private orchestrator: unknown;
 
-  constructor(orchestrator?: any) {
+  constructor(orchestrator?: unknown) {
     this.client = getClient();
     this.orchestrator = orchestrator ?? null;
   }
@@ -135,9 +135,10 @@ export class IntentRouter {
    * is unavailable (e.g., during testing).
    */
   private buildAgentListPrompt(): string {
-    if (this.orchestrator && typeof this.orchestrator.getRegisteredAgents === 'function') {
+    const orch = this.orchestrator as Record<string, unknown> | undefined;
+    if (orch && typeof orch.getRegisteredAgents === 'function') {
       const agents: Array<{ type: string; description: string }> =
-        this.orchestrator.getRegisteredAgents();
+        (orch.getRegisteredAgents as () => Array<{ type: string; description: string }>)();
       return agents.map((a) => `- ${a.type}: ${a.description}`).join('\n');
     }
     return this.getStaticAgentList();
@@ -362,7 +363,7 @@ Rules:
   /**
    * Validate and normalize raw parsed classification data.
    */
-  private validateClassification(raw: any): IntentClassification {
+  private validateClassification(raw: Record<string, unknown>): IntentClassification {
     const validIntents = [
       'agent_invocation',
       'direct_question',
@@ -370,7 +371,8 @@ Rules:
       'batch_operation',
       'multi_agent',
     ];
-    const intent = validIntents.includes(raw.intent) ? raw.intent : 'direct_question';
+    const rawIntent = raw.intent as string;
+    const intent = (validIntents.includes(rawIntent) ? rawIntent : 'direct_question') as IntentClassification['intent'];
 
     return {
       intent,
@@ -383,7 +385,7 @@ Rules:
       reasoning: typeof raw.reasoning === 'string' ? raw.reasoning : 'No reasoning provided',
       extractedParams:
         typeof raw.extractedParams === 'object' && raw.extractedParams !== null
-          ? raw.extractedParams
+          ? (raw.extractedParams as Record<string, unknown>)
           : {},
     };
   }

@@ -110,7 +110,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<TenantRole, PermissionName[]> = {
  */
 export async function ensurePermissionsExist(): Promise<void> {
   const existing = await db.select().from(permissions).all();
-  const existingNames = new Set((existing as any[]).map((p: any) => p.name));
+  const existingNames = new Set((existing as Array<Record<string, unknown>>).map((p: Record<string, unknown>) => p.name));
 
   for (const perm of ALL_PERMISSIONS) {
     if (existingNames.has(perm)) continue;
@@ -144,8 +144,8 @@ export async function seedDefaultPermissions(tenantId: string, grantedBy?: strin
   // Fetch all permissions to get their IDs
   const allPerms = await db.select().from(permissions).all();
   const permByName = new Map<string, string>();
-  for (const p of allPerms as any[]) {
-    permByName.set(p.name, p.id);
+  for (const p of allPerms as Array<Record<string, unknown>>) {
+    permByName.set(String(p.name), String(p.id));
   }
 
   // Insert role_permissions for each role

@@ -18,6 +18,13 @@ import {
   cdrFeatures,
   cdrEligibility,
   cdrDataHolders,
+  type CdrProduct,
+  type CdrDataHolder,
+  type CdrLendingRate,
+  type CdrDepositRate,
+  type CdrFee,
+  type CdrFeature,
+  type CdrEligibility,
 } from '../schema.js';
 import { cogneeTools, COGNEE_DATASETS } from './claude/cognee-tools.js';
 import { cogneeClient, type CogneeSearchType } from './cognee_client.js';
@@ -44,7 +51,7 @@ export class CdrCogneeIndexer {
 
       const texts: string[] = [];
 
-      for (const product of products as any[]) {
+      for (const product of products) {
         // Look up the data holder name
         let holderName = product.brandName ?? product.brand ?? '';
         if (!holderName && product.dataHolderId) {
@@ -53,7 +60,7 @@ export class CdrCogneeIndexer {
             .from(cdrDataHolders)
             .where(eq(cdrDataHolders.id, product.dataHolderId))
             .get();
-          holderName = (holder as any)?.brandName ?? product.dataHolderId;
+          holderName = holder?.brandName ?? product.dataHolderId;
         }
 
         const text =
@@ -69,8 +76,9 @@ export class CdrCogneeIndexer {
 
       await cogneeTools.index(texts, COGNEE_DATASETS.cdrProducts);
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`Product indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push(`Product indexing failed: ${message}`);
       return { count: 0, errors };
     }
   }
@@ -87,15 +95,15 @@ export class CdrCogneeIndexer {
 
       // Lending rates
       const lendingRates = await db.select().from(cdrLendingRates).all();
-      for (const lr of (lendingRates ?? []) as any[]) {
+      for (const lr of lendingRates ?? []) {
         // Get product name
         const product = await db
           .select()
           .from(cdrProducts)
           .where(eq(cdrProducts.id, lr.productId))
           .get();
-        const productName = (product as any)?.name ?? lr.productId;
-        const bankName = (product as any)?.brandName ?? '';
+        const productName = product?.name ?? lr.productId;
+        const bankName = product?.brandName ?? '';
 
         const ratePercent = ((lr.rate ?? 0) * 100).toFixed(2);
         const compRatePercent = lr.comparisonRate
@@ -116,14 +124,14 @@ export class CdrCogneeIndexer {
 
       // Deposit rates
       const depositRates = await db.select().from(cdrDepositRates).all();
-      for (const dr of (depositRates ?? []) as any[]) {
+      for (const dr of depositRates ?? []) {
         const product = await db
           .select()
           .from(cdrProducts)
           .where(eq(cdrProducts.id, dr.productId))
           .get();
-        const productName = (product as any)?.name ?? dr.productId;
-        const bankName = (product as any)?.brandName ?? '';
+        const productName = product?.name ?? dr.productId;
+        const bankName = product?.brandName ?? '';
 
         const ratePercent = ((dr.rate ?? 0) * 100).toFixed(2);
 
@@ -141,8 +149,9 @@ export class CdrCogneeIndexer {
       }
 
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`Rate indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push(`Rate indexing failed: ${message}`);
       return { count: 0, errors };
     }
   }
@@ -161,7 +170,7 @@ export class CdrCogneeIndexer {
 
       const texts: string[] = [];
 
-      for (const product of products as any[]) {
+      for (const product of products) {
         try {
           // Get holder name
           let holderName = product.brandName ?? product.brand ?? '';
@@ -171,7 +180,7 @@ export class CdrCogneeIndexer {
               .from(cdrDataHolders)
               .where(eq(cdrDataHolders.id, product.dataHolderId))
               .get();
-            holderName = (holder as any)?.brandName ?? '';
+            holderName = holder?.brandName ?? '';
           }
 
           const pid = product.id;
@@ -183,9 +192,9 @@ export class CdrCogneeIndexer {
             .where(eq(cdrLendingRates.productId, pid))
             .all();
 
-          const lendingText = (lRates as any[])
+          const lendingText = lRates
             .map(
-              (lr) =>
+              (lr: CdrLendingRate) =>
                 `${lr.lendingRateType}: ${((lr.rate ?? 0) * 100).toFixed(2)}%` +
                 (lr.comparisonRate
                   ? ` (comparison ${(lr.comparisonRate * 100).toFixed(2)}%)`
@@ -201,15 +210,15 @@ export class CdrCogneeIndexer {
             .where(eq(cdrDepositRates.productId, pid))
             .all();
 
-          const depositText = (dRates as any[])
-            .map((dr) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
+          const depositText = dRates
+            .map((dr: CdrDepositRate) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
             .join('; ');
 
           // Fees
           const fees = await db.select().from(cdrFees).where(eq(cdrFees.productId, pid)).all();
 
-          const feesText = (fees as any[])
-            .map((f) => `${f.name} (${f.feeType}): ${f.amount ? `$${f.amount}` : 'varies'}`)
+          const feesText = fees
+            .map((f: CdrFee) => `${f.name} (${f.feeType}): ${f.amount ? `$${f.amount}` : 'varies'}`)
             .join('; ');
 
           // Features
@@ -219,8 +228,8 @@ export class CdrCogneeIndexer {
             .where(eq(cdrFeatures.productId, pid))
             .all();
 
-          const featuresText = (features as any[])
-            .map((f) => f.featureType + (f.additionalValue ? `: ${f.additionalValue}` : ''))
+          const featuresText = features
+            .map((f: CdrFeature) => f.featureType + (f.additionalValue ? `: ${f.additionalValue}` : ''))
             .join('; ');
 
           // Eligibility
@@ -230,8 +239,8 @@ export class CdrCogneeIndexer {
             .where(eq(cdrEligibility.productId, pid))
             .all();
 
-          const eligibilityText = (eligibility as any[])
-            .map((e) => e.eligibilityType + (e.additionalValue ? `: ${e.additionalValue}` : ''))
+          const eligibilityText = eligibility
+            .map((e: CdrEligibility) => e.eligibilityType + (e.additionalValue ? `: ${e.additionalValue}` : ''))
             .join('; ');
 
           // Compose full knowledge document
@@ -247,8 +256,9 @@ export class CdrCogneeIndexer {
           if (eligibilityText) doc += `Eligibility: ${eligibilityText}. `;
 
           texts.push(doc.trim());
-        } catch (err: any) {
-          errors.push(`Failed to build knowledge for ${product.name}: ${err.message}`);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          errors.push(`Failed to build knowledge for ${product.name}: ${message}`);
         }
       }
 
@@ -257,8 +267,9 @@ export class CdrCogneeIndexer {
       }
 
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`Product knowledge indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push(`Product knowledge indexing failed: ${message}`);
       return { count: 0, errors };
     }
   }
@@ -299,8 +310,9 @@ export class CdrCogneeIndexer {
       try {
         await cogneeTools.cognify(dataset);
         console.log(`[CDR-Indexer] Cognified dataset: ${dataset}`);
-      } catch (err: any) {
-        allErrors.push(`Cognify failed for ${dataset}: ${err.message}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        allErrors.push(`Cognify failed for ${dataset}: ${message}`);
       }
     }
 
@@ -348,13 +360,13 @@ export class CdrCogneeIndexer {
       .from(cdrDataHolders)
       .where(eq(cdrDataHolders.id, dataHolderId))
       .get();
-    const holderName = (holder as any)?.brandName ?? dataHolderId;
+    const holderName = holder?.brandName ?? dataHolderId;
 
     const productTexts: string[] = [];
     const rateTexts: string[] = [];
     const knowledgeTexts: string[] = [];
 
-    for (const product of products as any[]) {
+    for (const product of products) {
       const pid = product.id;
 
       // Product text
@@ -369,7 +381,7 @@ export class CdrCogneeIndexer {
         .where(eq(cdrLendingRates.productId, pid))
         .all();
 
-      for (const lr of lRates as any[]) {
+      for (const lr of lRates) {
         const ratePercent = ((lr.rate ?? 0) * 100).toFixed(2);
         rateTexts.push(
           `Lending Rate: ${product.name} (${holderName}). Type: ${lr.lendingRateType}. Rate: ${ratePercent}%.`,
@@ -383,7 +395,7 @@ export class CdrCogneeIndexer {
         .where(eq(cdrDepositRates.productId, pid))
         .all();
 
-      for (const dr of dRates as any[]) {
+      for (const dr of dRates) {
         const ratePercent = ((dr.rate ?? 0) * 100).toFixed(2);
         rateTexts.push(
           `Deposit Rate: ${product.name} (${holderName}). Type: ${dr.depositRateType}. Rate: ${ratePercent}%.`,
@@ -398,16 +410,16 @@ export class CdrCogneeIndexer {
         .where(eq(cdrFeatures.productId, pid))
         .all();
 
-      const lendingSummary = (lRates as any[])
-        .map((lr) => `${lr.lendingRateType}: ${((lr.rate ?? 0) * 100).toFixed(2)}%`)
+      const lendingSummary = lRates
+        .map((lr: CdrLendingRate) => `${lr.lendingRateType}: ${((lr.rate ?? 0) * 100).toFixed(2)}%`)
         .join('; ');
-      const depositSummary = (dRates as any[])
-        .map((dr) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
+      const depositSummary = dRates
+        .map((dr: CdrDepositRate) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
         .join('; ');
-      const feeSummary = (fees as any[])
-        .map((f) => `${f.name}: ${f.amount ? `$${f.amount}` : 'varies'}`)
+      const feeSummary = fees
+        .map((f: CdrFee) => `${f.name}: ${f.amount ? `$${f.amount}` : 'varies'}`)
         .join('; ');
-      const featureSummary = (features as any[]).map((f) => f.featureType).join('; ');
+      const featureSummary = features.map((f: CdrFeature) => f.featureType).join('; ');
 
       let doc = `Banking Product: ${product.name} by ${holderName}. Category: ${product.productCategory}. `;
       if (product.description) doc += `${product.description}. `;
@@ -422,21 +434,24 @@ export class CdrCogneeIndexer {
     // Index all 3 datasets
     try {
       if (productTexts.length) await cogneeTools.index(productTexts, COGNEE_DATASETS.cdrProducts);
-    } catch (err: any) {
-      allErrors.push(`Product indexing: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      allErrors.push(`Product indexing: ${message}`);
     }
 
     try {
       if (rateTexts.length) await cogneeTools.index(rateTexts, COGNEE_DATASETS.cdrRates);
-    } catch (err: any) {
-      allErrors.push(`Rate indexing: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      allErrors.push(`Rate indexing: ${message}`);
     }
 
     try {
       if (knowledgeTexts.length)
         await cogneeTools.index(knowledgeTexts, COGNEE_DATASETS.bankingProductKnowledge);
-    } catch (err: any) {
-      allErrors.push(`Knowledge indexing: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      allErrors.push(`Knowledge indexing: ${message}`);
     }
 
     return {
@@ -497,8 +512,9 @@ export class CdrCogneeIndexer {
       );
 
       return { count: BANKING_KNOWLEDGE_DOCS.length, errors };
-    } catch (err: any) {
-      errors.push(`Banking knowledge indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push(`Banking knowledge indexing failed: ${message}`);
       return { count: 0, errors };
     }
   }
@@ -535,7 +551,7 @@ export class CdrCogneeIndexer {
     const rateTexts: string[] = [];
     const knowledgeTexts: string[] = [];
 
-    for (const product of updatedProducts as any[]) {
+    for (const product of updatedProducts) {
       const pid = product.id;
 
       // Resolve holder name
@@ -546,7 +562,7 @@ export class CdrCogneeIndexer {
           .from(cdrDataHolders)
           .where(eq(cdrDataHolders.id, product.dataHolderId))
           .get();
-        holderName = (holder as any)?.brandName ?? product.dataHolderId;
+        holderName = holder?.brandName ?? product.dataHolderId;
       }
 
       // Product text
@@ -561,7 +577,7 @@ export class CdrCogneeIndexer {
         .where(eq(cdrLendingRates.productId, pid))
         .all();
 
-      for (const lr of lRates as any[]) {
+      for (const lr of lRates) {
         const ratePercent = ((lr.rate ?? 0) * 100).toFixed(2);
         rateTexts.push(
           `Lending Rate: ${product.name} (${holderName}). Type: ${lr.lendingRateType}. Rate: ${ratePercent}%.` +
@@ -577,7 +593,7 @@ export class CdrCogneeIndexer {
         .where(eq(cdrDepositRates.productId, pid))
         .all();
 
-      for (const dr of dRates as any[]) {
+      for (const dr of dRates) {
         const ratePercent = ((dr.rate ?? 0) * 100).toFixed(2);
         rateTexts.push(
           `Deposit Rate: ${product.name} (${holderName}). Type: ${dr.depositRateType}. Rate: ${ratePercent}%.`,
@@ -592,16 +608,16 @@ export class CdrCogneeIndexer {
         .where(eq(cdrFeatures.productId, pid))
         .all();
 
-      const lendingSummary = (lRates as any[])
-        .map((lr) => `${lr.lendingRateType}: ${((lr.rate ?? 0) * 100).toFixed(2)}%`)
+      const lendingSummary = lRates
+        .map((lr: CdrLendingRate) => `${lr.lendingRateType}: ${((lr.rate ?? 0) * 100).toFixed(2)}%`)
         .join('; ');
-      const depositSummary = (dRates as any[])
-        .map((dr) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
+      const depositSummary = dRates
+        .map((dr: CdrDepositRate) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
         .join('; ');
-      const feeSummary = (fees as any[])
-        .map((f) => `${f.name}: ${f.amount ? `$${f.amount}` : 'varies'}`)
+      const feeSummary = fees
+        .map((f: CdrFee) => `${f.name}: ${f.amount ? `$${f.amount}` : 'varies'}`)
         .join('; ');
-      const featureSummary = (features as any[]).map((f) => f.featureType).join('; ');
+      const featureSummary = features.map((f: CdrFeature) => f.featureType).join('; ');
 
       let doc = `Banking Product: ${product.name} by ${holderName}. Category: ${product.productCategory}. `;
       if (product.description) doc += `${product.description}. `;
@@ -616,21 +632,24 @@ export class CdrCogneeIndexer {
     // Index into all 3 datasets
     try {
       if (productTexts.length) await cogneeTools.index(productTexts, COGNEE_DATASETS.cdrProducts);
-    } catch (err: any) {
-      allErrors.push(`Incremental product indexing: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      allErrors.push(`Incremental product indexing: ${message}`);
     }
 
     try {
       if (rateTexts.length) await cogneeTools.index(rateTexts, COGNEE_DATASETS.cdrRates);
-    } catch (err: any) {
-      allErrors.push(`Incremental rate indexing: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      allErrors.push(`Incremental rate indexing: ${message}`);
     }
 
     try {
       if (knowledgeTexts.length)
         await cogneeTools.index(knowledgeTexts, COGNEE_DATASETS.bankingProductKnowledge);
-    } catch (err: any) {
-      allErrors.push(`Incremental knowledge indexing: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      allErrors.push(`Incremental knowledge indexing: ${message}`);
     }
 
     // Cognify updated datasets
@@ -643,8 +662,9 @@ export class CdrCogneeIndexer {
     for (const dataset of datasetsToUpdate) {
       try {
         await cogneeTools.cognify(dataset);
-      } catch (err: any) {
-        allErrors.push(`Incremental cognify ${dataset}: ${err.message}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        allErrors.push(`Incremental cognify ${dataset}: ${message}`);
       }
     }
 
@@ -678,7 +698,7 @@ export class CdrCogneeIndexer {
       topK: 5,
       mergeResults: true,
     });
-    return results.map((r: any) => (typeof r === 'string' ? r : (r.content ?? JSON.stringify(r))));
+    return results.map((r) => (typeof r === 'string' ? r : ((r as { content?: string }).content ?? JSON.stringify(r))));
   }
 }
 

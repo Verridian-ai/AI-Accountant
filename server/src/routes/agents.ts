@@ -102,7 +102,7 @@ agents.post('/bas/calculate', zValidator('json', basCalculateSchema), async (c) 
       .all();
 
     const result = await orchestrator.invoke('gst_calculator', {
-      transactions: quarterTxs.map((tx: any) => ({
+      transactions: quarterTxs.map((tx: Record<string, unknown>) => ({
         id: tx.id,
         date: tx.date,
         description: tx.description,

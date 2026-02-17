@@ -21,7 +21,7 @@ import {
   employeeTaxDeclarations,
   employeeDocuments,
 } from '../schema.js';
-import { eq, and, desc, like, sql } from 'drizzle-orm';
+import { eq, and, desc, like, sql , type SQL } from 'drizzle-orm';
 import { encryptField, decryptField, maskTFN, maskAccountNumber, maskBSB } from './encryption.js';
 
 export class EmployeeService {
@@ -90,13 +90,13 @@ export class EmployeeService {
       status?: string;
       search?: string;
     },
-  ): Promise<{ data: any[]; total: number }> {
+  ): Promise<{ data: Record<string, unknown>[]; total: number }> {
     const page = options?.page ?? 1;
     const limit = options?.limit ?? 50;
     const offset = (page - 1) * limit;
 
     // Build conditions
-    const conditions: any[] = [eq(employees.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(employees.userId, userId)];
     if (options?.status) {
       conditions.push(eq(employees.status, options.status));
     }
@@ -126,7 +126,7 @@ export class EmployeeService {
       .offset(offset);
 
     return {
-      data: rows.map((r: any) => this.maskSensitiveFields(r)),
+      data: rows.map((r: Record<string, unknown>) => this.maskSensitiveFields(r)),
       total,
     };
   }
@@ -151,7 +151,7 @@ export class EmployeeService {
       employmentType: string;
     }>,
   ): Promise<any | null> {
-    const updateData: any = { ...data, updatedAt: new Date().toISOString() };
+    const updateData: Record<string, unknown> = { ...data, updatedAt: new Date().toISOString() };
 
     // Encrypt TFN if provided — plaintext must never reach the DB
     if (data.taxFileNumber) {
@@ -219,10 +219,10 @@ export class EmployeeService {
       .select()
       .from(employeeBankDetails)
       .where(eq(employeeBankDetails.employeeId, employeeId));
-    return rows.map((r: any) => ({
+    return rows.map((r: Record<string, unknown>) => ({
       ...r,
-      bsb: maskBSB(decryptField(r.bsb)),
-      accountNumber: maskAccountNumber(decryptField(r.accountNumber)),
+      bsb: maskBSB(decryptField(r.bsb as string)),
+      accountNumber: maskAccountNumber(decryptField(r.accountNumber as string)),
     }));
   }
 
@@ -235,10 +235,10 @@ export class EmployeeService {
       .select()
       .from(employeeBankDetails)
       .where(eq(employeeBankDetails.employeeId, employeeId));
-    return rows.map((r: any) => ({
+    return rows.map((r: Record<string, unknown>) => ({
       ...r,
-      bsb: decryptField(r.bsb),
-      accountNumber: decryptField(r.accountNumber),
+      bsb: decryptField(r.bsb as string),
+      accountNumber: decryptField(r.accountNumber as string),
     }));
   }
 
@@ -340,10 +340,10 @@ export class EmployeeService {
    * Mask sensitive fields for API responses.
    * Decrypts TFN then masks it — the decrypted value is never returned.
    */
-  private maskSensitiveFields(employee: any): any {
+  private maskSensitiveFields(employee: Record<string, unknown>): Record<string, unknown> {
     return {
       ...employee,
-      taxFileNumber: employee.taxFileNumber ? maskTFN(decryptField(employee.taxFileNumber)) : null,
+      taxFileNumber: employee.taxFileNumber ? maskTFN(decryptField(employee.taxFileNumber as string)) : null,
     };
   }
 

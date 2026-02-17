@@ -9,6 +9,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { eq, and, desc, asc, sql } from 'drizzle-orm';
+import type Anthropic from '@anthropic-ai/sdk';
 import { getClient } from './claude/client.js';
 import { db, ocrDocuments, ocrLineItems, documentQueue, merchantMemory } from '../schema.js';
 import { logger } from '../utils/logger.js';
@@ -35,7 +36,7 @@ export interface OCRDocumentRecord {
   gstAmount?: number | null;
   totalAmount?: number | null;
   currency: string;
-  extractedData?: any;
+  extractedData?: Record<string, unknown>;
   confidenceScore: number;
   status: string;
   errorMessage?: string | null;
@@ -326,7 +327,7 @@ export class OCRProcessingService {
           {
             role: 'user',
             content: [
-              sourceBlock as any,
+              sourceBlock,
               {
                 type: 'text',
                 text: `Extract all financial data from this document. Return a JSON object with:
@@ -362,8 +363,8 @@ Return ONLY valid JSON, no markdown.`,
       });
 
       // Extract text content from response
-      const textBlock = response.content.find((b: any) => b.type === 'text');
-      const rawText = textBlock ? (textBlock as any).text : '';
+      const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text');
+      const rawText = textBlock?.text ?? '';
 
       // Parse JSON (strip any accidental markdown fencing)
       const cleaned = rawText
@@ -435,19 +436,21 @@ Return ONLY valid JSON, no markdown.`,
         .where(eq(ocrDocuments.id, documentId))
         .get();
       return this.toDocumentRecord(updated);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : String(err);
       const now = new Date().toISOString();
       await db
         .update(ocrDocuments)
         .set({
           status: 'failed',
-          errorMessage: err.message?.substring(0, 500),
+          errorMessage: errorMessage.substring(0, 500),
           updatedAt: now,
         })
         .where(eq(ocrDocuments.id, documentId))
         .run();
 
-      logger.error(`[OCR] Document ${documentId} failed: ${err.message}`);
+      logger.error(`[OCR] Document ${documentId} failed: ${errorMessage}`);
       throw err;
     }
   }
@@ -458,7 +461,7 @@ Return ONLY valid JSON, no markdown.`,
 
   async extractLineItems(documentId: string): Promise<OCRLineItemRecord[]> {
     // Check for existing line items
-    let items: any[] = await db
+    let items = await db
       .select()
       .from(ocrLineItems)
       .where(eq(ocrLineItems.documentId, documentId))
@@ -488,7 +491,7 @@ Return ONLY valid JSON, no markdown.`,
 
       // 1. Try merchant_memory pattern matching
       if (userId) {
-        const memories: any[] = await db
+        const memories = await db
           .select()
           .from(merchantMemory)
           .where(eq(merchantMemory.userId, userId))
@@ -525,7 +528,7 @@ Return ONLY valid JSON, no markdown.`,
       }
     }
 
-    return items.map(this.toLineItemRecord);
+    return items.map((item: typeof ocrLineItems.$inferSelect) => this.toLineItemRecord(item));
   }
 
   // --------------------------------------------------------------------------
@@ -569,7 +572,7 @@ Return ONLY valid JSON, no markdown.`,
         {
           role: 'user',
           content: [
-            sourceBlock as any,
+            sourceBlock,
             {
               type: 'text',
               text: 'Classify this financial document into exactly one of: invoice, receipt, bill, credit_note, statement, quote, purchase_order. Return only the classification word, nothing else.',
@@ -579,8 +582,8 @@ Return ONLY valid JSON, no markdown.`,
       ],
     });
 
-    const textBlock = response.content.find((b: any) => b.type === 'text');
-    const classification = (textBlock ? (textBlock as any).text : 'unknown').trim().toLowerCase();
+    const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text');
+    const classification = (textBlock?.text ?? 'unknown').trim().toLowerCase();
 
     const validType = VALID_DOCUMENT_TYPES.has(classification) ? classification : 'unknown';
 
@@ -613,10 +616,11 @@ Return ONLY valid JSON, no markdown.`,
       try {
         await this.processDocument(docId);
         processed++;
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
         failed++;
-        errors.push(`${docId}: ${err.message}`);
-        logger.warn(`[OCR] Batch item ${docId} failed: ${err.message}`);
+        errors.push(`${docId}: ${errorMessage}`);
+        logger.warn(`[OCR] Batch item ${docId} failed: ${errorMessage}`);
       }
 
       // Rate-limit: 1 second delay between API calls
@@ -665,7 +669,7 @@ Return ONLY valid JSON, no markdown.`,
 
   async processQueue(limit: number = 10): Promise<void> {
     // Fetch next batch of queued items ordered by priority ASC, scheduledAt ASC
-    const items: any[] = await db
+    const items = await db
       .select()
       .from(documentQueue)
       .where(eq(documentQueue.status, 'queued'))
@@ -711,7 +715,8 @@ Return ONLY valid JSON, no markdown.`,
           .run();
 
         logger.info(`[OCR] Queue item ${item.id} completed (action: ${item.action})`);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
         const attempts = (item.attempts ?? 0) + 1;
         const maxAttempts = item.maxAttempts ?? 3;
 
@@ -721,13 +726,13 @@ Return ONLY valid JSON, no markdown.`,
             .update(documentQueue)
             .set({
               status: 'queued',
-              errorMessage: err.message?.substring(0, 500),
+              errorMessage: errorMessage.substring(0, 500),
             })
             .where(eq(documentQueue.id, item.id))
             .run();
 
           logger.warn(
-            `[OCR] Queue item ${item.id} failed (attempt ${attempts}/${maxAttempts}), will retry: ${err.message}`,
+            `[OCR] Queue item ${item.id} failed (attempt ${attempts}/${maxAttempts}), will retry: ${errorMessage}`,
           );
         } else {
           // Max retries exceeded
@@ -735,13 +740,13 @@ Return ONLY valid JSON, no markdown.`,
             .update(documentQueue)
             .set({
               status: 'failed',
-              errorMessage: err.message?.substring(0, 500),
+              errorMessage: errorMessage.substring(0, 500),
             })
             .where(eq(documentQueue.id, item.id))
             .run();
 
           logger.error(
-            `[OCR] Queue item ${item.id} permanently failed after ${attempts} attempts: ${err.message}`,
+            `[OCR] Queue item ${item.id} permanently failed after ${attempts} attempts: ${errorMessage}`,
           );
         }
       }
@@ -784,8 +789,8 @@ Return ONLY valid JSON, no markdown.`,
         );
     }
 
-    const docs: any[] = await query.orderBy(desc(ocrDocuments.createdAt)).all();
-    return docs.map(this.toDocumentRecord);
+    const docs = await query.orderBy(desc(ocrDocuments.createdAt)).all();
+    return docs.map((doc: typeof ocrDocuments.$inferSelect) => this.toDocumentRecord(doc));
   }
 
   async deleteDocument(documentId: string): Promise<void> {
@@ -831,48 +836,48 @@ Return ONLY valid JSON, no markdown.`,
     }
   }
 
-  private toDocumentRecord(raw: any): OCRDocumentRecord {
+  private toDocumentRecord(raw: typeof ocrDocuments.$inferSelect): OCRDocumentRecord {
     return {
       id: raw.id,
-      userId: raw.userId ?? raw.user_id,
-      accountId: raw.accountId ?? raw.account_id ?? null,
-      fileName: raw.fileName ?? raw.file_name,
-      filePath: raw.filePath ?? raw.file_path,
-      fileSize: raw.fileSize ?? raw.file_size,
-      mimeType: raw.mimeType ?? raw.mime_type,
-      documentType: raw.documentType ?? raw.document_type ?? 'unknown',
-      documentNumber: raw.documentNumber ?? raw.document_number ?? null,
-      vendorName: raw.vendorName ?? raw.vendor_name ?? null,
-      vendorAbn: raw.vendorAbn ?? raw.vendor_abn ?? null,
-      documentDate: raw.documentDate ?? raw.document_date ?? null,
-      dueDate: raw.dueDate ?? raw.due_date ?? null,
+      userId: raw.userId,
+      accountId: raw.accountId ?? null,
+      fileName: raw.fileName,
+      filePath: raw.filePath,
+      fileSize: raw.fileSize,
+      mimeType: raw.mimeType,
+      documentType: raw.documentType ?? 'unknown',
+      documentNumber: raw.documentNumber ?? null,
+      vendorName: raw.vendorName ?? null,
+      vendorAbn: raw.vendorAbn ?? null,
+      documentDate: raw.documentDate ?? null,
+      dueDate: raw.dueDate ?? null,
       subtotal: raw.subtotal ?? null,
-      gstAmount: raw.gstAmount ?? raw.gst_amount ?? null,
-      totalAmount: raw.totalAmount ?? raw.total_amount ?? null,
+      gstAmount: raw.gstAmount ?? null,
+      totalAmount: raw.totalAmount ?? null,
       currency: raw.currency ?? 'AUD',
-      extractedData: raw.extractedData ?? raw.extracted_data ?? null,
-      confidenceScore: raw.confidenceScore ?? raw.confidence_score ?? 0,
+      extractedData: raw.extractedData ? (JSON.parse(raw.extractedData) as Record<string, unknown>) : undefined,
+      confidenceScore: raw.confidenceScore ?? 0,
       status: raw.status ?? 'pending',
-      errorMessage: raw.errorMessage ?? raw.error_message ?? null,
-      processedAt: raw.processedAt ?? raw.processed_at ?? null,
-      createdAt: raw.createdAt ?? raw.created_at ?? new Date().toISOString(),
+      errorMessage: raw.errorMessage ?? null,
+      processedAt: raw.processedAt ?? null,
+      createdAt: raw.createdAt ?? new Date().toISOString(),
     };
   }
 
-  private toLineItemRecord(raw: any): OCRLineItemRecord {
+  private toLineItemRecord(raw: typeof ocrLineItems.$inferSelect): OCRLineItemRecord {
     return {
       id: raw.id,
-      documentId: raw.documentId ?? raw.document_id,
-      lineNumber: raw.lineNumber ?? raw.line_number,
+      documentId: raw.documentId,
+      lineNumber: raw.lineNumber,
       description: raw.description,
       quantity: raw.quantity ?? 1,
-      unitPrice: raw.unitPrice ?? raw.unit_price ?? null,
+      unitPrice: raw.unitPrice ?? null,
       amount: raw.amount,
-      gstAmount: raw.gstAmount ?? raw.gst_amount ?? 0,
-      gstInclusive: raw.gstInclusive ?? raw.gst_inclusive ?? true,
+      gstAmount: raw.gstAmount ?? 0,
+      gstInclusive: Boolean(raw.gstInclusive ?? true),
       category: raw.category ?? null,
-      accountCode: raw.accountCode ?? raw.account_code ?? null,
-      confidenceScore: raw.confidenceScore ?? raw.confidence_score ?? 0,
+      accountCode: raw.accountCode ?? null,
+      confidenceScore: raw.confidenceScore ?? 0,
     };
   }
 }

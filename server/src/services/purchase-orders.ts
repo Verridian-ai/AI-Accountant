@@ -27,7 +27,7 @@ import {
   supplierPaymentRunItems,
   users,
 } from '../schema.js';
-import { eq, and, gte, lte, sql, desc, asc } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, desc, asc, type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 import { billService } from './bills.js';
 
@@ -236,7 +236,7 @@ export class PurchaseOrderService {
     const { page = 1, limit = 50, status, supplierId, dateFrom, dateTo } = options;
     const offset = (page - 1) * limit;
 
-    const conditions: any[] = [eq(purchaseOrders.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(purchaseOrders.userId, userId)];
     if (status) conditions.push(eq(purchaseOrders.status, status));
     if (supplierId) conditions.push(eq(purchaseOrders.supplierId, supplierId));
     if (dateFrom) conditions.push(gte(purchaseOrders.issueDate, dateFrom));
@@ -275,7 +275,7 @@ export class PurchaseOrderService {
       .offset(offset)
       .all();
 
-    const data: POWithSupplier[] = rows.map((r: any) => ({
+    const data: POWithSupplier[] = rows.map((r: Record<string, unknown>) => ({
       id: r.id,
       userId: r.userId,
       supplierId: r.supplierId,
@@ -329,13 +329,13 @@ export class PurchaseOrderService {
     // Fetch line items
     const lines = await db.select().from(poLines).where(eq(poLines.purchaseOrderId, poId)).all();
 
-    const lineItems: POLineWithProgress[] = lines.map((l: any) => {
+    const lineItems: POLineWithProgress[] = lines.map((l: Record<string, unknown>) => {
       const qty = Number(l.quantity) || 0;
       const qtyReceived = Number(l.quantityReceived) || 0;
       return {
-        id: l.id,
-        purchaseOrderId: l.purchaseOrderId,
-        description: l.description,
+        id: String(l.id),
+        purchaseOrderId: String(l.purchaseOrderId),
+        description: String(l.description),
         quantity: qty,
         unitPrice: Number(l.unitPrice) || 0,
         amount: Number(l.amount) || 0,
@@ -367,10 +367,10 @@ export class PurchaseOrderService {
         receivedBy: receipt.receivedBy ?? null,
         notes: receipt.notes ?? null,
         createdAt: String(receipt.createdAt),
-        lines: rLines.map((rl: any) => ({
-          id: rl.id,
-          receiptId: rl.receiptId,
-          poLineId: rl.poLineId,
+        lines: rLines.map((rl: Record<string, unknown>) => ({
+          id: String(rl.id),
+          receiptId: String(rl.receiptId),
+          poLineId: String(rl.poLineId),
           quantityReceived: Number(rl.quantityReceived) || 0,
         })),
       });
@@ -386,11 +386,11 @@ export class PurchaseOrderService {
       })
       .from(bills)
       .where(
-        and(eq(bills.supplierId, (row as any).supplierId), eq(bills.userId, (row as any).userId)),
+        and(eq(bills.supplierId, row.supplierId as string), eq(bills.userId, row.userId as string)),
       )
       .all();
 
-    const linkedBills = linkedBillRows.map((b: any) => ({
+    const linkedBills = linkedBillRows.map((b: Record<string, unknown>) => ({
       id: b.id,
       billNumber: b.billNumber ?? '',
       totalCents: Number(b.totalAmount) || 0,
@@ -408,20 +408,20 @@ export class PurchaseOrderService {
       totalOrdered > 0 ? Math.round((totalReceived / totalOrdered) * 100) : 0;
 
     return {
-      id: (row as any).id,
-      userId: (row as any).userId,
-      supplierId: (row as any).supplierId,
-      poNumber: (row as any).poNumber,
-      status: (row as any).status,
-      issueDate: (row as any).issueDate,
-      expectedDate: (row as any).expectedDate ?? null,
-      subtotal: Number((row as any).subtotal) || 0,
-      gstAmount: Number((row as any).gstAmount) || 0,
-      totalAmount: Number((row as any).totalAmount) || 0,
-      notes: (row as any).notes ?? null,
-      createdAt: String((row as any).createdAt),
-      updatedAt: String((row as any).updatedAt),
-      supplierName: (row as any).supplierName ?? 'Unknown Supplier',
+      id: row.id,
+      userId: row.userId,
+      supplierId: row.supplierId,
+      poNumber: row.poNumber,
+      status: row.status,
+      issueDate: row.issueDate,
+      expectedDate: row.expectedDate ?? null,
+      subtotal: Number(row.subtotal) || 0,
+      gstAmount: Number(row.gstAmount) || 0,
+      totalAmount: Number(row.totalAmount) || 0,
+      notes: row.notes ?? null,
+      createdAt: String(row.createdAt),
+      updatedAt: String(row.updatedAt),
+      supplierName: row.supplierName ?? 'Unknown Supplier',
       lineItems,
       receipts,
       linkedBills,
@@ -433,7 +433,11 @@ export class PurchaseOrderService {
    * Create a new PO with auto-generated number and line items.
    * Inserts PO + lines atomically. Status starts as 'draft'.
    */
-  async createPurchaseOrder(userId: string, data: CreatePOInput): Promise<any> {
+  async createPurchaseOrder(userId: string, data: CreatePOInput): Promise<{
+    id: string; userId: string; supplierId: string; poNumber: string; status: string;
+    issueDate: string; expectedDate: string | null; subtotal: number; gstAmount: number;
+    totalAmount: number; notes: string | null; lineItemCount: number;
+  }> {
     if (!data.lineItems || data.lineItems.length === 0) {
       throw new Error('Purchase order must have at least one line item');
     }
@@ -500,7 +504,7 @@ export class PurchaseOrderService {
   /**
    * Update a draft PO. Recalculates totals if line items changed.
    */
-  async updatePurchaseOrder(poId: string, data: UpdatePOInput): Promise<any> {
+  async updatePurchaseOrder(poId: string, data: UpdatePOInput): Promise<typeof purchaseOrders.$inferSelect | undefined> {
     const existing = await db
       .select()
       .from(purchaseOrders)
@@ -518,7 +522,7 @@ export class PurchaseOrderService {
     }
 
     const now = new Date().toISOString();
-    const updates: Record<string, any> = { updatedAt: now };
+    const updates: Record<string, unknown> = { updatedAt: now };
 
     if (data.expectedDate !== undefined) updates.expectedDate = data.expectedDate;
     if (data.notes !== undefined) updates.notes = data.notes;
@@ -558,7 +562,7 @@ export class PurchaseOrderService {
   /**
    * Send a PO to the supplier. Transition: draft → sent.
    */
-  async sendPurchaseOrder(poId: string): Promise<any> {
+  async sendPurchaseOrder(poId: string): Promise<typeof purchaseOrders.$inferSelect | undefined> {
     const po = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
 
     if (!po) {
@@ -593,7 +597,10 @@ export class PurchaseOrderService {
    *   - Separation of duties: PO creator ≠ goods receiver (single-user exception)
    *   - Updates PO status to 'partially_received' or 'received'
    */
-  async receiveGoods(poId: string, receipt: ReceiveGoodsInput): Promise<any> {
+  async receiveGoods(poId: string, receipt: ReceiveGoodsInput): Promise<{
+    id: string; purchaseOrderId: string; receiptDate: string; receivedBy: string | null;
+    notes: string | null; createdAt: string; lines: ReceiveGoodsInput['lines']; newPOStatus: string;
+  }> {
     const po = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
 
     if (!po) {
@@ -639,7 +646,7 @@ export class PurchaseOrderService {
       .where(eq(poLines.purchaseOrderId, poId))
       .all();
 
-    const lineMap = new Map<string, any>();
+    const lineMap = new Map<string, typeof existingLines[number]>();
     for (const l of existingLines) {
       lineMap.set(l.id, l);
     }
@@ -749,7 +756,7 @@ export class PurchaseOrderService {
   /**
    * Cancel a PO. Only draft or sent POs with no goods received.
    */
-  async cancelPurchaseOrder(poId: string): Promise<any> {
+  async cancelPurchaseOrder(poId: string): Promise<typeof purchaseOrders.$inferSelect | undefined> {
     const po = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
 
     if (!po) {
@@ -982,7 +989,10 @@ export class PurchaseOrderService {
    * Create a batch payment run for multiple approved bills.
    * Calculates total, generates bank reference, sets status = 'draft'.
    */
-  async createPaymentRun(userId: string, data: CreatePaymentRunInput): Promise<any> {
+  async createPaymentRun(userId: string, data: CreatePaymentRunInput): Promise<{
+    id: string; userId: string; paymentDate: string; status: string;
+    totalAmount: number; bankReference: string; billCount: number; createdAt: string;
+  }> {
     if (!data.billIds || data.billIds.length === 0) {
       throw new Error('Payment run must include at least one bill');
     }
@@ -1072,7 +1082,10 @@ export class PurchaseOrderService {
    * Uses BillService.recordPayment() for each bill.
    * If any payment fails, the run stays in 'processing' for manual review.
    */
-  async processPaymentRun(paymentRunId: string): Promise<any> {
+  async processPaymentRun(paymentRunId: string): Promise<{
+    id: string; status: string; processedAt: string; totalBills: number;
+    successCount: number; errorCount: number; errors?: string[];
+  }> {
     const run = await db
       .select()
       .from(supplierPaymentRuns)
@@ -1113,8 +1126,9 @@ export class PurchaseOrderService {
           reference: run.bankReference ?? undefined,
           notes: `Payment run ${paymentRunId}`,
         });
-      } catch (err: any) {
-        errors.push(`Bill ${item.billId}: ${err.message}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        errors.push(`Bill ${item.billId}: ${message}`);
       }
     }
 
@@ -1178,7 +1192,7 @@ export class PurchaseOrderService {
       .where(eq(supplierPaymentRunItems.paymentRunId, paymentRunId))
       .all();
 
-    const items = itemRows.map((r: any) => ({
+    const items = itemRows.map((r: Record<string, unknown>) => ({
       id: r.id,
       paymentRunId: r.paymentRunId,
       billId: r.billId,

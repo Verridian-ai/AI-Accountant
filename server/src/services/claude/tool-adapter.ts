@@ -81,8 +81,7 @@ export function adaptLegacyTool(
 
   // Type assertion bridges the dynamically-built Zod schema to the
   // strictly-typed tool() overloads.  At runtime the schema works correctly.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (tool as any)({
+  return (tool as unknown as (opts: { description: string; parameters: z.ZodSchema; execute: (args: Record<string, unknown>) => Promise<unknown> }) => ToolSet[string])({
     description,
     parameters: zodSchema,
     execute: async (args: Record<string, unknown>) => handler(args),

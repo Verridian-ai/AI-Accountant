@@ -21,36 +21,37 @@ const usePostgres =
   isProduction || dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://');
 
 /** SQLite-compat query builder that adds .get()/.all()/.run() to PG query chains */
-interface SqliteCompatQuery<T = any> {
+interface SqliteCompatQuery<T = unknown> {
   get(): Promise<T | undefined>;
   all(): Promise<T[]>;
   run(): Promise<void>;
-  where(...args: any[]): SqliteCompatQuery<T>;
-  set(...args: any[]): SqliteCompatQuery<T>;
-  values(...args: any[]): SqliteCompatQuery<T>;
-  from(...args: any[]): SqliteCompatQuery<T>;
-  leftJoin(...args: any[]): SqliteCompatQuery<T>;
-  orderBy(...args: any[]): SqliteCompatQuery<T>;
-  [key: string]: any;
+  where(...args: unknown[]): SqliteCompatQuery<T>;
+  set(...args: unknown[]): SqliteCompatQuery<T>;
+  values(...args: unknown[]): SqliteCompatQuery<T>;
+  from(...args: unknown[]): SqliteCompatQuery<T>;
+  leftJoin(...args: unknown[]): SqliteCompatQuery<T>;
+  orderBy(...args: unknown[]): SqliteCompatQuery<T>;
+  [key: string]: unknown;
 }
 
 /**
  * Create a Proxy wrapper around the PostgreSQL db to intercept query chains
  * and add .get() / .all() / .run() methods that are SQLite-specific.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Proxy wraps Drizzle's dynamic PG database object
 function wrapPgDb(pgDb: any): any {
-  const handler: ProxyHandler<any> = {
+  const handler: ProxyHandler<Record<string, unknown>> = {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (typeof value === 'function') {
-        return function (this: any, ...args: any[]) {
-          const result = value.apply(target, args);
+        return function (this: unknown, ...args: unknown[]) {
+          const result = (value as Function).apply(target, args);
           // Wrap the result in a proxy to add .get()/.all()/.run()
-          if (result && typeof result === 'object' && typeof result.then === 'function') {
-            return addSqliteCompat(result);
+          if (result && typeof result === 'object' && typeof (result as PromiseLike<unknown>).then === 'function') {
+            return addSqliteCompat(result as Record<string, unknown>);
           }
           if (result && typeof result === 'object') {
-            return addSqliteCompat(result);
+            return addSqliteCompat(result as Record<string, unknown>);
           }
           return result;
         };
@@ -61,7 +62,8 @@ function wrapPgDb(pgDb: any): any {
   return new Proxy(pgDb, handler);
 }
 
-function addSqliteCompat(obj: any): any {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Proxy wraps dynamic Drizzle query chain objects
+function addSqliteCompat(obj: Record<string, unknown>): any {
   if (!obj || typeof obj !== 'object') return obj;
   // Avoid double-wrapping
   if (obj.__pgWrapped) return obj;
@@ -71,27 +73,27 @@ function addSqliteCompat(obj: any): any {
       if (prop === '__pgWrapped') return true;
       if (prop === 'get') {
         return async function () {
-          const rows = await target;
+          const rows = await (target as unknown as PromiseLike<unknown>);
           return Array.isArray(rows) ? (rows[0] ?? undefined) : rows;
         };
       }
       if (prop === 'all') {
         return async function () {
-          const rows = await target;
+          const rows = await (target as unknown as PromiseLike<unknown>);
           return Array.isArray(rows) ? rows : [rows];
         };
       }
       if (prop === 'run') {
         return async function () {
-          return await target;
+          return await (target as unknown as PromiseLike<unknown>);
         };
       }
       const value = Reflect.get(target, prop, receiver);
       if (typeof value === 'function') {
-        return function (this: any, ...args: any[]) {
-          const result = value.apply(target, args);
+        return function (this: unknown, ...args: unknown[]) {
+          const result = (value as Function).apply(target, args);
           if (result && typeof result === 'object') {
-            return addSqliteCompat(result);
+            return addSqliteCompat(result as Record<string, unknown>);
           }
           return result;
         };

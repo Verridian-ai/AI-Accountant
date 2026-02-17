@@ -125,7 +125,7 @@ export class ABNLookupService {
         .all();
 
       if (records.length > 0) {
-        const rec: any = records[0];
+        const rec = records[0];
         logger.debug(`[ABN] Cache hit for ABN ${abn}`);
         return {
           abn,
@@ -199,8 +199,8 @@ export class ABNLookupService {
         }
 
         return await response.text();
-      } catch (err: any) {
-        logger.warn(`[ABN] Request attempt ${attempt}/${retries} failed: ${err.message}`);
+      } catch (err: unknown) {
+        logger.warn(`[ABN] Request attempt ${attempt}/${retries} failed: ${err instanceof Error ? err.message : String(err)}`);
         if (attempt < retries) {
           const delay = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
           await new Promise((resolve) => setTimeout(resolve, delay));
@@ -414,8 +414,8 @@ export class ABNLookupService {
         `[ABN] Connection test passed: ${result.businessName} (GST: ${result.gstRegistered})`,
       );
       return { ok: true, result };
-    } catch (err: any) {
-      return { ok: false, error: `Connection test failed: ${err.message}` };
+    } catch (err: unknown) {
+      return { ok: false, error: `Connection test failed: ${err instanceof Error ? err.message : String(err)}` };
     }
   }
 

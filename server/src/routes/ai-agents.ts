@@ -29,12 +29,12 @@ agentRoutes.get('/', async (c) => {
 });
 
 agentRoutes.get('/:type', async (c) => {
-  return c.json(await agentService.getAgentInfo(c.req.param('type') as any));
+  return c.json(await agentService.getAgentInfo(c.req.param('type') as import('../services/agents.js').PythonAgentType));
 });
 
 agentRoutes.post('/:type/run', zValidator('json', runAgentSchema), async (c) => {
   const payload = c.get('jwtPayload');
-  const agentType = c.req.param('type') as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const agentType = c.req.param('type') as import('../services/agents.js').PythonAgentType;
   const { query } = c.req.valid('json');
   const txs = await db.select().from(transactions).where(eq(transactions.userId, payload.userId)).orderBy(desc(transactions.date));
   const result = await agentService.runAgent(agentType, query, { transactions: txs });

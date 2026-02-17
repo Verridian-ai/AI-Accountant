@@ -144,12 +144,13 @@ export class EnrichmentService {
       .where(eq(merchantMemory.userId, userId))
       .all();
 
-    const existingMappings = memoryRecords
+    type MemoryRow = { merchantPattern: string; merchantDisplayName: string | null; category: string | null; gstApplicable: boolean | null };
+    const existingMappings = (memoryRecords as MemoryRow[])
       .filter(
-        (m: any) =>
+        (m) =>
           !m.merchantPattern.startsWith('abn:') && !m.merchantPattern.startsWith('places:'),
       )
-      .map((m: any) => ({
+      .map((m) => ({
         pattern: m.merchantPattern,
         displayName: m.merchantDisplayName || m.merchantPattern,
         category: m.category,
@@ -164,8 +165,8 @@ export class EnrichmentService {
     >();
 
     for (const tx of txList) {
-      const desc = stripPaymentPrefix((tx as any).description || '');
-      const matched = existingMappings.find((m: any) =>
+      const desc = stripPaymentPrefix(String((tx as Record<string, unknown>).description || ''));
+      const matched = existingMappings.find((m) =>
         desc.toLowerCase().includes(m.pattern.toLowerCase()),
       );
       if (matched && matched.category) {
@@ -200,17 +201,18 @@ export class EnrichmentService {
           `[Enrichment] Stage 1: Running Merchant Intelligence on ${uncachedTxs.length} transactions`,
         );
 
+        type TxLike = { id: string; description: string | null; amount: number; category: string | null };
         const merchantInput = {
-          merchants: uncachedTxs.map((tx: any) => ({
+          merchants: (uncachedTxs as TxLike[]).map((tx) => ({
             transactionId: parseInt(tx.id, 10) || 0,
-            description: tx.description,
+            description: tx.description ?? '',
             amount: tx.amount,
-            category: tx.category,
+            category: tx.category ?? '',
           })),
           existingMappings,
         };
 
-        const result = await this.merchantAgent.invoke(merchantInput);
+        const result = await this.merchantAgent.invoke(merchantInput as Parameters<typeof this.merchantAgent.invoke>[0]);
         merchantResults = result.results;
 
         // Store new merchant mappings (with ABN and industry now persisted)
@@ -285,9 +287,9 @@ export class EnrichmentService {
 
         // Check if resolved from cache (Stage 0)
         const cached = cacheHits.get(txId);
-        let category = (tx as any).category || '';
-        let merchantNormalized = (tx as any).merchantNormalized || '';
-        let gstRegistered = true;
+        let category: string = String((tx as Record<string, unknown>).category || '');
+        let merchantNormalized: string = String((tx as Record<string, unknown>).merchantNormalized || '');
+        let gstRegistered: boolean = true;
 
         if (cached) {
           category = category || cached.category;
@@ -307,22 +309,22 @@ export class EnrichmentService {
 
           // Fallback: try memory patterns with prefix stripping
           if (!category) {
-            const desc = stripPaymentPrefix((tx as any).description || '');
-            const matched = existingMappings.find((m: any) =>
-              desc.toLowerCase().includes(m.pattern.toLowerCase()),
+            const desc = stripPaymentPrefix(String((tx as Record<string, unknown>).description ?? ''));
+            const matched = existingMappings.find((m: Record<string, unknown>) =>
+              desc.toLowerCase().includes(String(m.pattern).toLowerCase()),
             );
             if (matched) {
-              category = matched.category;
-              merchantNormalized = matched.displayName;
-              gstRegistered = matched.gstRegistered;
+              category = String(matched.category ?? '');
+              merchantNormalized = String(matched.displayName ?? '');
+              gstRegistered = Boolean(matched.gstRegistered ?? true);
             }
           }
         }
 
         // Stage 3: GST calculation (non-AI, rule-based)
         const gstResult = category
-          ? inferGstCategory(category, (tx as any).amount)
-          : { gstCategory: 'taxable_10', gstAmount: calculateGstFromInclusive((tx as any).amount) };
+          ? inferGstCategory(category, Number((tx as Record<string, unknown>).amount))
+          : { gstCategory: 'taxable_10', gstAmount: calculateGstFromInclusive(Number((tx as Record<string, unknown>).amount)) };
 
         if (!gstRegistered) {
           gstResult.gstCategory = 'gst_free';
@@ -330,13 +332,13 @@ export class EnrichmentService {
         }
 
         // Skip overwriting GST fields if user has manually edited this transaction
-        if ((tx as any).isEdited) {
+        if ((tx as Record<string, unknown>).isEdited) {
           logger.info(`[Enrichment] Skipping GST overwrite for edited transaction ${txId}`);
           const updateData: Record<string, any> = {};
           if (merchantNormalized) {
             updateData.merchantNormalized = merchantNormalized;
           }
-          if (category && !(tx as any).category) {
+          if (category && !(tx as Record<string, unknown>).category) {
             updateData.category = category;
           }
           if (Object.keys(updateData).length > 0) {
@@ -357,7 +359,7 @@ export class EnrichmentService {
         if (merchantNormalized) {
           updateData.merchantNormalized = merchantNormalized;
         }
-        if (category && !(tx as any).category) {
+        if (category && !(tx as Record<string, unknown>).category) {
           updateData.category = category;
         }
 
@@ -475,7 +477,7 @@ export class EnrichmentService {
       return { enriched: 0, failed: 0, pending: 0 };
     }
 
-    const ids = uncategorized.map((tx: any) => tx.id);
+    const ids = uncategorized.map((tx: Record<string, unknown>) => tx.id);
     return this.enrichTransactions(ids, userId);
   }
 }

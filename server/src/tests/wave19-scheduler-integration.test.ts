@@ -67,9 +67,11 @@ function describe(name: string, fn: () => void | Promise<void>): void {
 function createMockDeps(): SchedulerDeps {
   return {
     rbaDataFeed: {
+      fetchLatest: async () => {},
       fetchAllTables: async () => ({ indicators: [], tablesProcessed: 5, errors: [] }),
     },
     absDataFeed: {
+      fetchLatest: async () => {},
       fetchAllIndicators: async () => ({ indicators: [], dataflowsProcessed: 5, errors: [] }),
     },
     marketPriceService: {
@@ -81,6 +83,7 @@ function createMockDeps(): SchedulerDeps {
       }),
     },
     sentimentService: {
+      refreshSentiment: async () => {},
       researchTopic: async (_topic: string) => ({ articles: [], summary: 'mock' }),
       analyzeSentiment: async (_topic: string) => ({
         sentimentScore: 0,
@@ -88,6 +91,7 @@ function createMockDeps(): SchedulerDeps {
       }),
     },
     marketCogneeIndexer: {
+      indexAll: async () => {},
       incrementalIndex: async (_since: string) => ({ totalIndexed: 0, errors: [] }),
     },
   };
@@ -373,6 +377,7 @@ describe('DataRefreshScheduler — Manual trigger updates job status', async () 
 describe('DataRefreshScheduler — Trigger with failing handler', async () => {
   const failingDeps: SchedulerDeps = {
     rbaDataFeed: {
+      fetchLatest: async () => { throw new Error('Network error'); },
       fetchAllTables: async () => {
         throw new Error('Network error');
       },

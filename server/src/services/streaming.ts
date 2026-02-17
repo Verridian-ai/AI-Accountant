@@ -80,7 +80,7 @@ export class StreamingService {
 
     // Best-effort DB persistence
     try {
-      await (db as any).run(
+      await (db as unknown as { run: (...args: unknown[]) => Promise<unknown> }).run(
         `INSERT INTO agent_stream_sessions (id, agent_type, user_id, session_status, model_id, provider, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
         [id, agentType, userId, 'pending', 'default', 'anthropic'],
@@ -103,7 +103,7 @@ export class StreamingService {
   async *streamAgentResponse(
     sessionId: string,
     agent: VercelAgent<any, any>,
-    input: any,
+    input: unknown,
   ): AsyncGenerator<SSEStreamEvent> {
     const session = this.sessions.get(sessionId);
     if (!session) {
@@ -222,13 +222,14 @@ export class StreamingService {
 
     // Fall back to DB lookup
     try {
-      const rows = await (db as any).all(
+      const rows = await (db as unknown as { all: (...args: unknown[]) => Promise<unknown[]> }).all(
         `SELECT id, agent_type, session_status, token_usage, latency_ms
          FROM agent_stream_sessions WHERE id = $1`,
         [sessionId],
       );
-      const row = Array.isArray(rows) ? rows[0] : rows;
-      if (!row) return null;
+      const rawRow = Array.isArray(rows) ? rows[0] : rows;
+      if (!rawRow) return null;
+      const row = rawRow as Record<string, unknown>;
 
       let tokenUsage: StreamSession['tokenUsage'];
       if (row.token_usage) {
@@ -241,11 +242,11 @@ export class StreamingService {
       }
 
       return {
-        id: row.id,
+        id: row.id as string,
         agentType: row.agent_type as AgentType,
         status: row.session_status as StreamSession['status'],
         tokenUsage,
-        latencyMs: row.latency_ms ?? undefined,
+        latencyMs: (row.latency_ms as number | null) ?? undefined,
       };
     } catch {
       return null;
@@ -279,7 +280,7 @@ export class StreamingService {
     limit: number = 50,
   ): Promise<Array<Record<string, unknown>>> {
     try {
-      const rows = await (db as any).all(
+      const rows = await (db as unknown as { all: (...args: unknown[]) => Promise<unknown[]> }).all(
         `SELECT id, agent_type, session_status, token_usage, latency_ms,
                 stream_started_at, stream_completed_at, error_message,
                 model_id, provider, created_at
@@ -289,7 +290,7 @@ export class StreamingService {
          LIMIT $2`,
         [userId, limit],
       );
-      return Array.isArray(rows) ? rows : [];
+      return Array.isArray(rows) ? (rows as Array<Record<string, unknown>>) : [];
     } catch {
       return [];
     }
@@ -316,7 +317,7 @@ export class StreamingService {
 
     // Clean DB sessions
     try {
-      await (db as any).run(
+      await (db as unknown as { run: (...args: unknown[]) => Promise<unknown> }).run(
         `UPDATE agent_stream_sessions
          SET session_status = 'errored',
              error_message = 'Session timed out (stale cleanup)',
@@ -357,7 +358,7 @@ export class StreamingService {
     const sql = `UPDATE agent_stream_sessions SET ${setClauses.join(', ')} WHERE id = $${paramIdx}`;
 
     // Fire-and-forget — do not await
-    (db as any).run(sql, values).catch(() => {
+    (db as unknown as { run: (...args: unknown[]) => Promise<unknown> }).run(sql, values).catch(() => {
       // Silently ignore DB write failures
     });
   }

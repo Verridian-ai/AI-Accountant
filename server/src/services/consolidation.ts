@@ -262,7 +262,7 @@ export class ConsolidationService {
       .select()
       .from(entities)
       .where(and(eq(entities.id, params.parentEntityId), eq(entities.userId, params.userId)))
-      .get()) as any;
+      .get()) as Record<string, unknown>;
 
     if (!parentEntity) {
       throw new Error('Parent entity not found');
@@ -291,9 +291,9 @@ export class ConsolidationService {
         .select()
         .from(entityAccounts)
         .where(eq(entityAccounts.entityId, eid))
-        .all()) as any[];
+        .all()) as Array<Record<string, unknown>>;
 
-      const accountIds = linkedAccounts.map((a: any) => a.accountId);
+      const accountIds = linkedAccounts.map((a: Record<string, unknown>) => String(a.accountId));
       if (accountIds.length === 0) continue;
 
       // Aggregate transactions for these accounts within the FY
@@ -313,12 +313,14 @@ export class ConsolidationService {
             ),
           )
           .groupBy(transactions.category)
-          .all()) as any[];
+          .all()) as Array<Record<string, unknown>>;
 
         for (const agg of txnAggregates) {
-          if (!agg.category || agg.totalAmount === 0) continue;
+          const aggCategory = String(agg.category ?? '');
+          const aggAmount = Number(agg.totalAmount ?? 0);
+          if (!aggCategory || aggAmount === 0) continue;
 
-          const lineType = getLineTypeForCategory(agg.category);
+          const lineType = getLineTypeForCategory(aggCategory);
           const lineId = crypto.randomUUID();
 
           lines.push({
@@ -326,9 +328,9 @@ export class ConsolidationService {
             snapshotId,
             entityId: eid,
             lineType,
-            category: agg.category,
-            description: `${agg.category} for entity`,
-            amount: agg.totalAmount,
+            category: aggCategory,
+            description: `${aggCategory} for entity`,
+            amount: aggAmount,
             isElimination: false,
             sourceRuleId: null,
             createdAt: new Date().toISOString(),
@@ -500,7 +502,7 @@ export class ConsolidationService {
           sql`${interEntityTransactions.transactionDate} <= ${fyEnd}`,
         ),
       )
-      .all()) as any[];
+      .all()) as Array<Record<string, unknown>>;
 
     for (const rule of rules) {
       const criteria: RuleCriteria = JSON.parse(rule.criteriaJson);
@@ -517,24 +519,29 @@ export class ConsolidationService {
           );
 
           for (const iet of matchingIETs) {
+            const ietFrom = String(iet.fromEntityId);
+            const ietTo = String(iet.toEntityId);
+            const ietAmt = Number(iet.amount ?? 0);
+            const ietDesc = String(iet.description ?? 'Inter-entity');
+            const ietType = String(iet.transactionType);
             if (criteria.matchEntities && criteria.matchEntities.length > 0) {
               if (
-                !criteria.matchEntities.includes(iet.fromEntityId) &&
-                !criteria.matchEntities.includes(iet.toEntityId)
+                !criteria.matchEntities.includes(ietFrom) &&
+                !criteria.matchEntities.includes(ietTo)
               ) {
                 continue;
               }
             }
 
-            const amount = Math.abs(iet.amount);
+            const amount = Math.abs(ietAmt);
             // Revenue elimination (credit side)
             eliminatedLines.push({
               id: crypto.randomUUID(),
               snapshotId,
-              entityId: iet.toEntityId,
+              entityId: ietTo,
               lineType: 'elimination',
               category: 'Inter-entity Revenue Elimination',
-              description: `Eliminate ${iet.transactionType}: ${iet.description ?? 'Inter-entity'}`,
+              description: `Eliminate ${ietType}: ${ietDesc}`,
               amount: -amount,
               isElimination: true,
               sourceRuleId: rule.id,
@@ -545,10 +552,10 @@ export class ConsolidationService {
             eliminatedLines.push({
               id: crypto.randomUUID(),
               snapshotId,
-              entityId: iet.fromEntityId,
+              entityId: ietFrom,
               lineType: 'elimination',
               category: 'Inter-entity Expense Elimination',
-              description: `Eliminate ${iet.transactionType}: ${iet.description ?? 'Inter-entity'}`,
+              description: `Eliminate ${ietType}: ${ietDesc}`,
               amount: amount,
               isElimination: true,
               sourceRuleId: rule.id,
@@ -560,7 +567,7 @@ export class ConsolidationService {
 
           if (matchingIETs.length > 0) {
             const totalEliminated = matchingIETs.reduce(
-              (sum: number, iet: any) => sum + Math.abs(iet.amount),
+              (sum: number, iet: Record<string, unknown>) => sum + Math.abs(Number(iet.amount)),
               0,
             );
             eliminationDetails.push({
@@ -578,25 +585,29 @@ export class ConsolidationService {
           const loanIETs = confirmedIETs.filter((iet) => iet.transactionType === 'loan');
 
           for (const iet of loanIETs) {
+            const ietFrom = String(iet.fromEntityId);
+            const ietTo = String(iet.toEntityId);
+            const ietAmt = Number(iet.amount ?? 0);
+            const ietDesc = String(iet.description ?? 'Inter-entity loan');
             if (criteria.matchEntities && criteria.matchEntities.length > 0) {
               if (
-                !criteria.matchEntities.includes(iet.fromEntityId) &&
-                !criteria.matchEntities.includes(iet.toEntityId)
+                !criteria.matchEntities.includes(ietFrom) &&
+                !criteria.matchEntities.includes(ietTo)
               ) {
                 continue;
               }
             }
 
-            const amount = Math.abs(iet.amount);
+            const amount = Math.abs(ietAmt);
 
             // Eliminate receivable
             eliminatedLines.push({
               id: crypto.randomUUID(),
               snapshotId,
-              entityId: iet.fromEntityId,
+              entityId: ietFrom,
               lineType: 'elimination',
               category: 'Inter-entity Loan Receivable Elimination',
-              description: `Eliminate loan receivable: ${iet.description ?? 'Inter-entity loan'}`,
+              description: `Eliminate loan receivable: ${ietDesc}`,
               amount: -amount,
               isElimination: true,
               sourceRuleId: rule.id,
@@ -607,10 +618,10 @@ export class ConsolidationService {
             eliminatedLines.push({
               id: crypto.randomUUID(),
               snapshotId,
-              entityId: iet.toEntityId,
+              entityId: ietTo,
               lineType: 'elimination',
               category: 'Inter-entity Loan Payable Elimination',
-              description: `Eliminate loan payable: ${iet.description ?? 'Inter-entity loan'}`,
+              description: `Eliminate loan payable: ${ietDesc}`,
               amount: amount,
               isElimination: true,
               sourceRuleId: rule.id,
@@ -622,7 +633,7 @@ export class ConsolidationService {
 
           if (loanIETs.length > 0) {
             const totalEliminated = loanIETs.reduce(
-              (sum: number, iet: any) => sum + Math.abs(iet.amount),
+              (sum: number, iet: Record<string, unknown>) => sum + Math.abs(Number(iet.amount)),
               0,
             );
             eliminationDetails.push({
@@ -642,16 +653,20 @@ export class ConsolidationService {
           );
 
           for (const iet of dividendIETs) {
-            const amount = Math.abs(iet.amount);
+            const ietFrom = String(iet.fromEntityId);
+            const ietTo = String(iet.toEntityId);
+            const ietAmt = Number(iet.amount ?? 0);
+            const ietDesc = String(iet.description ?? 'Inter-entity dividend');
+            const amount = Math.abs(ietAmt);
 
             // Eliminate dividend income
             eliminatedLines.push({
               id: crypto.randomUUID(),
               snapshotId,
-              entityId: iet.toEntityId,
+              entityId: ietTo,
               lineType: 'elimination',
               category: 'Dividend Income Elimination',
-              description: `Eliminate dividend: ${iet.description ?? 'Inter-entity dividend'}`,
+              description: `Eliminate dividend: ${ietDesc}`,
               amount: -amount,
               isElimination: true,
               sourceRuleId: rule.id,
@@ -662,10 +677,10 @@ export class ConsolidationService {
             eliminatedLines.push({
               id: crypto.randomUUID(),
               snapshotId,
-              entityId: iet.fromEntityId,
+              entityId: ietFrom,
               lineType: 'elimination',
               category: 'Dividend Equity Elimination',
-              description: `Eliminate equity reduction for dividend: ${iet.description ?? 'Inter-entity dividend'}`,
+              description: `Eliminate equity reduction for dividend: ${ietDesc}`,
               amount: amount,
               isElimination: true,
               sourceRuleId: rule.id,
@@ -677,7 +692,7 @@ export class ConsolidationService {
 
           if (dividendIETs.length > 0) {
             const totalEliminated = dividendIETs.reduce(
-              (sum: number, iet: any) => sum + Math.abs(iet.amount),
+              (sum: number, iet: Record<string, unknown>) => sum + Math.abs(Number(iet.amount)),
               0,
             );
             eliminationDetails.push({
@@ -945,11 +960,11 @@ export class ConsolidationService {
         .select({ count: sql<number>`COUNT(*)` })
         .from(consolidationSnapshotLines)
         .where(eq(consolidationSnapshotLines.snapshotId, snap.id))
-        .get()) as any;
+        .get()) as Record<string, unknown>;
 
       enriched.push({
         ...snap,
-        lineCount: countResult?.count ?? 0,
+        lineCount: Number(countResult?.count ?? 0),
       });
     }
 
@@ -1026,9 +1041,9 @@ export class ConsolidationService {
     const entityIds = [...new Set(regularLines.map((l) => l.entityId))];
     const entityNameMap = new Map<string, string>();
     for (const eid of entityIds) {
-      const entity = (await db.select().from(entities).where(eq(entities.id, eid)).get()) as any;
+      const entity = (await db.select().from(entities).where(eq(entities.id, eid)).get()) as Record<string, unknown>;
       if (entity) {
-        entityNameMap.set(eid, entity.name);
+        entityNameMap.set(eid, String(entity.name));
       }
     }
 
@@ -1135,11 +1150,11 @@ export class ConsolidationService {
       .select()
       .from(entities)
       .where(and(eq(entities.parentEntityId, parentId), eq(entities.userId, userId)))
-      .all()) as any[];
+      .all()) as Array<Record<string, unknown>>;
 
     const descendants = [...children];
     for (const child of children) {
-      const grandchildren = await this.getDescendantEntities(child.id, userId);
+      const grandchildren = await this.getDescendantEntities(String(child.id), userId);
       descendants.push(...grandchildren);
     }
 

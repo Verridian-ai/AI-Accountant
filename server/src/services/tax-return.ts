@@ -271,7 +271,7 @@ export class TaxReturnService {
       .where(eq(businessProfiles.userId, userId))
       .get();
 
-    const entityType = (profile as any)?.entityType ?? 'company';
+    const entityType = (profile as Record<string, unknown> | undefined)?.entityType ?? 'company';
     if (entityType !== 'company') {
       warnings.push(
         `Business profile entity type is '${entityType}', not 'company'. Using company tax rate regardless.`,

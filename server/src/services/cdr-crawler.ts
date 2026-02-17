@@ -60,7 +60,6 @@ interface DataHolderRecord {
   dataHolderBrandId: string;
   brandName: string;
   publicBaseUri: string;
-  [key: string]: any;
 }
 
 /** CDR Register API response shape for data holder brands */
@@ -129,9 +128,9 @@ interface CdrProductDetail extends CdrProductSummary {
     feesAndPricingUri?: string;
     bundleUri?: string;
   };
-  bundles?: any[];
+  bundles?: unknown[];
   features?: CdrFeatureData[];
-  constraints?: any[];
+  constraints?: unknown[];
   eligibility?: CdrEligibilityData[];
   fees?: CdrFeeData[];
   depositRates?: CdrDepositRateData[];
@@ -165,7 +164,7 @@ interface CdrFeeData {
   additionalValue?: string;
   additionalInfo?: string;
   additionalInfoUri?: string;
-  discounts?: any[];
+  discounts?: unknown[];
 }
 
 interface CdrDepositRateData {
@@ -173,7 +172,7 @@ interface CdrDepositRateData {
   rate: string;
   calculationFrequency?: string;
   applicationFrequency?: string;
-  tiers?: any[];
+  tiers?: unknown[];
   additionalValue?: string;
   additionalInfo?: string;
   additionalInfoUri?: string;
@@ -188,7 +187,7 @@ interface CdrLendingRateData {
   interestPaymentDue?: string;
   repaymentType?: string;
   loanPurpose?: string;
-  tiers?: any[];
+  tiers?: unknown[];
   additionalValue?: string;
   additionalInfo?: string;
   additionalInfoUri?: string;
@@ -247,11 +246,11 @@ export class CdrCrawler {
   // HTTP helpers
   // --------------------------------------------------------------------------
 
-  private async fetchWithRetry(
+  private async fetchWithRetry<T = unknown>(
     url: string,
     holderId: string,
     stage: CrawlError['stage'],
-  ): Promise<any> {
+  ): Promise<T> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < this.config.retryAttempts; attempt++) {
@@ -298,12 +297,12 @@ export class CdrCrawler {
           throw new Error(`HTTP ${response.status}: ${response.statusText} for ${url}`);
         }
 
-        return await response.json();
-      } catch (err: any) {
+        return await response.json() as T;
+      } catch (err: unknown) {
         clearTimeout(timeout);
-        lastError = err;
+        lastError = err instanceof Error ? err : new Error(String(err));
 
-        if (err.name === 'AbortError') {
+        if (lastError.name === 'AbortError') {
           console.warn(`[CDR] Timeout for ${holderId} (attempt ${attempt + 1})`);
         }
 
@@ -332,8 +331,8 @@ export class CdrCrawler {
       const url = `${this.config.registerBaseUrl}/cdr-register/v1/banking/data-holders/brands`;
       console.log(`[CDR] Stage 1: Discovering data holders from ${url}`);
 
-      const body = await this.fetchWithRetry(url, '__register__', 'discovery');
-      const brands: CdrRegisterBrand[] = body?.data ?? body ?? [];
+      const body = await this.fetchWithRetry(url, '__register__', 'discovery') as { data?: CdrRegisterBrand[] } | CdrRegisterBrand[];
+      const brands: CdrRegisterBrand[] = (body as { data?: CdrRegisterBrand[] })?.data ?? (body as CdrRegisterBrand[]) ?? [];
 
       const activeBrands = (Array.isArray(brands) ? brands : []).filter(
         (b) => b.status === 'ACTIVE',
@@ -408,11 +407,12 @@ export class CdrCrawler {
           publicBaseUri: publicBaseUri.replace(/\/$/, ''),
         });
       }
-    } catch (err: any) {
-      console.error(`[CDR] Discovery failed: ${err.message}`);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[CDR] Discovery failed: ${errMsg}`);
       errors.push({
         stage: 'discovery',
-        message: err.message,
+        message: errMsg,
       });
     }
 
@@ -517,13 +517,14 @@ export class CdrCrawler {
         .run();
 
       console.log(`[CDR] Cataloged ${productIds.length} products from ${dataHolder.brandName}`);
-    } catch (err: any) {
-      console.error(`[CDR] Catalog failed for ${dataHolder.brandName}: ${err.message}`);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[CDR] Catalog failed for ${dataHolder.brandName}: ${errMsg}`);
       errors.push({
         stage: 'catalog',
         dataHolderId: dataHolder.id,
-        message: err.message,
-        statusCode: (err as any).statusCode,
+        message: errMsg,
+        statusCode: (err as Record<string, number>).statusCode,
       });
     }
 
@@ -695,16 +696,17 @@ export class CdrCrawler {
             .run();
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       console.error(
-        `[CDR] Detail failed for ${productId} @ ${dataHolder.brandName}: ${err.message}`,
+        `[CDR] Detail failed for ${productId} @ ${dataHolder.brandName}: ${errMsg}`,
       );
       errors.push({
         stage: 'detail',
         dataHolderId: dataHolder.id,
         productId,
-        message: err.message,
-        statusCode: (err as any).statusCode,
+        message: errMsg,
+        statusCode: (err as Record<string, number>).statusCode,
       });
     }
 
@@ -835,8 +837,9 @@ export class CdrCrawler {
           }
         }
       }
-    } catch (err: any) {
-      allErrors.push({ stage: 'discovery', message: err.message });
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      allErrors.push({ stage: 'discovery', message: errMsg });
     }
 
     const durationMs = Date.now() - start;
@@ -903,7 +906,7 @@ export class CdrCrawler {
           .where(inArray(cdrDataHolders.id, dataHolderIds))
           .all();
 
-        holders = (rows as any[]).map((r) => ({
+        holders = rows.map((r: Record<string, unknown>) => ({
           id: r.id,
           dataHolderBrandId: r.dataHolderBrandId,
           brandName: r.brandName,
@@ -963,8 +966,9 @@ export class CdrCrawler {
           }
         }
       }
-    } catch (err: any) {
-      allErrors.push({ stage: 'discovery', message: err.message });
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      allErrors.push({ stage: 'discovery', message: errMsg });
     }
 
     const durationMs = Date.now() - start;

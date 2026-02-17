@@ -32,7 +32,7 @@ export function AutoMatchView() {
       if (result) {
         setResult({
           ...result,
-          details: result.details.map((d: any) =>
+          details: result.details.map((d: { matchId?: string; documentId: string; status: string; topScore?: number }) =>
             d.matchId === matchId ? { ...d, status: 'matched' } : d,
           ),
           matched: result.matched + 1,
@@ -50,7 +50,7 @@ export function AutoMatchView() {
       if (result) {
         setResult({
           ...result,
-          details: result.details.map((d: any) =>
+          details: result.details.map((d: { matchId?: string; documentId: string; status: string; topScore?: number }) =>
             d.matchId === matchId ? { ...d, status: 'unmatched' } : d,
           ),
           suggested: result.suggested - 1,
@@ -220,7 +220,7 @@ export function AutoMatchView() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {result.details.map((detail: any, i: number) => (
+                    {result.details.map((detail: { matchId?: string; documentId: string; status: string; topScore?: number }, i: number) => (
                       <tr key={i} className="hover:bg-white/5">
                         <td className="px-5 py-3">
                           <span className="text-zinc-200 font-mono text-xs">

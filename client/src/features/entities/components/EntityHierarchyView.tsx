@@ -70,7 +70,7 @@ export function EntityHierarchyView({ hierarchy, loading, onRefresh }: EntityHie
 
   const rootEntities = hierarchy?.rootEntities ?? [];
   const entitiesMap = new Map<string, EntityWithDetails>(
-    (hierarchy?.entities ?? []).map((e: any) => [e.id, e]),
+    (hierarchy?.entities ?? []).map((e: EntityWithDetails) => [e.id, e]),
   );
 
   const handleEntityCreated = () => {
@@ -112,7 +112,7 @@ export function EntityHierarchyView({ hierarchy, loading, onRefresh }: EntityHie
         </Card>
       ) : (
         <div className="space-y-3">
-          {rootEntities.map((entity: any) => (
+          {rootEntities.map((entity: EntityData) => (
             <EntityNode
               key={entity.id}
               entity={entity}
@@ -238,7 +238,7 @@ function EntityNode({
               <p className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-1">
                 Linked Accounts
               </p>
-              {accounts.map((acc: any) => (
+              {accounts.map((acc: { id: string; accountId: string; role: string; ownershipPercentage: number }) => (
                 <div
                   key={acc.id}
                   className="flex items-center gap-2 text-xs text-zinc-400 neu-inset px-3 py-1.5 rounded-lg"
@@ -258,7 +258,7 @@ function EntityNode({
 
       {/* Child Entities */}
       {isExpanded &&
-        children.map((child: any) => (
+        children.map((child: EntityData) => (
           <EntityNode
             key={child.id}
             entity={child}

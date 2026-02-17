@@ -9,7 +9,7 @@
  */
 
 import { db, datapointConfigs, cogneeFeedback } from '../schema.js';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql , type SQL } from 'drizzle-orm';
 import { cogneeClient } from './cognee_client.js';
 
 // ============================================================================
@@ -208,7 +208,7 @@ export class CogneeDataPointService {
     await this._ensurePredefinedExist(userId);
 
     // Build query conditions
-    const conditions: any[] = [eq(datapointConfigs.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(datapointConfigs.userId, userId)];
 
     if (filters?.datapointType) {
       conditions.push(eq(datapointConfigs.datapointType, filters.datapointType));
@@ -230,11 +230,11 @@ export class CogneeDataPointService {
       .all();
 
     return rows
-      .map((row: any) => ({
+      .map((row: Record<string, unknown>) => ({
         ...row,
-        schemaDefinition: JSON.parse(row.schemaDefinition),
+        schemaDefinition: JSON.parse(row.schemaDefinition as string),
       }))
-      .sort((a: any, b: any) => a.name.localeCompare(b.name));
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) => String(a.name).localeCompare(String(b.name)));
   }
 
   /**
@@ -250,8 +250,8 @@ export class CogneeDataPointService {
     if (!row) return null;
 
     return {
-      ...(row as any),
-      schemaDefinition: JSON.parse((row as any).schemaDefinition),
+      ...(row as Record<string, unknown>),
+      schemaDefinition: JSON.parse((row as Record<string, unknown>).schemaDefinition as string),
     };
   }
 
@@ -278,7 +278,7 @@ export class CogneeDataPointService {
 
     if (!existing) return null;
 
-    const existingRow = existing as any;
+    const existingRow = existing as Record<string, unknown>;
 
     // Guard: predefined DataPoints cannot have name/type changed
     if (existingRow.isPredefined) {
@@ -314,7 +314,7 @@ export class CogneeDataPointService {
 
     // Re-send to Cognee if schema changed
     if (updates.schemaDefinition) {
-      const dsName = updates.datasetName ?? existingRow.datasetName;
+      const dsName = (updates.datasetName ?? existingRow.datasetName) as string;
       await this._sendToCognee(dsName, updates.schemaDefinition, userId).catch((err) =>
         console.warn('[DataPointService] Re-send schema to Cognee failed:', err),
       );
@@ -338,7 +338,7 @@ export class CogneeDataPointService {
       throw new Error(`DataPoint config not found: ${datapointId}`);
     }
 
-    if ((existing as any).isPredefined) {
+    if ((existing as Record<string, unknown>).isPredefined) {
       throw new Error('Cannot deactivate a predefined DataPoint');
     }
 
@@ -364,7 +364,7 @@ export class CogneeDataPointService {
       throw new Error(`DataPoint config not found: ${datapointId}`);
     }
 
-    if ((existing as any).isPredefined) {
+    if ((existing as Record<string, unknown>).isPredefined) {
       throw new Error('Cannot delete a predefined DataPoint');
     }
 
@@ -386,7 +386,7 @@ export class CogneeDataPointService {
       throw new Error(`DataPoint config not found: ${datapointId}`);
     }
 
-    const configRow = config as any;
+    const configRow = config as Record<string, unknown>;
 
     // Count feedback entries for this datapoint
     const feedbackRows = await db
@@ -402,7 +402,7 @@ export class CogneeDataPointService {
     try {
       const results = await cogneeClient.searchRich(
         `${configRow.name} entities`,
-        configRow.datasetName,
+        configRow.datasetName as string,
         3,
         'CHUNKS',
         userId,
@@ -417,9 +417,9 @@ export class CogneeDataPointService {
     }
 
     return {
-      totalExtractions: configRow.extractionCount ?? 0,
-      lastExtractionAt: configRow.lastExtractionAt ?? null,
-      accuracyScore: configRow.accuracyScore ?? null,
+      totalExtractions: (configRow.extractionCount ?? 0) as number,
+      lastExtractionAt: (configRow.lastExtractionAt ?? null) as string | null,
+      accuracyScore: (configRow.accuracyScore ?? null) as number | null,
       feedbackCount,
       sampleEntities,
     };
@@ -531,7 +531,7 @@ export class CogneeDataPointService {
 
     if (existing) {
       // Update existing
-      const existingRow = existing as any;
+      const existingRow = existing as Record<string, unknown>;
       await db
         .update(datapointConfigs)
         .set({
@@ -540,7 +540,7 @@ export class CogneeDataPointService {
           datasetName: config.targetDataset,
           updatedAt: new Date().toISOString(),
         })
-        .where(eq(datapointConfigs.id, existingRow.id))
+        .where(eq(datapointConfigs.id, existingRow.id as string))
         .run();
     } else {
       // Insert new
@@ -593,7 +593,7 @@ export class CogneeDataPointService {
       .where(and(eq(datapointConfigs.userId, userId), eq(datapointConfigs.isPredefined, true)))
       .all();
 
-    const existingNames = new Set((existing as any[]).map((r) => r.name));
+    const existingNames = new Set((existing as Array<Record<string, unknown>>).map((r) => r.name));
 
     const datasetMap: Record<PredefinedName, string> = {
       FinancialTransaction: 'bank_transactions',

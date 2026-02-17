@@ -134,29 +134,33 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
 // Validation Helper
 // ============================================================================
 
+interface ValidationCheck {
+  name: string;
+  passed: boolean;
+  expected?: string | number | null;
+  actual?: string | number | null;
+  message?: string;
+}
+
+interface SuggestedFix {
+  field: string;
+  currentValue: string | number | null;
+  suggestedValue: string | number | null;
+  reason: string;
+}
+
 async function validateExtraction(documentId: string): Promise<{
   isValid: boolean;
-  checks: Array<{ name: string; passed: boolean; expected?: any; actual?: any; message?: string }>;
+  checks: ValidationCheck[];
   warnings: string[];
-  suggestedFixes: Array<{ field: string; currentValue: any; suggestedValue: any; reason: string }>;
+  suggestedFixes: SuggestedFix[];
 }> {
-  const checks: Array<{
-    name: string;
-    passed: boolean;
-    expected?: any;
-    actual?: any;
-    message?: string;
-  }> = [];
+  const checks: ValidationCheck[] = [];
   const warnings: string[] = [];
-  const suggestedFixes: Array<{
-    field: string;
-    currentValue: any;
-    suggestedValue: any;
-    reason: string;
-  }> = [];
+  const suggestedFixes: SuggestedFix[] = [];
 
   // Fetch document
-  const doc: any = await db
+  const doc = await db
     .select()
     .from(ocrDocuments)
     .where(eq(ocrDocuments.id, documentId))
@@ -173,7 +177,7 @@ async function validateExtraction(documentId: string): Promise<{
   }
 
   // Fetch line items
-  const lineItems: any[] = await db
+  const lineItems = await db
     .select()
     .from(ocrLineItems)
     .where(eq(ocrLineItems.documentId, documentId))
@@ -190,7 +194,7 @@ async function validateExtraction(documentId: string): Promise<{
 
   // 1. Line items sum vs subtotal
   if (lineItems.length > 0 && subtotal != null) {
-    const lineItemsSum = lineItems.reduce((sum: number, item: any) => sum + (item.amount ?? 0), 0);
+    const lineItemsSum = lineItems.reduce((sum: number, item: typeof lineItems[number]) => sum + (Number(item.amount) ?? 0), 0);
     const diff = Math.abs(lineItemsSum - subtotal);
     const passed = diff <= 0.01;
     checks.push({

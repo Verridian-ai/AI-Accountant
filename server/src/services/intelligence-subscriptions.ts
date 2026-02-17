@@ -8,7 +8,7 @@
  */
 
 import { randomUUID } from 'crypto';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc , type SQL } from 'drizzle-orm';
 import { db, intelligenceSubscriptions } from '../schema.js';
 
 // ============================================================================
@@ -182,7 +182,7 @@ export class IntelligenceSubscriptionService {
     userId: string,
     filters?: SubscriptionFilters,
   ): Promise<IntelligenceSubscription[]> {
-    const conditions: any[] = [eq(intelligenceSubscriptions.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(intelligenceSubscriptions.userId, userId)];
 
     if (filters?.subscriptionType) {
       conditions.push(eq(intelligenceSubscriptions.subscriptionType, filters.subscriptionType));
@@ -203,7 +203,7 @@ export class IntelligenceSubscriptionService {
       .orderBy(desc(intelligenceSubscriptions.createdAt))
       .all();
 
-    return rows.map((r: any) => this._mapDbRow(r));
+    return rows.map((r: Record<string, unknown>) => this._mapDbRow(r));
   }
 
   async updateSubscription(
@@ -282,7 +282,7 @@ export class IntelligenceSubscriptionService {
             break;
 
           case 'sse':
-            await this._sendSSE((notif.config as any)?.sseChannel ?? 'intelligence', {
+            await this._sendSSE(String((notif.config as Record<string, unknown> | undefined)?.sseChannel ?? 'intelligence'), {
               type: 'intelligence_insight',
               insight: notif.insight,
               subscriptionId: notif.subscriptionId,
@@ -292,7 +292,7 @@ export class IntelligenceSubscriptionService {
 
           case 'email':
             await this._sendEmail(
-              (notif.config as any)?.emailAddress ?? '',
+              String((notif.config as Record<string, unknown> | undefined)?.emailAddress ?? ''),
               `Intelligence Alert: ${notif.insight.title}`,
               `${notif.insight.description}\n\nSeverity: ${notif.insight.severity}\nConfidence: ${(notif.insight.confidence * 100).toFixed(0)}%${notif.insight.recommendedAction ? `\nRecommended action: ${notif.insight.recommendedAction}` : ''}`,
             );
@@ -300,7 +300,7 @@ export class IntelligenceSubscriptionService {
             break;
 
           case 'webhook':
-            success = await this._sendWebhook((notif.config as any)?.webhookUrl ?? '', {
+            success = await this._sendWebhook(String((notif.config as Record<string, unknown> | undefined)?.webhookUrl ?? ''), {
               event: 'intelligence_insight',
               subscriptionId: notif.subscriptionId,
               subscriptionName: notif.subscriptionName,
@@ -312,8 +312,8 @@ export class IntelligenceSubscriptionService {
           default:
             error = `Unknown channel: ${notif.channel}`;
         }
-      } catch (err: any) {
-        error = err.message ?? String(err);
+      } catch (err: unknown) {
+        error = err instanceof Error ? err.message : String(err);
       }
 
       const now = new Date().toISOString();
@@ -513,8 +513,8 @@ export class IntelligenceSubscriptionService {
         console.warn(
           `[IntelSub] Webhook attempt ${attempt}/${maxRetries} failed: HTTP ${res.status}`,
         );
-      } catch (err: any) {
-        console.warn(`[IntelSub] Webhook attempt ${attempt}/${maxRetries} error:`, err.message);
+      } catch (err: unknown) {
+        console.warn(`[IntelSub] Webhook attempt ${attempt}/${maxRetries} error:`, err instanceof Error ? err.message : String(err));
       }
 
       if (attempt < maxRetries) {
@@ -534,34 +534,33 @@ export class IntelligenceSubscriptionService {
     return map[severity] ?? 0;
   }
 
-  private _mapDbRow(row: any): IntelligenceSubscription {
+  private _mapDbRow(row: Record<string, unknown>): IntelligenceSubscription {
+    const filterRaw = row.filterCriteria ?? row.filter_criteria;
+    const notifConfigRaw = row.notificationConfig ?? row.notification_config;
+
     return {
-      id: row.id,
-      userId: row.userId ?? row.user_id,
-      name: row.name,
-      subscriptionType: row.subscriptionType ?? row.subscription_type,
+      id: String(row.id),
+      userId: String(row.userId ?? row.user_id ?? ''),
+      name: String(row.name ?? ''),
+      subscriptionType: String(row.subscriptionType ?? row.subscription_type ?? ''),
       filterCriteria:
-        typeof row.filterCriteria === 'string'
-          ? JSON.parse(row.filterCriteria)
-          : typeof row.filter_criteria === 'string'
-            ? JSON.parse(row.filter_criteria)
-            : (row.filterCriteria ?? {}),
-      notificationChannel: row.notificationChannel ?? row.notification_channel,
-      notificationConfig: row.notificationConfig
-        ? typeof row.notificationConfig === 'string'
-          ? JSON.parse(row.notificationConfig)
-          : row.notificationConfig
-        : row.notification_config
-          ? typeof row.notification_config === 'string'
-            ? JSON.parse(row.notification_config)
-            : row.notification_config
-          : undefined,
-      isActive: typeof row.isActive === 'boolean' ? row.isActive : (row.is_active ?? true),
-      triggerCount: row.triggerCount ?? row.trigger_count ?? 0,
-      lastTriggeredAt: row.lastTriggeredAt ?? row.last_triggered_at ?? undefined,
-      cooldownMinutes: row.cooldownMinutes ?? row.cooldown_minutes ?? 60,
-      createdAt: row.createdAt ?? row.created_at,
-      updatedAt: row.updatedAt ?? row.updated_at,
+        typeof filterRaw === 'string'
+          ? JSON.parse(filterRaw)
+          : (filterRaw ?? {}) as FilterCriteria,
+      notificationChannel: String(row.notificationChannel ?? row.notification_channel ?? ''),
+      notificationConfig: notifConfigRaw
+        ? typeof notifConfigRaw === 'string'
+          ? JSON.parse(notifConfigRaw) as Record<string, unknown>
+          : notifConfigRaw as Record<string, unknown>
+        : undefined,
+      isActive: typeof row.isActive === 'boolean' ? row.isActive : Boolean(row.is_active ?? true),
+      triggerCount: Number(row.triggerCount ?? row.trigger_count ?? 0),
+      lastTriggeredAt: (row.lastTriggeredAt ?? row.last_triggered_at) != null
+        ? String(row.lastTriggeredAt ?? row.last_triggered_at)
+        : undefined,
+      cooldownMinutes: Number(row.cooldownMinutes ?? row.cooldown_minutes ?? 60),
+      createdAt: String(row.createdAt ?? row.created_at ?? ''),
+      updatedAt: String(row.updatedAt ?? row.updated_at ?? ''),
     };
   }
 

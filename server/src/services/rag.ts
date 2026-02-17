@@ -28,9 +28,9 @@ export class RAGService {
   async indexTransactions(transactions: unknown[], userId?: string) {
     if (!USE_COGNEE) return null;
 
-    const lines = (transactions as any[]).map(
+    const lines = (transactions as Array<Record<string, unknown>>).map(
       (tx) =>
-        `Date: ${tx.date}, Description: ${tx.description}, Amount: $${(tx.amount / 100).toFixed(2)}, Category: ${tx.category}, Notes: ${tx.aiReasoningNotes || 'N/A'}`,
+        `Date: ${tx.date}, Description: ${tx.description}, Amount: $${(Number(tx.amount) / 100).toFixed(2)}, Category: ${tx.category}, Notes: ${tx.aiReasoningNotes || 'N/A'}`,
     );
 
     logger.info(`[RAG] Indexing ${lines.length} transactions in Cognee...`);

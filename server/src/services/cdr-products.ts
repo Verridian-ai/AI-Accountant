@@ -21,8 +21,12 @@ import {
   cdrFees,
   cdrFeatures,
   cdrEligibility,
+  type CdrLendingRate,
+  type CdrDepositRate,
+  type CdrFee,
+  type CdrFeature,
 } from '../schema.js';
-import { eq, and, gte, lte, like, inArray, desc, asc, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, like, inArray, desc, asc, sql, type SQL } from 'drizzle-orm';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -167,7 +171,7 @@ export class CdrProductService {
     const offset = filters.offset ?? 0;
 
     // Build WHERE conditions
-    const conditions: any[] = [];
+    const conditions: (SQL | undefined)[] = [];
 
     if (filters.productCategory) {
       conditions.push(eq(cdrProducts.productCategory, filters.productCategory));
@@ -225,12 +229,12 @@ export class CdrProductService {
       let rateType: string | null = null;
 
       if (lendingRates.length > 0) {
-        const sorted = [...lendingRates].sort((a: any, b: any) => a.rate - b.rate);
+        const sorted = [...lendingRates].sort((a, b) => a.rate - b.rate);
         bestRate = sorted[0].rate;
         comparisonRate = sorted[0].comparisonRate ?? null;
         rateType = sorted[0].lendingRateType;
       } else if (depositRates.length > 0) {
-        const sorted = [...depositRates].sort((a: any, b: any) => b.rate - a.rate);
+        const sorted = [...depositRates].sort((a, b) => b.rate - a.rate);
         bestRate = sorted[0].rate;
         rateType = sorted[0].depositRateType;
       }
@@ -242,32 +246,32 @@ export class CdrProductService {
       // Apply rate type filter
       if (filters.rateType) {
         const matchesLending = lendingRates.some(
-          (r: any) => r.lendingRateType === filters.rateType,
+          (r: CdrLendingRate) => r.lendingRateType === filters.rateType,
         );
         const matchesDeposit = depositRates.some(
-          (r: any) => r.depositRateType === filters.rateType,
+          (r: CdrDepositRate) => r.depositRateType === filters.rateType,
         );
         if (!matchesLending && !matchesDeposit) continue;
       }
 
       // Apply loan purpose filter
       if (filters.loanPurpose) {
-        const matchesPurpose = lendingRates.some((r: any) => r.loanPurpose === filters.loanPurpose);
+        const matchesPurpose = lendingRates.some((r: CdrLendingRate) => r.loanPurpose === filters.loanPurpose);
         if (!matchesPurpose) continue;
       }
 
       // Apply repayment type filter
       if (filters.repaymentType) {
         const matchesRepayment = lendingRates.some(
-          (r: any) => r.repaymentType === filters.repaymentType,
+          (r: CdrLendingRate) => r.repaymentType === filters.repaymentType,
         );
         if (!matchesRepayment) continue;
       }
 
       // Apply feature filter
       if (filters.features && filters.features.length > 0) {
-        const productFeatureTypes = featureRows.map((f: any) => f.featureType);
-        const hasAll = filters.features.every((f) => productFeatureTypes.includes(f));
+        const productFeatureTypes = featureRows.map((f: CdrFeature) => f.featureType);
+        const hasAll = filters.features.every((ft: string) => productFeatureTypes.includes(ft));
         if (!hasAll) continue;
       }
 
@@ -289,7 +293,7 @@ export class CdrProductService {
         rateType,
         featureCount: featureRows.length,
         feeCount: feeRows.length,
-        features: featureRows.map((f: any) => f.featureType),
+        features: featureRows.map((f: CdrFeature) => f.featureType),
         applicationUri: row.applicationUri ?? null,
       });
     }
@@ -345,10 +349,16 @@ export class CdrProductService {
 
     // Fetch full details for each product
     const products: EnrichedProduct[] = [];
-    const ratesMap: Record<string, any[]> = {};
-    const feesMap: Record<string, any[]> = {};
-    const featuresMap: Record<string, any[]> = {};
-    const eligibilityMap: Record<string, any[]> = {};
+    type LendingRateRow = typeof cdrLendingRates.$inferSelect;
+    type DepositRateRow = typeof cdrDepositRates.$inferSelect;
+    type FeeRow = typeof cdrFees.$inferSelect;
+    type FeatureRow = typeof cdrFeatures.$inferSelect;
+    type EligibilityRow = typeof cdrEligibility.$inferSelect;
+
+    const ratesMap: Record<string, Array<LendingRateRow | DepositRateRow>> = {};
+    const feesMap: Record<string, FeeRow[]> = {};
+    const featuresMap: Record<string, FeatureRow[]> = {};
+    const eligibilityMap: Record<string, EligibilityRow[]> = {};
 
     for (const id of ids) {
       const [productRows] = await Promise.all([
@@ -388,12 +398,12 @@ export class CdrProductService {
       let rateType: string | null = null;
 
       if (lendingRates.length > 0) {
-        const sorted = [...lendingRates].sort((a: any, b: any) => a.rate - b.rate);
+        const sorted = [...lendingRates].sort((a, b) => a.rate - b.rate);
         bestRate = sorted[0].rate;
         comparisonRate = sorted[0].comparisonRate ?? null;
         rateType = sorted[0].lendingRateType;
       } else if (depositRates.length > 0) {
-        const sorted = [...depositRates].sort((a: any, b: any) => b.rate - a.rate);
+        const sorted = [...depositRates].sort((a, b) => b.rate - a.rate);
         bestRate = sorted[0].rate;
         rateType = sorted[0].depositRateType;
       }
@@ -410,7 +420,7 @@ export class CdrProductService {
         rateType,
         featureCount: featureRows.length,
         feeCount: feeRows.length,
-        features: featureRows.map((f: any) => f.featureType),
+        features: featureRows.map((f: CdrFeature) => f.featureType),
         applicationUri: row.applicationUri ?? null,
       });
     }
@@ -460,7 +470,7 @@ export class CdrProductService {
         label: feeType,
         values: Object.fromEntries(
           products.map((p) => {
-            const fee = (feesMap[p.id] ?? []).find((f: any) => f.feeType === feeType);
+            const fee = (feesMap[p.id] ?? []).find((f) => f.feeType === feeType);
             return [p.id, fee ? (fee.amount ?? 'See details') : 'N/A'];
           }),
         ),
@@ -504,7 +514,7 @@ export class CdrProductService {
         label: ft,
         values: Object.fromEntries(
           products.map((p) => {
-            const has = (featuresMap[p.id] ?? []).some((f: any) => f.featureType === ft);
+            const has = (featuresMap[p.id] ?? []).some((f) => f.featureType === ft);
             return [p.id, has];
           }),
         ),
@@ -525,7 +535,7 @@ export class CdrProductService {
         label: et,
         values: Object.fromEntries(
           products.map((p) => {
-            const elig = (eligibilityMap[p.id] ?? []).find((e: any) => e.eligibilityType === et);
+            const elig = (eligibilityMap[p.id] ?? []).find((e) => e.eligibilityType === et);
             return [
               p.id,
               elig ? (elig.additionalInfo ?? elig.additionalValue ?? 'Required') : 'N/A',
@@ -594,7 +604,16 @@ export class CdrProductService {
         .orderBy(asc(cdrLendingRates.rate))
         .limit(limit);
 
-      return rows.map((r: any) => ({
+      return rows.map((r: {
+        productId: string;
+        rate: number;
+        comparisonRate: number | null;
+        rateType: string;
+        productName: string;
+        productCategory: string;
+        dataHolderName: string | null;
+        dataHolderLogo: string | null;
+      }) => ({
         productId: r.productId,
         productName: r.productName,
         dataHolderName: r.dataHolderName ?? '',
@@ -624,7 +643,15 @@ export class CdrProductService {
       .orderBy(desc(cdrDepositRates.rate))
       .limit(limit);
 
-    return rows.map((r: any) => ({
+    return rows.map((r: {
+      productId: string;
+      rate: number;
+      rateType: string;
+      productName: string;
+      productCategory: string;
+      dataHolderName: string | null;
+      dataHolderLogo: string | null;
+    }) => ({
       productId: r.productId,
       productName: r.productName,
       dataHolderName: r.dataHolderName ?? '',

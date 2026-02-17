@@ -21,7 +21,7 @@ feedRoutes.get('/', async (c) => {
 });
 
 feedRoutes.post('/refresh', async (c) => {
-  const results: any = {};
+  const results: Record<string, unknown> = {};
   try {
     results.rba = await rbaDataFeed.fetchAllTables();
   } catch (e) {

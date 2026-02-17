@@ -117,7 +117,7 @@ Analyze the input thoroughly using the available tools, then return a JSON objec
       'find_match_candidates',
       async (input) => {
         const documentId = input.documentId as string;
-        const options: any = {};
+        const options: Record<string, unknown> = {};
         if (input.amountTolerance != null)
           options.amountTolerance = input.amountTolerance as number;
         if (input.dateTolerance != null) options.dateTolerance = input.dateTolerance as number;

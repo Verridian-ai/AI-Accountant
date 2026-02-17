@@ -7,8 +7,10 @@
  */
 
 import { randomUUID } from 'crypto';
-import { eq, and, sql, count, desc, gte, lte } from 'drizzle-orm';
+import { eq, and, sql, count, desc, gte, lte, type SQL } from 'drizzle-orm';
 import { db, cogneeFeedback, datapointConfigs } from '../schema.js';
+
+type FeedbackRow = typeof cogneeFeedback.$inferSelect;
 import { cogneeClient } from './cognee_client.js';
 
 // ============================================================================
@@ -40,7 +42,7 @@ export interface FeedbackStats {
   accuracyRate: number;
   trend: 'improving' | 'declining' | 'stable';
   topCorrectedFields: Array<{ field: string; correctionCount: number }>;
-  recentFeedback: any[];
+  recentFeedback: FeedbackRow[];
 }
 
 export interface MemifyOptions {
@@ -78,7 +80,7 @@ export class CogneeFeedbackService {
    * Submit feedback on a Cognee entity (search result, datapoint, graph node, etc.).
    * Persists to the cogneeFeedback table and forwards to Cognee API.
    */
-  async submitFeedback(userId: string, feedback: FeedbackSubmission): Promise<any> {
+  async submitFeedback(userId: string, feedback: FeedbackSubmission): Promise<Record<string, unknown>> {
     const id = randomUUID();
     const now = new Date().toISOString();
 
@@ -123,7 +125,7 @@ export class CogneeFeedbackService {
    */
   async getFeedbackStats(userId: string, filters?: FeedbackFilters): Promise<FeedbackStats> {
     // Build conditions
-    const conditions: any[] = [eq(cogneeFeedback.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(cogneeFeedback.userId, userId)];
     if (filters?.entityType) {
       conditions.push(eq(cogneeFeedback.entityType, filters.entityType));
     }
@@ -206,7 +208,7 @@ export class CogneeFeedbackService {
    */
   async triggerMemify(userId: string, options?: MemifyOptions): Promise<MemifyResult> {
     // Get unapplied feedback
-    const unapplied = await db
+    const unapplied: FeedbackRow[] = await db
       .select()
       .from(cogneeFeedback)
       .where(and(eq(cogneeFeedback.userId, userId), eq(cogneeFeedback.appliedToMemify, false)))
@@ -233,7 +235,7 @@ export class CogneeFeedbackService {
     }
 
     // Group by dataset from context
-    const datasetGroups: Record<string, any[]> = {};
+    const datasetGroups: Record<string, FeedbackRow[]> = {};
     for (const fb of unapplied) {
       let dataset = 'general_feedback';
       if (fb.context) {
@@ -256,11 +258,11 @@ export class CogneeFeedbackService {
 
     // Trigger memify for each dataset group
     for (const dataset of targetDatasets) {
-      const feedbackData = datasetGroups[dataset].map((fb: any) => ({
+      const feedbackData = datasetGroups[dataset].map((fb) => ({
         entity_id: fb.entityId,
         feedback_type: fb.feedbackType,
-        original_value: fb.originalValue,
-        corrected_value: fb.correctedValue,
+        original_value: fb.originalValue ?? undefined,
+        corrected_value: fb.correctedValue ?? undefined,
       }));
 
       await cogneeClient.triggerMemify(
@@ -275,7 +277,7 @@ export class CogneeFeedbackService {
 
     // Mark all as applied
     const appliedIds = unapplied
-      .filter((fb: any) => {
+      .filter((fb) => {
         let dataset = 'general_feedback';
         if (fb.context) {
           try {
@@ -287,7 +289,7 @@ export class CogneeFeedbackService {
         }
         return targetDatasets.includes(dataset);
       })
-      .map((fb: any) => fb.id);
+      .map((fb) => fb.id);
 
     for (const fbId of appliedIds) {
       await db
@@ -301,8 +303,8 @@ export class CogneeFeedbackService {
     const newAccuracyScores: Record<string, number> = {};
     const configIds = new Set(
       unapplied
-        .filter((fb: any) => fb.datapointConfigId)
-        .map((fb: any) => fb.datapointConfigId as string),
+        .filter((fb) => fb.datapointConfigId)
+        .map((fb) => fb.datapointConfigId as string),
     );
 
     for (const configId of configIds) {
@@ -333,8 +335,8 @@ export class CogneeFeedbackService {
     filters?: FeedbackFilters,
     page: number = 1,
     pageSize: number = 20,
-  ): Promise<{ items: any[]; total: number; page: number; pageSize: number }> {
-    const conditions: any[] = [eq(cogneeFeedback.userId, userId)];
+  ): Promise<{ items: FeedbackRow[]; total: number; page: number; pageSize: number }> {
+    const conditions: (SQL | undefined)[] = [eq(cogneeFeedback.userId, userId)];
     if (filters?.entityType) {
       conditions.push(eq(cogneeFeedback.entityType, filters.entityType));
     }
@@ -368,7 +370,7 @@ export class CogneeFeedbackService {
   /**
    * Get a single feedback record by ID.
    */
-  async getFeedbackById(feedbackId: string): Promise<any | null> {
+  async getFeedbackById(feedbackId: string): Promise<FeedbackRow | null> {
     const result = await db
       .select()
       .from(cogneeFeedback)
@@ -450,7 +452,7 @@ export class CogneeFeedbackService {
       .where(and(eq(cogneeFeedback.userId, userId), eq(cogneeFeedback.appliedToMemify, false)))
       .get();
 
-    const total = (unappliedCount as any)?.count ?? 0;
+    const total = unappliedCount?.count ?? 0;
 
     if (total < DEFAULT_AUTO_MEMIFY_THRESHOLD) {
       return null;
@@ -466,7 +468,7 @@ export class CogneeFeedbackService {
    * Feedback should be sorted newest-first.
    */
   private calculateTrend(
-    feedbackItems: any[],
+    feedbackItems: FeedbackRow[],
     midpoint: number,
   ): 'improving' | 'declining' | 'stable' {
     if (feedbackItems.length < 4) return 'stable';
@@ -483,7 +485,7 @@ export class CogneeFeedbackService {
     return 'stable';
   }
 
-  private halfAccuracy(items: any[]): number {
+  private halfAccuracy(items: FeedbackRow[]): number {
     if (items.length === 0) return 0;
     let score = 0;
     for (const fb of items) {

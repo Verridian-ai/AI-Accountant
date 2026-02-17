@@ -244,7 +244,7 @@ export class NamespaceManager {
       .from(ragChunks)
       .where(eq(ragChunks.namespaceId, namespaceId));
 
-    const chunkIds = namespaceChunks.map((c: any) => c.id);
+    const chunkIds = namespaceChunks.map((c: Record<string, unknown>) => c.id);
 
     // Delete all citations referencing these chunks (using parameterized query)
     if (chunkIds.length > 0) {
@@ -390,7 +390,7 @@ export class NamespaceManager {
       .from(ragChunks)
       .where(eq(ragChunks.documentId, documentId));
 
-    const chunkIds = docChunks.map((c: any) => c.id);
+    const chunkIds = docChunks.map((c: Record<string, unknown>) => c.id);
 
     // Delete citations referencing this document's chunks (using parameterized query)
     if (chunkIds.length > 0) {

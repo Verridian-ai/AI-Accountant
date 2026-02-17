@@ -59,7 +59,7 @@ export function MatchStatistics() {
         ? 'text-red-400'
         : 'text-amber-400';
   const maxVendorCount =
-    stats.topVendors.length > 0 ? Math.max(...stats.topVendors.map((v: any) => v.count)) : 1;
+    stats.topVendors.length > 0 ? Math.max(...stats.topVendors.map((v: { name: string; count: number }) => v.count)) : 1;
 
   return (
     <div className="space-y-6">
@@ -148,7 +148,7 @@ export function MatchStatistics() {
             <p className="text-zinc-500 text-sm">No vendor data yet</p>
           ) : (
             <div className="space-y-3">
-              {stats.topVendors.slice(0, 10).map((vendor: any, i: number) => (
+              {stats.topVendors.slice(0, 10).map((vendor: { name: string; count: number }, i: number) => (
                 <div key={i} className="flex items-center gap-3">
                   <span className="text-xs text-zinc-500 w-5 text-right">{i + 1}.</span>
                   <div className="flex-1 min-w-0">
@@ -189,8 +189,8 @@ export function MatchStatistics() {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {stats.ruleEffectiveness
-                    .sort((a: any, b: any) => b.matchCount - a.matchCount)
-                    .map((rule: any) => {
+                    .sort((a: { matchCount: number }, b: { matchCount: number }) => b.matchCount - a.matchCount)
+                    .map((rule: { ruleId: string; name: string; matchCount: number; lastMatched?: string }) => {
                       const isRecent =
                         rule.lastMatched &&
                         Date.now() - new Date(rule.lastMatched).getTime() < 7 * 24 * 60 * 60 * 1000;

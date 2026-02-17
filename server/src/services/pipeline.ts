@@ -62,8 +62,8 @@ async function flagLikelyTransfersByDescription(
       try {
         await db.update(transactions).set({ isTransfer: true }).where(eq(transactions.id, tx.id));
         flagged++;
-      } catch (err: any) {
-        logger.warn(`[Pipeline] Failed to flag transfer ${tx.id}: ${err.message}`);
+      } catch (err: unknown) {
+        logger.warn(`[Pipeline] Failed to flag transfer ${tx.id}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
   }
@@ -147,7 +147,7 @@ async function withRetry<T>(
   delay: number = 1000,
   operationName: string = 'Operation',
 ): Promise<T> {
-  let lastError: any;
+  let lastError: unknown;
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
@@ -233,17 +233,18 @@ export class PipelineService {
           1000,
           'PDF Extraction',
         );
-      } catch (pdfErr: any) {
+      } catch (pdfErr: unknown) {
         logger.error('[Pipeline PDF Error]', pdfErr, { filePath });
+        const pdfErrMsg = pdfErr instanceof Error ? pdfErr.message : String(pdfErr);
         await db
           .update(statements)
           .set({
             parsingStatus: 'FAILED',
             errorType: 'PDF_READ_ERROR',
-            errorMessage: pdfErr.message || 'Failed to read PDF content.',
+            errorMessage: pdfErrMsg || 'Failed to read PDF content.',
             errorDetails: JSON.stringify({
               filename: stmt?.filename,
-              originalError: pdfErr.message,
+              originalError: pdfErrMsg,
             }),
           })
           .where(eq(statements.id, statementId));
@@ -276,7 +277,7 @@ export class PipelineService {
 
       try {
         // Try parser's extractAccountInfo first (faster, no AI cost)
-        let accountInfo: any = null;
+        let accountInfo: { accountNumber: string | null; accountNumberMasked?: string | null; bankName?: string | null; accountType?: string | null; openingBalance?: number | null; closingBalance?: number | null; statementPeriod?: { start: string; end: string } | null; confidence?: number } | null = null;
         const bankDetections = parserRegistry.detectBank(pdfText);
         if (bankDetections.length > 0 && bankDetections[0].confidence >= 0.5) {
           const parser = parserRegistry.getParser(bankDetections[0].bankId);
@@ -293,9 +294,9 @@ export class PipelineService {
                 );
                 accountInfo = parserAccountInfo;
               }
-            } catch (parserAccErr: any) {
+            } catch (parserAccErr: unknown) {
               logger.warn(
-                `[Pipeline] Parser account info extraction failed: ${parserAccErr.message}`,
+                `[Pipeline] Parser account info extraction failed: ${parserAccErr instanceof Error ? parserAccErr.message : String(parserAccErr)}`,
               );
             }
           }
@@ -311,17 +312,19 @@ export class PipelineService {
           );
         }
 
-        accountDetection.detectedInfo = {
-          accountNumber: accountInfo.accountNumber,
-          accountNumberMasked: accountInfo.accountNumberMasked,
-          bankName: accountInfo.bankName,
-          accountType: accountInfo.accountType,
-          openingBalance: accountInfo.openingBalance,
-          closingBalance: accountInfo.closingBalance,
-        };
+        if (accountInfo) {
+          accountDetection.detectedInfo = {
+            accountNumber: accountInfo.accountNumber ?? null,
+            accountNumberMasked: accountInfo.accountNumberMasked ?? null,
+            bankName: accountInfo.bankName ?? null,
+            accountType: accountInfo.accountType ?? null,
+            openingBalance: accountInfo.openingBalance ?? null,
+            closingBalance: accountInfo.closingBalance ?? null,
+          };
+        }
 
         // Check if this account already exists
-        if (accountInfo.accountNumber && userId) {
+        if (accountInfo?.accountNumber && userId) {
           const accountHash = accountService.hashAccountNumber(accountInfo.accountNumber);
           const existingAccount = await accountService.findAccountByHash(userId, accountHash);
 
@@ -331,7 +334,7 @@ export class PipelineService {
             logger.info(`[Pipeline] Found existing account: ${existingAccount.accountName}`);
 
             // Update account balance if we have closing balance
-            if (accountInfo.closingBalance !== null) {
+            if (accountInfo.closingBalance != null) {
               await accountService.updateAccountBalance(
                 existingAccount.id,
                 accountInfo.closingBalance,
@@ -356,7 +359,7 @@ export class PipelineService {
               });
 
               // Update balance if we have closing balance info
-              if (accountInfo.closingBalance !== null && accountInfo.closingBalance !== undefined) {
+              if (accountInfo.closingBalance != null) {
                 await accountService.updateAccountBalance(
                   newAccount.id,
                   accountInfo.closingBalance,
@@ -374,9 +377,9 @@ export class PipelineService {
                 accountId: newAccount.id,
                 detectedInfo: accountDetection.detectedInfo,
               });
-            } catch (createErr: any) {
+            } catch (createErr: unknown) {
               logger.warn(
-                `[Pipeline] Auto-create account failed, marking for manual setup: ${createErr.message}`,
+                `[Pipeline] Auto-create account failed, marking for manual setup: ${createErr instanceof Error ? createErr.message : String(createErr)}`,
               );
               accountDetection.needsSetup = true;
 
@@ -421,7 +424,7 @@ export class PipelineService {
             const ccMinPayMatch = pdfText.match(
               /minimum\s*(?:payment|amount\s*due)[:\s]*\$?([\d,]+\.?\d*)/i,
             );
-            const updateData: Record<string, any> = {};
+            const updateData: Record<string, number> = {};
             if (ccLimitMatch) {
               updateData.creditLimit = Math.round(
                 parseFloat(ccLimitMatch[1].replace(/,/g, '')) * 100,
@@ -441,8 +444,8 @@ export class PipelineService {
                 `[Pipeline] Updated credit card account with: ${JSON.stringify(updateData)}`,
               );
             }
-          } catch (ccUpdateErr: any) {
-            logger.warn(`[Pipeline] Credit card info update failed: ${ccUpdateErr.message}`);
+          } catch (ccUpdateErr: unknown) {
+            logger.warn(`[Pipeline] Credit card info update failed: ${ccUpdateErr instanceof Error ? ccUpdateErr.message : String(ccUpdateErr)}`);
           }
         }
       }
@@ -501,9 +504,9 @@ export class PipelineService {
               `[Pipeline] Credit card parser returned 0 transactions, trying regular bank parser`,
             );
           }
-        } catch (ccErr: any) {
+        } catch (ccErr: unknown) {
           logger.warn(
-            `[Pipeline] Credit card parser error, trying regular bank parser: ${ccErr.message}`,
+            `[Pipeline] Credit card parser error, trying regular bank parser: ${ccErr instanceof Error ? ccErr.message : String(ccErr)}`,
           );
         }
       }
@@ -551,8 +554,8 @@ export class PipelineService {
               `[Pipeline] Bank parser returned 0 transactions (${parseResult.parseWarnings.join(', ')}), falling through to AI`,
             );
           }
-        } catch (parserErr: any) {
-          logger.warn(`[Pipeline] Bank parser error, falling through to AI: ${parserErr.message}`);
+        } catch (parserErr: unknown) {
+          logger.warn(`[Pipeline] Bank parser error, falling through to AI: ${parserErr instanceof Error ? parserErr.message : String(parserErr)}`);
         }
       } // end if (!rawData) for regular parser
 
@@ -565,7 +568,7 @@ export class PipelineService {
           logger.info(`[Pipeline] Using Claude agent orchestrator`);
           try {
             const merchantMemoryData = userId ? await accountService.getMerchantMemory(userId) : [];
-            const memoryPatterns = merchantMemoryData.map((m: any) => ({
+            const memoryPatterns = merchantMemoryData.map((m) => ({
               pattern: m.merchantPattern,
               category: m.category,
               gst: m.gstApplicable ?? false,
@@ -621,7 +624,7 @@ export class PipelineService {
                 `[Pipeline] Claude agents extracted ${rawData.transactions.length} transactions`,
               );
 
-              const allAgentInserts = rawData.transactions.map((tx: any, i: number) => {
+              const allAgentInserts = rawData.transactions.map((tx, i) => {
                 const aiCat = (categorizations && categorizations[i]) || {
                   category: 'Uncategorized',
                   gst: false,
@@ -677,7 +680,7 @@ export class PipelineService {
               }
 
               if (toInsert.length > 0) {
-                await db.transaction(async (tx: any) => {
+                await db.transaction(async (tx: typeof db) => {
                   await tx.insert(transactions).values(toInsert);
 
                   const pendingItems: (typeof pendingCategorization.$inferInsert)[] = [];
@@ -750,13 +753,13 @@ export class PipelineService {
               if (agentUncategorized.length > 0 && userId) {
                 try {
                   await enrichmentService.enrichTransactions(agentUncategorized, userId);
-                } catch (enrichErr: any) {
-                  logger.warn(`[Pipeline] Agent path enrichment error: ${enrichErr.message}`);
+                } catch (enrichErr: unknown) {
+                  logger.warn(`[Pipeline] Agent path enrichment error: ${enrichErr instanceof Error ? enrichErr.message : String(enrichErr)}`);
                 }
               }
 
               const finalStatus = accountDetection.needsSetup ? 'NEEDS_ACCOUNT_SETUP' : 'COMPLETED';
-              const sortedDates = rawData.transactions.map((t: any) => t.date).sort();
+              const sortedDates = rawData.transactions.map((t) => t.date).sort();
 
               await db
                 .update(statements)
@@ -794,9 +797,9 @@ export class PipelineService {
               logger.info(`[Pipeline] Claude agent processing complete for ${statementId}`);
               return; // Done — skip the legacy path below
             }
-          } catch (agentErr: any) {
+          } catch (agentErr: unknown) {
             logger.warn(
-              `[Pipeline] Claude agent failed, falling back to legacy AI: ${agentErr.message}`,
+              `[Pipeline] Claude agent failed, falling back to legacy AI: ${agentErr instanceof Error ? agentErr.message : String(agentErr)}`,
             );
             // Fall through to legacy path
           }
@@ -819,7 +822,7 @@ export class PipelineService {
             2000,
             'AI Transaction Parsing',
           );
-        } catch (aiErr: any) {
+        } catch (aiErr: unknown) {
           logger.error('[Pipeline AI Error]', aiErr);
           await db
             .update(statements)
@@ -828,7 +831,7 @@ export class PipelineService {
               errorType: 'AI_PARSE_ERROR',
               errorMessage:
                 'The AI was unable to find transactions in this document. Ensure it is a valid bank statement.',
-              errorDetails: JSON.stringify({ rawError: aiErr.message }),
+              errorDetails: JSON.stringify({ rawError: aiErr instanceof Error ? aiErr.message : String(aiErr) }),
             })
             .where(eq(statements.id, statementId));
           events.emit('update', {
@@ -898,8 +901,8 @@ export class PipelineService {
             needsReview,
           });
         }
-      } catch (visionErr: any) {
-        logger.warn(`[Pipeline] Vision secondary check failed (non-fatal): ${visionErr.message}`);
+      } catch (visionErr: unknown) {
+        logger.warn(`[Pipeline] Vision secondary check failed (non-fatal): ${visionErr instanceof Error ? visionErr.message : String(visionErr)}`);
         // Vision is supplementary — don't block pipeline on vision failure
       }
 
@@ -911,7 +914,7 @@ export class PipelineService {
 
         // Get merchant memory for intelligent categorization
         const merchantMemoryData = userId ? await accountService.getMerchantMemory(userId) : [];
-        const memoryPatterns = merchantMemoryData.map((m: any) => ({
+        const memoryPatterns = merchantMemoryData.map((m) => ({
           pattern: m.merchantPattern,
           category: m.category,
           gst: m.gstApplicable ?? false,
@@ -1038,7 +1041,7 @@ export class PipelineService {
         if (toInsert.length > 0) {
           logger.info(`[Pipeline] Inserting ${toInsert.length} transactions into database...`);
 
-          await db.transaction(async (tx: any) => {
+          await db.transaction(async (tx: typeof db) => {
             // 4.1 Insert Transactions
             await tx.insert(transactions).values(toInsert);
 
@@ -1116,7 +1119,7 @@ export class PipelineService {
 
             if (userAccounts.length > 1 && allUserTxs.length > 1) {
               // Convert to TransferCandidate format
-              const candidates: TransferCandidate[] = allUserTxs.map((t: any) => ({
+              const candidates: TransferCandidate[] = allUserTxs.map((t: typeof transactions.$inferSelect) => ({
                 id: t.id,
                 accountId: t.accountId || '',
                 date: t.date,
@@ -1127,7 +1130,7 @@ export class PipelineService {
               }));
 
               // Convert accounts to AccountContext format
-              const accountContexts: AccountContext[] = userAccounts.map((a: any) => ({
+              const accountContexts: AccountContext[] = userAccounts.map((a: typeof accounts.$inferSelect) => ({
                 id: a.id,
                 accountNumber: a.accountNumber,
                 bankId: a.bankName || '',
@@ -1191,8 +1194,8 @@ export class PipelineService {
                 logger.info(`[Pipeline] No transfer matches found`);
               }
             }
-          } catch (transferErr: any) {
-            logger.warn(`[Pipeline] Transfer detection error (non-fatal): ${transferErr.message}`);
+          } catch (transferErr: unknown) {
+            logger.warn(`[Pipeline] Transfer detection error (non-fatal): ${transferErr instanceof Error ? transferErr.message : String(transferErr)}`);
             // Flag transactions that look like transfers by description keywords
             await flagLikelyTransfersByDescription(toInsert);
           }
@@ -1228,8 +1231,8 @@ export class PipelineService {
               `[Pipeline] Running enrichment on ${uncategorizedIds.length} uncategorized transactions...`,
             );
             await enrichmentService.enrichTransactions(uncategorizedIds, userId);
-          } catch (enrichErr: any) {
-            logger.warn(`[Pipeline] Enrichment error (non-fatal): ${enrichErr.message}`);
+          } catch (enrichErr: unknown) {
+            logger.warn(`[Pipeline] Enrichment error (non-fatal): ${enrichErr instanceof Error ? enrichErr.message : String(enrichErr)}`);
           }
         }
 
@@ -1289,21 +1292,22 @@ export class PipelineService {
           userId,
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error(`[Pipeline Critical Error]`, err);
+      const errMsg = (err instanceof Error ? err.message : null) || 'An unexpected system error occurred during processing.';
       await db
         .update(statements)
         .set({
           parsingStatus: 'FAILED',
           errorType: 'CRITICAL_ERROR',
-          errorMessage: err.message || 'An unexpected system error occurred during processing.',
+          errorMessage: errMsg,
         })
         .where(eq(statements.id, statementId));
       events.emit('update', { type: 'statement_updated', id: statementId, status: 'FAILED' });
       events.emitPipelineError({
         statementId,
         errorType: 'CRITICAL_ERROR',
-        message: err.message || 'An unexpected system error occurred during processing.',
+        message: errMsg,
       });
     }
   }

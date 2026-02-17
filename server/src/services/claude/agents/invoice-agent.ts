@@ -154,7 +154,7 @@ Key rules:
         const dueDate = input.dueDate as string | undefined;
 
         // Extract userId from the agent context (set during invoke)
-        const userId = (this as any)._currentInput?.userId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentInput as Record<string, unknown> | undefined)?.userId as string ?? 'system';
 
         try {
           const result = await invoicingService.createInvoice(userId, {
@@ -194,7 +194,7 @@ Key rules:
       async (input) => {
         const invoiceId = input.invoiceId as string;
         const action = input.action as 'send' | 'void';
-        const userId = (this as any)._currentInput?.userId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentInput as Record<string, unknown> | undefined)?.userId as string ?? 'system';
 
         try {
           if (action === 'send') {
@@ -213,7 +213,7 @@ Key rules:
       'generate_pdf',
       async (input) => {
         const invoiceId = input.invoiceId as string;
-        const userId = (this as any)._currentInput?.userId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentInput as Record<string, unknown> | undefined)?.userId as string ?? 'system';
 
         try {
           // Fetch invoice data for PDF generation
@@ -239,7 +239,7 @@ Key rules:
       async (input) => {
         const customerId = input.customerId as string;
         const status = input.status as string | undefined;
-        const userId = (this as any)._currentInput?.userId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentInput as Record<string, unknown> | undefined)?.userId as string ?? 'system';
 
         try {
           const result = await invoicingService.listInvoices(userId, {
@@ -264,7 +264,7 @@ Key rules:
         const paymentDate = input.paymentDate as string;
         const paymentMethod = input.paymentMethod as string;
         const reference = input.reference as string | undefined;
-        const userId = (this as any)._currentInput?.userId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentInput as Record<string, unknown> | undefined)?.userId as string ?? 'system';
 
         try {
           const result = await invoicingService.recordPayment(userId, invoiceId, {
@@ -283,13 +283,13 @@ Key rules:
       'search_customers',
       async (input) => {
         const query = input.query as string;
-        const userId = (this as any)._currentInput?.userId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentInput as Record<string, unknown> | undefined)?.userId as string ?? 'system';
 
         try {
           const results = await customerService.searchCustomers(userId, query);
           return {
             success: true,
-            customers: results.map((c: any) => ({
+            customers: results.map((c: Record<string, unknown>) => ({
               id: c.id,
               businessName: c.businessName,
               contactName: c.contactName,
@@ -316,7 +316,7 @@ Key rules:
     ],
   ]);
 
-  async invoke(input: InvoiceAgentInput): Promise<InvoiceAgentOutput & { usage: any }> {
+  async invoke(input: InvoiceAgentInput) {
     return await super.invoke(input);
   }
 

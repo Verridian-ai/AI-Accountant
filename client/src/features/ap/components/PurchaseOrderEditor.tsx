@@ -76,7 +76,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
       setStatus(po.status);
       if (po.lineItems?.length) {
         setLineItems(
-          po.lineItems.map((li: any) => ({
+          po.lineItems.map((li: { id?: string; description: string; quantity: number; unitPrice: number }) => ({
             id: li.id ?? nextLineId(),
             description: li.description,
             quantity: li.quantity,
@@ -166,15 +166,15 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
       };
 
       if (poId) {
-        await apApi.updatePurchaseOrder(poId, payload as any);
+        await apApi.updatePurchaseOrder(poId, payload);
         if (sendAfter) await apApi.sendPurchaseOrder(poId);
       } else {
-        const result = await apApi.createPurchaseOrder(payload as any);
+        const result = await apApi.createPurchaseOrder(payload);
         if (sendAfter) await apApi.sendPurchaseOrder(result.id);
       }
       onSave();
-    } catch (e: any) {
-      setError(e.message ?? 'Failed to save purchase order');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to save purchase order');
     } finally {
       setSaving(false);
       setSending(false);

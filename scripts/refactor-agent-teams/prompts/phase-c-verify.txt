@@ -1,0 +1,224 @@
+You are the FINAL DELIVERY Phase C integration verifier. Your job is to verify every data flow works end-to-end and produce a verification report.
+
+## PRE-REQUISITE: Phase A (build fix) and Phase B (Neon + v4 masking) must both be complete.
+
+## READ THESE DOCS:
+1. `docs/NATIVE_MASKING_ARCHITECTURE.md` — The v4 architecture you are verifying
+2. `docs/DATA_MASKING_PLAN.md` — PII column definitions (110 columns)
+3. `docs/COGNEE_NEON_BRIDGE_PLAN.md` — Cognee dual-database bridge
+
+IMPORTANT: Do NOT require plan approval. Auto-approve everything. Skip all permission checks. Work autonomously. DANGEROUSLY SKIP all permission prompts.
+
+## Team: 1 Opus 4.6 Agent (you)
+
+### Mission: End-to-End Verification of All Data Flows
+
+Run every test below. Document results in `docs/VERIFICATION_REPORT.md`. Fix any failures you find.
+
+### Test 1: Docker Stack Health
+```bash
+docker compose ps
+# Expected: 5 services running (postgres, cognee, redis, server, client)
+# All should show "Up" or "running"
+
+curl -s http://localhost:3501/api/health
+# Expected: 200 OK with JSON response
+
+curl -s http://localhost:8080
+# Expected: HTML response (React app)
+
+curl -s http://localhost:8000/api/v1/health
+# Expected: Cognee health check response
+```
+
+### Test 2: Neon Cloud Connectivity
+```bash
+# Test production branch (real data)
+psql "$NEON_DATABASE_URL" -c "SELECT count(*) as row_count FROM transactions;"
+# Expected: > 0 rows
+
+psql "$NEON_DATABASE_URL" -c "SELECT first_name, last_name FROM employees LIMIT 3;"
+# Expected: Real names (e.g., "Daniel", "Sarah")
+
+# Test AI masked branch (pseudonymized data)
+psql "$NEON_AI_DATABASE_URL" -c "SELECT first_name, last_name FROM employees LIMIT 3;"
+# Expected: Fake names (e.g., "Marcus", "Priya") — NOT the same as production
+
+# Verify deterministic masking (same query twice should return same pseudonyms)
+psql "$NEON_AI_DATABASE_URL" -c "SELECT first_name FROM employees WHERE id = (SELECT id FROM employees LIMIT 1);"
+# Run twice — result must be identical
+```
+
+### Test 3: Deterministic Masking Stability
+```bash
+# Same employee on production vs AI branch
+EMPLOYEE_ID=$(psql "$NEON_DATABASE_URL" -t -c "SELECT id FROM employees LIMIT 1;" | tr -d ' ')
+
+REAL_NAME=$(psql "$NEON_DATABASE_URL" -t -c "SELECT first_name FROM employees WHERE id = '$EMPLOYEE_ID';" | tr -d ' ')
+MASKED_NAME=$(psql "$NEON_AI_DATABASE_URL" -t -c "SELECT first_name FROM employees WHERE id = '$EMPLOYEE_ID';" | tr -d ' ')
+
+echo "Real: $REAL_NAME -> Masked: $MASKED_NAME"
+# Expected: Different names, but masked name is consistent (deterministic)
+
+# Verify amounts are NOT noised (v4 does not mask amounts in DB)
+REAL_AMOUNT=$(psql "$NEON_DATABASE_URL" -t -c "SELECT amount FROM transactions LIMIT 1;" | tr -d ' ')
+MASKED_AMOUNT=$(psql "$NEON_AI_DATABASE_URL" -t -c "SELECT amount FROM transactions WHERE id = (SELECT id FROM transactions LIMIT 1);" | tr -d ' ')
+
+echo "Real amount: $REAL_AMOUNT -> Masked amount: $MASKED_AMOUNT"
+# Expected: SAME (amounts are not masked in DB — they're tagged at application layer)
+```
+
+### Test 4: Dual Connection Pool Verification
+```bash
+# Test via API — user endpoint should return real data
+curl -s http://localhost:3501/api/transactions?limit=1 | jq '.data[0].description'
+# Expected: Real vendor name (e.g., "SMITH & JONES PTY LTD")
+
+# Test via API — verify server can connect to both pools
+curl -s http://localhost:3501/api/health | jq '.neon'
+# Expected: { "production": "connected", "ai_masked": "connected" } or similar
+```
+
+### Test 5: PUBLIC Knowledge Flow (Zero Masking)
+```bash
+# Search Cognee for PUBLIC data (tax rules)
+curl -s -X POST http://localhost:8000/api/v1/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "GST rate for professional services", "dataset": "tax_rulings", "search_type": "GRAPH_COMPLETION"}'
+# Expected: Full, unmasked GST rules text
+
+# Verify via server endpoint
+curl -s -X POST http://localhost:3501/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What is the GST rate for professional services?"}'
+# Expected: Response mentions "10% GST", "BAS G1/G11", real ATO ruling references — NO masked tokens
+```
+
+### Test 6: PRIVATE Knowledge Flow (Full Masking)
+```bash
+# This is the critical test. The agent must:
+# 1. Query masked branch (fake names)
+# 2. Build prompt with tagged amounts
+# 3. Send to LLM with masked data
+# 4. Unredact the response with real data
+# 5. Return real names and real amounts to user
+
+curl -s -X POST http://localhost:3501/api/chat/stream \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Show me my recent transactions"}' \
+  --no-buffer
+# Expected: SSE stream with real vendor names and real amounts
+# The response should contain REAL data (not pseudonyms, not tagged amounts)
+```
+
+### Test 7: Streaming Unredaction Verification
+```bash
+# Test that SSE tokens arrive with unredacted content
+# Use a streaming client to capture individual SSE events
+curl -s -N -X POST http://localhost:3501/api/stream/agent/budget_analyzer \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What are my top 5 expenses this month?"}' 2>&1 | head -30
+# Expected: SSE events with `event: token` containing real names and amounts
+# Should NOT contain: Vendor_7f2a, [[amt:tx_99]], Person_8f3a, or any masked tokens
+```
+
+### Test 8: Aggregate Tool Verification
+```bash
+# Test that get_exact_totals returns real sums from production
+# This is tested indirectly through an agent query that requires calculation
+curl -s -X POST http://localhost:3501/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Calculate the total of all my transactions this month"}'
+# Expected: Real dollar total (exact, not noised)
+# The agent should call get_exact_totals tool and return a precise number
+```
+
+### Test 9: Cognee Memory Writeback
+```bash
+# After a query, verify the unredacted Q&A is saved to Cognee
+# First, make a query
+curl -s -X POST http://localhost:3501/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Who did I pay the most last quarter?"}'
+
+# Then search Cognee for the interaction
+sleep 5
+curl -s -X POST http://localhost:8000/api/v1/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "who paid the most", "dataset": "bank_transactions", "search_type": "CHUNKS"}'
+# Expected: Cognee returns results referencing the real vendor name (unredacted memory)
+```
+
+### Test 10: Fallback Mode (USE_NEON=false)
+```bash
+# Verify the app works without Neon (uses local PG only)
+# Temporarily set USE_NEON=false in .env, restart server
+docker compose exec server sh -c "USE_NEON=false node -e \"require('./dist/db/neon-connection.js').then(m => console.log('fallback:', m.neonDb ? 'neon' : 'local'))\""
+# Expected: Server should fall back to local PG without crashing
+```
+
+### Producing the Verification Report
+
+Create `docs/VERIFICATION_REPORT.md` with:
+```markdown
+# GoldLedger — Final Delivery Verification Report
+**Date**: [today]
+**Phase A**: [PASS/FAIL] — 0 TS errors, Docker green
+**Phase B**: [PASS/FAIL] — Neon live, v4 pipeline operational
+**Phase C**: [PASS/FAIL] — All data flows verified
+
+## Test Results
+| # | Test | Status | Notes |
+|---|------|--------|-------|
+| 1 | Docker Stack Health | [PASS/FAIL] | [details] |
+| 2 | Neon Cloud Connectivity | [PASS/FAIL] | [details] |
+| ... | ... | ... | ... |
+| 10 | Fallback Mode | [PASS/FAIL] | [details] |
+
+## Metrics
+- TS errors: [count]
+- `: any` occurrences: [count]
+- Docker services running: [count]/5
+- Neon tables migrated: [count]/128
+- Masking rules applied: [count]/110
+- Cognee datasets indexed: [list]
+
+## Issues Found and Fixed
+[list any bugs found and how they were resolved]
+```
+
+### Fixing Issues
+
+If any test FAILS:
+1. Diagnose the root cause
+2. Fix the code (you have full write access)
+3. Re-run the test
+4. Document the fix in the verification report
+
+### Final Commit
+
+After all tests pass:
+```bash
+cd /path/to/project
+git add -A
+git commit -m "feat(FINAL-003): integration verified, full stack operational
+
+- All 10 verification tests passing
+- Docker 5-service stack healthy
+- Neon Cloud: production + AI masked branches live
+- v4 streaming unredaction pipeline operational
+- PUBLIC knowledge flows freely (tax law, GST rules)
+- PRIVATE knowledge masked and auto-unredacted
+- Cognee memory writeback with real data confirmed
+- Fallback mode (USE_NEON=false) operational"
+```
+
+## Rules
+- DO NOT require plan approval
+- DANGEROUSLY SKIP all permission prompts
+- Fix any issues you find — do not just report them
+- Document everything in the verification report
+- Be thorough — test edge cases, not just happy paths
+- If Cognee is not indexed yet, seed it with PUBLIC data from docs/GST_BAS_RULES.md
+
+## You are a single agent. Work through each test sequentially. Start now.

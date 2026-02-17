@@ -11,7 +11,7 @@
  */
 
 import { db, depreciableAssets, depreciationSchedule } from '../schema.js';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql , type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 
 // ============================================================================
@@ -309,16 +309,16 @@ export class FixedAssetService {
       throw new Error(`Asset not found: ${assetId}`);
     }
 
-    const asset: any = rows[0];
+    const asset = rows[0] as Record<string, unknown>;
     const fy = parseFY(financialYear);
-    const purchaseDate = new Date(asset.purchaseDate);
+    const purchaseDate = new Date(String(asset.purchaseDate));
 
-    const purchasePrice: number = asset.purchaseCost ?? 0;
+    const purchasePrice: number = Number(asset.purchaseCost ?? 0);
     const residualValue: number = 0; // depreciableAssets table doesn't have residual; default 0
-    const effectiveLifeYears: number = asset.effectiveLifeYears ?? 10;
-    const usefulLifeMonths: number = asset.effectiveLife ?? effectiveLifeYears * 12;
+    const effectiveLifeYears: number = Number(asset.effectiveLifeYears ?? 10);
+    const usefulLifeMonths: number = Number(asset.effectiveLife ?? effectiveLifeYears * 12);
     const usefulLifeYears = usefulLifeMonths / 12;
-    const openingWDV: number = asset.currentWrittenDownValue ?? asset.currentValue ?? 0;
+    const openingWDV: number = Number(asset.currentWrittenDownValue ?? asset.currentValue ?? 0);
     const method: DepreciationMethod =
       (asset.depreciationMethod as DepreciationMethod) ?? 'diminishing_value';
 
@@ -347,11 +347,11 @@ export class FixedAssetService {
       .limit(1);
 
     if (existingDepr.length > 0) {
-      const existing: any = existingDepr[0];
+      const existing = existingDepr[0] as Record<string, unknown>;
       return {
-        openingValue: existing.openingValue ?? openingWDV,
-        depreciationAmount: existing.depreciationAmount ?? 0,
-        closingValue: existing.closingValue ?? openingWDV,
+        openingValue: Number(existing.openingValue ?? openingWDV),
+        depreciationAmount: Number(existing.depreciationAmount ?? 0),
+        closingValue: Number(existing.closingValue ?? openingWDV),
         rate: 0,
         method,
         daysHeld: 0,
@@ -399,7 +399,7 @@ export class FixedAssetService {
 
       case 'instant_write_off': {
         // Full deduction if under threshold, only in purchase year
-        const purchaseFY = getFYForDate(asset.purchaseDate);
+        const purchaseFY = getFYForDate(String(asset.purchaseDate));
         if (purchaseFY === financialYear && purchasePrice < INSTANT_WRITE_OFF_THRESHOLD) {
           depreciationAmount = openingWDV;
           rate = 1;
@@ -409,7 +409,7 @@ export class FixedAssetService {
 
       case 'low_value_pool': {
         // LVP: 37.5% first year, 30% subsequent
-        const purchaseFY = getFYForDate(asset.purchaseDate);
+        const purchaseFY = getFYForDate(String(asset.purchaseDate));
         if (purchaseFY === financialYear) {
           rate = LVP_FIRST_YEAR_RATE;
         } else {
@@ -474,15 +474,15 @@ export class FixedAssetService {
     const errors: Array<{ assetId: string; error: string }> = [];
     let totalDepreciation = 0;
 
-    for (const asset of allAssets as any[]) {
+    for (const asset of allAssets as Array<Record<string, unknown>>) {
       try {
-        const depr = await this.calculateDepreciation(asset.id, financialYear);
+        const depr = await this.calculateDepreciation(String(asset.id), financialYear);
 
         if (depr.depreciationAmount > 0) {
           // Insert depreciation record
           await db.insert(depreciationSchedule).values({
             id: crypto.randomUUID(),
-            assetId: asset.id,
+            assetId: String(asset.id),
             financialYear,
             openingValue: depr.openingValue,
             depreciationAmount: depr.depreciationAmount,
@@ -500,21 +500,21 @@ export class FixedAssetService {
               currentWrittenDownValue: depr.closingValue,
               isActive: newStatus === 'active',
             })
-            .where(eq(depreciableAssets.id, asset.id));
+            .where(eq(depreciableAssets.id, String(asset.id)));
 
           totalDepreciation += depr.depreciationAmount;
         }
 
         results.push({
-          assetId: asset.id,
-          assetName: asset.assetName,
+          assetId: String(asset.id),
+          assetName: String(asset.assetName),
           depreciationAmount: depr.depreciationAmount,
           closingValue: depr.closingValue,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         errors.push({
-          assetId: asset.id,
-          error: err.message ?? String(err),
+          assetId: String(asset.id),
+          error: err instanceof Error ? err.message : String(err),
         });
       }
     }
@@ -552,16 +552,16 @@ export class FixedAssetService {
       throw new Error(`Asset not found: ${params.assetId}`);
     }
 
-    const asset: any = rows[0];
+    const asset = rows[0] as Record<string, unknown>;
     const proceeds = params.proceeds ?? 0;
     const gstOnProceeds = params.gstOnProceeds ?? 0;
-    const wdvAtDisposal: number = asset.currentWrittenDownValue ?? asset.currentValue ?? 0;
+    const wdvAtDisposal: number = Number(asset.currentWrittenDownValue ?? asset.currentValue ?? 0);
 
     // Calculate profit/loss: proceeds - GST on proceeds - WDV
     const profitLoss = proceeds - gstOnProceeds - wdvAtDisposal;
 
     // CGT: applicable if held > 12 months and there's a capital gain
-    const purchaseDate = new Date(asset.purchaseDate);
+    const purchaseDate = new Date(String(asset.purchaseDate));
     const disposalDate = new Date(params.disposalDate);
     const daysHeld = daysBetween(purchaseDate, disposalDate);
     const cgtApplicable = daysHeld > 365 && profitLoss > 0;
@@ -618,7 +618,7 @@ export class FixedAssetService {
     };
   }> {
     // Build base query conditions
-    const conditions: any[] = [eq(depreciableAssets.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(depreciableAssets.userId, userId)];
 
     if (filters?.category) {
       conditions.push(eq(depreciableAssets.assetCategory, filters.category));
@@ -639,30 +639,30 @@ export class FixedAssetService {
       .where(and(...conditions));
 
     // Map DB rows to FixedAsset interface
-    const assets: FixedAsset[] = (rows as any[]).map((r: any) => ({
-      id: r.id,
-      userId: r.userId,
+    const assets: FixedAsset[] = (rows as Array<Record<string, unknown>>).map((r: Record<string, unknown>) => ({
+      id: String(r.id),
+      userId: String(r.userId),
       entityId: null,
       accountId: null,
-      assetNumber: `FA-${r.purchaseDate?.slice(0, 4) ?? '0000'}-${r.id.slice(0, 4).toUpperCase()}`,
-      assetName: r.assetName,
+      assetNumber: `FA-${String(r.purchaseDate ?? '').slice(0, 4) || '0000'}-${String(r.id).slice(0, 4).toUpperCase()}`,
+      assetName: String(r.assetName),
       category: r.assetCategory as AssetCategory,
-      purchaseDate: r.purchaseDate,
-      purchasePrice: r.purchaseCost,
+      purchaseDate: String(r.purchaseDate),
+      purchasePrice: Number(r.purchaseCost ?? 0),
       residualValue: 0,
-      usefulLifeMonths: r.effectiveLife ?? 0,
+      usefulLifeMonths: Number(r.effectiveLife ?? 0),
       depreciationMethod: r.depreciationMethod as DepreciationMethod,
-      effectiveLifeYears: r.effectiveLifeYears ?? 0,
-      openingWrittenDownValue: r.openingWrittenDownValue ?? r.openingValue ?? 0,
-      currentWrittenDownValue: r.currentWrittenDownValue ?? r.currentValue ?? 0,
+      effectiveLifeYears: Number(r.effectiveLifeYears ?? 0),
+      openingWrittenDownValue: Number(r.openingWrittenDownValue ?? r.openingValue ?? 0),
+      currentWrittenDownValue: Number(r.currentWrittenDownValue ?? r.currentValue ?? 0),
       status: r.isActive ? ('active' as AssetStatus) : ('disposed' as AssetStatus),
       location: null,
       serialNumber: null,
       supplier: null,
       invoiceReference: null,
       gstClaimed: 0,
-      createdAt: r.createdAt,
-      updatedAt: r.createdAt,
+      createdAt: String(r.createdAt),
+      updatedAt: String(r.createdAt),
     }));
 
     // Filter by date range in memory (simpler than building dynamic SQL)
@@ -771,39 +771,39 @@ export class FixedAssetService {
     let totalAdditions = 0;
     let totalDisposals = 0;
 
-    for (const asset of allAssets as any[]) {
+    for (const asset of allAssets as Array<Record<string, unknown>>) {
       // Check if there's a depreciation record for this FY
       const deprRows = await db
         .select()
         .from(depreciationSchedule)
         .where(
           and(
-            eq(depreciationSchedule.assetId, asset.id),
+            eq(depreciationSchedule.assetId, String(asset.id)),
             eq(depreciationSchedule.financialYear, financialYear),
           ),
         )
         .limit(1);
 
-      const depr: any = deprRows[0];
-      const openingValue =
-        depr?.openingValue ?? asset.openingWrittenDownValue ?? asset.openingValue ?? 0;
-      const depreciationAmt = depr?.depreciationAmount ?? 0;
-      const closingValue = depr?.closingValue ?? openingValue - depreciationAmt;
+      const depr = deprRows[0] as Record<string, unknown> | undefined;
+      const openingValue = Number(
+        depr?.openingValue ?? asset.openingWrittenDownValue ?? asset.openingValue ?? 0);
+      const depreciationAmt = Number(depr?.depreciationAmount ?? 0);
+      const closingValue = Number(depr?.closingValue ?? openingValue - depreciationAmt);
 
       // Additions: assets purchased during this FY
-      const purchaseDate = asset.purchaseDate ?? '';
+      const purchaseDate = String(asset.purchaseDate ?? '');
       const isAddition = purchaseDate >= fyStartStr && purchaseDate <= fyEndStr;
-      const additions = isAddition ? (asset.purchaseCost ?? 0) : 0;
+      const additions = isAddition ? Number(asset.purchaseCost ?? 0) : 0;
 
       // Disposals: assets disposed during this FY (marked inactive)
       const isDisposed = !asset.isActive;
       const disposals = isDisposed && !isAddition ? openingValue : 0;
 
       assetEntries.push({
-        assetId: asset.id,
-        assetName: asset.assetName,
-        category: asset.assetCategory,
-        method: asset.depreciationMethod,
+        assetId: String(asset.id),
+        assetName: String(asset.assetName),
+        category: String(asset.assetCategory),
+        method: String(asset.depreciationMethod),
         openingValue,
         depreciation: depreciationAmt,
         closingValue,
@@ -841,7 +841,7 @@ export class FixedAssetService {
       .from(depreciableAssets)
       .where(eq(depreciableAssets.userId, userId));
 
-    const nextNumber = ((count[0] as any)?.count ?? 0) + 1;
+    const nextNumber = (Number((count[0] as Record<string, unknown> | undefined)?.count) || 0) + 1;
     const year = new Date().getFullYear();
 
     return `FA-${year}-${String(nextNumber).padStart(4, '0')}`;

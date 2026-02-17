@@ -491,7 +491,7 @@ app.get('/api/transactions/export', async (c) => {
     });
 
     // Native CSV generation to avoid dependencies
-    const generateCSV = (data: any[]) => {
+    const generateCSV = (data: Record<string, unknown>[]) => {
       if (data.length === 0) return '';
 
       const headers = Object.keys(data[0]);
@@ -1586,9 +1586,10 @@ app.get('/api/statements/gap-analysis', async (c) => {
     }
 
     // Calculate coverage summary
+    type StmtRow = typeof statements.$inferSelect;
     const allDates = stmts
-      .filter((s) => s.periodStartDate && s.periodEndDate)
-      .flatMap((s) => [s.periodStartDate!, s.periodEndDate!])
+      .filter((s: StmtRow) => s.periodStartDate && s.periodEndDate)
+      .flatMap((s: StmtRow) => [s.periodStartDate!, s.periodEndDate!])
       .sort();
 
     const coverage = {
@@ -1606,7 +1607,7 @@ app.get('/api/statements/gap-analysis', async (c) => {
       gaps,
       overlaps,
       balanceMismatches,
-      statements: stmts.map((s) => ({
+      statements: stmts.map((s: StmtRow) => ({
         ...s,
         accountId: stmtAccountMap.get(s.id) || null,
       })),
@@ -1729,7 +1730,11 @@ app.get('/api/pending-categorizations', async (c) => {
     )
     .all();
 
-  const results = rows.map((row) => ({
+  type PendingJoinRow = {
+    pending_categorization: typeof pendingCategorization.$inferSelect;
+    transactions: typeof transactions.$inferSelect | null;
+  };
+  const results = (rows as PendingJoinRow[]).map((row: PendingJoinRow) => ({
     ...row.pending_categorization,
     transaction: row.transactions,
   }));
@@ -1890,7 +1895,12 @@ app.get('/api/transfers', async (c) => {
     .where(eq(transferLinks.userId, userId))
     .all();
 
-  const results = rows.map((row) => {
+  type TransferJoinRow = {
+    transfer_links: typeof transferLinks.$inferSelect;
+    source_tx: typeof transactions.$inferSelect | null;
+    dest_tx: typeof transactions.$inferSelect | null;
+  };
+  const results = (rows as TransferJoinRow[]).map((row: TransferJoinRow) => {
     return {
       ...row.transfer_links,
       sourceTransaction: row.source_tx,
@@ -2101,17 +2111,17 @@ app.get('/api/accounts/:id/credit-analytics', async (c) => {
       t.description.toLowerCase().includes('fee'),
   );
   const totalInterestPaid = interestTransactions.reduce(
-    (sum: any, t: any) => sum + Math.abs(t.amount),
+    (sum: number, t: { amount: number }) => sum + Math.abs(t.amount),
     0,
   );
 
   // Find payment transactions (credits to the card)
   const payments = txs.filter((t) => t.amount > 0 && !t.isTransfer);
-  const totalPayments = payments.reduce((sum: any, t: any) => sum + t.amount, 0);
+  const totalPayments = payments.reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
 
   // Calculate average monthly spending
   const purchases = txs.filter((t) => t.amount < 0 && !t.isTransfer);
-  const totalSpending = purchases.reduce((sum: any, t: any) => sum + Math.abs(t.amount), 0);
+  const totalSpending = purchases.reduce((sum: number, t: { amount: number }) => sum + Math.abs(t.amount), 0);
 
   // Get unique months
   const months = new Set(txs.map((t) => t.date.substring(0, 7)));
@@ -2164,8 +2174,9 @@ app.post('/api/debt-recommendations', async (c) => {
     .all();
 
   // Filter to only accounts with debt (negative balance or credit cards/loans)
-  const accountsWithDebt = debtAccounts.filter(
-    (a) =>
+  type AcctRow = typeof accounts.$inferSelect;
+  const accountsWithDebt = (debtAccounts as AcctRow[]).filter(
+    (a: AcctRow) =>
       (a.accountType === 'credit_card' || a.accountType === 'loan') &&
       a.currentBalance !== null &&
       a.currentBalance < 0,
@@ -2181,10 +2192,10 @@ app.post('/api/debt-recommendations', async (c) => {
   }
 
   // Create a map of account IDs to account info for easy lookup
-  const accountMap = new Map(accountsWithDebt.map((a) => [a.id, a]));
+  const accountMap = new Map(accountsWithDebt.map((a: AcctRow) => [a.id, a]));
 
   // Prepare accounts for AI analysis
-  const accountsForAnalysis = accountsWithDebt.map((a) => ({
+  const accountsForAnalysis = accountsWithDebt.map((a: AcctRow) => ({
     id: a.id,
     name: a.accountName,
     type: a.accountType,
@@ -2837,7 +2848,8 @@ app.get('/api/gst/review-queue', async (c) => {
       .limit(50)
       .all();
 
-    const items = reviewItems.map((tx) => {
+    type TxRow = typeof transactions.$inferSelect;
+    const items = (reviewItems as TxRow[]).map((tx: TxRow) => {
       const absAmount = Math.abs(tx.amount);
       // Auto-suggest category based on amount direction and category
       let suggestedCategory = 'taxable_10';
@@ -3213,7 +3225,8 @@ app.get('/api/bas/:quarter/drill-down/:label', async (c) => {
       .all();
 
     // Filter by BAS label
-    const filtered = txns.filter((tx) => {
+    type BASLabelTxRow = typeof transactions.$inferSelect;
+    const filtered = (txns as BASLabelTxRow[]).filter((tx: BASLabelTxRow) => {
       const cat = tx.gstCategory || 'taxable_10';
       switch (label) {
         case 'G1':
@@ -3236,7 +3249,7 @@ app.get('/api/bas/:quarter/drill-down/:label', async (c) => {
     });
 
     return c.json(
-      filtered.map((tx) => ({
+      filtered.map((tx: BASLabelTxRow) => ({
         id: tx.id,
         date: tx.date,
         description: tx.description,
@@ -3661,14 +3674,17 @@ app.get('/api/tax/summary/:year', async (c) => {
       .all();
 
     // Sum up values
-    const totalIncome = userTransactions
-      .filter((t) => t.amount > 0 && !t.isTransfer)
-      .reduce((sum: any, t: any) => sum + t.amount, 0);
+    type TaxTxRow = typeof transactions.$inferSelect;
+    type DeductionRow = typeof deductions.$inferSelect;
+    type CgtEventRow = typeof cgtEvents.$inferSelect;
+    const totalIncome = (userTransactions as TaxTxRow[])
+      .filter((t: TaxTxRow) => t.amount > 0 && !t.isTransfer)
+      .reduce((sum: number, t: TaxTxRow) => sum + t.amount, 0);
 
-    const totalDeductionsAmount = userDeductions.reduce((sum: any, d: any) => sum + d.amount, 0);
+    const totalDeductionsAmount = (userDeductions as DeductionRow[]).reduce((sum: number, d: DeductionRow) => sum + d.amount, 0);
 
-    const netCGT = cgtEventsList.reduce(
-      (sum: any, e: any) => sum + ((e.capitalGainNet || 0) - (e.capitalLoss || 0)),
+    const netCGT = (cgtEventsList as CgtEventRow[]).reduce(
+      (sum: number, e: CgtEventRow) => sum + ((e.capitalGainNet || 0) - (e.capitalLoss || 0)),
       0,
     );
 
@@ -3683,8 +3699,8 @@ app.get('/api/tax/summary/:year', async (c) => {
     // Map to client's expected TaxSummary format (values in cents)
     const taxableIncomeCents = totalIncome - totalDeductionsAmount + Math.max(0, netCGT);
     const totalTaxPayableCents = Math.round(taxCalc.totalTax * 100);
-    const totalCapitalLosses = cgtEventsList.reduce(
-      (sum: any, e: any) => sum + (e.capitalLoss || 0),
+    const totalCapitalLosses = (cgtEventsList as CgtEventRow[]).reduce(
+      (sum: number, e: CgtEventRow) => sum + (e.capitalLoss || 0),
       0,
     );
 
@@ -3761,20 +3777,22 @@ app.get('/api/accounts/consolidated', async (c) => {
       .all();
 
     // Calculate totals per account
-    const accountSummaries = userAccounts.map((account) => {
-      const accountTxs = userTransactions.filter((t) => t.accountId === account.id);
+    type SumAcctRow = typeof accounts.$inferSelect;
+    type SumTxRow = typeof transactions.$inferSelect;
+    const accountSummaries = (userAccounts as SumAcctRow[]).map((account: SumAcctRow) => {
+      const accountTxs = (userTransactions as SumTxRow[]).filter((t: SumTxRow) => t.accountId === account.id);
       const totalIncome = accountTxs
-        .filter((t) => t.amount > 0 && !t.isTransfer)
-        .reduce((sum: any, t: any) => sum + t.amount, 0);
+        .filter((t: SumTxRow) => t.amount > 0 && !t.isTransfer)
+        .reduce((sum: number, t: SumTxRow) => sum + t.amount, 0);
       const totalExpenses = accountTxs
-        .filter((t) => t.amount < 0 && !t.isTransfer)
-        .reduce((sum: any, t: any) => sum + Math.abs(t.amount), 0);
+        .filter((t: SumTxRow) => t.amount < 0 && !t.isTransfer)
+        .reduce((sum: number, t: SumTxRow) => sum + Math.abs(t.amount), 0);
       const transfersIn = accountTxs
-        .filter((t) => t.amount > 0 && t.isTransfer)
-        .reduce((sum: any, t: any) => sum + t.amount, 0);
+        .filter((t: SumTxRow) => t.amount > 0 && t.isTransfer)
+        .reduce((sum: number, t: SumTxRow) => sum + t.amount, 0);
       const transfersOut = accountTxs
-        .filter((t) => t.amount < 0 && t.isTransfer)
-        .reduce((sum: any, t: any) => sum + Math.abs(t.amount), 0);
+        .filter((t: SumTxRow) => t.amount < 0 && t.isTransfer)
+        .reduce((sum: number, t: SumTxRow) => sum + Math.abs(t.amount), 0);
 
       return {
         ...account,
@@ -3790,10 +3808,10 @@ app.get('/api/accounts/consolidated', async (c) => {
     // Calculate overall totals (excluding transfers to avoid double-counting)
     const overallTotals = {
       totalAccounts: userAccounts.length,
-      totalTransactions: userTransactions.filter((t) => !t.isTransfer).length,
-      totalIncome: accountSummaries.reduce((sum: any, a: any) => sum + a.totalIncome, 0),
-      totalExpenses: accountSummaries.reduce((sum: any, a: any) => sum + a.totalExpenses, 0),
-      netWorth: userAccounts.reduce((sum: any, a: any) => sum + (a.currentBalance || 0), 0),
+      totalTransactions: (userTransactions as SumTxRow[]).filter((t: SumTxRow) => !t.isTransfer).length,
+      totalIncome: accountSummaries.reduce((sum: number, a) => sum + a.totalIncome, 0),
+      totalExpenses: accountSummaries.reduce((sum: number, a) => sum + a.totalExpenses, 0),
+      netWorth: (userAccounts as SumAcctRow[]).reduce((sum: number, a: SumAcctRow) => sum + (a.currentBalance || 0), 0),
     };
 
     return c.json({
@@ -3829,7 +3847,10 @@ app.post('/api/transfers/auto-detect', async (c) => {
       .all();
 
     // Convert to transfer candidate format
-    const candidates = userTransactions.map((t) => ({
+    type DetTxRow = typeof transactions.$inferSelect;
+    type DetAcctRow = typeof accounts.$inferSelect;
+    type DetLinkRow = typeof transferLinks.$inferSelect;
+    const candidates = (userTransactions as DetTxRow[]).map((t: DetTxRow) => ({
       id: parseInt(t.id) || 0,
       accountId: parseInt(t.accountId || '0') || 0,
       date: t.date,
@@ -3839,16 +3860,16 @@ app.post('/api/transfers/auto-detect', async (c) => {
       linkedTransactionId: t.transferLinkId ? parseInt(t.transferLinkId) : undefined,
     }));
 
-    const accountContexts = userAccounts.map((a) => ({
+    const accountContexts = (userAccounts as DetAcctRow[]).map((a: DetAcctRow) => ({
       id: parseInt(a.id) || 0,
       accountNumber: a.accountNumber,
       bankId: a.bankName || 'unknown',
       accountName: a.accountName,
       accountType: a.accountType,
-      ownershipTag: a.ownershipTag || 'business',
+      ownershipTag: (a.ownershipTag || 'business') as 'personal' | 'business',
     }));
 
-    const existingLinkPairs = existingLinks.map((l) => ({
+    const existingLinkPairs = (existingLinks as DetLinkRow[]).map((l: DetLinkRow) => ({
       sourceId: parseInt(l.sourceTransactionId) || 0,
       targetId: parseInt(l.destinationTransactionId) || 0,
     }));
@@ -3863,11 +3884,11 @@ app.post('/api/transfers/auto-detect', async (c) => {
       // Detect owner contributions (personal → business)
       const ownerContribIds: string[] = [];
       for (const match of matches) {
-        const srcAcct = userAccounts.find(
-          (a) => (parseInt(a.id) || 0) === match.sourceTransaction.accountId,
+        const srcAcct = (userAccounts as DetAcctRow[]).find(
+          (a: DetAcctRow) => (parseInt(a.id) || 0) === match.sourceTransaction.accountId,
         );
-        const dstAcct = userAccounts.find(
-          (a) => (parseInt(a.id) || 0) === match.targetTransaction.accountId,
+        const dstAcct = (userAccounts as DetAcctRow[]).find(
+          (a: DetAcctRow) => (parseInt(a.id) || 0) === match.targetTransaction.accountId,
         );
         if (srcAcct?.ownershipTag === 'personal' && dstAcct?.ownershipTag === 'business') {
           ownerContribIds.push(String(match.targetTransaction.id));
@@ -3979,7 +4000,7 @@ app.get('/api/transfers/summary', async (c) => {
     const toDate = c.req.query('to');
 
     // Build date filter conditions
-    const conditions: any[] = [eq(transferLinks.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(transferLinks.userId, userId)];
 
     if (fromDate) {
       conditions.push(gte(transferLinks.transferDate, fromDate));
@@ -4046,9 +4067,9 @@ app.get('/api/transfers/summary', async (c) => {
     return c.json({
       period,
       totalTransfers: links.length,
-      totalAmount: links.reduce((sum: any, l: any) => sum + (l.amount || 0), 0),
-      confirmedCount: links.filter((l) => l.isUserConfirmed).length,
-      pendingCount: links.filter((l) => !l.isUserConfirmed).length,
+      totalAmount: links.reduce((sum: number, l: { amount?: number | null }) => sum + (l.amount || 0), 0),
+      confirmedCount: links.filter((l: { isUserConfirmed?: boolean | null }) => l.isUserConfirmed).length,
+      pendingCount: links.filter((l: { isUserConfirmed?: boolean | null }) => !l.isUserConfirmed).length,
       byPeriod: Object.entries(byPeriod)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([key, data]) => ({
@@ -4101,7 +4122,8 @@ app.get('/api/reports/consolidated/:period', async (c) => {
       .all();
 
     // Exclude transfers from calculations
-    const nonTransferTxs = userTransactions.filter((t) => !t.isTransfer);
+    type RptTxRow = typeof transactions.$inferSelect;
+    const nonTransferTxs = (userTransactions as RptTxRow[]).filter((t: RptTxRow) => !t.isTransfer);
 
     // Category breakdown
     const categoryTotals: Record<string, { income: number; expenses: number; count: number }> = {};
@@ -4120,8 +4142,8 @@ app.get('/api/reports/consolidated/:period', async (c) => {
     }
 
     // GST summary
-    const gstTransactions = nonTransferTxs.filter((t) => t.gstApplicable);
-    const totalGST = gstTransactions.reduce((sum: any, t: any) => {
+    const gstTransactions = nonTransferTxs.filter((t: RptTxRow) => t.gstApplicable);
+    const totalGST = gstTransactions.reduce((sum: number, t: RptTxRow) => {
       return sum + (t.gstAmount || Math.round(Math.abs(t.amount) / 11));
     }, 0);
 
@@ -4131,24 +4153,24 @@ app.get('/api/reports/consolidated/:period', async (c) => {
       endDate,
       summary: {
         totalIncome: nonTransferTxs
-          .filter((t) => t.amount > 0)
-          .reduce((sum: any, t: any) => sum + t.amount, 0),
+          .filter((t: RptTxRow) => t.amount > 0)
+          .reduce((sum: number, t: RptTxRow) => sum + t.amount, 0),
         totalExpenses: nonTransferTxs
-          .filter((t) => t.amount < 0)
-          .reduce((sum: any, t: any) => sum + Math.abs(t.amount), 0),
-        netFlow: nonTransferTxs.reduce((sum: any, t: any) => sum + t.amount, 0),
+          .filter((t: RptTxRow) => t.amount < 0)
+          .reduce((sum: number, t: RptTxRow) => sum + Math.abs(t.amount), 0),
+        netFlow: nonTransferTxs.reduce((sum: number, t: RptTxRow) => sum + t.amount, 0),
         transactionCount: nonTransferTxs.length,
         transferCount: userTransactions.length - nonTransferTxs.length,
       },
       gst: {
         gstTransactionCount: gstTransactions.length,
         totalGSTCollected: gstTransactions
-          .filter((t) => t.amount > 0)
-          .reduce((sum: any, t: any) => sum + (t.gstAmount || Math.round(t.amount / 11)), 0),
+          .filter((t: RptTxRow) => t.amount > 0)
+          .reduce((sum: number, t: RptTxRow) => sum + (t.gstAmount || Math.round(t.amount / 11)), 0),
         totalGSTPaid: gstTransactions
-          .filter((t) => t.amount < 0)
+          .filter((t: RptTxRow) => t.amount < 0)
           .reduce(
-            (sum: any, t: any) => sum + (t.gstAmount || Math.round(Math.abs(t.amount) / 11)),
+            (sum: number, t: RptTxRow) => sum + (t.gstAmount || Math.round(Math.abs(t.amount) / 11)),
             0,
           ),
         estimatedGSTPayable: totalGST,
@@ -4277,8 +4299,9 @@ app.get('/api/analytics/category-breakdown', async (c) => {
       )
       .all();
 
-    const filtered = txns.filter((t) => (isExpense ? t.amount < 0 : t.amount > 0));
-    const totalAbs = filtered.reduce((s: any, t: any) => s + Math.abs(t.amount), 0);
+    type BreakTxRow = typeof transactions.$inferSelect;
+    const filtered = (txns as BreakTxRow[]).filter((t: BreakTxRow) => (isExpense ? t.amount < 0 : t.amount > 0));
+    const totalAbs = filtered.reduce((s: number, t: BreakTxRow) => s + Math.abs(t.amount), 0);
 
     const byCategory: Record<string, { total: number; count: number }> = {};
     for (const t of filtered) {
@@ -4330,7 +4353,12 @@ app.get('/api/analytics/recurring-payments', async (c) => {
       byMerchant[key].push({ amount: Math.abs(t.amount), date: t.date });
     }
 
-    const recurring: any[] = [];
+    const recurring: Array<{
+      id: string; merchantPattern: string; typicalAmount: number;
+      frequency: string; lastOccurrence: string; nextExpected: string;
+      isActive: boolean; category: undefined; annualCost: number;
+      isMissed: boolean; amountChanged: boolean;
+    }> = [];
     const now = new Date();
 
     for (const [merchant, occurrences] of Object.entries(byMerchant)) {
@@ -4512,7 +4540,10 @@ app.get('/api/analytics/budget-vs-actual', async (c) => {
 
     // Combine all categories
     const allCats = new Set([...Object.keys(actuals), ...Object.keys(monthlyAvg)]);
-    const result: any[] = [];
+    const result: Array<{
+      id: string; category: string; periodType: string; periodStart: string;
+      amountCents: number; actualCents: number; variance: number; utilizationPercent: number;
+    }> = [];
     for (const cat of allCats) {
       const budgetAmount = monthlyAvg[cat] || 0;
       const actualAmount = actuals[cat] || 0;
@@ -4573,7 +4604,10 @@ app.get('/api/analytics/anomalies', async (c) => {
       .where(and(eq(transactions.userId, userId), eq(transactions.isTransfer, false)))
       .all();
 
-    const anomalies: any[] = [];
+    const anomalies: Array<{
+      id: string; transactionId: string; type: string; severity: string;
+      description: string; isDismissed: boolean; createdAt: string;
+    }> = [];
     const now = new Date().toISOString();
 
     // Calculate average and stddev per category
@@ -4717,7 +4751,10 @@ app.get('/api/analytics/cash-flow-forecast', async (c) => {
     let currentBalance = latestTx[0]?.balance || 0;
 
     // Generate forecast
-    const forecast: any[] = [];
+    const forecast: Array<{
+      month: string; projectedBalance: number; confidence: number;
+      upperBound: number; lowerBound: number;
+    }> = [];
     const now = new Date();
 
     for (let i = 1; i <= forecastMonths; i++) {
@@ -4941,7 +4978,7 @@ app.get('/api/schemas/:agentType/stats', async (c) => {
   try {
     const agentType = c.req.param('agentType');
     // Try to read stats from structured_output_schemas table
-    const row: any = await db.get(sql`SELECT agent_type as "agentType", schema_name as "schemaName",
+    const row = await db.get(sql`SELECT agent_type as "agentType", schema_name as "schemaName",
             schema_version as "schemaVersion", validation_stats as "validationStats",
             is_active as "isActive", created_at as "createdAt", updated_at as "updatedAt"
             FROM structured_output_schemas WHERE agent_type = ${agentType}`);
@@ -5014,7 +5051,12 @@ app.get('/api/migration/status/:agentType', async (c) => {
 // 11. GET /api/migration/benchmarks — Compare legacy vs Vercel metrics
 app.get('/api/migration/benchmarks', async (c) => {
   try {
-    const statuses: any[] = await db.all(sql`SELECT agent_type as "agentType",
+    const statuses: Array<{
+      agentType: string; migrationPhase: string;
+      legacyInvocations: number; vercelInvocations: number;
+      errorRateLegacy: number; errorRateVercel: number;
+      avgLatencyLegacyMs: number; avgLatencyVercelMs: number;
+    }> = await db.all(sql`SELECT agent_type as "agentType",
             migration_phase as "migrationPhase",
             legacy_invocations as "legacyInvocations", vercel_invocations as "vercelInvocations",
             error_rate_legacy as "errorRateLegacy", error_rate_vercel as "errorRateVercel",
@@ -5221,7 +5263,7 @@ app.get('/api/market/feeds', async (c) => {
 // 2. POST /api/market/feeds/refresh — Refresh all feeds
 app.post('/api/market/feeds/refresh', async (c) => {
   try {
-    const results: any = {};
+    const results: Record<string, unknown> = {};
     try {
       results.rba = await rbaDataFeed.fetchAllTables();
     } catch (e: unknown) {
@@ -5248,7 +5290,7 @@ app.post('/api/market/feeds/refresh', async (c) => {
 app.post('/api/market/feeds/:feedId/refresh', async (c) => {
   try {
     const feedId = c.req.param('feedId');
-    let result: any;
+    let result: unknown;
 
     if (feedId.startsWith('rba-')) {
       const tableKey = feedId.replace('rba-', '').toUpperCase();
@@ -5723,7 +5765,7 @@ app.post('/api/cognee/init-user', zValidator('json', initCogneeUserSchema), asyn
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }) as any
+      }) as unknown as { run(): Promise<unknown> }
     ).run();
 
     // Set up user auth token cache if we got a refresh token
@@ -5798,7 +5840,7 @@ app.post('/api/cognee/reindex', zValidator('json', reindexSchema), async (c) => 
       db
         .update(cogneeUserAccounts)
         .set({ lastSyncAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
-        .where(eq(cogneeUserAccounts.userId, userId)) as any
+        .where(eq(cogneeUserAccounts.userId, userId)) as unknown as { run(): Promise<unknown> }
     ).run();
 
     return c.json({ message: 'Reindex triggered', userId, prefix });
@@ -5880,7 +5922,7 @@ app.get('/api/cognee/graph/:userId', async (c) => {
       : [];
 
     // Fetch graph for each user dataset (limit to 10 to avoid timeout)
-    const graphs: Array<{ dataset: string; graph: any }> = [];
+    const graphs: Array<{ dataset: string; graph: unknown }> = [];
     for (const ds of userDatasets.slice(0, 10)) {
       try {
         const graph = await cogneeClient.getDatasetGraph(ds.id ?? ds.name ?? ds, userId);
@@ -7173,7 +7215,7 @@ app.post(
 // =========================================================================
 
 import { pushNotificationService } from './services/push-notifications.js';
-import { syncService } from './services/sync.js';
+import { syncService, type SyncOperation } from './services/sync.js';
 import type { ClientPushSubscription } from './services/push-notification-types.js';
 
 // --- PUSH NOTIFICATION ROUTES (4) ---
@@ -7315,7 +7357,7 @@ app.put('/api/notifications/preferences', async (c) => {
       }
       await db
         .update(notificationPreferences)
-        .set(setValues as any)
+        .set(setValues as Record<string, unknown>)
         .where(
           and(
             eq(notificationPreferences.userId, userId),
@@ -7361,7 +7403,7 @@ app.put('/api/notifications/preferences', async (c) => {
 
 app.post('/api/sync', async (c) => {
   try {
-    const body = (await c.req.json()) as { operations: any[]; userId?: string; tenantId?: string };
+    const body = (await c.req.json()) as { operations: SyncOperation[]; userId?: string; tenantId?: string };
     const userId = body.userId ?? c.req.query('userId') ?? 'default';
     const tenantId = body.tenantId ?? c.req.query('tenantId') ?? 'default';
     if (!Array.isArray(body.operations)) {

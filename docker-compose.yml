@@ -131,7 +131,7 @@ services:
       # F4 Memify: Custom enrichment rules path
       - MEMIFY_CUSTOM_RULES_PATH=/app/custom_models/tasks/memify_enrichment.py
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/settings"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/settings')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -217,6 +217,13 @@ services:
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_SSL=false
       - REDIS_URL=redis://redis:6379
+      # Neon Database Cloud (production data + masked AI branch)
+      - NEON_API_KEY=${NEON_API_KEY}
+      - NEON_PROJECT_ID=${NEON_PROJECT_ID}
+      - NEON_ORG_ID=${NEON_ORG_ID}
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - NEON_AI_DATABASE_URL=${NEON_AI_DATABASE_URL}
+      - USE_NEON=${USE_NEON:-true}
       # Wave 4: TFN encryption key (AES-256-GCM for TFN + bank account numbers)
       - TFN_ENCRYPTION_KEY=${TFN_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
       # Wave 8: Payment gateway key

@@ -71,7 +71,7 @@ export class BudgetService {
 
     await db.insert(budgets).values(newBudget);
 
-    let lines: any[] = [];
+    let lines: Record<string, unknown>[] = [];
     if (params.autoGenerate) {
       const lookback = params.lookbackMonths ?? 12;
       lines = await this.generateFromHistory(
@@ -83,7 +83,7 @@ export class BudgetService {
       );
 
       // Update total from generated lines
-      const total = lines.reduce((sum: number, l: any) => sum + Math.abs(l.budgetedAmount), 0);
+      const total = lines.reduce((sum: number, l: Record<string, unknown>) => sum + Math.abs(Number(l.budgetedAmount ?? 0)), 0);
       await db
         .update(budgets)
         .set({ totalAmount: total, updatedAt: new Date().toISOString() })
@@ -154,7 +154,7 @@ export class BudgetService {
       .where(eq(budgetLines.budgetId, budgetId))
       .all();
 
-    const total = lines.reduce((sum: number, l: any) => sum + Math.abs(l.budgetedAmount), 0);
+    const total = lines.reduce((sum: number, l: Record<string, unknown>) => sum + Math.abs(Number(l.budgetedAmount ?? 0)), 0);
     await db.update(budgets).set({ totalAmount: total }).where(eq(budgets.id, budgetId));
 
     return this.getBudget(budgetId);
@@ -268,7 +268,7 @@ export class BudgetService {
     }
 
     // Calculate averages and seasonal factors per category
-    const generatedLines: any[] = [];
+    const generatedLines: Record<string, unknown>[] = [];
     const targetMonths = getMonthsBetween(periodStart, periodEnd);
 
     for (const [category, monthAmounts] of categoryMonthMap) {
@@ -296,7 +296,7 @@ export class BudgetService {
         const seasonalFactor = monthFactors.get(calMonth) ?? 1.0;
         const budgetedAmount = Math.round(overallAvg * seasonalFactor);
 
-        const lineData: any = {
+        const lineData: Record<string, unknown> = {
           id: crypto.randomUUID(),
           category,
           subcategory: null,
@@ -331,7 +331,11 @@ export class BudgetService {
       .from(budgetLines)
       .where(eq(budgetLines.budgetId, budgetId))
       .all();
-    const results: any[] = [];
+    type VarianceResult = Record<string, unknown> & {
+      budgetLine: { category: string; budgetedAmount: number };
+      actualAmount: number;
+    };
+    const results: VarianceResult[] = [];
 
     for (const line of lines) {
       // Determine date range for this budget line's period
@@ -378,7 +382,7 @@ export class BudgetService {
 
       if (existing) {
         await db.update(budgetVsActual).set(record).where(eq(budgetVsActual.id, existing.id));
-        results.push({ ...existing, ...record, budgetLine: line });
+        results.push({ ...existing, ...record, budgetLine: line } as VarianceResult);
       } else {
         const newRecord = {
           id: crypto.randomUUID(),
@@ -386,7 +390,7 @@ export class BudgetService {
           ...record,
         };
         await db.insert(budgetVsActual).values(newRecord);
-        results.push({ ...newRecord, budgetLine: line });
+        results.push({ ...newRecord, budgetLine: line } as VarianceResult);
       }
     }
 
@@ -491,7 +495,7 @@ export class BudgetService {
       .where(eq(budgetLines.budgetId, budgetId))
       .all();
 
-    const total = lines.reduce((sum: number, l: any) => sum + Math.abs(l.budgetedAmount), 0);
+    const total = lines.reduce((sum: number, l: Record<string, unknown>) => sum + Math.abs(Number(l.budgetedAmount ?? 0)), 0);
 
     await db
       .update(budgets)

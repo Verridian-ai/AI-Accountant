@@ -398,6 +398,7 @@ export const inviteTeamMemberSchema = z.object({
 // ============================================================================
 
 import { ValidationError } from '../errors.js';
+export { ValidationError } from '../errors.js';
 
 /**
  * Validate request body against a Zod schema

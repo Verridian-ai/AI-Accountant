@@ -18,24 +18,24 @@ export type PythonAgentType = 'financial_analyst' | 'bas' | 'tax' | 'reconciliat
 export type { AgentType } from './claude/types.js';
 
 export interface AgentContext {
-  transactions?: any[];
-  accounts?: any[];
-  statements?: any[];
+  transactions?: Record<string, unknown>[];
+  accounts?: Record<string, unknown>[];
+  statements?: Record<string, unknown>[];
 }
 
 export interface AgentResponse {
   success: boolean;
   message: string;
-  data?: any;
+  data?: unknown;
   reasoning?: string;
   code_executed?: string;
-  code_result?: any;
+  code_result?: unknown;
 }
 
 export interface CodeExecutionResult {
   success: boolean;
   output: string;
-  result?: any;
+  result?: unknown;
   error?: string;
   execution_time_ms: number;
 }

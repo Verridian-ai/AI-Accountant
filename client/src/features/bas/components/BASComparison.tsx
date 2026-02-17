@@ -31,7 +31,7 @@ const BAS_LABELS: Record<string, string> = {
 const generateQuarters = (): { value: string; label: string }[] => {
   const options = [];
   const currentYear = new Date().getFullYear();
-  for (let year = currentYear; year >= currentYear - 2; year--) {
+  for (let year = currentYear; year >= currentYear - 4; year--) {
     for (let q = 4; q >= 1; q--) {
       options.push({
         value: `${year}-Q${q}`,
@@ -106,8 +106,8 @@ export function BASComparison() {
 
   const allLabels = data
     ? Array.from(
-        new Set([...Object.keys(data.periodA.labels), ...Object.keys(data.periodB.labels)]),
-      ).sort()
+      new Set([...Object.keys(data.periodA.labels), ...Object.keys(data.periodB.labels)]),
+    ).sort()
     : [];
 
   return (
@@ -177,9 +177,8 @@ export function BASComparison() {
                 return (
                   <div
                     key={label}
-                    className={`grid grid-cols-5 gap-2 py-2 px-2 rounded-lg text-sm items-center ${
-                      absVariance > 50 ? 'bg-red-500/5' : absVariance > 20 ? 'bg-amber-500/5' : ''
-                    }`}
+                    className={`grid grid-cols-5 gap-2 py-2 px-2 rounded-lg text-sm items-center ${absVariance > 50 ? 'bg-red-500/5' : absVariance > 20 ? 'bg-amber-500/5' : ''
+                      }`}
                   >
                     <div>
                       <span className="font-mono text-xs text-[#FFCC00] mr-2">{label}</span>

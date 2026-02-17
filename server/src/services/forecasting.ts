@@ -108,7 +108,7 @@ export class ForecastingService {
       .orderBy(sql`${forecastScenarios.createdAt} DESC`)
       .all();
 
-    return scenarios.map((s: any) => ({
+    return scenarios.map((s: Record<string, unknown>) => ({
       ...s,
       assumptions: typeof s.assumptions === 'string' ? JSON.parse(s.assumptions) : s.assumptions,
     }));
@@ -219,7 +219,7 @@ export class ForecastingService {
     // Generate forecast periods
     const forecastStart = new Date(scenario.basePeriodEnd);
     forecastStart.setMonth(forecastStart.getMonth() + 1);
-    const generatedPeriods: any[] = [];
+    const generatedPeriods: Record<string, unknown>[] = [];
 
     // Clear existing forecast periods for this scenario
     await db.delete(forecastPeriods).where(eq(forecastPeriods.scenarioId, scenarioId));

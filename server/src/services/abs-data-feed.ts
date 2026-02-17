@@ -194,7 +194,7 @@ export class AbsDataFeed {
 
       // Get observation dimension values (time periods)
       const obsDimension = structure.dimensions?.observation?.[0];
-      const timePeriods: string[] = obsDimension?.values?.map((v: any) => v.id) ?? [];
+      const timePeriods: string[] = obsDimension?.values?.map((v: Record<string, unknown>) => v.id) ?? [];
 
       if (timePeriods.length === 0) return [];
 
@@ -287,8 +287,8 @@ export class AbsDataFeed {
         allIndicators.push(...indicators);
         dataflowsProcessed++;
         await this.updateFeedStatus(key, true);
-      } catch (err: any) {
-        const message = err?.message ?? String(err);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.error(`[ABS] Error fetching dataflow ${key}:`, message);
         errors.push({ dataflow: key, error: message });
         await this.updateFeedStatus(key, false, message);
@@ -349,7 +349,7 @@ export class AbsDataFeed {
         .limit(periods)
         .all();
 
-      return rows.map((r: any) => ({
+      return rows.map((r: Record<string, unknown>) => ({
         id: r.id as string,
         feedId: r.feedId as string,
         indicatorCode: r.indicatorCode as string,

@@ -279,7 +279,7 @@ export class StreamingService {
         try {
           const writeResult = sseStream.write(raw);
           // If write returns a promise, race against timeout
-          if (writeResult && typeof (writeResult as any).then === 'function') {
+          if (writeResult && typeof (writeResult as unknown as Record<string, unknown>).then === 'function') {
             const timeout = new Promise<never>((_, reject) =>
               setTimeout(() => reject(new Error('SSE write timeout')), WRITE_TIMEOUT_MS),
             );
@@ -299,7 +299,7 @@ export class StreamingService {
 
       // Override isOpen to also check our local `open` flag
       const origIsOpen = writer.isOpen.bind(writer);
-      (writer as any).isOpen = (): boolean => open && origIsOpen();
+      (writer as unknown as Record<string, unknown>).isOpen = (): boolean => open && origIsOpen();
 
       // D03-B1: Clean up on client disconnect
       sseStream.onAbort(() => {
@@ -385,7 +385,7 @@ export class StreamingService {
     });
 
     // Store stream for retrieval
-    (c as any).__sseStream = readableStream;
+    (c as unknown as Record<string, unknown>).__sseStream = readableStream;
 
     return writer;
   }
@@ -395,7 +395,7 @@ export class StreamingService {
    * The route handler should return this as the Response body.
    */
   getStream(c: Context): ReadableStream | null {
-    return (c as any).__sseStream ?? null;
+    return ((c as unknown as Record<string, unknown>).__sseStream ?? null) as ReadableStream | null;
   }
 
   /**

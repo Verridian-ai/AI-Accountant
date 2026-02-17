@@ -189,8 +189,8 @@ interface TreeMapContentProps {
   fill?: string;
 }
 
-function InventoryTreeMapContent(props: any) {
-  const { x, y, width, height: h, name, value, fill } = props as TreeMapContentProps;
+function InventoryTreeMapContent(props: TreeMapContentProps) {
+  const { x, y, width, height: h, name, value, fill } = props;
   if (width < 30 || h < 20) return null;
 
   return (
@@ -325,7 +325,7 @@ function InventoryValuationInner() {
             />
             <Tooltip
               contentStyle={CHART_THEME.tooltipStyle}
-              formatter={((value: number) => [formatAUD(value), '']) as any}
+              formatter={(value: string | number | Array<string | number>) => [formatAUD(Number(value)), '']}
             />
             <Legend
               wrapperStyle={{ color: '#E5E7EB', fontSize: CHART_THEME.fontSize }}
@@ -424,8 +424,7 @@ function InventoryValuationInner() {
             <Tooltip
               contentStyle={CHART_THEME.tooltipStyle}
               labelStyle={{ color: CHART_COLORS.primary }}
-              formatter={
-                ((value: number | undefined, name: string) => {
+              formatter={(value: string | number | Array<string | number>, name: string) => {
                   if (value == null) return ['-', name];
                   const labels: Record<string, string> = {
                     equipment: 'Equipment',
@@ -435,9 +434,8 @@ function InventoryValuationInner() {
                     vehiclesProj: 'Vehicles (Proj)',
                     propertyProj: 'Property (Proj)',
                   };
-                  return [formatAUD(value), labels[name] ?? name];
-                }) as any
-              }
+                  return [formatAUD(Number(value)), labels[name] ?? name];
+                }}
             />
             <Legend
               wrapperStyle={{ color: '#E5E7EB', fontSize: CHART_THEME.fontSize }}
@@ -550,11 +548,11 @@ function InventoryValuationInner() {
             dataKey="value"
             aspectRatio={4 / 3}
             animationDuration={500}
-            content={(<InventoryTreeMapContent x={0} y={0} width={0} height={0} />) as any}
+            content={<InventoryTreeMapContent x={0} y={0} width={0} height={0} />}
           >
             <Tooltip
               contentStyle={CHART_THEME.tooltipStyle}
-              formatter={((value: number) => [formatAUD(value), '']) as any}
+              formatter={(value: string | number | Array<string | number>) => [formatAUD(Number(value)), '']}
             />
           </RechartsTreemap>{' '}
         </ChartContainer>

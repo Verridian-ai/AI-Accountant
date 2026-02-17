@@ -244,8 +244,9 @@ export class EnhancedBudgetService {
       .all();
 
     // Group by category → monthly totals
+    type CatRow = { category: string | null; total: number; month: string };
     const categoryMonthly = new Map<string, number[]>();
-    for (const row of rows as any[]) {
+    for (const row of rows as CatRow[]) {
       const cat = row.category ?? 'Uncategorized';
       if (!categoryMonthly.has(cat)) categoryMonthly.set(cat, []);
       categoryMonthly.get(cat)!.push(Number(row.total));
@@ -333,8 +334,9 @@ export class EnhancedBudgetService {
       .all();
 
     // Group by merchant
+    type MerchantRow = { merchant: string | null; date: string; amount: number };
     const merchantTxs = new Map<string, Array<{ date: string; amount: number }>>();
-    for (const row of rows as any[]) {
+    for (const row of rows as MerchantRow[]) {
       const merchant = row.merchant ?? 'Unknown';
       if (!merchantTxs.has(merchant)) merchantTxs.set(merchant, []);
       merchantTxs.get(merchant)!.push({
@@ -561,7 +563,7 @@ export class EnhancedBudgetService {
       .orderBy(sql`SUBSTRING(${transactions.date}, 1, 7)`)
       .all();
 
-    const monthlyValues = (rows as any[]).map((r, i) => ({
+    const monthlyValues = (rows as Array<Record<string, unknown>>).map((r, i) => ({
       index: i,
       month: r.month as string,
       total: Number(r.total),

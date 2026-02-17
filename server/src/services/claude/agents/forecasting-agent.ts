@@ -394,8 +394,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
             periodsGenerated: result.periods.length,
             periods: result.periods,
           };
-        } catch (err: any) {
-          return { success: false, error: err.message ?? 'Forecast generation failed' };
+        } catch (err: unknown) {
+          return { success: false, error: err instanceof Error ? err.message : 'Forecast generation failed' };
         }
       },
     ],
@@ -406,8 +406,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
         try {
           const comparison = await this.forecastService.compareForecasts(forecastIds);
           return { success: true, ...comparison };
-        } catch (err: any) {
-          return { success: false, error: err.message ?? 'Comparison failed' };
+        } catch (err: unknown) {
+          return { success: false, error: err instanceof Error ? err.message : 'Comparison failed' };
         }
       },
     ],
@@ -420,8 +420,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
           await this.forecastService.updateActuals(forecastId);
           const accuracy = await this.forecastService.calculateAccuracy(forecastId);
           return { success: true, forecastId, ...accuracy };
-        } catch (err: any) {
-          return { success: false, error: err.message ?? 'Accuracy calculation failed' };
+        } catch (err: unknown) {
+          return { success: false, error: err instanceof Error ? err.message : 'Accuracy calculation failed' };
         }
       },
     ],
@@ -433,8 +433,8 @@ Return a JSON object matching the ForecastingOutput schema.`;
         try {
           const forecasts = await this.forecastService.getForecasts(userId, status);
           return { success: true, count: forecasts.length, forecasts };
-        } catch (err: any) {
-          return { success: false, error: err.message ?? 'Failed to list forecasts' };
+        } catch (err: unknown) {
+          return { success: false, error: err instanceof Error ? err.message : 'Failed to list forecasts' };
         }
       },
     ],

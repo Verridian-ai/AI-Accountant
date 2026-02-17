@@ -59,7 +59,7 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
     setError(null);
     try {
       const data = await knowledgeApi.getGraph(datasetName, { maxNodes: 200, ontologyId });
-      const nodes: GraphNode[] = (data.nodes ?? []).map((n: any, i: number) => ({
+      const nodes: GraphNode[] = (data.nodes ?? []).map((n: { id: string; label?: string; type?: string; neighbors?: Array<{ id: string; label: string; edgeType: string }>; properties?: Record<string, unknown> }) => ({
         id: n.id,
         label: n.label || n.id,
         type: n.type || 'default',
@@ -70,7 +70,7 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
         neighbors: n.neighbors,
         properties: n.properties,
       }));
-      const edges: GraphEdge[] = (data.edges ?? []).map((e: any) => ({
+      const edges: GraphEdge[] = (data.edges ?? []).map((e: { source: string; target: string; type?: string }) => ({
         source: e.source,
         target: e.target,
         type: e.type || 'related',
@@ -81,8 +81,8 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
       const types = [...new Set(nodes.map((n) => n.type))];
       setAllTypes(types);
       setTypeFilters(new Set(types));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to load graph');
     } finally {
       setLoading(false);
     }

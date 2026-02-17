@@ -507,7 +507,7 @@ export class MultiEntityService {
   ): Promise<{
     entity: Entity;
     settings: EntitySetting | null;
-    accounts: Array<EntityAccount & { accountDetails: any }>;
+    accounts: Array<EntityAccount & { accountDetails: unknown }>;
     parent?: Entity;
     children: Entity[];
   }> {

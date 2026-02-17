@@ -108,7 +108,7 @@ export class AgentOrchestrator {
    * Initialize the mutation framework.
    * Called once during server startup, after db is available.
    */
-  initMutationFramework(db: any): void {
+  initMutationFramework(db: Record<string, unknown>): void {
     this.confirmationFlow = new ConfirmationFlowService(db);
   }
 
@@ -155,7 +155,7 @@ export class AgentOrchestrator {
     if (VERCEL_MIGRATION_FLAGS[agentType]) {
       if (agentType === 'transaction_categorizer') {
         const vercelAgent = new VercelTransactionCategorizer();
-        const result = await vercelAgent.executeWithFallback(input as any);
+        const result = await vercelAgent.executeWithFallback(input as never);
         this.emitProgress(agentType, 'completed');
         return {
           ...result.output,
@@ -164,11 +164,11 @@ export class AgentOrchestrator {
             outputTokens: result.tokenUsage?.completionTokens ?? 0,
             toolCalls: 0,
           },
-        } as any;
+        } as unknown as AgentOutputMap[T] & { usage: TokenUsage };
       }
       if (agentType === 'budget_analyzer') {
         const vercelAgent = new VercelBudgetAnalyzer();
-        const result = await vercelAgent.executeWithFallback(input as any);
+        const result = await vercelAgent.executeWithFallback(input as never);
         this.emitProgress(agentType, 'completed');
         return {
           ...result.output,
@@ -177,11 +177,11 @@ export class AgentOrchestrator {
             outputTokens: result.tokenUsage?.completionTokens ?? 0,
             toolCalls: 0,
           },
-        } as any;
+        } as unknown as AgentOutputMap[T] & { usage: TokenUsage };
       }
       if (agentType === 'financial_planner') {
         const vercelAgent = new VercelFinancialPlanner();
-        const result = await vercelAgent.executeWithFallback(input as any);
+        const result = await vercelAgent.executeWithFallback(input as never);
         this.emitProgress(agentType, 'completed');
         return {
           ...result.output,
@@ -190,11 +190,11 @@ export class AgentOrchestrator {
             outputTokens: result.tokenUsage?.completionTokens ?? 0,
             toolCalls: 0,
           },
-        } as any;
+        } as unknown as AgentOutputMap[T] & { usage: TokenUsage };
       }
       if (agentType === 'tax_strategy') {
         const vercelAgent = new VercelTaxStrategy();
-        const result = await vercelAgent.executeWithFallback(input as any);
+        const result = await vercelAgent.executeWithFallback(input as never);
         this.emitProgress(agentType, 'completed');
         return {
           ...result.output,
@@ -203,11 +203,11 @@ export class AgentOrchestrator {
             outputTokens: result.tokenUsage?.completionTokens ?? 0,
             toolCalls: 0,
           },
-        } as any;
+        } as unknown as AgentOutputMap[T] & { usage: TokenUsage };
       }
       if (agentType === 'merchant_intelligence') {
         const vercelAgent = new VercelMerchantIntelligence();
-        const result = await vercelAgent.executeWithFallback(input as any);
+        const result = await vercelAgent.executeWithFallback(input as never);
         this.emitProgress(agentType, 'completed');
         return {
           ...result.output,
@@ -216,7 +216,7 @@ export class AgentOrchestrator {
             outputTokens: result.tokenUsage?.completionTokens ?? 0,
             toolCalls: 0,
           },
-        } as any;
+        } as unknown as AgentOutputMap[T] & { usage: TokenUsage };
       }
     }
 

@@ -19,16 +19,15 @@ logger.info(
   `[DB] Environment: ${isProduction ? 'production' : 'development'}, Using: ${usePostgres ? 'PostgreSQL' : 'SQLite'}`,
 );
 
-// Export based on environment
-// Note: We use dynamic imports via require for CommonJS compatibility with the build
-/* eslint-disable @typescript-eslint/no-require-imports */
-let exportedModule;
+// Export based on environment — use dynamic import() for ESM compatibility
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let exportedModule: Record<string, any>;
 if (usePostgres) {
   logger.info('[DB] Loading PostgreSQL schema and connection');
-  exportedModule = require('./postgres-exports');
+  exportedModule = await import('./postgres-exports.js');
 } else {
   logger.info('[DB] Loading SQLite schema');
-  exportedModule = require('../schema');
+  exportedModule = await import('../schema.js');
 }
 
 export const db = exportedModule.db;

@@ -476,7 +476,20 @@ export class SparseSearchEngine {
       .limit(topK * 2); // Fetch more for scoring
 
     // Calculate a simple term frequency score
-    const scoredResults = chunks.map((chunk: any) => {
+    type ChunkRow = {
+      id: string;
+      documentId: string;
+      content: string;
+      chunkType: string | null;
+      category: string | null;
+      dateStart: string | null;
+      dateEnd: string | null;
+      accountId: string | null;
+      totalAmount: number | null;
+      transactionCount: number | null;
+      merchantNormalized: string | null;
+    };
+    const scoredResults = (chunks as ChunkRow[]).map((chunk: ChunkRow) => {
       const contentLower = chunk.content.toLowerCase();
       let score = 0;
       const matchedTerms: string[] = [];
@@ -505,10 +518,10 @@ export class SparseSearchEngine {
     });
 
     // Sort by score and take topK
-    scoredResults.sort((a: any, b: any) => b.score - a.score);
+    scoredResults.sort((a, b) => b.score - a.score);
     const topResults = scoredResults.slice(0, topK);
 
-    return topResults.map((result: any, index: number) => ({
+    return topResults.map((result, index: number) => ({
       chunkId: result.chunk.id,
       documentId: result.chunk.documentId,
       content: result.chunk.content,
@@ -516,7 +529,7 @@ export class SparseSearchEngine {
       rank: index + 1,
       matchedTerms: result.matchedTerms,
       metadata: {
-        chunkType: result.chunk.chunkType,
+        chunkType: result.chunk.chunkType ?? 'unknown',
         category: result.chunk.category,
         dateStart: result.chunk.dateStart,
         dateEnd: result.chunk.dateEnd,

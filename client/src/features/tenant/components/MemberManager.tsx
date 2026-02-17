@@ -60,8 +60,8 @@ export function MemberManager() {
       setInviteEmail('');
       setShowInvite(false);
       load();
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to send invite');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to send invite');
     } finally {
       setInviting(false);
     }
@@ -72,8 +72,8 @@ export function MemberManager() {
     try {
       await tenantApi.updateMemberRole(tenantId, memberId, newRole);
       load();
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to update role');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update role');
     }
   };
 
@@ -83,8 +83,8 @@ export function MemberManager() {
       await tenantApi.removeMember(tenantId, memberId);
       setConfirmRemove(null);
       load();
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to remove member');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to remove member');
     }
   };
 
@@ -93,8 +93,8 @@ export function MemberManager() {
     try {
       await tenantApi.revokeInvitation(tenantId, invitationId);
       load();
-    } catch (err: any) {
-      setError(err.message ?? 'Failed to revoke invitation');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to revoke invitation');
     }
   };
 

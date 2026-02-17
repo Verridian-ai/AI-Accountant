@@ -175,12 +175,12 @@ export class TenantRateLimiter {
       .where(eq(apiRateLimits.tenantId, tenantId))
       .all();
 
-    return (rows as any[]).map((row) => ({
-      endpointPattern: row.endpointPattern ?? row.endpoint_pattern,
-      requestsPerMinute: row.requestsPerMinute ?? row.requests_per_minute ?? 60,
-      requestsPerHour: row.requestsPerHour ?? row.requests_per_hour ?? 1000,
-      requestsPerDay: row.requestsPerDay ?? row.requests_per_day ?? 10000,
-      burstLimit: row.burstLimit ?? row.burst_limit ?? 10,
+    return (rows as Array<Record<string, unknown>>).map((row) => ({
+      endpointPattern: String(row.endpointPattern ?? row.endpoint_pattern ?? ''),
+      requestsPerMinute: Number(row.requestsPerMinute ?? row.requests_per_minute ?? 60),
+      requestsPerHour: Number(row.requestsPerHour ?? row.requests_per_hour ?? 1000),
+      requestsPerDay: Number(row.requestsPerDay ?? row.requests_per_day ?? 10000),
+      burstLimit: Number(row.burstLimit ?? row.burst_limit ?? 10),
     }));
   }
 

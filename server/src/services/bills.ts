@@ -12,7 +12,7 @@
  */
 
 import { db, bills, billLines, billPayments, suppliers, purchaseOrders, users } from '../schema.js';
-import { eq, and, gte, lte, sql, asc } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, asc , type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 
 // ============================================================================
@@ -222,7 +222,7 @@ export class BillService {
     const offset = (page - 1) * limit;
 
     // Build WHERE conditions
-    const conditions: any[] = [eq(bills.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(bills.userId, userId)];
     if (status) {
       conditions.push(eq(bills.status, status));
     }
@@ -276,7 +276,7 @@ export class BillService {
       .offset(offset)
       .all();
 
-    const data: BillWithSupplier[] = rows.map((r: any) => ({
+    const data: BillWithSupplier[] = rows.map((r: Record<string, unknown>) => ({
       id: r.id,
       userId: r.userId,
       supplierId: r.supplierId,
@@ -358,7 +358,7 @@ export class BillService {
       .limit(1)
       .get();
 
-    const lineItems: BillLine[] = lines.map((l: any) => ({
+    const lineItems: BillLine[] = lines.map((l: Record<string, unknown>) => ({
       id: l.id,
       billId: l.billId,
       description: l.description,
@@ -371,7 +371,7 @@ export class BillService {
       taxCode: l.taxCode,
     }));
 
-    const paymentList: BillPayment[] = payments.map((p: any) => ({
+    const paymentList: BillPayment[] = payments.map((p: Record<string, unknown>) => ({
       id: p.id,
       billId: p.billId,
       paymentDate: p.paymentDate,
@@ -400,7 +400,7 @@ export class BillService {
       notes: row.notes,
       createdAt: String(row.createdAt),
       updatedAt: String(row.updatedAt),
-      supplierName: (row as any).supplierName ?? 'Unknown Supplier',
+      supplierName: String((row as Record<string, unknown>).supplierName ?? 'Unknown Supplier'),
       lineItems,
       payments: paymentList,
     };
@@ -865,7 +865,7 @@ export class BillService {
         billId: bill.id,
         billNumber: bill.billNumber ?? '',
         supplierId: bill.supplierId,
-        supplierName: (bill as any).supplierName ?? 'Unknown',
+        supplierName: String((bill as Record<string, unknown>).supplierName ?? 'Unknown'),
         issueDateISO: bill.issueDate,
         dueDateISO: bill.dueDate,
         totalAmountCents: Number(bill.totalAmount) || 0,
@@ -936,7 +936,7 @@ export class BillService {
       .all();
 
     const now = new Date().toISOString();
-    const updated: any[] = [];
+    const updated: Record<string, unknown>[] = [];
 
     for (const bill of overdueBills) {
       await db

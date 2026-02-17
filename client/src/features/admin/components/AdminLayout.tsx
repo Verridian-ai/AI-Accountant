@@ -71,7 +71,7 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
   useEffect(() => {
     if (!authenticated) return;
     fetchAdminProfile()
-      .then((p: any) => setAdminUser({ username: p.username || 'admin', role: p.role || 'admin' }))
+      .then((p: { username?: string; role?: string }) => setAdminUser({ username: p.username || 'admin', role: p.role || 'admin' }))
       .catch(() => {
         /* token might be stale, let them use it until a real call fails */
       });

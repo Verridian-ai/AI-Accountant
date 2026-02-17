@@ -26,7 +26,7 @@ interface DataPoint {
   isPredefined: boolean;
   extractionCount: number;
   accuracy: number;
-  schemaFields: any;
+  schemaFields: Record<string, unknown>;
   extractionPrompt: string;
   createdAt: string;
 }
@@ -57,7 +57,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
     knowledgeApi
       .listDataPoints(userId)
       .then(setDataPoints)
-      .catch((e: any) => setError(e.message))
+      .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
@@ -69,10 +69,10 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
     if (!form.name.trim()) return;
     setCreating(true);
     try {
-      let parsedSchema: any = {};
+      let parsedSchema: Record<string, unknown> = {};
       if (form.schemaFields.trim()) {
         try {
-          parsedSchema = JSON.parse(form.schemaFields);
+          parsedSchema = JSON.parse(form.schemaFields) as Record<string, unknown>;
         } catch {
           parsedSchema = { raw: form.schemaFields };
         }
@@ -96,8 +96,8 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
         schemaFields: '',
       });
       loadDataPoints();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to create datapoint');
     } finally {
       setCreating(false);
     }
@@ -112,8 +112,8 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
         await knowledgeApi.activateDataPoint(dp.id);
       }
       loadDataPoints();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to toggle datapoint');
     } finally {
       setToggling(null);
     }

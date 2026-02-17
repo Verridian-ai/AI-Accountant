@@ -624,7 +624,13 @@ export const api = {
     if (!res.ok) throw new Error('Failed to delete chart');
   },
 
-  fetchAuditLog: async (options?: any): Promise<any> => {
+  fetchAuditLog: async (options?: {
+    agentType?: string;
+    action?: string;
+    from?: string;
+    to?: string;
+    limit?: number;
+  }): Promise<{ entries: AuditEntry[] }> => {
     return mutationApi.fetchAuditLog(options);
   },
 };
@@ -1152,16 +1158,16 @@ export const taxApi = {
     return res.json();
   },
 
-  fetchCompanyReturn: async (...args: any[]) => Promise.resolve({} as any),
-  fetchPersonalReturn: async (...args: any[]) => Promise.resolve({} as any),
-  fetchSoleTraderReturn: async (...args: any[]) => Promise.resolve({} as any),
-  fetchTrustReturn: async (...args: any[]) => Promise.resolve({} as any),
-  fetchStrategies: async (...args: any[]) => Promise.resolve([] as any[]),
-  generateStrategies: async (...args: any[]) => Promise.resolve({} as any),
-  updateStrategyStatus: async (...args: any[]) => Promise.resolve({} as any),
-  scanEquity: async (...args: any[]) => Promise.resolve({} as any),
-  confirmEquityEvent: async (...args: any[]) => Promise.resolve({} as any),
-  fetchEquitySummary: async (...args: any[]) => Promise.resolve({} as any),
+  fetchCompanyReturn: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchPersonalReturn: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchSoleTraderReturn: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchTrustReturn: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchStrategies: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  generateStrategies: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  updateStrategyStatus: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  scanEquity: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  confirmEquityEvent: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  fetchEquitySummary: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
 // Multi-bank API methods
@@ -1513,10 +1519,10 @@ export const analyticsApi = {
     return res.json();
   },
 
-  fetchBillAlerts: async (...args: any[]) => Promise.resolve([] as any[]),
-  projectRevenue: async (...args: any[]) => Promise.resolve({} as any),
-  projectExpenses: async (...args: any[]) => Promise.resolve({} as any),
-  calculateWealthProjection: async (...args: any[]) => Promise.resolve({} as any),
+  fetchBillAlerts: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  projectRevenue: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  projectExpenses: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  calculateWealthProjection: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
 // ─── Wave 2: Mutation & Streaming API ───────────────────────────────
@@ -1924,7 +1930,7 @@ export async function fetchEmployees(
     status?: string;
     search?: string;
   },
-): Promise<{ data: any[]; total: number }> {
+): Promise<{ data: Record<string, unknown>[]; total: number }> {
   const qp = new URLSearchParams({ userId });
   if (params?.page) qp.set('page', String(params.page));
   if (params?.limit) qp.set('limit', String(params.limit));
@@ -1937,7 +1943,7 @@ export async function fetchEmployees(
   return res.json();
 }
 
-export async function createEmployee(data: any): Promise<any> {
+export async function createEmployee(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -1947,7 +1953,7 @@ export async function createEmployee(data: any): Promise<any> {
   return res.json();
 }
 
-export async function fetchEmployee(id: string): Promise<any> {
+export async function fetchEmployee(id: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${id}`, {
     headers: getAuthHeaders(),
   });
@@ -1955,7 +1961,7 @@ export async function fetchEmployee(id: string): Promise<any> {
   return res.json();
 }
 
-export async function updateEmployee(id: string, data: any): Promise<any> {
+export async function updateEmployee(id: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -1965,7 +1971,7 @@ export async function updateEmployee(id: string, data: any): Promise<any> {
   return res.json();
 }
 
-export async function deleteEmployee(id: string): Promise<any> {
+export async function deleteEmployee(id: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${id}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
@@ -1974,7 +1980,7 @@ export async function deleteEmployee(id: string): Promise<any> {
   return res.json();
 }
 
-export async function fetchBankDetails(employeeId: string): Promise<any> {
+export async function fetchBankDetails(employeeId: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${employeeId}/bank-details`, {
     headers: getAuthHeaders(),
   });
@@ -1982,7 +1988,7 @@ export async function fetchBankDetails(employeeId: string): Promise<any> {
   return res.json();
 }
 
-export async function addBankDetails(employeeId: string, data: any): Promise<any> {
+export async function addBankDetails(employeeId: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${employeeId}/bank-details`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -1992,7 +1998,7 @@ export async function addBankDetails(employeeId: string, data: any): Promise<any
   return res.json();
 }
 
-export async function fetchSuperFund(employeeId: string): Promise<any> {
+export async function fetchSuperFund(employeeId: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${employeeId}/super`, {
     headers: getAuthHeaders(),
   });
@@ -2000,7 +2006,7 @@ export async function fetchSuperFund(employeeId: string): Promise<any> {
   return res.json();
 }
 
-export async function addSuperFund(employeeId: string, data: any): Promise<any> {
+export async function addSuperFund(employeeId: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${employeeId}/super`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2010,7 +2016,7 @@ export async function addSuperFund(employeeId: string, data: any): Promise<any> 
   return res.json();
 }
 
-export async function fetchTaxDeclaration(employeeId: string): Promise<any> {
+export async function fetchTaxDeclaration(employeeId: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${employeeId}/tax-declaration`, {
     headers: getAuthHeaders(),
   });
@@ -2018,7 +2024,7 @@ export async function fetchTaxDeclaration(employeeId: string): Promise<any> {
   return res.json();
 }
 
-export async function submitTaxDeclaration(employeeId: string, data: any): Promise<any> {
+export async function submitTaxDeclaration(employeeId: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${employeeId}/tax-declaration`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2034,7 +2040,7 @@ export async function fetchPayCategories(
     page?: number;
     limit?: number;
   },
-): Promise<{ data: any[]; total: number }> {
+): Promise<{ data: Record<string, unknown>[]; total: number }> {
   const qp = new URLSearchParams({ userId });
   if (params?.page) qp.set('page', String(params.page));
   if (params?.limit) qp.set('limit', String(params.limit));
@@ -2045,7 +2051,7 @@ export async function fetchPayCategories(
   return res.json();
 }
 
-export async function createPayCategory(data: any): Promise<any> {
+export async function createPayCategory(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/pay-categories`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2075,7 +2081,7 @@ export async function seedDefaultPayCategories(userId: string): Promise<void> {
   }
 }
 
-export async function fetchPayStructure(employeeId: string): Promise<any> {
+export async function fetchPayStructure(employeeId: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${employeeId}/pay-structure`, {
     headers: getAuthHeaders(),
   });
@@ -2083,7 +2089,7 @@ export async function fetchPayStructure(employeeId: string): Promise<any> {
   return res.json();
 }
 
-export async function setPayStructure(employeeId: string, data: any): Promise<any> {
+export async function setPayStructure(employeeId: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}/api/payroll/employees/${employeeId}/pay-structure`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2483,9 +2489,9 @@ export const apApi = {
 
   processPaymentRun: async (id: string): Promise<void> => {
     // Process payment by marking each bill in the run as paid
-    const run: any = await apApi.fetchPaymentRun(id);
-    const billIds = run.billIds ?? run.bill_ids ?? [];
-    const payDate = run.paymentDate ?? run.payment_date ?? new Date().toISOString().split('T')[0];
+    const run = await apApi.fetchPaymentRun(id);
+    const billIds = run.billIds ?? [];
+    const payDate = run.paymentDate ?? new Date().toISOString().split('T')[0];
     for (const billId of billIds) {
       await apApi.payBill(billId, { paymentDate: payDate });
     }
@@ -2598,7 +2604,7 @@ export const invoicingApi = {
     return res.json();
   },
 
-  createCustomer: async (data: any) => {
+  createCustomer: async (data: Record<string, unknown>) => {
     const res = await fetch(`${API_URL}/customers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2608,7 +2614,7 @@ export const invoicingApi = {
     return res.json();
   },
 
-  updateCustomer: async (id: string, data: any) => {
+  updateCustomer: async (id: string, data: Record<string, unknown>) => {
     const res = await fetch(`${API_URL}/customers/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2635,7 +2641,7 @@ export const invoicingApi = {
     return res.json();
   },
 
-  addContact: async (customerId: string, data: any) => {
+  addContact: async (customerId: string, data: Record<string, unknown>) => {
     const res = await fetch(`${API_URL}/customers/${customerId}/contacts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2675,7 +2681,7 @@ export const invoicingApi = {
     return res.json();
   },
 
-  createInvoice: async (data: any) => {
+  createInvoice: async (data: Record<string, unknown>) => {
     const res = await fetch(`${API_URL}/invoices`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2685,7 +2691,7 @@ export const invoicingApi = {
     return res.json();
   },
 
-  updateInvoice: async (id: string, data: any) => {
+  updateInvoice: async (id: string, data: Record<string, unknown>) => {
     const res = await fetch(`${API_URL}/invoices/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2719,7 +2725,7 @@ export const invoicingApi = {
     return res.blob();
   },
 
-  recordPayment: async (invoiceId: string, data: any) => {
+  recordPayment: async (invoiceId: string, data: Record<string, unknown>) => {
     const res = await fetch(`${API_URL}/invoices/${invoiceId}/payment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2729,7 +2735,7 @@ export const invoicingApi = {
     return res.json();
   },
 
-  createCreditNote: async (data: any) => {
+  createCreditNote: async (data: Record<string, unknown>) => {
     const res = await fetch(`${API_URL}/invoices/credit-note`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -2780,7 +2786,7 @@ api.deleteTransaction = createDeleteTransactionInterceptor(_originalDeleteTransa
 // --- Agent 01: Final Fixes ---
 
 export const transactionsApi = {
-  fetchAuditLog: async (options?: any) => Promise.resolve({ entries: [], total: 0 }),
+  fetchAuditLog: async (_options?: Record<string, unknown>) => Promise.resolve({ entries: [] as AuditEntry[], total: 0 }),
 };
 
 export interface ProfitAndLossReport {
@@ -2807,109 +2813,109 @@ export interface CategoryGroup {
 
 export interface OCRDocument {
   id: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface OCRLineItem {
   id: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-export type AssetRegisterResponse = any;
-export type AutoMatchResult = any;
-export type BalanceSheetReport = any;
-export type BatchDepreciationResult = any;
-export type BorrowingCapacityResult = any;
-export type Budget = any;
-export type BudgetLine = any;
-export type BudgetVariance = any;
-export type CarFinanceComparison = any;
-export type CashFlowReport = any;
-export type ConsolidationDetailResponse = any;
-export type ConsolidationSnapshotData = any;
-export type DepreciationScheduleResponse = any;
-export type DetectedEquityEvent = any;
-export type EntityData = any;
-export type EntityHierarchyResponse = any;
-export type EntitySettingData = any;
-export type EntityWithDetails = any;
-export type EquitySummary = any;
-export type FixedAssetData = any;
-export type ForecastPeriod = any;
-export type ForecastScenario = any;
-export type HomeLoanResult = any;
-export type InterEntityTransactionData = any;
-export type KPIMetric = any;
-export type MatchCandidate = any;
-export type MatchStats = any;
-export type PaymentMatchRule = any;
-export type PeriodComparisonReport = any;
-export type PeriodComparisonRow = any;
-export type PersonalLoanResult = any;
-export type ProjectionResult = any;
-export type RecurringBill = any;
-export type RefinanceResult = any;
-export type RepaymentFrequency = any;
-export type TaxStrategyRecord = any;
-export type TrialBalanceEntry = any;
-export type TrialBalanceReport = any;
-export type VarianceSummary = any;
-export type WealthProjectionResult = any;
+export type AssetRegisterResponse = Record<string, unknown>;
+export type AutoMatchResult = Record<string, unknown>;
+export type BalanceSheetReport = Record<string, unknown>;
+export type BatchDepreciationResult = Record<string, unknown>;
+export type BorrowingCapacityResult = Record<string, unknown>;
+export type Budget = Record<string, unknown>;
+export type BudgetLine = Record<string, unknown>;
+export type BudgetVariance = Record<string, unknown>;
+export type CarFinanceComparison = Record<string, unknown>;
+export type CashFlowReport = Record<string, unknown>;
+export type ConsolidationDetailResponse = Record<string, unknown>;
+export type ConsolidationSnapshotData = Record<string, unknown>;
+export type DepreciationScheduleResponse = Record<string, unknown>;
+export type DetectedEquityEvent = Record<string, unknown>;
+export type EntityData = Record<string, unknown>;
+export type EntityHierarchyResponse = Record<string, unknown>;
+export type EntitySettingData = Record<string, unknown>;
+export type EntityWithDetails = Record<string, unknown>;
+export type EquitySummary = Record<string, unknown>;
+export type FixedAssetData = Record<string, unknown>;
+export type ForecastPeriod = Record<string, unknown>;
+export type ForecastScenario = Record<string, unknown>;
+export type HomeLoanResult = Record<string, unknown>;
+export type InterEntityTransactionData = Record<string, unknown>;
+export type KPIMetric = Record<string, unknown>;
+export type MatchCandidate = Record<string, unknown>;
+export type MatchStats = Record<string, unknown>;
+export type PaymentMatchRule = Record<string, unknown>;
+export type PeriodComparisonReport = Record<string, unknown>;
+export type PeriodComparisonRow = Record<string, unknown>;
+export type PersonalLoanResult = Record<string, unknown>;
+export type ProjectionResult = Record<string, unknown>;
+export type RecurringBill = Record<string, unknown>;
+export type RefinanceResult = Record<string, unknown>;
+export type RepaymentFrequency = Record<string, unknown>;
+export type TaxStrategyRecord = Record<string, unknown>;
+export type TrialBalanceEntry = Record<string, unknown>;
+export type TrialBalanceReport = Record<string, unknown>;
+export type VarianceSummary = Record<string, unknown>;
+export type WealthProjectionResult = Record<string, unknown>;
 
 // Missing Standalone Functions
-export const adminLogin = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchActivityLog = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchActivitySummary = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchAdminProfile = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchAdminUsers = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchAgentConfigs = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchAgentCosts = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchAgentExecutions = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchAgentStats = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchBestRates = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchCdrAlerts = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchCdrProducts = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchCogneeAdminDatasets = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchCogneeDatasetDetail = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchCogneeGraphStats = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchDataHolders = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchDiskUsage = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchFeatureFlags = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchHealthHistory = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchSystemHealth = async (...args: any[]) => Promise.resolve({} as any);
-export const fetchSystemMetrics = async (...args: any[]) => Promise.resolve({} as any);
-export const testCogneeSearch = async (...args: any[]) => Promise.resolve({} as any);
-export const reindexCogneeDataset = async (...args: any[]) => Promise.resolve({} as any);
-export const triggerCdrCrawl = async (...args: any[]) => Promise.resolve({} as any);
-export const compareCdrProducts = async (...args: any[]) => Promise.resolve({} as any);
-export const calculateSavings = async (...args: any[]) => Promise.resolve({} as any);
-export const createAdminUser = async (...args: any[]) => Promise.resolve({} as any);
-export const createCdrAlert = async (...args: any[]) => Promise.resolve({} as any);
-export const createFeatureFlag = async (...args: any[]) => Promise.resolve({} as any);
-export const deleteAdminUser = async (...args: any[]) => Promise.resolve({} as any);
-export const deleteCdrAlert = async (...args: any[]) => Promise.resolve({} as any);
-export const updateAdminUser = async (...args: any[]) => Promise.resolve({} as any);
-export const updateAgentConfig = async (...args: any[]) => Promise.resolve({} as any);
-export const updateFeatureFlag = async (...args: any[]) => Promise.resolve({} as any);
+export const adminLogin = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchActivityLog = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchActivitySummary = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchAdminProfile = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchAdminUsers = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchAgentConfigs = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchAgentCosts = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchAgentExecutions = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchAgentStats = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchBestRates = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchCdrAlerts = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchCdrProducts = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchCogneeAdminDatasets = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchCogneeDatasetDetail = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchCogneeGraphStats = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchDataHolders = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchDiskUsage = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchFeatureFlags = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchHealthHistory = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchSystemHealth = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const fetchSystemMetrics = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const testCogneeSearch = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const reindexCogneeDataset = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const triggerCdrCrawl = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const compareCdrProducts = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const calculateSavings = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const createAdminUser = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const createCdrAlert = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const createFeatureFlag = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const deleteAdminUser = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const deleteCdrAlert = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const updateAdminUser = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const updateAgentConfig = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
+export const updateFeatureFlag = async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>);
 export const fetchMarketRates = fetchMarketPrices;
 
 // Missing API Namespace Objects
-export const entityApi: any = {
-  createEntity: async (data: any) => Promise.resolve({} as any),
-  getHierarchy: async () => Promise.resolve({} as any),
-  updateSettings: async (id: string, settings: any) => Promise.resolve(),
-  getInterEntityTransactions: async (filters: any) => Promise.resolve([] as any[]),
-  confirmInterEntityTransaction: async (id: string, entityId: string, confirmed: boolean) =>
+export const entityApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  createEntity: async (data: unknown) => Promise.resolve({} as Record<string, unknown>),
+  getHierarchy: async () => Promise.resolve({} as Record<string, unknown>),
+  updateSettings: async (_id: unknown, _settings: unknown) => Promise.resolve(),
+  getInterEntityTransactions: async (_filters: unknown) => Promise.resolve([] as Record<string, unknown>[]),
+  confirmInterEntityTransaction: async (_id: unknown, _entityId: unknown, _confirmed: unknown) =>
     Promise.resolve(),
-  recordInterEntityTransaction: async (data: any) => Promise.resolve(),
+  recordInterEntityTransaction: async (_data: unknown) => Promise.resolve(),
 };
 
-export const assetApi: any = {
-  disposeAsset: async (...args: any[]) => Promise.resolve({} as any),
-  getRegister: async (...args: any[]) => Promise.resolve({ assets: [] } as any),
-  getDepreciationSchedule: async (...args: any[]) => Promise.resolve({} as any),
-  runBatchDepreciation: async (...args: any[]) => Promise.resolve({} as any),
-  registerAsset: async (...args: any[]) => Promise.resolve({} as any),
+export const assetApi: Record<string, (...args: unknown[]) => Promise<unknown>> = {
+  disposeAsset: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getRegister: async (..._args: unknown[]) => Promise.resolve({ assets: [] } as Record<string, unknown>),
+  getDepreciationSchedule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  runBatchDepreciation: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  registerAsset: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
 export const forecastApi: any = {

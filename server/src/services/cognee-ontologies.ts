@@ -7,7 +7,7 @@
  */
 
 import { db, graphSchemas } from '../schema.js';
-import { eq, and } from 'drizzle-orm';
+import { eq, and , type SQL } from 'drizzle-orm';
 import { cogneeClient } from './cognee_client.js';
 import crypto from 'crypto';
 
@@ -312,7 +312,7 @@ export class CogneeOntologyService {
     let query = db.select().from(graphSchemas);
 
     // Build conditions: user's own ontologies OR predefined ones
-    const conditions: any[] = [];
+    const conditions: (SQL | undefined)[] = [];
 
     if (filters?.ontologyType) {
       conditions.push(eq(graphSchemas.ontologyType, filters.ontologyType));
@@ -327,15 +327,15 @@ export class CogneeOntologyService {
     // Always filter to user's own + predefined
     if (conditions.length > 0) {
       // Apply all filter conditions; the DB will return matching rows for this user
-      query = query.where(and(eq(graphSchemas.userId, userId), ...conditions)) as any;
+      query = query.where(and(eq(graphSchemas.userId, userId), ...conditions)) as Record<string, unknown>;
     } else {
-      query = query.where(eq(graphSchemas.userId, userId)) as any;
+      query = query.where(eq(graphSchemas.userId, userId)) as Record<string, unknown>;
     }
 
-    const results = await (query as any).all();
+    const results = await (query as { all(): Promise<unknown[]> }).all();
 
     // Sort by name
-    return (results as any[]).sort((a: any, b: any) =>
+    return (results as Array<Record<string, unknown>>).sort((a: Record<string, unknown>, b: Record<string, unknown>) =>
       (a.name as string).localeCompare(b.name as string),
     );
   }
@@ -369,7 +369,7 @@ export class CogneeOntologyService {
     // Validate edge references if node/edge types are being updated
     const newNodeTypes = updates.nodeTypes ?? JSON.parse(existing.nodeTypes);
     const newEdgeTypes = updates.edgeTypes ?? JSON.parse(existing.edgeTypes);
-    const nodeTypeNames = new Set(newNodeTypes.map((n: any) => n.name));
+    const nodeTypeNames = new Set(newNodeTypes.map((n: Record<string, unknown>) => n.name));
 
     for (const edge of newEdgeTypes) {
       if (!nodeTypeNames.has(edge.sourceType)) {
@@ -588,7 +588,7 @@ export class CogneeOntologyService {
       .where(and(eq(graphSchemas.userId, userId), eq(graphSchemas.isPredefined, true)))
       .all();
 
-    const existingNames = new Set((existing as any[]).map((r: any) => r.name));
+    const existingNames = new Set((existing as Array<Record<string, unknown>>).map((r: Record<string, unknown>) => r.name));
 
     for (const [, def] of Object.entries(PREDEFINED_ONTOLOGIES)) {
       if (existingNames.has(def.name)) continue;

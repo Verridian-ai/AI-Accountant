@@ -156,7 +156,7 @@ export class RBACService {
       .get();
 
     if (!member) return null;
-    return ((member as any).role ?? 'viewer') as TenantRole;
+    return ((member as Record<string, unknown>).role ?? 'viewer') as TenantRole;
   }
 
   /**
@@ -169,15 +169,15 @@ export class RBACService {
       .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.role, role)))
       .all();
 
-    return (rows as any[]).map((row: any) => ({
-      id: row.id,
-      tenantId: row.tenantId ?? row.tenant_id,
-      userId: row.userId ?? row.user_id,
+    return (rows as Array<Record<string, unknown>>).map((row: Record<string, unknown>) => ({
+      id: row.id as string,
+      tenantId: (row.tenantId ?? row.tenant_id) as string,
+      userId: (row.userId ?? row.user_id) as string,
       role: (row.role ?? 'viewer') as TenantRole,
-      displayName: row.displayName ?? row.display_name ?? undefined,
+      displayName: (row.displayName ?? row.display_name ?? undefined) as string | undefined,
       isPrimaryContact: Boolean(row.isPrimaryContact ?? row.is_primary_contact ?? false),
-      joinedAt: row.joinedAt ?? row.joined_at ?? '',
-      lastActiveAt: row.lastActiveAt ?? row.last_active_at ?? undefined,
+      joinedAt: (row.joinedAt ?? row.joined_at ?? '') as string,
+      lastActiveAt: (row.lastActiveAt ?? row.last_active_at ?? undefined) as string | undefined,
     }));
   }
 
@@ -205,13 +205,13 @@ export class RBACService {
     // Fetch all permissions to map IDs to names
     const allPerms = await db.select().from(permissions).all();
     const permMap = new Map<string, string>();
-    for (const p of allPerms as any[]) {
-      permMap.set(p.id, p.name);
+    for (const p of allPerms as Array<Record<string, unknown>>) {
+      permMap.set(p.id as string, p.name as string);
     }
 
-    for (const rp of rps as any[]) {
+    for (const rp of rps as Array<Record<string, unknown>>) {
       const role = rp.role as string;
-      const permId = rp.permissionId ?? rp.permission_id;
+      const permId = (rp.permissionId ?? rp.permission_id) as string;
       const permName = permMap.get(permId);
       if (permName && matrix[role]) {
         matrix[role].push(permName);
@@ -245,8 +245,8 @@ export class RBACService {
     // Fetch all permissions to validate names and get IDs
     const allPerms = await db.select().from(permissions).all();
     const permByName = new Map<string, string>();
-    for (const p of allPerms as any[]) {
-      permByName.set(p.name, p.id);
+    for (const p of allPerms as Array<Record<string, unknown>>) {
+      permByName.set(p.name as string, p.id as string);
     }
 
     // Validate all permission names
@@ -427,7 +427,7 @@ export class RBACService {
       .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
       .all();
 
-    const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
+    const permIds = (rps as Array<Record<string, unknown>>).map((rp) => rp.permissionId ?? rp.permission_id);
     if (permIds.length === 0) {
       this.cache.set(tenantId, userId, []);
       return [];
@@ -436,11 +436,11 @@ export class RBACService {
     // Fetch permission names
     const allPerms = await db.select().from(permissions).all();
     const permMap = new Map<string, string>();
-    for (const p of allPerms as any[]) {
-      permMap.set(p.id, p.name);
+    for (const p of allPerms as Array<Record<string, unknown>>) {
+      permMap.set(p.id as string, p.name as string);
     }
 
-    const permNames = permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
+    const permNames = permIds.map((id) => permMap.get(id as string)).filter((name): name is string => !!name);
 
     // Cache the result
     this.cache.set(tenantId, userId, permNames);

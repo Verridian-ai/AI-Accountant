@@ -21,7 +21,7 @@ interface Forecast {
   financialYear: string;
   granularity: string;
   createdAt: string;
-  periods?: any[];
+  periods?: Array<{ period: string; projectedInflow: number; projectedOutflow: number; netFlow: number }>;
 }
 
 interface ScenarioConfig {

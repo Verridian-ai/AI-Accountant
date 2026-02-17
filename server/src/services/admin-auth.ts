@@ -208,7 +208,7 @@ export class AdminAuthService {
       throw new Error('User is not a member of this tenant');
     }
 
-    const role = ((member as any).role ?? 'viewer') as TenantRole;
+    const role = ((member as Record<string, unknown>).role ?? 'viewer') as TenantRole;
 
     // Look up permissions for this role in this tenant
     const permList = await this._getTenantPermissions(tenantId, role);
@@ -257,7 +257,7 @@ export class AdminAuthService {
     // Verify the target tenant exists and is active
     const tenant = await db.select().from(tenants).where(eq(tenants.id, targetTenantId)).get();
     if (!tenant) return null;
-    const tenantRow = tenant as any;
+    const tenantRow = tenant as Record<string, unknown>;
     const isActive = tenantRow.isActive ?? tenantRow.is_active ?? true;
     if (!isActive) return null;
 
@@ -289,16 +289,16 @@ export class AdminAuthService {
       .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
       .all();
 
-    const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
+    const permIds = (rps as Array<Record<string, unknown>>).map((rp) => String(rp.permissionId ?? rp.permission_id ?? ''));
     if (permIds.length === 0) return [];
 
     const allPerms = await db.select().from(permissions).all();
     const permMap = new Map<string, string>();
-    for (const p of allPerms as any[]) {
-      permMap.set(p.id, p.name);
+    for (const p of allPerms as Array<Record<string, unknown>>) {
+      permMap.set(String(p.id), String(p.name));
     }
 
-    return permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
+    return permIds.map((id: string) => permMap.get(id)).filter((name): name is string => !!name);
   }
 
   // --------------------------------------------------------------------------

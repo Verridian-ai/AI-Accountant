@@ -54,7 +54,7 @@ async function getLargeTransactionThreshold(userId: string, tenantId: string): P
 
   if (!prefs) return 100_000; // Default $1,000
 
-  const row = prefs as any;
+  const row = prefs as Record<string, unknown>;
   return Number(
     row.largeTransactionThresholdCents ?? row.large_transaction_threshold_cents ?? 100_000,
   );
@@ -75,7 +75,7 @@ async function getBudgetAlertThreshold(userId: string, tenantId: string): Promis
 
   if (!prefs) return 80; // Default 80%
 
-  const row = prefs as any;
+  const row = prefs as Record<string, unknown>;
   return Number(row.budgetAlertThresholdPercent ?? row.budget_alert_threshold_percent ?? 80);
 }
 
@@ -139,8 +139,8 @@ export async function triggerBASReminder(
     data: { type: 'bas_reminder', dueDate: String(dueDate), daysUntilDue },
   };
 
-  for (const member of members as any[]) {
-    const memberUserId = member.userId ?? member.user_id;
+  for (const member of members as Array<Record<string, unknown>>) {
+    const memberUserId = String(member.userId ?? member.user_id ?? '');
 
     // Only send to members with bas.read permission
     try {
@@ -152,7 +152,7 @@ export async function triggerBASReminder(
     }
 
     await pushNotificationService.sendNotification(
-      memberUserId,
+      memberUserId as string,
       tenantId,
       payload,
       'bas_reminders',

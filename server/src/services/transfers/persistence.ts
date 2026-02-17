@@ -81,9 +81,9 @@ export async function persistTransferMatches(
 
       result.created++;
       result.linkIds.push(linkId);
-    } catch (err: any) {
+    } catch (err: unknown) {
       result.errors.push(
-        `Failed to persist match ${match.sourceTransaction.id} → ${match.targetTransaction.id}: ${err.message}`,
+        `Failed to persist match ${match.sourceTransaction.id} → ${match.targetTransaction.id}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }

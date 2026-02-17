@@ -377,7 +377,7 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
           status,
           limit: 20,
         });
-        return result.data.map((e: any) => ({
+        return result.data.map((e: Record<string, unknown>) => ({
           id: e.id,
           name: `${e.firstName} ${e.lastName}`,
           email: e.email,
@@ -437,7 +437,7 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
         const MINIMUM_SUPER_RATE = parseFloat(process.env.SUPER_GUARANTEE_RATE ?? '11.5');
         const fy = (input.financialYear as string | undefined) ?? getCurrentFinancialYear();
 
-        const results = superFunds.map((fund: any) => ({
+        const results = superFunds.map((fund: { fundName: unknown; contributionRate: number }) => ({
           fundName: fund.fundName,
           contributionRate: fund.contributionRate,
           minimumRequired: MINIMUM_SUPER_RATE,
@@ -452,7 +452,7 @@ Return a JSON object matching the PayrollAgentOutput schema.`;
         return {
           employeeId,
           superFunds: results,
-          overallCompliant: results.every((r: any) => r.isCompliant),
+          overallCompliant: results.every((r: Record<string, unknown>) => r.isCompliant),
           note: `Minimum super guarantee rate for ${fy} is ${MINIMUM_SUPER_RATE}% (configurable via SUPER_GUARANTEE_RATE env var)`,
         };
       },

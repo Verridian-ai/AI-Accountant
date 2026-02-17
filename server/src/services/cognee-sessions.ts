@@ -58,7 +58,7 @@ export interface CacheStats {
 // Wave 3: Cognee user-scoped session types
 export interface CogneeSessionContext {
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string; timestamp: string }>;
-  activeFilters: Record<string, any>;
+  activeFilters: Record<string, unknown>;
   lastQuery: string;
   lastDatasets: string[];
   datasetPrefix: string;
@@ -140,8 +140,8 @@ export class CogneeSessionService {
       const key = `${KEY_PREFIX}session:${userId}:${id}`;
       await this.redis!.set(key, JSON.stringify(session), 'EX', SESSION_TTL_SECONDS);
       return session;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to create session:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to create session:', err instanceof Error ? err.message : String(err));
       return null;
     }
   }
@@ -161,8 +161,8 @@ export class CogneeSessionService {
       session.lastActivityAt = new Date().toISOString();
       await this.redis!.set(key, JSON.stringify(session), 'EX', SESSION_TTL_SECONDS);
       return session;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to get session:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to get session:', err instanceof Error ? err.message : String(err));
       return null;
     }
   }
@@ -188,8 +188,8 @@ export class CogneeSessionService {
 
       await this.redis!.set(key, JSON.stringify(session), 'EX', SESSION_TTL_SECONDS);
       return session;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to update session:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to update session:', err instanceof Error ? err.message : String(err));
       return null;
     }
   }
@@ -203,8 +203,8 @@ export class CogneeSessionService {
 
       const deleted = await this.redis!.del(key);
       return deleted > 0;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to destroy session:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to destroy session:', err instanceof Error ? err.message : String(err));
       return false;
     }
   }
@@ -224,8 +224,8 @@ export class CogneeSessionService {
         }
       }
       return sessions;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to list sessions:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to list sessions:', err instanceof Error ? err.message : String(err));
       return [];
     }
   }
@@ -248,8 +248,8 @@ export class CogneeSessionService {
       const key = `${KEY_PREFIX}cache:query:${cacheKey}`;
       await this.redis!.set(key, serialized, 'EX', ttlSeconds);
       return true;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to cache result:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to cache result:', err instanceof Error ? err.message : String(err));
       return false;
     }
   }
@@ -271,8 +271,8 @@ export class CogneeSessionService {
 
       this.stats.cacheMisses++;
       return null;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to get cached result:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to get cached result:', err instanceof Error ? err.message : String(err));
       this.stats.cacheMisses++;
       return null;
     }
@@ -289,8 +289,8 @@ export class CogneeSessionService {
 
       const deleted = await this.redis!.del(...keys);
       return deleted;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to invalidate cache:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to invalidate cache:', err instanceof Error ? err.message : String(err));
       return 0;
     }
   }
@@ -361,8 +361,8 @@ export class CogneeSessionService {
         limit,
         resetAt: new Date(now + windowSeconds * 1000).toISOString(),
       };
-    } catch (err: any) {
-      console.warn('[CogneeSession] Rate limit check failed:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Rate limit check failed:', err instanceof Error ? err.message : String(err));
       return defaultAllowed;
     }
   }
@@ -374,8 +374,8 @@ export class CogneeSessionService {
       const key = `${KEY_PREFIX}ratelimit:${operation}`;
       const count = await this.redis!.zcard(key);
       return { count, limit: 0 }; // limit is context-dependent, caller knows it
-    } catch (err: any) {
-      console.warn('[CogneeSession] Rate limit status failed:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Rate limit status failed:', err instanceof Error ? err.message : String(err));
       return null;
     }
   }
@@ -422,8 +422,8 @@ export class CogneeSessionService {
       await this.redis!.sadd(`${KEY_PREFIX}csessions:user:${userId}`, sessionId);
 
       return { sessionId, context };
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to create Cognee session:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to create Cognee session:', err instanceof Error ? err.message : String(err));
       return null;
     }
   }
@@ -441,8 +441,8 @@ export class CogneeSessionService {
 
       const parsed = JSON.parse(data);
       return parsed.context as CogneeSessionContext;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to get Cognee session:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to get Cognee session:', err instanceof Error ? err.message : String(err));
       return null;
     }
   }
@@ -486,8 +486,8 @@ export class CogneeSessionService {
       const ttl = await this.redis!.ttl(key);
       parsed.context = context;
       await this.redis!.set(key, JSON.stringify(parsed), 'EX', Math.max(ttl, 1800));
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to add conversation turn:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to add conversation turn:', err instanceof Error ? err.message : String(err));
     }
   }
 
@@ -517,8 +517,8 @@ export class CogneeSessionService {
       const result = await this.createCogneeSession(userId, options);
       if (!result) return null;
       return { ...result, isNew: true };
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to get/create Cognee session:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to get/create Cognee session:', err instanceof Error ? err.message : String(err));
       return null;
     }
   }
@@ -529,7 +529,7 @@ export class CogneeSessionService {
   async cacheUserQueryResult(
     userId: string,
     queryHash: string,
-    result: any,
+    result: unknown,
     ttlSeconds: number = 300,
   ): Promise<boolean> {
     if (!this._ensureConnected()) return false;
@@ -541,8 +541,8 @@ export class CogneeSessionService {
 
       await this.redis!.set(key, serialized, 'EX', ttlSeconds);
       return true;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to cache user query result:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to cache user query result:', err instanceof Error ? err.message : String(err));
       return false;
     }
   }
@@ -550,15 +550,15 @@ export class CogneeSessionService {
   /**
    * Get cached Cognee search result for user (Wave 3)
    */
-  async getCachedUserQueryResult(userId: string, queryHash: string): Promise<any | null> {
+  async getCachedUserQueryResult<T = unknown>(userId: string, queryHash: string): Promise<T | null> {
     if (!this._ensureConnected()) return null;
 
     try {
       const key = `${KEY_PREFIX}cache:user_${userId}:${queryHash}`;
       const data = await this.redis!.get(key);
       return data ? this._deserializeFromCache(data) : null;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to get cached user query result:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to get cached user query result:', err instanceof Error ? err.message : String(err));
       return null;
     }
   }
@@ -578,8 +578,8 @@ export class CogneeSessionService {
       }
       await this.redis!.del(`${KEY_PREFIX}csessions:user:${userId}`);
       return destroyed;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Failed to destroy user Cognee sessions:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Failed to destroy user Cognee sessions:', err instanceof Error ? err.message : String(err));
       return 0;
     }
   }
@@ -618,8 +618,8 @@ export class CogneeSessionService {
         activeSessions: sessionKeys.length,
         cachedQueries: cacheKeys.length,
       };
-    } catch (err: any) {
-      console.warn('[CogneeSession] Health check failed:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Health check failed:', err instanceof Error ? err.message : String(err));
       return disconnected;
     }
   }
@@ -647,8 +647,8 @@ export class CogneeSessionService {
 
       const deleted = await this.redis!.del(...keys);
       return deleted;
-    } catch (err: any) {
-      console.warn('[CogneeSession] Flush failed:', err.message);
+    } catch (err: unknown) {
+      console.warn('[CogneeSession] Flush failed:', err instanceof Error ? err.message : String(err));
       return 0;
     }
   }
@@ -666,9 +666,9 @@ export class CogneeSessionService {
         this.connected = true;
         console.log('[CogneeSession] Connected to Redis');
         return;
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.warn(
-          `[CogneeSession] Connection attempt ${attempt}/${CONNECT_MAX_RETRIES} failed: ${err.message}`,
+          `[CogneeSession] Connection attempt ${attempt}/${CONNECT_MAX_RETRIES} failed: ${err instanceof Error ? err.message : String(err)}`,
         );
         if (attempt < CONNECT_MAX_RETRIES) {
           const delay = CONNECT_RETRY_BASE_MS * Math.pow(2, attempt - 1);

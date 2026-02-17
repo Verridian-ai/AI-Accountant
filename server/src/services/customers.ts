@@ -8,7 +8,7 @@
  * ABN validation uses the mod-89 checksum + optional ABR lookup.
  */
 
-import { eq, and, or, like, sql } from 'drizzle-orm';
+import { eq, and, or, like, sql , type SQL } from 'drizzle-orm';
 import { validateABN, normalizeABN } from '../utils/abn.js';
 import { ABNLookupService } from './enrichment/abn-lookup.js';
 import { logger } from '../utils/logger.js';
@@ -61,9 +61,9 @@ export interface CustomerWithBalance {
 // ---------------------------------------------------------------------------
 
 export class CustomerService {
-  private db: any;
+  private db: typeof db;
 
-  constructor(database?: any) {
+  constructor(database?: typeof db) {
     this.db = database ?? db;
   }
 
@@ -85,7 +85,7 @@ export class CustomerService {
     const isActive = options.isActive ?? true;
 
     // Build conditions
-    const conditions: any[] = [eq(customers.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(customers.userId, userId)];
 
     if (isActive !== undefined) {
       conditions.push(eq(customers.isActive, isActive));

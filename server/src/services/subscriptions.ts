@@ -75,21 +75,21 @@ function buildUsageReport(usage: UsageJson, plan: SubscriptionPlan): UsageReport
   };
 }
 
-function dbPlanToSubscriptionPlan(row: any): SubscriptionPlan {
+function dbPlanToSubscriptionPlan(row: Record<string, unknown>): SubscriptionPlan {
   return {
-    id: row.id,
-    name: row.name,
-    displayName: row.displayName ?? row.display_name ?? '',
-    description: row.description ?? '',
-    priceMonthlyCents: row.priceMonthlyCents ?? row.price_monthly_cents ?? 0,
-    priceAnnualCents: row.priceAnnualCents ?? row.price_annual_cents ?? 0,
-    maxMembers: row.maxMembers ?? row.max_members ?? 1,
-    maxAccounts: row.maxAccounts ?? row.max_accounts ?? 2,
-    maxTransactionsPerMonth: row.maxTransactionsPerMonth ?? row.max_transactions_per_month ?? 500,
-    maxAiQueriesPerMonth: row.maxAiQueriesPerMonth ?? row.max_ai_queries_per_month ?? 50,
-    maxStorageMb: row.maxStorageMb ?? row.max_storage_mb ?? 100,
-    features: parseFeatures(row.featuresJson ?? row.features_json),
-    isActive: row.isActive ?? row.is_active ?? true,
+    id: row.id as string,
+    name: row.name as string,
+    displayName: (row.displayName ?? row.display_name ?? '') as string,
+    description: (row.description ?? '') as string,
+    priceMonthlyCents: (row.priceMonthlyCents ?? row.price_monthly_cents ?? 0) as number,
+    priceAnnualCents: (row.priceAnnualCents ?? row.price_annual_cents ?? 0) as number,
+    maxMembers: (row.maxMembers ?? row.max_members ?? 1) as number,
+    maxAccounts: (row.maxAccounts ?? row.max_accounts ?? 2) as number,
+    maxTransactionsPerMonth: (row.maxTransactionsPerMonth ?? row.max_transactions_per_month ?? 500) as number,
+    maxAiQueriesPerMonth: (row.maxAiQueriesPerMonth ?? row.max_ai_queries_per_month ?? 50) as number,
+    maxStorageMb: (row.maxStorageMb ?? row.max_storage_mb ?? 100) as number,
+    features: parseFeatures((row.featuresJson ?? row.features_json) as string | null | undefined),
+    isActive: (row.isActive ?? row.is_active ?? true) as boolean,
   };
 }
 
@@ -103,18 +103,18 @@ function parseFeatures(raw: string | null | undefined): string[] {
   }
 }
 
-function dbRowToSubscription(row: any, plan: SubscriptionPlan): Subscription {
-  const usage = parseUsageJson(row.usageJson ?? row.usage_json);
+function dbRowToSubscription(row: Record<string, unknown>, plan: SubscriptionPlan): Subscription {
+  const usage = parseUsageJson((row.usageJson ?? row.usage_json) as string | null | undefined);
   return {
-    id: row.id,
-    tenantId: row.tenantId ?? row.tenant_id,
+    id: row.id as string,
+    tenantId: (row.tenantId ?? row.tenant_id) as string,
     plan,
-    status: row.status,
-    billingCycle: row.billingCycle ?? row.billing_cycle ?? 'monthly',
-    currentPeriodStart: row.currentPeriodStart ?? row.current_period_start,
-    currentPeriodEnd: row.currentPeriodEnd ?? row.current_period_end,
+    status: row.status as 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired',
+    billingCycle: (row.billingCycle ?? row.billing_cycle ?? 'monthly') as 'monthly' | 'annual',
+    currentPeriodStart: (row.currentPeriodStart ?? row.current_period_start) as string,
+    currentPeriodEnd: (row.currentPeriodEnd ?? row.current_period_end) as string,
     cancelAtPeriodEnd: !!(row.cancelAtPeriodEnd ?? row.cancel_at_period_end),
-    trialEnd: row.trialEnd ?? row.trial_end ?? undefined,
+    trialEnd: (row.trialEnd ?? row.trial_end ?? undefined) as string | undefined,
     usage: buildUsageReport(usage, plan),
   };
 }
@@ -394,7 +394,7 @@ export class SubscriptionService {
 
     const results: Subscription[] = [];
     for (const row of rows) {
-      const planId = row.planId ?? (row as any).plan_id;
+      const planId = row.planId ?? (row as Record<string, unknown>).plan_id;
       const plan = await this.getPlan(planId);
       if (plan) {
         results.push(dbRowToSubscription(row, plan));

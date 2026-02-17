@@ -125,7 +125,7 @@ export class VercelFinancialPlanner extends VercelAgent<
     super('financial_planner', SYSTEM_PROMPT, FinancialPlannerOutputSchema);
   }
 
-  getTools(): ToolSet {
+  getTools(sessionId?: string): ToolSet {
     const tools: ToolSet = {};
 
     tools['analyze_spending_patterns'] = adaptLegacyTool(
@@ -395,8 +395,7 @@ export class VercelFinancialPlanner extends VercelAgent<
         const searchQuery = patternType ? `${query} type:${patternType}` : query;
         try {
           const results = await cogneeTools.searchWithDataPoint(
-            searchQuery, 'FinancialTransaction',
-          , sessionId);
+            searchQuery, 'FinancialTransaction', sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };

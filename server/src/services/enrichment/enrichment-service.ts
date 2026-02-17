@@ -59,16 +59,24 @@ export class EnrichmentService {
       .where(eq(merchantMemory.userId, userId))
       .all();
 
-    const existingMappings = memoryRecords
+    interface MemoryRecord {
+      merchantPattern: string;
+      merchantDisplayName: string | null;
+      category: string | null;
+      gstApplicable: boolean | null;
+      [key: string]: unknown;
+    }
+
+    const existingMappings = (memoryRecords as MemoryRecord[])
       .filter(
-        (m: any) =>
+        (m) =>
           !m.merchantPattern.startsWith('abn:') && !m.merchantPattern.startsWith('places:'),
       )
-      .map((m: any) => ({
-        pattern: m.merchantPattern,
-        displayName: m.merchantDisplayName || m.merchantPattern,
-        category: m.category,
-        gstRegistered: m.gstApplicable ?? false,
+      .map((m) => ({
+        pattern: m.merchantPattern as string,
+        displayName: (m.merchantDisplayName || m.merchantPattern) as string,
+        category: (m.category ?? '') as string,
+        gstRegistered: (m.gstApplicable ?? false) as boolean,
       }));
 
     // Stage 0: Cache lookup
@@ -79,9 +87,9 @@ export class EnrichmentService {
     >();
 
     for (const tx of txList) {
-      const desc = stripPaymentPrefix((tx as any).description || '');
-      const matched = existingMappings.find((m: any) =>
-        desc.toLowerCase().includes(m.pattern.toLowerCase()),
+      const desc = stripPaymentPrefix(String((tx as Record<string, unknown>).description ?? ''));
+      const matched = existingMappings.find((m) =>
+        desc.toLowerCase().includes(String(m.pattern).toLowerCase()),
       );
       if (matched && matched.category) {
         cacheHits.set(tx.id, {
@@ -113,8 +121,8 @@ export class EnrichmentService {
       try {
         const txId = tx.id;
         const cached = cacheHits.get(txId);
-        let category = (tx as any).category || '';
-        let merchantNormalized = (tx as any).merchantNormalized || '';
+        let category = String((tx as Record<string, unknown>).category ?? '');
+        let merchantNormalized = String((tx as Record<string, unknown>).merchantNormalized ?? '');
         let gstRegistered = true;
 
         if (cached) {
@@ -133,8 +141,8 @@ export class EnrichmentService {
           }
 
           if (!category) {
-            const desc = stripPaymentPrefix((tx as any).description || '');
-            const matched = existingMappings.find((m: any) =>
+            const desc = stripPaymentPrefix(String((tx as Record<string, unknown>).description ?? ''));
+            const matched = existingMappings.find((m) =>
               desc.toLowerCase().includes(m.pattern.toLowerCase()),
             );
             if (matched) {
@@ -146,9 +154,10 @@ export class EnrichmentService {
         }
 
         // GST calculation (non-AI, rule-based)
+        const txAmount = Number((tx as Record<string, unknown>).amount) || 0;
         const gstResult = category
-          ? inferGstCategory(category, (tx as any).amount)
-          : { gstCategory: 'taxable_10', gstAmount: calculateGstFromInclusive((tx as any).amount) };
+          ? inferGstCategory(category, txAmount)
+          : { gstCategory: 'taxable_10', gstAmount: calculateGstFromInclusive(txAmount) };
 
         if (!gstRegistered) {
           gstResult.gstCategory = 'gst_free';
@@ -156,11 +165,11 @@ export class EnrichmentService {
         }
 
         // Skip overwriting GST fields if user has manually edited
-        if ((tx as any).isEdited) {
+        if ((tx as Record<string, unknown>).isEdited) {
           logger.info(`[Enrichment] Skipping GST overwrite for edited transaction ${txId}`);
           const updateData: Record<string, any> = {};
           if (merchantNormalized) updateData.merchantNormalized = merchantNormalized;
-          if (category && !(tx as any).category) updateData.category = category;
+          if (category && !(tx as Record<string, unknown>).category) updateData.category = category;
           if (Object.keys(updateData).length > 0) {
             await db.update(transactions).set(updateData).where(eq(transactions.id, txId));
           }
@@ -177,7 +186,7 @@ export class EnrichmentService {
         };
 
         if (merchantNormalized) updateData.merchantNormalized = merchantNormalized;
-        if (category && !(tx as any).category) updateData.category = category;
+        if (category && !(tx as Record<string, unknown>).category) updateData.category = category;
 
         await db.update(transactions).set(updateData).where(eq(transactions.id, txId));
 
@@ -216,7 +225,7 @@ export class EnrichmentService {
       return { enriched: 0, failed: 0, pending: 0 };
     }
 
-    const ids = uncategorized.map((tx: any) => tx.id);
+    const ids = uncategorized.map((tx: Record<string, unknown>) => tx.id);
     return this.enrichTransactions(ids, userId);
   }
 }

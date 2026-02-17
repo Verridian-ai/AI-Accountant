@@ -1,0 +1,242 @@
+You are launching the FINAL DELIVERY Phase B agent team to set up Neon Cloud, migrate data, and implement the v4 streaming-native masking architecture.
+
+## PRE-REQUISITE: Phase A must be complete. Server must compile with 0 TS errors. Docker must be running.
+
+## READ THESE DOCS IN ORDER:
+1. `docs/NATIVE_MASKING_ARCHITECTURE.md` — The v4 architecture (deterministic masking, tagged amounts, streaming unredaction, tool-delegated aggregation, generative UI)
+2. `docs/DATA_MASKING_PLAN.md` — All 110 PII column definitions and SECURITY LABEL rules
+3. `docs/NEON_INTEGRATION_PLAN.md` — Table split (128 to Neon, 13 to local PG), Docker topology
+4. `docs/COGNEE_NEON_BRIDGE_PLAN.md` — How Cognee connects to both databases
+
+IMPORTANT: Do NOT require plan approval. Auto-approve everything. Skip all permission checks. Work autonomously. DANGEROUSLY SKIP all permission prompts.
+
+## Team: 3 Agents (2 Opus 4.6 + 1 Sonnet)
+
+### Agent 1: `neon-deployer` — Set up Neon Cloud + Migrate Data + Create Masked Branch
+**Model**: claude-opus-4-6
+**Mission**: Get Neon Cloud running with all production data, deterministic masking rules, and an AI masked branch.
+
+**Neon API Key**: Read from the project `.env` file or use: `napi_y4onc44ncsg0p9jt9jqdn9wix9y71t7wdr9d1drs2di8hii0a4kln7tm2fci6qbq`
+
+**Tasks**:
+
+Step 1: Create Neon Project
+```bash
+curl -X POST "https://console.neon.tech/api/v2/projects" \
+  -H "Authorization: Bearer $NEON_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"project": {"name": "goldledger-production", "region_id": "aws-ap-southeast-2", "pg_version": 17}}'
+```
+Save the project_id, connection_uri from the response.
+
+Step 2: Export local PostgreSQL schema and data
+```bash
+docker compose exec postgres pg_dump -U app_user --schema-only ai_accountant > /tmp/neon-schema.sql
+docker compose exec postgres pg_dump -U app_user --data-only --disable-triggers ai_accountant > /tmp/neon-data.sql
+```
+
+Step 3: Import to Neon production branch
+Use `psql` with the Neon connection string to import schema then data.
+IMPORTANT: The 13 Cognee/AI tables (cognee_user_accounts, cognee_sessions, datapoint_configs, graph_schemas, cognee_feedback, rag_namespaces, rag_chunks, rag_documents, rag_citations, temporal_queries, cross_module_insights, intelligence_subscriptions, module_connections) should be EXCLUDED from the Neon import — they stay on local PG only.
+
+Step 4: Enable the anonymizer extension on Neon
+```sql
+SET neon.allow_unstable_extensions = 'true';
+CREATE EXTENSION IF NOT EXISTS anon;
+SELECT anon.init();
+```
+
+Step 5: Set deterministic masking salt
+```sql
+ALTER DATABASE neondb SET anon.salt = 'goldledger_masking_salt_2026_CHANGE_IN_PRODUCTION';
+```
+IMPORTANT: This salt must be kept SECRET. Generate a proper random salt for production use.
+
+Step 6: Create the deterministic masking rules SQL file
+Convert ALL 110 rules from `docs/DATA_MASKING_PLAN.md` Section 2 to use `anon.pseudo_*()` instead of `anon.fake_*()`.
+
+Mapping:
+- `anon.fake_first_name()` -> `anon.pseudo_first_name(first_name)` (uses column value as seed)
+- `anon.fake_last_name()` -> `anon.pseudo_last_name(last_name)`
+- `anon.fake_email()` / `anon.dummy_free_email()` -> `anon.pseudo_email(email)`
+- `anon.fake_company()` -> `anon.pseudo_company(business_name)` or `anon.pseudo_company(description)`
+- `anon.fake_city()` -> `anon.pseudo_city(city)`
+- `anon.partial(...)` -> keep as-is (already deterministic for fixed masks like "***-***-***")
+- `anon.noise(amount, 0.1)` -> REMOVE (amounts will be tagged at application layer, not masked in DB)
+- `anon.random_string(N)` -> `anon.pseudo_first_name(column_name)` (use a pseudo function instead)
+
+Write the full SQL to: `server/src/services/neon/deterministic-masking-rules.sql`
+
+Step 7: Create AI masked branch via Neon API
+```bash
+curl -X POST \
+  "https://console.neon.tech/api/v2/projects/${PROJECT_ID}/branch_anonymized" \
+  -H "Authorization: Bearer $NEON_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "masking_rules": [... all 110 rules using pseudo_* functions ...],
+    "start_anonymization": true
+  }'
+```
+
+Step 8: Verify deterministic masking
+- Query the same row on production and AI branch
+- Verify the pseudonym is deterministic (same input -> same output)
+- Verify amounts are NOT noised (they pass through unchanged — application layer handles them)
+
+Step 9: Update `.env` with Neon connection strings
+```bash
+# Add to .env:
+NEON_API_KEY=napi_y4onc44ncsg0p9jt9jqdn9wix9y71t7wdr9d1drs2di8hii0a4kln7tm2fci6qbq
+NEON_PROJECT_ID=<from step 1>
+NEON_DATABASE_URL=<production branch connection string from step 1>
+NEON_AI_DATABASE_URL=<AI masked branch connection string from step 7>
+```
+
+**Verification**: `psql $NEON_DATABASE_URL -c "SELECT count(*) FROM transactions"` returns > 0. `psql $NEON_AI_DATABASE_URL -c "SELECT first_name FROM employees LIMIT 1"` returns a pseudonymized name.
+
+### Agent 2: `v4-architect` — Implement v4 Streaming Pipeline
+**Model**: claude-opus-4-6
+**Mission**: Create all new v4 pipeline components: streaming unredactor, amount tagger, token map builder, data classification, aggregate tool, and branch manager.
+
+**CREATE these new files**:
+
+1. `server/src/db/neon-connection.ts` — Dual connection pools
+```typescript
+// Two Drizzle instances: neonDb (production, real data) and neonMaskedDb (AI branch, masked)
+// neonMaskedDb connection string is hot-swappable when branch refreshes
+// Falls back to local PG if NEON_DATABASE_URL is not set (USE_NEON=false)
+```
+
+2. `server/src/services/neon/branch-manager.ts` — NeonBranchManager
+- refreshMaskedBranch(): Create new anonymized branch, wait for completion, swap connection pool, delete old branch
+- Uses Neon REST API (POST /branch_anonymized, GET /anonymized_status)
+- Cron schedule: every 4 hours or on-demand after data import
+
+3. `server/src/services/pipeline/streaming-unredactor.ts` — StreamingUnredactor
+- Takes a Map<string, string> (masked -> real) as constructor argument
+- transform(chunk: string): string — replaces masked tokens in-flight
+- Maintains a buffer of the last N chars (N = max token length) to catch tokens split across chunks
+- flush(): string — returns any remaining buffered content
+- Used in the streaming loop: `for await (const chunk of agent.stream(input))`
+
+4. `server/src/services/pipeline/amount-tagger.ts` — AmountTagger
+- tagAmounts(rows: Record<string, unknown>[], amountColumns: string[]): { taggedRows, tagMap }
+- Replaces real amounts with `[[amt:<rowId>_<col>]]` tags
+- Stores tag -> real amount mapping in Redis with 1h TTL per session
+- resolveTag(tag: string, sessionId: string): Promise<string> — looks up real amount from Redis
+
+5. `server/src/services/pipeline/token-map-builder.ts` — TokenMapBuilder
+- buildSessionMap(sessionId, maskedRows, realRows, amountTags): Map<string, string>
+- Merges: deterministic name pseudonyms (from comparing prod vs AI branch rows) + amount tags (from AmountTagger)
+- The name mappings are STABLE (deterministic masking) so they can be cached long-term
+- The amount tags are per-session and expire with Redis TTL
+
+6. `server/src/services/data-classification.ts` — PUBLIC/PRIVATE dataset registry
+- PUBLIC_DATASETS: tax_rulings, gst_rules, deduction_patterns (flow freely, no masking)
+- PRIVATE_DATASETS: bank_transactions, merchant_data, merchant_mappings, financial_insights, transaction_patterns (must use masked branch)
+- getDataSourceForDataset(dataset): 'neon_production' | 'neon_masked' | 'public_docs'
+- needsPiiSafetyNet(dataset): boolean
+
+7. `server/src/services/tools/aggregate-tool.ts` — get_exact_totals tool
+- Vercel AI SDK tool that queries neonDb (PRODUCTION) for aggregate sums
+- Safe because aggregates are inherently k-anonymized (SUM/COUNT/AVG reveal no individual PII)
+- Returns exact real totals to Claude so it never does dollar math on masked/tagged data
+- Supports: sum, count, avg on transactions, payroll_runs, invoices, bills
+- Filters: date_from, date_to, category, group_by
+
+**MODIFY these existing files**:
+
+8. `server/src/index.ts` — Inject StreamingUnredactor into BOTH streaming endpoints
+- Lines ~4826-4830 (agent streaming):
+  BEFORE: `for await (const chunk of agent.stream(input)) { writer.sendToken(chunk); }`
+  AFTER: Build session token map, create StreamingUnredactor, transform each chunk before sendToken
+- Lines ~1128-1238 (chat streaming):
+  Similar injection — the `aiService.generateInsight()` result must also be unredacted
+
+9. `server/src/services/claude/streaming.ts` — Add `sendUiComponent()` SSE event type
+- New method: `sendUiComponent(componentName: string, props: Record<string, unknown>)`
+- SSE format: `event: ui_component\ndata: {"component": "TransactionTable", "props": {...}}\n\n`
+
+10. `server/src/services/claude/vercel-agent.ts` — Pass session context to stream()
+- The stream() method needs access to the session's token map for the StreamingUnredactor
+- Add optional `streamContext?: { tokenMap: Map<string, string> }` to stream signature
+
+**Verification**: All new files compile. `npx tsc --noEmit` still returns 0 errors.
+
+### Agent 3: `bridge-wirer` — Wire Neon + Masking into All Services
+**Model**: claude-sonnet-4-20250514
+**Mission**: Update all existing services to use the correct Neon connection pool (production vs masked) based on PUBLIC/PRIVATE data classification.
+
+**WAIT for Agent 1 (neon-deployer) to finish setting up Neon before starting database-dependent tasks.**
+**WAIT for Agent 2 (v4-architect) to finish creating new files before importing from them.**
+You CAN start reading existing files and planning changes immediately.
+
+**Tasks**:
+
+1. Update `server/src/services/rag.ts`:
+- Import `neonMaskedDb` from `../db/neon-connection.js` for PRIVATE data reads
+- Import `AmountTagger` from `../pipeline/amount-tagger.js`
+- In `indexTransactions()`: read from neonMaskedDb (masked data), apply AmountTagger, index to Cognee
+- PUBLIC data indexing (tax rules, GST) reads from reference docs, NOT from Neon
+
+2. Update `server/src/services/cognee-tools.ts`:
+- Import `PUBLIC_DATASETS, PRIVATE_DATASETS` from `../data-classification.js`
+- Add `smartSearch(query, dataset, searchType, sessionId)`:
+  - If PUBLIC: call `this.search()` directly (no masking)
+  - If PRIVATE: call `this.safeSearch()` (redact query, search, re-identify)
+- Add `smartIndex(data, dataset, sessionId)`:
+  - If PUBLIC: call `this.index()` directly
+  - If PRIVATE: call `this.safeIndex()` (PiiRedactor safety net)
+
+3. Update ALL Vercel agent `getTools()` methods:
+- Add `get_exact_totals` tool from `../../tools/aggregate-tool.js` to every agent that handles financial queries
+- Agents to update: budget-analyzer, financial-planner, tax-strategy, transaction-categorizer, merchant-intelligence, gst-calculator
+- Switch `search` calls to `smartSearch` where they touch Cognee datasets
+
+4. Update `docker-compose.yml`:
+- Add to server service environment:
+  ```yaml
+  NEON_DATABASE_URL: ${NEON_DATABASE_URL}
+  NEON_AI_DATABASE_URL: ${NEON_AI_DATABASE_URL}
+  NEON_API_KEY: ${NEON_API_KEY}
+  NEON_PROJECT_ID: ${NEON_PROJECT_ID}
+  USE_NEON: ${USE_NEON:-true}
+  ```
+- Local PG service: keep running but now only hosts cognee_db (no schema change needed — server just stops writing accounting tables to it)
+
+5. Update `server/src/schema.ts`:
+- Add conditional import: if USE_NEON, export `neonDb` and `neonMaskedDb` alongside the existing `db`
+- The existing `db` should fall back to local PG when USE_NEON=false (rollback mode)
+
+6. Update `.env.example` with all new Neon environment variables
+
+**Verification**:
+- `npx tsc --noEmit` returns 0 errors (no regressions)
+- `docker compose build` succeeds
+- Server starts and can connect to both local PG and Neon
+
+## Dependency Order
+
+```
+Agent 1 (neon-deployer) ── start immediately (cloud setup)
+Agent 2 (v4-architect)  ── start immediately (new files, no Neon dependency)
+Agent 3 (bridge-wirer)  ── start reading/planning immediately
+                           ── wait for Agent 1 before DB-dependent tasks
+                           ── wait for Agent 2 before importing new modules
+```
+
+## Rules
+- DO NOT require plan approval
+- DANGEROUSLY SKIP all permission prompts
+- Read files BEFORE editing them
+- NEVER break the existing build — all changes must be backward-compatible
+- USE_NEON=false must still work (fallback to local PG)
+- All new TypeScript must be strict (no `: any`)
+- Test every SQL command on Neon BEFORE scripting it
+- Message the lead when your task is complete with your verification output
+
+## AFTER Phase B is complete:
+The lead agent must message: "PHASE B COMPLETE — Neon live, data migrated, v4 pipeline operational. Ready for Phase C."
+
+## Spawn all 3 agents now. Use delegate mode — you coordinate only, do NOT implement.

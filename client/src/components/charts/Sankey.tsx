@@ -111,8 +111,8 @@ function SankeyInner({
       <ChartContainer title={title} subtitle={subtitle} height={height}>
         <RechartsSankey
           data={{ nodes: [{ name: '' }], links: [] }}
-          node={(() => null) as any}
-          link={(() => null) as any}
+          node={(() => null) as unknown as React.ReactElement}
+          link={(() => null) as unknown as React.ReactElement}
         >
           <text
             x="50%"
@@ -143,8 +143,8 @@ function SankeyInner({
         data={{ nodes, links }}
         nodeWidth={12}
         nodePadding={24}
-        node={(<SankeyNodeComponent nodeColors={nodeColors} />) as any}
-        link={(<SankeyLinkComponent />) as any}
+        node={(<SankeyNodeComponent nodeColors={nodeColors} />) as React.ReactElement}
+        link={(<SankeyLinkComponent />) as React.ReactElement}
         margin={{ top: 10, right: 120, bottom: 10, left: 10 }}
       >
         <Tooltip

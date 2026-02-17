@@ -19,7 +19,7 @@ migrationRoutes.get('/schemas', async (c) => {
 });
 
 migrationRoutes.get('/schemas/:agentType', async (c) => {
-  const schema = schemaRegistry.getSchema(c.req.param('agentType') as any);
+  const schema = schemaRegistry.getSchema(c.req.param('agentType') as import('../services/claude/types.js').AgentType);
   return schema ? c.json(schema) : c.json({ error: 'Not found' }, 404);
 });
 

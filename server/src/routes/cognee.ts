@@ -24,7 +24,7 @@ cogneeRoutes.post('/init-user', zValidator('json', initCogneeUserSchema), async 
   if (existing.length > 0) return c.json({ message: 'Exists', account: existing[0] });
   const cogneeEmail = email || `user_${userId}@goldledger.app`;
   const result = await cogneeClient.createCogneeUser(cogneeEmail, crypto.randomUUID());
-  await (db.insert(cogneeUserAccounts).values({ id: crypto.randomUUID(), userId, cogneeEmail, cogneeRefreshToken: result.refreshToken, cogneeUserId: result.userId, datasetPrefix: `user_${userId}`, isActive: true, createdAt: new Date().toISOString() }) as any).run(); // eslint-disable-line @typescript-eslint/no-explicit-any
+  await db.insert(cogneeUserAccounts).values({ id: crypto.randomUUID(), userId, cogneeEmail, cogneeRefreshToken: result.refreshToken, cogneeUserId: result.userId, datasetPrefix: `user_${userId}`, isActive: true, createdAt: new Date().toISOString() }).run();
   if (result.userId && result.refreshToken) await cogneeClient.setupUserAuth(userId, result.refreshToken);
   return c.json({ message: 'Initialized' }, 201);
 });

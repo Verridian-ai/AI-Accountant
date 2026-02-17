@@ -151,7 +151,8 @@ taxRoutes.get('/gst/review-queue', async (c) => {
       )
       .limit(50)
       .all();
-    const items = reviewItems.map((tx: any) => ({
+    type TxRow = typeof transactions.$inferSelect;
+    const items = reviewItems.map((tx: TxRow) => ({
       id: tx.id,
       date: tx.date,
       description: tx.description,
@@ -221,9 +222,10 @@ taxRoutes.get('/tax/summary/:year', async (c) => {
     .from(transactions)
     .where(eq(transactions.userId, payload.userId))
     .all();
+  type TxRow2 = typeof transactions.$inferSelect;
   const totalIncome = userTransactions
-    .filter((t: any) => t.amount > 0 && !t.isTransfer)
-    .reduce((sum: number, t: any) => sum + t.amount, 0); // eslint-disable-line @typescript-eslint/no-explicit-any
+    .filter((t: TxRow2) => t.amount > 0 && !t.isTransfer)
+    .reduce((sum: number, t: TxRow2) => sum + t.amount, 0);
   return c.json({ taxYear, grossIncomeCents: totalIncome, status: 'draft' });
 });
 

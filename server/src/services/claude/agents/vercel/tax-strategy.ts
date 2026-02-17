@@ -59,7 +59,7 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
     super('tax_strategy', SYSTEM_PROMPT, TaxStrategyOutputSchema);
   }
 
-  getTools(): ToolSet {
+  getTools(sessionId?: string): ToolSet {
     const tools: ToolSet = {};
 
     tools['analyze_entity_structure'] = adaptLegacyTool(
@@ -210,8 +210,7 @@ export class VercelTaxStrategy extends VercelAgent<TaxStrategyInput, TaxStrategy
         const entityType = input.entityType as string;
         try {
           const results = await cogneeTools.searchWithDataPoint(
-            `${deductionType} ${entityType}`, 'TaxEvent',
-          , sessionId);
+            `${deductionType} ${entityType}`, 'TaxEvent', sessionId);
           return { found: results.length > 0, results };
         } catch {
           return { found: false, results: [], error: 'Cognee search unavailable' };

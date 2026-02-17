@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 interface CustomerDetailProps {
   customerId: string;
   onBack: () => void;
-  onEdit: (customer: any) => void;
+  onEdit: (customer: CustomerRecord) => void;
 }
 
 const formatABN = (abn: string | null | undefined): string => {
@@ -33,9 +33,36 @@ const formatABN = (abn: string | null | undefined): string => {
 const formatAUD = (cents: number) =>
   new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100);
 
+interface CustomerRecord {
+  businessName?: string;
+  abn?: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postcode?: string;
+  notes?: string;
+  paymentTermsDays?: number;
+  isActive?: boolean;
+  outstandingBalance?: number;
+  overdueAmount?: number;
+  invoices?: Array<{ id: string; invoiceNumber?: string; issueDate?: string; date?: string; totalCents?: number; total?: number; status?: string }>;
+  [key: string]: unknown;
+}
+
+interface ContactRecord {
+  id?: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+}
+
 export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailProps) {
-  const [customer, setCustomer] = useState<any>(null);
-  const [contacts, setContacts] = useState<any[]>([]);
+  const [customer, setCustomer] = useState<CustomerRecord | null>(null);
+  const [contacts, setContacts] = useState<ContactRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [archiving, setArchiving] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -329,7 +356,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
           <p className="text-xs text-zinc-600">No additional contacts.</p>
         ) : (
           <div className="space-y-2">
-            {contacts.map((c: any, i: number) => (
+            {contacts.map((c: ContactRecord, i: number) => (
               <div
                 key={c.id ?? i}
                 className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800/30 text-sm"
@@ -371,7 +398,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
                 </tr>
               </thead>
               <tbody>
-                {invoices.map((inv: any) => (
+                {invoices.map((inv: { id: string; invoiceNumber?: string; issueDate?: string; date?: string; totalCents?: number; total?: number; status?: string }) => (
                   <tr key={inv.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
                     <td className="px-3 py-2 text-zinc-200 font-mono">
                       {inv.invoiceNumber ?? inv.id}

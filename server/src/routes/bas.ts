@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { db, transactions, taxCodes } from '../schema.js';
 import { eq, and, gte, lte } from 'drizzle-orm';
-import { BASService } from '../services/bas.js';
+import { BASService, type BASResult } from '../services/bas.js';
 import { events } from '../events.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
@@ -59,8 +59,8 @@ basRoutes.get('/:quarter/calculate', async (c) => {
     payload.userId,
     financialYear,
     quarterNum,
-    method as any,
-  ); // eslint-disable-line @typescript-eslint/no-explicit-any
+    method,
+  );
   const g5 = result.labels.G2 + result.labels.G3;
   const g6 = result.labels.G1 - g5;
   const g9 = result.labels['1A'];
@@ -106,12 +106,11 @@ basRoutes.post('/:quarter/save', zValidator('json', saveBASSchema), async (c) =>
   const quarter = c.req.param('quarter');
   const body = c.req.valid('json');
   const { financialYear, quarter: quarterNum } = resolvePeriod(quarter);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await basService.saveBASCalculation(
     payload.userId,
     financialYear,
     quarterNum,
-    body as any,
+    body as unknown as BASResult,
   );
   events.emit('update', { type: 'bas_updated' });
   return c.json(result);
@@ -209,7 +208,8 @@ basRoutes.get('/:quarter/drill-down/:label', async (c) => {
         ),
       )
       .all();
-    const filtered = txns.filter((tx: any) => {
+    type TxRow = typeof transactions.$inferSelect;
+    const filtered = txns.filter((tx: TxRow) => {
       const cat = tx.gstCategory || 'taxable_10';
       switch (label) {
         case 'G1':
@@ -231,7 +231,7 @@ basRoutes.get('/:quarter/drill-down/:label', async (c) => {
       }
     });
     return c.json(
-      filtered.map((tx: any) => ({
+      filtered.map((tx: Record<string, unknown>) => ({
         id: tx.id,
         date: tx.date,
         description: tx.description,

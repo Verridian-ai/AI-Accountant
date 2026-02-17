@@ -5,7 +5,11 @@
  */
 
 import { db, complianceChecks, complianceSchedules, anomalyAlerts } from '../schema.js';
-import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, sql, type SQL } from 'drizzle-orm';
+
+type ComplianceCheckRow = typeof complianceChecks.$inferSelect;
+type ComplianceScheduleRow = typeof complianceSchedules.$inferSelect;
+type AnomalyAlertRow = typeof anomalyAlerts.$inferSelect;
 import crypto from 'crypto';
 
 // ---------------------------------------------------------------------------
@@ -100,7 +104,7 @@ export class ComplianceMonitorService {
       dateTo?: string;
     },
   ): Promise<ComplianceObligation[]> {
-    const conditions: any[] = [eq(complianceChecks.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(complianceChecks.userId, userId)];
 
     if (options?.obligationType)
       conditions.push(eq(complianceChecks.obligationType, options.obligationType));
@@ -108,7 +112,7 @@ export class ComplianceMonitorService {
     if (options?.dateFrom) conditions.push(gte(complianceChecks.dueDate, options.dateFrom));
     if (options?.dateTo) conditions.push(lte(complianceChecks.dueDate, options.dateTo));
 
-    const rows: any[] = await db
+    const rows: ComplianceCheckRow[] = await db
       .select()
       .from(complianceChecks)
       .where(and(...conditions))
@@ -117,7 +121,7 @@ export class ComplianceMonitorService {
 
     const now = new Date();
 
-    return rows.map((row: any) => {
+    return rows.map((row) => {
       const dueDate = new Date(row.dueDate);
       const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / 86400000);
 
@@ -198,7 +202,7 @@ export class ComplianceMonitorService {
     const startYear = parseInt(match[1], 10);
 
     // Get user's enabled schedules
-    const schedules: any[] = await db
+    const schedules: ComplianceScheduleRow[] = await db
       .select()
       .from(complianceSchedules)
       .where(and(eq(complianceSchedules.userId, userId), eq(complianceSchedules.enabled, 1)))
@@ -221,7 +225,7 @@ export class ComplianceMonitorService {
 
       for (const period of periods) {
         // Check if obligation already exists
-        const existing: any = await db
+        const existing = await db
           .select()
           .from(complianceChecks)
           .where(
@@ -236,7 +240,7 @@ export class ComplianceMonitorService {
         if (existing) continue;
 
         const id = await this.createObligation(userId, {
-          obligationType: schedule.obligationType,
+          obligationType: schedule.obligationType as ObligationType,
           period: period.label,
           dueDate: period.dueDate,
         });
@@ -244,7 +248,7 @@ export class ComplianceMonitorService {
         created.push({
           id,
           userId,
-          obligationType: schedule.obligationType,
+          obligationType: schedule.obligationType as ObligationType,
           period: period.label,
           dueDate: period.dueDate,
           status: 'pending',
@@ -280,7 +284,7 @@ export class ComplianceMonitorService {
     const pastCutoff = new Date(now);
     pastCutoff.setDate(pastCutoff.getDate() - 90); // Show up to 90 days overdue
 
-    const rows: any[] = await db
+    const rows: ComplianceCheckRow[] = await db
       .select()
       .from(complianceChecks)
       .where(
@@ -295,14 +299,14 @@ export class ComplianceMonitorService {
 
     // Filter out already-lodged/paid
     const active = rows.filter(
-      (r: any) => r.status !== 'lodged' && r.status !== 'paid' && r.status !== 'exempt',
+      (r) => r.status !== 'lodged' && r.status !== 'paid' && r.status !== 'exempt',
     );
 
-    return active.map((row: any) => {
+    return active.map((row) => {
       const dueDate = new Date(row.dueDate);
       const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / 86400000);
 
-      let status: ObligationStatus = row.status;
+      let status: ObligationStatus = row.status as ObligationStatus;
       if (daysUntilDue < 0 && status !== 'lodged' && status !== 'paid') status = 'overdue';
       else if (daysUntilDue <= 14 && status === 'pending') status = 'upcoming';
 
@@ -435,7 +439,7 @@ export class ComplianceMonitorService {
     }
 
     // Active anomaly alerts factor — cross-module risk integration
-    const openAlerts: any[] = await db
+    const openAlerts: AnomalyAlertRow[] = await db
       .select()
       .from(anomalyAlerts)
       .where(and(eq(anomalyAlerts.userId, userId), eq(anomalyAlerts.status, 'open')))
@@ -446,7 +450,7 @@ export class ComplianceMonitorService {
       score += alertScore;
 
       const highSeverity = openAlerts.filter(
-        (a: any) => a.severity === 'high' || a.severity === 'critical',
+        (a) => a.severity === 'high' || a.severity === 'critical',
       ).length;
       const severity: RiskLevel = highSeverity > 0 ? 'high' : 'medium';
 
@@ -464,7 +468,7 @@ export class ComplianceMonitorService {
     }
 
     // Check for missing schedules
-    const schedules: any[] = await db
+    const schedules: ComplianceScheduleRow[] = await db
       .select()
       .from(complianceSchedules)
       .where(eq(complianceSchedules.userId, userId))
@@ -513,13 +517,13 @@ export class ComplianceMonitorService {
 
   /** Get all compliance schedules for a user. */
   async getSchedules(userId: string): Promise<ComplianceScheduleItem[]> {
-    const rows: any[] = await db
+    const rows: ComplianceScheduleRow[] = await db
       .select()
       .from(complianceSchedules)
       .where(eq(complianceSchedules.userId, userId))
       .all();
 
-    return rows.map((row: any) => ({
+    return rows.map((row) => ({
       id: row.id,
       userId: row.userId,
       obligationType: row.obligationType as ObligationType,

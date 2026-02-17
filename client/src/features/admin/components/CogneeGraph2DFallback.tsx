@@ -88,11 +88,41 @@ function getEdgeColor(type: string): string {
   return EDGE_COLORS[type.toLowerCase()] ?? EDGE_COLORS.default;
 }
 
-function transformData(raw: any): { nodes: GraphNode[]; links: GraphLink[] } {
-  const rawNodes: any[] = raw?.nodes ?? raw?.data?.nodes ?? [];
-  const rawLinks: any[] = raw?.links ?? raw?.edges ?? raw?.data?.links ?? raw?.data?.edges ?? [];
+interface RawNode2D {
+  id: string | number;
+  name?: string;
+  label?: string;
+  type?: string;
+  entity_type?: string;
+  dataset?: string;
+  connections?: number;
+  degree?: number;
+  properties?: Record<string, unknown>;
+}
 
-  const nodes: GraphNode[] = rawNodes.slice(0, MAX_NODES).map((n: any) => {
+interface RawLink2D {
+  source: string | number;
+  target: string | number;
+  type?: string;
+  relationship?: string;
+}
+
+interface RawGraphResponse2D {
+  nodes?: RawNode2D[];
+  links?: RawLink2D[];
+  edges?: RawLink2D[];
+  data?: {
+    nodes?: RawNode2D[];
+    links?: RawLink2D[];
+    edges?: RawLink2D[];
+  };
+}
+
+function transformData(raw: RawGraphResponse2D): { nodes: GraphNode[]; links: GraphLink[] } {
+  const rawNodes: RawNode2D[] = raw?.nodes ?? raw?.data?.nodes ?? [];
+  const rawLinks: RawLink2D[] = raw?.links ?? raw?.edges ?? raw?.data?.links ?? raw?.data?.edges ?? [];
+
+  const nodes: GraphNode[] = rawNodes.slice(0, MAX_NODES).map((n: RawNode2D) => {
     const type = (n.type || n.entity_type || 'default').toLowerCase();
     const connections = Number(n.connections ?? n.degree ?? 0);
     return {
@@ -113,9 +143,9 @@ function transformData(raw: any): { nodes: GraphNode[]; links: GraphLink[] } {
 
   const nodeIds = new Set(nodes.map((n) => n.id));
   const links: GraphLink[] = rawLinks
-    .filter((l: any) => nodeIds.has(String(l.source)) && nodeIds.has(String(l.target)))
+    .filter((l: RawLink2D) => nodeIds.has(String(l.source)) && nodeIds.has(String(l.target)))
     .slice(0, 1500)
-    .map((l: any) => {
+    .map((l: RawLink2D) => {
       const type = (l.type || l.relationship || 'related_to').toLowerCase();
       return {
         source: String(l.source),
@@ -218,7 +248,7 @@ export function CogneeGraph2DFallback({
     setLoading(true);
     setError(null);
     try {
-      let raw: any;
+      let raw: RawGraphResponse2D;
       if (datasetName) {
         raw = await adminFetch(`/api/admin/cognee/datasets/${encodeURIComponent(datasetName)}`);
       } else {
@@ -229,8 +259,8 @@ export function CogneeGraph2DFallback({
       linksRef.current = links;
       setNodeCount(nodes.length);
       setLinkCount(links.length);
-    } catch (err: any) {
-      setError(err?.message ?? 'Failed to load graph');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load graph');
     } finally {
       setLoading(false);
     }

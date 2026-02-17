@@ -240,10 +240,10 @@ class AgentMonitoringService {
       const result = await fn();
 
       // Extract token usage if the result carries it
-      const usage = (result as any)?.usage;
-      const inputTokens = usage?.inputTokens ?? 0;
-      const outputTokens = usage?.outputTokens ?? 0;
-      const toolCalls = usage?.toolCalls ?? 0;
+      const usage = (result as Record<string, unknown>)?.usage as Record<string, unknown> | undefined;
+      const inputTokens = Number(usage?.inputTokens ?? 0);
+      const outputTokens = Number(usage?.outputTokens ?? 0);
+      const toolCalls = Number(usage?.toolCalls ?? 0);
 
       await this.recordExecutionComplete(executionId, {
         status: 'completed',
@@ -426,7 +426,7 @@ class AgentMonitoringService {
       countQuery = countQuery.where(whereClause);
     }
     const countResult = await countQuery.get();
-    const total = (countResult as any)?.count ?? 0;
+    const total = Number((countResult as Record<string, unknown> | undefined)?.count ?? 0);
 
     // Post-filter for numeric thresholds (simpler than SQL for PG/SQLite compat)
     let filtered = data;
@@ -622,7 +622,7 @@ class AgentMonitoringService {
       .from(agentExecutions)
       .where(lte(agentExecutions.createdAt, cutoff))
       .get();
-    const count = (countResult as any)?.count ?? 0;
+    const count = Number((countResult as Record<string, unknown> | undefined)?.count ?? 0);
 
     if (count > 0) {
       await db.delete(agentExecutions).where(lte(agentExecutions.createdAt, cutoff)).run();

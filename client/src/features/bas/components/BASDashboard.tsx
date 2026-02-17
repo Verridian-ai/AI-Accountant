@@ -131,7 +131,7 @@ export function BASDashboard() {
     const options = [];
     const currentYear = new Date().getFullYear();
 
-    for (let year = currentYear; year >= currentYear - 2; year--) {
+    for (let year = currentYear; year >= currentYear - 4; year--) {
       for (let q = 4; q >= 1; q--) {
         options.push({
           value: `${year}-Q${q}`,
@@ -257,24 +257,22 @@ export function BASDashboard() {
               {/* Quarter Selector as pill buttons */}
               <div className="flex-1 min-w-[200px]">
                 <div className="flex flex-wrap gap-1.5">
-                  {generateQuarterOptions()
-                    .slice(0, 8)
-                    .map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setSelectedQuarter(opt.value)}
-                        className={cn(
-                          'px-3 py-2 min-h-[44px] rounded-xl text-[10px] font-bold transition-all border',
-                          selectedQuarter === opt.value
-                            ? 'bg-[#FFCC00]/10 border-[#FFCC00]/30 text-[#FFCC00]'
-                            : 'border-white/5 text-zinc-500 hover:text-zinc-300 hover:border-white/10',
-                        )}
-                      >
-                        <span className="font-black">{opt.label}</span>
-                        <span className="ml-1 text-[8px] opacity-70">{opt.sublabel}</span>
-                      </button>
-                    ))}
+                  {generateQuarterOptions().map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setSelectedQuarter(opt.value)}
+                      className={cn(
+                        'px-3 py-2 min-h-[44px] rounded-xl text-[10px] font-bold transition-all border',
+                        selectedQuarter === opt.value
+                          ? 'bg-[#FFCC00]/10 border-[#FFCC00]/30 text-[#FFCC00]'
+                          : 'border-white/5 text-zinc-500 hover:text-zinc-300 hover:border-white/10',
+                      )}
+                    >
+                      <span className="font-black">{opt.label}</span>
+                      <span className="ml-1 text-[8px] opacity-70">{opt.sublabel}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -775,14 +773,13 @@ export function BASDashboard() {
                     <div
                       className="h-2 rounded-full bg-[#FFCC00] transition-all duration-500"
                       style={{
-                        width: `${
-                          basData.g1_total_sales > 0
+                        width: `${basData.g1_total_sales > 0
                             ? Math.min(
-                                (basData.g9_gst_on_sales / basData.g1_total_sales) * 100 * 11,
-                                100,
-                              )
+                              (basData.g9_gst_on_sales / basData.g1_total_sales) * 100 * 11,
+                              100,
+                            )
                             : 0
-                        }%`,
+                          }%`,
                       }}
                     />
                   </div>
@@ -805,14 +802,13 @@ export function BASDashboard() {
                     <div
                       className="h-2 rounded-full bg-emerald-400 transition-all duration-500"
                       style={{
-                        width: `${
-                          basData.g12_g10_plus_g11 > 0
+                        width: `${basData.g12_g10_plus_g11 > 0
                             ? Math.min(
-                                (basData.g19_gst_credits / basData.g12_g10_plus_g11) * 100 * 11,
-                                100,
-                              )
+                              (basData.g19_gst_credits / basData.g12_g10_plus_g11) * 100 * 11,
+                              100,
+                            )
                             : 0
-                        }%`,
+                          }%`,
                       }}
                     />
                   </div>

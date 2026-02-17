@@ -530,22 +530,22 @@ export class LedgerService {
 
     // Create reversal entry with swapped debits/credits
     const reversalLines: JournalEntryLine[] = await Promise.all(
-      originalLines.map(async (line: any) => {
+      originalLines.map(async (line: Record<string, unknown>) => {
         const account = await db
           .select()
           .from(chartOfAccounts)
-          .where(eq(chartOfAccounts.id, line.accountId))
+          .where(eq(chartOfAccounts.id, String(line.accountId)))
           .limit(1);
 
         return {
-          accountCode: account[0].accountCode,
-          description: `Reversal: ${line.description || ''}`,
-          debitAmount: line.creditAmount, // Swap
-          creditAmount: line.debitAmount, // Swap
-          taxCode: line.taxCode || undefined,
-          taxAmount: line.taxAmount ? -line.taxAmount : undefined,
-          bankAccountId: line.bankAccountId || undefined,
-          transactionId: line.transactionId || undefined,
+          accountCode: String((account[0] as Record<string, unknown>)?.accountCode ?? ''),
+          description: `Reversal: ${String(line.description || '')}`,
+          debitAmount: Number(line.creditAmount ?? 0), // Swap
+          creditAmount: Number(line.debitAmount ?? 0), // Swap
+          taxCode: line.taxCode ? String(line.taxCode) : undefined,
+          taxAmount: line.taxAmount ? -Number(line.taxAmount) : undefined,
+          bankAccountId: line.bankAccountId ? String(line.bankAccountId) : undefined,
+          transactionId: line.transactionId ? String(line.transactionId) : undefined,
         };
       }),
     );

@@ -108,15 +108,15 @@ export class OwnerEquityService {
       .all();
 
     // Map to TransferDetector format
-    const candidates: TransferCandidate[] = txRows.map((tx: any, i: number) => ({
+    const candidates: TransferCandidate[] = txRows.map((tx: Record<string, unknown>, i: number) => ({
       id: i,
-      accountId: userAccounts.findIndex((a: any) => a.id === tx.accountId),
+      accountId: userAccounts.findIndex((a: Record<string, unknown>) => a.id === tx.accountId),
       date: tx.date,
       description: tx.description,
       amount: tx.amount,
     }));
 
-    const accountContexts: AccountContext[] = userAccounts.map((a: any, i: number) => ({
+    const accountContexts: AccountContext[] = userAccounts.map((a: Record<string, unknown>, i: number) => ({
       id: i,
       accountNumber: a.accountNumber ?? '',
       bankId: a.bankName ?? 'CBA',
@@ -171,7 +171,7 @@ export class OwnerEquityService {
 
     if (businessAccounts.length === 0) return [];
 
-    const businessAccountIds = new Set(businessAccounts.map((a: any) => a.id));
+    const businessAccountIds = new Set(businessAccounts.map((a: Record<string, unknown>) => a.id));
 
     // Load business account transactions in the financial year
     const txRows = await db
@@ -189,7 +189,10 @@ export class OwnerEquityService {
 
     const events: DetectedEquityEvent[] = [];
 
-    for (const tx of txRows as any[]) {
+    type TxRow = { id: string; accountId: string | null; amount: number; description: string | null; date: string; category: string | null; isTransfer: boolean | null };
+    type AcctRow = { id: string; accountName: string | null };
+
+    for (const tx of txRows as TxRow[]) {
       // Only consider transactions from business accounts
       if (!tx.accountId || !businessAccountIds.has(tx.accountId)) continue;
 
@@ -199,7 +202,7 @@ export class OwnerEquityService {
       // Check for ATM withdrawals
       const isATM = ATM_PATTERNS.some((p) => p.test(desc));
       if (isATM) {
-        const account = businessAccounts.find((a: any) => a.id === tx.accountId);
+        const account = (businessAccounts as AcctRow[]).find((a) => a.id === tx.accountId);
         events.push({
           transactionId: tx.id,
           amount,
@@ -214,7 +217,7 @@ export class OwnerEquityService {
       // Check for personal expense categories
       const isPersonalExpense = PERSONAL_EXPENSE_CATEGORIES.includes(tx.category ?? '');
       if (isPersonalExpense) {
-        const account = businessAccounts.find((a: any) => a.id === tx.accountId);
+        const account = (businessAccounts as AcctRow[]).find((a) => a.id === tx.accountId);
         events.push({
           transactionId: tx.id,
           amount,
@@ -228,7 +231,7 @@ export class OwnerEquityService {
 
       // Check for transfers to personal accounts (isTransfer + isOwnerContribution inverse)
       if (tx.isTransfer && amount >= CONTRIBUTION_THRESHOLD_CENTS) {
-        const account = businessAccounts.find((a: any) => a.id === tx.accountId);
+        const account = (businessAccounts as AcctRow[]).find((a) => a.id === tx.accountId);
         events.push({
           transactionId: tx.id,
           amount,
@@ -307,7 +310,8 @@ export class OwnerEquityService {
     let totalDrawings = 0;
     const monthlyMap = new Map<string, { contributions: number; drawings: number }>();
 
-    for (const event of events as any[]) {
+    type EquityRow = { amount: number; createdAt: string; eventType: string };
+    for (const event of events as EquityRow[]) {
       const amount = Math.abs(event.amount);
 
       // Extract month from associated transaction or use createdAt

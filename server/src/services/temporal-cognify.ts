@@ -396,7 +396,7 @@ export class TemporalCognifyService {
     timeRange: { start: string; end: string },
   ): Promise<TimelineEvent[]> {
     // Query transactions within time range
-    const rows: any[] = await db
+    const rows: Record<string, unknown>[] = await db
       .select()
       .from(transactions)
       .where(
@@ -409,15 +409,15 @@ export class TemporalCognifyService {
       .orderBy(transactions.date)
       .all();
 
-    const events: TimelineEvent[] = rows.map((tx: any) => ({
-      date: tx.date,
-      type: tx.category ?? 'transaction',
+    const events: TimelineEvent[] = rows.map((tx: Record<string, unknown>) => ({
+      date: String(tx.date),
+      type: String(tx.category ?? 'transaction'),
       module: 'transactions',
-      title: tx.description,
-      description: `${tx.description} — $${((tx.amount ?? 0) / 100).toFixed(2)}`,
+      title: String(tx.description),
+      description: `${tx.description} — $${(Number(tx.amount ?? 0) / 100).toFixed(2)}`,
       severity: undefined,
-      amount: tx.amount,
-      relatedEntityId: tx.accountId ?? undefined,
+      amount: Number(tx.amount),
+      relatedEntityId: tx.accountId ? String(tx.accountId) : undefined,
     }));
 
     // Sort chronologically
@@ -526,7 +526,7 @@ export class TemporalCognifyService {
   /** Check cache validity — returns cached result if not expired */
   private async _checkCache(queryId: string): Promise<TemporalQueryResult | null> {
     try {
-      const row: any = await db
+      const row = await db
         .select()
         .from(temporalQueries)
         .where(eq(temporalQueries.id, queryId))

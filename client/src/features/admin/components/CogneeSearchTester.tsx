@@ -29,7 +29,7 @@ export function CogneeSearchTester() {
 
   useEffect(() => {
     fetchCogneeAdminDatasets()
-      .then((res: any) => {
+      .then((res: { datasets?: Array<{ name: string }> } | Array<{ name: string }>) => {
         const ds = Array.isArray(res) ? res : res?.datasets || [];
         setDatasets(ds.map((d: { name: string }) => d.name));
       })
@@ -49,7 +49,7 @@ export function CogneeSearchTester() {
         searchTypes: selectedTypes,
         topK,
       });
-      const searchRes = res as any;
+      const searchRes = res as SearchResult[] | { results?: SearchResult[] };
       setResults(Array.isArray(searchRes) ? searchRes : searchRes?.results || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');

@@ -62,7 +62,7 @@ export class PayStructureService {
       type?: string;
       activeOnly?: boolean;
     },
-  ): Promise<{ data: any[]; total: number }> {
+  ): Promise<{ data: Record<string, unknown>[]; total: number }> {
     const page = options?.page ?? 1;
     const limit = options?.limit ?? 50;
     const offset = (page - 1) * limit;
@@ -140,8 +140,8 @@ export class PayStructureService {
       await this.createPayCategory({
         userId,
         name: cat.name,
-        type: cat.type as any,
-        rateType: cat.rateType as any,
+        type: cat.type as 'ordinary' | 'overtime' | 'allowance' | 'deduction' | 'super' | 'leave',
+        rateType: cat.rateType as 'hourly' | 'annual' | 'fixed',
         multiplier: cat.multiplier,
         isTaxable: cat.isTaxable,
         isSuperBearing: cat.isSuperBearing,
@@ -192,7 +192,7 @@ export class PayStructureService {
 
     // Deduplicate by payCategoryId — keep most recent
     const seen = new Set<string>();
-    const current: any[] = [];
+    const current: Record<string, unknown>[] = [];
     for (const row of rows) {
       if (!seen.has(row.payCategoryId)) {
         seen.add(row.payCategoryId);

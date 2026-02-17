@@ -35,7 +35,7 @@ tenantRoutes.post('/', zValidator('json', createTenantSchema), async (c) => {
   try {
     const userId = getUserId(c);
     const body = c.req.valid('json');
-    const tenant = await tenantService.createTenant(body.name, body.slug, userId, body as any);
+    const tenant = await tenantService.createTenant(body.name, body.slug, userId, body as unknown as import('../services/tenant-types.js').CreateTenantOptions);
     return c.json(tenant, 201);
   } catch (err) { return c.json({ error: getErrorMessage(err) || 'Failed' }, 400); }
 });

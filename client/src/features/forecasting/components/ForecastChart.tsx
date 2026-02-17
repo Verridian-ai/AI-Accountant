@@ -36,12 +36,12 @@ const formatDollar = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value / 100);
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ dataKey: string; color: string; name: string; value: number }>; label?: string }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="neu-raised p-3 rounded-xl border border-white/10 text-xs space-y-1">
       <p className="font-bold text-zinc-300">{label}</p>
-      {payload.map((entry: any) => (
+      {payload.map((entry: { dataKey: string; color: string; name: string; value: number }) => (
         <p key={entry.dataKey} style={{ color: entry.color }}>
           {entry.name}: {formatDollar(entry.value)}
         </p>

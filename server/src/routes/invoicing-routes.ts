@@ -3,7 +3,7 @@
  * 17 API endpoints for customer management and invoice lifecycle.
  */
 
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { CustomerService } from '../services/customers.js';
 import {
@@ -43,9 +43,8 @@ import {
 } from '../validation/features/invoicing.js';
 
 // Helper: extract userId from JWT payload
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getUserId(c: any): string {
-  const payload = c.get('jwtPayload');
+function getUserId(c: Context): string {
+  const payload = c.get('jwtPayload' as never) as { userId?: string } | undefined;
   return payload?.userId ?? 'default-user';
 }
 
@@ -74,9 +73,10 @@ invoicingRoutes.post('/customers', zValidator('json', createCustomerSchema), asy
     const data = c.req.valid('json');
     const customer = await customerService.createCustomer(userId, data);
     return c.json(customer, 201);
-  } catch (err: any) {
-    const status = err.message?.includes('ABN') ? 400 : 500;
-    return c.json({ error: err.message ?? 'Failed to create customer' }, status);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const status = msg.includes('ABN') ? 400 : 500;
+    return c.json({ error: msg || 'Failed to create customer' }, status);
   }
 });
 
@@ -87,11 +87,12 @@ invoicingRoutes.get('/customers/:id', async (c) => {
     const customerId = c.req.param('id');
     const result = await customerService.getCustomerWithBalance(userId, customerId);
     return c.json(result);
-  } catch (err: any) {
-    if (err.message?.includes('not found')) {
-      return c.json({ error: err.message }, 404);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('not found')) {
+      return c.json({ error: msg }, 404);
     }
-    return c.json({ error: err.message ?? 'Failed to get customer' }, 500);
+    return c.json({ error: msg || 'Failed to get customer' }, 500);
   }
 });
 
@@ -103,12 +104,13 @@ invoicingRoutes.patch('/customers/:id', zValidator('json', updateCustomerSchema)
     const data = c.req.valid('json');
     const customer = await customerService.updateCustomer(userId, customerId, data);
     return c.json(customer);
-  } catch (err: any) {
-    if (err.message?.includes('not found')) {
-      return c.json({ error: err.message }, 404);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('not found')) {
+      return c.json({ error: msg }, 404);
     }
-    const status = err.message?.includes('ABN') ? 400 : 500;
-    return c.json({ error: err.message ?? 'Failed to update customer' }, status);
+    const status = msg.includes('ABN') ? 400 : 500;
+    return c.json({ error: msg || 'Failed to update customer' }, status);
   }
 });
 
@@ -119,11 +121,12 @@ invoicingRoutes.delete('/customers/:id', async (c) => {
     const customerId = c.req.param('id');
     await customerService.archiveCustomer(userId, customerId);
     return c.json({ success: true });
-  } catch (err: any) {
-    if (err.message?.includes('not found')) {
-      return c.json({ error: err.message }, 404);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('not found')) {
+      return c.json({ error: msg }, 404);
     }
-    return c.json({ error: err.message ?? 'Failed to archive customer' }, 500);
+    return c.json({ error: msg || 'Failed to archive customer' }, 500);
   }
 });
 
@@ -224,14 +227,15 @@ invoicingRoutes.patch('/invoices/:id', zValidator('json', updateInvoiceSchema), 
     const data = c.req.valid('json');
     const result = await invoicingService.updateInvoice(userId, invoiceId, data);
     return c.json(result);
-  } catch (err: any) {
-    if (err.message?.includes('not found')) {
-      return c.json({ error: err.message }, 404);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('not found')) {
+      return c.json({ error: msg }, 404);
     }
-    if (err.message?.includes('Cannot update')) {
-      return c.json({ error: err.message }, 400);
+    if (msg.includes('Cannot update')) {
+      return c.json({ error: msg }, 400);
     }
-    return c.json({ error: err.message ?? 'Failed to update invoice' }, 500);
+    return c.json({ error: msg || 'Failed to update invoice' }, 500);
   }
 });
 
@@ -242,14 +246,15 @@ invoicingRoutes.post('/invoices/:id/send', async (c) => {
     const invoiceId = c.req.param('id');
     const result = await invoicingService.sendInvoice(userId, invoiceId);
     return c.json(result);
-  } catch (err: any) {
-    if (err.message?.includes('not found')) {
-      return c.json({ error: err.message }, 404);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('not found')) {
+      return c.json({ error: msg }, 404);
     }
-    if (err.message?.includes('Cannot send')) {
-      return c.json({ error: err.message }, 400);
+    if (msg.includes('Cannot send')) {
+      return c.json({ error: msg }, 400);
     }
-    return c.json({ error: err.message ?? 'Failed to send invoice' }, 500);
+    return c.json({ error: msg || 'Failed to send invoice' }, 500);
   }
 });
 
@@ -260,14 +265,15 @@ invoicingRoutes.post('/invoices/:id/void', async (c) => {
     const invoiceId = c.req.param('id');
     const result = await invoicingService.voidInvoice(userId, invoiceId);
     return c.json(result);
-  } catch (err: any) {
-    if (err.message?.includes('not found')) {
-      return c.json({ error: err.message }, 404);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('not found')) {
+      return c.json({ error: msg }, 404);
     }
-    if (err.message?.includes('Cannot void') || err.message?.includes('already void')) {
-      return c.json({ error: err.message }, 400);
+    if (msg.includes('Cannot void') || msg.includes('already void')) {
+      return c.json({ error: msg }, 400);
     }
-    return c.json({ error: err.message ?? 'Failed to void invoice' }, 500);
+    return c.json({ error: msg || 'Failed to void invoice' }, 500);
   }
 });
 
@@ -284,7 +290,7 @@ invoicingRoutes.get('/invoices/:id/pdf', async (c) => {
     }
 
     // Get business profile for header
-    const profile = await (db as any)
+    const profile = await db
       .select()
       .from(businessProfiles)
       .where(eq(businessProfiles.userId, userId))
@@ -301,11 +307,12 @@ invoicingRoutes.get('/invoices/:id/pdf', async (c) => {
     c.header('Content-Type', 'application/pdf');
     c.header('Content-Disposition', `attachment; filename="invoice-${invoiceNumber}.pdf"`);
     return c.body(new Uint8Array(pdfBuffer));
-  } catch (err: any) {
-    if (err.message?.includes('not found')) {
-      return c.json({ error: err.message }, 404);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('not found')) {
+      return c.json({ error: msg }, 404);
     }
-    return c.json({ error: err.message ?? 'Failed to generate PDF' }, 500);
+    return c.json({ error: msg || 'Failed to generate PDF' }, 500);
   }
 });
 
@@ -324,14 +331,15 @@ invoicingRoutes.post(
         data as unknown as RecordPaymentInput,
       );
       return c.json(payment, 201);
-    } catch (err: any) {
-      if (err.message?.includes('not found')) {
-        return c.json({ error: err.message }, 404);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('not found')) {
+        return c.json({ error: msg }, 404);
       }
-      if (err.message?.includes('Cannot record')) {
-        return c.json({ error: err.message }, 400);
+      if (msg.includes('Cannot record')) {
+        return c.json({ error: msg }, 400);
       }
-      return c.json({ error: err.message ?? 'Failed to record payment' }, 500);
+      return c.json({ error: msg || 'Failed to record payment' }, 500);
     }
   },
 );

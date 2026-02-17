@@ -548,7 +548,7 @@ export class FeedbackManager {
       .all();
 
     // Group by transaction to get merchant info
-    const transactionIds = [...new Set(feedback.map((f: any) => f.transactionId as string))];
+    const transactionIds = [...new Set(feedback.map((f: Record<string, unknown>) => f.transactionId as string))];
     const txns =
       transactionIds.length > 0
         ? await db
@@ -558,7 +558,7 @@ export class FeedbackManager {
             .all()
         : [];
 
-    const txnMap = new Map(txns.map((t: any) => [t.id, t]));
+    const txnMap = new Map(txns.map((t: Record<string, unknown>) => [t.id, t]));
 
     // Group feedback by merchant pattern + corrected value
     const patternMap = new Map<
@@ -572,15 +572,15 @@ export class FeedbackManager {
     >();
 
     for (const fb of feedback) {
-      const txn = txnMap.get(fb.transactionId) as any;
+      const txn = txnMap.get(fb.transactionId) as Record<string, unknown>;
       if (!txn || !txn.merchantNormalized) continue;
 
       const key = `${txn.merchantNormalized}::${fb.correctedValue}`;
 
       if (!patternMap.has(key)) {
         patternMap.set(key, {
-          merchantNormalized: txn.merchantNormalized,
-          merchantDisplayName: txn.description,
+          merchantNormalized: String(txn.merchantNormalized),
+          merchantDisplayName: String(txn.description),
           correctedValue: fb.correctedValue || '',
           feedbackIds: [],
         });
@@ -953,7 +953,7 @@ export class FeedbackManager {
       .where(inArray(parserFeedback.id, feedbackIds))
       .all();
 
-    const userIds = [...new Set(feedback.map((f: any) => f.userId as string))];
+    const userIds = [...new Set(feedback.map((f: Record<string, unknown>) => f.userId as string))];
 
     for (const userId of userIds) {
       const result = await this.applyFeedbackToMerchantMemory(userId as string, minOccurrences);

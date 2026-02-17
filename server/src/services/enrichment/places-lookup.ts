@@ -77,24 +77,26 @@ export class PlacesLookupService {
         return null;
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as Record<string, unknown>;
 
-      if (!data.places || data.places.length === 0) {
+      const places = data.places as Array<Record<string, unknown>> | undefined;
+      if (!places || places.length === 0) {
         logger.debug(`[Places] No results for "${query}"`);
         return null;
       }
 
-      const place = data.places[0];
+      const place = places[0] as Record<string, unknown>;
+      const displayName = place.displayName as Record<string, unknown> | undefined;
       const result: PlacesResult = {
-        placeId: place.id || '',
-        name: place.displayName?.text || query,
-        formattedAddress: place.formattedAddress || '',
-        types: place.types || [],
+        placeId: String(place.id ?? ''),
+        name: String(displayName?.text ?? query),
+        formattedAddress: String(place.formattedAddress ?? ''),
+        types: (place.types as string[]) ?? [],
       };
 
       return result;
-    } catch (err: any) {
-      logger.warn(`[Places] Search failed for "${query}": ${err.message}`);
+    } catch (err: unknown) {
+      logger.warn(`[Places] Search failed for "${query}": ${err instanceof Error ? err.message : String(err)}`);
       return null;
     }
   }
@@ -145,7 +147,7 @@ export class PlacesLookupService {
         .all();
 
       if (records.length > 0) {
-        const rec: any = records[0];
+        const rec = records[0];
         logger.debug(`[Places] Cache hit for "${query}"`);
         return {
           placeId: '',

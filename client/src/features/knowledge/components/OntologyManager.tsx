@@ -49,7 +49,7 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
     knowledgeApi
       .listOntologies(userId)
       .then(setOntologies)
-      .catch((e: any) => setError(e.message))
+      .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
@@ -78,8 +78,8 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
       setShowCreate(false);
       setForm({ name: '', ontologyType: 'custom', description: '', nodeTypes: '', edgeTypes: '' });
       loadOntologies();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to create ontology');
     } finally {
       setCreating(false);
     }
@@ -93,8 +93,8 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
       setApplyDataset('');
       setApplying(null);
       loadOntologies();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to apply ontology');
       setApplying(null);
     }
   };

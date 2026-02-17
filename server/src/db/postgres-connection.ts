@@ -207,7 +207,7 @@ export async function rawQuery<T>(sql: string, params?: unknown[]): Promise<T[]>
  * Execute a transaction with automatic rollback on error
  * Critical for financial data integrity
  */
-export async function withTransaction<T>(callback: (client: any) => Promise<T>): Promise<T> {
+export async function withTransaction<T>(callback: (client: unknown) => Promise<T>): Promise<T> {
   const connectionPool = initializePool();
   const client = await connectionPool.connect();
 

@@ -323,16 +323,18 @@ export class CitationManager {
     }
 
     // Fetch chunk and document details
-    const chunkIds = citationRecords.map((c: any) => c.chunkId);
-    const documentIds = [...new Set(citationRecords.map((c: any) => c.documentId))] as string[];
+    const chunkIds = citationRecords.map((c: typeof citationRecords[number]) => c.chunkId);
+    const documentIds = [...new Set(citationRecords.map((c: typeof citationRecords[number]) => c.documentId))] as string[];
 
     const [chunks, documents] = await Promise.all([
       db.select().from(ragChunks).where(inArray(ragChunks.id, chunkIds)),
       db.select().from(ragDocuments).where(inArray(ragDocuments.id, documentIds)),
     ]);
 
-    const chunkMap = new Map(chunks.map((c: any) => [c.id, c]));
-    const documentMap = new Map(documents.map((d: any) => [d.id, d]));
+    type ChunkRow = typeof ragChunks.$inferSelect;
+    type DocumentRow = typeof ragDocuments.$inferSelect;
+    const chunkMap = new Map<string, ChunkRow>(chunks.map((c: ChunkRow) => [c.id, c]));
+    const documentMap = new Map<string, DocumentRow>(documents.map((d: DocumentRow) => [d.id, d]));
 
     // Collect all transaction and account IDs to batch fetch (fixes N+1 query problem)
     const transactionIds = new Set<string>();
@@ -376,8 +378,8 @@ export class CitationManager {
         : Promise.resolve([]),
     ]);
 
-    const transactionMap = new Map(transactionResults.map((t: any) => [t.id, t]));
-    const accountMap = new Map(accountResults.map((a: any) => [a.id, a]));
+    const transactionMap = new Map(transactionResults.map((t: { id: string; date: string; description: string; amount: number; category: string | null; balance: number | null }) => [t.id, t]));
+    const accountMap = new Map(accountResults.map((a: { id: string; accountName: string; accountNumber: string; bankName: string | null; accountType: string }) => [a.id, a]));
 
     // Build enriched citations
     const enrichedCitations: CitationWithSource[] = [];
@@ -388,9 +390,7 @@ export class CitationManager {
 
       if (!chunk || !document) continue;
 
-      const chunkAny = chunk as any;
-      const documentAny = document as any;
-      const metadata = metadataMap.get(chunkAny.id) || {};
+      const metadata: ChunkMetadata = metadataMap.get(chunk.id) || {};
 
       // Get transaction and account details from pre-fetched maps
       const transactionDetails: TransactionDetails | null = metadata.transactionId
@@ -413,9 +413,9 @@ export class CitationManager {
         snippet: citation.excerptUsed || '',
         wasHelpful: citation.wasHelpful,
         createdAt: citation.createdAt,
-        sourceType: documentAny.sourceType,
-        sourceTitle: documentAny.title,
-        chunkContent: chunkAny.content,
+        sourceType: (document as Record<string, unknown>).sourceType as string,
+        sourceTitle: (document as Record<string, unknown>).title as string | null,
+        chunkContent: (chunk as Record<string, unknown>).content as string,
         transactionDetails,
         accountDetails,
       });
@@ -460,7 +460,7 @@ export class CitationManager {
       .from(ragChunks)
       .where(inArray(ragChunks.id, chunkIds));
 
-    const existingIds = new Set(results.map((r: any) => r.id));
+    const existingIds = new Set(results.map((r: { id: string }) => r.id));
     const statusMap = new Map<string, boolean>();
 
     for (const id of chunkIds) {
@@ -673,7 +673,7 @@ export class CitationManager {
       return 0;
     }
 
-    const orphanedIds = orphanedCitations.map((c: any) => c.id);
+    const orphanedIds = orphanedCitations.map((c: { id: string }) => c.id);
 
     await db.delete(ragCitations).where(inArray(ragCitations.id, orphanedIds));
 

@@ -59,16 +59,16 @@ function parseKeysJson(raw: unknown): { p256dh: string; auth: string } {
 }
 
 /** Convert raw DB row to PushSubscriptionRecord */
-function rowToSubscription(row: any): PushSubscriptionRecord {
+function rowToSubscription(row: Record<string, unknown>): PushSubscriptionRecord {
   return {
-    id: row.id,
-    userId: row.userId ?? row.user_id,
-    tenantId: row.tenantId ?? row.tenant_id,
-    endpoint: row.endpoint,
+    id: row.id as string,
+    userId: (row.userId ?? row.user_id) as string,
+    tenantId: (row.tenantId ?? row.tenant_id) as string,
+    endpoint: row.endpoint as string,
     keysJson: parseKeysJson(row.keysJson ?? row.keys_json),
-    deviceName: row.deviceName ?? row.device_name ?? undefined,
+    deviceName: (row.deviceName ?? row.device_name ?? undefined) as string | undefined,
     isActive: Boolean(row.isActive ?? row.is_active ?? true),
-    lastUsedAt: row.lastUsedAt ?? row.last_used_at ?? undefined,
+    lastUsedAt: (row.lastUsedAt ?? row.last_used_at ?? undefined) as string | undefined,
     errorCount: Number(row.errorCount ?? row.error_count ?? 0),
   };
 }
@@ -203,7 +203,7 @@ export class PushNotificationService {
           tenantId,
           keysJson: JSON.stringify(subscription.keys),
           deviceName:
-            deviceName ?? (existing as any).deviceName ?? (existing as any).device_name ?? null,
+            deviceName ?? (existing as Record<string, unknown>).deviceName ?? (existing as Record<string, unknown>).device_name ?? null,
           isActive: true,
           errorCount: 0,
           lastUsedAt: now,
@@ -252,7 +252,7 @@ export class PushNotificationService {
         ),
       )
       .all();
-    return (rows as any[]).map(rowToSubscription);
+    return (rows as Array<Record<string, unknown>>).map(rowToSubscription);
   }
 
   /** Deactivate a subscription (sets is_active=false). */
@@ -363,9 +363,9 @@ export class PushNotificationService {
 
     const members = await membersQuery.all();
 
-    for (const member of members as any[]) {
+    for (const member of members as Array<Record<string, unknown>>) {
       const memberRole = (member.role ?? member.role) as TenantRole;
-      const memberUserId = member.userId ?? member.user_id;
+      const memberUserId = (member.userId ?? member.user_id) as string;
 
       // Filter by roles if specified
       if (roles && roles.length > 0 && !roles.includes(memberRole)) {
@@ -478,8 +478,9 @@ export class PushNotificationService {
         .run();
 
       return true;
-    } catch (err: any) {
-      const statusCode = err?.statusCode ?? 0;
+    } catch (err: unknown) {
+      const errObj = err as Record<string, unknown> | null;
+      const statusCode = (errObj?.statusCode ?? 0) as number;
 
       // 410 Gone or 404 = subscription no longer valid → deactivate immediately
       if (statusCode === 410 || statusCode === 404) {
@@ -505,14 +506,14 @@ export class PushNotificationService {
         .get();
 
       if (sub) {
-        const errorCount = Number((sub as any).errorCount ?? (sub as any).error_count ?? 0);
+        const errorCount = Number((sub as Record<string, unknown>).errorCount ?? (sub as Record<string, unknown>).error_count ?? 0);
         if (errorCount >= MAX_ERROR_COUNT) {
           await this.deactivateSubscription(endpoint);
         }
       }
 
       console.warn(
-        `[PushNotification] Delivery failed for ${endpoint}: ${err?.message ?? 'Unknown error'}`,
+        `[PushNotification] Delivery failed for ${endpoint}: ${err instanceof Error ? err.message : 'Unknown error'}`,
       );
       return false;
     }
@@ -540,10 +541,10 @@ export class PushNotificationService {
 
     if (!prefs) return false;
 
-    const row = prefs as any;
-    const start = row.quietHoursStart ?? row.quiet_hours_start;
-    const end = row.quietHoursEnd ?? row.quiet_hours_end;
-    const timezone = row.timezone ?? 'Australia/Sydney';
+    const row = prefs as Record<string, unknown>;
+    const start = (row.quietHoursStart ?? row.quiet_hours_start) as string | undefined;
+    const end = (row.quietHoursEnd ?? row.quiet_hours_end) as string | undefined;
+    const timezone = (row.timezone ?? 'Australia/Sydney') as string;
 
     if (!start || !end) return false;
 
@@ -575,7 +576,7 @@ export class PushNotificationService {
     // No preferences row = all defaults = enabled
     if (!prefs) return true;
 
-    const row = prefs as any;
+    const row = prefs as Record<string, unknown>;
 
     // Check master push toggle
     const pushEnabled = row.pushEnabled ?? row.push_enabled;

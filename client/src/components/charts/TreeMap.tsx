@@ -30,8 +30,8 @@ interface ContentProps {
   colors: string[];
 }
 
-function TreeMapContent(props: any) {
-  const { x, y, width, height: h, name, value, index, colors } = props as ContentProps;
+function TreeMapContent(props: ContentProps) {
+  const { x, y, width, height: h, name, value, index, colors } = props;
   if (width < 30 || h < 20) return null;
 
   const fill = colors[index % colors.length] ?? CHART_COLORS.primary;
@@ -115,7 +115,7 @@ function TreeMapInner({
         aspectRatio={4 / 3}
         animationDuration={500}
         content={
-          (<TreeMapContent x={0} y={0} width={0} height={0} index={0} colors={colors} />) as any
+          (<TreeMapContent x={0} y={0} width={0} height={0} index={0} colors={colors} />) as React.ReactElement
         }
       >
         <Tooltip

@@ -22,6 +22,54 @@
 
 import type { SQL } from 'drizzle-orm';
 
+// ============================================================================
+// INTERNAL TYPES — model the wrapPgDb() proxy shape
+// ============================================================================
+
+/** Minimal chainable query produced by the wrapPgDb() proxy */
+interface ProxiedQueryChain {
+  where(condition: SQL | undefined): ProxiedQueryChain;
+  set(data: Record<string, unknown>): ProxiedQueryChain;
+  values(data: unknown): ProxiedQueryChain;
+  from(table: unknown): ProxiedQueryChain;
+  leftJoin(table: unknown, on: SQL): ProxiedQueryChain;
+  orderBy(...columns: unknown[]): ProxiedQueryChain;
+  limit(count: number): ProxiedQueryChain;
+  offset(count: number): ProxiedQueryChain;
+  onConflictDoNothing(): ProxiedQueryChain;
+  get?(): Promise<unknown>;
+  all?(): Promise<unknown[]>;
+  run?(): Promise<unknown>;
+  then: Promise<unknown>['then'];
+  [key: string]: unknown;
+}
+
+/** Minimal DB instance shape returned by wrapPgDb() or drizzleSqlite() */
+interface DbInstance {
+  select(fields?: Record<string, unknown>): ProxiedQueryChain;
+  insert(table: unknown): ProxiedQueryChain;
+  update(table: unknown): ProxiedQueryChain;
+  delete(table: unknown): ProxiedQueryChain;
+  transaction?<R>(cb: (tx: DbInstance) => Promise<R>): Promise<R>;
+  [key: string]: unknown;
+}
+
+/**
+ * Drizzle table shape — must have $inferSelect and $inferInsert.
+ * Uses Record<string, any> because Drizzle's SQLiteTableWithColumns
+ * has class-based column properties that lack a string index signature
+ * compatible with Record<string, unknown>.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DrizzleTable = Record<string, any> & {
+  $inferSelect: unknown;
+  $inferInsert: unknown;
+};
+
+// ============================================================================
+// QUERY HELPERS
+// ============================================================================
+
 /**
  * Type-safe single row select
  * Returns the first matching row or undefined
@@ -31,11 +79,11 @@ import type { SQL } from 'drizzle-orm';
  * @param where - WHERE clause condition(s)
  * @returns Promise resolving to the first row or undefined
  */
-export async function selectOne<T extends Record<string, any>>(
-  db: any,
+export async function selectOne<T extends DrizzleTable>(
+  db: DbInstance,
   table: T,
   where?: SQL | undefined
-): Promise<(typeof table)['$inferSelect'] | undefined> {
+): Promise<T['$inferSelect'] | undefined> {
   const query = db.select().from(table);
   if (where) {
     query.where(where);
@@ -43,7 +91,7 @@ export async function selectOne<T extends Record<string, any>>(
 
   // Use .get() if available (SQLite compatibility), otherwise fetch and take first
   if (typeof query.get === 'function') {
-    return await query.get();
+    return await query.get() as T['$inferSelect'] | undefined;
   }
 
   const rows = await query;
@@ -59,11 +107,11 @@ export async function selectOne<T extends Record<string, any>>(
  * @param where - WHERE clause condition(s)
  * @returns Promise resolving to an array of rows
  */
-export async function selectMany<T extends Record<string, any>>(
-  db: any,
+export async function selectMany<T extends DrizzleTable>(
+  db: DbInstance,
   table: T,
   where?: SQL | undefined
-): Promise<Array<(typeof table)['$inferSelect']>> {
+): Promise<Array<T['$inferSelect']>> {
   const query = db.select().from(table);
   if (where) {
     query.where(where);
@@ -71,7 +119,7 @@ export async function selectMany<T extends Record<string, any>>(
 
   // Use .all() if available (SQLite compatibility), otherwise return directly
   if (typeof query.all === 'function') {
-    return await query.all();
+    return await query.all() as Array<T['$inferSelect']>;
   }
 
   const rows = await query;
@@ -87,10 +135,10 @@ export async function selectMany<T extends Record<string, any>>(
  * @param values - Row(s) to insert
  * @returns Promise resolving to void
  */
-export async function insert<T extends Record<string, any>>(
-  db: any,
+export async function insert<T extends DrizzleTable>(
+  db: DbInstance,
   table: T,
-  values: (typeof table)['$inferInsert'] | Array<(typeof table)['$inferInsert']>
+  values: T['$inferInsert'] | Array<T['$inferInsert']>
 ): Promise<void> {
   const query = db.insert(table).values(values);
 
@@ -112,13 +160,13 @@ export async function insert<T extends Record<string, any>>(
  * @param where - WHERE clause condition(s)
  * @returns Promise resolving to void
  */
-export async function update<T extends Record<string, any>>(
-  db: any,
+export async function update<T extends DrizzleTable>(
+  db: DbInstance,
   table: T,
-  set: Partial<(typeof table)['$inferInsert']>,
+  set: Partial<T['$inferInsert']>,
   where?: SQL | undefined
 ): Promise<void> {
-  const query = db.update(table).set(set);
+  const query = db.update(table).set(set as Record<string, unknown>);
   if (where) {
     query.where(where);
   }
@@ -140,8 +188,8 @@ export async function update<T extends Record<string, any>>(
  * @param where - WHERE clause condition(s)
  * @returns Promise resolving to void
  */
-export async function deleteRows<T extends Record<string, any>>(
-  db: any,
+export async function deleteRows<T extends DrizzleTable>(
+  db: DbInstance,
   table: T,
   where?: SQL | undefined
 ): Promise<void> {
@@ -168,33 +216,33 @@ export async function deleteRows<T extends Record<string, any>>(
  * @param db - Database instance
  * @returns Chainable query builder with type preservation
  */
-export function typedQuery(db: any) {
+export function typedQuery(db: DbInstance) {
   return {
     /**
      * Start a SELECT query with full type inference
      */
-    select<T extends Record<string, any>>() {
+    select<T extends DrizzleTable>() {
       return new TypedSelectBuilder<T>(db.select());
     },
 
     /**
      * Start an INSERT query with full type inference
      */
-    insert<T extends Record<string, any>>(table: T) {
+    insert<T extends DrizzleTable>(table: T) {
       return new TypedInsertBuilder<T>(db.insert(table), table);
     },
 
     /**
      * Start an UPDATE query with full type inference
      */
-    update<T extends Record<string, any>>(table: T) {
+    update<T extends DrizzleTable>(table: T) {
       return new TypedUpdateBuilder<T>(db.update(table), table);
     },
 
     /**
      * Start a DELETE query with full type inference
      */
-    delete<T extends Record<string, any>>(table: T) {
+    delete<T extends DrizzleTable>(table: T) {
       return new TypedDeleteBuilder<T>(db.delete(table), table);
     },
   };
@@ -204,10 +252,10 @@ export function typedQuery(db: any) {
  * Typed SELECT query builder
  * Preserves return types for complex SELECT queries
  */
-class TypedSelectBuilder<T extends Record<string, any>> {
-  private query: any;
+class TypedSelectBuilder<T extends DrizzleTable> {
+  private query: ProxiedQueryChain;
 
-  constructor(query: any) {
+  constructor(query: ProxiedQueryChain) {
     this.query = query;
   }
 
@@ -221,12 +269,12 @@ class TypedSelectBuilder<T extends Record<string, any>> {
     return this;
   }
 
-  leftJoin(table: any, on: SQL): this {
+  leftJoin(table: unknown, on: SQL): this {
     this.query = this.query.leftJoin(table, on);
     return this;
   }
 
-  orderBy(...columns: any[]): this {
+  orderBy(...columns: unknown[]): this {
     this.query = this.query.orderBy(...columns);
     return this;
   }
@@ -246,7 +294,7 @@ class TypedSelectBuilder<T extends Record<string, any>> {
    */
   async get(): Promise<T['$inferSelect'] | undefined> {
     if (typeof this.query.get === 'function') {
-      return await this.query.get();
+      return await this.query.get() as T['$inferSelect'] | undefined;
     }
     const rows = await this.query;
     return Array.isArray(rows) ? rows[0] : rows;
@@ -257,7 +305,7 @@ class TypedSelectBuilder<T extends Record<string, any>> {
    */
   async all(): Promise<Array<T['$inferSelect']>> {
     if (typeof this.query.all === 'function') {
-      return await this.query.all();
+      return await this.query.all() as Array<T['$inferSelect']>;
     }
     const rows = await this.query;
     return Array.isArray(rows) ? rows : [rows];
@@ -267,11 +315,11 @@ class TypedSelectBuilder<T extends Record<string, any>> {
 /**
  * Typed INSERT query builder
  */
-class TypedInsertBuilder<T extends Record<string, any>> {
-  private query: any;
+class TypedInsertBuilder<T extends DrizzleTable> {
+  private query: ProxiedQueryChain;
   private table: T;
 
-  constructor(query: any, table: T) {
+  constructor(query: ProxiedQueryChain, table: T) {
     this.query = query;
     this.table = table;
   }
@@ -298,17 +346,17 @@ class TypedInsertBuilder<T extends Record<string, any>> {
 /**
  * Typed UPDATE query builder
  */
-class TypedUpdateBuilder<T extends Record<string, any>> {
-  private query: any;
+class TypedUpdateBuilder<T extends DrizzleTable> {
+  private query: ProxiedQueryChain;
   private table: T;
 
-  constructor(query: any, table: T) {
+  constructor(query: ProxiedQueryChain, table: T) {
     this.query = query;
     this.table = table;
   }
 
   set(data: Partial<T['$inferInsert']>): this {
-    this.query = this.query.set(data);
+    this.query = this.query.set(data as Record<string, unknown>);
     return this;
   }
 
@@ -329,11 +377,11 @@ class TypedUpdateBuilder<T extends Record<string, any>> {
 /**
  * Typed DELETE query builder
  */
-class TypedDeleteBuilder<T extends Record<string, any>> {
-  private query: any;
+class TypedDeleteBuilder<T extends DrizzleTable> {
+  private query: ProxiedQueryChain;
   private table: T;
 
-  constructor(query: any, table: T) {
+  constructor(query: ProxiedQueryChain, table: T) {
     this.query = query;
     this.table = table;
   }
@@ -361,8 +409,8 @@ class TypedDeleteBuilder<T extends Record<string, any>> {
  * @returns Promise resolving to the callback's return value
  */
 export async function withTypedTransaction<T>(
-  db: any,
-  callback: (tx: any) => Promise<T>
+  db: DbInstance,
+  callback: (tx: DbInstance) => Promise<T>
 ): Promise<T> {
   // If db has a transaction method, use it
   if (typeof db.transaction === 'function') {

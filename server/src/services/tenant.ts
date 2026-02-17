@@ -52,61 +52,61 @@ const DEFAULT_SUBSCRIPTION: SubscriptionInfo = {
 };
 
 /** Convert a raw DB row into a typed Tenant object */
-function rowToTenant(row: any): Tenant {
+function rowToTenant(row: Record<string, unknown>): Tenant {
   return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    logoUrl: row.logoUrl ?? row.logo_url ?? undefined,
-    primaryContactEmail: row.primaryContactEmail ?? row.primary_contact_email ?? undefined,
-    abn: row.abn ?? undefined,
-    entityType: row.entityType ?? row.entity_type ?? undefined,
-    industry: row.industry ?? undefined,
-    financialYearEnd: row.financialYearEnd ?? row.financial_year_end ?? '06-30',
-    timezone: row.timezone ?? 'Australia/Sydney',
+    id: String(row.id),
+    name: String(row.name),
+    slug: String(row.slug),
+    logoUrl: row.logoUrl ?? row.logo_url ? String(row.logoUrl ?? row.logo_url) : undefined,
+    primaryContactEmail: row.primaryContactEmail ?? row.primary_contact_email ? String(row.primaryContactEmail ?? row.primary_contact_email) : undefined,
+    abn: row.abn ? String(row.abn) : undefined,
+    entityType: row.entityType ?? row.entity_type ? String(row.entityType ?? row.entity_type) : undefined,
+    industry: row.industry ? String(row.industry) : undefined,
+    financialYearEnd: String(row.financialYearEnd ?? row.financial_year_end ?? '06-30'),
+    timezone: String(row.timezone ?? 'Australia/Sydney'),
     settingsJson: parseJson(row.settingsJson ?? row.settings_json),
     isActive: Boolean(row.isActive ?? row.is_active ?? true),
-    createdAt: row.createdAt ?? row.created_at ?? new Date().toISOString(),
-    updatedAt: row.updatedAt ?? row.updated_at ?? new Date().toISOString(),
+    createdAt: String(row.createdAt ?? row.created_at ?? new Date().toISOString()),
+    updatedAt: String(row.updatedAt ?? row.updated_at ?? new Date().toISOString()),
   };
 }
 
 /** Convert a raw DB row into a typed TenantMember object */
-function rowToMember(row: any): TenantMember {
+function rowToMember(row: Record<string, unknown>): TenantMember {
   return {
-    id: row.id,
-    tenantId: row.tenantId ?? row.tenant_id,
-    userId: row.userId ?? row.user_id,
+    id: String(row.id),
+    tenantId: String(row.tenantId ?? row.tenant_id),
+    userId: String(row.userId ?? row.user_id),
     role: (row.role ?? 'viewer') as TenantRole,
-    displayName: row.displayName ?? row.display_name ?? undefined,
+    displayName: row.displayName ?? row.display_name ? String(row.displayName ?? row.display_name) : undefined,
     isPrimaryContact: Boolean(row.isPrimaryContact ?? row.is_primary_contact ?? false),
-    joinedAt: row.joinedAt ?? row.joined_at ?? new Date().toISOString(),
-    lastActiveAt: row.lastActiveAt ?? row.last_active_at ?? undefined,
+    joinedAt: String(row.joinedAt ?? row.joined_at ?? new Date().toISOString()),
+    lastActiveAt: row.lastActiveAt ?? row.last_active_at ? String(row.lastActiveAt ?? row.last_active_at) : undefined,
   };
 }
 
 /** Convert a raw DB row into a typed TenantInvitation object */
-function rowToInvitation(row: any): TenantInvitation {
+function rowToInvitation(row: Record<string, unknown>): TenantInvitation {
   return {
-    id: row.id,
-    tenantId: row.tenantId ?? row.tenant_id,
-    email: row.email,
+    id: String(row.id),
+    tenantId: String(row.tenantId ?? row.tenant_id),
+    email: String(row.email),
     role: (row.role ?? 'viewer') as TenantRole,
-    invitedBy: row.invitedBy ?? row.invited_by,
-    token: row.token,
-    status: row.status ?? 'pending',
-    expiresAt: row.expiresAt ?? row.expires_at,
-    acceptedAt: row.acceptedAt ?? row.accepted_at ?? undefined,
-    createdAt: row.createdAt ?? row.created_at ?? new Date().toISOString(),
+    invitedBy: String(row.invitedBy ?? row.invited_by),
+    token: String(row.token),
+    status: String(row.status ?? 'pending') as 'pending' | 'accepted' | 'expired' | 'revoked',
+    expiresAt: String(row.expiresAt ?? row.expires_at),
+    acceptedAt: row.acceptedAt ?? row.accepted_at ? String(row.acceptedAt ?? row.accepted_at) : undefined,
+    createdAt: String(row.createdAt ?? row.created_at ?? new Date().toISOString()),
   };
 }
 
 /** Safely parse JSON with fallback to empty object */
-function parseJson(value: any): Record<string, any> {
+function parseJson(value: unknown): Record<string, unknown> {
   if (!value) return {};
-  if (typeof value === 'object') return value;
+  if (typeof value === 'object' && value !== null) return value as Record<string, unknown>;
   try {
-    return JSON.parse(value);
+    return JSON.parse(String(value));
   } catch {
     return {};
   }
@@ -344,7 +344,7 @@ export class TenantService {
     }
 
     // Prevent removing the last owner
-    if ((member as any).role === 'owner') {
+    if ((member as Record<string, unknown>).role === 'owner') {
       const ownerCount = await this._countMembersWithRole(tenantId, 'owner');
       if (ownerCount <= 1) {
         throw new Error('Cannot remove the last owner. Transfer ownership first.');
@@ -384,7 +384,7 @@ export class TenantService {
     }
 
     // Prevent demoting the last owner
-    if ((member as any).role === 'owner' && newRole !== 'owner') {
+    if ((member as Record<string, unknown>).role === 'owner' && newRole !== 'owner') {
       const ownerCount = await this._countMembersWithRole(tenantId, 'owner');
       if (ownerCount <= 1) {
         throw new Error('Cannot demote the last owner. Assign another owner first.');
@@ -421,7 +421,7 @@ export class TenantService {
       .from(tenantMembers)
       .where(eq(tenantMembers.tenantId, tenantId))
       .all();
-    return (rows as any[]).map(rowToMember);
+    return (rows as Array<Record<string, unknown>>).map(rowToMember);
   }
 
   /**
@@ -435,8 +435,8 @@ export class TenantService {
       .all();
 
     const results: Array<{ tenant: Tenant; role: TenantRole }> = [];
-    for (const m of memberships as any[]) {
-      const tenant = await this.getTenant(m.tenantId ?? m.tenant_id);
+    for (const m of memberships as Array<Record<string, unknown>>) {
+      const tenant = await this.getTenant(String(m.tenantId ?? m.tenant_id));
       if (tenant && tenant.isActive) {
         results.push({ tenant, role: (m.role ?? 'viewer') as TenantRole });
       }
@@ -537,27 +537,27 @@ export class TenantService {
       throw new Error('Invalid invitation token');
     }
 
-    const inv = invitation as any;
+    const inv = invitation as Record<string, unknown>;
     if (inv.status !== 'pending') {
       throw new Error(`Invitation has already been ${inv.status}`);
     }
 
-    const expiresAt = new Date(inv.expiresAt ?? inv.expires_at);
+    const expiresAt = new Date(String(inv.expiresAt ?? inv.expires_at));
     if (expiresAt < new Date()) {
       // Mark as expired
       await db
         .update(tenantInvitations)
         .set({ status: 'expired' })
-        .where(eq(tenantInvitations.id, inv.id))
+        .where(eq(tenantInvitations.id, String(inv.id)))
         .run();
       throw new Error('Invitation has expired');
     }
 
-    const tenantId = inv.tenantId ?? inv.tenant_id;
+    const tenantId = String(inv.tenantId ?? inv.tenant_id);
     const role = (inv.role ?? 'viewer') as TenantRole;
 
     // Create the member
-    const member = await this.addMember(tenantId, userId, role, inv.invitedBy ?? inv.invited_by);
+    const member = await this.addMember(tenantId, userId, role, String(inv.invitedBy ?? inv.invited_by));
 
     // Mark invitation as accepted
     const now = new Date().toISOString();
@@ -567,7 +567,7 @@ export class TenantService {
         status: 'accepted',
         acceptedAt: now,
       })
-      .where(eq(tenantInvitations.id, inv.id))
+      .where(eq(tenantInvitations.id, String(inv.id)))
       .run();
 
     const tenant = await this.getTenant(tenantId);
@@ -590,7 +590,7 @@ export class TenantService {
       throw new Error('Invitation not found');
     }
 
-    if ((invitation as any).status !== 'pending') {
+    if ((invitation as Record<string, unknown>).status !== 'pending') {
       throw new Error('Can only revoke pending invitations');
     }
 
@@ -610,7 +610,7 @@ export class TenantService {
       .from(tenantInvitations)
       .where(and(eq(tenantInvitations.tenantId, tenantId), eq(tenantInvitations.status, 'pending')))
       .all();
-    return (rows as any[]).map(rowToInvitation);
+    return (rows as Array<Record<string, unknown>>).map(rowToInvitation);
   }
 
   /**
@@ -628,13 +628,13 @@ export class TenantService {
       .all();
 
     let count = 0;
-    for (const inv of expired as any[]) {
+    for (const inv of expired as Array<Record<string, unknown>>) {
       const expiresAt = inv.expiresAt ?? inv.expires_at;
-      if (expiresAt && new Date(expiresAt) < new Date(now)) {
+      if (expiresAt && new Date(String(expiresAt)) < new Date(now)) {
         await db
           .update(tenantInvitations)
           .set({ status: 'expired' })
-          .where(eq(tenantInvitations.id, inv.id))
+          .where(eq(tenantInvitations.id, String(inv.id)))
           .run();
         count++;
       }
@@ -680,7 +680,7 @@ export class TenantService {
       throw new Error('Tenant has been deactivated');
     }
 
-    const role = ((member as any).role ?? 'viewer') as TenantRole;
+    const role = ((member as Record<string, unknown>).role ?? 'viewer') as TenantRole;
 
     // Fetch permissions for this role in this tenant
     const perms = await this._getPermissionsForRole(tenantId, role);
@@ -716,10 +716,10 @@ export class TenantService {
       .orderBy(tenantMembers.joinedAt)
       .all();
 
-    if (!memberships || (memberships as any[]).length === 0) return null;
+    if (!memberships || (memberships as Array<Record<string, unknown>>).length === 0) return null;
 
-    const first = (memberships as any[])[0];
-    const tenantId = first.tenantId ?? first.tenant_id;
+    const first = (memberships as Array<Record<string, unknown>>)[0];
+    const tenantId = String(first.tenantId ?? first.tenant_id);
     return this.getTenant(tenantId);
   }
 
@@ -734,7 +734,7 @@ export class TenantService {
       .from(tenantMembers)
       .where(eq(tenantMembers.tenantId, tenantId))
       .all();
-    return (rows as any[]).length;
+    return (rows as Array<Record<string, unknown>>).length;
   }
 
   /** Get the count of pending invitations for a tenant */
@@ -744,7 +744,7 @@ export class TenantService {
       .from(tenantInvitations)
       .where(and(eq(tenantInvitations.tenantId, tenantId), eq(tenantInvitations.status, 'pending')))
       .all();
-    return (rows as any[]).length;
+    return (rows as Array<Record<string, unknown>>).length;
   }
 
   /** Count members with a specific role in a tenant */
@@ -754,7 +754,7 @@ export class TenantService {
       .from(tenantMembers)
       .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.role, role)))
       .all();
-    return (rows as any[]).length;
+    return (rows as Array<Record<string, unknown>>).length;
   }
 
   /** Get the list of permission names for a role in a tenant */
@@ -766,16 +766,16 @@ export class TenantService {
       .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
       .all();
 
-    const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
+    const permIds = (rps as Array<Record<string, unknown>>).map((rp) => rp.permissionId ?? rp.permission_id);
     if (permIds.length === 0) return [];
 
     const allPerms = await db.select().from(permissions).all();
     const permMap = new Map<string, string>();
-    for (const p of allPerms as any[]) {
-      permMap.set(p.id, p.name);
+    for (const p of allPerms as Array<Record<string, unknown>>) {
+      permMap.set(String(p.id), String(p.name));
     }
 
-    return permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
+    return permIds.map((id) => permMap.get(String(id))).filter((name): name is string => !!name);
   }
 
   /** Get subscription info for a tenant, with defaults for free tier */
@@ -791,8 +791,8 @@ export class TenantService {
 
     if (!sub) return { ...DEFAULT_SUBSCRIPTION };
 
-    const subRow = sub as any;
-    const planId = subRow.planId ?? subRow.plan_id;
+    const subRow = sub as Record<string, unknown>;
+    const planId = String(subRow.planId ?? subRow.plan_id);
 
     // Fetch the plan details
     const plan = await db
@@ -803,33 +803,33 @@ export class TenantService {
 
     if (!plan) return { ...DEFAULT_SUBSCRIPTION };
 
-    const planRow = plan as any;
+    const planRow = plan as Record<string, unknown>;
     return {
-      planId: planRow.id,
-      planName: planRow.displayName ?? planRow.display_name ?? planRow.name,
-      status: subRow.status,
-      billingCycle: subRow.billingCycle ?? subRow.billing_cycle ?? 'monthly',
-      maxMembers: planRow.maxMembers ?? planRow.max_members ?? 3,
-      maxAccounts: planRow.maxAccounts ?? planRow.max_accounts ?? 2,
+      planId: String(planRow.id),
+      planName: String(planRow.displayName ?? planRow.display_name ?? planRow.name),
+      status: String(subRow.status),
+      billingCycle: String(subRow.billingCycle ?? subRow.billing_cycle ?? 'monthly'),
+      maxMembers: Number(planRow.maxMembers ?? planRow.max_members ?? 3),
+      maxAccounts: Number(planRow.maxAccounts ?? planRow.max_accounts ?? 2),
       maxTransactionsPerMonth:
-        planRow.maxTransactionsPerMonth ?? planRow.max_transactions_per_month ?? 500,
-      maxAiQueriesPerMonth: planRow.maxAiQueriesPerMonth ?? planRow.max_ai_queries_per_month ?? 50,
-      maxStorageMb: planRow.maxStorageMb ?? planRow.max_storage_mb ?? 100,
+        Number(planRow.maxTransactionsPerMonth ?? planRow.max_transactions_per_month ?? 500),
+      maxAiQueriesPerMonth: Number(planRow.maxAiQueriesPerMonth ?? planRow.max_ai_queries_per_month ?? 50),
+      maxStorageMb: Number(planRow.maxStorageMb ?? planRow.max_storage_mb ?? 100),
       currentPeriodEnd:
-        subRow.currentPeriodEnd ??
+        String(subRow.currentPeriodEnd ??
         subRow.current_period_end ??
-        DEFAULT_SUBSCRIPTION.currentPeriodEnd,
+        DEFAULT_SUBSCRIPTION.currentPeriodEnd),
       features: parseJsonArray(planRow.featuresJson ?? planRow.features_json),
     };
   }
 }
 
 /** Parse a JSON array safely */
-function parseJsonArray(value: any): string[] {
+function parseJsonArray(value: unknown): string[] {
   if (!value) return [];
   if (Array.isArray(value)) return value;
   try {
-    const parsed = JSON.parse(value);
+    const parsed = JSON.parse(String(value));
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];

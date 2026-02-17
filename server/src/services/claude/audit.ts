@@ -73,9 +73,9 @@ export interface AuditQueryOptions {
  * with parameterized queries for SQL injection safety.
  */
 export class AuditService {
-  private db: any;
+  private db: Record<string, unknown>;
 
-  constructor(db: any) {
+  constructor(db: Record<string, unknown>) {
     this.db = db;
   }
 
@@ -387,9 +387,11 @@ export class AuditService {
     const limit = options?.limit ?? 50;
     const offset = options?.offset ?? 0;
 
+    type DbLike = { all: (...args: unknown[]) => Promise<unknown[]>; run: (...args: unknown[]) => Promise<unknown> };
+    const dbTyped = this.db as unknown as DbLike;
     try {
       const [entries, countResult] = await Promise.all([
-        this.db.all(
+        dbTyped.all(
           `SELECT id, mutation_id as "mutationId", session_id as "sessionId", ` +
             `agent_type as "agentType", action, target_table as "targetTable", ` +
             `target_id as "targetId", before_state as "beforeState", ` +
@@ -398,14 +400,14 @@ export class AuditService {
             `FROM agent_audit_log ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
           [...params, limit, offset],
         ),
-        this.db.all(`SELECT COUNT(*) as count FROM agent_audit_log ${whereClause}`, params),
+        dbTyped.all(`SELECT COUNT(*) as count FROM agent_audit_log ${whereClause}`, params),
       ]);
 
       const redactedEntries = (entries as AuditEntry[]).map((e) => this.redactSensitiveFields(e));
 
       return {
         entries: redactedEntries,
-        total: countResult[0]?.count ?? 0,
+        total: (countResult[0] as Record<string, unknown> | undefined)?.count as number ?? 0,
       };
     } catch (error) {
       console.error('[AuditService] Failed to query audit log:', error);
@@ -418,8 +420,9 @@ export class AuditService {
    * Returns entries in chronological order (oldest first).
    */
   async getMutationAuditTrail(mutationId: string): Promise<AuditEntry[]> {
+    const dbTyped = this.db as unknown as { all: (...args: unknown[]) => Promise<unknown[]> };
     try {
-      const entries = (await this.db.all(
+      const entries = (await dbTyped.all(
         `SELECT id, mutation_id as "mutationId", session_id as "sessionId", ` +
           `agent_type as "agentType", action, target_table as "targetTable", ` +
           `target_id as "targetId", before_state as "beforeState", ` +
@@ -440,8 +443,9 @@ export class AuditService {
    * Returns entries in chronological order (oldest first).
    */
   async getSessionAuditTrail(sessionId: string): Promise<AuditEntry[]> {
+    const dbTyped = this.db as unknown as { all: (...args: unknown[]) => Promise<unknown[]> };
     try {
-      const entries = (await this.db.all(
+      const entries = (await dbTyped.all(
         `SELECT id, mutation_id as "mutationId", session_id as "sessionId", ` +
           `agent_type as "agentType", action, target_table as "targetTable", ` +
           `target_id as "targetId", before_state as "beforeState", ` +
@@ -467,8 +471,9 @@ export class AuditService {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
+    const dbTyped = this.db as unknown as { run: (...args: unknown[]) => Promise<unknown> };
     try {
-      await this.db.run(
+      await dbTyped.run(
         `INSERT INTO agent_audit_log (
           id, mutation_id, session_id, agent_type, action,
           target_table, target_id, before_state, after_state,

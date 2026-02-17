@@ -818,14 +818,15 @@ export class BulkUploadQueue {
 
       this.emitFileEvent(job, file, 'file_completed');
       logger.info(`[Queue] File ${file.originalName} completed successfully`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error(`[Queue] File ${file.originalName} failed`, error);
 
       file.retryCount++;
       job.progress.processing--;
 
       // Don't retry timeout errors
-      const isTimeout = error.code === 'PROCESSING_TIMEOUT';
+      const errObj = error instanceof Error ? error as Error & { code?: string } : null;
+      const isTimeout = errObj?.code === 'PROCESSING_TIMEOUT';
       const canRetry = !isTimeout && file.retryCount < this.config.maxRetries;
 
       if (canRetry) {
@@ -845,7 +846,7 @@ export class BulkUploadQueue {
         }, delay);
       } else {
         file.state = 'failed';
-        file.error = error.message || 'Unknown error';
+        file.error = errObj?.message || 'Unknown error';
         job.progress.failed++;
 
         this.emitFileEvent(job, file, 'file_failed');

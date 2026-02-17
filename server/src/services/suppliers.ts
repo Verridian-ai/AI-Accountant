@@ -13,7 +13,8 @@
  */
 
 import { db } from '../schema.js';
-import { eq, and, desc, asc, like, sql, or } from 'drizzle-orm';
+import type * as SchemaTypes from '../schema.js';
+import { eq, and, desc, asc, like, sql, or, type SQL } from 'drizzle-orm';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import crypto from 'crypto';
 import { validateABN, normalizeABN } from '../utils/abn.js';
@@ -135,18 +136,18 @@ export interface ListOptions {
 // Lazy table references (Agent 1 may not have added these yet)
 // ---------------------------------------------------------------------------
 
-let _suppliers: any;
-let _bills: any;
-let _billPayments: any;
+let _suppliers: typeof SchemaTypes.suppliers | undefined;
+let _bills: typeof SchemaTypes.bills | undefined;
+let _billPayments: typeof SchemaTypes.billPayments | undefined;
 let _tablesLoaded = false;
 
 async function ensureTables() {
   if (_tablesLoaded) return;
   try {
     const schema = await import('../schema.js');
-    _suppliers = (schema as any).suppliers;
-    _bills = (schema as any).bills;
-    _billPayments = (schema as any).billPayments;
+    _suppliers = schema.suppliers;
+    _bills = schema.bills;
+    _billPayments = schema.billPayments;
     _tablesLoaded = true;
   } catch {
     _tablesLoaded = false;
@@ -180,7 +181,7 @@ export class SupplierService {
     const offset = (page - 1) * limit;
 
     // Build conditions
-    const conditions: any[] = [eq(_suppliers.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(_suppliers.userId, userId)];
 
     if (options.isActive !== undefined) {
       conditions.push(eq(_suppliers.isActive, options.isActive));
@@ -208,7 +209,7 @@ export class SupplierService {
     const total = Number(countResult?.count ?? 0);
 
     // Sort
-    let orderByClause: any;
+    let orderByClause: SQL;
     const sortOrder = options.sortOrder ?? 'asc';
     const sortFn = sortOrder === 'desc' ? desc : asc;
 
@@ -232,7 +233,7 @@ export class SupplierService {
       .offset(offset)
       .all();
 
-    const data = rows.map((row: any) => this.rowToSupplier(row, true));
+    const data = rows.map((row: Record<string, unknown>) => this.rowToSupplier(row, true));
 
     return { data, total };
   }
@@ -266,12 +267,12 @@ export class SupplierService {
         .limit(10)
         .all();
 
-      recentBills = bills.map((b: any) => ({
-        id: b.id,
-        billNumber: b.billNumber ?? '',
+      recentBills = bills.map((b: Record<string, unknown>) => ({
+        id: b.id as string,
+        billNumber: (b.billNumber ?? '') as string,
         totalAmountCents: Number(b.totalAmount ?? b.total_amount ?? 0),
-        status: b.status ?? 'draft',
-        dueDate: b.dueDate ?? b.due_date ?? '',
+        status: (b.status ?? 'draft') as string,
+        dueDate: (b.dueDate ?? b.due_date ?? '') as string,
       }));
 
       // Total outstanding (unpaid bills)
@@ -357,7 +358,7 @@ export class SupplierService {
     // Encrypt bank account number before storage
     const encryptedAccountNumber = data.bankAccountNumber ? encrypt(data.bankAccountNumber) : null;
 
-    const record: any = {
+    const record: Record<string, unknown> = {
       id,
       userId,
       businessName: data.businessName,
@@ -411,7 +412,7 @@ export class SupplierService {
     }
 
     // Build update set
-    const updates: any = {};
+    const updates: Record<string, unknown> = {};
 
     if (data.businessName !== undefined) updates.businessName = data.businessName;
     if (data.contactName !== undefined) updates.contactName = data.contactName;
@@ -516,7 +517,7 @@ export class SupplierService {
       .limit(10)
       .all();
 
-    return rows.map((row: any) => this.rowToSupplier(row, true));
+    return rows.map((row: Record<string, unknown>) => this.rowToSupplier(row, true));
   }
 
   // =========================================================================
@@ -533,7 +534,8 @@ export class SupplierService {
 
     if (!row) return null;
 
-    const rawAccountNumber = (row as any).bankAccountNumber ?? (row as any).bank_account_number;
+    const r = row as Record<string, unknown>;
+    const rawAccountNumber = (r.bankAccountNumber ?? r.bank_account_number) as string | null;
     if (!rawAccountNumber) return null;
 
     let accountNumber: string;
@@ -545,9 +547,9 @@ export class SupplierService {
     }
 
     return {
-      bsb: (row as any).bankBsb ?? (row as any).bank_bsb ?? '',
+      bsb: ((r.bankBsb ?? r.bank_bsb ?? '') as string),
       accountNumber,
-      accountName: (row as any).bankAccountName ?? (row as any).bank_account_name ?? '',
+      accountName: ((r.bankAccountName ?? r.bank_account_name ?? '') as string),
     };
   }
 
@@ -609,8 +611,8 @@ export class SupplierService {
    * Handles both camelCase and snake_case column names (wrapPgDb proxy).
    * When maskBank is true, shows only last 4 digits of account number.
    */
-  private rowToSupplier(row: any, maskBank: boolean): Supplier {
-    const rawAccountNumber = row.bankAccountNumber ?? row.bank_account_number ?? null;
+  private rowToSupplier(row: Record<string, unknown>, maskBank: boolean): Supplier {
+    const rawAccountNumber = (row.bankAccountNumber ?? row.bank_account_number ?? null) as string | null;
 
     let displayAccountNumber: string | null = null;
     if (rawAccountNumber && maskBank) {
@@ -632,21 +634,21 @@ export class SupplierService {
     }
 
     return {
-      id: row.id,
-      userId: row.userId ?? row.user_id,
-      businessName: row.businessName ?? row.business_name ?? '',
-      contactName: row.contactName ?? row.contact_name ?? null,
-      email: row.email ?? null,
-      phone: row.phone ?? null,
-      address: row.address ?? null,
-      abn: row.abn ?? null,
+      id: row.id as string,
+      userId: (row.userId ?? row.user_id) as string,
+      businessName: (row.businessName ?? row.business_name ?? '') as string,
+      contactName: (row.contactName ?? row.contact_name ?? null) as string | null,
+      email: (row.email ?? null) as string | null,
+      phone: (row.phone ?? null) as string | null,
+      address: (row.address ?? null) as string | null,
+      abn: (row.abn ?? null) as string | null,
       paymentTermsDays: Number(row.paymentTermsDays ?? row.payment_terms_days ?? 30),
-      bankBsb: row.bankBsb ?? row.bank_bsb ?? null,
+      bankBsb: (row.bankBsb ?? row.bank_bsb ?? null) as string | null,
       bankAccountNumber: displayAccountNumber,
-      bankAccountName: row.bankAccountName ?? row.bank_account_name ?? null,
-      notes: row.notes ?? null,
-      isActive: row.isActive ?? row.is_active ?? true,
-      createdAt: row.createdAt ?? row.created_at ?? '',
+      bankAccountName: (row.bankAccountName ?? row.bank_account_name ?? null) as string | null,
+      notes: (row.notes ?? null) as string | null,
+      isActive: (row.isActive ?? row.is_active ?? true) as boolean,
+      createdAt: (row.createdAt ?? row.created_at ?? '') as string,
     };
   }
 }

@@ -119,7 +119,7 @@ export function BudgetProjections() {
                 <span className="text-right">Projected</span>
                 <span className="text-right">Upper</span>
               </div>
-              {revenue.projections.map((p: any) => (
+              {revenue.projections.map((p: { month: string; lowerBound: number; projected: number; upperBound: number }) => (
                 <div
                   key={p.month}
                   className="grid grid-cols-4 text-sm py-1.5 border-b border-white/5 last:border-0"
@@ -154,7 +154,7 @@ export function BudgetProjections() {
                 <span className="text-right">Projected</span>
                 <span className="text-right">Upper</span>
               </div>
-              {expenses.projections.map((p: any) => (
+              {expenses.projections.map((p: { month: string; lowerBound: number; projected: number; upperBound: number }) => (
                 <div
                   key={p.month}
                   className="grid grid-cols-4 text-sm py-1.5 border-b border-white/5 last:border-0"

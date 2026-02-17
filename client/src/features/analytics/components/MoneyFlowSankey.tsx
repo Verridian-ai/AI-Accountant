@@ -316,7 +316,7 @@ function MoneyFlowSankeyInner() {
                       nodeCount={nodes.length}
                       onNodeClick={handleNodeClick}
                     />
-                  ) as any
+                  ) as React.ReactElement
                 }
                 link={
                   (
@@ -325,7 +325,7 @@ function MoneyFlowSankeyInner() {
                       onLinkClick={handleLinkClick}
                       highlightIndex={highlightLinkIndex}
                     />
-                  ) as any
+                  ) as React.ReactElement
                 }
                 margin={{ top: 10, right: 160, bottom: 10, left: 160 }}
               >
@@ -348,8 +348,8 @@ function MoneyFlowSankeyInner() {
             ) : (
               <RechartsSankey
                 data={{ nodes: [{ name: '' }], links: [] }}
-                node={(() => null) as any}
-                link={(() => null) as any}
+                node={(() => null) as unknown as React.ReactElement}
+                link={(() => null) as unknown as React.ReactElement}
               >
                 <text
                   x="50%"

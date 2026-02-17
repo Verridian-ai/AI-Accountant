@@ -47,7 +47,7 @@ export abstract class VercelAgent<TInput, TOutput> {
   // -----------------------------------------------------------------------
 
   /** Return the Vercel AI SDK tools this agent can use. */
-  abstract getTools(): ToolSet;
+  abstract getTools(sessionId?: string): ToolSet;
 
   /** Turn typed input into the user-message prompt string. */
   abstract buildPrompt(input: TInput): string;

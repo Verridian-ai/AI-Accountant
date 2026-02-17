@@ -9,7 +9,8 @@ import os from 'os';
 import crypto from 'crypto';
 import { db } from '../schema.js';
 import { systemMetrics, systemHealthChecks } from '../db/admin-schema.js';
-import { sql, desc, gte, lte, eq, and } from 'drizzle-orm';
+import { sql, desc, gte, lte, eq, and, type SQL } from 'drizzle-orm';
+import type { Context, Next } from 'hono';
 
 // ============================================================================
 // TYPES
@@ -19,7 +20,7 @@ interface HealthCheckResult {
   service: string;
   status: 'healthy' | 'degraded' | 'unhealthy';
   responseTimeMs: number;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   error?: string;
 }
 
@@ -126,13 +127,13 @@ class SystemHealthService {
         responseTimeMs: Date.now() - start,
         details: result,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         service: 'postgres',
         status: 'unhealthy',
         responseTimeMs: Date.now() - start,
         details: {},
-        error: err.message ?? 'PostgreSQL check failed',
+        error: err instanceof Error ? err.message : 'PostgreSQL check failed',
       };
     }
   }
@@ -168,13 +169,13 @@ class SystemHealthService {
         responseTimeMs: Date.now() - start,
         details: result,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         service: 'cognee',
         status: 'degraded',
         responseTimeMs: Date.now() - start,
         details: {},
-        error: err.message ?? 'Cognee check failed',
+        error: err instanceof Error ? err.message : 'Cognee check failed',
       };
     }
   }
@@ -206,13 +207,13 @@ class SystemHealthService {
           platform: process.platform,
         },
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         service: 'server',
         status: 'unhealthy',
         responseTimeMs: Date.now() - start,
         details: {},
-        error: err.message ?? 'Server check failed',
+        error: err instanceof Error ? err.message : 'Server check failed',
       };
     }
   }
@@ -233,14 +234,14 @@ class SystemHealthService {
         responseTimeMs: Date.now() - start,
         details: result,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Client nginx may not be reachable outside Docker — graceful degradation
       return {
         service: 'client',
         status: 'degraded',
         responseTimeMs: Date.now() - start,
         details: { note: 'Client may not be reachable outside Docker' },
-        error: err.message ?? 'Client check failed',
+        error: err instanceof Error ? err.message : 'Client check failed',
       };
     }
   }
@@ -283,13 +284,13 @@ class SystemHealthService {
         responseTimeMs: Date.now() - start,
         details: result,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         service: 'redis',
         status: 'degraded',
         responseTimeMs: Date.now() - start,
         details: {},
-        error: err.message ?? 'Redis check failed',
+        error: err instanceof Error ? err.message : 'Redis check failed',
       };
     }
   }
@@ -430,8 +431,9 @@ class SystemHealthService {
           })
           .run();
       }
-    } catch (err: any) {
-      console.error('[SystemHealth] Failed to collect metrics:', err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error('[SystemHealth] Failed to collect metrics:', errMsg);
     }
   }
 
@@ -440,7 +442,7 @@ class SystemHealthService {
   // --------------------------------------------------------------------------
 
   requestLatencyMiddleware() {
-    return async (c: any, next: () => Promise<void>) => {
+    return async (c: Context, next: Next) => {
       const start = Date.now();
       await next();
       const duration = Date.now() - start;
@@ -486,8 +488,9 @@ class SystemHealthService {
           })
           .run();
       }
-    } catch (err: any) {
-      console.error('[SystemHealth] Failed to flush latency buffer:', err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error('[SystemHealth] Failed to flush latency buffer:', errMsg);
     }
   }
 
@@ -495,9 +498,9 @@ class SystemHealthService {
   // Query Methods
   // --------------------------------------------------------------------------
 
-  async getMetrics(filters: MetricFilter = {}): Promise<any[]> {
+  async getMetrics(filters: MetricFilter = {}): Promise<unknown[]> {
     try {
-      const conditions: any[] = [];
+      const conditions: (SQL | undefined)[] = [];
 
       if (filters.startTime) {
         conditions.push(gte(systemMetrics.observationTime, filters.startTime));
@@ -537,7 +540,7 @@ class SystemHealthService {
           .from(systemMetrics);
 
         if (conditions.length > 0) {
-          return await (query as any)
+          return await query
             .where(and(...conditions))
             .groupBy(intervalExpr, systemMetrics.metricName)
             .orderBy(desc(intervalExpr))
@@ -545,7 +548,7 @@ class SystemHealthService {
             .all();
         }
 
-        return await (query as any)
+        return await query
           .groupBy(intervalExpr, systemMetrics.metricName)
           .orderBy(desc(intervalExpr))
           .limit(filters.limit ?? 500)
@@ -556,28 +559,29 @@ class SystemHealthService {
       const query = db.select().from(systemMetrics);
 
       if (conditions.length > 0) {
-        return await (query as any)
+        return await query
           .where(and(...conditions))
           .orderBy(desc(systemMetrics.observationTime))
           .limit(filters.limit ?? 200)
           .all();
       }
 
-      return await (query as any)
+      return await query
         .orderBy(desc(systemMetrics.observationTime))
         .limit(filters.limit ?? 200)
         .all();
-    } catch (err: any) {
-      console.error('[SystemHealth] Failed to get metrics:', err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error('[SystemHealth] Failed to get metrics:', errMsg);
       return [];
     }
   }
 
-  async getHealthHistory(serviceName?: string, hours: number = 24): Promise<any[]> {
+  async getHealthHistory(serviceName?: string, hours: number = 24): Promise<unknown[]> {
     try {
       const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 
-      const conditions: any[] = [gte(systemHealthChecks.checkedAt, cutoff)];
+      const conditions: (SQL | undefined)[] = [gte(systemHealthChecks.checkedAt, cutoff)];
 
       if (serviceName) {
         conditions.push(eq(systemHealthChecks.serviceName, serviceName));
@@ -590,8 +594,9 @@ class SystemHealthService {
         .orderBy(desc(systemHealthChecks.checkedAt))
         .limit(500)
         .all();
-    } catch (err: any) {
-      console.error('[SystemHealth] Failed to get health history:', err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error('[SystemHealth] Failed to get health history:', errMsg);
       return [];
     }
   }
@@ -718,8 +723,9 @@ class SystemHealthService {
       deletedChecks = -1;
 
       console.log(`[SystemHealth] Cleaned up data older than ${CONFIG.retentionHours}h`);
-    } catch (err: any) {
-      console.error('[SystemHealth] Cleanup failed:', err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error('[SystemHealth] Cleanup failed:', errMsg);
     }
 
     return { deletedMetrics, deletedChecks };
@@ -747,8 +753,9 @@ class SystemHealthService {
           })
           .run();
       }
-    } catch (err: any) {
-      console.error('[SystemHealth] Failed to persist health checks:', err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error('[SystemHealth] Failed to persist health checks:', errMsg);
     }
   }
 }

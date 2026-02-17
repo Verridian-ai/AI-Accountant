@@ -94,34 +94,34 @@ function parsePayload(raw: unknown): Record<string, unknown> {
 }
 
 /** Convert raw row to ServerConflict */
-function rowToConflict(row: any): ServerConflict {
+function rowToConflict(row: Record<string, unknown>): ServerConflict {
   return {
-    id: row.id,
-    deviceId: row.deviceId ?? row.device_id,
-    operation: row.operation,
-    resourceType: row.resourceType ?? row.resource_type,
-    resourceId: row.resourceId ?? row.resource_id ?? undefined,
+    id: String(row.id),
+    deviceId: String(row.deviceId ?? row.device_id),
+    operation: String(row.operation),
+    resourceType: String(row.resourceType ?? row.resource_type),
+    resourceId: row.resourceId ?? row.resource_id ? String(row.resourceId ?? row.resource_id) : undefined,
     payload: parsePayload(row.payloadJson ?? row.payload_json),
-    conflictDetails: row.conflictDetails ?? row.conflict_details ?? undefined,
-    serverVersion: row.serverVersion ?? row.server_version ?? undefined,
-    clientVersion: row.clientVersion ?? row.client_version ?? undefined,
-    createdAt: row.createdAt ?? row.created_at ?? undefined,
+    conflictDetails: row.conflictDetails ?? row.conflict_details ? String(row.conflictDetails ?? row.conflict_details) : undefined,
+    serverVersion: row.serverVersion ?? row.server_version ? Number(row.serverVersion ?? row.server_version) : undefined,
+    clientVersion: row.clientVersion ?? row.client_version ? Number(row.clientVersion ?? row.client_version) : undefined,
+    createdAt: row.createdAt ?? row.created_at ? String(row.createdAt ?? row.created_at) : undefined,
   };
 }
 
 /** Convert raw row to SyncLogEntry */
-function rowToLogEntry(row: any): SyncLogEntry {
+function rowToLogEntry(row: Record<string, unknown>): SyncLogEntry {
   return {
-    id: row.id,
-    deviceId: row.deviceId ?? row.device_id,
-    operation: row.operation,
-    resourceType: row.resourceType ?? row.resource_type,
-    resourceId: row.resourceId ?? row.resource_id ?? undefined,
-    syncStatus: row.syncStatus ?? row.sync_status ?? 'pending',
-    conflictResolution: row.conflictResolution ?? row.conflict_resolution ?? undefined,
-    errorMessage: row.errorMessage ?? row.error_message ?? undefined,
-    createdAt: row.createdAt ?? row.created_at ?? undefined,
-    syncedAt: row.syncedAt ?? row.synced_at ?? undefined,
+    id: String(row.id),
+    deviceId: String(row.deviceId ?? row.device_id),
+    operation: String(row.operation),
+    resourceType: String(row.resourceType ?? row.resource_type),
+    resourceId: row.resourceId ?? row.resource_id ? String(row.resourceId ?? row.resource_id) : undefined,
+    syncStatus: String(row.syncStatus ?? row.sync_status ?? 'pending'),
+    conflictResolution: row.conflictResolution ?? row.conflict_resolution ? String(row.conflictResolution ?? row.conflict_resolution) : undefined,
+    errorMessage: row.errorMessage ?? row.error_message ? String(row.errorMessage ?? row.error_message) : undefined,
+    createdAt: row.createdAt ?? row.created_at ? String(row.createdAt ?? row.created_at) : undefined,
+    syncedAt: row.syncedAt ?? row.synced_at ? String(row.syncedAt ?? row.synced_at) : undefined,
   };
 }
 
@@ -199,15 +199,16 @@ export class SyncService {
             error: applyResult.error,
           });
         }
-      } catch (err: any) {
-        await this.logSync(userId, tenantId, op, 'error', err.message ?? 'Unknown error');
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : 'Unknown error';
+        await this.logSync(userId, tenantId, op, 'error', errMsg);
         result.errors++;
         result.results.push({
           operation: op.operation,
           resourceType: op.resourceType,
           resourceId: op.resourceId,
           status: 'error',
-          error: err.message ?? 'Unknown error',
+          error: errMsg,
         });
       }
     }
@@ -231,9 +232,9 @@ export class SyncService {
       if (!row) return 0;
 
       // Use updatedAt as version (epoch ms)
-      const updatedAt = (row as any).updatedAt ?? (row as any).updated_at ?? (row as any).date;
+      const updatedAt = (row as Record<string, unknown>).updatedAt ?? (row as Record<string, unknown>).updated_at ?? (row as Record<string, unknown>).date;
       if (updatedAt) {
-        return new Date(updatedAt).getTime();
+        return new Date(String(updatedAt)).getTime();
       }
       return 1; // Exists but no version info
     }
@@ -257,10 +258,10 @@ export class SyncService {
             error: `Unsupported resource type: ${op.resourceType}`,
           };
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         success: false,
-        error: err.message ?? 'Apply operation failed',
+        error: err instanceof Error ? err.message : 'Apply operation failed',
       };
     }
   }
@@ -308,7 +309,7 @@ export class SyncService {
 
         await db
           .update(transactions)
-          .set(setValues as any)
+          .set(setValues as Record<string, unknown>)
           .where(eq(transactions.id, op.resourceId!))
           .run();
 
@@ -345,7 +346,7 @@ export class SyncService {
       .orderBy(desc(offlineSyncLog.createdAt))
       .all();
 
-    return (rows as any[]).map(rowToConflict);
+    return (rows as Array<Record<string, unknown>>).map(rowToConflict);
   }
 
   /**
@@ -365,20 +366,20 @@ export class SyncService {
       throw new Error(`Conflict ${conflictId} not found`);
     }
 
-    const row = conflict as any;
+    const row = conflict as Record<string, unknown>;
 
     if (resolution === 'client_wins') {
       // Re-apply the client's operation
       const payload = parsePayload(row.payloadJson ?? row.payload_json);
       const op: SyncOperation = {
-        deviceId: row.deviceId ?? row.device_id,
+        deviceId: String(row.deviceId ?? row.device_id),
         operation: row.operation as 'create' | 'update' | 'delete',
-        resourceType: row.resourceType ?? row.resource_type,
-        resourceId: row.resourceId ?? row.resource_id,
+        resourceType: String(row.resourceType ?? row.resource_type),
+        resourceId: row.resourceId ?? row.resource_id ? String(row.resourceId ?? row.resource_id) : undefined,
         payload,
       };
 
-      const tenantId = row.tenantId ?? row.tenant_id;
+      const tenantId = String(row.tenantId ?? row.tenant_id);
       await this.applyOperation(op, tenantId);
     }
     // server_wins = do nothing (server state is already correct)
@@ -412,7 +413,7 @@ export class SyncService {
       .all();
 
     // Manual pagination since SQLite proxy may not support .limit()/.offset() chaining consistently
-    return (rows as any[]).slice(offset, offset + limit).map(rowToLogEntry);
+    return (rows as Array<Record<string, unknown>>).slice(offset, offset + limit).map(rowToLogEntry);
   }
 
   // --------------------------------------------------------------------------

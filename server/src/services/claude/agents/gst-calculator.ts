@@ -139,6 +139,9 @@ const CATEGORY_GST_MAP: Record<
 const CAR_COST_LIMIT_CENTS = 6810800; // $68,108
 
 export class GSTCalculatorAgent extends ClaudeAgent<GSTCalculatorInput, GSTCalculatorOutput> {
+  /** Session ID for Cognee search — set before invoke() by the orchestrator or caller. */
+  protected sessionId?: string;
+
   protected systemPrompt = `You are an Australian GST and BAS specialist. Calculate GST amounts from inclusive prices, categorize transactions by GST treatment (GST-free, input-taxed, capital acquisitions, private/non-business), and populate BAS labels (G1-G11, 1A, 1B, W1-W2, 5A, 7C-7D) according to ATO rules.
 
 You understand the Australian financial year (July-June) and quarterly BAS periods.
@@ -705,9 +708,9 @@ Return a JSON object matching the GSTCalculatorOutput schema.`;
       'lookup_gst_ruling',
       async (input) => {
         const query = input.query as string;
-        return cogneeTools.search(query, 'gst_rules', "GRAPH_COMPLETION", sessionId);
+        return cogneeTools.search(query, 'gst_rules', "GRAPH_COMPLETION", this.sessionId);
       }, ],
-  ], sessionId);
+  ]);
 
   constructor() {
     super('gst_calculator');

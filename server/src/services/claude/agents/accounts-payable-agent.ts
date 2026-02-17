@@ -165,7 +165,7 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     [
       'enter_bill',
       async (input) => {
-        const userId = (this as any)._currentUserId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentUserId as string | undefined) ?? 'system';
         const result = await billService.createBill(userId, {
           supplierId: input.supplierId as string,
           billNumber: input.billNumber as string | undefined,
@@ -196,7 +196,7 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     [
       'create_purchase_order',
       async (input) => {
-        const userId = (this as any)._currentUserId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentUserId as string | undefined) ?? 'system';
         const result = await purchaseOrderService.createPurchaseOrder(userId, {
           supplierId: input.supplierId as string,
           expectedDate: input.expectedDate as string | undefined,
@@ -244,7 +244,7 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     [
       'schedule_payment',
       async (input) => {
-        const userId = (this as any)._currentUserId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentUserId as string | undefined) ?? 'system';
         const result = await purchaseOrderService.createPaymentRun(userId, {
           billIds: input.billIds as string[],
           paymentDate: input.paymentDate as string,
@@ -262,7 +262,7 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     [
       'generate_aging_report',
       async (input) => {
-        const userId = (this as any)._currentUserId ?? 'system';
+        const userId = ((this as unknown as Record<string, unknown>)._currentUserId as string | undefined) ?? 'system';
         const asOfDate = input.asOfDate as string | undefined;
         const report = await billService.getAPAging(userId, asOfDate);
         return {
@@ -335,7 +335,7 @@ Return a JSON object matching the AccountsPayableOutput schema.`;
     ],
   ]);
 
-  async invoke(input: AccountsPayableInput): Promise<AccountsPayableOutput & { usage: any }> {
+  async invoke(input: AccountsPayableInput) {
     return super.invoke(input);
   }
 

@@ -89,8 +89,8 @@ export interface TrialBalanceEntry {
 
 export interface PeriodComparison {
   reportType: string;
-  currentPeriod: { start: string; end: string; data: any };
-  priorPeriod: { start: string; end: string; data: any };
+  currentPeriod: { start: string; end: string; data: ProfitAndLossReport | BalanceSheetReport | CashFlowReport | TrialBalanceReport };
+  priorPeriod: { start: string; end: string; data: ProfitAndLossReport | BalanceSheetReport | CashFlowReport | TrialBalanceReport };
   variances: CategoryVariance[];
   significantChanges: CategoryVariance[];
 }
@@ -570,8 +570,9 @@ export class FinancialReportService {
     priorEnd: string,
     reportType: string,
   ): Promise<PeriodComparison> {
-    let currentData: any;
-    let priorData: any;
+    type ReportData = ProfitAndLossReport | BalanceSheetReport | CashFlowReport | TrialBalanceReport;
+    let currentData: ReportData;
+    let priorData: ReportData;
 
     switch (reportType) {
       case 'profit_and_loss':
@@ -612,23 +613,25 @@ export class FinancialReportService {
    * Calculate per-category variances between two report datasets.
    */
   private calculateVariances(
-    currentData: any,
-    priorData: any,
+    currentData: ProfitAndLossReport | BalanceSheetReport | CashFlowReport | TrialBalanceReport,
+    priorData: ProfitAndLossReport | BalanceSheetReport | CashFlowReport | TrialBalanceReport,
     reportType: string,
   ): CategoryVariance[] {
     const variances: CategoryVariance[] = [];
 
-    if (reportType === 'profit_and_loss' && currentData.revenue && priorData.revenue) {
+    if (reportType === 'profit_and_loss' && 'revenue' in currentData && 'revenue' in priorData) {
       // Combine revenue + expenses + COGS sections
+      const curr = currentData as ProfitAndLossReport;
+      const prior = priorData as ProfitAndLossReport;
       const allCurrentGroups: CategoryGroup[] = [
-        ...(currentData.revenue || []),
-        ...(currentData.costOfGoodsSold || []),
-        ...(currentData.expenses || []),
+        ...(curr.revenue || []),
+        ...(curr.costOfGoodsSold || []),
+        ...(curr.expenses || []),
       ];
       const allPriorGroups: CategoryGroup[] = [
-        ...(priorData.revenue || []),
-        ...(priorData.costOfGoodsSold || []),
-        ...(priorData.expenses || []),
+        ...(prior.revenue || []),
+        ...(prior.costOfGoodsSold || []),
+        ...(prior.expenses || []),
       ];
 
       // Build map of prior amounts
@@ -652,12 +655,14 @@ export class FinancialReportService {
           variances.push(this.buildVariance(g.category, 0, g.amount));
         }
       }
-    } else if (reportType === 'cash_flow' && currentData.operating) {
+    } else if (reportType === 'cash_flow' && 'operating' in currentData) {
       // Compare cash flow sections
+      const currCf = currentData as CashFlowReport;
+      const priorCf = priorData as CashFlowReport;
       const sections = ['operating', 'investing', 'financing'] as const;
       for (const section of sections) {
-        const currentTotal = currentData[section]?.total ?? 0;
-        const priorTotal = priorData[section]?.total ?? 0;
+        const currentTotal = currCf[section]?.total ?? 0;
+        const priorTotal = priorCf[section]?.total ?? 0;
         variances.push(this.buildVariance(section, currentTotal, priorTotal));
       }
     } else {
@@ -669,9 +674,11 @@ export class FinancialReportService {
         'totalDebits',
         'totalCredits',
       ];
+      const currRec = currentData as unknown as Record<string, unknown>;
+      const priorRec = priorData as unknown as Record<string, unknown>;
       for (const key of keys) {
-        if (currentData[key] !== undefined && priorData[key] !== undefined) {
-          variances.push(this.buildVariance(key, currentData[key], priorData[key]));
+        if (currRec[key] !== undefined && priorRec[key] !== undefined) {
+          variances.push(this.buildVariance(key, Number(currRec[key]), Number(priorRec[key])));
         }
       }
     }
@@ -706,7 +713,7 @@ export class FinancialReportService {
    */
   async createSnapshot(
     templateId: string,
-    reportData: any,
+    reportData: Record<string, unknown>,
     userId?: string,
     reportType?: string,
     periodStart?: string,

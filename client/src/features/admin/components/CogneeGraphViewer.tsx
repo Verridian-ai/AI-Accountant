@@ -108,12 +108,43 @@ function targetId(link: GraphLink): string {
   return typeof link.target === 'object' ? (link.target as GraphNode).id : String(link.target);
 }
 
-/** Transform raw API response into typed graph data. */
-function transformToGraphData(raw: any): { nodes: GraphNode[]; links: GraphLink[] } {
-  const rawNodes: any[] = raw?.nodes ?? raw?.data?.nodes ?? [];
-  const rawLinks: any[] = raw?.links ?? raw?.edges ?? raw?.data?.links ?? raw?.data?.edges ?? [];
+interface RawGraphResponse {
+  nodes?: RawNode[];
+  links?: RawLink[];
+  edges?: RawLink[];
+  data?: {
+    nodes?: RawNode[];
+    links?: RawLink[];
+    edges?: RawLink[];
+  };
+}
 
-  const nodes: GraphNode[] = rawNodes.slice(0, MAX_NODES).map((n: any) => {
+interface RawNode {
+  id: string | number;
+  name?: string;
+  label?: string;
+  type?: string;
+  entity_type?: string;
+  dataset?: string;
+  connections?: number;
+  degree?: number;
+  properties?: Record<string, unknown>;
+}
+
+interface RawLink {
+  source: string | number;
+  target: string | number;
+  type?: string;
+  relationship?: string;
+  properties?: Record<string, unknown>;
+}
+
+/** Transform raw API response into typed graph data. */
+function transformToGraphData(raw: RawGraphResponse): { nodes: GraphNode[]; links: GraphLink[] } {
+  const rawNodes: RawNode[] = raw?.nodes ?? raw?.data?.nodes ?? [];
+  const rawLinks: RawLink[] = raw?.links ?? raw?.edges ?? raw?.data?.links ?? raw?.data?.edges ?? [];
+
+  const nodes: GraphNode[] = rawNodes.slice(0, MAX_NODES).map((n: RawNode) => {
     const type = (n.type || n.entity_type || 'default').toLowerCase();
     const connections = Number(n.connections ?? n.degree ?? 0);
     return {
@@ -131,9 +162,9 @@ function transformToGraphData(raw: any): { nodes: GraphNode[]; links: GraphLink[
   const nodeIds = new Set(nodes.map((n) => n.id));
 
   const links: GraphLink[] = rawLinks
-    .filter((l: any) => nodeIds.has(String(l.source)) && nodeIds.has(String(l.target)))
+    .filter((l: RawLink) => nodeIds.has(String(l.source)) && nodeIds.has(String(l.target)))
     .slice(0, MAX_LINKS)
-    .map((l: any) => {
+    .map((l: RawLink) => {
       const type = (l.type || l.relationship || 'related_to').toLowerCase();
       return {
         source: String(l.source),
@@ -484,7 +515,7 @@ export function CogneeGraphViewer({
     setLoading(true);
     setError(null);
     try {
-      let raw: any;
+      let raw: RawGraphResponse;
       if (datasetName) {
         raw = await adminFetch(`/api/admin/cognee/datasets/${encodeURIComponent(datasetName)}`);
       } else {
@@ -493,8 +524,8 @@ export function CogneeGraphViewer({
       const { nodes, links } = transformToGraphData(raw);
       setAllNodes(nodes);
       setAllLinks(links);
-    } catch (err: any) {
-      setError(err?.message ?? 'Failed to load graph data');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load graph data');
     } finally {
       setLoading(false);
     }
@@ -575,7 +606,7 @@ export function CogneeGraphViewer({
 
   function zoomToNode(graph: ForceGraph3DInstance, node: GraphNode) {
     const distance = 100;
-    const n = node as any;
+    const n = node as GraphNode & { x?: number; y?: number; z?: number };
     const x = n.x ?? 0;
     const y = n.y ?? 0;
     const z = n.z ?? 0;

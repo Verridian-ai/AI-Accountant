@@ -1,6 +1,6 @@
 import { userRepository } from '../../repositories/user-repository.js';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { sign } from 'hono/jwt';
 import { requireEnv } from '../../lib/config.js';
 import { AuthenticationError, DuplicateError } from '../../errors.js';
 
@@ -18,7 +18,8 @@ export class AuthService {
 
     if (!user) throw new Error('Failed to create user');
 
-    const token = jwt.sign({ userId: user.id, username }, JWT_SECRET, { expiresIn: '7d' });
+    const payload = { userId: user.id, username, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 };
+    const token = await sign(payload, JWT_SECRET);
     return { token, user: { id: user.id, username } };
   }
 
@@ -28,7 +29,8 @@ export class AuthService {
       throw new AuthenticationError('Invalid credentials');
     }
 
-    const token = jwt.sign({ userId: user.id, username }, JWT_SECRET, { expiresIn: '7d' });
+    const payload = { userId: user.id, username, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 };
+    const token = await sign(payload, JWT_SECRET);
     return { token, user: { id: user.id, username } };
   }
 

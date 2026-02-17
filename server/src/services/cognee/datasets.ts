@@ -135,7 +135,7 @@ export async function getDatasetGraph(
   name: string,
   userId?: string,
   tenantId?: string,
-): Promise<{ nodes: any[]; edges: any[] } | null> {
+): Promise<{ nodes: Record<string, unknown>[]; edges: Record<string, unknown>[] } | null> {
   try {
     const prefixedName = applyTenantPrefix(name, tenantId);
     const auth = await buildAuthHeaders(state, userId);

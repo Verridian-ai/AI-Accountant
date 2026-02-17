@@ -298,8 +298,8 @@ export class RbaDataFeed {
 
         // Update feed last-fetched timestamp
         await this.updateFeedStatus(tableKey, true);
-      } catch (err: any) {
-        const message = err?.message ?? String(err);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.error(`[RBA] Error fetching table ${tableKey}:`, message);
         errors.push({ table: tableKey, error: message });
         await this.updateFeedStatus(tableKey, false, message);

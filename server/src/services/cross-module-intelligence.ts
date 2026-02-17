@@ -22,8 +22,23 @@ import {
   crossModuleInsights,
   moduleConnections,
 } from '../schema.js';
-import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, desc, gte, lte, sql, type SQL } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+
+// ============================================================================
+// DB ROW TYPES (inferred from schema)
+// ============================================================================
+
+type TransactionRow = typeof transactions.$inferSelect;
+type BasPeriodRow = typeof basPeriods.$inferSelect;
+type BasCalculationRow = typeof basCalculations.$inferSelect;
+type TaxYearSummaryRow = typeof taxYearSummary.$inferSelect;
+type ReconciliationAlertRow = typeof reconciliationAlerts.$inferSelect;
+type ForecastScenarioRow = typeof forecastScenarios.$inferSelect;
+type ForecastPeriodRow = typeof forecastPeriods.$inferSelect;
+type KpiMetricRow = typeof kpiMetrics.$inferSelect;
+type CrossModuleInsightRow = typeof crossModuleInsights.$inferSelect;
+type ModuleConnectionRow = typeof moduleConnections.$inferSelect;
 
 // ============================================================================
 // TYPES
@@ -189,7 +204,7 @@ export class CrossModuleIntelligenceService {
     // Persist new insights
     for (const insight of allInsights) {
       try {
-        await (db as any)
+        await db
           .insert(crossModuleInsights)
           .values({
             id: insight.id,
@@ -275,7 +290,7 @@ export class CrossModuleIntelligenceService {
   // --------------------------------------------------------------------------
 
   async getModuleConnections(filters: ConnectionFilters = {}): Promise<ModuleConnection[]> {
-    const conditions: any[] = [];
+    const conditions: (SQL | undefined)[] = [];
 
     if (filters.sourceModule) {
       conditions.push(eq(moduleConnections.sourceModule, filters.sourceModule));
@@ -290,20 +305,20 @@ export class CrossModuleIntelligenceService {
       conditions.push(gte(moduleConnections.strength, filters.minStrength));
     }
 
-    const query = (db as any).select().from(moduleConnections);
-    const rows: any[] =
+    const query = db.select().from(moduleConnections);
+    const rows: ModuleConnectionRow[] =
       conditions.length > 0 ? await query.where(and(...conditions)).all() : await query.all();
 
-    return rows.map((r: any) => ({
+    return rows.map((r) => ({
       id: r.id,
-      sourceModule: r.sourceModule ?? r.source_module,
-      targetModule: r.targetModule ?? r.target_module,
-      connectionType: r.connectionType ?? r.connection_type,
+      sourceModule: r.sourceModule,
+      targetModule: r.targetModule,
+      connectionType: r.connectionType,
       description: r.description,
       strength: r.strength,
-      isBidirectional: Boolean(r.isBidirectional ?? r.is_bidirectional),
-      activityCount: r.activityCount ?? r.activity_count ?? 0,
-      lastActivityAt: r.lastActivityAt ?? r.last_activity_at ?? null,
+      isBidirectional: Boolean(r.isBidirectional),
+      activityCount: r.activityCount ?? 0,
+      lastActivityAt: r.lastActivityAt ?? null,
     }));
   }
 
@@ -312,7 +327,7 @@ export class CrossModuleIntelligenceService {
     targetModule: string,
     connectionType: string,
   ): Promise<void> {
-    await (db as any)
+    await db
       .update(moduleConnections)
       .set({
         activityCount: sql`${moduleConnections.activityCount} + 1`,
@@ -337,7 +352,7 @@ export class CrossModuleIntelligenceService {
 
     // 1. Significant transactions (|amount| > $500)
     try {
-      const txRows: any[] = await (db as any)
+      const txRows: TransactionRow[] = await db
         .select()
         .from(transactions)
         .where(
@@ -361,7 +376,7 @@ export class CrossModuleIntelligenceService {
             description: tx.description ?? 'Unknown transaction',
             severity: Math.abs(amt) >= 500000 ? 'warning' : 'info',
             amount: amt,
-            metadata: { category: tx.category, accountId: tx.accountId ?? tx.account_id },
+            metadata: { category: tx.category, accountId: tx.accountId },
           });
         }
       }
@@ -371,7 +386,7 @@ export class CrossModuleIntelligenceService {
 
     // 2. BAS events
     try {
-      const basRows: any[] = await (db as any)
+      const basRows: BasPeriodRow[] = await db
         .select()
         .from(basPeriods)
         .where(
@@ -386,13 +401,13 @@ export class CrossModuleIntelligenceService {
       for (const bp of basRows) {
         const status = bp.status;
         entries.push({
-          date: bp.endDate ?? bp.end_date,
+          date: bp.endDate,
           module: 'bas',
           eventType: status === 'lodged' ? 'bas_lodged' : 'bas_period',
-          title: `BAS Q${bp.quarter} ${bp.financialYear ?? bp.financial_year}: ${status}`,
-          description: `BAS period ${bp.startDate ?? bp.start_date} to ${bp.endDate ?? bp.end_date}`,
+          title: `BAS Q${bp.quarter} ${bp.financialYear}: ${status}`,
+          description: `BAS period ${bp.startDate} to ${bp.endDate}`,
           severity: status === 'overdue' ? 'critical' : status === 'draft' ? 'suggestion' : 'info',
-          metadata: { periodType: bp.periodType ?? bp.period_type, status },
+          metadata: { periodType: bp.periodType, status },
         });
       }
     } catch {
@@ -401,7 +416,7 @@ export class CrossModuleIntelligenceService {
 
     // 3. Tax year summaries
     try {
-      const taxRows: any[] = await (db as any)
+      const taxRows: TaxYearSummaryRow[] = await db
         .select()
         .from(taxYearSummary)
         .where(eq(taxYearSummary.userId, userId))
@@ -409,14 +424,14 @@ export class CrossModuleIntelligenceService {
 
       for (const ts of taxRows) {
         entries.push({
-          date: ts.calculatedAt ?? ts.calculated_at ?? timeRange.end,
+          date: ts.calculatedAt ?? timeRange.end,
           module: 'tax',
           eventType: 'tax_calculation',
-          title: `Tax year ${ts.taxYear ?? ts.tax_year}: $${((ts.netTax ?? ts.net_tax ?? 0) / 100).toFixed(2)} net tax`,
-          description: `Gross income: $${((ts.grossIncome ?? ts.gross_income ?? 0) / 100).toFixed(2)}, Deductions: $${((ts.totalDeductions ?? ts.total_deductions ?? 0) / 100).toFixed(2)}`,
+          title: `Tax year ${ts.taxYear}: $${((ts.netTax ?? 0) / 100).toFixed(2)} net tax`,
+          description: `Gross income: $${((ts.grossIncome ?? 0) / 100).toFixed(2)}, Deductions: $${((ts.totalDeductions ?? 0) / 100).toFixed(2)}`,
           severity: 'info',
-          amount: ts.netTax ?? ts.net_tax ?? 0,
-          metadata: { taxYear: ts.taxYear ?? ts.tax_year },
+          amount: ts.netTax ?? 0,
+          metadata: { taxYear: ts.taxYear },
         });
       }
     } catch {
@@ -425,7 +440,7 @@ export class CrossModuleIntelligenceService {
 
     // 4. Reconciliation alerts
     try {
-      const alertRows: any[] = await (db as any)
+      const alertRows: ReconciliationAlertRow[] = await db
         .select()
         .from(reconciliationAlerts)
         .where(
@@ -438,16 +453,16 @@ export class CrossModuleIntelligenceService {
 
       for (const al of alertRows) {
         entries.push({
-          date: al.createdAt ?? al.created_at,
+          date: al.createdAt,
           module: 'anomaly_detection',
           eventType: 'reconciliation_alert',
-          title: `Reconciliation alert: ${al.alertType ?? al.alert_type}`,
+          title: `Reconciliation alert: ${al.alertType}`,
           description: al.description,
           severity: 'warning',
-          amount: al.difference,
+          amount: al.difference ?? undefined,
           metadata: {
-            accountId: al.accountId ?? al.account_id,
-            isResolved: Boolean(al.isResolved ?? al.is_resolved),
+            accountId: al.accountId,
+            isResolved: Boolean(al.isResolved),
           },
         });
       }
@@ -457,7 +472,7 @@ export class CrossModuleIntelligenceService {
 
     // 5. KPI deviations
     try {
-      const kpiRows: any[] = await (db as any)
+      const kpiRows: KpiMetricRow[] = await db
         .select()
         .from(kpiMetrics)
         .where(
@@ -470,9 +485,9 @@ export class CrossModuleIntelligenceService {
         .all();
 
       for (const kpi of kpiRows) {
-        const metricName = kpi.metricName ?? kpi.metric_name;
-        const metricValue = kpi.metricValue ?? kpi.metric_value;
-        const targetValue = kpi.targetValue ?? kpi.target_value;
+        const metricName = kpi.metricName;
+        const metricValue = kpi.metricValue;
+        const targetValue = kpi.targetValue;
         if (targetValue && Math.abs(metricValue - targetValue) / Math.abs(targetValue) > 0.2) {
           entries.push({
             date: kpi.period + '-01',
@@ -502,7 +517,7 @@ export class CrossModuleIntelligenceService {
     filters: InsightFilters = {},
   ): Promise<{ items: CrossModuleInsight[]; total: number }> {
     const { limit = 20, offset = 0 } = filters;
-    const conditions: any[] = [eq(crossModuleInsights.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(crossModuleInsights.userId, userId)];
 
     if (filters.insightType) {
       conditions.push(eq(crossModuleInsights.insightType, filters.insightType));
@@ -525,14 +540,14 @@ export class CrossModuleIntelligenceService {
 
     const whereClause = and(...conditions);
 
-    const countResult = await (db as any)
+    const countResult = await db
       .select({ count: sql`count(*)` })
       .from(crossModuleInsights)
       .where(whereClause)
       .get();
     const total = Number(countResult?.count ?? 0);
 
-    const rows: any[] = await (db as any)
+    const rows: CrossModuleInsightRow[] = await db
       .select()
       .from(crossModuleInsights)
       .where(whereClause)
@@ -541,7 +556,7 @@ export class CrossModuleIntelligenceService {
       .offset(offset)
       .all();
 
-    let items = rows.map((r: any) => this._rowToInsight(r));
+    let items = rows.map((r) => this._rowToInsight(r));
 
     if (filters.sourceModules?.length) {
       items = items.filter((i) => i.sourceModules.some((m) => filters.sourceModules!.includes(m)));
@@ -552,7 +567,7 @@ export class CrossModuleIntelligenceService {
   }
 
   async getInsightById(insightId: string): Promise<CrossModuleInsight | null> {
-    const row = await (db as any)
+    const row = await db
       .select()
       .from(crossModuleInsights)
       .where(eq(crossModuleInsights.id, insightId))
@@ -562,7 +577,7 @@ export class CrossModuleIntelligenceService {
   }
 
   async markInsightViewed(insightId: string): Promise<void> {
-    await (db as any)
+    await db
       .update(crossModuleInsights)
       .set({ status: 'viewed' })
       .where(eq(crossModuleInsights.id, insightId))
@@ -570,7 +585,7 @@ export class CrossModuleIntelligenceService {
   }
 
   async actOnInsight(insightId: string, _action?: string): Promise<void> {
-    await (db as any)
+    await db
       .update(crossModuleInsights)
       .set({ status: 'acted_on', actedOnAt: new Date().toISOString() })
       .where(eq(crossModuleInsights.id, insightId))
@@ -578,7 +593,7 @@ export class CrossModuleIntelligenceService {
   }
 
   async dismissInsight(insightId: string): Promise<void> {
-    await (db as any)
+    await db
       .update(crossModuleInsights)
       .set({ status: 'dismissed' })
       .where(eq(crossModuleInsights.id, insightId))
@@ -600,7 +615,7 @@ export class CrossModuleIntelligenceService {
     const insights: CrossModuleInsight[] = [];
 
     try {
-      const alerts: any[] = await (db as any)
+      const alerts: ReconciliationAlertRow[] = await db
         .select()
         .from(reconciliationAlerts)
         .where(
@@ -614,13 +629,13 @@ export class CrossModuleIntelligenceService {
 
       if (alerts.length === 0) return insights;
 
-      const overdueBasPeriods: any[] = await (db as any)
+      const overdueBasPeriods: BasPeriodRow[] = await db
         .select()
         .from(basPeriods)
         .where(and(eq(basPeriods.userId, userId), eq(basPeriods.status, 'overdue')))
         .all();
 
-      const lowConfResult = await (db as any)
+      const lowConfResult = await db
         .select({ count: sql`count(*)` })
         .from(transactions)
         .where(
@@ -648,7 +663,7 @@ export class CrossModuleIntelligenceService {
               alertCount: alerts.length,
               overdueBasCount: overdueBasPeriods.length,
               lowConfidenceTxCount: lowConfCount,
-              alertTypes: alerts.map((a: any) => a.alertType ?? a.alert_type),
+              alertTypes: alerts.map((a) => a.alertType ?? (a as Record<string, unknown>)['alert_type']),
             },
             modules,
             Math.min(0.5 + alerts.length * 0.1 + overdueBasPeriods.length * 0.15, 0.95),
@@ -675,7 +690,7 @@ export class CrossModuleIntelligenceService {
     const insights: CrossModuleInsight[] = [];
 
     try {
-      const monthlyTx: any[] = await (db as any)
+      const monthlyTx: Array<{ month: string; totalIncome: number; totalExpense: number; total_income?: number; total_expense?: number }> = await db
         .select({
           month: sql`substr(${transactions.date}, 1, 7)`,
           totalIncome: sql`sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end)`,
@@ -695,7 +710,7 @@ export class CrossModuleIntelligenceService {
 
       if (monthlyTx.length < 3) return insights;
 
-      const incomes = monthlyTx.map((m: any) => Number(m.totalIncome ?? m.total_income ?? 0));
+      const incomes = monthlyTx.map((m) => Number(m.totalIncome ?? m.total_income ?? 0));
       let growthMonths = 0;
       for (let i = 1; i < incomes.length; i++) {
         if (incomes[i] > incomes[i - 1]) growthMonths++;
@@ -727,7 +742,7 @@ export class CrossModuleIntelligenceService {
       }
 
       // Expense outpacing income
-      const expenses = monthlyTx.map((m: any) => Number(m.totalExpense ?? m.total_expense ?? 0));
+      const expenses = monthlyTx.map((m) => Number(m.totalExpense ?? m.total_expense ?? 0));
       if (incomes.length >= 3 && expenses.length >= 3) {
         const incomeGrowth =
           incomes[0] > 0 ? (incomes[incomes.length - 1] - incomes[0]) / incomes[0] : 0;
@@ -770,13 +785,13 @@ export class CrossModuleIntelligenceService {
     const insights: CrossModuleInsight[] = [];
 
     try {
-      const overdueBasRows: any[] = await (db as any)
+      const overdueBasRows: BasPeriodRow[] = await db
         .select()
         .from(basPeriods)
         .where(and(eq(basPeriods.userId, userId), eq(basPeriods.status, 'overdue')))
         .all();
 
-      const uncatResult = await (db as any)
+      const uncatResult = await db
         .select({ count: sql`count(*)` })
         .from(transactions)
         .where(
@@ -790,7 +805,7 @@ export class CrossModuleIntelligenceService {
         .get();
       const uncategorizedCount = Number(uncatResult?.count ?? 0);
 
-      const missingGstResult = await (db as any)
+      const missingGstResult = await db
         .select({ count: sql`count(*)` })
         .from(transactions)
         .where(
@@ -862,7 +877,7 @@ export class CrossModuleIntelligenceService {
     const insights: CrossModuleInsight[] = [];
 
     try {
-      const scenarios: any[] = await (db as any)
+      const scenarios: ForecastScenarioRow[] = await db
         .select()
         .from(forecastScenarios)
         .where(and(eq(forecastScenarios.userId, userId), eq(forecastScenarios.status, 'active')))
@@ -871,7 +886,7 @@ export class CrossModuleIntelligenceService {
       if (scenarios.length === 0) return insights;
 
       for (const scenario of scenarios) {
-        const periods: any[] = await (db as any)
+        const periods: ForecastPeriodRow[] = await db
           .select()
           .from(forecastPeriods)
           .where(eq(forecastPeriods.scenarioId, scenario.id))
@@ -879,7 +894,7 @@ export class CrossModuleIntelligenceService {
 
         if (periods.length === 0) continue;
 
-        const actuals: any[] = await (db as any)
+        const actuals: Array<{ month: string; total: number }> = await db
           .select({
             month: sql`substr(${transactions.date}, 1, 7)`,
             total: sql`sum(${transactions.amount})`,
@@ -895,12 +910,12 @@ export class CrossModuleIntelligenceService {
           .groupBy(sql`substr(${transactions.date}, 1, 7)`)
           .all();
 
-        const actualMap = new Map(actuals.map((a: any) => [a.month, Number(a.total ?? 0)]));
+        const actualMap = new Map(actuals.map((a) => [a.month, Number(a.total ?? 0)]));
         let deviations = 0;
         let totalDeviation = 0;
 
         for (const period of periods) {
-          const forecastAmt = period.forecastAmount ?? period.forecast_amount ?? 0;
+          const forecastAmt = period.forecastAmount ?? 0;
           const actual = actualMap.get(period.period);
           if (actual == null || forecastAmt === 0) continue;
 
@@ -951,7 +966,7 @@ export class CrossModuleIntelligenceService {
     const insights: CrossModuleInsight[] = [];
 
     try {
-      const taxSummaries: any[] = await (db as any)
+      const taxSummaries: TaxYearSummaryRow[] = await db
         .select()
         .from(taxYearSummary)
         .where(eq(taxYearSummary.userId, userId))
@@ -961,13 +976,13 @@ export class CrossModuleIntelligenceService {
       if (taxSummaries.length === 0) return insights;
 
       const latestTax = taxSummaries[0];
-      const grossIncome = latestTax.grossIncome ?? latestTax.gross_income ?? 0;
-      const totalDeductions = latestTax.totalDeductions ?? latestTax.total_deductions ?? 0;
+      const grossIncome = latestTax.grossIncome ?? 0;
+      const totalDeductions = latestTax.totalDeductions ?? 0;
       const deductionRatio = grossIncome > 0 ? totalDeductions / grossIncome : 0;
 
       // Low deduction ratio for businesses earning > $50k
       if (deductionRatio < 0.15 && grossIncome > 5000000) {
-        const expenseResult = await (db as any)
+        const expenseResult = await db
           .select({ total: sql`sum(abs(${transactions.amount}))` })
           .from(transactions)
           .where(
@@ -1047,7 +1062,7 @@ export class CrossModuleIntelligenceService {
 
     try {
       // Spending by category per month
-      const categoryMonthly: any[] = await (db as any)
+      const categoryMonthly: Array<{ category: string | null; month: string; total: number }> = await db
         .select({
           category: transactions.category,
           month: sql`substr(${transactions.date}, 1, 7)`,
@@ -1110,7 +1125,7 @@ export class CrossModuleIntelligenceService {
       }
 
       // Account concentration — one account dominates spending
-      const accountSpend: any[] = await (db as any)
+      const accountSpend: Array<{ accountId: string | null; total: number }> = await db
         .select({
           accountId: transactions.accountId,
           total: sql`sum(abs(${transactions.amount}))`,
@@ -1129,7 +1144,7 @@ export class CrossModuleIntelligenceService {
         .all();
 
       if (accountSpend.length >= 2) {
-        const totals = accountSpend.map((a: any) => Number(a.total ?? 0));
+        const totals = accountSpend.map((a) => Number(a.total ?? 0));
         const grandTotal = totals.reduce((a, b) => a + b, 0);
         const maxSpend = Math.max(...totals);
 
@@ -1140,8 +1155,8 @@ export class CrossModuleIntelligenceService {
               'High account concentration in spending',
               `Over ${((maxSpend / grandTotal) * 100).toFixed(0)}% of spending flows through a single account. Consider diversifying for better tracking.`,
               {
-                accountBreakdown: accountSpend.map((a: any) => ({
-                  accountId: a.accountId ?? a.account_id,
+                accountBreakdown: accountSpend.map((a) => ({
+                  accountId: a.accountId,
                   total: Number(a.total ?? 0),
                 })),
               },
@@ -1333,7 +1348,8 @@ export class CrossModuleIntelligenceService {
     try {
       switch (module) {
         case 'transactions': {
-          const monthly: any[] = await (db as any)
+          interface TxMonthlyMetric { month: string; totalIncome: number; totalExpense: number; netFlow: number; txCount: number; avgAmount: number; total_income?: number; total_expense?: number; net_flow?: number; tx_count?: number; avg_amount?: number }
+          const monthly: TxMonthlyMetric[] = await db
             .select({
               month: sql`substr(${transactions.date}, 1, 7)`,
               totalIncome: sql`sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end)`,
@@ -1354,50 +1370,50 @@ export class CrossModuleIntelligenceService {
             .orderBy(sql`substr(${transactions.date}, 1, 7)`)
             .all();
 
-          metrics['income'] = monthly.map((m: any) => Number(m.totalIncome ?? m.total_income ?? 0));
-          metrics['expense'] = monthly.map((m: any) =>
+          metrics['income'] = monthly.map((m) => Number(m.totalIncome ?? m.total_income ?? 0));
+          metrics['expense'] = monthly.map((m) =>
             Number(m.totalExpense ?? m.total_expense ?? 0),
           );
-          metrics['net_flow'] = monthly.map((m: any) => Number(m.netFlow ?? m.net_flow ?? 0));
-          metrics['tx_count'] = monthly.map((m: any) => Number(m.txCount ?? m.tx_count ?? 0));
-          metrics['avg_amount'] = monthly.map((m: any) => Number(m.avgAmount ?? m.avg_amount ?? 0));
+          metrics['net_flow'] = monthly.map((m) => Number(m.netFlow ?? m.net_flow ?? 0));
+          metrics['tx_count'] = monthly.map((m) => Number(m.txCount ?? m.tx_count ?? 0));
+          metrics['avg_amount'] = monthly.map((m) => Number(m.avgAmount ?? m.avg_amount ?? 0));
           break;
         }
 
         case 'tax': {
-          const summaries: any[] = await (db as any)
+          const summaries: TaxYearSummaryRow[] = await db
             .select()
             .from(taxYearSummary)
             .where(eq(taxYearSummary.userId, userId))
             .orderBy(taxYearSummary.taxYear)
             .all();
 
-          metrics['gross_income'] = summaries.map((s: any) =>
-            Number(s.grossIncome ?? s.gross_income ?? 0),
+          metrics['gross_income'] = summaries.map((s) =>
+            Number(s.grossIncome ?? 0),
           );
-          metrics['total_deductions'] = summaries.map((s: any) =>
-            Number(s.totalDeductions ?? s.total_deductions ?? 0),
+          metrics['total_deductions'] = summaries.map((s) =>
+            Number(s.totalDeductions ?? 0),
           );
-          metrics['net_tax'] = summaries.map((s: any) => Number(s.netTax ?? s.net_tax ?? 0));
-          metrics['taxable_income'] = summaries.map((s: any) =>
-            Number(s.taxableIncome ?? s.taxable_income ?? 0),
+          metrics['net_tax'] = summaries.map((s) => Number(s.netTax ?? 0));
+          metrics['taxable_income'] = summaries.map((s) =>
+            Number(s.taxableIncome ?? 0),
           );
           break;
         }
 
         case 'bas': {
-          const basRows: any[] = await (db as any).select().from(basCalculations).all();
+          const basRows: BasCalculationRow[] = await db.select().from(basCalculations).all();
 
-          metrics['gst_collected'] = basRows.map((b: any) => Number(b.labelG1 ?? b.label_g1 ?? 0));
-          metrics['gst_paid'] = basRows.map((b: any) => Number(b.labelG11 ?? b.label_g11 ?? 0));
-          metrics['amount_owing'] = basRows.map((b: any) =>
-            Number(b.amountOwing ?? b.amount_owing ?? 0),
+          metrics['gst_collected'] = basRows.map((b) => Number(b.labelG1 ?? 0));
+          metrics['gst_paid'] = basRows.map((b) => Number(b.labelG11 ?? 0));
+          metrics['amount_owing'] = basRows.map((b) =>
+            Number(b.amountOwing ?? 0),
           );
           break;
         }
 
         case 'analytics': {
-          const kpis: any[] = await (db as any)
+          const kpis: KpiMetricRow[] = await db
             .select()
             .from(kpiMetrics)
             .where(
@@ -1412,9 +1428,9 @@ export class CrossModuleIntelligenceService {
 
           const metricGroups = new Map<string, number[]>();
           for (const kpi of kpis) {
-            const name = kpi.metricName ?? kpi.metric_name;
+            const name = kpi.metricName;
             if (!metricGroups.has(name)) metricGroups.set(name, []);
-            metricGroups.get(name)!.push(Number(kpi.metricValue ?? kpi.metric_value ?? 0));
+            metricGroups.get(name)!.push(Number(kpi.metricValue ?? 0));
           }
           for (const [name, values] of metricGroups) {
             metrics[name] = values;
@@ -1423,21 +1439,21 @@ export class CrossModuleIntelligenceService {
         }
 
         case 'forecasting': {
-          const scenarios: any[] = await (db as any)
+          const scenarios: ForecastScenarioRow[] = await db
             .select()
             .from(forecastScenarios)
             .where(eq(forecastScenarios.userId, userId))
             .all();
 
           for (const sc of scenarios) {
-            const periods: any[] = await (db as any)
+            const periods: ForecastPeriodRow[] = await db
               .select()
               .from(forecastPeriods)
               .where(eq(forecastPeriods.scenarioId, sc.id))
               .all();
 
-            metrics[`forecast_${sc.name ?? 'unnamed'}`] = periods.map((p: any) =>
-              Number(p.forecastAmount ?? p.forecast_amount ?? 0),
+            metrics[`forecast_${sc.name ?? 'unnamed'}`] = periods.map((p) =>
+              Number(p.forecastAmount ?? 0),
             );
           }
           break;
@@ -1454,25 +1470,25 @@ export class CrossModuleIntelligenceService {
   }
 
   /** Convert a raw DB row into a CrossModuleInsight object. */
-  private _rowToInsight(r: any): CrossModuleInsight {
+  private _rowToInsight(r: CrossModuleInsightRow): CrossModuleInsight {
     return {
       id: r.id,
-      userId: r.userId ?? r.user_id,
-      insightType: r.insightType ?? r.insight_type,
+      userId: r.userId,
+      insightType: r.insightType,
       title: r.title,
       description: r.description,
-      severity: r.severity,
-      sourceModules: this._parseJson(r.sourceModules ?? r.source_modules, []),
-      relatedEntities: this._parseJson(r.relatedEntities ?? r.related_entities, []),
-      timeRangeStart: r.timeRangeStart ?? r.time_range_start,
-      timeRangeEnd: r.timeRangeEnd ?? r.time_range_end,
+      severity: r.severity as CrossModuleInsight['severity'],
+      sourceModules: this._parseJson(r.sourceModules, []),
+      relatedEntities: this._parseJson(r.relatedEntities, []),
+      timeRangeStart: r.timeRangeStart ?? undefined,
+      timeRangeEnd: r.timeRangeEnd ?? undefined,
       confidence: Number(r.confidence ?? 0.5),
       evidence: this._parseJson(r.evidence, {}),
-      recommendedAction: r.recommendedAction ?? r.recommended_action,
+      recommendedAction: r.recommendedAction ?? undefined,
       status: r.status,
-      actedOnAt: r.actedOnAt ?? r.acted_on_at,
-      createdAt: r.createdAt ?? r.created_at,
-      expiresAt: r.expiresAt ?? r.expires_at,
+      actedOnAt: r.actedOnAt ?? undefined,
+      createdAt: r.createdAt,
+      expiresAt: r.expiresAt ?? undefined,
     };
   }
 

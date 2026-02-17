@@ -11,9 +11,17 @@
  */
 
 import { gt } from 'drizzle-orm';
-import { db, economicIndicators, marketPrices, sentimentSnapshots } from '../schema.js';
+import {
+  db,
+  economicIndicators,
+  marketPrices,
+  sentimentSnapshots,
+  type EconomicIndicator,
+  type MarketPrice,
+  type SentimentSnapshot,
+} from '../schema.js';
 import { cogneeTools, COGNEE_DATASETS } from './claude/cognee-tools.js';
-import { cogneeClient, type CogneeSearchType } from './cognee_client.js';
+import { cogneeClient, type CogneeSearchType, type CogneeSearchResult } from './cognee_client.js';
 
 export interface MarketIndexResult {
   intelligenceIndexed: number;
@@ -95,8 +103,8 @@ export class MarketCogneeIndexer {
       }
 
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`Market intelligence indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      errors.push(`Market intelligence indexing failed: ${err instanceof Error ? err.message : String(err)}`);
       return { count: 0, errors };
     }
   }
@@ -105,7 +113,7 @@ export class MarketCogneeIndexer {
    * Index sentiment snapshot documents into the market_sentiment dataset.
    * Captures sentiment scores, labels, source counts, and summaries.
    */
-  async indexSentimentData(sentiments: any[]): Promise<{ count: number; errors: string[] }> {
+  async indexSentimentData(sentiments: SentimentSnapshot[]): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
     try {
@@ -134,8 +142,8 @@ export class MarketCogneeIndexer {
       }
 
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`Sentiment indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      errors.push(`Sentiment indexing failed: ${err instanceof Error ? err.message : String(err)}`);
       return { count: 0, errors };
     }
   }
@@ -144,7 +152,7 @@ export class MarketCogneeIndexer {
    * Index RBA indicator documents into the rba_statistics dataset.
    * Groups indicators by category for structured retrieval.
    */
-  async indexRbaData(indicators: any[]): Promise<{ count: number; errors: string[] }> {
+  async indexRbaData(indicators: EconomicIndicator[]): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
     try {
@@ -153,7 +161,7 @@ export class MarketCogneeIndexer {
       const texts: string[] = [];
 
       // Group by category for richer documents
-      const grouped = new Map<string, any[]>();
+      const grouped = new Map<string, EconomicIndicator[]>();
       for (const ind of indicators) {
         const cat = ind.category ?? 'General';
         if (!grouped.has(cat)) grouped.set(cat, []);
@@ -163,7 +171,7 @@ export class MarketCogneeIndexer {
       for (const [category, items] of grouped) {
         const indicatorDetails = items
           .map(
-            (i: any) =>
+            (i) =>
               `${i.indicatorName} (${i.indicatorCode}): ${i.value} ${i.unit}` +
               (i.changePct != null
                 ? ` (${Number(i.changePct) >= 0 ? '+' : ''}${Number(i.changePct).toFixed(2)}%)`
@@ -173,7 +181,7 @@ export class MarketCogneeIndexer {
           .join('; ');
 
         const latestDate = items.reduce(
-          (max: string, i: any) => (i.observationDate > max ? i.observationDate : max),
+          (max: string, i) => (i.observationDate > max ? i.observationDate : max),
           items[0].observationDate,
         );
 
@@ -207,8 +215,8 @@ export class MarketCogneeIndexer {
       }
 
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`RBA indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      errors.push(`RBA indexing failed: ${err instanceof Error ? err.message : String(err)}`);
       return { count: 0, errors };
     }
   }
@@ -217,7 +225,7 @@ export class MarketCogneeIndexer {
    * Index ABS indicator documents into the abs_statistics dataset.
    * Groups indicators by category/dataflow for structured retrieval.
    */
-  async indexAbsData(indicators: any[]): Promise<{ count: number; errors: string[] }> {
+  async indexAbsData(indicators: EconomicIndicator[]): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
     try {
@@ -226,7 +234,7 @@ export class MarketCogneeIndexer {
       const texts: string[] = [];
 
       // Group by category for richer documents
-      const grouped = new Map<string, any[]>();
+      const grouped = new Map<string, EconomicIndicator[]>();
       for (const ind of indicators) {
         const cat = ind.category ?? 'General';
         if (!grouped.has(cat)) grouped.set(cat, []);
@@ -236,7 +244,7 @@ export class MarketCogneeIndexer {
       for (const [category, items] of grouped) {
         const indicatorDetails = items
           .map(
-            (i: any) =>
+            (i) =>
               `${i.indicatorName} (${i.indicatorCode}): ${i.value} ${i.unit}` +
               (i.changePct != null
                 ? ` (${Number(i.changePct) >= 0 ? '+' : ''}${Number(i.changePct).toFixed(2)}%)`
@@ -246,7 +254,7 @@ export class MarketCogneeIndexer {
           .join('; ');
 
         const latestDate = items.reduce(
-          (max: string, i: any) => (i.observationDate > max ? i.observationDate : max),
+          (max: string, i) => (i.observationDate > max ? i.observationDate : max),
           items[0].observationDate,
         );
 
@@ -280,8 +288,8 @@ export class MarketCogneeIndexer {
       }
 
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`ABS indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      errors.push(`ABS indexing failed: ${err instanceof Error ? err.message : String(err)}`);
       return { count: 0, errors };
     }
   }
@@ -290,7 +298,7 @@ export class MarketCogneeIndexer {
    * Index ASX/crypto market price documents into the asx_market_data dataset.
    * Captures symbol, name, price, change, volume, and market cap.
    */
-  async indexMarketPrices(prices: any[]): Promise<{ count: number; errors: string[] }> {
+  async indexMarketPrices(prices: MarketPrice[]): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
 
     try {
@@ -325,8 +333,8 @@ export class MarketCogneeIndexer {
       }
 
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`Market price indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      errors.push(`Market price indexing failed: ${err instanceof Error ? err.message : String(err)}`);
       return { count: 0, errors };
     }
   }
@@ -342,12 +350,12 @@ export class MarketCogneeIndexer {
     console.log('[Market-Indexer] Starting full market Cognee indexing...');
 
     // 1. Fetch all indicators from DB, split by source (RBA vs ABS)
-    const allIndicators = await db.select().from(economicIndicators).all();
-    const rbaIndicators = (allIndicators as any[]).filter(
-      (i: any) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
+    const allIndicators: EconomicIndicator[] = await db.select().from(economicIndicators).all();
+    const rbaIndicators = allIndicators.filter(
+      (i: EconomicIndicator) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
     );
-    const absIndicators = (allIndicators as any[]).filter(
-      (i: any) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
+    const absIndicators = allIndicators.filter(
+      (i: EconomicIndicator) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
     );
 
     // 2. Fetch all sentiment snapshots
@@ -367,12 +375,12 @@ export class MarketCogneeIndexer {
     console.log(`[Market-Indexer] Indexed ${absResult.count} ABS documents`);
 
     // Index sentiment
-    const sentimentResult = await this.indexSentimentData(allSentiment as any[]);
+    const sentimentResult = await this.indexSentimentData(allSentiment);
     allErrors.push(...sentimentResult.errors);
     console.log(`[Market-Indexer] Indexed ${sentimentResult.count} sentiment documents`);
 
     // Index prices
-    const priceResult = await this.indexMarketPrices(allPrices as any[]);
+    const priceResult = await this.indexMarketPrices(allPrices);
     allErrors.push(...priceResult.errors);
     console.log(`[Market-Indexer] Indexed ${priceResult.count} price documents`);
 
@@ -380,8 +388,8 @@ export class MarketCogneeIndexer {
     const intelligenceSnapshots = this.buildIntelligenceSnapshots(
       rbaIndicators,
       absIndicators,
-      allSentiment as any[],
-      allPrices as any[],
+      allSentiment,
+      allPrices,
     );
     const intelligenceResult = await this.indexMarketIntelligence(intelligenceSnapshots);
     allErrors.push(...intelligenceResult.errors);
@@ -400,8 +408,8 @@ export class MarketCogneeIndexer {
       try {
         await cogneeClient.cognify([dataset], true, MARKET_COGNIFY_PROMPT);
         console.log(`[Market-Indexer] Cognified dataset: ${dataset}`);
-      } catch (err: any) {
-        allErrors.push(`Cognify failed for ${dataset}: ${err.message}`);
+      } catch (err: unknown) {
+        allErrors.push(`Cognify failed for ${dataset}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 
@@ -441,11 +449,11 @@ export class MarketCogneeIndexer {
       .where(gt(economicIndicators.createdAt, since))
       .all();
 
-    const rbaIndicators = (newIndicators as any[]).filter(
-      (i: any) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
+    const rbaIndicators = newIndicators.filter(
+      (i: EconomicIndicator) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
     );
-    const absIndicators = (newIndicators as any[]).filter(
-      (i: any) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
+    const absIndicators = newIndicators.filter(
+      (i: EconomicIndicator) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
     );
 
     // Fetch only new sentiment
@@ -465,8 +473,8 @@ export class MarketCogneeIndexer {
     if (
       !rbaIndicators.length &&
       !absIndicators.length &&
-      !(newSentiment as any[]).length &&
-      !(newPrices as any[]).length
+      !newSentiment.length &&
+      !newPrices.length
     ) {
       console.log('[Market-Indexer] No updated market data found');
       return {
@@ -498,16 +506,16 @@ export class MarketCogneeIndexer {
 
     // Index updated sentiment
     let sentimentCount = 0;
-    if ((newSentiment as any[]).length) {
-      const sentimentResult = await this.indexSentimentData(newSentiment as any[]);
+    if (newSentiment.length) {
+      const sentimentResult = await this.indexSentimentData(newSentiment);
       sentimentCount = sentimentResult.count;
       allErrors.push(...sentimentResult.errors);
     }
 
     // Index updated prices
     let priceCount = 0;
-    if ((newPrices as any[]).length) {
-      const priceResult = await this.indexMarketPrices(newPrices as any[]);
+    if (newPrices.length) {
+      const priceResult = await this.indexMarketPrices(newPrices);
       priceCount = priceResult.count;
       allErrors.push(...priceResult.errors);
     }
@@ -517,8 +525,8 @@ export class MarketCogneeIndexer {
     const intelligenceSnapshots = this.buildIntelligenceSnapshots(
       rbaIndicators,
       absIndicators,
-      newSentiment as any[],
-      newPrices as any[],
+      newSentiment,
+      newPrices,
     );
     if (intelligenceSnapshots.length) {
       const intelligenceResult = await this.indexMarketIntelligence(intelligenceSnapshots);
@@ -537,8 +545,8 @@ export class MarketCogneeIndexer {
     for (const dataset of datasetsToUpdate) {
       try {
         await cogneeClient.cognify([dataset], true, MARKET_COGNIFY_PROMPT);
-      } catch (err: any) {
-        allErrors.push(`Incremental cognify ${dataset}: ${err.message}`);
+      } catch (err: unknown) {
+        allErrors.push(`Incremental cognify ${dataset}: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
 
@@ -588,7 +596,7 @@ export class MarketCogneeIndexer {
       topK: 5,
       mergeResults: true,
     });
-    return results.map((r: any) => (typeof r === 'string' ? r : (r.content ?? JSON.stringify(r))));
+    return results.map((r: CogneeSearchResult) => r.text ?? JSON.stringify(r));
   }
 
   // --- Private helpers ---
@@ -598,10 +606,10 @@ export class MarketCogneeIndexer {
    * Creates high-level market analysis documents for the market_intelligence dataset.
    */
   private buildIntelligenceSnapshots(
-    rbaIndicators: any[],
-    absIndicators: any[],
-    sentiments: any[],
-    prices: any[],
+    rbaIndicators: EconomicIndicator[],
+    absIndicators: EconomicIndicator[],
+    sentiments: SentimentSnapshot[],
+    prices: MarketPrice[],
   ): Array<{
     topic: string;
     summary: string;
@@ -625,10 +633,10 @@ export class MarketCogneeIndexer {
     if (rbaIndicators.length) {
       snapshots.push({
         topic: 'RBA Economic Overview',
-        summary: `${rbaIndicators.length} RBA indicators tracked across ${new Set(rbaIndicators.map((i: any) => i.category)).size} categories`,
+        summary: `${rbaIndicators.length} RBA indicators tracked across ${new Set(rbaIndicators.map((i) => i.category)).size} categories`,
         sentimentLabel: 'informational',
         observationDate: today,
-        indicators: rbaIndicators.slice(0, 10).map((i: any) => ({
+        indicators: rbaIndicators.slice(0, 10).map((i) => ({
           name: i.indicatorName,
           value: Number(i.value),
           unit: i.unit,
@@ -641,10 +649,10 @@ export class MarketCogneeIndexer {
     if (absIndicators.length) {
       snapshots.push({
         topic: 'ABS Economic Overview',
-        summary: `${absIndicators.length} ABS indicators tracked across ${new Set(absIndicators.map((i: any) => i.category)).size} categories`,
+        summary: `${absIndicators.length} ABS indicators tracked across ${new Set(absIndicators.map((i) => i.category)).size} categories`,
         sentimentLabel: 'informational',
         observationDate: today,
-        indicators: absIndicators.slice(0, 10).map((i: any) => ({
+        indicators: absIndicators.slice(0, 10).map((i) => ({
           name: i.indicatorName,
           value: Number(i.value),
           unit: i.unit,
@@ -657,10 +665,10 @@ export class MarketCogneeIndexer {
     if (prices.length) {
       snapshots.push({
         topic: 'Market Prices Overview',
-        summary: `${prices.length} assets tracked across ${new Set(prices.map((p: any) => p.assetType)).size} asset types`,
+        summary: `${prices.length} assets tracked across ${new Set(prices.map((p) => p.assetType)).size} asset types`,
         sentimentLabel: 'informational',
         observationDate: today,
-        prices: prices.slice(0, 15).map((p: any) => ({
+        prices: prices.slice(0, 15).map((p) => ({
           symbol: p.symbol,
           name: p.name,
           price: Number(p.price),

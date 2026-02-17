@@ -10,8 +10,11 @@
  */
 
 import { db, transactions, anomalyAlerts } from '../schema.js';
-import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, sql, type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
+
+type TransactionRow = typeof transactions.$inferSelect;
+type AnomalyAlertRow = typeof anomalyAlerts.$inferSelect;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,7 +44,7 @@ export interface AnomalyAlertResult {
   description: string;
   details: Record<string, unknown>;
   transactionId?: string;
-  accountId?: string;
+  accountId?: string | null;
 }
 
 export interface AlertFilters {
@@ -97,12 +100,12 @@ export class AnomalyDetectionService {
     userId: string,
     options: AnomalyScanOptions,
   ): Promise<AnomalyAlertResult[]> {
-    const conditions: any[] = [eq(transactions.userId, userId)];
+    const conditions: (SQL | undefined)[] = [eq(transactions.userId, userId)];
     if (options.accountId) conditions.push(eq(transactions.accountId, options.accountId));
     if (options.dateFrom) conditions.push(gte(transactions.date, options.dateFrom));
     if (options.dateTo) conditions.push(lte(transactions.date, options.dateTo));
 
-    const txns: any[] = await db
+    const txns: TransactionRow[] = await db
       .select()
       .from(transactions)
       .where(and(...conditions))
@@ -173,7 +176,7 @@ export class AnomalyDetectionService {
   // Detector 1 — Duplicate Payments
   // -----------------------------------------------------------------------
 
-  async detectDuplicatePayments(txns: any[]): Promise<AnomalyAlertResult[]> {
+  async detectDuplicatePayments(txns: TransactionRow[]): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
 
     for (let i = 0; i < txns.length; i++) {
@@ -223,11 +226,11 @@ export class AnomalyDetectionService {
   // Detector 2 — Amount Anomalies (z-score per category)
   // -----------------------------------------------------------------------
 
-  async detectAmountAnomalies(txns: any[], category?: string): Promise<AnomalyAlertResult[]> {
+  async detectAmountAnomalies(txns: TransactionRow[], category?: string): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
 
     // Group by category
-    const grouped = new Map<string, any[]>();
+    const grouped = new Map<string, TransactionRow[]>();
     for (const tx of txns) {
       const cat = category ?? tx.category ?? 'uncategorized';
       if (category && tx.category !== category) continue;
@@ -239,7 +242,7 @@ export class AnomalyDetectionService {
     for (const [cat, catTxns] of grouped) {
       if (catTxns.length < 5) continue; // need enough data
 
-      const amounts = catTxns.map((t: any) => Math.abs(t.amount));
+      const amounts = catTxns.map((t) => Math.abs(t.amount));
       const stats = this._calculateStats(amounts);
       if (stats.stdDev === 0) continue;
 
@@ -276,12 +279,12 @@ export class AnomalyDetectionService {
   // Detector 3 — Velocity Spikes
   // -----------------------------------------------------------------------
 
-  async detectVelocitySpikes(txns: any[], windowDays = 7): Promise<AnomalyAlertResult[]> {
+  async detectVelocitySpikes(txns: TransactionRow[], windowDays = 7): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
     if (txns.length < 10) return alerts;
 
     // --- Window-based frequency detection ---
-    const dateGroups = new Map<string, any[]>();
+    const dateGroups = new Map<string, TransactionRow[]>();
     for (const tx of txns) {
       const list = dateGroups.get(tx.date) ?? [];
       list.push(tx);
@@ -330,7 +333,7 @@ export class AnomalyDetectionService {
     }
 
     // --- Rapid successive transactions (<5 min apart) ---
-    const txnsWithTime = txns.filter((t: any) => t.date && t.date.includes('T'));
+    const txnsWithTime = txns.filter((t) => t.date && t.date.includes('T'));
     for (let i = 1; i < txnsWithTime.length; i++) {
       const prev = new Date(txnsWithTime[i - 1].date).getTime();
       const curr = new Date(txnsWithTime[i].date).getTime();
@@ -370,7 +373,7 @@ export class AnomalyDetectionService {
     const startDate = new Date(now);
     startDate.setMonth(startDate.getMonth() - months);
 
-    const allTxns: any[] = await db
+    const allTxns: TransactionRow[] = await db
       .select()
       .from(transactions)
       .where(
@@ -386,8 +389,8 @@ export class AnomalyDetectionService {
     const halfwayStr = halfwayDate.toISOString().slice(0, 10);
 
     // Split into historical and recent halves
-    const historical = allTxns.filter((t: any) => t.date < halfwayStr);
-    const recent = allTxns.filter((t: any) => t.date >= halfwayStr);
+    const historical = allTxns.filter((t) => t.date < halfwayStr);
+    const recent = allTxns.filter((t) => t.date >= halfwayStr);
 
     if (historical.length < 5 || recent.length < 5) return alerts;
 
@@ -433,12 +436,12 @@ export class AnomalyDetectionService {
   // Detector 5 — Unusual Merchant
   // -----------------------------------------------------------------------
 
-  async detectUnusualMerchant(txns: any[]): Promise<AnomalyAlertResult[]> {
+  async detectUnusualMerchant(txns: TransactionRow[]): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
 
     // Count merchant occurrences
     const merchantCounts = new Map<string, number>();
-    const merchantTxns = new Map<string, any[]>();
+    const merchantTxns = new Map<string, TransactionRow[]>();
 
     for (const tx of txns) {
       const merchant = (tx.merchantNormalized ?? tx.description ?? '').toLowerCase().trim();
@@ -486,7 +489,7 @@ export class AnomalyDetectionService {
         }
       } else if (count >= 3) {
         // Check for pattern change in recurring merchant
-        const amounts = merchantTxList.map((t: any) => Math.abs(t.amount));
+        const amounts = merchantTxList.map((t) => Math.abs(t.amount));
         const stats = this._calculateStats(amounts);
         if (stats.stdDev === 0) continue;
 
@@ -528,7 +531,7 @@ export class AnomalyDetectionService {
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - 12);
 
-    const txns: any[] = await db
+    const txns: TransactionRow[] = await db
       .select()
       .from(transactions)
       .where(
@@ -570,7 +573,7 @@ export class AnomalyDetectionService {
       // Check if latest occurrence had a significant amount change
       const lastTx = txns
         .filter(
-          (t: any) =>
+          (t) =>
             (t.merchantNormalized ?? t.description ?? '').toLowerCase().trim() ===
             pattern.merchant.toLowerCase(),
         )
@@ -608,8 +611,8 @@ export class AnomalyDetectionService {
   // Public — Alert CRUD
   // -----------------------------------------------------------------------
 
-  async getAlerts(userId: string, filters?: AlertFilters): Promise<any[]> {
-    const conditions: any[] = [eq(anomalyAlerts.userId, userId)];
+  async getAlerts(userId: string, filters?: AlertFilters): Promise<AnomalyAlertRow[]> {
+    const conditions: (SQL | undefined)[] = [eq(anomalyAlerts.userId, userId)];
 
     if (filters?.status) conditions.push(eq(anomalyAlerts.status, filters.status));
     if (filters?.severity) conditions.push(eq(anomalyAlerts.severity, filters.severity));
@@ -657,7 +660,7 @@ export class AnomalyDetectionService {
   }
 
   async getAlertStats(userId: string): Promise<AlertStats> {
-    const allAlerts: any[] = await db
+    const allAlerts: AnomalyAlertRow[] = await db
       .select()
       .from(anomalyAlerts)
       .where(eq(anomalyAlerts.userId, userId))
@@ -683,9 +686,9 @@ export class AnomalyDetectionService {
     const thirtyStr = thirtyDaysAgo.toISOString();
     const sixtyStr = sixtyDaysAgo.toISOString();
 
-    const recentCount = allAlerts.filter((a: any) => a.createdAt >= thirtyStr).length;
+    const recentCount = allAlerts.filter((a) => a.createdAt >= thirtyStr).length;
     const priorCount = allAlerts.filter(
-      (a: any) => a.createdAt >= sixtyStr && a.createdAt < thirtyStr,
+      (a) => a.createdAt >= sixtyStr && a.createdAt < thirtyStr,
     ).length;
 
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
@@ -728,8 +731,8 @@ export class AnomalyDetectionService {
     return { mean, stdDev, median, q1, q3 };
   }
 
-  private _findRecurringPatterns(txns: any[]): RecurringPattern[] {
-    const merchantGroups = new Map<string, any[]>();
+  private _findRecurringPatterns(txns: TransactionRow[]): RecurringPattern[] {
+    const merchantGroups = new Map<string, TransactionRow[]>();
 
     for (const tx of txns) {
       const merchant = (tx.merchantNormalized ?? tx.description ?? '').toLowerCase().trim();
@@ -745,7 +748,7 @@ export class AnomalyDetectionService {
       if (group.length < 3) continue; // need at least 3 occurrences
 
       // Sort by date
-      group.sort((a: any, b: any) => a.date.localeCompare(b.date));
+      group.sort((a, b) => a.date.localeCompare(b.date));
 
       // Calculate intervals between consecutive transactions
       const intervals: number[] = [];
@@ -764,7 +767,7 @@ export class AnomalyDetectionService {
 
       if (cv > 0.4 || avgInterval < 5 || avgInterval > 120) continue;
 
-      const amounts = group.map((t: any) => Math.abs(t.amount));
+      const amounts = group.map((t) => Math.abs(t.amount));
       const avgAmount = amounts.reduce((s: number, a: number) => s + a, 0) / amounts.length;
 
       const lastDate = group[group.length - 1].date;
@@ -855,7 +858,7 @@ export class AnomalyDetectionService {
     return Math.abs(Math.round((b - a) / 86400000));
   }
 
-  private _categoryProportions(txns: any[]): Record<string, number> {
+  private _categoryProportions(txns: TransactionRow[]): Record<string, number> {
     const totals: Record<string, number> = {};
     let grandTotal = 0;
 

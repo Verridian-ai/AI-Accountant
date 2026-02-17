@@ -58,11 +58,40 @@ export interface SchedulerStatus {
 }
 
 export interface SchedulerDeps {
-  rbaDataFeed?: any;
-  absDataFeed?: any;
-  marketPriceService?: any;
-  sentimentService?: any;
-  marketCogneeIndexer?: any;
+  rbaDataFeed?: {
+    fetchLatest(): Promise<void>;
+    fetchAllTables(): Promise<{
+      tablesProcessed: number;
+      errors?: Array<{ table: string; error: string }>;
+    }>;
+  };
+  absDataFeed?: {
+    fetchLatest(): Promise<void>;
+    fetchAllIndicators(): Promise<{
+      dataflowsProcessed: number;
+      errors?: Array<{ dataflow: string; error: string }>;
+    }>;
+  };
+  marketPriceService?: {
+    refreshPrices(): Promise<{
+      asxUpdated: number;
+      cryptoUpdated: number;
+      asxApiCallsRemaining: number;
+      errors: Array<{ source: string; symbol: string; error: string }>;
+    }>;
+  };
+  sentimentService?: {
+    refreshSentiment(): Promise<void>;
+    researchTopic(topic: string): Promise<unknown>;
+    analyzeSentiment(topic: string): Promise<unknown>;
+  };
+  marketCogneeIndexer?: {
+    indexAll(): Promise<void>;
+    incrementalIndex(since: string): Promise<{
+      totalIndexed?: number;
+      errors?: string[];
+    }>;
+  };
 }
 
 // ============================================================================
@@ -779,7 +808,7 @@ export class DataRefreshScheduler {
           const id = crypto.randomUUID();
 
           try {
-            await (db as any)
+            await db
               .insert(economicCalendar)
               .values({
                 id,

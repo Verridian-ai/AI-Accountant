@@ -8,7 +8,9 @@
  */
 
 import { db, sentimentSnapshots } from '../schema.js';
-import { eq, sql, desc, and, gte } from 'drizzle-orm';
+import { eq, sql, desc, and, gte, type SQL } from 'drizzle-orm';
+
+type SentimentSnapshotRow = typeof sentimentSnapshots.$inferSelect;
 import crypto from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
@@ -252,7 +254,7 @@ Focus on Australian market context and provide actionable insights.`;
       return {
         topic,
         query,
-        articles: (parsed.articles || []).map((a: any) => ({
+        articles: (parsed.articles || []).map((a: { title?: string; url?: string; source?: string; snippet?: string; publishedDate?: string }) => ({
           title: a.title || 'Unknown',
           url: a.url || '',
           source: a.source || 'Unknown',
@@ -264,13 +266,14 @@ Focus on Australian market context and provide actionable insights.`;
         relatedTopics: parsed.relatedTopics || [],
         fetchedAt: now,
       };
-    } catch (err: any) {
-      console.error(`[Sentiment] Research failed for "${topic}":`, err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[Sentiment] Research failed for "${topic}":`, errMsg);
       return {
         topic,
         query,
         articles: [],
-        summary: `Research unavailable: ${err.message}`,
+        summary: `Research unavailable: ${errMsg}`,
         keyFindings: [],
         relatedTopics: [],
         fetchedAt: now,
@@ -362,8 +365,9 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
         topNegative: (parsed.topNegative || []).slice(0, 3),
         summary: parsed.summary || '',
       };
-    } catch (err: any) {
-      console.error(`[Sentiment] Analysis failed for "${topic}":`, err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[Sentiment] Analysis failed for "${topic}":`, errMsg);
       return {
         sentimentScore: 0,
         sentimentLabel: 'neutral',
@@ -373,7 +377,7 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
         neutralCount: 0,
         topPositive: [],
         topNegative: [],
-        summary: `Sentiment analysis unavailable: ${err.message}`,
+        summary: `Sentiment analysis unavailable: ${errMsg}`,
       };
     }
   }
@@ -453,8 +457,9 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
       try {
         const snapshot = await this.getSentimentSnapshot(topic);
         results.push(snapshot);
-      } catch (err: any) {
-        console.error(`[Sentiment] Batch: skipping "${topic}" — ${err.message}`);
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error(`[Sentiment] Batch: skipping "${topic}" — ${errMsg}`);
       }
       // Small delay between topics to respect rate limits
       await this.sleep(500);
@@ -471,7 +476,7 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
     const cutoffStr = cutoff.toISOString();
 
     try {
-      const rows: any[] = await db
+      const rows: SentimentSnapshotRow[] = await db
         .select()
         .from(sentimentSnapshots)
         .where(
@@ -481,8 +486,9 @@ Provide a 2-3 sentence summary of the overall market sentiment.`;
         .all();
 
       return rows.map((r) => this.rowToSnapshot(r));
-    } catch (err: any) {
-      console.error(`[Sentiment] History query failed for "${topic}":`, err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[Sentiment] History query failed for "${topic}":`, errMsg);
       return [];
     }
   }
@@ -534,9 +540,9 @@ Provide:
       return {
         event,
         impactSummary: parsed.impactSummary || '',
-        affectedSectors: (parsed.affectedSectors || []).map((s: any) => ({
+        affectedSectors: (parsed.affectedSectors || []).map((s: { sector?: string; impact?: string; reason?: string }) => ({
           sector: s.sector || 'Unknown',
-          impact: ['positive', 'negative', 'neutral'].includes(s.impact) ? s.impact : 'neutral',
+          impact: (['positive', 'negative', 'neutral'] as const).find((v) => v === s.impact) ?? 'neutral',
           reason: s.reason || '',
         })),
         shortTermOutlook: parsed.shortTermOutlook || '',
@@ -544,11 +550,12 @@ Provide:
         confidence: Math.max(0, Math.min(1, parsed.confidence ?? 0.5)),
         sources: parsed.sources || [],
       };
-    } catch (err: any) {
-      console.error(`[Sentiment] Impact analysis failed:`, err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[Sentiment] Impact analysis failed:`, errMsg);
       return {
         event,
-        impactSummary: `Impact analysis unavailable: ${err.message}`,
+        impactSummary: `Impact analysis unavailable: ${errMsg}`,
         affectedSectors: [],
         shortTermOutlook: '',
         longTermOutlook: '',
@@ -586,13 +593,14 @@ inflation, employment, government policy, international trade impacts on Austral
       const response = await this.callAI(systemPrompt, userPrompt);
       const parsed = this.safeParseJSON(response, { topics: [] });
 
-      return (parsed.topics || []).slice(0, 10).map((t: any) => ({
+      return (parsed.topics || []).slice(0, 10).map((t: { topic?: string; trendScore?: number; recentArticles?: number }) => ({
         topic: t.topic || 'Unknown',
         trendScore: Math.max(0, Math.min(1, t.trendScore ?? 0.5)),
         recentArticles: Math.max(0, Math.round(t.recentArticles ?? 0)),
       }));
-    } catch (err: any) {
-      console.error(`[Sentiment] Trending topics failed:`, err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[Sentiment] Trending topics failed:`, errMsg);
       return DEFAULT_FINANCIAL_TOPICS.map((topic, i) => ({
         topic,
         trendScore: 1 - i * 0.1,
@@ -620,8 +628,9 @@ inflation, employment, government policy, international trade impacts on Austral
           return textBlock.text;
         }
         throw new Error('Empty response from Anthropic');
-      } catch (err: any) {
-        console.warn(`[Sentiment] Anthropic call failed: ${err.message} — trying OpenRouter`);
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.warn(`[Sentiment] Anthropic call failed: ${errMsg} — trying OpenRouter`);
         recordFailure();
       }
     }
@@ -642,8 +651,9 @@ inflation, employment, government policy, international trade impacts on Austral
         const content = response.choices[0]?.message?.content;
         if (content) return content;
         throw new Error('Empty response from OpenRouter');
-      } catch (err: any) {
-        console.error(`[Sentiment] OpenRouter call failed: ${err.message}`);
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error(`[Sentiment] OpenRouter call failed: ${errMsg}`);
         throw err;
       }
     }
@@ -655,7 +665,7 @@ inflation, employment, government policy, international trade impacts on Austral
 
   private async getFromDB(topic: string): Promise<SentimentSnapshot | null> {
     try {
-      const rows: any[] = await db
+      const rows: SentimentSnapshotRow[] = await db
         .select()
         .from(sentimentSnapshots)
         .where(eq(sentimentSnapshots.topic, topic))
@@ -698,12 +708,13 @@ inflation, employment, government policy, international trade impacts on Austral
       console.log(
         `[Sentiment] Stored snapshot for "${snapshot.topic}" (score: ${snapshot.sentimentScore})`,
       );
-    } catch (err: any) {
-      console.error(`[Sentiment] DB store failed:`, err.message);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[Sentiment] DB store failed:`, errMsg);
     }
   }
 
-  private rowToSnapshot(row: any): SentimentSnapshot {
+  private rowToSnapshot(row: SentimentSnapshotRow): SentimentSnapshot {
     return {
       id: row.id,
       topic: row.topic,

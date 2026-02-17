@@ -56,16 +56,62 @@ const typeLabels: Record<string, string> = {
 
 const SUPER_MIN_RATE = 11.5;
 
+interface EmployeeRecord {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  date_of_birth?: string;
+  address?: string;
+  tfn_masked?: string;
+  employment_status?: string;
+  employment_type?: string;
+  [key: string]: unknown;
+}
+
+interface BankDetailRecord {
+  bsb?: string;
+  bsb_masked?: string;
+  account_number?: string;
+  account_number_masked?: string;
+  account_name?: string;
+  split_percentage?: number;
+}
+
+interface SuperFundRecord {
+  fund_name?: string;
+  fund_abn?: string;
+  usi?: string;
+  member_number?: string;
+  contribution_rate?: number;
+}
+
+interface TaxDeclarationRecord {
+  tax_free_threshold?: boolean;
+  has_help_debt?: boolean;
+  has_sfss_debt?: boolean;
+  tax_offset_claimed?: boolean;
+  dependants?: number;
+}
+
+interface PayStructureRecord {
+  category_name?: string;
+  pay_category_id?: string;
+  rate_type?: string;
+  rate_cents?: number;
+  standard_hours?: number;
+}
+
 export function EmployeeDetail({ employeeId, onBack }: EmployeeDetailProps) {
   const [activeTab, setActiveTab] = useState<DetailTab>('personal');
-  const [employee, setEmployee] = useState<any>(null);
-  const [bankDetails, setBankDetails] = useState<any[]>([]);
-  const [superFund, setSuperFund] = useState<any>(null);
-  const [taxDeclaration, setTaxDeclaration] = useState<any>(null);
-  const [payStructure, setPayStructureData] = useState<any[]>([]);
+  const [employee, setEmployee] = useState<EmployeeRecord | null>(null);
+  const [bankDetails, setBankDetails] = useState<BankDetailRecord[]>([]);
+  const [superFund, setSuperFund] = useState<SuperFundRecord | null>(null);
+  const [taxDeclaration, setTaxDeclaration] = useState<TaxDeclarationRecord | null>(null);
+  const [payStructure, setPayStructureData] = useState<PayStructureRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
-  const [editData, setEditData] = useState<any>({});
+  const [editData, setEditData] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadData();
@@ -255,9 +301,9 @@ function PersonalTab({
   onCancel,
   onFieldChange,
 }: {
-  employee: any;
+  employee: EmployeeRecord;
   editing: boolean;
-  editData: any;
+  editData: Record<string, string>;
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
@@ -340,7 +386,7 @@ function BankTab({
   employeeId,
   onRefresh,
 }: {
-  bankDetails: any[];
+  bankDetails: BankDetailRecord[];
   employeeId: string;
   onRefresh: () => void;
 }) {
@@ -464,7 +510,7 @@ function SuperTab({
   employeeId,
   onRefresh,
 }: {
-  superFund: any;
+  superFund: SuperFundRecord | null;
   employeeId: string;
   onRefresh: () => void;
 }) {
@@ -525,7 +571,7 @@ function SuperTab({
                 </label>
                 <input
                   type="text"
-                  value={(form as any)[f.key]}
+                  value={form[f.key as keyof typeof form]}
                   onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                   placeholder={f.placeholder}
                   className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
@@ -621,7 +667,7 @@ function TaxTab({
   employeeId,
   onRefresh,
 }: {
-  taxDeclaration: any;
+  taxDeclaration: TaxDeclarationRecord | null;
   employeeId: string;
   onRefresh: () => void;
 }) {
@@ -648,7 +694,7 @@ function TaxTab({
     <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer">
       <input
         type="checkbox"
-        checked={(form as any)[key]}
+        checked={form[key as keyof typeof form] as boolean}
         onChange={(e) => setForm({ ...form, [key]: e.target.checked })}
         disabled={!editing}
         className="h-4 w-4 rounded border-zinc-600 text-[#FFCC00] focus:ring-[#FFCC00]/40"
@@ -722,7 +768,7 @@ function PayTab({
   employeeId,
   onRefresh,
 }: {
-  payStructure: any[];
+  payStructure: PayStructureRecord[];
   employeeId: string;
   onRefresh: () => void;
 }) {

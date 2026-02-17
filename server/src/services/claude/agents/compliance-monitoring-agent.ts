@@ -188,8 +188,8 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
         try {
           const deadlines = await complianceService.getUpcomingDeadlines(userId, withinDays);
           return { obligations: deadlines, count: deadlines.length };
-        } catch (err: any) {
-          return { obligations: [], error: err.message ?? 'Failed to check deadlines' };
+        } catch (err: unknown) {
+          return { obligations: [], error: err instanceof Error ? err.message : 'Failed to check deadlines' };
         }
       },
     ],
@@ -199,13 +199,13 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
         const userId = input.userId as string;
         try {
           return await complianceService.assessOverallRisk(userId);
-        } catch (err: any) {
+        } catch (err: unknown) {
           return {
             overallRisk: 'medium',
             score: 0,
             factors: [],
             recommendations: [],
-            error: err.message,
+            error: err instanceof Error ? err.message : String(err),
           };
         }
       },
@@ -224,14 +224,14 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
         ];
         try {
           const alerts = await anomalyService.scanTransactions(userId, {
-            detectors: detectors as any[],
+            detectors: detectors as import('../../anomaly-detection.js').AnomalyDetectorType[],
             dateFrom: input.dateFrom as string | undefined,
             dateTo: input.dateTo as string | undefined,
-            severityThreshold: input.severityThreshold as any,
+            severityThreshold: input.severityThreshold as 'low' | 'medium' | 'high' | undefined,
           });
           return { alerts, count: alerts.length };
-        } catch (err: any) {
-          return { alerts: [], count: 0, error: err.message };
+        } catch (err: unknown) {
+          return { alerts: [], count: 0, error: err instanceof Error ? err.message : String(err) };
         }
       },
     ],
@@ -243,8 +243,8 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
         try {
           const created = await complianceService.generateSchedule(userId, financialYear);
           return { created, count: created.length };
-        } catch (err: any) {
-          return { created: [], error: err.message };
+        } catch (err: unknown) {
+          return { created: [], error: err instanceof Error ? err.message : String(err) };
         }
       },
     ],
@@ -259,8 +259,8 @@ Return a JSON object matching the ComplianceMonitoringOutput schema.`;
             referenceNumber: input.referenceNumber as string | undefined,
           });
           return { success: true };
-        } catch (err: any) {
-          return { success: false, error: err.message };
+        } catch (err: unknown) {
+          return { success: false, error: err instanceof Error ? err.message : String(err) };
         }
       },
     ],

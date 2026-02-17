@@ -203,18 +203,18 @@ export class CogneeTools {
    * Search using a DataPoint-structured entity query.
    * Delegates to CHUNKS search on the datapoint-specific dataset.
    */
-  async searchWithDataPoint(query: string, dataPointType: string): Promise<CogneeSearchResult[]> {
+  async searchWithDataPoint(query: string, dataPointType: string, sessionId?: string): Promise<CogneeSearchResult[]> {
     const dataset = `datapoint_${dataPointType.toLowerCase()}`;
-    return this.search(query, dataset, 'CHUNKS');
+    return this.search(query, dataset, 'CHUNKS', sessionId);
   }
 
   /**
    * Search with ontology-based context.
    * Uses GRAPH_COMPLETION for ontology-aware results.
    */
-  async searchWithOntology(query: string, ontologyType: string): Promise<CogneeSearchResult[]> {
+  async searchWithOntology(query: string, ontologyType: string, sessionId?: string): Promise<CogneeSearchResult[]> {
     const dataset = `ontology_${ontologyType.toLowerCase()}`;
-    return this.search(query, dataset, 'GRAPH_COMPLETION');
+    return this.search(query, dataset, 'GRAPH_COMPLETION', sessionId);
   }
 
   /**
@@ -243,9 +243,10 @@ export class CogneeTools {
     query: string,
     dataset: string,
     timeRange: { start: string; end: string },
+    sessionId?: string,
   ): Promise<CogneeSearchResult[]> {
     const augmented = `${query} [period: ${timeRange.start} to ${timeRange.end}]`;
-    return this.search(augmented, dataset, 'CHUNKS');
+    return this.search(augmented, dataset, 'CHUNKS', sessionId);
   }
 
   /**

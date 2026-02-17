@@ -128,7 +128,7 @@ export class VercelTransactionCategorizer extends VercelAgent<CategorizerInput, 
     super('transaction_categorizer', SYSTEM_PROMPT, CategorizerOutputSchema);
   }
 
-  getTools(): ToolSet {
+  getTools(sessionId?: string): ToolSet {
     const tools: ToolSet = {};
 
     tools['lookup_merchant_memory'] = adaptLegacyTool(

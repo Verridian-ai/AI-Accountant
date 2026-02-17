@@ -30,7 +30,7 @@ export class VercelBudgetAnalyzer extends VercelAgent<BudgetAnalyzerInput, Budge
     super('budget_analyzer', SYSTEM_PROMPT, BudgetAnalyzerOutputSchema);
   }
 
-  getTools(): ToolSet {
+  getTools(sessionId?: string): ToolSet {
     const tools: ToolSet = {};
 
     tools['analyze_spending_by_category'] = adaptLegacyTool(
@@ -363,7 +363,7 @@ export class VercelBudgetAnalyzer extends VercelAgent<BudgetAnalyzerInput, Budge
           return { found: false, results: [], error: 'Cognee search unavailable' };
         }
       },
-    , sessionId);
+    );
 
     return tools;
   }

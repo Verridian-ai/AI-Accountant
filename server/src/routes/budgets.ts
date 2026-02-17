@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { db, accounts } from '../schema.js';
 import { eq, and } from 'drizzle-orm';
-import { aiService } from '../services/ai.js';
+import { aiService, type DebtStrategy } from '../services/ai.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const debtRecommendationsSchema = z.object({
@@ -62,18 +62,18 @@ budgetsRoutes.post('/debt-recommendations', zValidator('json', debtRecommendatio
   );
 
   const transformStrategy = (
-    strategy: any,
+    strategy: DebtStrategy,
     name: string,
     description: string,
   ) => {
     if (!strategy) return null;
 
     const totalMonthlyPayment = strategy.monthlyPayments.reduce(
-      (sum: number, p: any) => sum + (p.payment_cents || 0),
+      (sum: number, p: { account_id: string; payment_cents: number }) => sum + (p.payment_cents || 0),
       0,
     );
 
-    const payoffOrder = strategy.monthlyPayments.map((p: any) => {
+    const payoffOrder = strategy.monthlyPayments.map((p: { account_id: string; payment_cents: number }) => {
       const account = accountMap.get(p.account_id);
       return {
         accountId: p.account_id,
@@ -83,9 +83,9 @@ budgetsRoutes.post('/debt-recommendations', zValidator('json', debtRecommendatio
       };
     });
 
-    const projections = (strategy.monthlyBreakdown || []).slice(0, 24).map((m: any) => {
+    const projections = (strategy.monthlyBreakdown || []).slice(0, 24).map((m) => {
       const totalDebt = Object.values(m.balances || {}).reduce(
-        (sum: number, bal: any) => sum + (typeof bal === 'number' ? bal : 0),
+        (sum: number, bal: number) => sum + bal,
         0,
       );
       return {

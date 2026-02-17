@@ -211,7 +211,7 @@ export class VercelMerchantIntelligence extends VercelAgent<
     super('merchant_intelligence', SYSTEM_PROMPT, MerchantIntelligenceOutputSchema);
   }
 
-  getTools(): ToolSet {
+  getTools(sessionId?: string): ToolSet {
     const tools: ToolSet = {};
 
     tools['search_cognee_merchant'] = adaptLegacyTool(
@@ -230,8 +230,7 @@ export class VercelMerchantIntelligence extends VercelAgent<
       async (input) => {
         const name = input.merchantName as string;
         const results = await cogneeTools.search(
-          `merchant mapping for "${name}"`, 'merchant_mappings', 'CHUNKS_LEXICAL',
-        , sessionId);
+          `merchant mapping for "${name}"`, 'merchant_mappings', 'CHUNKS_LEXICAL', sessionId);
         return { found: results.length > 0, results };
       },
     );

@@ -150,12 +150,17 @@ const MUTABLE_TABLES = new Set([
  * });
  * ```
  */
+interface MutationDb {
+  all(sql: string, params?: unknown[]): Promise<Array<Record<string, unknown>>>;
+  run(sql: string, params?: unknown[]): Promise<{ changes?: number } | undefined>;
+}
+
 export class MutationTools {
-  private db: any;
+  private db: MutationDb;
   private sessionId: string;
 
-  constructor(db: any, sessionId: string) {
-    this.db = db;
+  constructor(db: MutationDb | Record<string, unknown>, sessionId: string) {
+    this.db = db as MutationDb;
     this.sessionId = sessionId;
   }
 
@@ -324,13 +329,13 @@ export class MutationTools {
           'SELECT * FROM agent_mutations WHERE session_id = ? AND status = ? ORDER BY created_at DESC',
           [this.sessionId, status],
         );
-        return rows.map((r: any) => this.rowToMutation(r));
+        return rows.map((r: Record<string, unknown>) => this.rowToMutation(r));
       }
       const rows = await this.db.all(
         'SELECT * FROM agent_mutations WHERE session_id = ? ORDER BY created_at DESC',
         [this.sessionId],
       );
-      return rows.map((r: any) => this.rowToMutation(r));
+      return rows.map((r: Record<string, unknown>) => this.rowToMutation(r));
     } catch (error) {
       console.error('[MutationTools] Failed to list session mutations:', error);
       return [];
@@ -350,7 +355,7 @@ export class MutationTools {
          ORDER BY created_at DESC`,
         [sid],
       );
-      return rows.map((r: any) => this.rowToMutation(r));
+      return rows.map((r: Record<string, unknown>) => this.rowToMutation(r));
     } catch (error) {
       console.error('[MutationTools] Failed to list pending mutations:', error);
       return [];
@@ -561,29 +566,29 @@ export class MutationTools {
    * Normalize a database row into a typed AgentMutation.
    * Handles the boolean conversion (SQLite stores as 0/1).
    */
-  private rowToMutation(row: any): AgentMutation {
+  private rowToMutation(row: Record<string, unknown>): AgentMutation {
     return {
-      id: row.id,
-      sessionId: row.session_id ?? row.sessionId,
-      agentType: row.agent_type ?? row.agentType,
-      mutationType: row.mutation_type ?? row.mutationType,
-      targetTable: row.target_table ?? row.targetTable,
-      targetId: row.target_id ?? row.targetId ?? null,
-      targetIds: row.target_ids ?? row.targetIds ?? null,
-      beforeState: row.before_state ?? row.beforeState ?? null,
-      afterState: row.after_state ?? row.afterState,
-      description: row.description,
+      id: String(row.id),
+      sessionId: String(row.session_id ?? row.sessionId),
+      agentType: String(row.agent_type ?? row.agentType) as AgentType,
+      mutationType: String(row.mutation_type ?? row.mutationType),
+      targetTable: String(row.target_table ?? row.targetTable),
+      targetId: row.target_id ?? row.targetId ? String(row.target_id ?? row.targetId) : null,
+      targetIds: row.target_ids ?? row.targetIds ? String(row.target_ids ?? row.targetIds) : null,
+      beforeState: row.before_state ?? row.beforeState ? String(row.before_state ?? row.beforeState) : null,
+      afterState: String(row.after_state ?? row.afterState ?? ''),
+      description: String(row.description ?? ''),
       status: row.status as MutationStatus,
-      confidence: row.confidence ?? null,
+      confidence: row.confidence != null ? Number(row.confidence) : null,
       requiresConfirmation: Boolean(row.requires_confirmation ?? row.requiresConfirmation),
-      confirmedAt: row.confirmed_at ?? row.confirmedAt ?? null,
-      executedAt: row.executed_at ?? row.executedAt ?? null,
-      rejectedAt: row.rejected_at ?? row.rejectedAt ?? null,
-      rejectionReason: row.rejection_reason ?? row.rejectionReason ?? null,
-      errorMessage: row.error_message ?? row.errorMessage ?? null,
-      expiresAt: row.expires_at ?? row.expiresAt ?? null,
-      createdAt: row.created_at ?? row.createdAt,
-      updatedAt: row.updated_at ?? row.updatedAt,
+      confirmedAt: row.confirmed_at ?? row.confirmedAt ? String(row.confirmed_at ?? row.confirmedAt) : null,
+      executedAt: row.executed_at ?? row.executedAt ? String(row.executed_at ?? row.executedAt) : null,
+      rejectedAt: row.rejected_at ?? row.rejectedAt ? String(row.rejected_at ?? row.rejectedAt) : null,
+      rejectionReason: row.rejection_reason ?? row.rejectionReason ? String(row.rejection_reason ?? row.rejectionReason) : null,
+      errorMessage: row.error_message ?? row.errorMessage ? String(row.error_message ?? row.errorMessage) : null,
+      expiresAt: row.expires_at ?? row.expiresAt ? String(row.expires_at ?? row.expiresAt) : null,
+      createdAt: String(row.created_at ?? row.createdAt),
+      updatedAt: String(row.updated_at ?? row.updatedAt),
     };
   }
 
@@ -594,6 +599,6 @@ export class MutationTools {
       type: eventType,
       data,
       timestamp: new Date().toISOString(),
-    } as any);
+    } as Record<string, unknown>);
   }
 }

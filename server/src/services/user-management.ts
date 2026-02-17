@@ -14,7 +14,7 @@ import {
   type AdminUser,
   type FeatureFlag,
 } from '../db/admin-schema.js';
-import { eq, and, gte, lte, like, desc, asc, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, like, desc, asc, sql , type SQL } from 'drizzle-orm';
 import { AdminAuthService, adminAuthService } from './admin-auth.js';
 
 // ============================================================================
@@ -342,7 +342,7 @@ export class UserManagementService {
       action: 'admin.update',
       resourceType: 'admin_user',
       resourceId: id,
-      details: { changes: Object.keys(data).filter((k) => (data as any)[k] !== undefined) },
+      details: { changes: Object.keys(data).filter((k) => (data as Record<string, unknown>)[k] !== undefined) },
       status: 'success',
     }).catch(() => {});
 
@@ -394,7 +394,7 @@ export class UserManagementService {
     const offset = filters?.offset ?? 0;
 
     // Build conditions
-    const conditions: any[] = [];
+    const conditions: (SQL | undefined)[] = [];
     if (filters?.role) conditions.push(eq(adminUsers.role, filters.role));
     if (filters?.isActive !== undefined) conditions.push(eq(adminUsers.isActive, filters.isActive));
     if (filters?.search) {
@@ -549,7 +549,7 @@ export class UserManagementService {
     const limit = filters.limit ?? 50;
     const offset = filters.offset ?? 0;
 
-    const conditions: any[] = [];
+    const conditions: (SQL | undefined)[] = [];
     if (filters.userId) conditions.push(eq(userActivityLog.userId, filters.userId));
     if (filters.action) conditions.push(eq(userActivityLog.action, filters.action));
     if (filters.resourceType)
@@ -582,7 +582,7 @@ export class UserManagementService {
   async getActivitySummary(userId?: string, days: number = 30): Promise<ActivitySummary> {
     const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
-    const conditions: any[] = [gte(userActivityLog.createdAt, cutoff)];
+    const conditions: (SQL | undefined)[] = [gte(userActivityLog.createdAt, cutoff)];
     if (userId) conditions.push(eq(userActivityLog.userId, userId));
     const whereClause = and(...conditions);
 

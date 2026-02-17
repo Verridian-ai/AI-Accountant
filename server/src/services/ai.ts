@@ -204,8 +204,8 @@ Rules:
           `[AI Vision Batched] Batch ${batchNum} extracted ${batchTxs.length} transactions`,
         );
         allTransactions.push(...batchTxs);
-      } catch (err: any) {
-        console.error(`[AI Vision Batched] Batch ${batchNum} error: ${err.message}`);
+      } catch (err: unknown) {
+        console.error(`[AI Vision Batched] Batch ${batchNum} error: ${err instanceof Error ? err.message : String(err)}`);
         // Continue with other batches even if one fails
       }
     }
@@ -780,7 +780,7 @@ Return JSON:
   }
 }
 
-interface DebtStrategy {
+export interface DebtStrategy {
   totalMonths: number;
   totalInterestCents: number;
   totalPaidCents: number;

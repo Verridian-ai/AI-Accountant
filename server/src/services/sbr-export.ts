@@ -552,14 +552,14 @@ export class SBRExporter {
       .orderBy(desc(exportHistory.createdAt))
       .limit(limit);
 
-    return history.map((h: any) => {
+    return history.map((h: Record<string, unknown>) => {
       let financialYear = '';
       let quarter = 0;
 
       // Safely parse dateRange JSON
       if (h.dateRange) {
         try {
-          const parsed = JSON.parse(h.dateRange);
+          const parsed = JSON.parse(String(h.dateRange));
           financialYear = parsed.financialYear || '';
           quarter = parsed.quarter || 0;
         } catch {

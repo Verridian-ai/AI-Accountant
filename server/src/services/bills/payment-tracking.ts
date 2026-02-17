@@ -151,7 +151,7 @@ export async function getAPAging(userId: string, asOfDate?: string): Promise<APA
       billId: bill.id,
       billNumber: bill.billNumber ?? '',
       supplierId: bill.supplierId,
-      supplierName: (bill as any).supplierName ?? 'Unknown',
+      supplierName: String((bill as Record<string, unknown>).supplierName ?? 'Unknown'),
       issueDateISO: bill.issueDate,
       dueDateISO: bill.dueDate,
       totalAmountCents: Number(bill.totalAmount) || 0,
