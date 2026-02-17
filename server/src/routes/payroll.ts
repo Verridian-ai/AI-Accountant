@@ -6,8 +6,12 @@ import { payStructureService } from '../services/pay-structures.js';
 import { validateTFN, validateBSB, isEncryptionConfigured } from '../services/encryption.js';
 import { logger } from '../lib/logger.js';
 import { config } from '../lib/config.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const payrollRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+payrollRoutes.use('/*', tenantAuthMiddleware());
 
 // --- Validation Schemas ---
 

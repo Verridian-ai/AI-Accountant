@@ -3,9 +3,13 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { PurchaseOrderService } from '../services/purchase-orders.js';
 import { getUserId } from '../utils/auth-helpers.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const poRoutes = new Hono();
 const purchaseOrderService = new PurchaseOrderService();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+poRoutes.use('/*', tenantAuthMiddleware());
 
 const createPOSchema = z.object({
   supplierId: z.string().min(1), expectedDate: z.string().optional(), notes: z.string().max(2000).optional(),

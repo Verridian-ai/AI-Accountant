@@ -10,8 +10,12 @@ import { InvoicingService } from '../services/invoicing.js';
 import { InvoicePDFService } from '../services/invoice-pdf.js';
 import { db, businessProfiles } from '../schema.js';
 import { eq } from 'drizzle-orm';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const invoicingRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+invoicingRoutes.use('/*', tenantAuthMiddleware());
 
 // Service instances
 const customerService = new CustomerService();

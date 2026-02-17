@@ -3,9 +3,13 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { SupplierService } from '../services/suppliers.js';
 import { getUserId } from '../utils/auth-helpers.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const supplierRoutes = new Hono();
 const supplierService = new SupplierService();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+supplierRoutes.use('/*', tenantAuthMiddleware());
 
 const createSupplierSchema = z.object({
   businessName: z.string().min(1).max(200),

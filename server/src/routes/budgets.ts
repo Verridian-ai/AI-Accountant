@@ -4,12 +4,16 @@ import { zValidator } from '@hono/zod-validator';
 import { db, accounts } from '../schema.js';
 import { eq, and } from 'drizzle-orm';
 import { aiService } from '../services/ai.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const debtRecommendationsSchema = z.object({
   monthlyBudget: z.number().positive(),
 });
 
 const budgetsRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+budgetsRoutes.use('/*', tenantAuthMiddleware());
 
 // Get debt reduction recommendations
 budgetsRoutes.post('/debt-recommendations', zValidator('json', debtRecommendationsSchema), async (c) => {

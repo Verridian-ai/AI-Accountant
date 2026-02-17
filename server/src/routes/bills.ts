@@ -3,9 +3,13 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { BillService } from '../services/bills.js';
 import { getUserId } from '../utils/auth-helpers.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const billRoutes = new Hono();
 const billService = new BillService();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+billRoutes.use('/*', tenantAuthMiddleware());
 
 const createBillSchema = z.object({
   supplierId: z.string().min(1),
