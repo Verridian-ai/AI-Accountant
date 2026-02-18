@@ -4,6 +4,8 @@ import { db } from '../schema.js';
 import { sql } from 'drizzle-orm';
 import { SchemaRegistry } from '../services/claude/schemas/schema-registry.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import type { AgentType } from '../services/claude/types.js';
+import { ALL_AGENT_TYPES } from './agent-routes-extended/routes-status.js';
 
 // Zod type reference for migration status response shape
 const _migrationStatusShape = z.object({ agentType: z.string(), status: z.string() });
@@ -19,7 +21,11 @@ migrationRoutes.get('/schemas', async (c) => {
 });
 
 migrationRoutes.get('/schemas/:agentType', async (c) => {
-  const schema = schemaRegistry.getSchema(c.req.param('agentType') as import('../services/claude/types.js').AgentType);
+  const rawAgentType = c.req.param('agentType');
+  if (!ALL_AGENT_TYPES.includes(rawAgentType as AgentType)) {
+    return c.json({ error: `Invalid agent type: ${rawAgentType}` }, 404);
+  }
+  const schema = schemaRegistry.getSchema(rawAgentType as AgentType);
   return schema ? c.json(schema) : c.json({ error: 'Not found' }, 404);
 });
 
@@ -27,14 +33,18 @@ migrationRoutes.get('/status', async (c) => {
   try {
     const statuses = await db.all(sql`SELECT * FROM agent_migration_status`);
     return c.json({ statuses });
-  } catch { return c.json({ statuses: [] }); }
+  } catch {
+    return c.json({ statuses: [] });
+  }
 });
 
 migrationRoutes.get('/benchmarks', async (c) => {
   try {
     const statuses = await db.all(sql`SELECT * FROM agent_migration_status`);
     return c.json({ benchmarks: statuses });
-  } catch { return c.json({ benchmarks: [] }); }
+  } catch {
+    return c.json({ benchmarks: [] });
+  }
 });
 
 export default migrationRoutes;

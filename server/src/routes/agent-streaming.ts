@@ -13,6 +13,7 @@ import { AuditService } from '../services/claude/audit.js';
 import { ConfirmationFlowService } from '../services/claude/confirmation-flow.js';
 import type { AgentType } from '../services/claude/types.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { ALL_AGENT_TYPES } from './agent-routes-extended/routes-status.js';
 
 const streamingRoutes = new Hono();
 const streamingService = new StreamingService();
@@ -30,7 +31,11 @@ streamingRoutes.post(
   streamingRateLimiter(),
   zValidator('json', agentStreamInputSchema),
   async (c) => {
-    const agentType = c.req.param('agentType') as AgentType;
+    const rawAgentType = c.req.param('agentType');
+    if (!ALL_AGENT_TYPES.includes(rawAgentType as AgentType)) {
+      return c.json({ error: `Invalid agent type: ${rawAgentType}` }, 400);
+    }
+    const agentType = rawAgentType as AgentType;
     const input = c.req.valid('json');
     const _userId = c.req.query('userId') || 'default';
     const agent = streamingRegistry.getAgent(agentType);

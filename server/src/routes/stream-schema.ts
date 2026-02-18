@@ -3,6 +3,7 @@ import { db } from '../schema.js';
 import { sql } from 'drizzle-orm';
 import { getErrorMessage } from '../utils/error.js';
 import type { AgentType } from '../services/claude/types.js';
+import { ALL_AGENT_TYPES } from './agent-routes-extended/routes-status.js';
 import { StreamingService } from '../services/claude/streaming.js';
 import { StreamingRegistry } from '../services/streaming-registry.js';
 import { SchemaRegistry } from '../services/claude/schemas/schema-registry.js';
@@ -89,7 +90,11 @@ streamSchemaRoutes.post(
 // POST /api/schemas/:agentType/validate
 streamSchemaRoutes.post('/schemas/:agentType/validate', async (c) => {
   try {
-    const agentType = c.req.param('agentType') as AgentType;
+    const rawAgentType = c.req.param('agentType');
+    if (!ALL_AGENT_TYPES.includes(rawAgentType as AgentType)) {
+      return c.json({ error: `Invalid agent type: ${rawAgentType}` }, 400);
+    }
+    const agentType = rawAgentType as AgentType;
     const { output } = await c.req.json();
     if (output === undefined)
       return c.json({ error: 'Request body must include "output" field' }, 400);

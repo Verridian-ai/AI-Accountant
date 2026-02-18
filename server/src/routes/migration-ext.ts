@@ -3,13 +3,18 @@ import { db } from '../schema.js';
 import { sql } from 'drizzle-orm';
 import { schemaRegistry } from '../services/singletons.js';
 import type { AgentType } from '../services/claude/types.js';
+import { ALL_AGENT_TYPES } from './agent-routes-extended/routes-status.js';
 
 const migrationExtRoutes = new Hono();
 
 // POST /api/schemas/:agentType/validate — Validate output against schema
 migrationExtRoutes.post('/schemas/:agentType/validate', async (c) => {
   try {
-    const agentType = c.req.param('agentType') as AgentType;
+    const rawAgentType = c.req.param('agentType');
+    if (!ALL_AGENT_TYPES.includes(rawAgentType as AgentType)) {
+      return c.json({ error: `Invalid agent type: ${rawAgentType}` }, 400);
+    }
+    const agentType = rawAgentType as AgentType;
     const { output } = await c.req.json();
     if (output === undefined) {
       return c.json({ error: 'Request body must include "output" field' }, 400);
