@@ -25,7 +25,16 @@ export interface AutoExecuteRule {
 
 /**
  * Agent -> Table permission matrix.
- * Only agents with explicit permissions can propose mutations.
+ *
+ * DENY-BY-DEFAULT: Any agent NOT listed here is automatically denied all mutations.
+ * Any agent listed here is denied for tables NOT in their entry.
+ * Any agent listed for a table is denied for operations not explicitly set to `true`.
+ *
+ * This is enforced in MutationAuthService.canPropose() — callers never need to add
+ * their own fallback; an absent entry is always treated as denied.
+ *
+ * When adding a new agent, you MUST add an explicit entry here even if the agent is
+ * read-only (use all-false permissions). Do NOT add a generic catch-all.
  */
 export const PERMISSION_MATRIX: Record<string, Record<string, TablePermission>> = {
   // ── Categorization agents ──
@@ -161,9 +170,10 @@ export const PERMISSION_MATRIX: Record<string, Record<string, TablePermission>> 
   },
 
   // ── CDR Product (read-only — external data) ──
-  cdr_product: {
-    // CDR products come from external APIs; the agent should not mutate them
-  },
+  // Intentionally empty: CDR products come from external APIs. The agent reads
+  // external rate data and never writes to the local database. Any mutation
+  // attempt by cdr_product will be denied by MutationAuthService.canPropose().
+  cdr_product: {},
 };
 
 /**

@@ -221,7 +221,6 @@ app.use('/api/*', async (c, next) => {
   // Public endpoints that don't require auth
   const publicPaths = [
     '/api/vertex-ai/models',
-    '/api/vertex-ai/test',
     '/api/subscriptions/plans',
     '/api/auth/login',
     '/api/auth/register',

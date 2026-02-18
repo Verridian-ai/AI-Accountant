@@ -37,6 +37,17 @@ export class MutationAuthService {
       };
     }
 
+    // Map batch_update → update for permission lookup. Explicitly reject any
+    // mutation type that doesn't map to a known TablePermission key — this prevents
+    // a future unknown type (e.g., 'truncate') from silently falling through.
+    const knownTypes = new Set(['create', 'update', 'delete', 'batch_update']);
+    if (!knownTypes.has(mutationType)) {
+      return {
+        allowed: false,
+        requiresConfirmation: true,
+        reason: `Unknown mutation type: '${mutationType}'. Expected create|update|delete|batch_update`,
+      };
+    }
     const opKey = mutationType === 'batch_update' ? 'update' : mutationType;
     if (!permissions[opKey as keyof TablePermission]) {
       return {
