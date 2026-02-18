@@ -78,6 +78,23 @@ app.use('*', securityHeaders());
 app.use('/api/*', auditMiddleware({ logReads: false }));
 app.use('/auth/*', auditMiddleware({ logReads: false }));
 
+// CORS — must be before route mounts so preflight OPTIONS requests are handled first
+app.use(
+  '/*',
+  cors({
+    origin: (origin) => {
+      const allowed = [
+        'http://localhost:5173',
+        'http://localhost:8080',
+        'http://localhost:3501',
+        ...(process.env.ALLOWED_ORIGINS?.split(',').map((s) => s.trim()) ?? []),
+      ];
+      return allowed.includes(origin) ? origin : null;
+    },
+    credentials: true,
+  }),
+);
+
 // Mount auth routes
 app.route('/auth', authRoutes);
 
@@ -189,14 +206,6 @@ const authLimiter = rateLimiter({
   keyGenerator: getRateLimitKey,
   message: { error: 'Too many login attempts. Please try again later.' },
 });
-
-app.use(
-  '/*',
-  cors({
-    origin: ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:3501'],
-    credentials: true,
-  }),
-);
 
 // --- Wave 21: Schema initialization ---
 const schemaRegistry = new SchemaRegistry();

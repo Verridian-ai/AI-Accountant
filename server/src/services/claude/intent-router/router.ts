@@ -73,9 +73,20 @@ export class IntentRouter {
   /**
    * Classify a user query into a structured intent.
    *
-   * 1. Tries keyword pre-filter first (instant, no API call)
-   * 2. Falls back to Claude Haiku classification
-   * 3. Defaults to budget_analyzer with low confidence on failure
+   * Two-tier classification with explicit fallback at every level:
+   * 1. Keyword pre-filter — instant pattern matching, no API cost.
+   *    Returns if a KEYWORD_RULES pattern matches (confidence >= 0.88).
+   * 2. Claude Haiku LLM classification — ~100ms, ~$0.001/call.
+   *    Returns parsed IntentClassification with confidence from the model.
+   *    If confidence < INTENT_CONFIDENCE_THRESHOLD (0.6), the primaryAgent is
+   *    overridden to 'budget_analyzer' (read-only, safe default).
+   * 3. Fallback — if the LLM call throws or returns unparseable JSON,
+   *    fallbackClassification() returns { intent: 'direct_question',
+   *    primaryAgent: 'budget_analyzer', confidence: 0.3 }.
+   *
+   * The fallback agent 'budget_analyzer' is intentionally read-only —
+   * it can only SELECT from transactions, never mutate any data.
+   * This means classification failures degrade gracefully without risk.
    */
   async classify(
     query: string,
@@ -180,7 +191,9 @@ Rules:
 
     const parsed = this.parseJsonResponse(textBlock.text);
 
-    // Validate and enforce confidence threshold
+    // Validate and enforce confidence threshold.
+    // Low-confidence results are silently routed to 'budget_analyzer' (read-only)
+    // rather than attempting a potentially incorrect mutation via a wrong agent.
     if (parsed.confidence < INTENT_CONFIDENCE_THRESHOLD) {
       return {
         ...parsed,
