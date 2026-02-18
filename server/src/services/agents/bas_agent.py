@@ -1,3 +1,6 @@
+# Refactored: bas_agent/ package replaces this file.
+# Python resolves 'from .bas_agent import X' via bas_agent/__init__.py.
+# This file is unreachable — the package directory takes priority in Python's import resolution.
 """BAS (Business Activity Statement) Agent for Australian tax calculations."""
 
 from pydantic_ai import Agent

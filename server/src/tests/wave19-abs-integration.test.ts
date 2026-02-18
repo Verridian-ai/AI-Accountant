@@ -345,7 +345,7 @@ describe('AbsDataFeed — Empty SDMX returns empty results', async () => {
     const indicators = await feed.parseDataflow('CPI', EMPTY_SDMX);
     assert(Array.isArray(indicators), 'Empty SDMX returns an array');
     assertEqual(indicators.length, 0, 'Empty SDMX produces zero indicators');
-  } catch (err: any) {
+  } catch {
     assert(true, 'Empty SDMX handled gracefully');
   }
 });
@@ -356,7 +356,7 @@ describe('AbsDataFeed — Invalid SDMX structure returns empty results', async (
     const indicators = await feed.parseDataflow('CPI', INVALID_SDMX);
     assert(Array.isArray(indicators), 'Invalid SDMX returns an array');
     assertEqual(indicators.length, 0, 'Invalid SDMX produces zero indicators');
-  } catch (err: any) {
+  } catch {
     assert(true, 'Invalid SDMX handled gracefully');
   }
 });

@@ -42,12 +42,26 @@ export interface SchedulerStatus {
   uptime: number;
 }
 
+interface RefreshResult {
+  tablesProcessed?: number;
+  dataflowsProcessed?: number;
+  asxUpdated?: number;
+  asxApiCallsRemaining?: number | string;
+  cryptoUpdated?: number;
+  totalIndexed?: number;
+  errors?: unknown[];
+  [key: string]: unknown;
+}
+
 export interface SchedulerDeps {
-  rbaDataFeed?: any;
-  absDataFeed?: any;
-  marketPriceService?: any;
-  sentimentService?: any;
-  marketCogneeIndexer?: any;
+  rbaDataFeed?: { fetchAllTables: () => Promise<RefreshResult> };
+  absDataFeed?: { fetchAllIndicators: () => Promise<RefreshResult> };
+  marketPriceService?: { refreshPrices: () => Promise<RefreshResult> };
+  sentimentService?: {
+    researchTopic: (topic: string) => Promise<RefreshResult>;
+    analyzeSentiment: (topic: string) => Promise<RefreshResult>;
+  };
+  marketCogneeIndexer?: { incrementalIndex: (since: string) => Promise<RefreshResult> };
 }
 
 // ============================================================================

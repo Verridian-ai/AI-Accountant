@@ -1,5 +1,5 @@
 /**
- * Export Service — Data Fetching Operations
+ * Export Service -- Data Fetching Operations
  * Retrieves data for each export type (transactions, BAS, tax, full backup).
  */
 
@@ -21,6 +21,18 @@ type GenerateFileFn = (
   data: unknown,
   baseName: string,
 ) => Promise<ExportResult>;
+
+/** Safely read a numeric field from a DB row, defaulting to 0. */
+function num(row: Record<string, unknown>, key: string): number {
+  const v = row[key];
+  return typeof v === 'number' ? v : 0;
+}
+
+/** Safely read a string field from a DB row, defaulting to ''. */
+function str(row: Record<string, unknown>, key: string, fallback = ''): string {
+  const v = row[key];
+  return typeof v === 'string' ? v : fallback;
+}
 
 /**
  * Export transactions
@@ -51,19 +63,19 @@ export async function exportTransactions(
     .where(and(...conditions))
     .orderBy(desc(transactions.date));
 
-  const exportData = txns.map((tx: any) => ({
-    date: tx.date,
-    description: tx.description,
-    amount: (tx.amount / 100).toFixed(2),
-    balance: tx.balance ? (tx.balance / 100).toFixed(2) : '',
-    category: tx.category || '',
+  const exportData = (txns as Record<string, unknown>[]).map((tx) => ({
+    date: str(tx, 'date'),
+    description: str(tx, 'description'),
+    amount: (num(tx, 'amount') / 100).toFixed(2),
+    balance: num(tx, 'balance') ? (num(tx, 'balance') / 100).toFixed(2) : '',
+    category: str(tx, 'category'),
     gst_applicable: tx.gstApplicable ? 'Yes' : 'No',
-    gst_amount: tx.gstAmount ? (tx.gstAmount / 100).toFixed(2) : '',
-    gst_category: tx.gstCategory || '',
+    gst_amount: num(tx, 'gstAmount') ? (num(tx, 'gstAmount') / 100).toFixed(2) : '',
+    gst_category: str(tx, 'gstCategory'),
     is_transfer: tx.isTransfer ? 'Yes' : 'No',
-    merchant: tx.merchantNormalized || '',
-    confidence: tx.confidenceScore?.toFixed(2) || '',
-    notes: tx.aiReasoningNotes || '',
+    merchant: str(tx, 'merchantNormalized'),
+    confidence: typeof tx.confidenceScore === 'number' ? tx.confidenceScore.toFixed(2) : '',
+    notes: str(tx, 'aiReasoningNotes'),
   }));
 
   return generateFile(exportId, options, exportData, 'transactions');
@@ -85,35 +97,35 @@ export async function exportBAS(
 
   const exportData = [];
 
-  for (const period of periods) {
+  for (const period of periods as Record<string, unknown>[]) {
     const calcs = await db
       .select()
       .from(basCalculations)
-      .where(eq(basCalculations.basPeriodId, period.id))
+      .where(eq(basCalculations.basPeriodId, str(period, 'id')))
       .limit(1);
 
-    const calc = calcs[0];
+    const calc = (calcs as Record<string, unknown>[])[0];
 
     exportData.push({
-      financial_year: period.financialYear,
+      financial_year: str(period, 'financialYear'),
       quarter: `Q${period.quarter}`,
-      start_date: period.startDate,
-      end_date: period.endDate,
-      status: period.status,
-      lodgement_due: period.lodgementDue,
-      lodgement_date: period.lodgementDate || '',
-      g1_total_sales: calc ? (calc.labelG1 / 100).toFixed(2) : '0.00',
-      g2_export_sales: calc ? (calc.labelG2 / 100).toFixed(2) : '0.00',
-      g3_gst_free_sales: calc ? (calc.labelG3 / 100).toFixed(2) : '0.00',
-      g10_capital_purchases: calc ? (calc.labelG10 / 100).toFixed(2) : '0.00',
-      g11_non_capital_purchases: calc ? (calc.labelG11 / 100).toFixed(2) : '0.00',
-      '1a_gst_on_sales': calc ? (calc.label1A / 100).toFixed(2) : '0.00',
-      '1b_gst_on_purchases': calc ? (calc.label1B / 100).toFixed(2) : '0.00',
-      w1_total_wages: calc ? (calc.labelW1 / 100).toFixed(2) : '0.00',
-      w2_amounts_withheld: calc ? (calc.labelW2 / 100).toFixed(2) : '0.00',
-      '5a_payg_instalment': calc ? (calc.label5A / 100).toFixed(2) : '0.00',
-      net_gst: calc ? (calc.netGst / 100).toFixed(2) : '0.00',
-      total_payable: calc ? (calc.totalPayable / 100).toFixed(2) : '0.00',
+      start_date: str(period, 'startDate'),
+      end_date: str(period, 'endDate'),
+      status: str(period, 'status'),
+      lodgement_due: str(period, 'lodgementDue'),
+      lodgement_date: str(period, 'lodgementDate'),
+      g1_total_sales: calc ? (num(calc, 'labelG1') / 100).toFixed(2) : '0.00',
+      g2_export_sales: calc ? (num(calc, 'labelG2') / 100).toFixed(2) : '0.00',
+      g3_gst_free_sales: calc ? (num(calc, 'labelG3') / 100).toFixed(2) : '0.00',
+      g10_capital_purchases: calc ? (num(calc, 'labelG10') / 100).toFixed(2) : '0.00',
+      g11_non_capital_purchases: calc ? (num(calc, 'labelG11') / 100).toFixed(2) : '0.00',
+      '1a_gst_on_sales': calc ? (num(calc, 'label1A') / 100).toFixed(2) : '0.00',
+      '1b_gst_on_purchases': calc ? (num(calc, 'label1B') / 100).toFixed(2) : '0.00',
+      w1_total_wages: calc ? (num(calc, 'labelW1') / 100).toFixed(2) : '0.00',
+      w2_amounts_withheld: calc ? (num(calc, 'labelW2') / 100).toFixed(2) : '0.00',
+      '5a_payg_instalment': calc ? (num(calc, 'label5A') / 100).toFixed(2) : '0.00',
+      net_gst: calc ? (num(calc, 'netGst') / 100).toFixed(2) : '0.00',
+      total_payable: calc ? (num(calc, 'totalPayable') / 100).toFixed(2) : '0.00',
     });
   }
 
@@ -141,32 +153,33 @@ export async function exportTaxSummary(
     .orderBy(desc(deductions.taxYear));
 
   const exportData = {
-    tax_summaries: summaries.map((s: any) => ({
-      tax_year: s.taxYear,
-      gross_salary_wages: (s.grossSalaryWages / 100).toFixed(2),
-      gross_business_income: (s.grossBusinessIncome / 100).toFixed(2),
-      gross_investment_income: (s.grossInvestmentIncome / 100).toFixed(2),
-      total_gross_income: (s.totalGrossIncome / 100).toFixed(2),
-      work_related_deductions: (s.workRelatedDeductions / 100).toFixed(2),
-      total_deductions: (s.totalDeductions / 100).toFixed(2),
-      net_capital_gain: (s.netCapitalGain / 100).toFixed(2),
-      taxable_income: (s.taxableIncome / 100).toFixed(2),
-      tax_on_taxable_income: (s.taxOnTaxableIncome / 100).toFixed(2),
-      medicare_levy: (s.medicareLevy / 100).toFixed(2),
-      tax_offsets_total: (s.taxOffsetsTotal / 100).toFixed(2),
-      total_tax_payable: (s.totalTaxPayable / 100).toFixed(2),
-      tax_withheld: (s.taxWithheld / 100).toFixed(2),
-      refund_or_payable: (s.refundOrPayable / 100).toFixed(2),
-      effective_tax_rate: s.effectiveTaxRate?.toFixed(2) || '0.00',
-      status: s.status,
+    tax_summaries: (summaries as Record<string, unknown>[]).map((s) => ({
+      tax_year: str(s, 'taxYear'),
+      gross_salary_wages: (num(s, 'grossSalaryWages') / 100).toFixed(2),
+      gross_business_income: (num(s, 'grossBusinessIncome') / 100).toFixed(2),
+      gross_investment_income: (num(s, 'grossInvestmentIncome') / 100).toFixed(2),
+      total_gross_income: (num(s, 'totalGrossIncome') / 100).toFixed(2),
+      work_related_deductions: (num(s, 'workRelatedDeductions') / 100).toFixed(2),
+      total_deductions: (num(s, 'totalDeductions') / 100).toFixed(2),
+      net_capital_gain: (num(s, 'netCapitalGain') / 100).toFixed(2),
+      taxable_income: (num(s, 'taxableIncome') / 100).toFixed(2),
+      tax_on_taxable_income: (num(s, 'taxOnTaxableIncome') / 100).toFixed(2),
+      medicare_levy: (num(s, 'medicareLevy') / 100).toFixed(2),
+      tax_offsets_total: (num(s, 'taxOffsetsTotal') / 100).toFixed(2),
+      total_tax_payable: (num(s, 'totalTaxPayable') / 100).toFixed(2),
+      tax_withheld: (num(s, 'taxWithheld') / 100).toFixed(2),
+      refund_or_payable: (num(s, 'refundOrPayable') / 100).toFixed(2),
+      effective_tax_rate:
+        typeof s.effectiveTaxRate === 'number' ? s.effectiveTaxRate.toFixed(2) : '0.00',
+      status: str(s, 'status'),
     })),
-    deductions: userDeductions.map((d: any) => ({
-      tax_year: d.taxYear,
-      category: d.category,
-      subcategory: d.subcategory || '',
-      description: d.description,
-      amount: (d.amount / 100).toFixed(2),
-      calculation_method: d.calculationMethod || '',
+    deductions: (userDeductions as Record<string, unknown>[]).map((d) => ({
+      tax_year: str(d, 'taxYear'),
+      category: str(d, 'category'),
+      subcategory: str(d, 'subcategory'),
+      description: str(d, 'description'),
+      amount: (num(d, 'amount') / 100).toFixed(2),
+      calculation_method: str(d, 'calculationMethod'),
       is_substantiated: d.isSubstantiated ? 'Yes' : 'No',
     })),
   };
@@ -203,31 +216,31 @@ export async function exportFullBackup(
   const exportData = {
     exportDate: new Date().toISOString(),
     exportVersion: '1.0',
-    transactions: userTransactions.map((tx: any) => ({
+    transactions: (userTransactions as Record<string, unknown>[]).map((tx) => ({
       ...tx,
-      amount: tx.amount / 100,
-      balance: tx.balance ? tx.balance / 100 : null,
-      gstAmount: tx.gstAmount ? tx.gstAmount / 100 : null,
+      amount: num(tx, 'amount') / 100,
+      balance: num(tx, 'balance') ? num(tx, 'balance') / 100 : null,
+      gstAmount: num(tx, 'gstAmount') ? num(tx, 'gstAmount') / 100 : null,
     })),
-    accounts: userAccounts.map((acc: any) => ({
+    accounts: (userAccounts as Record<string, unknown>[]).map((acc) => ({
       ...acc,
-      currentBalance: acc.currentBalance ? acc.currentBalance / 100 : null,
-      creditLimit: acc.creditLimit ? acc.creditLimit / 100 : null,
-      minimumPayment: acc.minimumPayment ? acc.minimumPayment / 100 : null,
+      currentBalance: num(acc, 'currentBalance') ? num(acc, 'currentBalance') / 100 : null,
+      creditLimit: num(acc, 'creditLimit') ? num(acc, 'creditLimit') / 100 : null,
+      minimumPayment: num(acc, 'minimumPayment') ? num(acc, 'minimumPayment') / 100 : null,
     })),
     basPeriods: userBasPeriods,
-    taxSummaries: userTaxSummaries.map((s: any) => ({
+    taxSummaries: (userTaxSummaries as Record<string, unknown>[]).map((s) => ({
       ...s,
-      grossSalaryWages: s.grossSalaryWages / 100,
-      grossBusinessIncome: s.grossBusinessIncome / 100,
-      totalGrossIncome: s.totalGrossIncome / 100,
-      totalDeductions: s.totalDeductions / 100,
-      taxableIncome: s.taxableIncome / 100,
-      totalTaxPayable: s.totalTaxPayable / 100,
+      grossSalaryWages: num(s, 'grossSalaryWages') / 100,
+      grossBusinessIncome: num(s, 'grossBusinessIncome') / 100,
+      totalGrossIncome: num(s, 'totalGrossIncome') / 100,
+      totalDeductions: num(s, 'totalDeductions') / 100,
+      taxableIncome: num(s, 'taxableIncome') / 100,
+      totalTaxPayable: num(s, 'totalTaxPayable') / 100,
     })),
-    deductions: userDeductions.map((d: any) => ({
+    deductions: (userDeductions as Record<string, unknown>[]).map((d) => ({
       ...d,
-      amount: d.amount / 100,
+      amount: num(d, 'amount') / 100,
     })),
   };
 

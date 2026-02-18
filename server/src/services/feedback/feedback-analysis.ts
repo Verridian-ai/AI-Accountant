@@ -159,7 +159,13 @@ FeedbackManager.prototype.autoApplyHighConfidenceFeedback = async function (
     .from(parserFeedback)
     .where(inArray(parserFeedback.id, feedbackIds))
     .all();
-  const userIds = [...new Set(feedback.map((f: any) => f.userId as string))];
+  const userIds = [
+    ...new Set(
+      (feedback as Record<string, unknown>[]).map(
+        (f: Record<string, unknown>) => f.userId as string,
+      ),
+    ),
+  ];
 
   for (const userId of userIds) {
     const result = await this.applyFeedbackToMerchantMemory(userId as string, minOccurrences);

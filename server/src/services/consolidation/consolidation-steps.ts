@@ -20,15 +20,36 @@ import {
 } from './types.js';
 import { applyEliminations } from './elimination-rules.js';
 
+interface EntityRow {
+  id: string;
+  userId: string;
+  parentEntityId: string | null;
+  isConsolidatedParent: boolean;
+  name: string;
+}
+
+interface LinkedAccountRow {
+  entityId: string;
+  accountId: string;
+}
+
+interface TxnAggregateRow {
+  category: string | null;
+  totalAmount: number;
+}
+
 /**
  * Recursively fetch all descendant entities of a parent.
  */
-export async function getDescendantEntities(parentId: string, userId: string): Promise<any[]> {
-  const children = (await db
+export async function getDescendantEntities(
+  parentId: string,
+  userId: string,
+): Promise<EntityRow[]> {
+  const children: EntityRow[] = await db
     .select()
     .from(entities)
     .where(and(eq(entities.parentEntityId, parentId), eq(entities.userId, userId)))
-    .all()) as any[];
+    .all();
 
   const descendants = [...children];
   for (const child of children) {
@@ -59,11 +80,11 @@ export async function generateConsolidation(params: {
   }>;
 }> {
   // Verify parent entity is a consolidated parent
-  const parentEntity = (await db
+  const parentEntity: EntityRow | undefined = await db
     .select()
     .from(entities)
     .where(and(eq(entities.id, params.parentEntityId), eq(entities.userId, params.userId)))
-    .get()) as any;
+    .get();
 
   if (!parentEntity) {
     throw new Error('Parent entity not found');
@@ -150,17 +171,17 @@ async function aggregateEntityTransactions(
   snapshotId: string,
   lines: ConsolidationSnapshotLine[],
 ): Promise<void> {
-  const linkedAccounts = (await db
+  const linkedAccounts: LinkedAccountRow[] = await db
     .select()
     .from(entityAccounts)
     .where(eq(entityAccounts.entityId, entityId))
-    .all()) as any[];
+    .all();
 
-  const accountIds = linkedAccounts.map((a: any) => a.accountId);
+  const accountIds = linkedAccounts.map((a) => a.accountId);
   if (accountIds.length === 0) return;
 
   for (const accountId of accountIds) {
-    const txnAggregates = (await db
+    const txnAggregates: TxnAggregateRow[] = await db
       .select({
         category: transactions.category,
         totalAmount: sql<number>`COALESCE(SUM(${transactions.amount}), 0)`,
@@ -175,7 +196,7 @@ async function aggregateEntityTransactions(
         ),
       )
       .groupBy(transactions.category)
-      .all()) as any[];
+      .all();
 
     for (const agg of txnAggregates) {
       if (!agg.category || agg.totalAmount === 0) continue;

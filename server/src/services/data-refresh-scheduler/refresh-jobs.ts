@@ -35,7 +35,7 @@ export async function refreshRbaData(deps: SchedulerDeps): Promise<void> {
   logger.info('[Scheduler] Refreshing RBA data...');
   const result = await deps.rbaDataFeed.fetchAllTables();
   logger.info(
-    `[Scheduler] RBA refresh done: ${result.tablesProcessed ?? 0} tables processed, ${result.errors?.length ?? 0} errors`,
+    `[Scheduler] RBA refresh done: ${result.tablesProcessed ?? 0} tables processed, ${(result.errors as unknown[] | undefined)?.length ?? 0} errors`,
   );
 }
 
@@ -51,7 +51,7 @@ export async function refreshAbsData(deps: SchedulerDeps): Promise<void> {
   logger.info('[Scheduler] Refreshing ABS data...');
   const result = await deps.absDataFeed.fetchAllIndicators();
   logger.info(
-    `[Scheduler] ABS refresh done: ${result.dataflowsProcessed ?? 0} dataflows processed, ${result.errors?.length ?? 0} errors`,
+    `[Scheduler] ABS refresh done: ${result.dataflowsProcessed ?? 0} dataflows processed, ${(result.errors as unknown[] | undefined)?.length ?? 0} errors`,
   );
 }
 
@@ -138,7 +138,7 @@ export async function refreshCogneeIndex(deps: SchedulerDeps): Promise<void> {
   logger.info(`[Scheduler] Running incremental Cognee index since ${since}...`);
   const result = await deps.marketCogneeIndexer.incrementalIndex(since);
   logger.info(
-    `[Scheduler] Cognee index done: ${result.totalIndexed ?? 0} indexed, ${result.errors?.length ?? 0} errors`,
+    `[Scheduler] Cognee index done: ${result.totalIndexed ?? 0} indexed, ${(result.errors as unknown[] | undefined)?.length ?? 0} errors`,
   );
 }
 
@@ -160,7 +160,7 @@ export async function refreshCalendar(): Promise<void> {
         const id = crypto.randomUUID();
 
         try {
-          await (db as any)
+          await db
             .insert(economicCalendar)
             .values({
               id,

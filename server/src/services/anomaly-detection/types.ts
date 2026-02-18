@@ -45,6 +45,22 @@ export interface AlertStats {
   trend: 'increasing' | 'stable' | 'decreasing';
 }
 
+export interface StoredAlert {
+  id: string;
+  userId: string;
+  accountId: string | null;
+  transactionId: string | null;
+  alertType: string;
+  severity: string;
+  title: string;
+  description: string;
+  details: string;
+  status: string;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+}
+
 export interface RecurringPattern {
   merchant: string;
   averageAmount: number;
@@ -59,6 +75,17 @@ export interface DescriptiveStats {
   median: number;
   q1: number;
   q3: number;
+}
+
+/** Minimal transaction shape needed by anomaly detection utilities */
+export interface TransactionLike {
+  id?: string;
+  date: string;
+  amount: number;
+  category?: string | null;
+  merchantNormalized?: string | null;
+  description?: string | null;
+  accountId?: string | null;
 }
 
 export const SEVERITY_RANK: Record<string, number> = {

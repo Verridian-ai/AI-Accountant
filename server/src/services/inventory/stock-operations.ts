@@ -6,6 +6,7 @@
 
 import { db } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 import {
   ensureTables,
@@ -239,7 +240,7 @@ export async function getStockLevels(
   const _warehouses = getWarehouses();
   if (!_inventoryStock || !_inventoryItems || !_warehouses) return [];
 
-  const itemConditions: any[] = [eq(_inventoryItems.userId, userId)];
+  const itemConditions: SQL[] = [eq(_inventoryItems.userId, userId)];
   if (filters?.itemId) itemConditions.push(eq(_inventoryItems.id, filters.itemId));
 
   const items = (await db
@@ -259,7 +260,7 @@ export async function getStockLevels(
   }> = [];
 
   for (const item of items) {
-    const stockConditions: any[] = [eq(_inventoryStock.itemId, item.id)];
+    const stockConditions: SQL[] = [eq(_inventoryStock.itemId, item.id)];
     if (filters?.warehouseId)
       stockConditions.push(eq(_inventoryStock.warehouseId, filters.warehouseId));
 

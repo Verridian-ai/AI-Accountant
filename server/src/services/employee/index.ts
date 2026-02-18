@@ -74,7 +74,7 @@ export class EmployeeService {
     return getTaxDeclaration(...args);
   }
 
-  private maskSensitiveFields(employee: any): any {
+  private maskSensitiveFields(employee: Record<string, unknown>): Record<string, unknown> {
     return maskSensitiveFields(employee);
   }
 

@@ -6,6 +6,7 @@
 
 import { db } from '../../schema.js';
 import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import {
   ensureTables,
   getInventoryItems,
@@ -56,7 +57,7 @@ export async function getMovementHistory(
   const _inventoryMovements = getInventoryMovements();
   if (!_inventoryMovements) return { movements: [], total: 0 };
 
-  const conditions: any[] = [eq(_inventoryMovements.userId, userId)];
+  const conditions: SQL[] = [eq(_inventoryMovements.userId, userId)];
 
   if (filters?.itemId) {
     conditions.push(eq(_inventoryMovements.itemId, filters.itemId));
@@ -82,7 +83,7 @@ export async function getMovementHistory(
     .where(whereClause)
     .get();
 
-  const total = (countResult as any)?.count ?? 0;
+  const total = (countResult as { count: number } | undefined)?.count ?? 0;
 
   const limit = filters?.limit ?? 50;
   const offset = filters?.offset ?? 0;

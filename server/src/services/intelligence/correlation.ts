@@ -133,7 +133,7 @@ export async function getModuleMetrics(
   try {
     switch (module) {
       case 'transactions': {
-        const monthly: Record<string, unknown>[] = await (db as any)
+        const monthly: Record<string, unknown>[] = await db
           .select({
             month: sql`substr(${transactions.date}, 1, 7)`,
             totalIncome: sql`sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end)`,
@@ -173,7 +173,7 @@ export async function getModuleMetrics(
       }
 
       case 'tax': {
-        const summaries: Record<string, unknown>[] = await (db as any)
+        const summaries: Record<string, unknown>[] = await db
           .select()
           .from(taxYearSummary)
           .where(eq(taxYearSummary.userId, userId))
@@ -196,10 +196,7 @@ export async function getModuleMetrics(
       }
 
       case 'bas': {
-        const basRows: Record<string, unknown>[] = await (db as any)
-          .select()
-          .from(basCalculations)
-          .all();
+        const basRows: Record<string, unknown>[] = await db.select().from(basCalculations).all();
 
         metrics['gst_collected'] = basRows.map((b: Record<string, unknown>) =>
           Number(b.labelG1 ?? b.label_g1 ?? 0),
@@ -214,7 +211,7 @@ export async function getModuleMetrics(
       }
 
       case 'analytics': {
-        const kpis: Record<string, unknown>[] = await (db as any)
+        const kpis: Record<string, unknown>[] = await db
           .select()
           .from(kpiMetrics)
           .where(
@@ -240,7 +237,7 @@ export async function getModuleMetrics(
       }
 
       case 'forecasting': {
-        const scenarios: Record<string, unknown>[] = await (db as any)
+        const scenarios: Record<string, unknown>[] = await db
           .select()
           .from(forecastScenarios)
           .where(eq(forecastScenarios.userId, userId))
@@ -248,7 +245,7 @@ export async function getModuleMetrics(
 
         for (const sc of scenarios) {
           const scenarioId = String(sc.id ?? '');
-          const periods: Record<string, unknown>[] = await (db as any)
+          const periods: Record<string, unknown>[] = await db
             .select()
             .from(forecastPeriods)
             .where(eq(forecastPeriods.scenarioId, scenarioId))

@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { db } from '../../schema.js';
 import { userActivityLog } from '../../db/admin-schema.js';
 import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import type {
   ActivityLogInput,
   ActivityLogFilters,
@@ -42,7 +43,7 @@ export async function getActivityLog(filters: ActivityLogFilters): Promise<Pagin
   const limit = filters.limit ?? 50;
   const offset = filters.offset ?? 0;
 
-  const conditions: any[] = [];
+  const conditions: SQL[] = [];
   if (filters.userId) conditions.push(eq(userActivityLog.userId, filters.userId));
   if (filters.action) conditions.push(eq(userActivityLog.action, filters.action));
   if (filters.resourceType) conditions.push(eq(userActivityLog.resourceType, filters.resourceType));
@@ -77,7 +78,7 @@ export async function getActivitySummary(
 ): Promise<ActivitySummary> {
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
-  const conditions: any[] = [gte(userActivityLog.createdAt, cutoff)];
+  const conditions: SQL[] = [gte(userActivityLog.createdAt, cutoff)];
   if (userId) conditions.push(eq(userActivityLog.userId, userId));
   const whereClause = and(...conditions);
 

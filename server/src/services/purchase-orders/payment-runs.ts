@@ -156,8 +156,10 @@ export async function processPaymentRun(paymentRunId: string): Promise<any> {
         reference: run.bankReference ?? undefined,
         notes: `Payment run ${paymentRunId}`,
       });
-    } catch (err: any) {
-      errors.push(`Bill ${item.billId}: ${err.message}`);
+    } catch (err: unknown) {
+      errors.push(
+        `Bill ${item.billId}: ${err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err)}`,
+      );
     }
   }
 
@@ -221,13 +223,13 @@ export async function getPaymentRun(paymentRunId: string): Promise<PaymentRunDet
     .where(eq(supplierPaymentRunItems.paymentRunId, paymentRunId))
     .all();
 
-  const items = itemRows.map((r: any) => ({
-    id: r.id,
-    paymentRunId: r.paymentRunId,
-    billId: r.billId,
+  const items = (itemRows as Record<string, unknown>[]).map((r) => ({
+    id: r.id as string,
+    paymentRunId: r.paymentRunId as string,
+    billId: r.billId as string,
     amount: Number(r.amount) || 0,
-    billNumber: r.billNumber ?? '',
-    supplierName: r.supplierName ?? 'Unknown Supplier',
+    billNumber: (r.billNumber as string) ?? '',
+    supplierName: (r.supplierName as string) ?? 'Unknown Supplier',
     amountCents: Number(r.amount) || 0,
   }));
 

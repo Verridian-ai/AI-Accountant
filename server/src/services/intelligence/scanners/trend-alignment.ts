@@ -16,7 +16,7 @@ export async function scanTrendAlignments(
   const insights: CrossModuleInsight[] = [];
 
   try {
-    const monthlyTx: any[] = await (db as any)
+    const monthlyTx: Record<string, unknown>[] = await db
       .select({
         month: sql`substr(${transactions.date}, 1, 7)`,
         totalIncome: sql`sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end)`,
@@ -36,7 +36,7 @@ export async function scanTrendAlignments(
 
     if (monthlyTx.length < 3) return insights;
 
-    const incomes = monthlyTx.map((m: any) => Number(m.totalIncome ?? m.total_income ?? 0));
+    const incomes = monthlyTx.map((m) => Number(m.totalIncome ?? m.total_income ?? 0));
     let growthMonths = 0;
     for (let i = 1; i < incomes.length; i++) {
       if (incomes[i] > incomes[i - 1]) growthMonths++;
@@ -68,7 +68,7 @@ export async function scanTrendAlignments(
     }
 
     // Expense outpacing income
-    const expenses = monthlyTx.map((m: any) => Number(m.totalExpense ?? m.total_expense ?? 0));
+    const expenses = monthlyTx.map((m) => Number(m.totalExpense ?? m.total_expense ?? 0));
     if (incomes.length >= 3 && expenses.length >= 3) {
       const incomeGrowth =
         incomes[0] > 0 ? (incomes[incomes.length - 1] - incomes[0]) / incomes[0] : 0;

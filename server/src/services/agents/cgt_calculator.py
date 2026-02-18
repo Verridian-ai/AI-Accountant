@@ -1,3 +1,6 @@
+# Refactored: cgt_calculator/ package replaces this file.
+# Python resolves 'from .cgt_calculator import X' via cgt_calculator/__init__.py.
+# This file is unreachable — the package directory takes priority in Python's import resolution.
 """
 Australian Capital Gains Tax (CGT) Calculator
 

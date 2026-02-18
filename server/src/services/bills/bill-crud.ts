@@ -11,7 +11,7 @@ import type {
   BillDetail,
   BillListOptions,
 } from './types.js';
-import { selectOne, selectMany } from '../../db/typed-queries.js';
+import { selectMany } from '../../db/typed-queries.js';
 
 // Re-export mutations for backward compatibility
 export { createBill, updateBill } from './bill-mutations.js';
@@ -236,4 +236,3 @@ export async function getBill(billId: string): Promise<BillDetail> {
 
   return detail;
 }
-

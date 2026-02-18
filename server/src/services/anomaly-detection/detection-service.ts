@@ -6,6 +6,7 @@
 
 import { db, transactions, anomalyAlerts } from '../../schema.js';
 import { eq, and, gte, lte } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 import type {
   AnomalyDetectorType,
@@ -13,23 +14,37 @@ import type {
   AnomalyAlertResult,
   AlertFilters,
   AlertStats,
+  StoredAlert,
 } from './types.js';
 import { AlertManagement } from './alert-management.js';
 import { SEVERITY_RANK } from './types.js';
 import { calculateStats, fuzzyAmountMatch, merchantSimilarity, daysBetween } from './utils.js';
 import { detectCategoryDrift, detectScheduleDeviation } from './db-detectors.js';
 
+interface TransactionRow {
+  id: string;
+  userId: string;
+  accountId: string | null;
+  date: string;
+  description: string;
+  amount: number;
+  balance: number | null;
+  category: string | null;
+  merchantNormalized: string | null;
+  isTransfer: boolean | number | null;
+}
+
 export class AnomalyDetectionService {
   async scanTransactions(
     userId: string,
     options: AnomalyScanOptions,
   ): Promise<AnomalyAlertResult[]> {
-    const conditions: any[] = [eq(transactions.userId, userId)];
+    const conditions: SQL[] = [eq(transactions.userId, userId)];
     if (options.accountId) conditions.push(eq(transactions.accountId, options.accountId));
     if (options.dateFrom) conditions.push(gte(transactions.date, options.dateFrom));
     if (options.dateTo) conditions.push(lte(transactions.date, options.dateTo));
 
-    const txns: any[] = await db
+    const txns: TransactionRow[] = await db
       .select()
       .from(transactions)
       .where(and(...conditions))
@@ -85,7 +100,7 @@ export class AnomalyDetectionService {
     return alerts;
   }
 
-  async detectDuplicatePayments(txns: any[]): Promise<AnomalyAlertResult[]> {
+  async detectDuplicatePayments(txns: TransactionRow[]): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
     for (let i = 0; i < txns.length; i++) {
       for (let j = i + 1; j < txns.length; j++) {
@@ -116,16 +131,19 @@ export class AnomalyDetectionService {
             merchantSimilarity: merchantSim,
           },
           transactionId: a.id,
-          accountId: a.accountId,
+          accountId: a.accountId ?? undefined,
         });
       }
     }
     return alerts;
   }
 
-  async detectAmountAnomalies(txns: any[], category?: string): Promise<AnomalyAlertResult[]> {
+  async detectAmountAnomalies(
+    txns: TransactionRow[],
+    category?: string,
+  ): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
-    const grouped = new Map<string, any[]>();
+    const grouped = new Map<string, TransactionRow[]>();
     for (const tx of txns) {
       const cat = category ?? tx.category ?? 'uncategorized';
       if (category && tx.category !== category) continue;
@@ -135,7 +153,7 @@ export class AnomalyDetectionService {
     }
     for (const [cat, catTxns] of grouped) {
       if (catTxns.length < 5) continue;
-      const amounts = catTxns.map((t: any) => Math.abs(t.amount));
+      const amounts = catTxns.map((t: TransactionRow) => Math.abs(t.amount));
       const stats = calculateStats(amounts);
       if (stats.stdDev === 0) continue;
       for (const tx of catTxns) {
@@ -156,7 +174,7 @@ export class AnomalyDetectionService {
               categoryStdDev: stats.stdDev,
             },
             transactionId: tx.id,
-            accountId: tx.accountId,
+            accountId: tx.accountId ?? undefined,
           });
         }
       }
@@ -164,11 +182,14 @@ export class AnomalyDetectionService {
     return alerts;
   }
 
-  async detectVelocitySpikes(txns: any[], windowDays = 7): Promise<AnomalyAlertResult[]> {
+  async detectVelocitySpikes(
+    txns: TransactionRow[],
+    windowDays = 7,
+  ): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
     if (txns.length < 10) return alerts;
 
-    const dateGroups = new Map<string, any[]>();
+    const dateGroups = new Map<string, TransactionRow[]>();
     for (const tx of txns) {
       const list = dateGroups.get(tx.date) ?? [];
       list.push(tx);
@@ -209,7 +230,7 @@ export class AnomalyDetectionService {
       }
     }
 
-    const txnsWithTime = txns.filter((t: any) => t.date && t.date.includes('T'));
+    const txnsWithTime = txns.filter((t: TransactionRow) => t.date && t.date.includes('T'));
     for (let i = 1; i < txnsWithTime.length; i++) {
       const diffMin =
         (new Date(txnsWithTime[i].date).getTime() - new Date(txnsWithTime[i - 1].date).getTime()) /
@@ -227,7 +248,7 @@ export class AnomalyDetectionService {
             minutesApart: Math.round(diffMin),
           },
           transactionId: txnsWithTime[i].id,
-          accountId: txnsWithTime[i].accountId,
+          accountId: txnsWithTime[i].accountId ?? undefined,
         });
       }
     }
@@ -238,10 +259,10 @@ export class AnomalyDetectionService {
     return detectCategoryDrift(userId, months);
   }
 
-  async detectUnusualMerchant(txns: any[]): Promise<AnomalyAlertResult[]> {
+  async detectUnusualMerchant(txns: TransactionRow[]): Promise<AnomalyAlertResult[]> {
     const alerts: AnomalyAlertResult[] = [];
     const merchantCounts = new Map<string, number>();
-    const merchantTxnMap = new Map<string, any[]>();
+    const merchantTxnMap = new Map<string, TransactionRow[]>();
 
     for (const tx of txns) {
       const merchant = (tx.merchantNormalized ?? tx.description ?? '').toLowerCase().trim();
@@ -271,10 +292,10 @@ export class AnomalyDetectionService {
               : `First-time transaction with ${merchant} for $${(absAmount / 100).toFixed(2)}.`,
           details: { merchant, amount: tx.amount, date: tx.date },
           transactionId: tx.id,
-          accountId: tx.accountId,
+          accountId: tx.accountId ?? undefined,
         });
       } else if (count >= 3) {
-        const amounts = merchantTxList.map((t: any) => Math.abs(t.amount));
+        const amounts = merchantTxList.map((t: TransactionRow) => Math.abs(t.amount));
         const stats = calculateStats(amounts);
         if (stats.stdDev === 0) continue;
         const latest = merchantTxList[merchantTxList.length - 1];
@@ -294,7 +315,7 @@ export class AnomalyDetectionService {
               zScore: Math.round(zScore * 100) / 100,
             },
             transactionId: latest.id,
-            accountId: latest.accountId,
+            accountId: latest.accountId ?? undefined,
           });
         }
       }
@@ -308,7 +329,7 @@ export class AnomalyDetectionService {
 
   private _alerts = new AlertManagement();
 
-  async getAlerts(userId: string, filters?: AlertFilters): Promise<any[]> {
+  async getAlerts(userId: string, filters?: AlertFilters): Promise<StoredAlert[]> {
     return this._alerts.getAlerts(userId, filters);
   }
 

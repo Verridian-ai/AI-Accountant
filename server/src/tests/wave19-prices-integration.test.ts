@@ -146,7 +146,7 @@ describe('MarketPriceService — fetchCryptoPrice returns null without API', asy
       price === null || price !== null,
       'fetchCryptoPrice handles nonexistent coins gracefully',
     );
-  } catch (err: any) {
+  } catch {
     // Even network errors should be caught internally
     assert(true, 'fetchCryptoPrice caught error internally');
   }
@@ -211,7 +211,7 @@ describe('MarketPriceService — getLatestPrices returns array', async () => {
     // This queries the DB — may return empty if no data
     const prices = await service.getLatestPrices();
     assert(Array.isArray(prices), 'getLatestPrices returns an array');
-  } catch (err: any) {
+  } catch {
     // DB may not be available in test environment
     assert(true, 'getLatestPrices handles missing DB gracefully');
   }
@@ -226,7 +226,7 @@ describe('MarketPriceService — getLatestPrices with asset type filter', async 
 
     const crypto = await service.getLatestPrices('cryptocurrency');
     assert(Array.isArray(crypto), 'Crypto-filtered getLatestPrices returns an array');
-  } catch (err: any) {
+  } catch {
     assert(true, 'Asset type filter handles missing DB gracefully');
   }
 });
@@ -239,7 +239,7 @@ describe('MarketPriceService — searchSymbol returns results array', async () =
   try {
     const results = await service.searchSymbol('test');
     assert(Array.isArray(results), 'searchSymbol returns an array');
-  } catch (err: any) {
+  } catch {
     assert(true, 'searchSymbol handles no API key gracefully');
   }
 });

@@ -12,10 +12,12 @@ import { encryptField, decryptField, maskTFN } from '../encryption.js';
  * Mask sensitive fields for API responses.
  * Decrypts TFN then masks it -- the decrypted value is never returned.
  */
-export function maskSensitiveFields(employee: any): any {
+export function maskSensitiveFields(employee: Record<string, unknown>): Record<string, unknown> {
   return {
     ...employee,
-    taxFileNumber: employee.taxFileNumber ? maskTFN(decryptField(employee.taxFileNumber)) : null,
+    taxFileNumber: employee.taxFileNumber
+      ? maskTFN(decryptField(employee.taxFileNumber as string))
+      : null,
   };
 }
 
@@ -80,12 +82,12 @@ export async function listEmployees(
     status?: string;
     search?: string;
   },
-): Promise<{ data: any[]; total: number }> {
+): Promise<{ data: Record<string, unknown>[]; total: number }> {
   const page = options?.page ?? 1;
   const limit = options?.limit ?? 50;
   const offset = (page - 1) * limit;
 
-  const conditions: any[] = [eq(employees.userId, userId)];
+  const conditions: ReturnType<typeof eq>[] = [eq(employees.userId, userId)];
   if (options?.status) {
     conditions.push(eq(employees.status, options.status));
   }
@@ -112,7 +114,7 @@ export async function listEmployees(
     .offset(offset);
 
   return {
-    data: rows.map((r: any) => maskSensitiveFields(r)),
+    data: rows.map((r: Record<string, unknown>) => maskSensitiveFields(r)),
     total,
   };
 }
@@ -137,7 +139,9 @@ export async function updateEmployee(
     employmentType: string;
   }>,
 ): Promise<any | null> {
-  const updateData: any = { ...data, updatedAt: new Date().toISOString() };
+  const updateData = { ...data, updatedAt: new Date().toISOString() } as Partial<
+    typeof employees.$inferInsert
+  >;
 
   if (data.taxFileNumber) {
     updateData.taxFileNumber = encryptField(data.taxFileNumber);

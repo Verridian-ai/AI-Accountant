@@ -2,7 +2,7 @@
  * Anomaly Detection Module — Shared Utility Functions
  */
 
-import type { DescriptiveStats, RecurringPattern } from './types.js';
+import type { DescriptiveStats, RecurringPattern, TransactionLike } from './types.js';
 
 export function calculateStats(values: number[]): DescriptiveStats {
   if (values.length === 0) return { mean: 0, stdDev: 0, median: 0, q1: 0, q3: 0 };
@@ -75,7 +75,7 @@ export function levenshtein(a: string, b: string): number {
   return prev[n];
 }
 
-export function categoryProportions(txns: any[]): Record<string, number> {
+export function categoryProportions(txns: TransactionLike[]): Record<string, number> {
   const totals: Record<string, number> = {};
   let grandTotal = 0;
   for (const tx of txns) {
@@ -92,8 +92,8 @@ export function categoryProportions(txns: any[]): Record<string, number> {
   return proportions;
 }
 
-export function findRecurringPatterns(txns: any[]): RecurringPattern[] {
-  const merchantGroups = new Map<string, any[]>();
+export function findRecurringPatterns(txns: TransactionLike[]): RecurringPattern[] {
+  const merchantGroups = new Map<string, TransactionLike[]>();
   for (const tx of txns) {
     const merchant = (tx.merchantNormalized ?? tx.description ?? '').toLowerCase().trim();
     if (!merchant) continue;
@@ -104,7 +104,7 @@ export function findRecurringPatterns(txns: any[]): RecurringPattern[] {
   const patterns: RecurringPattern[] = [];
   for (const [merchant, group] of merchantGroups) {
     if (group.length < 3) continue;
-    group.sort((a: any, b: any) => a.date.localeCompare(b.date));
+    group.sort((a, b) => a.date.localeCompare(b.date));
     const intervals: number[] = [];
     for (let i = 1; i < group.length; i++) {
       const days = daysBetween(group[i - 1].date, group[i].date);
@@ -115,7 +115,7 @@ export function findRecurringPatterns(txns: any[]): RecurringPattern[] {
     const intervalStats = calculateStats(intervals);
     const cv = intervalStats.mean > 0 ? intervalStats.stdDev / intervalStats.mean : Infinity;
     if (cv > 0.4 || avgInterval < 5 || avgInterval > 120) continue;
-    const amounts = group.map((t: any) => Math.abs(t.amount));
+    const amounts = group.map((t) => Math.abs(t.amount));
     const avgAmount = amounts.reduce((s: number, a: number) => s + a, 0) / amounts.length;
     const lastDate = group[group.length - 1].date;
     const nextExpected = new Date(lastDate);

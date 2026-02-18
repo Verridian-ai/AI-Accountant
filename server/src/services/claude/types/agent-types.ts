@@ -43,6 +43,8 @@ export interface CategorizerInput {
     category: string;
     gst: boolean;
   }>;
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface CategorizerOutput {
@@ -73,6 +75,8 @@ export interface GSTCalculatorInput {
   quarter: { year: number; quarter: 1 | 2 | 3 | 4 };
   accountId?: number;
   includePayg?: boolean;
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface GSTCalculatorOutput {
@@ -158,6 +162,8 @@ export interface BudgetAnalyzerInput {
   dateRange?: { start: string; end: string };
   focusAreas?: ('spending' | 'income' | 'savings' | 'recurring' | 'anomalies')[];
   includeProjections?: boolean;
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface BudgetAnalyzerOutput {
@@ -243,6 +249,8 @@ export interface MerchantIntelligenceInput {
     gstRegistered?: boolean;
     category?: string;
   }>;
+  sessionId?: string;
+  userId?: string;
 }
 
 export interface MerchantIntelligenceOutput {

@@ -79,7 +79,7 @@ export class AgentCircuitBreaker {
       this.failures = 0;
       this.state = 'closed';
       return result;
-    } catch (error) {
+    } catch {
       this.failures++;
       this.lastFailure = new Date();
       if (this.failures >= this.failureThreshold) {

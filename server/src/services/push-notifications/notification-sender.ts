@@ -14,7 +14,7 @@ import type {
   NotificationCategory,
   SendResult,
   BulkSendResult,
-} from '../push-notification-types.js';
+} from './types.js';
 import { MAX_ERROR_COUNT, DEFAULT_ICON, DEFAULT_BADGE, BULK_SEND_DELAY_MS } from './constants.js';
 import { delay } from './helpers.js';
 import { checkQuietHours, isNotificationEnabled } from './preference-checks.js';
@@ -102,9 +102,13 @@ export class NotificationSender {
 
     const members = await membersQuery.all();
 
-    for (const member of members as any[]) {
-      const memberRole = (member.role ?? member.role) as TenantRole;
-      const memberUserId = member.userId ?? member.user_id;
+    for (const member of members) {
+      const memberRole = ((member as Record<string, unknown>).role ?? 'viewer') as TenantRole;
+      const memberUserId = String(
+        (member as Record<string, unknown>).userId ??
+          (member as Record<string, unknown>).user_id ??
+          '',
+      );
 
       // Filter by roles if specified
       if (roles && roles.length > 0 && !roles.includes(memberRole)) {
@@ -213,8 +217,8 @@ export class NotificationSender {
         .run();
 
       return true;
-    } catch (err: any) {
-      const statusCode = err?.statusCode ?? 0;
+    } catch (err: unknown) {
+      const statusCode = ((err as Record<string, unknown>)?.statusCode as number) ?? 0;
 
       // 410 Gone or 404 = subscription no longer valid -> deactivate immediately
       if (statusCode === 410 || statusCode === 404) {
@@ -240,14 +244,18 @@ export class NotificationSender {
         .get();
 
       if (sub) {
-        const errorCount = Number((sub as any).errorCount ?? (sub as any).error_count ?? 0);
+        const errorCount = Number(
+          (sub as Record<string, unknown>).errorCount ??
+            (sub as Record<string, unknown>).error_count ??
+            0,
+        );
         if (errorCount >= MAX_ERROR_COUNT) {
           await this.manager.deactivateSubscription(endpoint);
         }
       }
 
       logger.warn(
-        `[PushNotification] Delivery failed for ${endpoint}: ${err?.message ?? 'Unknown error'}`,
+        `[PushNotification] Delivery failed for ${endpoint}: ${err instanceof Error ? err.message : 'Unknown error'}`,
       );
       return false;
     }

@@ -1,4 +1,4 @@
-import type { RbaTableDef } from '../economic-data-types.js';
+import type { RbaTableDef } from '../economic-data/enhanced-types.js';
 
 export const RBA_BASE_URL = 'https://www.rba.gov.au/statistics/tables';
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours

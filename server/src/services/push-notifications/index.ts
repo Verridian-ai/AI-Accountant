@@ -1,3 +1,4 @@
+export * from './types.js';
 export { PushNotificationService, pushNotificationService } from './push-notification-service.js';
 export { SubscriptionManager } from './subscription-manager.js';
 export { NotificationSender } from './notification-sender.js';

@@ -160,11 +160,7 @@ async function validateExtraction(documentId: string): Promise<{
   const suggestedFixes: SuggestedFix[] = [];
 
   // Fetch document
-  const doc = await db
-    .select()
-    .from(ocrDocuments)
-    .where(eq(ocrDocuments.id, documentId))
-    .get();
+  const doc = await db.select().from(ocrDocuments).where(eq(ocrDocuments.id, documentId)).get();
   if (!doc) {
     return {
       isValid: false,
@@ -194,7 +190,10 @@ async function validateExtraction(documentId: string): Promise<{
 
   // 1. Line items sum vs subtotal
   if (lineItems.length > 0 && subtotal != null) {
-    const lineItemsSum = lineItems.reduce((sum: number, item: typeof lineItems[number]) => sum + (Number(item.amount) ?? 0), 0);
+    const lineItemsSum = lineItems.reduce(
+      (sum: number, item: (typeof lineItems)[number]) => sum + (Number(item.amount) || 0),
+      0,
+    );
     const diff = Math.abs(lineItemsSum - subtotal);
     const passed = diff <= 0.01;
     checks.push({

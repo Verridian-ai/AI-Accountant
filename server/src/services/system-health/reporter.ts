@@ -77,8 +77,11 @@ export async function persistHealthChecks(checks: HealthCheckResult[]): Promise<
         })
         .run();
     }
-  } catch (err: any) {
-    logger.error('[SystemHealth] Failed to persist health checks:', err.message);
+  } catch (err: unknown) {
+    logger.error(
+      '[SystemHealth] Failed to persist health checks:',
+      err instanceof Error ? err.message : String(err),
+    );
   }
 }
 
@@ -170,8 +173,11 @@ export async function collectMetrics(): Promise<void> {
         })
         .run();
     }
-  } catch (err: any) {
-    logger.error('[SystemHealth] Failed to collect metrics:', err.message);
+  } catch (err: unknown) {
+    logger.error(
+      '[SystemHealth] Failed to collect metrics:',
+      err instanceof Error ? err.message : String(err),
+    );
   }
 }
 
@@ -202,8 +208,11 @@ export async function flushLatencyBuffer(entries: LatencyEntry[]): Promise<void>
         })
         .run();
     }
-  } catch (err: any) {
-    logger.error('[SystemHealth] Failed to flush latency buffer:', err.message);
+  } catch (err: unknown) {
+    logger.error(
+      '[SystemHealth] Failed to flush latency buffer:',
+      err instanceof Error ? err.message : String(err),
+    );
   }
 }
 

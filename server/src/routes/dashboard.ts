@@ -10,18 +10,22 @@ const createDashboardSchema = z.object({
   layout: z.record(z.unknown()).optional(),
 });
 
-const updateDashboardSchema = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().optional(),
-  layout: z.record(z.unknown()).optional(),
-}).passthrough();
+const updateDashboardSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    description: z.string().optional(),
+    layout: z.record(z.unknown()).optional(),
+  })
+  .passthrough();
 
-const saveChartSchema = z.object({
-  userId: z.string().optional(),
-  type: z.string().optional(),
-  title: z.string().optional(),
-  config: z.record(z.unknown()).optional(),
-}).passthrough();
+const saveChartSchema = z
+  .object({
+    userId: z.string().optional(),
+    type: z.string().optional(),
+    title: z.string().optional(),
+    config: z.record(z.unknown()).optional(),
+  })
+  .passthrough();
 
 const dashboardRoutes = new Hono();
 const dashboardService = new DashboardService();
@@ -45,7 +49,10 @@ dashboardRoutes.get('/:id', async (c) => {
 dashboardRoutes.post('/', zValidator('json', createDashboardSchema), async (c) => {
   const payload = c.get('jwtPayload');
   const { name, description, layout } = c.req.valid('json');
-  return c.json(await dashboardService.createDashboard(payload.userId, name, description, layout), 201);
+  return c.json(
+    await dashboardService.createDashboard(payload.userId, name, description, layout),
+    201,
+  );
 });
 
 // 4. PUT /dashboards/:id — update a dashboard
@@ -67,7 +74,20 @@ dashboardRoutes.get('/charts', async (c) => {
 
 dashboardRoutes.post('/charts', zValidator('json', saveChartSchema), async (c) => {
   const body = c.req.valid('json');
-  return c.json(await dashboardService.saveChart(body.userId || 'default', body as any), 201);
+  // Cast to SaveChartInput - Zod schema uses 'type' but interface uses 'chartType'
+  const chartInput = {
+    chartType: body.type ?? 'bar',
+    title: body.title ?? '',
+    dataSource: 'custom',
+    ...body,
+  };
+  return c.json(
+    await dashboardService.saveChart(
+      body.userId || 'default',
+      chartInput as Parameters<typeof dashboardService.saveChart>[1],
+    ),
+    201,
+  );
 });
 
 dashboardRoutes.delete('/charts/:id', async (c) => {

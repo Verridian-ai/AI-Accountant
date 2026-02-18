@@ -21,7 +21,7 @@ import { applyTenantPrefix } from './tenant.js';
 export async function listDatasets(
   state: AuthState,
   userId?: string,
-  tenantId?: string,
+  _tenantId?: string,
 ): Promise<Array<{ name: string; id?: string; status?: string }>> {
   try {
     const auth = await buildAuthHeaders(state, userId);
@@ -83,11 +83,14 @@ export async function deleteDataset(
   try {
     const prefixedName = applyTenantPrefix(name, tenantId);
     const auth = await buildAuthHeaders(state, userId);
-    const res = await fetch(`${state.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}`, {
-      method: 'DELETE',
-      headers: { ...auth },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    });
+    const res = await fetch(
+      `${state.baseUrl}/api/v1/datasets/${encodeURIComponent(prefixedName)}`,
+      {
+        method: 'DELETE',
+        headers: { ...auth },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      },
+    );
     if (!res.ok) {
       logger.warn(`[CogneeClient] Delete dataset failed: ${res.status}`);
     }

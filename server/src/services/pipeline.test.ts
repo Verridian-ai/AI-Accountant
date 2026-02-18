@@ -77,17 +77,15 @@ vi.mock('./ai', () => ({
       openingBalance: 1000,
       closingBalance: 2000,
     }),
-    categorizeWithMemory: vi
-      .fn()
-      .mockResolvedValue([
-        {
-          category: 'Food',
-          gst: true,
-          notes: 'Yum',
-          confidence: 0.9,
-          merchantNormalized: 'Test Merchant',
-        },
-      ]),
+    categorizeWithMemory: vi.fn().mockResolvedValue([
+      {
+        category: 'Food',
+        gst: true,
+        notes: 'Yum',
+        confidence: 0.9,
+        merchantNormalized: 'Test Merchant',
+      },
+    ]),
     parseWithVision: vi.fn(),
   },
 }));
@@ -268,9 +266,13 @@ describe('PipelineService', () => {
 
     // Reset pdf-parse mock to success by default
     const pdfParse = await import('pdf-parse');
-    // @ts-ignore
-    pdfParse.default.mockResolvedValue({
+    vi.mocked(pdfParse.default).mockResolvedValue({
       text: 'This is a sufficiently long mock PDF content to pass the length check validation in the pipeline service. It needs to be at least 50 characters long.',
+      numpages: 1,
+      numrender: 1,
+      info: {},
+      metadata: null,
+      version: 'default' as const,
     });
   });
 
@@ -302,8 +304,7 @@ describe('PipelineService', () => {
 
     // Mock pdf-parse to fail
     const pdfParse = await import('pdf-parse');
-    // @ts-ignore
-    pdfParse.default.mockRejectedValue(new Error('Corrupt PDF'));
+    vi.mocked(pdfParse.default).mockRejectedValue(new Error('Corrupt PDF'));
 
     await pipelineService.processStatement('s1', 'path/to/test.pdf');
 

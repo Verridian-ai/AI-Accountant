@@ -1,4 +1,4 @@
-import type { AbsDataflowDef } from '../economic-data-types.js';
+import type { AbsDataflowDef } from '../economic-data/enhanced-types.js';
 
 export const ABS_BASE_URL = 'https://data.api.abs.gov.au';
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -100,7 +100,7 @@ export const ABS_DATAFLOWS: Record<string, AbsDataflowDef> = {
 };
 
 /** In-memory cache of parsed SDMX responses */
-export const sdmxCache = new Map<string, { data: any; fetchedAt: number }>();
+export const sdmxCache = new Map<string, { data: unknown; fetchedAt: number }>();
 
 /** Timestamp of last ABS API request (for rate limiting) */
 export let lastRequestAt = 0;

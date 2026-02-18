@@ -17,13 +17,13 @@ export async function scanComplianceRisks(
   const insights: CrossModuleInsight[] = [];
 
   try {
-    const overdueBasRows: any[] = await (db as any)
+    const overdueBasRows = await db
       .select()
       .from(basPeriods)
       .where(and(eq(basPeriods.userId, userId), eq(basPeriods.status, 'overdue')))
       .all();
 
-    const uncatResult = await (db as any)
+    const uncatResult = await db
       .select({ count: sql`count(*)` })
       .from(transactions)
       .where(
@@ -37,7 +37,7 @@ export async function scanComplianceRisks(
       .get();
     const uncategorizedCount = Number(uncatResult?.count ?? 0);
 
-    const missingGstResult = await (db as any)
+    const missingGstResult = await db
       .select({ count: sql`count(*)` })
       .from(transactions)
       .where(

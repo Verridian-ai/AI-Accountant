@@ -7,6 +7,7 @@
 
 import { db, purchaseOrders, poLines, suppliers } from '../../schema.js';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 import { getNextPONumber } from './numbering.js';
 import {
@@ -29,7 +30,7 @@ export async function listPurchaseOrders(
   const { page = 1, limit = 50, status, supplierId, dateFrom, dateTo } = options;
   const offset = (page - 1) * limit;
 
-  const conditions: any[] = [eq(purchaseOrders.userId, userId)];
+  const conditions: SQL[] = [eq(purchaseOrders.userId, userId)];
   if (status) conditions.push(eq(purchaseOrders.status, status));
   if (supplierId) conditions.push(eq(purchaseOrders.supplierId, supplierId));
   if (dateFrom) conditions.push(gte(purchaseOrders.issueDate, dateFrom));
@@ -68,21 +69,21 @@ export async function listPurchaseOrders(
     .offset(offset)
     .all();
 
-  const data: POWithSupplier[] = rows.map((r: any) => ({
-    id: r.id,
-    userId: r.userId,
-    supplierId: r.supplierId,
-    poNumber: r.poNumber,
-    status: r.status,
-    issueDate: r.issueDate,
-    expectedDate: r.expectedDate ?? null,
+  const data: POWithSupplier[] = (rows as Record<string, unknown>[]).map((r) => ({
+    id: r.id as string,
+    userId: r.userId as string,
+    supplierId: r.supplierId as string,
+    poNumber: r.poNumber as string,
+    status: r.status as string,
+    issueDate: r.issueDate as string,
+    expectedDate: (r.expectedDate as string | null) ?? null,
     subtotal: Number(r.subtotal) || 0,
     gstAmount: Number(r.gstAmount) || 0,
     totalAmount: Number(r.totalAmount) || 0,
-    notes: r.notes ?? null,
+    notes: (r.notes as string | null) ?? null,
     createdAt: String(r.createdAt),
     updatedAt: String(r.updatedAt),
-    supplierName: r.supplierName ?? 'Unknown Supplier',
+    supplierName: (r.supplierName as string) ?? 'Unknown Supplier',
   }));
 
   return { data, total };

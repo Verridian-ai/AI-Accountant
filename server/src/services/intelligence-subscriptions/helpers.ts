@@ -60,19 +60,19 @@ export function checkCooldown(subscription: IntelligenceSubscription): boolean {
 /**
  * Map a raw DB row to an IntelligenceSubscription object.
  */
-export function mapDbRow(row: any): IntelligenceSubscription {
+export function mapDbRow(row: Record<string, unknown>): IntelligenceSubscription {
   return {
-    id: row.id,
-    userId: row.userId ?? row.user_id,
-    name: row.name,
-    subscriptionType: row.subscriptionType ?? row.subscription_type,
+    id: row.id as string,
+    userId: (row.userId ?? row.user_id) as string,
+    name: row.name as string,
+    subscriptionType: (row.subscriptionType ?? row.subscription_type) as string,
     filterCriteria:
       typeof row.filterCriteria === 'string'
         ? JSON.parse(row.filterCriteria)
         : typeof row.filter_criteria === 'string'
           ? JSON.parse(row.filter_criteria)
-          : (row.filterCriteria ?? {}),
-    notificationChannel: row.notificationChannel ?? row.notification_channel,
+          : ((row.filterCriteria ?? {}) as FilterCriteria),
+    notificationChannel: (row.notificationChannel ?? row.notification_channel) as string,
     notificationConfig: row.notificationConfig
       ? typeof row.notificationConfig === 'string'
         ? JSON.parse(row.notificationConfig)
@@ -82,11 +82,11 @@ export function mapDbRow(row: any): IntelligenceSubscription {
           ? JSON.parse(row.notification_config)
           : row.notification_config
         : undefined,
-    isActive: typeof row.isActive === 'boolean' ? row.isActive : (row.is_active ?? true),
-    triggerCount: row.triggerCount ?? row.trigger_count ?? 0,
-    lastTriggeredAt: row.lastTriggeredAt ?? row.last_triggered_at ?? undefined,
-    cooldownMinutes: row.cooldownMinutes ?? row.cooldown_minutes ?? 60,
-    createdAt: row.createdAt ?? row.created_at,
-    updatedAt: row.updatedAt ?? row.updated_at,
+    isActive: typeof row.isActive === 'boolean' ? row.isActive : Boolean(row.is_active ?? true),
+    triggerCount: Number(row.triggerCount ?? row.trigger_count ?? 0),
+    lastTriggeredAt: (row.lastTriggeredAt ?? row.last_triggered_at) as string | undefined,
+    cooldownMinutes: Number(row.cooldownMinutes ?? row.cooldown_minutes ?? 60),
+    createdAt: (row.createdAt ?? row.created_at) as string,
+    updatedAt: (row.updatedAt ?? row.updated_at) as string,
   };
 }

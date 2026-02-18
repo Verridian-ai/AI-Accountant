@@ -39,8 +39,9 @@ export async function sendWebhook(url: string, payload: unknown): Promise<boolea
       if (res.ok) return true;
 
       logger.warn(`[IntelSub] Webhook attempt ${attempt}/${maxRetries} failed: HTTP ${res.status}`);
-    } catch (err: any) {
-      logger.warn(`[IntelSub] Webhook attempt ${attempt}/${maxRetries} error:`, err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.warn(`[IntelSub] Webhook attempt ${attempt}/${maxRetries} error:`, message);
     }
 
     if (attempt < maxRetries) {
@@ -78,7 +79,7 @@ export async function dispatchNotification(
         break;
 
       case 'sse':
-        await sendSSE((notif.config as any)?.sseChannel ?? 'intelligence', {
+        await sendSSE(String(notif.config.sseChannel ?? 'intelligence'), {
           type: 'intelligence_insight',
           insight: notif.insight,
           subscriptionId: notif.subscriptionId,
@@ -88,7 +89,7 @@ export async function dispatchNotification(
 
       case 'email':
         await sendEmail(
-          (notif.config as any)?.emailAddress ?? '',
+          String(notif.config.emailAddress ?? ''),
           `Intelligence Alert: ${notif.insight.title}`,
           `${notif.insight.description}\n\nSeverity: ${notif.insight.severity}\nConfidence: ${(notif.insight.confidence * 100).toFixed(0)}%${notif.insight.recommendedAction ? `\nRecommended action: ${notif.insight.recommendedAction}` : ''}`,
         );
@@ -96,7 +97,7 @@ export async function dispatchNotification(
         break;
 
       case 'webhook':
-        success = await sendWebhook((notif.config as any)?.webhookUrl ?? '', {
+        success = await sendWebhook(String(notif.config.webhookUrl ?? ''), {
           event: 'intelligence_insight',
           subscriptionId: notif.subscriptionId,
           subscriptionName: notif.subscriptionName,
@@ -108,8 +109,8 @@ export async function dispatchNotification(
       default:
         error = `Unknown channel: ${notif.channel}`;
     }
-  } catch (err: any) {
-    error = err.message ?? String(err);
+  } catch (err: unknown) {
+    error = err instanceof Error ? err.message : String(err);
   }
 
   return { success, error };

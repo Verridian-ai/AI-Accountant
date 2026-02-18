@@ -9,6 +9,7 @@ import { gt } from 'drizzle-orm';
 import { db, economicIndicators, marketPrices, sentimentSnapshots } from '../../schema.js';
 import { COGNEE_DATASETS } from '../claude/cognee-tools.js';
 import { cogneeClient, type CogneeSearchType } from '../cognee_client.js';
+import type { EconomicIndicator, MarketPrice, SentimentSnapshot } from '../../db/market-schema.js';
 import { logger } from '../../lib/logger.js';
 import type { MarketIndexResult } from './types.js';
 import { MARKET_COGNIFY_PROMPT } from './types.js';
@@ -54,16 +55,16 @@ export class MarketCogneeIndexer {
 
     logger.info('[Market-Indexer] Starting full market Cognee indexing...');
 
-    const allIndicators = await db.select().from(economicIndicators).all();
-    const rbaIndicators = (allIndicators as any[]).filter(
-      (i: any) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
+    const allIndicators = (await db.select().from(economicIndicators).all()) as EconomicIndicator[];
+    const rbaIndicators = allIndicators.filter(
+      (i) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
     );
-    const absIndicators = (allIndicators as any[]).filter(
-      (i: any) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
+    const absIndicators = allIndicators.filter(
+      (i) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
     );
 
-    const allSentiment = await db.select().from(sentimentSnapshots).all();
-    const allPrices = await db.select().from(marketPrices).all();
+    const allSentiment = (await db.select().from(sentimentSnapshots).all()) as SentimentSnapshot[];
+    const allPrices = (await db.select().from(marketPrices).all()) as MarketPrice[];
 
     const rbaResult = await indexRbaData(rbaIndicators);
     allErrors.push(...rbaResult.errors);
@@ -73,19 +74,19 @@ export class MarketCogneeIndexer {
     allErrors.push(...absResult.errors);
     logger.info(`[Market-Indexer] Indexed ${absResult.count} ABS documents`);
 
-    const sentimentResult = await indexSentimentData(allSentiment as any[]);
+    const sentimentResult = await indexSentimentData(allSentiment);
     allErrors.push(...sentimentResult.errors);
     logger.info(`[Market-Indexer] Indexed ${sentimentResult.count} sentiment documents`);
 
-    const priceResult = await indexMarketPrices(allPrices as any[]);
+    const priceResult = await indexMarketPrices(allPrices);
     allErrors.push(...priceResult.errors);
     logger.info(`[Market-Indexer] Indexed ${priceResult.count} price documents`);
 
     const intelligenceSnapshots = buildIntelligenceSnapshots(
       rbaIndicators,
       absIndicators,
-      allSentiment as any[],
-      allPrices as any[],
+      allSentiment,
+      allPrices,
     );
     const intelligenceResult = await indexMarketIntelligence(intelligenceSnapshots);
     allErrors.push(...intelligenceResult.errors);
@@ -103,8 +104,10 @@ export class MarketCogneeIndexer {
       try {
         await cogneeClient.cognify([dataset], true, MARKET_COGNIFY_PROMPT);
         logger.info(`[Market-Indexer] Cognified dataset: ${dataset}`);
-      } catch (err: any) {
-        allErrors.push(`Cognify failed for ${dataset}: ${err.message}`);
+      } catch (err: unknown) {
+        allErrors.push(
+          `Cognify failed for ${dataset}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
@@ -133,36 +136,36 @@ export class MarketCogneeIndexer {
 
     logger.info(`[Market-Indexer] Incremental index for data updated since ${since}`);
 
-    const newIndicators = await db
+    const newIndicators = (await db
       .select()
       .from(economicIndicators)
       .where(gt(economicIndicators.createdAt, since))
-      .all();
+      .all()) as EconomicIndicator[];
 
-    const rbaIndicators = (newIndicators as any[]).filter(
-      (i: any) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
+    const rbaIndicators = newIndicators.filter(
+      (i) => i.source === 'RBA' || i.source === 'Reserve Bank of Australia',
     );
-    const absIndicators = (newIndicators as any[]).filter(
-      (i: any) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
+    const absIndicators = newIndicators.filter(
+      (i) => i.source === 'ABS' || i.source === 'Australian Bureau of Statistics',
     );
 
-    const newSentiment = await db
+    const newSentiment = (await db
       .select()
       .from(sentimentSnapshots)
       .where(gt(sentimentSnapshots.createdAt, since))
-      .all();
+      .all()) as SentimentSnapshot[];
 
-    const newPrices = await db
+    const newPrices = (await db
       .select()
       .from(marketPrices)
       .where(gt(marketPrices.createdAt, since))
-      .all();
+      .all()) as MarketPrice[];
 
     if (
       !rbaIndicators.length &&
       !absIndicators.length &&
-      !(newSentiment as any[]).length &&
-      !(newPrices as any[]).length
+      !newSentiment.length &&
+      !newPrices.length
     ) {
       logger.info('[Market-Indexer] No updated market data found');
       return {
@@ -191,15 +194,15 @@ export class MarketCogneeIndexer {
     }
 
     let sentimentCount = 0;
-    if ((newSentiment as any[]).length) {
-      const sentimentResult = await indexSentimentData(newSentiment as any[]);
+    if (newSentiment.length) {
+      const sentimentResult = await indexSentimentData(newSentiment);
       sentimentCount = sentimentResult.count;
       allErrors.push(...sentimentResult.errors);
     }
 
     let priceCount = 0;
-    if ((newPrices as any[]).length) {
-      const priceResult = await indexMarketPrices(newPrices as any[]);
+    if (newPrices.length) {
+      const priceResult = await indexMarketPrices(newPrices);
       priceCount = priceResult.count;
       allErrors.push(...priceResult.errors);
     }
@@ -208,8 +211,8 @@ export class MarketCogneeIndexer {
     const intelligenceSnapshots = buildIntelligenceSnapshots(
       rbaIndicators,
       absIndicators,
-      newSentiment as any[],
-      newPrices as any[],
+      newSentiment,
+      newPrices,
     );
     if (intelligenceSnapshots.length) {
       const intelligenceResult = await indexMarketIntelligence(intelligenceSnapshots);
@@ -227,8 +230,10 @@ export class MarketCogneeIndexer {
     for (const dataset of datasetsToUpdate) {
       try {
         await cogneeClient.cognify([dataset], true, MARKET_COGNIFY_PROMPT);
-      } catch (err: any) {
-        allErrors.push(`Incremental cognify ${dataset}: ${err.message}`);
+      } catch (err: unknown) {
+        allErrors.push(
+          `Incremental cognify ${dataset}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
@@ -268,7 +273,7 @@ export class MarketCogneeIndexer {
       topK: 5,
       mergeResults: true,
     });
-    return results.map((r: any) => (typeof r === 'string' ? r : (r.content ?? JSON.stringify(r))));
+    return results.map((r) => r.text);
   }
 }
 

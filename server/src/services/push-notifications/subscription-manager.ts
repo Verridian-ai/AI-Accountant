@@ -10,7 +10,7 @@ import { db, pushSubscriptions } from '../../schema.js';
 import { eq, and, sql } from 'drizzle-orm';
 import { logger } from '../../lib/logger.js';
 import { config } from '../../lib/config.js';
-import type { PushSubscriptionRecord, ClientPushSubscription } from '../push-notification-types.js';
+import type { PushSubscriptionRecord, ClientPushSubscription } from './types.js';
 import { MAX_ERROR_COUNT } from './constants.js';
 import { rowToSubscription } from './helpers.js';
 
@@ -90,7 +90,10 @@ export class SubscriptionManager {
           tenantId,
           keysJson: JSON.stringify(subscription.keys),
           deviceName:
-            deviceName ?? (existing as any).deviceName ?? (existing as any).device_name ?? null,
+            deviceName ??
+            (existing as Record<string, unknown>).deviceName ??
+            (existing as Record<string, unknown>).device_name ??
+            null,
           isActive: true,
           errorCount: 0,
           lastUsedAt: now,
@@ -139,7 +142,7 @@ export class SubscriptionManager {
         ),
       )
       .all();
-    return (rows as any[]).map(rowToSubscription);
+    return (rows as Record<string, unknown>[]).map(rowToSubscription);
   }
 
   /** Deactivate a subscription (sets is_active=false). */

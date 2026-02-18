@@ -15,6 +15,48 @@ import {
 import { eq } from 'drizzle-orm';
 import type { EnrichedProduct, ComparisonCategory, ProductComparison } from './types.js';
 
+interface LendingRateRow {
+  id: string;
+  productId: string;
+  rate: number;
+  comparisonRate: number | null;
+  lendingRateType: string;
+  [key: string]: unknown;
+}
+
+interface DepositRateRow {
+  id: string;
+  productId: string;
+  rate: number;
+  depositRateType: string;
+  [key: string]: unknown;
+}
+
+interface FeeRow {
+  id: string;
+  productId: string;
+  feeType: string;
+  amount: string | null;
+  additionalValue: string | null;
+  [key: string]: unknown;
+}
+
+interface FeatureRow {
+  id: string;
+  productId: string;
+  featureType: string;
+  [key: string]: unknown;
+}
+
+interface EligibilityRow {
+  id: string;
+  productId: string;
+  eligibilityType: string;
+  additionalInfo: string | null;
+  additionalValue: string | null;
+  [key: string]: unknown;
+}
+
 export async function compareProducts(productIds: string[]): Promise<ProductComparison> {
   const ids = productIds.slice(0, 5); // max 5
   if (ids.length === 0) {
@@ -28,10 +70,10 @@ export async function compareProducts(productIds: string[]): Promise<ProductComp
 
   // Fetch full details for each product
   const products: EnrichedProduct[] = [];
-  const ratesMap: Record<string, any[]> = {};
-  const feesMap: Record<string, any[]> = {};
-  const featuresMap: Record<string, any[]> = {};
-  const eligibilityMap: Record<string, any[]> = {};
+  const ratesMap: Record<string, Array<LendingRateRow | DepositRateRow>> = {};
+  const feesMap: Record<string, FeeRow[]> = {};
+  const featuresMap: Record<string, FeatureRow[]> = {};
+  const eligibilityMap: Record<string, EligibilityRow[]> = {};
 
   for (const id of ids) {
     const [productRows] = await Promise.all([
@@ -61,22 +103,22 @@ export async function compareProducts(productIds: string[]): Promise<ProductComp
       db.select().from(cdrEligibility).where(eq(cdrEligibility.productId, id)),
     ]);
 
-    ratesMap[id] = [...lendingRates, ...depositRates];
-    feesMap[id] = feeRows;
-    featuresMap[id] = featureRows;
-    eligibilityMap[id] = eligRows;
+    ratesMap[id] = [...(lendingRates as LendingRateRow[]), ...(depositRates as DepositRateRow[])];
+    feesMap[id] = feeRows as FeeRow[];
+    featuresMap[id] = featureRows as FeatureRow[];
+    eligibilityMap[id] = eligRows as EligibilityRow[];
 
     let bestRate: number | null = null;
     let comparisonRate: number | null = null;
     let rateType: string | null = null;
 
     if (lendingRates.length > 0) {
-      const sorted = [...lendingRates].sort((a: any, b: any) => a.rate - b.rate);
+      const sorted = [...(lendingRates as LendingRateRow[])].sort((a, b) => a.rate - b.rate);
       bestRate = sorted[0].rate;
       comparisonRate = sorted[0].comparisonRate ?? null;
       rateType = sorted[0].lendingRateType;
     } else if (depositRates.length > 0) {
-      const sorted = [...depositRates].sort((a: any, b: any) => b.rate - a.rate);
+      const sorted = [...(depositRates as DepositRateRow[])].sort((a, b) => b.rate - a.rate);
       bestRate = sorted[0].rate;
       rateType = sorted[0].depositRateType;
     }
@@ -93,7 +135,7 @@ export async function compareProducts(productIds: string[]): Promise<ProductComp
       rateType,
       featureCount: featureRows.length,
       feeCount: feeRows.length,
-      features: featureRows.map((f: any) => f.featureType),
+      features: (featureRows as FeatureRow[]).map((f) => f.featureType),
       applicationUri: row.applicationUri ?? null,
     });
   }
@@ -139,7 +181,7 @@ export async function compareProducts(productIds: string[]): Promise<ProductComp
       label: feeType,
       values: Object.fromEntries(
         products.map((p) => {
-          const fee = (feesMap[p.id] ?? []).find((f: any) => f.feeType === feeType);
+          const fee = (feesMap[p.id] ?? []).find((f: FeeRow) => f.feeType === feeType);
           return [p.id, fee ? (fee.amount ?? 'See details') : 'N/A'];
         }),
       ),
@@ -181,7 +223,7 @@ export async function compareProducts(productIds: string[]): Promise<ProductComp
       label: ft,
       values: Object.fromEntries(
         products.map((p) => {
-          const has = (featuresMap[p.id] ?? []).some((f: any) => f.featureType === ft);
+          const has = (featuresMap[p.id] ?? []).some((f: FeatureRow) => f.featureType === ft);
           return [p.id, has];
         }),
       ),
@@ -202,7 +244,9 @@ export async function compareProducts(productIds: string[]): Promise<ProductComp
       label: et,
       values: Object.fromEntries(
         products.map((p) => {
-          const elig = (eligibilityMap[p.id] ?? []).find((e: any) => e.eligibilityType === et);
+          const elig = (eligibilityMap[p.id] ?? []).find(
+            (e: EligibilityRow) => e.eligibilityType === et,
+          );
           return [p.id, elig ? (elig.additionalInfo ?? elig.additionalValue ?? 'Required') : 'N/A'];
         }),
       ),

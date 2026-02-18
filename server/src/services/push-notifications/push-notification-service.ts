@@ -20,7 +20,7 @@ import type {
   BulkSendResult,
   PushSubscriptionRecord,
   ClientPushSubscription,
-} from '../push-notification-types.js';
+} from './types.js';
 import { SubscriptionManager } from './subscription-manager.js';
 import { NotificationSender } from './notification-sender.js';
 import {

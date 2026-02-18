@@ -1,3 +1,6 @@
+# Refactored: seed/ package replaces this file.
+# Python resolves 'from .seed import X' via seed/__init__.py.
+# This file is unreachable — the package directory takes priority in Python's import resolution.
 """
 Cognee Knowledge Graph Seeding Script
 

@@ -7,6 +7,7 @@
 
 import { db } from '../../schema.js';
 import { eq, and, sql } from 'drizzle-orm';
+import type { InferSelectModel } from 'drizzle-orm';
 import {
   consolidationRules,
   interEntityTransactions,
@@ -69,7 +70,8 @@ export async function applyEliminations(
     .all()) as ConsolidationRule[];
 
   // Fetch confirmed inter-entity transactions for the FY
-  const confirmedIETs = (await db
+  type IET = InferSelectModel<typeof interEntityTransactions>;
+  const confirmedIETs: IET[] = await db
     .select()
     .from(interEntityTransactions)
     .where(
@@ -80,7 +82,7 @@ export async function applyEliminations(
         sql`${interEntityTransactions.transactionDate} <= ${fyEnd}`,
       ),
     )
-    .all()) as any[];
+    .all();
 
   for (const rule of rules) {
     const criteria: RuleCriteria = JSON.parse(rule.criteriaJson);
@@ -170,8 +172,8 @@ export async function applyEliminations(
   return { eliminatedLines, totalEliminationsAmount, eliminationDetails };
 }
 
-function sumIETAmounts(iets: any[]): number {
-  return iets.reduce((sum: number, iet: any) => sum + Math.abs(iet.amount), 0);
+function sumIETAmounts(iets: Array<{ amount: number | string | null }>): number {
+  return iets.reduce((sum: number, iet) => sum + Math.abs(Number(iet.amount ?? 0)), 0);
 }
 
 function sumCategoryMatchAmount(

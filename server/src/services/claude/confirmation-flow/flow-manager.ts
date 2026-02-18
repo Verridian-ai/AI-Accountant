@@ -12,9 +12,11 @@ import type { AgentType } from '../types.js';
 import type { CreateSessionOptions, AgentSession } from './types.js';
 
 export class ConfirmationFlowManager {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected db: any;
   protected authService: MutationAuthService;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(db: any) {
     this.db = db;
     this.authService = new MutationAuthService();

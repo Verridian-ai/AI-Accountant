@@ -17,6 +17,15 @@ import {
   cdrEligibility,
   cdrDataHolders,
 } from '../../schema.js';
+import type {
+  CdrProduct,
+  CdrDataHolder,
+  CdrLendingRate,
+  CdrDepositRate,
+  CdrFee,
+  CdrFeature,
+  CdrEligibility,
+} from '../../db/cdr-schema.js';
 import { cogneeTools, COGNEE_DATASETS } from '../claude/cognee-tools.js';
 
 /**
@@ -28,15 +37,15 @@ export async function indexRates(): Promise<{ count: number; errors: string[] }>
   try {
     const texts: string[] = [];
 
-    const lendingRates = await db.select().from(cdrLendingRates).all();
-    for (const lr of (lendingRates ?? []) as any[]) {
-      const product = await db
+    const lendingRates = (await db.select().from(cdrLendingRates).all()) as CdrLendingRate[];
+    for (const lr of lendingRates) {
+      const product = (await db
         .select()
         .from(cdrProducts)
         .where(eq(cdrProducts.id, lr.productId))
-        .get();
-      const productName = (product as any)?.name ?? lr.productId;
-      const bankName = (product as any)?.brandName ?? '';
+        .get()) as CdrProduct | undefined;
+      const productName = product?.name ?? lr.productId;
+      const bankName = product?.brandName ?? '';
 
       const ratePercent = ((lr.rate ?? 0) * 100).toFixed(2);
       const compRatePercent = lr.comparisonRate
@@ -55,15 +64,15 @@ export async function indexRates(): Promise<{ count: number; errors: string[] }>
       texts.push(text.trim());
     }
 
-    const depositRates = await db.select().from(cdrDepositRates).all();
-    for (const dr of (depositRates ?? []) as any[]) {
-      const product = await db
+    const depositRates = (await db.select().from(cdrDepositRates).all()) as CdrDepositRate[];
+    for (const dr of depositRates) {
+      const product = (await db
         .select()
         .from(cdrProducts)
         .where(eq(cdrProducts.id, dr.productId))
-        .get();
-      const productName = (product as any)?.name ?? dr.productId;
-      const bankName = (product as any)?.brandName ?? '';
+        .get()) as CdrProduct | undefined;
+      const productName = product?.name ?? dr.productId;
+      const bankName = product?.brandName ?? '';
 
       const ratePercent = ((dr.rate ?? 0) * 100).toFixed(2);
 
@@ -81,8 +90,8 @@ export async function indexRates(): Promise<{ count: number; errors: string[] }>
     }
 
     return { count: texts.length, errors };
-  } catch (err: any) {
-    errors.push(`Rate indexing failed: ${err.message}`);
+  } catch (err: unknown) {
+    errors.push(`Rate indexing failed: ${err instanceof Error ? err.message : String(err)}`);
     return { count: 0, errors };
   }
 }
@@ -94,32 +103,32 @@ export async function indexProductKnowledge(): Promise<{ count: number; errors: 
   const errors: string[] = [];
 
   try {
-    const products = await db.select().from(cdrProducts).all();
+    const products = (await db.select().from(cdrProducts).all()) as CdrProduct[];
     if (!products?.length) return { count: 0, errors: [] };
 
     const texts: string[] = [];
 
-    for (const product of products as any[]) {
+    for (const product of products) {
       try {
         let holderName = product.brandName ?? product.brand ?? '';
         if (!holderName && product.dataHolderId) {
-          const holder = await db
+          const holder = (await db
             .select()
             .from(cdrDataHolders)
             .where(eq(cdrDataHolders.id, product.dataHolderId))
-            .get();
-          holderName = (holder as any)?.brandName ?? '';
+            .get()) as CdrDataHolder | undefined;
+          holderName = holder?.brandName ?? '';
         }
 
         const pid = product.id;
 
-        const lRates = await db
+        const lRates = (await db
           .select()
           .from(cdrLendingRates)
           .where(eq(cdrLendingRates.productId, pid))
-          .all();
+          .all()) as CdrLendingRate[];
 
-        const lendingText = (lRates as any[])
+        const lendingText = lRates
           .map(
             (lr) =>
               `${lr.lendingRateType}: ${((lr.rate ?? 0) * 100).toFixed(2)}%` +
@@ -128,39 +137,43 @@ export async function indexProductKnowledge(): Promise<{ count: number; errors: 
           )
           .join('; ');
 
-        const dRates = await db
+        const dRates = (await db
           .select()
           .from(cdrDepositRates)
           .where(eq(cdrDepositRates.productId, pid))
-          .all();
+          .all()) as CdrDepositRate[];
 
-        const depositText = (dRates as any[])
+        const depositText = dRates
           .map((dr) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
           .join('; ');
 
-        const fees = await db.select().from(cdrFees).where(eq(cdrFees.productId, pid)).all();
+        const fees = (await db
+          .select()
+          .from(cdrFees)
+          .where(eq(cdrFees.productId, pid))
+          .all()) as CdrFee[];
 
-        const feesText = (fees as any[])
+        const feesText = fees
           .map((f) => `${f.name} (${f.feeType}): ${f.amount ? `$${f.amount}` : 'varies'}`)
           .join('; ');
 
-        const features = await db
+        const features = (await db
           .select()
           .from(cdrFeatures)
           .where(eq(cdrFeatures.productId, pid))
-          .all();
+          .all()) as CdrFeature[];
 
-        const featuresText = (features as any[])
+        const featuresText = features
           .map((f) => f.featureType + (f.additionalValue ? `: ${f.additionalValue}` : ''))
           .join('; ');
 
-        const eligibility = await db
+        const eligibility = (await db
           .select()
           .from(cdrEligibility)
           .where(eq(cdrEligibility.productId, pid))
-          .all();
+          .all()) as CdrEligibility[];
 
-        const eligibilityText = (eligibility as any[])
+        const eligibilityText = eligibility
           .map((e) => e.eligibilityType + (e.additionalValue ? `: ${e.additionalValue}` : ''))
           .join('; ');
 
@@ -176,8 +189,10 @@ export async function indexProductKnowledge(): Promise<{ count: number; errors: 
         if (eligibilityText) doc += `Eligibility: ${eligibilityText}. `;
 
         texts.push(doc.trim());
-      } catch (err: any) {
-        errors.push(`Failed to build knowledge for ${product.name}: ${err.message}`);
+      } catch (err: unknown) {
+        errors.push(
+          `Failed to build knowledge for ${product.name}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
@@ -186,8 +201,10 @@ export async function indexProductKnowledge(): Promise<{ count: number; errors: 
     }
 
     return { count: texts.length, errors };
-  } catch (err: any) {
-    errors.push(`Product knowledge indexing failed: ${err.message}`);
+  } catch (err: unknown) {
+    errors.push(
+      `Product knowledge indexing failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return { count: 0, errors };
   }
 }

@@ -1,25 +1,31 @@
+import type { DrizzleTable } from '../../db/queries/types.js';
+
 /**
  * Inventory Schema Loader
  *
  * Lazy-loads inventory table references from the schema module.
  * Agent 1 may not have added these to schema.ts yet,
  * so we dynamically import them at runtime.
+ *
+ * Note: These variables are intentionally untyped — they hold Drizzle table
+ * objects whose column accessors (.userId, .id, etc.) require dynamic property
+ * access. Same irreducible pattern as wrapPgDb() in schema.ts.
  */
 
-let _inventoryItems: any;
-let _inventoryStock: any;
-let _inventoryMovements: any;
-let _warehouses: any;
+let _inventoryItems: DrizzleTable | undefined;
+let _inventoryStock: DrizzleTable | undefined;
+let _inventoryMovements: DrizzleTable | undefined;
+let _warehouses: DrizzleTable | undefined;
 let _tablesLoaded = false;
 
 export async function ensureTables() {
   if (_tablesLoaded) return;
   try {
-    const schema = await import('../../schema.js');
-    _inventoryItems = (schema as any).inventoryItems;
-    _inventoryStock = (schema as any).inventoryStock;
-    _inventoryMovements = (schema as any).inventoryMovements;
-    _warehouses = (schema as any).warehouses;
+    const schema: Record<string, unknown> = await import('../../schema.js');
+    _inventoryItems = schema.inventoryItems as DrizzleTable;
+    _inventoryStock = schema.inventoryStock as DrizzleTable;
+    _inventoryMovements = schema.inventoryMovements as DrizzleTable;
+    _warehouses = schema.warehouses as DrizzleTable;
     _tablesLoaded = true;
   } catch {
     // Schema tables not yet available — will use raw SQL fallbacks

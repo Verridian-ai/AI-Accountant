@@ -3,10 +3,11 @@
  *
  * Redis-backed session management, query caching, and rate limiting
  * for the Cognee knowledge graph integration.
+ *
+ * Cache operations are delegated to cache-operations.ts.
  */
 
 import Redis from 'ioredis';
-import { createHash } from 'crypto';
 import { logger } from '../../lib/logger.js';
 import { config } from '../../lib/config.js';
 import type {
@@ -17,12 +18,16 @@ import type {
   CogneeSessionContext,
   CogneeUserSessionOptions,
 } from './types.js';
+import { CONNECT_MAX_RETRIES, CONNECT_RETRY_BASE_MS } from './constants.js';
 import {
-  MAX_CACHE_VALUE_BYTES,
-  CONNECT_MAX_RETRIES,
-  CONNECT_RETRY_BASE_MS,
-  KEY_PREFIX,
-} from './constants.js';
+  serializeForCache,
+  deserializeFromCache,
+  findSessionKey,
+  cacheQueryResult as cacheQueryResultFn,
+  getCachedResult as getCachedResultFn,
+  invalidateCache as invalidateCacheFn,
+  buildCacheKey as buildCacheKeyFn,
+} from './cache-operations.js';
 import {
   createCogneeSession as createCogneeSessionFn,
   getCogneeSessionContext,
@@ -40,7 +45,6 @@ import {
   getHealthStatus as getHealthStatusFn,
   computeCacheStats,
   flushKeys,
-  scanKeys,
 } from './health-stats.js';
 import {
   createSession as createSessionFn,
@@ -88,7 +92,7 @@ export class CogneeSessionService {
 
   async getSession(sessionId: string): Promise<CogneeSession | null> {
     if (!this._ensureConnected()) return null;
-    return getSessionFn(this.redis!, sessionId, (id) => this._findSessionKey(id));
+    return getSessionFn(this.redis!, sessionId, (id) => findSessionKey(this.redis!, id));
   }
 
   async updateSession(
@@ -96,12 +100,14 @@ export class CogneeSessionService {
     updates: Partial<Pick<CogneeSession, 'state' | 'data'>>,
   ): Promise<CogneeSession | null> {
     if (!this._ensureConnected()) return null;
-    return updateSessionFn(this.redis!, sessionId, updates, (id) => this._findSessionKey(id));
+    return updateSessionFn(this.redis!, sessionId, updates, (id) =>
+      findSessionKey(this.redis!, id),
+    );
   }
 
   async destroySession(sessionId: string): Promise<boolean> {
     if (!this._ensureConnected()) return false;
-    return destroySessionFn(this.redis!, sessionId, (id) => this._findSessionKey(id));
+    return destroySessionFn(this.redis!, sessionId, (id) => findSessionKey(this.redis!, id));
   }
 
   async listUserSessions(userId: string): Promise<CogneeSession[]> {
@@ -109,9 +115,7 @@ export class CogneeSessionService {
     return listUserSessionsFn(this.redis!, userId);
   }
 
-  // --------------------------------------------------------------------------
-  // QUERY CACHING
-  // --------------------------------------------------------------------------
+  // -- Query Caching (delegated to cache-operations.ts) --
 
   async cacheQueryResult(
     cacheKey: string,
@@ -119,16 +123,7 @@ export class CogneeSessionService {
     ttlSeconds: number = 300,
   ): Promise<boolean> {
     if (!this._ensureConnected()) return false;
-    try {
-      const serialized = this._serializeForCache(result);
-      if (!serialized) return false;
-      const key = `${KEY_PREFIX}cache:query:${cacheKey}`;
-      await this.redis!.set(key, serialized, 'EX', ttlSeconds);
-      return true;
-    } catch (err: any) {
-      logger.warn('[CogneeSession] Failed to cache result:', err.message);
-      return false;
-    }
+    return cacheQueryResultFn(this.redis!, cacheKey, result, ttlSeconds);
   }
 
   async getCachedResult<T = unknown>(cacheKey: string): Promise<T | null> {
@@ -136,38 +131,16 @@ export class CogneeSessionService {
       this.stats.cacheMisses++;
       return null;
     }
-    try {
-      const key = `${KEY_PREFIX}cache:query:${cacheKey}`;
-      const data = await this.redis!.get(key);
-      if (data) {
-        this.stats.cacheHits++;
-        return this._deserializeFromCache<T>(data);
-      }
-      this.stats.cacheMisses++;
-      return null;
-    } catch (err: any) {
-      logger.warn('[CogneeSession] Failed to get cached result:', err.message);
-      this.stats.cacheMisses++;
-      return null;
-    }
+    return getCachedResultFn<T>(this.redis!, cacheKey, this.stats);
   }
 
   async invalidateCache(pattern: string): Promise<number> {
     if (!this._ensureConnected()) return 0;
-    try {
-      const fullPattern = `${KEY_PREFIX}cache:query:${pattern}`;
-      const keys = await scanKeys(this.redis!, fullPattern);
-      if (keys.length === 0) return 0;
-      return await this.redis!.del(...keys);
-    } catch (err: any) {
-      logger.warn('[CogneeSession] Failed to invalidate cache:', err.message);
-      return 0;
-    }
+    return invalidateCacheFn(this.redis!, pattern);
   }
 
   buildCacheKey(queryType: string, params: Record<string, unknown>): string {
-    const sortedJson = JSON.stringify(params, Object.keys(params).sort());
-    return this._hashKey(`${queryType}:${sortedJson}`);
+    return buildCacheKeyFn(queryType, params);
   }
 
   // -- Rate Limiting (delegated to rate-limiter.ts) --
@@ -194,9 +167,7 @@ export class CogneeSessionService {
     return getRateLimitStatusFn(this.redis!, operation);
   }
 
-  // --------------------------------------------------------------------------
-  // WAVE 3: USER-SCOPED COGNEE SESSIONS (delegated)
-  // --------------------------------------------------------------------------
+  // -- Wave 3: User-Scoped Cognee Sessions (delegated to cognee-user-sessions.ts) --
 
   async createCogneeSession(userId: string, options: CogneeUserSessionOptions) {
     if (!this._ensureConnected()) return null;
@@ -233,7 +204,7 @@ export class CogneeSessionService {
   async cacheUserQueryResult(
     userId: string,
     queryHash: string,
-    result: any,
+    result: unknown,
     ttlSeconds: number = 300,
   ): Promise<boolean> {
     if (!this._ensureConnected()) return false;
@@ -243,18 +214,13 @@ export class CogneeSessionService {
       queryHash,
       result,
       ttlSeconds,
-      this._serializeForCache.bind(this),
+      serializeForCache,
     );
   }
 
-  async getCachedUserQueryResult(userId: string, queryHash: string): Promise<any | null> {
+  async getCachedUserQueryResult(userId: string, queryHash: string): Promise<unknown> {
     if (!this._ensureConnected()) return null;
-    return getCachedUserQueryResultFn(
-      this.redis!,
-      userId,
-      queryHash,
-      this._deserializeFromCache.bind(this),
-    );
+    return getCachedUserQueryResultFn(this.redis!, userId, queryHash, deserializeFromCache);
   }
 
   async destroyUserCogneeSessions(userId: string): Promise<number> {
@@ -286,9 +252,7 @@ export class CogneeSessionService {
     return flushKeys(this.redis!, pattern);
   }
 
-  // --------------------------------------------------------------------------
-  // PRIVATE HELPERS
-  // --------------------------------------------------------------------------
+  // -- Private Connection Helpers --
 
   private async _connect(): Promise<void> {
     if (!this.redis) return;
@@ -298,9 +262,10 @@ export class CogneeSessionService {
         this.connected = true;
         logger.info('[CogneeSession] Connected to Redis');
         return;
-      } catch (err: any) {
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
         logger.warn(
-          `[CogneeSession] Connection attempt ${attempt}/${CONNECT_MAX_RETRIES} failed: ${err.message}`,
+          `[CogneeSession] Connection attempt ${attempt}/${CONNECT_MAX_RETRIES} failed: ${msg}`,
         );
         if (attempt < CONNECT_MAX_RETRIES) {
           const delay = CONNECT_RETRY_BASE_MS * Math.pow(2, attempt - 1);
@@ -315,38 +280,6 @@ export class CogneeSessionService {
 
   private _ensureConnected(): boolean {
     return !!(this.connected && this.redis);
-  }
-
-  private _hashKey(input: string): string {
-    return createHash('sha256').update(input).digest('hex');
-  }
-
-  _serializeForCache(data: unknown): string | null {
-    try {
-      const json = JSON.stringify(data);
-      if (Buffer.byteLength(json, 'utf-8') > MAX_CACHE_VALUE_BYTES) {
-        logger.warn('[CogneeSession] Cache value exceeds 1MB limit, skipping');
-        return null;
-      }
-      return json;
-    } catch {
-      return null;
-    }
-  }
-
-  _deserializeFromCache<T>(data: string): T | null {
-    try {
-      return JSON.parse(data) as T;
-    } catch {
-      return null;
-    }
-  }
-
-  private async _findSessionKey(sessionId: string): Promise<string | null> {
-    if (!this.redis) return null;
-    const pattern = `${KEY_PREFIX}session:*:${sessionId}`;
-    const keys = await scanKeys(this.redis, pattern);
-    return keys.length > 0 ? keys[0] : null;
   }
 
   async disconnect(): Promise<void> {

@@ -87,15 +87,16 @@ export class SyncService {
             error: applyResult.error,
           });
         }
-      } catch (err: any) {
-        await logSync(userId, tenantId, op, 'error', err.message ?? 'Unknown error');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        await logSync(userId, tenantId, op, 'error', message);
         result.errors++;
         result.results.push({
           operation: op.operation,
           resourceType: op.resourceType,
           resourceId: op.resourceId,
           status: 'error',
-          error: err.message ?? 'Unknown error',
+          error: message,
         });
       }
     }
@@ -116,7 +117,10 @@ export class SyncService {
 
       if (!row) return 0;
 
-      const updatedAt = (row as any).updatedAt ?? (row as any).updated_at ?? (row as any).date;
+      const rowRecord = row as Record<string, unknown>;
+      const updatedAt = (rowRecord.updatedAt ?? rowRecord.updated_at ?? rowRecord.date) as
+        | string
+        | undefined;
       if (updatedAt) {
         return new Date(updatedAt).getTime();
       }
@@ -140,10 +144,11 @@ export class SyncService {
             error: `Unsupported resource type: ${op.resourceType}`,
           };
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       return {
         success: false,
-        error: err.message ?? 'Apply operation failed',
+        error: message,
       };
     }
   }
@@ -191,8 +196,8 @@ export class SyncService {
 
         await db
           .update(transactions)
-          .set(setValues as any)
-          .where(eq(transactions.id, op.resourceId!))
+          .set(setValues as typeof transactions.$inferInsert)
+          .where(eq(transactions.id, op.resourceId))
           .run();
 
         return { success: true, resourceId: op.resourceId, serverVersion: Date.now() };
@@ -201,7 +206,7 @@ export class SyncService {
       case 'delete': {
         if (!op.resourceId) return { success: false, error: 'resourceId required for delete' };
 
-        await db.delete(transactions).where(eq(transactions.id, op.resourceId!)).run();
+        await db.delete(transactions).where(eq(transactions.id, op.resourceId)).run();
 
         return { success: true, resourceId: op.resourceId };
       }
@@ -228,7 +233,7 @@ export class SyncService {
       .orderBy(desc(offlineSyncLog.createdAt))
       .all();
 
-    return (rows as any[]).map(rowToConflict);
+    return (rows as Record<string, unknown>[]).map(rowToConflict);
   }
 
   /**
@@ -248,19 +253,19 @@ export class SyncService {
       throw new Error(`Conflict ${conflictId} not found`);
     }
 
-    const row = conflict as any;
+    const row = conflict as Record<string, unknown>;
 
     if (resolution === 'client_wins') {
       const payload = parsePayload(row.payloadJson ?? row.payload_json);
       const op: SyncOperation = {
-        deviceId: row.deviceId ?? row.device_id,
+        deviceId: (row.deviceId ?? row.device_id) as string,
         operation: row.operation as 'create' | 'update' | 'delete',
-        resourceType: row.resourceType ?? row.resource_type,
-        resourceId: row.resourceId ?? row.resource_id,
+        resourceType: (row.resourceType ?? row.resource_type) as string,
+        resourceId: (row.resourceId ?? row.resource_id) as string | undefined,
         payload,
       };
 
-      const tenantId = row.tenantId ?? row.tenant_id;
+      const tenantId = (row.tenantId ?? row.tenant_id) as string;
       await this.applyOperation(op, tenantId);
     }
 
@@ -291,7 +296,7 @@ export class SyncService {
       .orderBy(desc(offlineSyncLog.createdAt))
       .all();
 
-    return (rows as any[]).slice(offset, offset + limit).map(rowToLogEntry);
+    return (rows as Record<string, unknown>[]).slice(offset, offset + limit).map(rowToLogEntry);
   }
 }
 

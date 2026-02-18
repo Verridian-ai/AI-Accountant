@@ -27,7 +27,7 @@ export interface FeedbackStats {
   accuracyRate: number;
   trend: 'improving' | 'declining' | 'stable';
   topCorrectedFields: Array<{ field: string; correctionCount: number }>;
-  recentFeedback: any[];
+  recentFeedback: Record<string, unknown>[];
 }
 
 export interface MemifyOptions {

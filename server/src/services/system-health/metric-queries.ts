@@ -5,13 +5,14 @@
 import { db } from '../../schema.js';
 import { systemMetrics, systemHealthChecks } from '../../db/admin-schema.js';
 import { sql, desc, gte, lte, eq, and } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { logger } from '../../lib/logger.js';
 import type { MetricFilter } from './types.js';
 import { CONFIG } from './types.js';
 
-export async function getMetrics(filters: MetricFilter = {}): Promise<any[]> {
+export async function getMetrics(filters: MetricFilter = {}): Promise<Record<string, unknown>[]> {
   try {
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
     if (filters.startTime) {
       conditions.push(gte(systemMetrics.observationTime, filters.startTime));
     }
@@ -50,7 +51,7 @@ export async function getMetrics(filters: MetricFilter = {}): Promise<any[]> {
         .from(systemMetrics);
 
       if (conditions.length > 0) {
-        return await (query as any)
+        return await query
           .where(and(...conditions))
           .groupBy(intervalExpr, systemMetrics.metricName)
           .orderBy(desc(intervalExpr))
@@ -58,7 +59,7 @@ export async function getMetrics(filters: MetricFilter = {}): Promise<any[]> {
           .all();
       }
 
-      return await (query as any)
+      return await query
         .groupBy(intervalExpr, systemMetrics.metricName)
         .orderBy(desc(intervalExpr))
         .limit(filters.limit ?? 500)
@@ -67,27 +68,31 @@ export async function getMetrics(filters: MetricFilter = {}): Promise<any[]> {
 
     const query = db.select().from(systemMetrics);
     if (conditions.length > 0) {
-      return await (query as any)
+      return await query
         .where(and(...conditions))
         .orderBy(desc(systemMetrics.observationTime))
         .limit(filters.limit ?? 200)
         .all();
     }
 
-    return await (query as any)
+    return await query
       .orderBy(desc(systemMetrics.observationTime))
       .limit(filters.limit ?? 200)
       .all();
-  } catch (err: any) {
-    logger.error('[SystemHealth] Failed to get metrics:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error('[SystemHealth] Failed to get metrics:', message);
     return [];
   }
 }
 
-export async function getHealthHistory(serviceName?: string, hours: number = 24): Promise<any[]> {
+export async function getHealthHistory(
+  serviceName?: string,
+  hours: number = 24,
+): Promise<Record<string, unknown>[]> {
   try {
     const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
-    const conditions: any[] = [gte(systemHealthChecks.checkedAt, cutoff)];
+    const conditions: SQL[] = [gte(systemHealthChecks.checkedAt, cutoff)];
     if (serviceName) {
       conditions.push(eq(systemHealthChecks.serviceName, serviceName));
     }
@@ -98,8 +103,9 @@ export async function getHealthHistory(serviceName?: string, hours: number = 24)
       .orderBy(desc(systemHealthChecks.checkedAt))
       .limit(500)
       .all();
-  } catch (err: any) {
-    logger.error('[SystemHealth] Failed to get health history:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error('[SystemHealth] Failed to get health history:', message);
     return [];
   }
 }
@@ -115,8 +121,9 @@ export async function cleanupOldData(): Promise<{ deletedMetrics: number; delete
     await db.delete(systemHealthChecks).where(lte(systemHealthChecks.checkedAt, cutoff)).run();
     deletedChecks = -1;
     logger.info(`[SystemHealth] Cleaned up data older than ${CONFIG.retentionHours}h`);
-  } catch (err: any) {
-    logger.error('[SystemHealth] Cleanup failed:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error('[SystemHealth] Cleanup failed:', message);
   }
 
   return { deletedMetrics, deletedChecks };

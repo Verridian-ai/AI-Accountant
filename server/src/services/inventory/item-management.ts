@@ -6,6 +6,7 @@
 
 import { db } from '../../schema.js';
 import { eq, and, like } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 import { ensureTables, getInventoryItems } from './schema-loader.js';
 import type { InventoryItem } from './types.js';
@@ -134,7 +135,7 @@ export async function listItems(
   const _inventoryItems = getInventoryItems();
   if (!_inventoryItems) return [];
 
-  const conditions: any[] = [eq(_inventoryItems.userId, userId)];
+  const conditions: SQL[] = [eq(_inventoryItems.userId, userId)];
 
   if (filters?.category) {
     conditions.push(eq(_inventoryItems.category, filters.category));

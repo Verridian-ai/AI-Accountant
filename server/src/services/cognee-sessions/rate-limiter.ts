@@ -54,8 +54,11 @@ export async function checkRateLimit(
       limit,
       resetAt: new Date(now + windowSeconds * 1000).toISOString(),
     };
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Rate limit check failed:', err.message);
+  } catch (err: unknown) {
+    logger.warn(
+      '[CogneeSession] Rate limit check failed:',
+      err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err),
+    );
     return defaultAllowed;
   }
 }
@@ -71,8 +74,11 @@ export async function getRateLimitStatus(
     const key = `${KEY_PREFIX}ratelimit:${operation}`;
     const count = await redis.zcard(key);
     return { count, limit: 0 };
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Rate limit status failed:', err.message);
+  } catch (err: unknown) {
+    logger.warn(
+      '[CogneeSession] Rate limit status failed:',
+      err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err),
+    );
     return null;
   }
 }

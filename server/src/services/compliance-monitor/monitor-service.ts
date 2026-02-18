@@ -1,5 +1,5 @@
 /**
- * Compliance Monitor Service (Wave 15) — Service Class
+ * Compliance Monitor Service (Wave 15) -- Service Class
  *
  * Tracks ATO compliance obligations, generates recurring schedules,
  * monitors deadlines, and assesses overall risk.
@@ -59,11 +59,13 @@ export class ComplianceMonitorService {
       throw new Error(`Invalid financial year format: ${financialYear}. Expected YYYY-YY.`);
     const startYear = parseInt(match[1], 10);
 
-    const schedules: any[] = await db
+    const scheduleRows = await db
       .select()
       .from(complianceSchedules)
       .where(and(eq(complianceSchedules.userId, userId), eq(complianceSchedules.enabled, 1)))
       .all();
+
+    const schedules = scheduleRows as Record<string, unknown>[];
 
     if (schedules.length === 0) {
       await createDefaultSchedules(userId, this.createSchedule.bind(this));
@@ -80,22 +82,22 @@ export class ComplianceMonitorService {
       );
 
       for (const period of periods) {
-        const existing: any = await db
+        const existingRow = await db
           .select()
           .from(complianceChecks)
           .where(
             and(
               eq(complianceChecks.userId, userId),
-              eq(complianceChecks.obligationType, schedule.obligationType),
+              eq(complianceChecks.obligationType, schedule.obligationType as string),
               eq(complianceChecks.period, period.label),
             ),
           )
           .get();
 
-        if (existing) continue;
+        if (existingRow) continue;
 
         const id = await this.createObligation(userId, {
-          obligationType: schedule.obligationType,
+          obligationType: schedule.obligationType as ObligationType,
           period: period.label,
           dueDate: period.dueDate,
         });
@@ -103,7 +105,7 @@ export class ComplianceMonitorService {
         created.push({
           id,
           userId,
-          obligationType: schedule.obligationType,
+          obligationType: schedule.obligationType as ObligationType,
           period: period.label,
           dueDate: period.dueDate,
           status: 'pending',
@@ -117,7 +119,7 @@ export class ComplianceMonitorService {
       await db
         .update(complianceSchedules)
         .set({ lastGenerated: new Date().toISOString() })
-        .where(eq(complianceSchedules.id, schedule.id))
+        .where(eq(complianceSchedules.id, schedule.id as string))
         .run();
     }
 
@@ -132,7 +134,7 @@ export class ComplianceMonitorService {
     const pastCutoff = new Date(now);
     pastCutoff.setDate(pastCutoff.getDate() - 90);
 
-    const rows: any[] = await db
+    const rawRows = await db
       .select()
       .from(complianceChecks)
       .where(
@@ -145,15 +147,17 @@ export class ComplianceMonitorService {
       .orderBy(complianceChecks.dueDate)
       .all();
 
+    const rows = rawRows as Record<string, unknown>[];
+
     const active = rows.filter(
-      (r: any) => r.status !== 'lodged' && r.status !== 'paid' && r.status !== 'exempt',
+      (r) => r.status !== 'lodged' && r.status !== 'paid' && r.status !== 'exempt',
     );
 
-    return active.map((row: any) => {
-      const dueDate = new Date(row.dueDate);
+    return active.map((row) => {
+      const dueDate = new Date(row.dueDate as string);
       const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / 86400000);
 
-      let status: ObligationStatus = row.status;
+      let status: ObligationStatus = row.status as ObligationStatus;
       if (daysUntilDue < 0 && status !== 'lodged' && status !== 'paid') status = 'overdue';
       else if (daysUntilDue <= 14 && status === 'pending') status = 'upcoming';
 
@@ -163,17 +167,17 @@ export class ComplianceMonitorService {
       else if (daysUntilDue <= 7) riskLevel = 'medium';
 
       return {
-        id: row.id,
-        userId: row.userId,
+        id: row.id as string,
+        userId: row.userId as string,
         obligationType: row.obligationType as ObligationType,
-        period: row.period,
-        dueDate: row.dueDate,
+        period: row.period as string,
+        dueDate: row.dueDate as string,
         status,
-        lodgedDate: row.lodgedDate ?? undefined,
-        amountDue: row.amountDue ?? undefined,
-        amountPaid: row.amountPaid ?? undefined,
-        referenceNumber: row.referenceNumber ?? undefined,
-        notes: row.notes ?? undefined,
+        lodgedDate: (row.lodgedDate as string) ?? undefined,
+        amountDue: (row.amountDue as number) ?? undefined,
+        amountPaid: (row.amountPaid as number) ?? undefined,
+        referenceNumber: (row.referenceNumber as string) ?? undefined,
+        notes: (row.notes as string) ?? undefined,
         riskLevel,
         daysUntilDue,
       };
@@ -200,19 +204,21 @@ export class ComplianceMonitorService {
   }
 
   async getSchedules(userId: string): Promise<ComplianceScheduleItem[]> {
-    const rows: any[] = await db
+    const rawRows = await db
       .select()
       .from(complianceSchedules)
       .where(eq(complianceSchedules.userId, userId))
       .all();
 
-    return rows.map((row: any) => ({
-      id: row.id,
-      userId: row.userId,
+    const rows = rawRows as Record<string, unknown>[];
+
+    return rows.map((row) => ({
+      id: row.id as string,
+      userId: row.userId as string,
       obligationType: row.obligationType as ObligationType,
       frequency: row.frequency as ScheduleFrequency,
-      baseDueDay: row.baseDueDay,
-      reminderDaysBefore: row.reminderDaysBefore,
+      baseDueDay: row.baseDueDay as number,
+      reminderDaysBefore: row.reminderDaysBefore as number,
       autoGenerate: Boolean(row.autoGenerate),
       enabled: Boolean(row.enabled),
     }));

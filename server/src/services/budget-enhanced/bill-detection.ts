@@ -39,7 +39,7 @@ export async function detectBillPatterns(userId: string): Promise<RecurringBill[
     .all();
 
   const merchantTxs = new Map<string, Array<{ date: string; amount: number }>>();
-  for (const row of rows as any[]) {
+  for (const row of rows as { merchant: string; date: string; amount: number }[]) {
     const merchant = row.merchant ?? 'Unknown';
     if (!merchantTxs.has(merchant)) merchantTxs.set(merchant, []);
     merchantTxs.get(merchant)!.push({ date: row.date, amount: Math.abs(row.amount) });

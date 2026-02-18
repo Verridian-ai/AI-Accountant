@@ -29,6 +29,31 @@ import {
   sleep,
 } from './ai-provider.js';
 
+// Typed interfaces for parsed AI JSON responses
+interface ParsedArticle {
+  title?: string;
+  url?: string;
+  source?: string;
+  snippet?: string;
+  publishedDate?: string | null;
+}
+
+interface ParsedSector {
+  sector?: string;
+  impact?: string;
+  reason?: string;
+}
+
+interface ParsedTopic {
+  topic?: string;
+  trendScore?: number;
+  recentArticles?: number;
+}
+
+function isValidImpact(value: string): value is 'positive' | 'negative' | 'neutral' {
+  return ['positive', 'negative', 'neutral'].includes(value);
+}
+
 // In-memory cache (supplements DB cache for speed)
 const memoryCache = new Map<string, { data: SentimentSnapshot; expiresAt: number }>();
 
@@ -65,7 +90,7 @@ export class SentimentAnalysisService {
       return {
         topic,
         query,
-        articles: (parsed.articles || []).map((a: any) => ({
+        articles: (parsed.articles || []).map((a: ParsedArticle) => ({
           title: a.title || 'Unknown',
           url: a.url || '',
           source: a.source || 'Unknown',
@@ -77,13 +102,14 @@ export class SentimentAnalysisService {
         relatedTopics: parsed.relatedTopics || [],
         fetchedAt: now,
       };
-    } catch (err: any) {
-      logger.error(`[Sentiment] Research failed for "${topic}":`, err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`[Sentiment] Research failed for "${topic}":`, message);
       return {
         topic,
         query,
         articles: [],
-        summary: `Research unavailable: ${err.message}`,
+        summary: `Research unavailable: ${message}`,
         keyFindings: [],
         relatedTopics: [],
         fetchedAt: now,
@@ -141,8 +167,9 @@ export class SentimentAnalysisService {
         topNegative: (parsed.topNegative || []).slice(0, 3),
         summary: parsed.summary || '',
       };
-    } catch (err: any) {
-      logger.error(`[Sentiment] Analysis failed for "${topic}":`, err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`[Sentiment] Analysis failed for "${topic}":`, message);
       return {
         sentimentScore: 0,
         sentimentLabel: 'neutral',
@@ -152,7 +179,7 @@ export class SentimentAnalysisService {
         neutralCount: 0,
         topPositive: [],
         topNegative: [],
-        summary: `Sentiment analysis unavailable: ${err.message}`,
+        summary: `Sentiment analysis unavailable: ${message}`,
       };
     }
   }
@@ -213,8 +240,9 @@ export class SentimentAnalysisService {
       try {
         const snapshot = await this.getSentimentSnapshot(topic);
         results.push(snapshot);
-      } catch (err: any) {
-        logger.error(`[Sentiment] Batch: skipping "${topic}" — ${err.message}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        logger.error(`[Sentiment] Batch: skipping "${topic}" — ${message}`);
       }
       await sleep(500);
     }
@@ -241,21 +269,25 @@ export class SentimentAnalysisService {
       return {
         event,
         impactSummary: parsed.impactSummary || '',
-        affectedSectors: (parsed.affectedSectors || []).map((s: any) => ({
-          sector: s.sector || 'Unknown',
-          impact: ['positive', 'negative', 'neutral'].includes(s.impact) ? s.impact : 'neutral',
-          reason: s.reason || '',
-        })),
+        affectedSectors: (parsed.affectedSectors || []).map((s: ParsedSector) => {
+          const impactVal = s.impact ?? '';
+          return {
+            sector: s.sector || 'Unknown',
+            impact: isValidImpact(impactVal) ? impactVal : ('neutral' as const),
+            reason: s.reason || '',
+          };
+        }),
         shortTermOutlook: parsed.shortTermOutlook || '',
         longTermOutlook: parsed.longTermOutlook || '',
         confidence: Math.max(0, Math.min(1, parsed.confidence ?? 0.5)),
         sources: parsed.sources || [],
       };
-    } catch (err: any) {
-      logger.error(`[Sentiment] Impact analysis failed:`, err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`[Sentiment] Impact analysis failed:`, message);
       return {
         event,
-        impactSummary: `Impact analysis unavailable: ${err.message}`,
+        impactSummary: `Impact analysis unavailable: ${message}`,
         affectedSectors: [],
         shortTermOutlook: '',
         longTermOutlook: '',
@@ -271,15 +303,14 @@ export class SentimentAnalysisService {
     try {
       const response = await this.callAI(systemPrompt, userPrompt);
       const parsed = safeParseJSON(response, { topics: [] });
-      return (parsed.topics || [])
-        .slice(0, 10)
-        .map((t: any) => ({
-          topic: t.topic || 'Unknown',
-          trendScore: Math.max(0, Math.min(1, t.trendScore ?? 0.5)),
-          recentArticles: Math.max(0, Math.round(t.recentArticles ?? 0)),
-        }));
-    } catch (err: any) {
-      logger.error(`[Sentiment] Trending topics failed:`, err.message);
+      return (parsed.topics || []).slice(0, 10).map((t: ParsedTopic) => ({
+        topic: t.topic || 'Unknown',
+        trendScore: Math.max(0, Math.min(1, t.trendScore ?? 0.5)),
+        recentArticles: Math.max(0, Math.round(t.recentArticles ?? 0)),
+      }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`[Sentiment] Trending topics failed:`, message);
       return DEFAULT_FINANCIAL_TOPICS.map((topic, i) => ({
         topic,
         trendScore: 1 - i * 0.1,

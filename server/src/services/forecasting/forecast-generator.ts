@@ -102,7 +102,7 @@ export async function generateForecast(scenarioId: string) {
   // Generate forecast periods
   const forecastStart = new Date(scenario.basePeriodEnd);
   forecastStart.setMonth(forecastStart.getMonth() + 1);
-  const generatedPeriods: any[] = [];
+  const generatedPeriods: Record<string, unknown>[] = [];
 
   // Clear existing forecast periods for this scenario
   await db.delete(forecastPeriods).where(eq(forecastPeriods.scenarioId, scenarioId));

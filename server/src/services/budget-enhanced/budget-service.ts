@@ -71,7 +71,7 @@ export class EnhancedBudgetService {
       .all();
 
     const categoryMonthly = new Map<string, number[]>();
-    for (const row of rows as any[]) {
+    for (const row of rows as { category: string; month: string; total: number }[]) {
       const cat = row.category ?? 'Uncategorized';
       if (!categoryMonthly.has(cat)) categoryMonthly.set(cat, []);
       categoryMonthly.get(cat)!.push(Number(row.total));

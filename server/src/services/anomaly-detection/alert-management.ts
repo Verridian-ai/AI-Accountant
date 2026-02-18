@@ -6,11 +6,12 @@
 
 import { db, anomalyAlerts } from '../../schema.js';
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
-import type { AlertFilters, AlertStats } from './types.js';
+import type { SQL } from 'drizzle-orm';
+import type { AlertFilters, AlertStats, StoredAlert } from './types.js';
 
 export class AlertManagement {
-  async getAlerts(userId: string, filters?: AlertFilters): Promise<any[]> {
-    const conditions: any[] = [eq(anomalyAlerts.userId, userId)];
+  async getAlerts(userId: string, filters?: AlertFilters): Promise<StoredAlert[]> {
+    const conditions: SQL[] = [eq(anomalyAlerts.userId, userId)];
     if (filters?.status) conditions.push(eq(anomalyAlerts.status, filters.status));
     if (filters?.severity) conditions.push(eq(anomalyAlerts.severity, filters.severity));
     if (filters?.alertType) conditions.push(eq(anomalyAlerts.alertType, filters.alertType));
@@ -49,7 +50,7 @@ export class AlertManagement {
   }
 
   async getAlertStats(userId: string): Promise<AlertStats> {
-    const allAlerts: any[] = await db
+    const allAlerts: StoredAlert[] = await db
       .select()
       .from(anomalyAlerts)
       .where(eq(anomalyAlerts.userId, userId))
@@ -69,9 +70,9 @@ export class AlertManagement {
     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
     const thirtyStr = thirtyDaysAgo.toISOString();
     const sixtyStr = sixtyDaysAgo.toISOString();
-    const recentCount = allAlerts.filter((a: any) => a.createdAt >= thirtyStr).length;
+    const recentCount = allAlerts.filter((a: StoredAlert) => a.createdAt >= thirtyStr).length;
     const priorCount = allAlerts.filter(
-      (a: any) => a.createdAt >= sixtyStr && a.createdAt < thirtyStr,
+      (a: StoredAlert) => a.createdAt >= sixtyStr && a.createdAt < thirtyStr,
     ).length;
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
     if (recentCount > priorCount * 1.2) trend = 'increasing';

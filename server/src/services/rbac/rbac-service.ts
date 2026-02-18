@@ -1,20 +1,10 @@
 /**
- * RBAC Service
- * Role-Based Access Control for multi-tenant permission checking,
- * role assignment, permission matrix management, and Hono middleware.
- *
- * Defined locally (no back-import from parent monolith).
+ * RBAC Service — Thin orchestrator
+ * Delegates all logic to sub-modules.
  */
 
-import { db, tenantMembers, rolePermissions, permissions } from '../../schema.js';
-import { eq, and } from 'drizzle-orm';
-import type { Context, Next } from 'hono';
 import type { TenantRole, TenantMember } from '../tenant-types.js';
-import { TENANT_ROLES } from '../tenant-types.js';
-import { ForbiddenError } from '../rbac-errors.js';
-import { PermissionCache } from '../rbac-cache.js';
-import { seedDefaultPermissions } from '../tenant-defaults.js';
-import crypto from 'crypto';
+import { PermissionCache } from './cache.js';
 import {
   ROLE_LEVEL,
   getRoleForUser,
@@ -22,10 +12,15 @@ import {
   checkPermission as checkPermissionFn,
   requirePermission as requirePermissionFn,
 } from './permission-checking.js';
+import { createPermissionMiddlewareImpl, createRoleMiddlewareImpl } from './rbac-middleware.js';
+import { assignRoleImpl, getUsersWithRoleImpl } from './rbac-role-management.js';
+import {
+  getPermissionMatrixImpl,
+  updateRolePermissionsImpl,
+  resetToDefaultsImpl,
+} from './rbac-permissions.js';
 
-// ============================================================================
-// RBAC SERVICE
-// ============================================================================
+export { ROLE_LEVEL };
 
 export class RBACService {
   private cache: PermissionCache;
@@ -34,22 +29,10 @@ export class RBACService {
     this.cache = new PermissionCache(1000, 60);
   }
 
-  // --------------------------------------------------------------------------
-  // PERMISSION CHECKING
-  // --------------------------------------------------------------------------
-
-  /**
-   * Check if a user has a specific permission in a tenant.
-   * Uses cached permissions when available.
-   */
   async checkPermission(tenantId: string, userId: string, permission: string): Promise<boolean> {
     return checkPermissionFn(this.cache, tenantId, userId, permission);
   }
 
-  /**
-   * Batch-check multiple permissions for a user in a tenant.
-   * Returns a map of permission -> granted boolean.
-   */
   async checkPermissions(
     tenantId: string,
     userId: string,
@@ -57,7 +40,6 @@ export class RBACService {
   ): Promise<Record<string, boolean>> {
     const perms = await getCachedPermissions(this.cache, tenantId, userId);
     const permSet = new Set(perms);
-
     const result: Record<string, boolean> = {};
     for (const p of permissionNames) {
       result[p] = permSet.has(p);
@@ -65,329 +47,67 @@ export class RBACService {
     return result;
   }
 
-  /**
-   * Require a specific permission -- throws ForbiddenError if not granted.
-   */
   async requirePermission(tenantId: string, userId: string, permission: string): Promise<void> {
     return requirePermissionFn(this.cache, tenantId, userId, permission);
   }
 
-  /**
-   * Get all permission names for a user's role in a tenant.
-   */
   async getUserPermissions(tenantId: string, userId: string): Promise<string[]> {
     return getCachedPermissions(this.cache, tenantId, userId);
   }
 
-  // --------------------------------------------------------------------------
-  // ROLE ASSIGNMENT
-  // --------------------------------------------------------------------------
-
-  /**
-   * Assign a role to a user in a tenant.
-   * Validates that the assigner has 'members.manage' permission and
-   * only owners can create other owners.
-   */
   async assignRole(
     tenantId: string,
     userId: string,
     role: TenantRole,
     assignedBy: string,
   ): Promise<void> {
-    if (!TENANT_ROLES.includes(role)) {
-      throw new Error(`Invalid role: ${role}`);
-    }
-
-    // Check assigner has permission
-    const hasManagePermission = await this.checkPermission(tenantId, assignedBy, 'members.manage');
-    if (!hasManagePermission) {
-      throw new ForbiddenError('members.manage', tenantId, assignedBy);
-    }
-
-    // Only owners can assign the owner role
-    if (role === 'owner') {
-      const assignerRole = await this.getRoleForUser(tenantId, assignedBy);
-      if (assignerRole !== 'owner') {
-        throw new Error('Only owners can assign the owner role');
-      }
-    }
-
-    // Prevent demoting the last owner
-    const currentRole = await this.getRoleForUser(tenantId, userId);
-    if (currentRole === 'owner' && role !== 'owner') {
-      const owners = await this.getUsersWithRole(tenantId, 'owner');
-      if (owners.length <= 1) {
-        throw new Error('Cannot demote the last owner. Assign another owner first.');
-      }
-    }
-
-    // Update the role
-    const now = new Date().toISOString();
-    await db
-      .update(tenantMembers)
-      .set({
-        role,
-        updatedAt: now,
-      })
-      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
-      .run();
-
-    // Invalidate cache for affected user
-    this.cache.invalidate(tenantId, userId);
+    return assignRoleImpl(this.cache, tenantId, userId, role, assignedBy);
   }
 
-  /**
-   * Get a user's role in a tenant.
-   */
   async getRoleForUser(tenantId: string, userId: string): Promise<TenantRole | null> {
     return getRoleForUser(tenantId, userId);
   }
 
-  /**
-   * List all members with a specific role in a tenant.
-   */
   async getUsersWithRole(tenantId: string, role: TenantRole): Promise<TenantMember[]> {
-    const rows = await db
-      .select()
-      .from(tenantMembers)
-      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.role, role)))
-      .all();
-
-    return (rows as Array<Record<string, unknown>>).map((row: Record<string, unknown>) => ({
-      id: row.id as string,
-      tenantId: (row.tenantId ?? row.tenant_id) as string,
-      userId: (row.userId ?? row.user_id) as string,
-      role: (row.role ?? 'viewer') as TenantRole,
-      displayName: (row.displayName ?? row.display_name ?? undefined) as string | undefined,
-      isPrimaryContact: Boolean(row.isPrimaryContact ?? row.is_primary_contact ?? false),
-      joinedAt: (row.joinedAt ?? row.joined_at ?? '') as string,
-      lastActiveAt: (row.lastActiveAt ?? row.last_active_at ?? undefined) as string | undefined,
-    }));
+    return getUsersWithRoleImpl(tenantId, role);
   }
 
-  // --------------------------------------------------------------------------
-  // PERMISSION MATRIX
-  // --------------------------------------------------------------------------
-
-  /**
-   * Get the complete role-permission matrix for a tenant.
-   * Returns all role -> permission[] mappings.
-   */
   async getPermissionMatrix(tenantId: string): Promise<Record<TenantRole, string[]>> {
-    const matrix: Record<string, string[]> = {};
-    for (const role of TENANT_ROLES) {
-      matrix[role] = [];
-    }
-
-    // Fetch all role_permissions for this tenant
-    const rps = await db
-      .select()
-      .from(rolePermissions)
-      .where(eq(rolePermissions.tenantId, tenantId))
-      .all();
-
-    // Fetch all permissions to map IDs to names
-    const allPerms = await db.select().from(permissions).all();
-    const permMap = new Map<string, string>();
-    for (const p of allPerms as Array<Record<string, unknown>>) {
-      permMap.set(p.id as string, p.name as string);
-    }
-
-    for (const rp of rps as Array<Record<string, unknown>>) {
-      const role = rp.role as string;
-      const permId = (rp.permissionId ?? rp.permission_id) as string;
-      const permName = permMap.get(permId);
-      if (permName && matrix[role]) {
-        matrix[role].push(permName);
-      }
-    }
-
-    return matrix as Record<TenantRole, string[]>;
+    return getPermissionMatrixImpl(tenantId);
   }
 
-  /**
-   * Replace all permissions for a specific role in a tenant.
-   * Only owners can modify role permissions.
-   */
   async updateRolePermissions(
     tenantId: string,
     role: TenantRole,
     permissionNames: string[],
     updatedBy: string,
   ): Promise<void> {
-    // Only owners can modify permissions
-    const updaterRole = await this.getRoleForUser(tenantId, updatedBy);
-    if (updaterRole !== 'owner') {
-      throw new Error('Only tenant owners can modify role permissions');
-    }
-
-    // Cannot modify the owner role's permissions (always has all)
-    if (role === 'owner') {
-      throw new Error('Cannot modify owner permissions -- owners always have full access');
-    }
-
-    // Fetch all permissions to validate names and get IDs
-    const allPerms = await db.select().from(permissions).all();
-    const permByName = new Map<string, string>();
-    for (const p of allPerms as Array<Record<string, unknown>>) {
-      permByName.set(p.name as string, p.id as string);
-    }
-
-    // Validate all permission names
-    for (const name of permissionNames) {
-      if (!permByName.has(name)) {
-        throw new Error(`Unknown permission: ${name}`);
-      }
-    }
-
-    // Delete existing role_permissions for this role in this tenant
-    await db
-      .delete(rolePermissions)
-      .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
-      .run();
-
-    // Insert new permissions
-    for (const name of permissionNames) {
-      const permId = permByName.get(name);
-      if (!permId) continue;
-
-      await db
-        .insert(rolePermissions)
-        .values({
-          id: crypto.randomUUID(),
-          tenantId,
-          role,
-          permissionId: permId,
-          grantedBy: updatedBy,
-        })
-        .run();
-    }
-
-    // Invalidate entire tenant cache since permissions changed
-    this.cache.invalidateTenant(tenantId);
+    return updateRolePermissionsImpl(this.cache, tenantId, role, permissionNames, updatedBy);
   }
 
-  /**
-   * Reset all role-permissions for a tenant back to the defaults.
-   */
   async resetToDefaults(tenantId: string): Promise<void> {
-    // Delete all existing role_permissions for this tenant
-    await db.delete(rolePermissions).where(eq(rolePermissions.tenantId, tenantId)).run();
-
-    // Re-seed defaults
-    await seedDefaultPermissions(tenantId);
-
-    // Invalidate entire tenant cache
-    this.cache.invalidateTenant(tenantId);
+    return resetToDefaultsImpl(this.cache, tenantId);
   }
 
-  // --------------------------------------------------------------------------
-  // MIDDLEWARE HELPERS
-  // --------------------------------------------------------------------------
-
-  /**
-   * Create a Hono middleware that requires a specific permission.
-   * Extracts tenantId from `X-Tenant-Id` header and userId from context.
-   */
   createPermissionMiddleware(permission: string) {
-    return async (c: Context, next: Next) => {
-      const tenantId = c.req.header('X-Tenant-Id');
-      const userId = c.get('userId') as string | undefined;
-
-      if (!tenantId) {
-        return c.json({ error: 'X-Tenant-Id header is required', code: 400 }, 400);
-      }
-      if (!userId) {
-        return c.json({ error: 'Authentication required', code: 401 }, 401);
-      }
-
-      try {
-        await this.requirePermission(tenantId, userId, permission);
-        return next();
-      } catch (err) {
-        if (err instanceof ForbiddenError) {
-          return c.json(
-            {
-              error: `Forbidden: missing permission '${permission}'`,
-              code: 403,
-              permission,
-            },
-            403,
-          );
-        }
-        throw err;
-      }
-    };
+    return createPermissionMiddlewareImpl(this.cache, permission);
   }
 
-  /**
-   * Create a Hono middleware that requires a minimum role level.
-   * Role hierarchy: owner > admin > accountant > bookkeeper > viewer
-   */
   createRoleMiddleware(minRole: TenantRole) {
-    const requiredLevel = ROLE_LEVEL[minRole];
-
-    return async (c: Context, next: Next) => {
-      const tenantId = c.req.header('X-Tenant-Id');
-      const userId = c.get('userId') as string | undefined;
-
-      if (!tenantId) {
-        return c.json({ error: 'X-Tenant-Id header is required', code: 400 }, 400);
-      }
-      if (!userId) {
-        return c.json({ error: 'Authentication required', code: 401 }, 401);
-      }
-
-      const userRole = await this.getRoleForUser(tenantId, userId);
-      if (!userRole) {
-        return c.json({ error: 'Not a member of this tenant', code: 403 }, 403);
-      }
-
-      const userLevel = ROLE_LEVEL[userRole] ?? 0;
-      if (userLevel < requiredLevel) {
-        return c.json(
-          {
-            error: `Insufficient role: requires '${minRole}', you have '${userRole}'`,
-            code: 403,
-            requiredRole: minRole,
-            actualRole: userRole,
-          },
-          403,
-        );
-      }
-
-      return next();
-    };
+    return createRoleMiddlewareImpl(this.cache, minRole);
   }
 
-  // --------------------------------------------------------------------------
-  // CACHE MANAGEMENT (public API for external invalidation)
-  // --------------------------------------------------------------------------
-
-  /**
-   * Invalidate cached permissions for a specific user in a tenant.
-   * Should be called when a user's role changes or they are removed.
-   */
   invalidateUserCache(tenantId: string, userId: string): void {
     this.cache.invalidate(tenantId, userId);
   }
 
-  /**
-   * Invalidate all cached permissions for a tenant.
-   * Should be called when role-permission mappings change.
-   */
   invalidateTenantCache(tenantId: string): void {
     this.cache.invalidateTenant(tenantId);
   }
 
-  /** Clear the entire permission cache. */
   clearCache(): void {
     this.cache.clear();
   }
 }
-
-// ============================================================================
-// SINGLETON EXPORT
-// ============================================================================
 
 export const rbacService = new RBACService();

@@ -57,8 +57,7 @@ describe('AccountRepository', () => {
 
   describe('create', () => {
     it('should insert account', async () => {
-      // @ts-expect-error -- testing mock
-      await accountRepository.create({ id: '1' });
+      await accountRepository.create({ id: '1' } as Parameters<typeof accountRepository.create>[0]);
       expect(db.insert).toHaveBeenCalled();
       expect(db.values).toHaveBeenCalled();
     });

@@ -53,10 +53,10 @@ export async function getBankDetails(employeeId: string): Promise<any[]> {
     .select()
     .from(employeeBankDetails)
     .where(eq(employeeBankDetails.employeeId, employeeId));
-  return rows.map((r: any) => ({
+  return (rows as Record<string, unknown>[]).map((r: Record<string, unknown>) => ({
     ...r,
-    bsb: maskBSB(decryptField(r.bsb)),
-    accountNumber: maskAccountNumber(decryptField(r.accountNumber)),
+    bsb: maskBSB(decryptField(r.bsb as string)),
+    accountNumber: maskAccountNumber(decryptField(r.accountNumber as string)),
   }));
 }
 
@@ -69,10 +69,10 @@ export async function getBankDetailsInternal(employeeId: string): Promise<any[]>
     .select()
     .from(employeeBankDetails)
     .where(eq(employeeBankDetails.employeeId, employeeId));
-  return rows.map((r: any) => ({
+  return (rows as Record<string, unknown>[]).map((r: Record<string, unknown>) => ({
     ...r,
-    bsb: decryptField(r.bsb),
-    accountNumber: decryptField(r.accountNumber),
+    bsb: decryptField(r.bsb as string),
+    accountNumber: decryptField(r.accountNumber as string),
   }));
 }
 

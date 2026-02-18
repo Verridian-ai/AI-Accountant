@@ -48,7 +48,7 @@ export async function getConsolidationHistory(
       .select({ count: sql<number>`COUNT(*)` })
       .from(consolidationSnapshotLines)
       .where(eq(consolidationSnapshotLines.snapshotId, snap.id))
-      .get()) as any;
+      .get()) as { count: number } | undefined;
 
     enriched.push({
       ...snap,
@@ -129,7 +129,7 @@ export async function getSnapshotDetail(
   const entityIds = [...new Set(regularLines.map((l) => l.entityId))];
   const entityNameMap = new Map<string, string>();
   for (const eid of entityIds) {
-    const entity = (await db.select().from(entities).where(eq(entities.id, eid)).get()) as any;
+    const entity = await db.select().from(entities).where(eq(entities.id, eid)).get();
     if (entity) {
       entityNameMap.set(eid, entity.name);
     }

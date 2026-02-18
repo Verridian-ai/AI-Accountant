@@ -88,11 +88,11 @@ export async function fetchWithRetry(
       }
 
       return await response.json();
-    } catch (err: any) {
+    } catch (err: unknown) {
       clearTimeout(timeout);
-      lastError = err;
+      lastError = err instanceof Error ? err : new Error(String(err));
 
-      if (err.name === 'AbortError') {
+      if ((err as { name?: string }).name === 'AbortError') {
         logger.warn(`[CDR] Timeout for ${holderId} (attempt ${attempt + 1})`);
       }
 

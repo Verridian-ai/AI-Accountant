@@ -15,6 +15,30 @@ import {
 import { eq, and, asc } from 'drizzle-orm';
 import { type POLineWithProgress, type POReceiptDetail, type PODetail } from './types.js';
 
+interface POLineRow {
+  id: string;
+  purchaseOrderId: string;
+  description: string;
+  quantity: number | string;
+  unitPrice: number | string;
+  amount: number | string;
+  quantityReceived: number | string;
+}
+
+interface POReceiptLineRow {
+  id: string;
+  receiptId: string;
+  poLineId: string;
+  quantityReceived: number | string;
+}
+
+interface BillSummaryRow {
+  id: string;
+  billNumber: string | null;
+  totalAmount: number | string | null;
+  status: string;
+}
+
 /**
  * Get a single PO with full details: line items, receipts, linked bills,
  * and overall receiving progress.
@@ -49,7 +73,7 @@ export async function getPurchaseOrder(poId: string): Promise<PODetail> {
   // Fetch line items
   const lines = await db.select().from(poLines).where(eq(poLines.purchaseOrderId, poId)).all();
 
-  const lineItems: POLineWithProgress[] = lines.map((l: any) => {
+  const lineItems: POLineWithProgress[] = lines.map((l: POLineRow) => {
     const qty = Number(l.quantity) || 0;
     const qtyReceived = Number(l.quantityReceived) || 0;
     return {
@@ -87,7 +111,7 @@ export async function getPurchaseOrder(poId: string): Promise<PODetail> {
       receivedBy: receipt.receivedBy ?? null,
       notes: receipt.notes ?? null,
       createdAt: String(receipt.createdAt),
-      lines: rLines.map((rl: any) => ({
+      lines: rLines.map((rl: POReceiptLineRow) => ({
         id: rl.id,
         receiptId: rl.receiptId,
         poLineId: rl.poLineId,
@@ -105,12 +129,10 @@ export async function getPurchaseOrder(poId: string): Promise<PODetail> {
       status: bills.status,
     })
     .from(bills)
-    .where(
-      and(eq(bills.supplierId, (row as any).supplierId), eq(bills.userId, (row as any).userId)),
-    )
+    .where(and(eq(bills.supplierId, row.supplierId), eq(bills.userId, row.userId)))
     .all();
 
-  const linkedBills = linkedBillRows.map((b: any) => ({
+  const linkedBills = linkedBillRows.map((b: BillSummaryRow) => ({
     id: b.id,
     billNumber: b.billNumber ?? '',
     totalCents: Number(b.totalAmount) || 0,
@@ -128,20 +150,20 @@ export async function getPurchaseOrder(poId: string): Promise<PODetail> {
     totalOrdered > 0 ? Math.round((totalReceived / totalOrdered) * 100) : 0;
 
   return {
-    id: (row as any).id,
-    userId: (row as any).userId,
-    supplierId: (row as any).supplierId,
-    poNumber: (row as any).poNumber,
-    status: (row as any).status,
-    issueDate: (row as any).issueDate,
-    expectedDate: (row as any).expectedDate ?? null,
-    subtotal: Number((row as any).subtotal) || 0,
-    gstAmount: Number((row as any).gstAmount) || 0,
-    totalAmount: Number((row as any).totalAmount) || 0,
-    notes: (row as any).notes ?? null,
-    createdAt: String((row as any).createdAt),
-    updatedAt: String((row as any).updatedAt),
-    supplierName: (row as any).supplierName ?? 'Unknown Supplier',
+    id: row.id,
+    userId: row.userId,
+    supplierId: row.supplierId,
+    poNumber: row.poNumber,
+    status: row.status,
+    issueDate: row.issueDate,
+    expectedDate: row.expectedDate ?? null,
+    subtotal: Number(row.subtotal) || 0,
+    gstAmount: Number(row.gstAmount) || 0,
+    totalAmount: Number(row.totalAmount) || 0,
+    notes: row.notes ?? null,
+    createdAt: String(row.createdAt),
+    updatedAt: String(row.updatedAt),
+    supplierName: row.supplierName ?? 'Unknown Supplier',
     lineItems,
     receipts,
     linkedBills,

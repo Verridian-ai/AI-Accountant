@@ -63,25 +63,28 @@ export function deduplicateInsights(insights: CrossModuleInsight[]): CrossModule
 }
 
 /** Convert a raw DB row into a CrossModuleInsight object. */
-export function rowToInsight(r: any): CrossModuleInsight {
+export function rowToInsight(r: Record<string, unknown>): CrossModuleInsight {
   return {
-    id: r.id,
-    userId: r.userId ?? r.user_id,
-    insightType: r.insightType ?? r.insight_type,
-    title: r.title,
-    description: r.description,
-    severity: r.severity,
-    sourceModules: parseJson(r.sourceModules ?? r.source_modules, []),
-    relatedEntities: parseJson(r.relatedEntities ?? r.related_entities, []),
-    timeRangeStart: r.timeRangeStart ?? r.time_range_start,
-    timeRangeEnd: r.timeRangeEnd ?? r.time_range_end,
+    id: r.id as string,
+    userId: (r.userId ?? r.user_id) as string,
+    insightType: (r.insightType ?? r.insight_type) as string,
+    title: r.title as string,
+    description: r.description as string,
+    severity: r.severity as CrossModuleInsight['severity'],
+    sourceModules: parseJson(r.sourceModules ?? r.source_modules, []) as string[],
+    relatedEntities: parseJson(
+      r.relatedEntities ?? r.related_entities,
+      [],
+    ) as CrossModuleInsight['relatedEntities'],
+    timeRangeStart: (r.timeRangeStart ?? r.time_range_start) as string | undefined,
+    timeRangeEnd: (r.timeRangeEnd ?? r.time_range_end) as string | undefined,
     confidence: Number(r.confidence ?? 0.5),
-    evidence: parseJson(r.evidence, {}),
-    recommendedAction: r.recommendedAction ?? r.recommended_action,
-    status: r.status,
-    actedOnAt: r.actedOnAt ?? r.acted_on_at,
-    createdAt: r.createdAt ?? r.created_at,
-    expiresAt: r.expiresAt ?? r.expires_at,
+    evidence: parseJson(r.evidence, {}) as Record<string, unknown>,
+    recommendedAction: (r.recommendedAction ?? r.recommended_action) as string | undefined,
+    status: r.status as CrossModuleInsight['status'],
+    actedOnAt: (r.actedOnAt ?? r.acted_on_at) as string | undefined,
+    createdAt: (r.createdAt ?? r.created_at) as string,
+    expiresAt: (r.expiresAt ?? r.expires_at) as string | undefined,
   };
 }
 

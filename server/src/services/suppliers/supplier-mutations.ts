@@ -6,6 +6,7 @@
  */
 
 import { db } from '../../schema.js';
+import type { DrizzleTable } from '../../db/queries/types.js';
 import { eq, and, sql, or } from 'drizzle-orm';
 import crypto from 'crypto';
 import { validateABN, normalizeABN } from '../../utils/abn.js';
@@ -16,18 +17,20 @@ import { encrypt } from './encryption.js';
 
 // ---------------------------------------------------------------------------
 // Lazy table references (shared with supplier-service.ts)
+// Note: These are intentionally untyped — they hold Drizzle table objects
+// whose column accessors require dynamic property access.
 // ---------------------------------------------------------------------------
 
-let _suppliers: any;
-let _bills: any;
+let _suppliers: DrizzleTable | undefined;
+let _bills: DrizzleTable | undefined;
 let _tablesLoaded = false;
 
 async function ensureTables() {
   if (_tablesLoaded) return;
   try {
-    const schema = await import('../../schema.js');
-    _suppliers = (schema as any).suppliers;
-    _bills = (schema as any).bills;
+    const schema: Record<string, unknown> = await import('../../schema.js');
+    _suppliers = schema.suppliers as DrizzleTable;
+    _bills = schema.bills as DrizzleTable;
     _tablesLoaded = true;
   } catch {
     _tablesLoaded = false;
@@ -85,10 +88,28 @@ export function validateBSB(bsb: string): void {
 // Create Supplier
 // ---------------------------------------------------------------------------
 
+interface SupplierRecord {
+  id: string;
+  userId: string;
+  businessName: string;
+  contactName: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  abn: string | null;
+  paymentTermsDays: number;
+  bankBsb: string | null;
+  bankAccountNumber: string | null;
+  bankAccountName: string | null;
+  notes: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export async function createSupplierRecord(
   userId: string,
   data: CreateSupplierInput,
-  rowToSupplier: (row: any, maskBank: boolean) => Supplier,
+  rowToSupplier: (row: Record<string, unknown>, maskBank: boolean) => Supplier,
 ): Promise<Supplier> {
   await ensureTables();
 
@@ -111,7 +132,7 @@ export async function createSupplierRecord(
 
   const encryptedAccountNumber = data.bankAccountNumber ? encrypt(data.bankAccountNumber) : null;
 
-  const record: any = {
+  const record: SupplierRecord = {
     id,
     userId,
     businessName: data.businessName,
@@ -133,7 +154,7 @@ export async function createSupplierRecord(
     await db.insert(_suppliers).values(record).run();
   }
 
-  return rowToSupplier(record, true);
+  return rowToSupplier(record as unknown as Record<string, unknown>, true);
 }
 
 // ---------------------------------------------------------------------------
@@ -143,7 +164,7 @@ export async function createSupplierRecord(
 export async function updateSupplierRecord(
   supplierId: string,
   data: UpdateSupplierInput,
-  rowToSupplier: (row: any, maskBank: boolean) => Supplier,
+  rowToSupplier: (row: Record<string, unknown>, maskBank: boolean) => Supplier,
 ): Promise<Supplier> {
   await ensureTables();
   if (!_suppliers) throw new Error('Suppliers table not available');
@@ -165,7 +186,7 @@ export async function updateSupplierRecord(
     validateBSB(data.bankBsb);
   }
 
-  const updates: any = {};
+  const updates: Record<string, unknown> = {};
 
   if (data.businessName !== undefined) updates.businessName = data.businessName;
   if (data.contactName !== undefined) updates.contactName = data.contactName;

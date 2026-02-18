@@ -330,7 +330,7 @@ export abstract class BaseBankParser implements BankParser {
    */
   protected isTransactionLine(line: string): boolean {
     // Must contain a date-like pattern and an amount-like pattern
-    const hasDate = /\d{1,2}[\/\-\s]\w{2,3}[\/\-\s]?\d{2,4}/.test(line);
+    const hasDate = /\d{1,2}[/\-\s]\w{2,3}[/\-\s]?\d{2,4}/.test(line);
     const hasAmount = /\$?\d+[,.]?\d*\.?\d{2}/.test(line);
     return hasDate && hasAmount;
   }

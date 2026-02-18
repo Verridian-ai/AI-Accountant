@@ -7,7 +7,7 @@
 
 import { rbaDataFeed } from '../rba-data-feed.js';
 import { absDataFeed } from '../abs-data-feed.js';
-import type { EconomicSnapshot as EnhancedEconomicSnapshot } from '../economic-data-types.js';
+import type { EnhancedEconomicSnapshot } from './enhanced-types.js';
 
 /**
  * Enhanced economic snapshot combining structured RBA CSV data + ABS SDMX data.

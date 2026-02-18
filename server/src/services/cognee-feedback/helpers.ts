@@ -6,8 +6,13 @@
  * Calculate trend by comparing accuracy of the recent half vs older half.
  * Feedback should be sorted newest-first.
  */
+interface FeedbackItem {
+  feedbackType: 'correct' | 'incorrect' | 'partial' | 'irrelevant' | 'missing';
+  [key: string]: unknown;
+}
+
 export function calculateTrend(
-  feedbackItems: any[],
+  feedbackItems: FeedbackItem[],
   midpoint: number,
 ): 'improving' | 'declining' | 'stable' {
   if (feedbackItems.length < 4) return 'stable';
@@ -24,7 +29,7 @@ export function calculateTrend(
   return 'stable';
 }
 
-function halfAccuracy(items: any[]): number {
+function halfAccuracy(items: FeedbackItem[]): number {
   if (items.length === 0) return 0;
   let score = 0;
   for (const fb of items) {

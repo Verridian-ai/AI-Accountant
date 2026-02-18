@@ -1,28 +1,100 @@
 /**
  * Subscription Service — Internal Types & Helpers
  *
+ * Core type definitions for the subscription management system.
  * Helper functions for parsing DB rows into typed subscription objects.
- * Re-exports all types from subscription-types.ts for convenience.
  */
 
-export type {
-  SubscriptionPlan,
-  Subscription,
-  UsageMetric,
-  UsageReport,
-  UsageStatus,
-  UsageJson,
-} from '../subscription-types.js';
+// ============================================================================
+// PLAN & SUBSCRIPTION TYPES
+// ============================================================================
 
-export { UsageLimitExceededError } from '../subscription-types.js';
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  priceMonthlyCents: number;
+  priceAnnualCents: number;
+  maxMembers: number;
+  maxAccounts: number;
+  maxTransactionsPerMonth: number;
+  maxAiQueriesPerMonth: number;
+  maxStorageMb: number;
+  features: string[];
+  isActive: boolean;
+}
 
-import type {
-  SubscriptionPlan,
-  Subscription,
-  UsageMetric,
-  UsageReport,
-  UsageJson,
-} from '../subscription-types.js';
+export interface Subscription {
+  id: string;
+  tenantId: string;
+  plan: SubscriptionPlan;
+  status: 'active' | 'cancelled' | 'expired' | 'trialing' | 'past_due';
+  billingCycle: 'monthly' | 'annual';
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+  trialEnd?: string;
+  usage: UsageReport;
+}
+
+// ============================================================================
+// USAGE TYPES
+// ============================================================================
+
+export type UsageMetric = 'members' | 'accounts' | 'transactions' | 'aiQueries' | 'storageMb';
+
+export interface UsageEntry {
+  current: number;
+  limit: number;
+  percentUsed: number;
+}
+
+export interface UsageReport {
+  members: UsageEntry;
+  accounts: UsageEntry;
+  transactions: UsageEntry;
+  aiQueries: UsageEntry;
+  storageMb: UsageEntry;
+}
+
+export interface UsageStatus {
+  metric: UsageMetric;
+  current: number;
+  limit: number;
+  percentUsed: number;
+  allowed: boolean;
+}
+
+// ============================================================================
+// RAW USAGE JSON (stored in DB)
+// ============================================================================
+
+export interface UsageJson {
+  members: number;
+  accounts: number;
+  transactions: number;
+  aiQueries: number;
+  storageMb: number;
+}
+
+// ============================================================================
+// ERROR CLASS
+// ============================================================================
+
+export class UsageLimitExceededError extends Error {
+  constructor(
+    public metric: UsageMetric,
+    public current: number,
+    public limit: number,
+    public planName: string,
+  ) {
+    super(
+      `${metric} limit exceeded: ${current}/${limit} on ${planName} plan. Upgrade to increase limits.`,
+    );
+    this.name = 'UsageLimitExceededError';
+  }
+}
 
 // ============================================================================
 // CONSTANTS
@@ -97,36 +169,41 @@ function parseFeatures(raw: string | null | undefined): string[] {
   }
 }
 
-export function dbPlanToSubscriptionPlan(row: any): SubscriptionPlan {
+export function dbPlanToSubscriptionPlan(row: Record<string, unknown>): SubscriptionPlan {
   return {
-    id: row.id,
-    name: row.name,
-    displayName: row.displayName ?? row.display_name ?? '',
-    description: row.description ?? '',
-    priceMonthlyCents: row.priceMonthlyCents ?? row.price_monthly_cents ?? 0,
-    priceAnnualCents: row.priceAnnualCents ?? row.price_annual_cents ?? 0,
-    maxMembers: row.maxMembers ?? row.max_members ?? 1,
-    maxAccounts: row.maxAccounts ?? row.max_accounts ?? 2,
-    maxTransactionsPerMonth: row.maxTransactionsPerMonth ?? row.max_transactions_per_month ?? 500,
-    maxAiQueriesPerMonth: row.maxAiQueriesPerMonth ?? row.max_ai_queries_per_month ?? 50,
-    maxStorageMb: row.maxStorageMb ?? row.max_storage_mb ?? 100,
-    features: parseFeatures(row.featuresJson ?? row.features_json),
-    isActive: row.isActive ?? row.is_active ?? true,
+    id: String(row.id),
+    name: String(row.name),
+    displayName: String(row.displayName ?? row.display_name ?? ''),
+    description: String(row.description ?? ''),
+    priceMonthlyCents: Number(row.priceMonthlyCents ?? row.price_monthly_cents ?? 0),
+    priceAnnualCents: Number(row.priceAnnualCents ?? row.price_annual_cents ?? 0),
+    maxMembers: Number(row.maxMembers ?? row.max_members ?? 1),
+    maxAccounts: Number(row.maxAccounts ?? row.max_accounts ?? 2),
+    maxTransactionsPerMonth: Number(
+      row.maxTransactionsPerMonth ?? row.max_transactions_per_month ?? 500,
+    ),
+    maxAiQueriesPerMonth: Number(row.maxAiQueriesPerMonth ?? row.max_ai_queries_per_month ?? 50),
+    maxStorageMb: Number(row.maxStorageMb ?? row.max_storage_mb ?? 100),
+    features: parseFeatures(String(row.featuresJson ?? row.features_json ?? '')),
+    isActive: Boolean(row.isActive ?? row.is_active ?? true),
   };
 }
 
-export function dbRowToSubscription(row: any, plan: SubscriptionPlan): Subscription {
-  const usage = parseUsageJson(row.usageJson ?? row.usage_json);
+export function dbRowToSubscription(
+  row: Record<string, unknown>,
+  plan: SubscriptionPlan,
+): Subscription {
+  const usage = parseUsageJson(String(row.usageJson ?? row.usage_json ?? ''));
   return {
-    id: row.id,
-    tenantId: row.tenantId ?? row.tenant_id,
+    id: String(row.id),
+    tenantId: String(row.tenantId ?? row.tenant_id),
     plan,
-    status: row.status,
-    billingCycle: row.billingCycle ?? row.billing_cycle ?? 'monthly',
-    currentPeriodStart: row.currentPeriodStart ?? row.current_period_start,
-    currentPeriodEnd: row.currentPeriodEnd ?? row.current_period_end,
-    cancelAtPeriodEnd: !!(row.cancelAtPeriodEnd ?? row.cancel_at_period_end),
-    trialEnd: row.trialEnd ?? row.trial_end ?? undefined,
+    status: (row.status as Subscription['status']) ?? 'active',
+    billingCycle: (row.billingCycle ?? row.billing_cycle ?? 'monthly') as 'monthly' | 'annual',
+    currentPeriodStart: String(row.currentPeriodStart ?? row.current_period_start),
+    currentPeriodEnd: String(row.currentPeriodEnd ?? row.current_period_end),
+    cancelAtPeriodEnd: Boolean(row.cancelAtPeriodEnd ?? row.cancel_at_period_end),
+    trialEnd: (row.trialEnd ?? row.trial_end) ? String(row.trialEnd ?? row.trial_end) : undefined,
     usage: buildUsageReport(usage, plan),
   };
 }

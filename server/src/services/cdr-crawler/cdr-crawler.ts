@@ -46,6 +46,10 @@ const DEFAULT_CONFIG: CdrCrawlerConfig = {
   userAgent: 'GoldLedger-CDR-Crawler/1.0',
 };
 
+interface CrawlerError extends Error {
+  statusCode?: number;
+}
+
 // ============================================================================
 // CdrCrawler Class
 // ============================================================================
@@ -63,7 +67,7 @@ export class CdrCrawler {
   // HTTP helper (delegates to api-client)
   // --------------------------------------------------------------------------
 
-  private async fetch(url: string, holderId: string, stage: CrawlError['stage']): Promise<any> {
+  private async fetch(url: string, holderId: string, stage: CrawlError['stage']): Promise<unknown> {
     return fetchWithRetry(url, holderId, stage, this.config, this.rateLimiter);
   }
 
@@ -83,7 +87,8 @@ export class CdrCrawler {
       logger.info(`[CDR] Stage 1: Discovering data holders from ${url}`);
 
       const body = await this.fetch(url, '__register__', 'discovery');
-      const brands: CdrRegisterBrand[] = body?.data ?? body ?? [];
+      const bodyObj = body as Record<string, unknown> | undefined;
+      const brands: CdrRegisterBrand[] = (bodyObj?.data ?? body ?? []) as CdrRegisterBrand[];
 
       const activeBrands = (Array.isArray(brands) ? brands : []).filter(
         (b) => b.status === 'ACTIVE',
@@ -110,9 +115,10 @@ export class CdrCrawler {
         await upsertDataHolder(brand, now);
         holders.push(brandToDataHolderRecord(brand));
       }
-    } catch (err: any) {
-      logger.error(`[CDR] Discovery failed: ${err.message}`);
-      errors.push({ stage: 'discovery', message: err.message });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`[CDR] Discovery failed: ${message}`);
+      errors.push({ stage: 'discovery', message });
     }
 
     return { holders, errors };
@@ -137,7 +143,7 @@ export class CdrCrawler {
 
       while (page <= totalPages) {
         const url = `${dataHolder.publicBaseUri}/cds-au/v1/banking/products?page=${page}&page-size=25`;
-        const body: CdrProductListResponse = await this.fetch(url, dataHolder.id, 'catalog');
+        const body = (await this.fetch(url, dataHolder.id, 'catalog')) as CdrProductListResponse;
 
         const products = body?.data?.products ?? [];
         totalPages = body?.meta?.totalPages ?? 1;
@@ -152,13 +158,15 @@ export class CdrCrawler {
 
       await updateDataHolderStats(dataHolder.id, productIds.length, now);
       logger.info(`[CDR] Cataloged ${productIds.length} products from ${dataHolder.brandName}`);
-    } catch (err: any) {
-      logger.error(`[CDR] Catalog failed for ${dataHolder.brandName}: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const statusCode = (err as CrawlerError).statusCode;
+      logger.error(`[CDR] Catalog failed for ${dataHolder.brandName}: ${message}`);
       errors.push({
         stage: 'catalog',
         dataHolderId: dataHolder.id,
-        message: err.message,
-        statusCode: (err as any).statusCode,
+        message,
+        statusCode,
       });
     }
 
@@ -178,7 +186,7 @@ export class CdrCrawler {
 
     try {
       const url = `${dataHolder.publicBaseUri}/cds-au/v1/banking/products/${productId}`;
-      const body: CdrProductDetailResponse = await this.fetch(url, dataHolder.id, 'detail');
+      const body = (await this.fetch(url, dataHolder.id, 'detail')) as CdrProductDetailResponse;
 
       const detail = body?.data;
       if (!detail) {
@@ -188,16 +196,16 @@ export class CdrCrawler {
       const now = new Date().toISOString();
       await updateProductDetail(compositeProductId, detail, now);
       await replaceChildRecords(compositeProductId, detail, now);
-    } catch (err: any) {
-      logger.error(
-        `[CDR] Detail failed for ${productId} @ ${dataHolder.brandName}: ${err.message}`,
-      );
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const statusCode = (err as CrawlerError).statusCode;
+      logger.error(`[CDR] Detail failed for ${productId} @ ${dataHolder.brandName}: ${message}`);
       errors.push({
         stage: 'detail',
         dataHolderId: dataHolder.id,
         productId,
-        message: err.message,
-        statusCode: (err as any).statusCode,
+        message,
+        statusCode,
       });
     }
 

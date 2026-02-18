@@ -52,7 +52,7 @@ export async function projectTimeSeries(
     .orderBy(sql`SUBSTRING(${transactions.date}, 1, 7)`)
     .all();
 
-  const monthlyValues = (rows as any[]).map((r, i) => ({
+  const monthlyValues = (rows as { month: string; total: number }[]).map((r, i) => ({
     index: i,
     month: r.month as string,
     total: Number(r.total),

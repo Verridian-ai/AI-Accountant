@@ -14,7 +14,7 @@ export async function getSessionHistory(
   limit: number = 50,
 ): Promise<Array<Record<string, unknown>>> {
   try {
-    const rows = await (db as any).all(
+    const rows = await db.all(
       `SELECT id, agent_type, session_status, token_usage, latency_ms,
               stream_started_at, stream_completed_at, error_message,
               model_id, provider, created_at
@@ -52,7 +52,7 @@ export async function cleanupStaleSessions(
 
   // Clean DB sessions
   try {
-    await (db as any).run(
+    await db.run(
       `UPDATE agent_stream_sessions
        SET session_status = 'errored',
            error_message = 'Session timed out (stale cleanup)',

@@ -137,7 +137,7 @@ export async function deleteDocument(documentId: string): Promise<void> {
     .from(ragChunks)
     .where(eq(ragChunks.documentId, documentId));
 
-  const chunkIds = docChunks.map((c: any) => c.id);
+  const chunkIds = (docChunks as Record<string, unknown>[]).map((c) => c.id as string);
 
   // Delete citations referencing this document's chunks
   if (chunkIds.length > 0) {

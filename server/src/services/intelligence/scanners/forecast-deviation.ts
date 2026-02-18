@@ -16,7 +16,7 @@ export async function scanForecastDeviations(
   const insights: CrossModuleInsight[] = [];
 
   try {
-    const scenarios: any[] = await (db as any)
+    const scenarios: Record<string, unknown>[] = await db
       .select()
       .from(forecastScenarios)
       .where(and(eq(forecastScenarios.userId, userId), eq(forecastScenarios.status, 'active')))
@@ -25,15 +25,15 @@ export async function scanForecastDeviations(
     if (scenarios.length === 0) return insights;
 
     for (const scenario of scenarios) {
-      const periods: any[] = await (db as any)
+      const periods: Record<string, unknown>[] = await db
         .select()
         .from(forecastPeriods)
-        .where(eq(forecastPeriods.scenarioId, scenario.id))
+        .where(eq(forecastPeriods.scenarioId, scenario.id as string))
         .all();
 
       if (periods.length === 0) continue;
 
-      const actuals: any[] = await (db as any)
+      const actuals: Record<string, unknown>[] = await db
         .select({
           month: sql`substr(${transactions.date}, 1, 7)`,
           total: sql`sum(${transactions.amount})`,
@@ -49,16 +49,21 @@ export async function scanForecastDeviations(
         .groupBy(sql`substr(${transactions.date}, 1, 7)`)
         .all();
 
-      const actualMap = new Map(actuals.map((a: any) => [a.month, Number(a.total ?? 0)]));
+      const actualMap = new Map(
+        actuals.map((a) => [
+          (a as Record<string, unknown>).month,
+          Number((a as Record<string, unknown>).total ?? 0),
+        ]),
+      );
       let deviations = 0;
       let totalDeviation = 0;
 
       for (const period of periods) {
-        const forecastAmt = period.forecastAmount ?? period.forecast_amount ?? 0;
+        const forecastAmt = Number(period.forecastAmount ?? period.forecast_amount ?? 0);
         const actual = actualMap.get(period.period);
         if (actual == null || forecastAmt === 0) continue;
 
-        const deviation = Math.abs((actual - forecastAmt) / forecastAmt);
+        const deviation = Math.abs((Number(actual) - forecastAmt) / forecastAmt);
         if (deviation > 0.25) {
           deviations++;
           totalDeviation += deviation;
@@ -73,8 +78,8 @@ export async function scanForecastDeviations(
             `Forecast "${scenario.name}" diverging from reality`,
             `${deviations} periods show >25% deviation (avg ${(avgDeviation * 100).toFixed(1)}% off). Consider updating assumptions.`,
             {
-              scenarioId: scenario.id,
-              scenarioName: scenario.name,
+              scenarioId: scenario.id as string,
+              scenarioName: scenario.name as string,
               deviationCount: deviations,
               averageDeviation: Math.round(avgDeviation * 10000) / 100,
             },

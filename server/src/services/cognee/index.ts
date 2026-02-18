@@ -7,11 +7,7 @@
 
 // Re-export all public types
 export type { CogneeSearchType, CogneeSearchResult, TokenCacheEntry } from './types.js';
-export {
-  REQUEST_TIMEOUT_MS,
-  COGNIFY_TIMEOUT_MS,
-  FINANCIAL_COGNIFY_PROMPT,
-} from './types.js';
+export { REQUEST_TIMEOUT_MS, COGNIFY_TIMEOUT_MS, FINANCIAL_COGNIFY_PROMPT } from './types.js';
 
 export { CogneeClientBase } from './client-base.js';
 export { CogneeClient } from './client.js';
@@ -48,3 +44,7 @@ export {
 
 import { CogneeClient } from './client.js';
 export const cogneeClient = new CogneeClient();
+
+// Dataset migration utility (Wave 23)
+export { migrateLegacyDatasets } from './migration.js';
+export type { MigrationResult } from './migration.js';

@@ -5,6 +5,7 @@
 
 import { eq, and, or, like, sql } from 'drizzle-orm';
 import { customers, invoices } from '../../schema.js';
+
 import type { Customer } from '../../schema.js';
 import type { CustomerWithBalance } from './types.js';
 
@@ -12,6 +13,7 @@ import type { CustomerWithBalance } from './types.js';
  * Get customer with outstanding balance calculation.
  */
 export async function getCustomerWithBalance(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   database: any,
   userId: string,
   customerId: string,
@@ -65,6 +67,7 @@ export async function getCustomerWithBalance(
  * Search customers (typeahead for invoice editor).
  */
 export async function searchCustomers(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   database: any,
   userId: string,
   query: string,

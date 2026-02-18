@@ -7,6 +7,7 @@
 
 import { db, parserFeedback } from '../../schema.js';
 import { and, gte, lt } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { logger } from '../../utils/logger.js';
 import type { FeedbackType, FeedbackPattern, ParserImprovementSuggestion } from './types.js';
 
@@ -18,7 +19,7 @@ export async function analyzeFeedbackPatterns(options?: {
 }): Promise<FeedbackPattern[]> {
   logger.info('[FeedbackManager] Analyzing feedback patterns');
 
-  const conditions: any[] = [];
+  const conditions: SQL[] = [];
   if (options?.startDate) conditions.push(gte(parserFeedback.createdAt, options.startDate));
   if (options?.endDate) conditions.push(lt(parserFeedback.createdAt, options.endDate));
 

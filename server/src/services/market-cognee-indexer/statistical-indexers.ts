@@ -6,13 +6,14 @@
  */
 
 import { cogneeTools, COGNEE_DATASETS } from '../claude/cognee-tools.js';
+import type { EconomicIndicator } from '../../db/market-schema.js';
 
 // --------------------------------------------------------------------------
 // RBA Data
 // --------------------------------------------------------------------------
 
 export async function indexRbaData(
-  indicators: any[],
+  indicators: EconomicIndicator[],
 ): Promise<{ count: number; errors: string[] }> {
   const errors: string[] = [];
 
@@ -21,7 +22,7 @@ export async function indexRbaData(
 
     const texts: string[] = [];
 
-    const grouped = new Map<string, any[]>();
+    const grouped = new Map<string, EconomicIndicator[]>();
     for (const ind of indicators) {
       const cat = ind.category ?? 'General';
       if (!grouped.has(cat)) grouped.set(cat, []);
@@ -31,7 +32,7 @@ export async function indexRbaData(
     for (const [category, items] of grouped) {
       const indicatorDetails = items
         .map(
-          (i: any) =>
+          (i) =>
             `${i.indicatorName} (${i.indicatorCode}): ${i.value} ${i.unit}` +
             (i.changePct != null
               ? ` (${Number(i.changePct) >= 0 ? '+' : ''}${Number(i.changePct).toFixed(2)}%)`
@@ -41,7 +42,7 @@ export async function indexRbaData(
         .join('; ');
 
       const latestDate = items.reduce(
-        (max: string, i: any) => (i.observationDate > max ? i.observationDate : max),
+        (max, i) => (i.observationDate > max ? i.observationDate : max),
         items[0].observationDate,
       );
 
@@ -74,8 +75,8 @@ export async function indexRbaData(
     }
 
     return { count: texts.length, errors };
-  } catch (err: any) {
-    errors.push(`RBA indexing failed: ${err.message}`);
+  } catch (err: unknown) {
+    errors.push(`RBA indexing failed: ${err instanceof Error ? err.message : String(err)}`);
     return { count: 0, errors };
   }
 }
@@ -85,7 +86,7 @@ export async function indexRbaData(
 // --------------------------------------------------------------------------
 
 export async function indexAbsData(
-  indicators: any[],
+  indicators: EconomicIndicator[],
 ): Promise<{ count: number; errors: string[] }> {
   const errors: string[] = [];
 
@@ -94,7 +95,7 @@ export async function indexAbsData(
 
     const texts: string[] = [];
 
-    const grouped = new Map<string, any[]>();
+    const grouped = new Map<string, EconomicIndicator[]>();
     for (const ind of indicators) {
       const cat = ind.category ?? 'General';
       if (!grouped.has(cat)) grouped.set(cat, []);
@@ -104,7 +105,7 @@ export async function indexAbsData(
     for (const [category, items] of grouped) {
       const indicatorDetails = items
         .map(
-          (i: any) =>
+          (i) =>
             `${i.indicatorName} (${i.indicatorCode}): ${i.value} ${i.unit}` +
             (i.changePct != null
               ? ` (${Number(i.changePct) >= 0 ? '+' : ''}${Number(i.changePct).toFixed(2)}%)`
@@ -114,7 +115,7 @@ export async function indexAbsData(
         .join('; ');
 
       const latestDate = items.reduce(
-        (max: string, i: any) => (i.observationDate > max ? i.observationDate : max),
+        (max, i) => (i.observationDate > max ? i.observationDate : max),
         items[0].observationDate,
       );
 
@@ -147,8 +148,8 @@ export async function indexAbsData(
     }
 
     return { count: texts.length, errors };
-  } catch (err: any) {
-    errors.push(`ABS indexing failed: ${err.message}`);
+  } catch (err: unknown) {
+    errors.push(`ABS indexing failed: ${err instanceof Error ? err.message : String(err)}`);
     return { count: 0, errors };
   }
 }

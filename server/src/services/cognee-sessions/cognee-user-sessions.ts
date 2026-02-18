@@ -1,5 +1,5 @@
 /**
- * Cognee Sessions — User-Scoped Cognee Session Methods (Wave 3)
+ * Cognee Sessions -- User-Scoped Cognee Session Methods (Wave 3)
  *
  * Extracted from CogneeSessionService for file-size compliance.
  * All methods receive the redis instance and helper functions via parameters.
@@ -42,8 +42,9 @@ export async function createCogneeSession(
     await redis.sadd(`${KEY_PREFIX}csessions:user:${userId}`, sessionId);
 
     return { sessionId, context };
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to create Cognee session:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.warn('[CogneeSession] Failed to create Cognee session:', message);
     return null;
   }
 }
@@ -57,10 +58,11 @@ export async function getCogneeSessionContext(
     const data = await redis.get(key);
     if (!data) return null;
 
-    const parsed = JSON.parse(data);
-    return parsed.context as CogneeSessionContext;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to get Cognee session:', err.message);
+    const parsed = JSON.parse(data) as { context: CogneeSessionContext };
+    return parsed.context;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.warn('[CogneeSession] Failed to get Cognee session:', message);
     return null;
   }
 }
@@ -78,8 +80,8 @@ export async function addConversationTurn(
     const data = await redis.get(key);
     if (!data) return;
 
-    const parsed = JSON.parse(data);
-    const context = parsed.context as CogneeSessionContext;
+    const parsed = JSON.parse(data) as { context: CogneeSessionContext };
+    const context = parsed.context;
 
     context.conversationHistory.push({
       role,
@@ -99,8 +101,9 @@ export async function addConversationTurn(
     const ttl = await redis.ttl(key);
     parsed.context = context;
     await redis.set(key, JSON.stringify(parsed), 'EX', Math.max(ttl, 1800));
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to add conversation turn:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.warn('[CogneeSession] Failed to add conversation turn:', message);
   }
 }
 
@@ -130,8 +133,9 @@ export async function getOrCreateCogneeSession(
     const result = await createCogneeSessionFn(redis, userId, options);
     if (!result) return null;
     return { ...result, isNew: true };
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to get/create Cognee session:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.warn('[CogneeSession] Failed to get/create Cognee session:', message);
     return null;
   }
 }
@@ -140,7 +144,7 @@ export async function cacheUserQueryResult(
   redis: Redis,
   userId: string,
   queryHash: string,
-  result: any,
+  result: unknown,
   ttlSeconds: number,
   serializeFn: (data: unknown) => string | null,
 ): Promise<boolean> {
@@ -151,24 +155,26 @@ export async function cacheUserQueryResult(
 
     await redis.set(key, serialized, 'EX', ttlSeconds);
     return true;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to cache user query result:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.warn('[CogneeSession] Failed to cache user query result:', message);
     return false;
   }
 }
 
-export async function getCachedUserQueryResult(
+export async function getCachedUserQueryResult<T>(
   redis: Redis,
   userId: string,
   queryHash: string,
-  deserializeFn: <T>(data: string) => T | null,
-): Promise<any | null> {
+  deserializeFn: <U>(data: string) => U | null,
+): Promise<T | null> {
   try {
     const key = `${KEY_PREFIX}cache:user_${userId}:${queryHash}`;
     const data = await redis.get(key);
-    return data ? deserializeFn(data) : null;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to get cached user query result:', err.message);
+    return data ? deserializeFn<T>(data) : null;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.warn('[CogneeSession] Failed to get cached user query result:', message);
     return null;
   }
 }
@@ -183,8 +189,9 @@ export async function destroyUserCogneeSessions(redis: Redis, userId: string): P
     }
     await redis.del(`${KEY_PREFIX}csessions:user:${userId}`);
     return destroyed;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to destroy user Cognee sessions:', err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.warn('[CogneeSession] Failed to destroy user Cognee sessions:', message);
     return 0;
   }
 }

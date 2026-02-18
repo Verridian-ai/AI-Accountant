@@ -18,6 +18,25 @@ import {
 } from './incremental-indexer.js';
 import { indexRates, indexProductKnowledge } from './product-indexing.js';
 
+interface ProductRow {
+  id: string;
+  name: string;
+  description: string | null;
+  productCategory: string;
+  applicationUri: string | null;
+  dataHolderId: string | null;
+  brandName?: string;
+  brand?: string;
+  isTailored?: boolean;
+  [key: string]: unknown;
+}
+
+interface DataHolderRow {
+  id: string;
+  brandName: string;
+  [key: string]: unknown;
+}
+
 export class CdrCogneeIndexer {
   async indexProducts(): Promise<{ count: number; errors: string[] }> {
     const errors: string[] = [];
@@ -28,7 +47,7 @@ export class CdrCogneeIndexer {
 
       const texts: string[] = [];
 
-      for (const product of products as any[]) {
+      for (const product of products as ProductRow[]) {
         let holderName = product.brandName ?? product.brand ?? '';
         if (!holderName && product.dataHolderId) {
           const holder = await db
@@ -36,7 +55,7 @@ export class CdrCogneeIndexer {
             .from(cdrDataHolders)
             .where(eq(cdrDataHolders.id, product.dataHolderId))
             .get();
-          holderName = (holder as any)?.brandName ?? product.dataHolderId;
+          holderName = (holder as DataHolderRow | undefined)?.brandName ?? product.dataHolderId;
         }
 
         const text =
@@ -52,8 +71,9 @@ export class CdrCogneeIndexer {
 
       await cogneeTools.index(texts, COGNEE_DATASETS.cdrProducts);
       return { count: texts.length, errors };
-    } catch (err: any) {
-      errors.push(`Product indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push(`Product indexing failed: ${message}`);
       return { count: 0, errors };
     }
   }
@@ -94,8 +114,9 @@ export class CdrCogneeIndexer {
       try {
         await cogneeTools.cognify(dataset);
         logger.info(`[CDR-Indexer] Cognified dataset: ${dataset}`);
-      } catch (err: any) {
-        allErrors.push(`Cognify failed for ${dataset}: ${err.message}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        allErrors.push(`Cognify failed for ${dataset}: ${message}`);
       }
     }
 
@@ -129,8 +150,9 @@ export class CdrCogneeIndexer {
       );
 
       return { count: BANKING_KNOWLEDGE_DOCS.length, errors };
-    } catch (err: any) {
-      errors.push(`Banking knowledge indexing failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push(`Banking knowledge indexing failed: ${message}`);
       return { count: 0, errors };
     }
   }
@@ -151,7 +173,7 @@ export class CdrCogneeIndexer {
       topK: 5,
       mergeResults: true,
     });
-    return results.map((r: any) => (typeof r === 'string' ? r : (r.content ?? JSON.stringify(r))));
+    return results.map((r) => r.text);
   }
 }
 

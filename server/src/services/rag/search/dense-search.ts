@@ -9,44 +9,10 @@
 
 import { db, ragChunks } from '../../../schema.js';
 import { eq, and, sql } from 'drizzle-orm';
+import type { DenseSearchOptions, DenseSearchResult } from './dense-search-types.js';
+import { callFastEmbed, generateFallbackEmbedding } from './dense-search-embedding.js';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-export interface DenseSearchOptions {
-  /** Maximum number of results to return */
-  topK?: number;
-  /** Minimum similarity threshold (0-1) */
-  minSimilarity?: number;
-  /** Filter by category */
-  category?: string;
-  /** Filter by date range (ISO format) */
-  dateStart?: string;
-  dateEnd?: string;
-  /** Filter by account ID */
-  accountId?: string;
-  /** Filter by namespace ID (if not using default) */
-  namespaceId?: string;
-}
-
-export interface DenseSearchResult {
-  chunkId: string;
-  documentId: string;
-  content: string;
-  similarity: number;
-  rank: number;
-  metadata: {
-    chunkType: string;
-    category: string | null;
-    dateStart: string | null;
-    dateEnd: string | null;
-    accountId: string | null;
-    totalAmount: number | null;
-    transactionCount: number | null;
-    merchantNormalized: string | null;
-  };
-}
+export type { DenseSearchOptions, DenseSearchResult };
 
 // ============================================================================
 // DENSE SEARCH ENGINE
@@ -65,126 +31,17 @@ export class DenseSearchEngine {
   }
 
   /**
-   * Generate embedding for query text using FastEmbed
-   * In production, this would call the FastEmbed API or local model
+   * Generate embedding for query text using FastEmbed.
+   * Delegates to callFastEmbed (Python subprocess) with hash-based fallback.
    */
   async generateQueryEmbedding(query: string): Promise<number[]> {
-    // NOTE: This is a placeholder that should be replaced with actual FastEmbed call
-    // For now, we'll generate a mock embedding for development
-    // In production, this would use fastembed-py via Python bridge or WASM
-
     console.log(`[DenseSearch] Generating embedding for query: "${query.slice(0, 50)}..."`);
 
-    // Check if we have a Python FastEmbed service available
-    const embedding = await this.callFastEmbed(query);
+    const embedding = await callFastEmbed(query, this.embeddingModel, this.embeddingDimensions);
 
     if (!embedding || embedding.length !== this.embeddingDimensions) {
       console.warn(`[DenseSearch] FastEmbed returned invalid embedding, using fallback`);
-      return this.generateFallbackEmbedding(query);
-    }
-
-    return embedding;
-  }
-
-  /**
-   * Call FastEmbed via Python subprocess
-   */
-  private async callFastEmbed(text: string): Promise<number[] | null> {
-    try {
-      // Dynamic import to avoid issues if child_process is not available
-      const { spawn } = await import('child_process');
-      const path = await import('path');
-      const { fileURLToPath } = await import('url');
-
-      const __dirname = path.dirname(fileURLToPath(import.meta.url));
-      const pythonPath = path.resolve(__dirname, '../../../../venv/Scripts/python.exe');
-
-      return new Promise((resolve) => {
-        const pythonCode = `
-import json
-import sys
-try:
-    from fastembed import TextEmbedding
-    model = TextEmbedding(model_name="${this.embeddingModel}")
-    text = json.loads(sys.argv[1])
-    embeddings = list(model.embed([text]))
-    print(json.dumps(embeddings[0].tolist()))
-except Exception as e:
-    print(json.dumps({"error": str(e)}), file=sys.stderr)
-    sys.exit(1)
-`;
-
-        const process = spawn(pythonPath, ['-c', pythonCode, JSON.stringify(text)]);
-        let stdout = '';
-        let stderr = '';
-
-        process.stdout.on('data', (data) => {
-          stdout += data.toString();
-        });
-
-        process.stderr.on('data', (data) => {
-          stderr += data.toString();
-        });
-
-        process.on('close', (code) => {
-          if (code !== 0) {
-            console.warn(`[DenseSearch] FastEmbed failed: ${stderr}`);
-            resolve(null);
-            return;
-          }
-          try {
-            const embedding = JSON.parse(stdout.trim());
-            if (Array.isArray(embedding)) {
-              resolve(embedding);
-            } else {
-              resolve(null);
-            }
-          } catch {
-            resolve(null);
-          }
-        });
-
-        process.on('error', () => {
-          resolve(null);
-        });
-
-        // Timeout after 10 seconds
-        setTimeout(() => {
-          process.kill();
-          resolve(null);
-        }, 10000);
-      });
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Generate a fallback embedding using simple hashing
-   * This is only for development/testing when FastEmbed is not available
-   */
-  private generateFallbackEmbedding(text: string): number[] {
-    console.warn('[DenseSearch] Using fallback embedding - NOT FOR PRODUCTION');
-
-    const embedding = new Array(this.embeddingDimensions).fill(0);
-    const normalized = text.toLowerCase().replace(/[^a-z0-9\s]/g, '');
-    const words = normalized.split(/\s+/);
-
-    // Simple hash-based embedding for development
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      for (let j = 0; j < word.length; j++) {
-        const idx = (word.charCodeAt(j) * (i + 1) * (j + 1)) % this.embeddingDimensions;
-        embedding[idx] += 1 / Math.sqrt(words.length);
-      }
-    }
-
-    // L2 normalize
-    const norm = Math.sqrt(embedding.reduce((sum, v) => sum + v * v, 0));
-    if (norm > 0) {
-      for (let i = 0; i < embedding.length; i++) {
-        embedding[i] /= norm;
-      }
+      return generateFallbackEmbedding(query, this.embeddingDimensions);
     }
 
     return embedding;

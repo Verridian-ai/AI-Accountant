@@ -40,7 +40,7 @@ export async function verifySourcesExist(chunkIds: string[]): Promise<Map<string
     .from(ragChunks)
     .where(inArray(ragChunks.id, chunkIds));
 
-  const existingIds = new Set(results.map((r: any) => r.id));
+  const existingIds = new Set((results as Record<string, unknown>[]).map((r) => r.id as string));
   const statusMap = new Map<string, boolean>();
 
   for (const id of chunkIds) {

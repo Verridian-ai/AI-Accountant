@@ -56,12 +56,11 @@ function getPoolConfig(): PoolConfig {
   };
 
   // SSL configuration for Cloud SQL direct connections
-  if (isProduction || process.env.DB_SSL === 'true') {
+  // DB_SSL=false explicitly disables SSL even in production (e.g. Docker local Postgres)
+  if (process.env.DB_SSL !== 'false' && (isProduction || process.env.DB_SSL === 'true')) {
     config.ssl = {
       rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
-      // For Cloud SQL with server CA
       ca: process.env.DB_SSL_CA,
-      // For mTLS (mutual TLS) if required
       cert: process.env.DB_SSL_CERT,
       key: process.env.DB_SSL_KEY,
     };

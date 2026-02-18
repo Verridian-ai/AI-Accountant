@@ -16,33 +16,33 @@ export function parsePayload(raw: unknown): Record<string, unknown> {
 }
 
 /** Convert raw row to ServerConflict */
-export function rowToConflict(row: any): ServerConflict {
+export function rowToConflict(row: Record<string, unknown>): ServerConflict {
   return {
-    id: row.id,
-    deviceId: row.deviceId ?? row.device_id,
-    operation: row.operation,
-    resourceType: row.resourceType ?? row.resource_type,
-    resourceId: row.resourceId ?? row.resource_id ?? undefined,
+    id: row.id as string,
+    deviceId: (row.deviceId ?? row.device_id) as string,
+    operation: row.operation as string,
+    resourceType: (row.resourceType ?? row.resource_type) as string,
+    resourceId: (row.resourceId ?? row.resource_id) as string | undefined,
     payload: parsePayload(row.payloadJson ?? row.payload_json),
-    conflictDetails: row.conflictDetails ?? row.conflict_details ?? undefined,
-    serverVersion: row.serverVersion ?? row.server_version ?? undefined,
-    clientVersion: row.clientVersion ?? row.client_version ?? undefined,
-    createdAt: row.createdAt ?? row.created_at ?? undefined,
+    conflictDetails: (row.conflictDetails ?? row.conflict_details) as string | undefined,
+    serverVersion: (row.serverVersion ?? row.server_version) as number | undefined,
+    clientVersion: (row.clientVersion ?? row.client_version) as number | undefined,
+    createdAt: (row.createdAt ?? row.created_at) as string | undefined,
   };
 }
 
 /** Convert raw row to SyncLogEntry */
-export function rowToLogEntry(row: any): SyncLogEntry {
+export function rowToLogEntry(row: Record<string, unknown>): SyncLogEntry {
   return {
-    id: row.id,
-    deviceId: row.deviceId ?? row.device_id,
-    operation: row.operation,
-    resourceType: row.resourceType ?? row.resource_type,
-    resourceId: row.resourceId ?? row.resource_id ?? undefined,
-    syncStatus: row.syncStatus ?? row.sync_status ?? 'pending',
-    conflictResolution: row.conflictResolution ?? row.conflict_resolution ?? undefined,
-    errorMessage: row.errorMessage ?? row.error_message ?? undefined,
-    createdAt: row.createdAt ?? row.created_at ?? undefined,
-    syncedAt: row.syncedAt ?? row.synced_at ?? undefined,
+    id: row.id as string,
+    deviceId: (row.deviceId ?? row.device_id) as string,
+    operation: row.operation as string,
+    resourceType: (row.resourceType ?? row.resource_type) as string,
+    resourceId: (row.resourceId ?? row.resource_id) as string | undefined,
+    syncStatus: ((row.syncStatus ?? row.sync_status) as string) ?? 'pending',
+    conflictResolution: (row.conflictResolution ?? row.conflict_resolution) as string | undefined,
+    errorMessage: (row.errorMessage ?? row.error_message) as string | undefined,
+    createdAt: (row.createdAt ?? row.created_at) as string | undefined,
+    syncedAt: (row.syncedAt ?? row.synced_at) as string | undefined,
   };
 }

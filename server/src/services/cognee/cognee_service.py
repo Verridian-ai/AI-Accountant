@@ -1,3 +1,6 @@
+# Refactored: cognee_service/ package replaces this file.
+# Python resolves 'from .cognee_service import X' via cognee_service/__init__.py.
+# This file is unreachable — the package directory takes priority in Python's import resolution.
 """
 Cognee integration service for CBA Statements Parse.
 

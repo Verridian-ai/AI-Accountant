@@ -83,8 +83,9 @@ describe('TransactionRepository', () => {
   describe('createMany', () => {
     it('should insert multiple transactions', async () => {
       const txs = [{ id: '1' }, { id: '2' }];
-      // @ts-expect-error -- testing mock
-      await transactionRepository.createMany(txs);
+      await transactionRepository.createMany(
+        txs as Parameters<typeof transactionRepository.createMany>[0],
+      );
       expect(db.insert).toHaveBeenCalled();
       expect(db.values).toHaveBeenCalledWith(txs);
     });

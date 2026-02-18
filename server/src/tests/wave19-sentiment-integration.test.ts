@@ -304,7 +304,7 @@ describe('SentimentAnalysisService — getSentimentHistory returns array', async
   try {
     const history = await service.getSentimentHistory('test topic', 7);
     assert(Array.isArray(history), 'getSentimentHistory returns an array');
-  } catch (err: any) {
+  } catch {
     // DB may not be available
     assert(true, 'getSentimentHistory handles missing DB gracefully');
   }

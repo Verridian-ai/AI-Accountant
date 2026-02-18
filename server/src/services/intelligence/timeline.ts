@@ -16,6 +16,64 @@ import {
 import { eq, and, desc, gte, lte } from 'drizzle-orm';
 import type { TimelineEntry, TimeRange } from './types.js';
 
+interface TxRow {
+  date: string;
+  amount: number;
+  description: string | null;
+  category: string | null;
+  accountId: string | null;
+  account_id?: string | null;
+}
+
+interface BasRow {
+  endDate: string | null;
+  end_date?: string | null;
+  startDate: string | null;
+  start_date?: string | null;
+  status: string;
+  quarter: number;
+  financialYear: string | null;
+  financial_year?: string | null;
+  periodType: string | null;
+  period_type?: string | null;
+}
+
+interface TaxRow {
+  calculatedAt: string | null;
+  calculated_at?: string | null;
+  taxYear: string | null;
+  tax_year?: string | null;
+  netTax: number | null;
+  net_tax?: number | null;
+  grossIncome: number | null;
+  gross_income?: number | null;
+  totalDeductions: number | null;
+  total_deductions?: number | null;
+}
+
+interface AlertRow {
+  createdAt: string | null;
+  created_at?: string | null;
+  alertType: string | null;
+  alert_type?: string | null;
+  description: string;
+  difference: number;
+  accountId: string | null;
+  account_id?: string | null;
+  isResolved: boolean | null;
+  is_resolved?: boolean | null;
+}
+
+interface KpiRow {
+  period: string;
+  metricName: string | null;
+  metric_name?: string | null;
+  metricValue: number;
+  metric_value?: number;
+  targetValue: number | null;
+  target_value?: number | null;
+}
+
 export async function generateTimeline(
   userId: string,
   timeRange: TimeRange,
@@ -24,7 +82,7 @@ export async function generateTimeline(
 
   // 1. Significant transactions (|amount| > $500)
   try {
-    const txRows: any[] = await (db as any)
+    const txRows: TxRow[] = await db
       .select()
       .from(transactions)
       .where(
@@ -58,7 +116,7 @@ export async function generateTimeline(
 
   // 2. BAS events
   try {
-    const basRows: any[] = await (db as any)
+    const basRows: BasRow[] = await db
       .select()
       .from(basPeriods)
       .where(
@@ -73,7 +131,7 @@ export async function generateTimeline(
     for (const bp of basRows) {
       const status = bp.status;
       entries.push({
-        date: bp.endDate ?? bp.end_date,
+        date: bp.endDate ?? bp.end_date ?? '',
         module: 'bas',
         eventType: status === 'lodged' ? 'bas_lodged' : 'bas_period',
         title: `BAS Q${bp.quarter} ${bp.financialYear ?? bp.financial_year}: ${status}`,
@@ -88,7 +146,7 @@ export async function generateTimeline(
 
   // 3. Tax year summaries
   try {
-    const taxRows: any[] = await (db as any)
+    const taxRows: TaxRow[] = await db
       .select()
       .from(taxYearSummary)
       .where(eq(taxYearSummary.userId, userId))
@@ -112,7 +170,7 @@ export async function generateTimeline(
 
   // 4. Reconciliation alerts
   try {
-    const alertRows: any[] = await (db as any)
+    const alertRows: AlertRow[] = await db
       .select()
       .from(reconciliationAlerts)
       .where(
@@ -125,7 +183,7 @@ export async function generateTimeline(
 
     for (const al of alertRows) {
       entries.push({
-        date: al.createdAt ?? al.created_at,
+        date: al.createdAt ?? al.created_at ?? '',
         module: 'anomaly_detection',
         eventType: 'reconciliation_alert',
         title: `Reconciliation alert: ${al.alertType ?? al.alert_type}`,
@@ -144,7 +202,7 @@ export async function generateTimeline(
 
   // 5. KPI deviations
   try {
-    const kpiRows: any[] = await (db as any)
+    const kpiRows: KpiRow[] = await db
       .select()
       .from(kpiMetrics)
       .where(
@@ -158,7 +216,7 @@ export async function generateTimeline(
 
     for (const kpi of kpiRows) {
       const metricName = kpi.metricName ?? kpi.metric_name;
-      const metricValue = kpi.metricValue ?? kpi.metric_value;
+      const metricValue = kpi.metricValue ?? kpi.metric_value ?? 0;
       const targetValue = kpi.targetValue ?? kpi.target_value;
       if (targetValue && Math.abs(metricValue - targetValue) / Math.abs(targetValue) > 0.2) {
         entries.push({

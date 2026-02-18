@@ -1,7 +1,7 @@
-/** Cognee Ontology Management Service — CRUD for graph ontologies. */
+/** Cognee Ontology Management Service -- CRUD for graph ontologies. */
 
 import { db, graphSchemas } from '../../schema.js';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, type SQL } from 'drizzle-orm';
 import { cogneeClient } from '../cognee_client.js';
 import crypto from 'crypto';
 import type {
@@ -12,6 +12,12 @@ import type {
   GraphData,
 } from './types.js';
 import { PREDEFINED_ONTOLOGIES } from './constants.js';
+
+interface NodeTypeDef {
+  name: string;
+  properties: Array<{ name: string; type: string; required?: boolean }>;
+  color?: string;
+}
 
 export class CogneeOntologyService {
   async defineOntology(userId: string, definition: OntologyDefinition) {
@@ -77,20 +83,21 @@ export class CogneeOntologyService {
 
   async listOntologies(userId: string, filters?: OntologyFilters) {
     await this.ensurePredefinedOntologies(userId);
-    let query = db.select().from(graphSchemas);
-    const conditions: any[] = [];
+
+    const conditions: SQL[] = [eq(graphSchemas.userId, userId)];
     if (filters?.ontologyType) conditions.push(eq(graphSchemas.ontologyType, filters.ontologyType));
     if (filters?.isActive !== undefined)
       conditions.push(eq(graphSchemas.isActive, filters.isActive));
     if (filters?.isPredefined !== undefined)
       conditions.push(eq(graphSchemas.isPredefined, filters.isPredefined));
-    if (conditions.length > 0) {
-      query = query.where(and(eq(graphSchemas.userId, userId), ...conditions)) as any;
-    } else {
-      query = query.where(eq(graphSchemas.userId, userId)) as any;
-    }
-    const results = await (query as any).all();
-    return (results as any[]).sort((a: any, b: any) =>
+
+    const results = await db
+      .select()
+      .from(graphSchemas)
+      .where(and(...conditions))
+      .all();
+
+    return (results as Array<Record<string, unknown>>).sort((a, b) =>
       (a.name as string).localeCompare(b.name as string),
     );
   }
@@ -108,9 +115,10 @@ export class CogneeOntologyService {
     const existing = await this.getOntology(ontologyId);
     if (!existing) throw new Error(`Ontology ${ontologyId} not found`);
     if (existing.isPredefined) throw new Error('Cannot modify predefined ontologies');
-    const newNodeTypes = updates.nodeTypes ?? JSON.parse(existing.nodeTypes);
-    const newEdgeTypes = updates.edgeTypes ?? JSON.parse(existing.edgeTypes);
-    const nodeTypeNames = new Set(newNodeTypes.map((n: any) => n.name));
+    const newNodeTypes: NodeTypeDef[] = updates.nodeTypes ?? JSON.parse(existing.nodeTypes);
+    const newEdgeTypes: OntologyDefinition['edgeTypes'] =
+      updates.edgeTypes ?? JSON.parse(existing.edgeTypes);
+    const nodeTypeNames = new Set(newNodeTypes.map((n) => n.name));
     for (const edge of newEdgeTypes) {
       if (!nodeTypeNames.has(edge.sourceType))
         throw new Error(`Edge "${edge.name}" references unknown source type "${edge.sourceType}"`);
@@ -119,14 +127,18 @@ export class CogneeOntologyService {
     }
     const now = new Date().toISOString();
     const typesChanged = updates.nodeTypes !== undefined || updates.edgeTypes !== undefined;
-    const setValues: Record<string, any> = { version: existing.version + 1, updatedAt: now };
+    const setValues: Record<string, unknown> = { version: existing.version! + 1, updatedAt: now };
     if (updates.name !== undefined) setValues.name = updates.name;
     if (updates.description !== undefined) setValues.description = updates.description;
     if (updates.nodeTypes !== undefined) setValues.nodeTypes = JSON.stringify(updates.nodeTypes);
     if (updates.edgeTypes !== undefined) setValues.edgeTypes = JSON.stringify(updates.edgeTypes);
     if (updates.constraints !== undefined)
       setValues.constraints = JSON.stringify(updates.constraints);
-    await db.update(graphSchemas).set(setValues).where(eq(graphSchemas.id, ontologyId)).run();
+    await db
+      .update(graphSchemas)
+      .set(setValues as typeof graphSchemas.$inferInsert)
+      .where(eq(graphSchemas.id, ontologyId))
+      .run();
     if (typesChanged) {
       const appliedDatasets: string[] = existing.appliedDatasets
         ? JSON.parse(existing.appliedDatasets)
@@ -262,7 +274,9 @@ export class CogneeOntologyService {
       .from(graphSchemas)
       .where(and(eq(graphSchemas.userId, userId), eq(graphSchemas.isPredefined, true)))
       .all();
-    const existingNames = new Set((existing as any[]).map((r: any) => r.name));
+    const existingNames = new Set(
+      (existing as Array<Record<string, unknown>>).map((r) => r.name as string),
+    );
     for (const [, def] of Object.entries(PREDEFINED_ONTOLOGIES)) {
       if (existingNames.has(def.name)) continue;
       const id = crypto.randomUUID();

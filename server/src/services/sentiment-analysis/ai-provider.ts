@@ -1,5 +1,5 @@
 /**
- * Sentiment Analysis — AI Provider Integration & Utility Helpers
+ * Sentiment Analysis -- AI Provider Integration & Utility Helpers
  */
 
 import Anthropic from '@anthropic-ai/sdk';
@@ -34,7 +34,7 @@ export function initAIClients(): {
   }
 
   if (!anthropicClient && !openRouterClient) {
-    logger.warn('[Sentiment] No AI API keys found — sentiment analysis will not work');
+    logger.warn('[Sentiment] No AI API keys found -- sentiment analysis will not work');
   }
 
   return { anthropicClient, openRouterClient };
@@ -64,8 +64,9 @@ export async function callAI(
         return textBlock.text;
       }
       throw new Error('Empty response from Anthropic');
-    } catch (err: any) {
-      logger.warn(`[Sentiment] Anthropic call failed: ${err.message} — trying OpenRouter`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.warn(`[Sentiment] Anthropic call failed: ${message} -- trying OpenRouter`);
       recordFailure();
     }
   }
@@ -86,20 +87,21 @@ export async function callAI(
       const content = response.choices[0]?.message?.content;
       if (content) return content;
       throw new Error('Empty response from OpenRouter');
-    } catch (err: any) {
-      logger.error(`[Sentiment] OpenRouter call failed: ${err.message}`);
-      throw err;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(`[Sentiment] OpenRouter call failed: ${message}`);
+      throw new Error(message);
     }
   }
 
-  throw new Error('No AI provider available — set ANTHROPIC_API_KEY or VITE_OPENROUTER_API_KEY');
+  throw new Error('No AI provider available -- set ANTHROPIC_API_KEY or VITE_OPENROUTER_API_KEY');
 }
 
 // ---------- DB Helpers ----------
 
 export async function getSnapshotFromDB(topic: string): Promise<SentimentSnapshot | null> {
   try {
-    const rows: any[] = await db
+    const rows = await db
       .select()
       .from(sentimentSnapshots)
       .where(eq(sentimentSnapshots.topic, topic))
@@ -108,7 +110,7 @@ export async function getSnapshotFromDB(topic: string): Promise<SentimentSnapsho
       .all();
 
     if (rows.length === 0) return null;
-    return rowToSnapshot(rows[0]);
+    return rowToSnapshot(rows[0] as Record<string, unknown>);
   } catch {
     return null;
   }
@@ -142,8 +144,9 @@ export async function storeSnapshotToDB(snapshot: SentimentSnapshot): Promise<vo
     logger.info(
       `[Sentiment] Stored snapshot for "${snapshot.topic}" (score: ${snapshot.sentimentScore})`,
     );
-  } catch (err: any) {
-    logger.error(`[Sentiment] DB store failed:`, err.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error(`[Sentiment] DB store failed:`, message);
   }
 }
 
@@ -156,16 +159,17 @@ export async function getSentimentHistoryFromDB(
   const cutoffStr = cutoff.toISOString();
 
   try {
-    const rows: any[] = await db
+    const rows = await db
       .select()
       .from(sentimentSnapshots)
       .where(and(eq(sentimentSnapshots.topic, topic), gte(sentimentSnapshots.createdAt, cutoffStr)))
       .orderBy(desc(sentimentSnapshots.createdAt))
       .all();
 
-    return rows.map((r) => rowToSnapshot(r));
-  } catch (err: any) {
-    logger.error(`[Sentiment] History query failed for "${topic}":`, err.message);
+    return (rows as Record<string, unknown>[]).map((r) => rowToSnapshot(r));
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error(`[Sentiment] History query failed for "${topic}":`, message);
     return [];
   }
 }
@@ -198,25 +202,25 @@ export function safeParseJSON<T>(input: unknown, fallback: T): T {
   }
 }
 
-export function rowToSnapshot(row: any): SentimentSnapshot {
+export function rowToSnapshot(row: Record<string, unknown>): SentimentSnapshot {
   return {
-    id: row.id,
-    topic: row.topic,
-    query: row.query,
-    sentimentScore: row.sentimentScore ?? 0,
-    sentimentLabel: row.sentimentLabel ?? 'neutral',
-    confidence: row.confidence ?? 0,
-    positiveCount: row.positiveCount ?? 0,
-    negativeCount: row.negativeCount ?? 0,
-    neutralCount: row.neutralCount ?? 0,
-    totalPosts: row.totalPosts ?? 0,
+    id: row.id as string,
+    topic: row.topic as string,
+    query: row.query as string,
+    sentimentScore: (row.sentimentScore as number) ?? 0,
+    sentimentLabel: (row.sentimentLabel as string) ?? 'neutral',
+    confidence: (row.confidence as number) ?? 0,
+    positiveCount: (row.positiveCount as number) ?? 0,
+    negativeCount: (row.negativeCount as number) ?? 0,
+    neutralCount: (row.neutralCount as number) ?? 0,
+    totalPosts: (row.totalPosts as number) ?? 0,
     topPositive: safeParseJSON(row.topPositive, []),
     topNegative: safeParseJSON(row.topNegative, []),
-    summary: row.summary ?? '',
+    summary: (row.summary as string) ?? '',
     sources: safeParseJSON(row.sources, []),
-    analysisModel: row.analysisModel ?? '',
-    observationDate: row.observationDate ?? '',
-    createdAt: row.createdAt ?? '',
+    analysisModel: (row.analysisModel as string) ?? '',
+    observationDate: (row.observationDate as string) ?? '',
+    createdAt: (row.createdAt as string) ?? '',
   };
 }
 

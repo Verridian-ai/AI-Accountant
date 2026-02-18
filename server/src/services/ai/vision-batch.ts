@@ -103,8 +103,10 @@ Rules:
         `[AI Vision Batched] Batch ${batchNum} extracted ${batchTxs.length} transactions`,
       );
       allTransactions.push(...batchTxs);
-    } catch (err: any) {
-      logger.error(`[AI Vision Batched] Batch ${batchNum} error: ${err.message}`);
+    } catch (err: unknown) {
+      logger.error(
+        `[AI Vision Batched] Batch ${batchNum} error: ${err instanceof Error ? err.message : String(err)}`,
+      );
       // Continue with other batches even if one fails
     }
   }

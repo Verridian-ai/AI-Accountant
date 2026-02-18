@@ -19,11 +19,8 @@ import {
   CreditCardParserConfig,
   CreditCardTransaction,
   CreditCardAccountInfo,
-  CreditCardTransactionType,
   parseForeignAmount,
   parseConversionRate,
-  parseDate,
-  parseAmount,
 } from './base-credit-parser';
 
 /**

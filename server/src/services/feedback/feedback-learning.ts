@@ -6,6 +6,7 @@
  */
 
 import { db, parserFeedback, transactions, merchantMemory } from '../../schema.js';
+import type { ParserFeedbackRecord, Transaction } from '../../schema.js';
 import { eq, and, inArray } from 'drizzle-orm';
 import crypto from 'crypto';
 import { logger } from '../../utils/logger.js';
@@ -108,16 +109,19 @@ export async function findConsistentCategoryCorrections(
     .where(and(...conditions))
     .all();
 
-  const transactionIds = [...new Set(feedback.map((f: any) => f.transactionId as string))];
-  const txns =
-    transactionIds.length > 0
-      ? await db
+  const transactionIds: string[] = (feedback as ParserFeedbackRecord[])
+    .map((f) => f.transactionId)
+    .filter((id): id is string => id !== null);
+  const uniqueIds = [...new Set(transactionIds)];
+  const txnRows: Transaction[] =
+    uniqueIds.length > 0
+      ? ((await db
           .select()
           .from(transactions)
-          .where(inArray(transactions.id, transactionIds as string[]))
-          .all()
+          .where(inArray(transactions.id, uniqueIds))
+          .all()) as Transaction[])
       : [];
-  const txnMap = new Map(txns.map((t: any) => [t.id, t]));
+  const txnMap = new Map<string, Transaction>(txnRows.map((t) => [t.id, t]));
 
   const patternMap = new Map<
     string,
@@ -129,8 +133,8 @@ export async function findConsistentCategoryCorrections(
     }
   >();
 
-  for (const fb of feedback) {
-    const txn = txnMap.get(fb.transactionId) as any;
+  for (const fb of feedback as ParserFeedbackRecord[]) {
+    const txn = txnMap.get(fb.transactionId!);
     if (!txn || !txn.merchantNormalized) continue;
     const key = `${txn.merchantNormalized}::${fb.correctedValue}`;
     if (!patternMap.has(key)) {

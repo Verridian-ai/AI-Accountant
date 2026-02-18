@@ -109,7 +109,9 @@ class AgentMonitoringService {
     try {
       const result = await fn();
 
-      const usage = (result as any)?.usage;
+      const usage = (result as Record<string, unknown>)?.usage as
+        | { inputTokens?: number; outputTokens?: number; toolCalls?: number }
+        | undefined;
       const inputTokens = usage?.inputTokens ?? 0;
       const outputTokens = usage?.outputTokens ?? 0;
       const toolCalls = usage?.toolCalls ?? 0;
@@ -193,7 +195,7 @@ class AgentMonitoringService {
       countQuery = countQuery.where(whereClause);
     }
     const countResult = await countQuery.get();
-    const total = (countResult as any)?.count ?? 0;
+    const total = (countResult as { count: number } | undefined)?.count ?? 0;
 
     let filtered = data;
     if (filters.minDurationMs) {
@@ -230,7 +232,7 @@ class AgentMonitoringService {
       .from(agentExecutions)
       .where(lte(agentExecutions.createdAt, cutoff))
       .get();
-    const count = (countResult as any)?.count ?? 0;
+    const count = (countResult as { count: number } | undefined)?.count ?? 0;
 
     if (count > 0) {
       await db.delete(agentExecutions).where(lte(agentExecutions.createdAt, cutoff)).run();

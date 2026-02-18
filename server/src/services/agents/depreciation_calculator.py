@@ -1,3 +1,6 @@
+# Refactored: depreciation_calculator/ package replaces this file.
+# Python resolves 'from .depreciation_calculator import X' via depreciation_calculator/__init__.py.
+# This file is unreachable — the package directory takes priority in Python's import resolution.
 """
 Australian Depreciation Calculator
 

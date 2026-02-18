@@ -16,11 +16,15 @@ async function _getTenantPermissions(tenantId: string, role: TenantRole): Promis
     .from(rolePermissions)
     .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
     .all();
-  const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
+  const permIds: string[] = rps
+    .map((rp: { permissionId?: string | null; permission_id?: string | null }) =>
+      String(rp.permissionId ?? rp.permission_id ?? ''),
+    )
+    .filter(Boolean);
   if (permIds.length === 0) return [];
   const allPerms = await db.select().from(permissions).all();
   const permMap = new Map<string, string>();
-  for (const p of allPerms as any[]) {
+  for (const p of allPerms) {
     permMap.set(p.id, p.name);
   }
   return permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
@@ -33,7 +37,7 @@ export async function generateTenantToken(userId: string, tenantId: string): Pro
     .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
     .get();
   if (!member) throw new Error('User is not a member of this tenant');
-  const role = ((member as any).role ?? 'viewer') as TenantRole;
+  const role = ((member as Record<string, unknown>).role ?? 'viewer') as TenantRole;
   const permList = await _getTenantPermissions(tenantId, role);
   const now = Math.floor(Date.now() / 1000);
   const payload = {
@@ -66,7 +70,7 @@ export async function refreshTenantToken(
   const targetTenantId = newTenantId ?? existing.tenantId;
   const tenant = await db.select().from(tenants).where(eq(tenants.id, targetTenantId)).get();
   if (!tenant) return null;
-  const tenantRow = tenant as any;
+  const tenantRow = tenant as Record<string, unknown>;
   const isActive = tenantRow.isActive ?? tenantRow.is_active ?? true;
   if (!isActive) return null;
   const member = await db

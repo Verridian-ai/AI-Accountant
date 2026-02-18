@@ -10,3 +10,17 @@ export type {
   CacheEntry,
 } from './types.js';
 export { FETCH_TIMEOUT_MS, TTL, URLS } from './types.js';
+
+// Enhanced types (RBA + ABS combined feeds)
+export type {
+  EconomicIndicatorRecord,
+  IndicatorSummary,
+  RateDecision,
+  EnhancedEconomicSnapshot,
+  RbaFetchResult,
+  AbsFetchResult,
+  RbaTableIndicator,
+  RbaTableDef,
+  AbsDataflowIndicator,
+  AbsDataflowDef,
+} from './enhanced-types.js';

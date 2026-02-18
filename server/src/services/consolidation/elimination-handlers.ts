@@ -14,9 +14,19 @@ import type {
 
 type EliminationDetail = { ruleId: string; ruleName: string; amount: number; description: string };
 
+interface InterEntityTransaction {
+  id: string;
+  fromEntityId: string;
+  toEntityId: string;
+  amount: number;
+  description: string | null;
+  transactionType: string;
+  status: string | null;
+}
+
 export function applyRevenueElimination(
   criteria: RuleCriteria,
-  confirmedIETs: any[],
+  confirmedIETs: InterEntityTransaction[],
   snapshotId: string,
   rule: ConsolidationRule,
   eliminatedLines: ConsolidationSnapshotLine[],
@@ -71,7 +81,7 @@ export function applyRevenueElimination(
 
   if (matchingIETs.length > 0) {
     const totalEliminated = matchingIETs.reduce(
-      (sum: number, iet: any) => sum + Math.abs(iet.amount),
+      (sum: number, iet: InterEntityTransaction) => sum + Math.abs(iet.amount),
       0,
     );
     eliminationDetails.push({
@@ -85,7 +95,7 @@ export function applyRevenueElimination(
 
 export function applyLoanElimination(
   criteria: RuleCriteria,
-  confirmedIETs: any[],
+  confirmedIETs: InterEntityTransaction[],
   snapshotId: string,
   rule: ConsolidationRule,
   eliminatedLines: ConsolidationSnapshotLine[],
@@ -136,7 +146,7 @@ export function applyLoanElimination(
 
   if (loanIETs.length > 0) {
     const totalEliminated = loanIETs.reduce(
-      (sum: number, iet: any) => sum + Math.abs(iet.amount),
+      (sum: number, iet: InterEntityTransaction) => sum + Math.abs(iet.amount),
       0,
     );
     eliminationDetails.push({
@@ -149,7 +159,7 @@ export function applyLoanElimination(
 }
 
 export function applyDividendElimination(
-  confirmedIETs: any[],
+  confirmedIETs: InterEntityTransaction[],
   snapshotId: string,
   rule: ConsolidationRule,
   eliminatedLines: ConsolidationSnapshotLine[],
@@ -193,7 +203,7 @@ export function applyDividendElimination(
 
   if (dividendIETs.length > 0) {
     const totalEliminated = dividendIETs.reduce(
-      (sum: number, iet: any) => sum + Math.abs(iet.amount),
+      (sum: number, iet: InterEntityTransaction) => sum + Math.abs(iet.amount),
       0,
     );
     eliminationDetails.push({

@@ -1,3 +1,6 @@
+# Refactored: tax_agent/ package replaces this file.
+# Python resolves 'from .tax_agent import X' via tax_agent/__init__.py.
+# This file is unreachable — the package directory takes priority in Python's import resolution.
 """Tax Agent for Australian income tax calculations and deductions."""
 
 from pydantic_ai import Agent

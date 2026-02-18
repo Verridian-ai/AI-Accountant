@@ -5,14 +5,8 @@
 import { db, tenantMembers, tenantInvitations } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
 import crypto from 'crypto';
-import type {
-  Tenant,
-  TenantMember,
-  TenantInvitation,
-  TenantContext,
-  TenantRole,
-} from '../tenant-types.js';
-import { TENANT_ROLES } from '../tenant-types.js';
+import type { Tenant, TenantMember, TenantInvitation, TenantContext, TenantRole } from './types.js';
+import { TENANT_ROLES } from './types.js';
 import { INVITATION_EXPIRY_MS, rowToInvitation } from './helpers.js';
 import {
   addMember,
@@ -84,25 +78,30 @@ export async function acceptInvitation(
     .where(eq(tenantInvitations.token, token))
     .get();
   if (!invitation) throw new Error('Invalid invitation token');
-  const inv = invitation as any;
-  if (inv.status !== 'pending') throw new Error(`Invitation has already been ${inv.status}`);
-  const expiresAt = new Date(inv.expiresAt ?? inv.expires_at);
+  if (invitation.status !== 'pending')
+    throw new Error(`Invitation has already been ${invitation.status}`);
+  const expiresAt = new Date(invitation.expiresAt ?? invitation.expires_at);
   if (expiresAt < new Date()) {
     await db
       .update(tenantInvitations)
       .set({ status: 'expired' })
-      .where(eq(tenantInvitations.id, inv.id))
+      .where(eq(tenantInvitations.id, invitation.id))
       .run();
     throw new Error('Invitation has expired');
   }
-  const tenantId = inv.tenantId ?? inv.tenant_id;
-  const role = (inv.role ?? 'viewer') as TenantRole;
-  const member = await addMember(tenantId, userId, role, inv.invitedBy ?? inv.invited_by);
+  const tenantId = invitation.tenantId ?? invitation.tenant_id;
+  const role = (invitation.role ?? 'viewer') as TenantRole;
+  const member = await addMember(
+    tenantId,
+    userId,
+    role,
+    invitation.invitedBy ?? invitation.invited_by,
+  );
   const now = new Date().toISOString();
   await db
     .update(tenantInvitations)
     .set({ status: 'accepted', acceptedAt: now })
-    .where(eq(tenantInvitations.id, inv.id))
+    .where(eq(tenantInvitations.id, invitation.id))
     .run();
   const tenant = await getTenant(tenantId);
   if (!tenant) throw new Error('Tenant not found after accepting invitation');
@@ -116,8 +115,7 @@ export async function revokeInvitation(invitationId: string): Promise<void> {
     .where(eq(tenantInvitations.id, invitationId))
     .get();
   if (!invitation) throw new Error('Invitation not found');
-  if ((invitation as any).status !== 'pending')
-    throw new Error('Can only revoke pending invitations');
+  if (invitation.status !== 'pending') throw new Error('Can only revoke pending invitations');
   await db
     .update(tenantInvitations)
     .set({ status: 'revoked' })
@@ -131,7 +129,7 @@ export async function getPendingInvitations(tenantId: string): Promise<TenantInv
     .from(tenantInvitations)
     .where(and(eq(tenantInvitations.tenantId, tenantId), eq(tenantInvitations.status, 'pending')))
     .all();
-  return (rows as any[]).map(rowToInvitation);
+  return rows.map(rowToInvitation);
 }
 
 export async function cleanupExpiredInvitations(): Promise<number> {
@@ -142,7 +140,7 @@ export async function cleanupExpiredInvitations(): Promise<number> {
     .where(eq(tenantInvitations.status, 'pending'))
     .all();
   let count = 0;
-  for (const inv of expired as any[]) {
+  for (const inv of expired) {
     const expiresAt = inv.expiresAt ?? inv.expires_at;
     if (expiresAt && new Date(expiresAt) < new Date(now)) {
       await db
@@ -162,7 +160,7 @@ async function getPendingInvitationCount(tenantId: string): Promise<number> {
     .from(tenantInvitations)
     .where(and(eq(tenantInvitations.tenantId, tenantId), eq(tenantInvitations.status, 'pending')))
     .all();
-  return (rows as any[]).length;
+  return rows.length;
 }
 
 export async function switchTenant(userId: string, tenantId: string): Promise<TenantContext> {
@@ -179,7 +177,7 @@ export async function getTenantContext(userId: string, tenantId: string): Promis
   const tenant = await getTenant(tenantId);
   if (!tenant) throw new Error('Tenant not found');
   if (!tenant.isActive) throw new Error('Tenant has been deactivated');
-  const role = ((member as any).role ?? 'viewer') as TenantRole;
+  const role = (member.role ?? 'viewer') as TenantRole;
   const perms = await getPermissionsForRole(tenantId, role);
   const subscription = await getSubscriptionInfo(tenantId);
   await db
@@ -197,7 +195,7 @@ export async function getDefaultTenant(userId: string): Promise<Tenant | null> {
     .where(eq(tenantMembers.userId, userId))
     .orderBy(tenantMembers.joinedAt)
     .all();
-  if (!memberships || (memberships as any[]).length === 0) return null;
-  const first = (memberships as any[])[0];
+  if (!memberships || memberships.length === 0) return null;
+  const first = memberships[0];
   return getTenant(first.tenantId ?? first.tenant_id);
 }

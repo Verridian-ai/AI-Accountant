@@ -2,6 +2,7 @@
  * Pipeline stage: Transaction categorization, saving, and indexing.
  */
 import { db, transactions, pendingCategorization } from '../../schema.js';
+import type { DbInstance } from '../../db/queries/types.js';
 import { aiService } from '../ai.js';
 import { ragService } from '../rag.js';
 import { accountService } from '../accounts.js';
@@ -175,7 +176,7 @@ export async function insertTransactions(
   if (toInsert.length === 0) return;
   logger.info(`[Pipeline] Inserting ${toInsert.length} transactions into database...`);
 
-  await db.transaction(async (tx: Record<string, (...args: any[]) => any>) => {
+  await db.transaction(async (tx: DbInstance) => {
     await tx.insert(transactions).values(toInsert);
 
     const pendingItems: (typeof pendingCategorization.$inferInsert)[] = [];

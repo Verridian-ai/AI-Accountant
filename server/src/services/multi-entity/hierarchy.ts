@@ -76,7 +76,7 @@ export async function getEntityWithAccounts(
 ): Promise<{
   entity: Entity;
   settings: EntitySetting | null;
-  accounts: Array<EntityAccount & { accountDetails: any }>;
+  accounts: Array<EntityAccount & { accountDetails: Record<string, unknown> | null }>;
   parent?: Entity;
   children: Entity[];
 }> {

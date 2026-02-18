@@ -184,7 +184,10 @@ export async function seedDefaultAdmin(hashFn: (pw: string) => Promise<string>):
         '[AdminAuth] IMPORTANT: Save this password! Set ADMIN_DEFAULT_PASSWORD env var for production.',
       );
     }
-  } catch (err: any) {
-    logger.warn('[AdminAuth] Could not seed default admin:', err.message || err);
+  } catch (err: unknown) {
+    logger.warn(
+      '[AdminAuth] Could not seed default admin:',
+      err instanceof Error ? err.message : String(err) || err,
+    );
   }
 }

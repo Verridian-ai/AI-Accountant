@@ -20,7 +20,7 @@ export interface OCRDocumentRecord {
   gstAmount?: number | null;
   totalAmount?: number | null;
   currency: string;
-  extractedData?: any;
+  extractedData?: Record<string, unknown>;
   confidenceScore: number;
   status: string;
   errorMessage?: string | null;

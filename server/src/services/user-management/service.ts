@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { db } from '../../schema.js';
 import { adminUsers, type AdminUser, type FeatureFlag } from '../../db/admin-schema.js';
 import { eq, and, desc, asc, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { AdminAuthService, adminAuthService } from '../admin-auth.js';
 import type {
   CreateAdminInput,
@@ -144,7 +145,11 @@ export class UserManagementService {
       action: 'admin.update',
       resourceType: 'admin_user',
       resourceId: id,
-      details: { changes: Object.keys(data).filter((k) => (data as any)[k] !== undefined) },
+      details: {
+        changes: Object.keys(data).filter(
+          (k) => (data as Record<string, unknown>)[k] !== undefined,
+        ),
+      },
       status: 'success',
     }).catch(() => {});
     const updated = await db.select().from(adminUsers).where(eq(adminUsers.id, id)).get();
@@ -183,7 +188,7 @@ export class UserManagementService {
   ): Promise<PaginatedResult<Omit<AdminUser, 'passwordHash' | 'mfaSecret'>>> {
     const limit = filters?.limit ?? 50;
     const offset = filters?.offset ?? 0;
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
     if (filters?.role) conditions.push(eq(adminUsers.role, filters.role));
     if (filters?.isActive !== undefined) conditions.push(eq(adminUsers.isActive, filters.isActive));
     if (filters?.search) {

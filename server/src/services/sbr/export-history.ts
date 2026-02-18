@@ -24,32 +24,32 @@ export async function getExportHistory(
     .orderBy(desc(exportHistory.createdAt))
     .limit(limit);
 
-  return history.map((h: any) => {
+  return (history as Record<string, unknown>[]).map((h) => {
     let financialYear = '';
     let quarter = 0;
 
     // Safely parse dateRange JSON
     if (h.dateRange) {
       try {
-        const parsed = JSON.parse(h.dateRange);
+        const parsed = JSON.parse(h.dateRange as string);
         financialYear = parsed.financialYear || '';
         quarter = parsed.quarter || 0;
       } catch {
         // dateRange is malformed; use defaults
-        logger.warn(`Malformed dateRange in export history ${h.id}`);
+        logger.warn(`Malformed dateRange in export history ${h.id as string}`);
       }
     }
 
     return {
-      id: h.id,
-      userId: h.userId,
+      id: h.id as string,
+      userId: h.userId as string,
       financialYear,
       quarter,
-      format: h.format,
-      status: h.status,
-      filePath: h.filePath || undefined,
-      createdAt: h.createdAt,
-      expiresAt: h.expiresAt || undefined,
+      format: h.format as string,
+      status: h.status as string,
+      filePath: (h.filePath as string | null) || undefined,
+      createdAt: h.createdAt as string,
+      expiresAt: (h.expiresAt as string | null) || undefined,
     };
   });
 }

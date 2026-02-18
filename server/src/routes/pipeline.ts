@@ -8,7 +8,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { db, transactions, accounts, transferLinks, merchantMemory } from '../schema.js';
-import { eq, and, gte, lte, like } from 'drizzle-orm';
+import { eq, and, like } from 'drizzle-orm';
 import {
   TransferDetector,
   type TransferCandidate,

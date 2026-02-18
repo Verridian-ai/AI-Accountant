@@ -56,14 +56,14 @@ export async function processFileWithWorker(
 
     emitFileEvent(job, file, 'file_completed');
     logger.info(`[Queue] File ${file.originalName} completed successfully`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error({ err: error }, `[Queue] File ${file.originalName} failed`);
 
     file.retryCount++;
     job.progress.processing--;
 
     // Don't retry timeout errors
-    const isTimeout = error.code === 'PROCESSING_TIMEOUT';
+    const isTimeout = (error as NodeJS.ErrnoException).code === 'PROCESSING_TIMEOUT';
     const canRetry = !isTimeout && file.retryCount < queueConfig.maxRetries;
 
     if (canRetry) {
@@ -84,7 +84,7 @@ export async function processFileWithWorker(
       }, delay);
     } else {
       file.state = 'failed';
-      file.error = error.message || 'Unknown error';
+      file.error = error instanceof Error ? error.message : String(error) || 'Unknown error';
       job.progress.failed++;
 
       emitFileEvent(job, file, 'file_failed');

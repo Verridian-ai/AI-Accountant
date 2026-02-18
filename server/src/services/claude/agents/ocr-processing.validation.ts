@@ -11,31 +11,42 @@ import { eq, asc } from 'drizzle-orm';
 
 export async function validateExtraction(documentId: string): Promise<{
   isValid: boolean;
-  checks: Array<{ name: string; passed: boolean; expected?: any; actual?: any; message?: string }>;
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    expected?: unknown;
+    actual?: unknown;
+    message?: string;
+  }>;
   warnings: string[];
-  suggestedFixes: Array<{ field: string; currentValue: any; suggestedValue: any; reason: string }>;
+  suggestedFixes: Array<{
+    field: string;
+    currentValue: unknown;
+    suggestedValue: unknown;
+    reason: string;
+  }>;
 }> {
   const checks: Array<{
     name: string;
     passed: boolean;
-    expected?: any;
-    actual?: any;
+    expected?: unknown;
+    actual?: unknown;
     message?: string;
   }> = [];
   const warnings: string[] = [];
   const suggestedFixes: Array<{
     field: string;
-    currentValue: any;
-    suggestedValue: any;
+    currentValue: unknown;
+    suggestedValue: unknown;
     reason: string;
   }> = [];
 
   // Fetch document
-  const doc: any = await db
+  const doc = (await db
     .select()
     .from(ocrDocuments)
     .where(eq(ocrDocuments.id, documentId))
-    .get();
+    .get()) as Record<string, unknown> | undefined;
   if (!doc) {
     return {
       isValid: false,
@@ -48,24 +59,27 @@ export async function validateExtraction(documentId: string): Promise<{
   }
 
   // Fetch line items
-  const lineItems: any[] = await db
+  const lineItems = (await db
     .select()
     .from(ocrLineItems)
     .where(eq(ocrLineItems.documentId, documentId))
     .orderBy(asc(ocrLineItems.lineNumber))
-    .all();
+    .all()) as Record<string, unknown>[];
 
-  const subtotal = doc.subtotal ?? null;
-  const gstAmount = doc.gstAmount ?? doc.gst_amount ?? null;
-  const totalAmount = doc.totalAmount ?? doc.total_amount ?? null;
-  const documentDate = doc.documentDate ?? doc.document_date ?? null;
-  const dueDate = doc.dueDate ?? doc.due_date ?? null;
-  const vendorAbn = doc.vendorAbn ?? doc.vendor_abn ?? null;
-  const documentType = doc.documentType ?? doc.document_type ?? null;
+  const subtotal = (doc.subtotal ?? null) as number | null;
+  const gstAmount = (doc.gstAmount ?? doc.gst_amount ?? null) as number | null;
+  const totalAmount = (doc.totalAmount ?? doc.total_amount ?? null) as number | null;
+  const documentDate = (doc.documentDate ?? doc.document_date ?? null) as string | null;
+  const dueDate = (doc.dueDate ?? doc.due_date ?? null) as string | null;
+  const vendorAbn = (doc.vendorAbn ?? doc.vendor_abn ?? null) as string | null;
+  const documentType = (doc.documentType ?? doc.document_type ?? null) as string | null;
 
   // 1. Line items sum vs subtotal
   if (lineItems.length > 0 && subtotal != null) {
-    const lineItemsSum = lineItems.reduce((sum: number, item: any) => sum + (item.amount ?? 0), 0);
+    const lineItemsSum = lineItems.reduce(
+      (sum: number, item: Record<string, unknown>) => sum + (Number(item.amount) || 0),
+      0,
+    );
     const diff = Math.abs(lineItemsSum - subtotal);
     const passed = diff <= 0.01;
     checks.push({

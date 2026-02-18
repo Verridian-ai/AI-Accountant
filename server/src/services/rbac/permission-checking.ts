@@ -28,7 +28,7 @@ export async function getRoleForUser(tenantId: string, userId: string): Promise<
     .get();
 
   if (!member) return null;
-  return ((member as any).role ?? 'viewer') as TenantRole;
+  return ((member as Record<string, unknown>).role ?? 'viewer') as TenantRole;
 }
 
 /**
@@ -55,7 +55,7 @@ export async function getCachedPermissions(
     .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
     .all();
 
-  const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
+  const permIds = rps.map((rp: Record<string, unknown>) => rp.permissionId ?? rp.permission_id);
   if (permIds.length === 0) {
     cache.set(tenantId, userId, []);
     return [];
@@ -64,11 +64,13 @@ export async function getCachedPermissions(
   // Fetch permission names
   const allPerms = await db.select().from(permissions).all();
   const permMap = new Map<string, string>();
-  for (const p of allPerms as any[]) {
+  for (const p of allPerms as Array<{ id: string; name: string }>) {
     permMap.set(p.id, p.name);
   }
 
-  const permNames = permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
+  const permNames = (permIds as (string | unknown)[])
+    .map((id) => permMap.get(id as string))
+    .filter((name): name is string => !!name);
 
   // Cache the result
   cache.set(tenantId, userId, permNames);

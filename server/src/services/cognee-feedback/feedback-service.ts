@@ -8,6 +8,7 @@
 
 import { randomUUID } from 'crypto';
 import { eq, and, desc, gte, lte } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { db, cogneeFeedback } from '../../schema.js';
 import { cogneeClient } from '../cognee_client.js';
 import type {
@@ -76,7 +77,7 @@ export class CogneeFeedbackService {
    * Calculates accuracy rate, trend, and top corrected fields.
    */
   async getFeedbackStats(userId: string, filters?: FeedbackFilters): Promise<FeedbackStats> {
-    const conditions: any[] = [eq(cogneeFeedback.userId, userId)];
+    const conditions: SQL[] = [eq(cogneeFeedback.userId, userId)];
     if (filters?.entityType) {
       conditions.push(eq(cogneeFeedback.entityType, filters.entityType));
     }
@@ -161,8 +162,8 @@ export class CogneeFeedbackService {
     filters?: FeedbackFilters,
     page: number = 1,
     pageSize: number = 20,
-  ): Promise<{ items: any[]; total: number; page: number; pageSize: number }> {
-    const conditions: any[] = [eq(cogneeFeedback.userId, userId)];
+  ): Promise<{ items: Record<string, unknown>[]; total: number; page: number; pageSize: number }> {
+    const conditions: SQL[] = [eq(cogneeFeedback.userId, userId)];
     if (filters?.entityType) {
       conditions.push(eq(cogneeFeedback.entityType, filters.entityType));
     }

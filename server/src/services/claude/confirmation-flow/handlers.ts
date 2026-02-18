@@ -23,10 +23,6 @@ import { logger } from '../../../lib/logger.js';
 import { ConfirmationFlowManager } from './flow-manager.js';
 
 export class ConfirmationFlowService extends ConfirmationFlowManager {
-  constructor(db: any) {
-    super(db);
-  }
-
   // ── Propose & Broadcast ─────────────────────────────────────────────────
 
   /**
@@ -116,7 +112,7 @@ export class ConfirmationFlowService extends ConfirmationFlowManager {
         confidence: proposal.confidence,
       },
       timestamp: new Date().toISOString(),
-    } as any);
+    });
 
     return { mutation, autoExecuted: canAutoExec };
   }
@@ -185,7 +181,7 @@ export class ConfirmationFlowService extends ConfirmationFlowManager {
       type: 'mutation_confirmed',
       data: { mutationId, agentType: mutation.agentType, userId },
       timestamp: now,
-    } as any);
+    });
 
     return { ...mutation, status: 'executed' as MutationStatus, confirmedAt: now, executedAt: now };
   }
@@ -235,7 +231,7 @@ export class ConfirmationFlowService extends ConfirmationFlowManager {
       type: 'mutation_rejected',
       data: { mutationId, agentType: mutation.agentType, userId, reason },
       timestamp: now,
-    } as any);
+    });
 
     return {
       ...mutation,
@@ -271,7 +267,7 @@ export class ConfirmationFlowService extends ConfirmationFlowManager {
         type: 'mutations_expired',
         data: { count },
         timestamp: now,
-      } as any);
+      });
     }
 
     return count;

@@ -52,13 +52,14 @@ export async function checkPostgres(): Promise<HealthCheckResult> {
       responseTimeMs: Date.now() - start,
       details: result,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'PostgreSQL check failed';
     return {
       service: 'postgres',
       status: 'unhealthy',
       responseTimeMs: Date.now() - start,
       details: {},
-      error: err.message ?? 'PostgreSQL check failed',
+      error: message,
     };
   }
 }
@@ -94,13 +95,14 @@ export async function checkCognee(): Promise<HealthCheckResult> {
       responseTimeMs: Date.now() - start,
       details: result,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Cognee check failed';
     return {
       service: 'cognee',
       status: 'degraded',
       responseTimeMs: Date.now() - start,
       details: {},
-      error: err.message ?? 'Cognee check failed',
+      error: message,
     };
   }
 }
@@ -132,13 +134,14 @@ export async function checkServer(): Promise<HealthCheckResult> {
         platform: process.platform,
       },
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Server check failed';
     return {
       service: 'server',
       status: 'unhealthy',
       responseTimeMs: Date.now() - start,
       details: {},
-      error: err.message ?? 'Server check failed',
+      error: message,
     };
   }
 }
@@ -159,14 +162,15 @@ export async function checkClient(): Promise<HealthCheckResult> {
       responseTimeMs: Date.now() - start,
       details: result,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     // Client nginx may not be reachable outside Docker — graceful degradation
+    const message = err instanceof Error ? err.message : 'Client check failed';
     return {
       service: 'client',
       status: 'degraded',
       responseTimeMs: Date.now() - start,
       details: { note: 'Client may not be reachable outside Docker' },
-      error: err.message ?? 'Client check failed',
+      error: message,
     };
   }
 }
@@ -209,13 +213,14 @@ export async function checkRedis(): Promise<HealthCheckResult> {
       responseTimeMs: Date.now() - start,
       details: result,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Redis check failed';
     return {
       service: 'redis',
       status: 'degraded',
       responseTimeMs: Date.now() - start,
       details: {},
-      error: err.message ?? 'Redis check failed',
+      error: message,
     };
   }
 }

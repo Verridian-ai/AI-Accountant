@@ -2,7 +2,7 @@
  * Push Notification Helper Functions
  */
 
-import type { PushSubscriptionRecord } from '../push-notification-types.js';
+import type { PushSubscriptionRecord } from './types.js';
 
 /** Parse keys JSON from DB (stored as text) */
 export function parseKeysJson(raw: unknown): { p256dh: string; auth: string } {
@@ -16,16 +16,16 @@ export function parseKeysJson(raw: unknown): { p256dh: string; auth: string } {
 }
 
 /** Convert raw DB row to PushSubscriptionRecord */
-export function rowToSubscription(row: any): PushSubscriptionRecord {
+export function rowToSubscription(row: Record<string, unknown>): PushSubscriptionRecord {
   return {
-    id: row.id,
-    userId: row.userId ?? row.user_id,
-    tenantId: row.tenantId ?? row.tenant_id,
-    endpoint: row.endpoint,
+    id: row.id as string,
+    userId: (row.userId ?? row.user_id) as string,
+    tenantId: (row.tenantId ?? row.tenant_id) as string,
+    endpoint: row.endpoint as string,
     keysJson: parseKeysJson(row.keysJson ?? row.keys_json),
-    deviceName: row.deviceName ?? row.device_name ?? undefined,
+    deviceName: (row.deviceName ?? row.device_name) as string | undefined,
     isActive: Boolean(row.isActive ?? row.is_active ?? true),
-    lastUsedAt: row.lastUsedAt ?? row.last_used_at ?? undefined,
+    lastUsedAt: (row.lastUsedAt ?? row.last_used_at) as string | undefined,
     errorCount: Number(row.errorCount ?? row.error_count ?? 0),
   };
 }

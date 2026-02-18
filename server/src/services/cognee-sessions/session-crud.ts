@@ -31,8 +31,11 @@ export async function createSession(
     const key = `${KEY_PREFIX}session:${userId}:${id}`;
     await redis.set(key, JSON.stringify(session), 'EX', SESSION_TTL_SECONDS);
     return session;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to create session:', err.message);
+  } catch (err: unknown) {
+    logger.warn(
+      '[CogneeSession] Failed to create session:',
+      err instanceof Error ? err.message : String(err),
+    );
     return null;
   }
 }
@@ -51,8 +54,11 @@ export async function getSession(
     session.lastActivityAt = new Date().toISOString();
     await redis.set(key, JSON.stringify(session), 'EX', SESSION_TTL_SECONDS);
     return session;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to get session:', err.message);
+  } catch (err: unknown) {
+    logger.warn(
+      '[CogneeSession] Failed to get session:',
+      err instanceof Error ? err.message : String(err),
+    );
     return null;
   }
 }
@@ -74,8 +80,11 @@ export async function updateSession(
     session.lastActivityAt = new Date().toISOString();
     await redis.set(key, JSON.stringify(session), 'EX', SESSION_TTL_SECONDS);
     return session;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to update session:', err.message);
+  } catch (err: unknown) {
+    logger.warn(
+      '[CogneeSession] Failed to update session:',
+      err instanceof Error ? err.message : String(err),
+    );
     return null;
   }
 }
@@ -90,8 +99,11 @@ export async function destroySession(
     if (!key) return false;
     const deleted = await redis.del(key);
     return deleted > 0;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to destroy session:', err.message);
+  } catch (err: unknown) {
+    logger.warn(
+      '[CogneeSession] Failed to destroy session:',
+      err instanceof Error ? err.message : String(err),
+    );
     return false;
   }
 }
@@ -106,8 +118,11 @@ export async function listUserSessions(redis: Redis, userId: string): Promise<Co
       if (data) sessions.push(JSON.parse(data));
     }
     return sessions;
-  } catch (err: any) {
-    logger.warn('[CogneeSession] Failed to list sessions:', err.message);
+  } catch (err: unknown) {
+    logger.warn(
+      '[CogneeSession] Failed to list sessions:',
+      err instanceof Error ? err.message : String(err),
+    );
     return [];
   }
 }

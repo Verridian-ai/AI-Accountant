@@ -15,6 +15,30 @@ import {
   ATM_PATTERNS,
 } from './types.js';
 
+interface TransactionRow {
+  id: string;
+  accountId: string | null;
+  date: string;
+  description: string;
+  amount: number;
+  category: string | null;
+  isTransfer: boolean | number | null;
+}
+
+interface AccountRow {
+  id: string;
+  accountNumber: string | null;
+  bankName: string | null;
+  accountName: string;
+  accountType: string;
+  ownershipTag: string | null;
+}
+
+function toOwnershipTag(tag: string | null): 'business' | 'personal' | undefined {
+  if (tag === 'business' || tag === 'personal') return tag;
+  return undefined;
+}
+
 /**
  * Scan for potential owner contributions (personal -> business transfers)
  * Uses TransferDetector to match cross-account transfers.
@@ -26,10 +50,14 @@ export async function scanForContributions(
   const { start, end } = getFinancialYearDates(financialYear);
 
   // Load accounts
-  const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId)).all();
+  const userAccounts: AccountRow[] = await db
+    .select()
+    .from(accounts)
+    .where(eq(accounts.userId, userId))
+    .all();
 
   // Load transactions in the financial year
-  const txRows = await db
+  const txRows: TransactionRow[] = await db
     .select()
     .from(transactions)
     .where(
@@ -42,21 +70,21 @@ export async function scanForContributions(
     .all();
 
   // Map to TransferDetector format
-  const candidates: TransferCandidate[] = txRows.map((tx: any, i: number) => ({
+  const candidates: TransferCandidate[] = txRows.map((tx: TransactionRow, i: number) => ({
     id: i,
-    accountId: userAccounts.findIndex((a: any) => a.id === tx.accountId),
+    accountId: userAccounts.findIndex((a: AccountRow) => a.id === tx.accountId),
     date: tx.date,
     description: tx.description,
     amount: tx.amount,
   }));
 
-  const accountContexts: AccountContext[] = userAccounts.map((a: any, i: number) => ({
+  const accountContexts: AccountContext[] = userAccounts.map((a: AccountRow, i: number) => ({
     id: i,
     accountNumber: a.accountNumber ?? '',
     bankId: a.bankName ?? 'CBA',
     accountName: a.accountName,
     accountType: a.accountType,
-    ownershipTag: a.ownershipTag ?? 'business',
+    ownershipTag: toOwnershipTag(a.ownershipTag) ?? 'business',
   }));
 
   // Detect contributions using TransferDetector
@@ -100,7 +128,7 @@ export async function scanForDrawings(
   const { start, end } = getFinancialYearDates(financialYear);
 
   // Load business accounts
-  const businessAccounts = await db
+  const businessAccounts: AccountRow[] = await db
     .select()
     .from(accounts)
     .where(and(eq(accounts.userId, userId), sql`${accounts.ownershipTag} = 'business'`))
@@ -108,10 +136,10 @@ export async function scanForDrawings(
 
   if (businessAccounts.length === 0) return [];
 
-  const businessAccountIds = new Set(businessAccounts.map((a: any) => a.id));
+  const businessAccountIds = new Set(businessAccounts.map((a: AccountRow) => a.id));
 
   // Load business account transactions in the financial year
-  const txRows = await db
+  const txRows: TransactionRow[] = await db
     .select()
     .from(transactions)
     .where(
@@ -126,7 +154,7 @@ export async function scanForDrawings(
 
   const events: DetectedEquityEvent[] = [];
 
-  for (const tx of txRows as any[]) {
+  for (const tx of txRows) {
     // Only consider transactions from business accounts
     if (!tx.accountId || !businessAccountIds.has(tx.accountId)) continue;
 
@@ -136,7 +164,7 @@ export async function scanForDrawings(
     // Check for ATM withdrawals
     const isATM = ATM_PATTERNS.some((p) => p.test(desc));
     if (isATM) {
-      const account = businessAccounts.find((a: any) => a.id === tx.accountId);
+      const account = businessAccounts.find((a: AccountRow) => a.id === tx.accountId);
       events.push({
         transactionId: tx.id,
         amount,
@@ -151,7 +179,7 @@ export async function scanForDrawings(
     // Check for personal expense categories
     const isPersonalExpense = PERSONAL_EXPENSE_CATEGORIES.includes(tx.category ?? '');
     if (isPersonalExpense) {
-      const account = businessAccounts.find((a: any) => a.id === tx.accountId);
+      const account = businessAccounts.find((a: AccountRow) => a.id === tx.accountId);
       events.push({
         transactionId: tx.id,
         amount,
@@ -165,7 +193,7 @@ export async function scanForDrawings(
 
     // Check for transfers to personal accounts (isTransfer + isOwnerContribution inverse)
     if (tx.isTransfer && amount >= CONTRIBUTION_THRESHOLD_CENTS) {
-      const account = businessAccounts.find((a: any) => a.id === tx.accountId);
+      const account = businessAccounts.find((a: AccountRow) => a.id === tx.accountId);
       events.push({
         transactionId: tx.id,
         amount,

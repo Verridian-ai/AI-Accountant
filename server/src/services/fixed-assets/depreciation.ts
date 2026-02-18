@@ -5,6 +5,8 @@
  */
 
 import { db, depreciableAssets, depreciationSchedule } from '../../schema.js';
+import type { DepreciableAsset } from '../../schema.js';
+import type { DepreciationScheduleRecord } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
 import crypto from 'crypto';
 import type { AssetStatus, DepreciationMethod, DepreciationResult } from './types.js';
@@ -34,7 +36,7 @@ export async function calculateDepreciation(
     throw new Error(`Asset not found: ${assetId}`);
   }
 
-  const asset: any = rows[0];
+  const asset = rows[0] as DepreciableAsset;
   const fy = parseFY(financialYear);
   const purchaseDate = new Date(asset.purchaseDate);
 
@@ -70,7 +72,7 @@ export async function calculateDepreciation(
     .limit(1);
 
   if (existingDepr.length > 0) {
-    const existing: any = existingDepr[0];
+    const existing = existingDepr[0] as DepreciationScheduleRecord;
     return {
       openingValue: existing.openingValue ?? openingWDV,
       depreciationAmount: existing.depreciationAmount ?? 0,
@@ -171,7 +173,7 @@ export async function runBatchDepreciation(
   const errors: Array<{ assetId: string; error: string }> = [];
   let totalDepreciation = 0;
 
-  for (const asset of allAssets as any[]) {
+  for (const asset of allAssets as DepreciableAsset[]) {
     try {
       const depr = await calculateDepreciation(asset.id, financialYear);
 
@@ -205,8 +207,8 @@ export async function runBatchDepreciation(
         depreciationAmount: depr.depreciationAmount,
         closingValue: depr.closingValue,
       });
-    } catch (err: any) {
-      errors.push({ assetId: asset.id, error: err.message ?? String(err) });
+    } catch (err: unknown) {
+      errors.push({ assetId: asset.id, error: err instanceof Error ? err.message : String(err) });
     }
   }
 

@@ -3,7 +3,9 @@
  */
 
 import { db, depreciableAssets, depreciationSchedule } from '../../schema.js';
+import type { DepreciableAsset } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 import type {
   AssetCategory,
@@ -150,7 +152,7 @@ export async function recordDisposal(params: {
 
   if (rows.length === 0) throw new Error(`Asset not found: ${params.assetId}`);
 
-  const asset: any = rows[0];
+  const asset = rows[0] as DepreciableAsset;
   const proceeds = params.proceeds ?? 0;
   const gstOnProceeds = params.gstOnProceeds ?? 0;
   const wdvAtDisposal: number = asset.currentWrittenDownValue ?? asset.currentValue ?? 0;
@@ -209,7 +211,7 @@ export async function getAssetRegister(
     byCategory: Array<{ category: string; count: number; cost: number; wdv: number }>;
   };
 }> {
-  const conditions: any[] = [eq(depreciableAssets.userId, userId)];
+  const conditions: SQL[] = [eq(depreciableAssets.userId, userId)];
   if (filters?.category) conditions.push(eq(depreciableAssets.assetCategory, filters.category));
   if (filters?.status === 'active') conditions.push(eq(depreciableAssets.isActive, true));
   else if (
@@ -225,7 +227,7 @@ export async function getAssetRegister(
     .from(depreciableAssets)
     .where(and(...conditions));
 
-  const assets: FixedAsset[] = (rows as any[]).map((r: any) => ({
+  const assets: FixedAsset[] = (rows as DepreciableAsset[]).map((r) => ({
     id: r.id,
     userId: r.userId,
     entityId: null,

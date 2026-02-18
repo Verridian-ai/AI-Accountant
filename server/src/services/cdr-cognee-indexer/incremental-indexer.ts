@@ -15,6 +15,14 @@ import {
   cdrFeatures,
   cdrDataHolders,
 } from '../../schema.js';
+import type {
+  CdrProduct,
+  CdrDataHolder,
+  CdrLendingRate,
+  CdrDepositRate,
+  CdrFee,
+  CdrFeature,
+} from '../../db/cdr-schema.js';
 import { logger } from '../../lib/logger.js';
 import { cogneeTools, COGNEE_DATASETS } from '../claude/cognee-tools.js';
 import type { CdrIndexResult } from './types.js';
@@ -26,11 +34,11 @@ export async function indexDataHolder(dataHolderId: string): Promise<CdrIndexRes
   const start = Date.now();
   const allErrors: string[] = [];
 
-  const products = await db
+  const products = (await db
     .select()
     .from(cdrProducts)
     .where(eq(cdrProducts.dataHolderId, dataHolderId))
-    .all();
+    .all()) as CdrProduct[];
 
   if (!products?.length) {
     return {
@@ -42,65 +50,69 @@ export async function indexDataHolder(dataHolderId: string): Promise<CdrIndexRes
     };
   }
 
-  const holder = await db
+  const holder = (await db
     .select()
     .from(cdrDataHolders)
     .where(eq(cdrDataHolders.id, dataHolderId))
-    .get();
-  const holderName = (holder as any)?.brandName ?? dataHolderId;
+    .get()) as CdrDataHolder | undefined;
+  const holderName = holder?.brandName ?? dataHolderId;
 
   const productTexts: string[] = [];
   const rateTexts: string[] = [];
   const knowledgeTexts: string[] = [];
 
-  for (const product of products as any[]) {
+  for (const product of products) {
     const pid = product.id;
 
     productTexts.push(
       `Product: ${product.name}. Bank: ${holderName}. Category: ${product.productCategory}. ${product.description ?? ''}`.trim(),
     );
 
-    const lRates = await db
+    const lRates = (await db
       .select()
       .from(cdrLendingRates)
       .where(eq(cdrLendingRates.productId, pid))
-      .all();
-    for (const lr of lRates as any[]) {
+      .all()) as CdrLendingRate[];
+    for (const lr of lRates) {
       const ratePercent = ((lr.rate ?? 0) * 100).toFixed(2);
       rateTexts.push(
         `Lending Rate: ${product.name} (${holderName}). Type: ${lr.lendingRateType}. Rate: ${ratePercent}%.`,
       );
     }
 
-    const dRates = await db
+    const dRates = (await db
       .select()
       .from(cdrDepositRates)
       .where(eq(cdrDepositRates.productId, pid))
-      .all();
-    for (const dr of dRates as any[]) {
+      .all()) as CdrDepositRate[];
+    for (const dr of dRates) {
       const ratePercent = ((dr.rate ?? 0) * 100).toFixed(2);
       rateTexts.push(
         `Deposit Rate: ${product.name} (${holderName}). Type: ${dr.depositRateType}. Rate: ${ratePercent}%.`,
       );
     }
 
-    const fees = await db.select().from(cdrFees).where(eq(cdrFees.productId, pid)).all();
-    const features = await db
+    const fees = (await db
+      .select()
+      .from(cdrFees)
+      .where(eq(cdrFees.productId, pid))
+      .all()) as CdrFee[];
+    const features = (await db
       .select()
       .from(cdrFeatures)
       .where(eq(cdrFeatures.productId, pid))
-      .all();
+      .all()) as CdrFeature[];
 
-    const lendingSummary = (lRates as any[])
+    const lendingSummary = lRates
       .map((lr) => `${lr.lendingRateType}: ${((lr.rate ?? 0) * 100).toFixed(2)}%`)
       .join('; ');
-    const depositSummary = (dRates as any[])
+    const depositSummary = dRates
       .map((dr) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
       .join('; ');
-    const feeSummary = (fees as any[])
+    const feeSummary = fees
       .map((f) => `${f.name}: ${f.amount ? `$${f.amount}` : 'varies'}`)
       .join('; ');
-    const featureSummary = (features as any[]).map((f) => f.featureType).join('; ');
+    const featureSummary = features.map((f) => f.featureType).join('; ');
 
     let doc = `Banking Product: ${product.name} by ${holderName}. Category: ${product.productCategory}. `;
     if (product.description) doc += `${product.description}. `;
@@ -114,21 +126,21 @@ export async function indexDataHolder(dataHolderId: string): Promise<CdrIndexRes
 
   try {
     if (productTexts.length) await cogneeTools.index(productTexts, COGNEE_DATASETS.cdrProducts);
-  } catch (err: any) {
-    allErrors.push(`Product indexing: ${err.message}`);
+  } catch (err: unknown) {
+    allErrors.push(`Product indexing: ${err instanceof Error ? err.message : String(err)}`);
   }
 
   try {
     if (rateTexts.length) await cogneeTools.index(rateTexts, COGNEE_DATASETS.cdrRates);
-  } catch (err: any) {
-    allErrors.push(`Rate indexing: ${err.message}`);
+  } catch (err: unknown) {
+    allErrors.push(`Rate indexing: ${err instanceof Error ? err.message : String(err)}`);
   }
 
   try {
     if (knowledgeTexts.length)
       await cogneeTools.index(knowledgeTexts, COGNEE_DATASETS.bankingProductKnowledge);
-  } catch (err: any) {
-    allErrors.push(`Knowledge indexing: ${err.message}`);
+  } catch (err: unknown) {
+    allErrors.push(`Knowledge indexing: ${err instanceof Error ? err.message : String(err)}`);
   }
 
   return {
@@ -149,11 +161,11 @@ export async function incrementalIndex(since: string): Promise<CdrIndexResult> {
 
   logger.info(`[CDR-Indexer] Incremental index for products updated since ${since}`);
 
-  const updatedProducts = await db
+  const updatedProducts = (await db
     .select()
     .from(cdrProducts)
     .where(gt(cdrProducts.updatedAt, since))
-    .all();
+    .all()) as CdrProduct[];
 
   if (!updatedProducts?.length) {
     logger.info('[CDR-Indexer] No updated products found');
@@ -170,29 +182,29 @@ export async function incrementalIndex(since: string): Promise<CdrIndexResult> {
   const rateTexts: string[] = [];
   const knowledgeTexts: string[] = [];
 
-  for (const product of updatedProducts as any[]) {
+  for (const product of updatedProducts) {
     const pid = product.id;
 
     let holderName = product.brandName ?? product.brand ?? '';
     if (!holderName && product.dataHolderId) {
-      const holder = await db
+      const holder = (await db
         .select()
         .from(cdrDataHolders)
         .where(eq(cdrDataHolders.id, product.dataHolderId))
-        .get();
-      holderName = (holder as any)?.brandName ?? product.dataHolderId;
+        .get()) as CdrDataHolder | undefined;
+      holderName = holder?.brandName ?? product.dataHolderId ?? '';
     }
 
     productTexts.push(
       `Product: ${product.name}. Bank: ${holderName}. Category: ${product.productCategory}. ${product.description ?? ''}`.trim(),
     );
 
-    const lRates = await db
+    const lRates = (await db
       .select()
       .from(cdrLendingRates)
       .where(eq(cdrLendingRates.productId, pid))
-      .all();
-    for (const lr of lRates as any[]) {
+      .all()) as CdrLendingRate[];
+    for (const lr of lRates) {
       const ratePercent = ((lr.rate ?? 0) * 100).toFixed(2);
       rateTexts.push(
         `Lending Rate: ${product.name} (${holderName}). Type: ${lr.lendingRateType}. Rate: ${ratePercent}%.` +
@@ -201,35 +213,39 @@ export async function incrementalIndex(since: string): Promise<CdrIndexResult> {
       );
     }
 
-    const dRates = await db
+    const dRates = (await db
       .select()
       .from(cdrDepositRates)
       .where(eq(cdrDepositRates.productId, pid))
-      .all();
-    for (const dr of dRates as any[]) {
+      .all()) as CdrDepositRate[];
+    for (const dr of dRates) {
       const ratePercent = ((dr.rate ?? 0) * 100).toFixed(2);
       rateTexts.push(
         `Deposit Rate: ${product.name} (${holderName}). Type: ${dr.depositRateType}. Rate: ${ratePercent}%.`,
       );
     }
 
-    const fees = await db.select().from(cdrFees).where(eq(cdrFees.productId, pid)).all();
-    const features = await db
+    const fees = (await db
+      .select()
+      .from(cdrFees)
+      .where(eq(cdrFees.productId, pid))
+      .all()) as CdrFee[];
+    const features = (await db
       .select()
       .from(cdrFeatures)
       .where(eq(cdrFeatures.productId, pid))
-      .all();
+      .all()) as CdrFeature[];
 
-    const lendingSummary = (lRates as any[])
+    const lendingSummary = lRates
       .map((lr) => `${lr.lendingRateType}: ${((lr.rate ?? 0) * 100).toFixed(2)}%`)
       .join('; ');
-    const depositSummary = (dRates as any[])
+    const depositSummary = dRates
       .map((dr) => `${dr.depositRateType}: ${((dr.rate ?? 0) * 100).toFixed(2)}%`)
       .join('; ');
-    const feeSummary = (fees as any[])
+    const feeSummary = fees
       .map((f) => `${f.name}: ${f.amount ? `$${f.amount}` : 'varies'}`)
       .join('; ');
-    const featureSummary = (features as any[]).map((f) => f.featureType).join('; ');
+    const featureSummary = features.map((f) => f.featureType).join('; ');
 
     let doc = `Banking Product: ${product.name} by ${holderName}. Category: ${product.productCategory}. `;
     if (product.description) doc += `${product.description}. `;
@@ -243,21 +259,27 @@ export async function incrementalIndex(since: string): Promise<CdrIndexResult> {
 
   try {
     if (productTexts.length) await cogneeTools.index(productTexts, COGNEE_DATASETS.cdrProducts);
-  } catch (err: any) {
-    allErrors.push(`Incremental product indexing: ${err.message}`);
+  } catch (err: unknown) {
+    allErrors.push(
+      `Incremental product indexing: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   try {
     if (rateTexts.length) await cogneeTools.index(rateTexts, COGNEE_DATASETS.cdrRates);
-  } catch (err: any) {
-    allErrors.push(`Incremental rate indexing: ${err.message}`);
+  } catch (err: unknown) {
+    allErrors.push(
+      `Incremental rate indexing: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   try {
     if (knowledgeTexts.length)
       await cogneeTools.index(knowledgeTexts, COGNEE_DATASETS.bankingProductKnowledge);
-  } catch (err: any) {
-    allErrors.push(`Incremental knowledge indexing: ${err.message}`);
+  } catch (err: unknown) {
+    allErrors.push(
+      `Incremental knowledge indexing: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   const datasetsToUpdate = [
@@ -269,8 +291,10 @@ export async function incrementalIndex(since: string): Promise<CdrIndexResult> {
   for (const dataset of datasetsToUpdate) {
     try {
       await cogneeTools.cognify(dataset);
-    } catch (err: any) {
-      allErrors.push(`Incremental cognify ${dataset}: ${err.message}`);
+    } catch (err: unknown) {
+      allErrors.push(
+        `Incremental cognify ${dataset}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 

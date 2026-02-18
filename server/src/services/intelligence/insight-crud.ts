@@ -6,6 +6,7 @@
 
 import { db, crossModuleInsights } from '../../schema.js';
 import { eq, and, desc, gte, lte, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import type { CrossModuleInsight, InsightFilters } from './types.js';
 import { rowToInsight } from './helpers.js';
 
@@ -14,7 +15,7 @@ export async function getInsights(
   filters: InsightFilters = {},
 ): Promise<{ items: CrossModuleInsight[]; total: number }> {
   const { limit = 20, offset = 0 } = filters;
-  const conditions: any[] = [eq(crossModuleInsights.userId, userId)];
+  const conditions: SQL[] = [eq(crossModuleInsights.userId, userId)];
 
   if (filters.insightType) {
     conditions.push(eq(crossModuleInsights.insightType, filters.insightType));
@@ -37,14 +38,14 @@ export async function getInsights(
 
   const whereClause = and(...conditions);
 
-  const countResult = await (db as any)
+  const countResult = await db
     .select({ count: sql`count(*)` })
     .from(crossModuleInsights)
     .where(whereClause)
     .get();
   const total = Number(countResult?.count ?? 0);
 
-  const rows: any[] = await (db as any)
+  const rows = await db
     .select()
     .from(crossModuleInsights)
     .where(whereClause)
@@ -53,10 +54,12 @@ export async function getInsights(
     .offset(offset)
     .all();
 
-  let items = rows.map((r: any) => rowToInsight(r));
+  let items: CrossModuleInsight[] = rows.map((r: Record<string, unknown>) => rowToInsight(r));
 
   if (filters.sourceModules?.length) {
-    items = items.filter((i) => i.sourceModules.some((m) => filters.sourceModules!.includes(m)));
+    items = items.filter((i: CrossModuleInsight) =>
+      i.sourceModules.some((m: string) => filters.sourceModules!.includes(m)),
+    );
     return { items, total: items.length };
   }
 
@@ -64,7 +67,7 @@ export async function getInsights(
 }
 
 export async function getInsightById(insightId: string): Promise<CrossModuleInsight | null> {
-  const row = await (db as any)
+  const row = await db
     .select()
     .from(crossModuleInsights)
     .where(eq(crossModuleInsights.id, insightId))
@@ -74,7 +77,7 @@ export async function getInsightById(insightId: string): Promise<CrossModuleInsi
 }
 
 export async function markInsightViewed(insightId: string): Promise<void> {
-  await (db as any)
+  await db
     .update(crossModuleInsights)
     .set({ status: 'viewed' })
     .where(eq(crossModuleInsights.id, insightId))
@@ -82,7 +85,7 @@ export async function markInsightViewed(insightId: string): Promise<void> {
 }
 
 export async function actOnInsight(insightId: string, _action?: string): Promise<void> {
-  await (db as any)
+  await db
     .update(crossModuleInsights)
     .set({ status: 'acted_on', actedOnAt: new Date().toISOString() })
     .where(eq(crossModuleInsights.id, insightId))
@@ -90,7 +93,7 @@ export async function actOnInsight(insightId: string, _action?: string): Promise
 }
 
 export async function dismissInsight(insightId: string): Promise<void> {
-  await (db as any)
+  await db
     .update(crossModuleInsights)
     .set({ status: 'dismissed' })
     .where(eq(crossModuleInsights.id, insightId))

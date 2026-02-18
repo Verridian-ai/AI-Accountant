@@ -3,6 +3,7 @@
  */
 
 import { db, depreciableAssets, depreciationSchedule } from '../../schema.js';
+import type { DepreciableAsset, DepreciationScheduleRecord } from '../../schema.js';
 import { eq, and, sql } from 'drizzle-orm';
 import { parseFY } from './types.js';
 
@@ -59,7 +60,7 @@ export async function getDepreciationSchedule(
     totalAdditions = 0,
     totalDisposals = 0;
 
-  for (const asset of allAssets as any[]) {
+  for (const asset of allAssets as DepreciableAsset[]) {
     const deprRows = await db
       .select()
       .from(depreciationSchedule)
@@ -71,7 +72,7 @@ export async function getDepreciationSchedule(
       )
       .limit(1);
 
-    const depr: any = deprRows[0];
+    const depr = deprRows[0] as DepreciationScheduleRecord | undefined;
     const openingValue =
       depr?.openingValue ?? asset.openingWrittenDownValue ?? asset.openingValue ?? 0;
     const depreciationAmt = depr?.depreciationAmount ?? 0;
@@ -121,7 +122,7 @@ export async function generateAssetNumber(userId: string): Promise<string> {
     .select({ count: sql<number>`COUNT(*)` })
     .from(depreciableAssets)
     .where(eq(depreciableAssets.userId, userId));
-  const nextNumber = ((count[0] as any)?.count ?? 0) + 1;
+  const nextNumber = Number(count[0]?.count ?? 0) + 1;
   const year = new Date().getFullYear();
   return `FA-${year}-${String(nextNumber).padStart(4, '0')}`;
 }

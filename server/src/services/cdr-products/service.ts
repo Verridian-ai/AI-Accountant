@@ -63,15 +63,15 @@ export class CdrProductService {
         .orderBy(asc(cdrLendingRates.rate))
         .limit(limit);
 
-      return rows.map((r: any) => ({
-        productId: r.productId,
-        productName: r.productName,
-        dataHolderName: r.dataHolderName ?? '',
-        dataHolderLogo: r.dataHolderLogo ?? '',
-        rate: r.rate,
-        comparisonRate: r.comparisonRate ?? null,
-        rateType: r.rateType,
-        productCategory: r.productCategory,
+      return (rows as Record<string, unknown>[]).map((r) => ({
+        productId: r.productId as string,
+        productName: r.productName as string,
+        dataHolderName: (r.dataHolderName as string) ?? '',
+        dataHolderLogo: (r.dataHolderLogo as string) ?? '',
+        rate: r.rate as number,
+        comparisonRate: (r.comparisonRate as number | null) ?? null,
+        rateType: r.rateType as string,
+        productCategory: r.productCategory as string,
       }));
     }
 
@@ -93,15 +93,15 @@ export class CdrProductService {
       .orderBy(desc(cdrDepositRates.rate))
       .limit(limit);
 
-    return rows.map((r: any) => ({
-      productId: r.productId,
-      productName: r.productName,
-      dataHolderName: r.dataHolderName ?? '',
-      dataHolderLogo: r.dataHolderLogo ?? '',
-      rate: r.rate,
+    return (rows as Record<string, unknown>[]).map((r) => ({
+      productId: r.productId as string,
+      productName: r.productName as string,
+      dataHolderName: (r.dataHolderName as string) ?? '',
+      dataHolderLogo: (r.dataHolderLogo as string) ?? '',
+      rate: r.rate as number,
       comparisonRate: null,
-      rateType: r.rateType,
-      productCategory: r.productCategory,
+      rateType: r.rateType as string,
+      productCategory: r.productCategory as string,
     }));
   }
 

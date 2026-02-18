@@ -64,7 +64,7 @@ export async function assessOverallRisk(
     }
   }
 
-  const openAlerts: any[] = await db
+  const openAlerts = await db
     .select()
     .from(anomalyAlerts)
     .where(and(eq(anomalyAlerts.userId, userId), eq(anomalyAlerts.status, 'open')))
@@ -74,8 +74,8 @@ export async function assessOverallRisk(
     const alertScore = Math.min(openAlerts.length * 3, 20);
     score += alertScore;
 
-    const highSeverity = openAlerts.filter(
-      (a: any) => a.severity === 'high' || a.severity === 'critical',
+    const highSeverity = (openAlerts as Record<string, unknown>[]).filter(
+      (a: Record<string, unknown>) => a.severity === 'high' || a.severity === 'critical',
     ).length;
     const severity: RiskLevel = highSeverity > 0 ? 'high' : 'medium';
 
@@ -92,7 +92,7 @@ export async function assessOverallRisk(
     }
   }
 
-  const schedules: any[] = await db
+  const schedules = await db
     .select()
     .from(complianceSchedules)
     .where(eq(complianceSchedules.userId, userId))

@@ -109,9 +109,9 @@ export function applyOntologyColors(
   let nodeTypesDef: Array<{ name: string; color?: string }>;
   try {
     const raw =
-      typeof (ontology as any).nodeTypes === 'string'
-        ? JSON.parse((ontology as any).nodeTypes)
-        : (ontology as any).nodeTypes;
+      typeof (ontology as Record<string, unknown>).nodeTypes === 'string'
+        ? JSON.parse((ontology as Record<string, unknown>).nodeTypes as string)
+        : (ontology as Record<string, unknown>).nodeTypes;
     nodeTypesDef = Array.isArray(raw) ? raw : [];
   } catch {
     nodeTypesDef = [];

@@ -192,7 +192,7 @@ export function analyzeStatement(pdfText: string): {
     /(?:Date\s+Transaction|Transaction\s+Details|Date\s+Description)/i.test(pdfText);
 
   // Estimate transaction count by looking for date patterns
-  const dateMatches = pdfText.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/g);
+  const dateMatches = pdfText.match(/\d{1,2}[/-]\d{1,2}[/-]\d{2,4}/g);
   const estimatedTransactionCount = dateMatches
     ? Math.max(0, dateMatches.length - 5) // Subtract header/footer dates
     : 0;

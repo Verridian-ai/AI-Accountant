@@ -3,7 +3,9 @@
  */
 
 import { db } from '../../schema.js';
+import type { DrizzleTable } from '../../db/queries/types.js';
 import { eq, and, desc, asc, like, sql, or } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { logger } from '../../utils/logger.js';
 import type {
   Supplier,
@@ -20,21 +22,21 @@ import {
 } from './supplier-mutations.js';
 
 // ---------------------------------------------------------------------------
-// Lazy table references
+// Lazy table references (irreducible — dynamic Drizzle table refs)
 // ---------------------------------------------------------------------------
 
-let _suppliers: any;
-let _bills: any;
-let _billPayments: any;
+let _suppliers: DrizzleTable | undefined;
+let _bills: DrizzleTable | undefined;
+let _billPayments: DrizzleTable | undefined;
 let _tablesLoaded = false;
 
 async function ensureTables() {
   if (_tablesLoaded) return;
   try {
-    const schema = await import('../../schema.js');
-    _suppliers = (schema as any).suppliers;
-    _bills = (schema as any).bills;
-    _billPayments = (schema as any).billPayments;
+    const schema: Record<string, unknown> = await import('../../schema.js');
+    _suppliers = schema.suppliers as DrizzleTable;
+    _bills = schema.bills as DrizzleTable;
+    _billPayments = schema.billPayments as DrizzleTable;
     _tablesLoaded = true;
   } catch {
     _tablesLoaded = false;
@@ -44,6 +46,16 @@ async function ensureTables() {
 // ---------------------------------------------------------------------------
 // SupplierService
 // ---------------------------------------------------------------------------
+
+interface BillRow {
+  id: string;
+  billNumber: string | null;
+  totalAmount: number | string | null;
+  total_amount?: number | string | null;
+  status: string;
+  dueDate: string | null;
+  due_date?: string | null;
+}
 
 export class SupplierService {
   // --- List Suppliers (paginated, masked bank details) ---
@@ -59,7 +71,7 @@ export class SupplierService {
     const limit = options.limit ?? 50;
     const offset = (page - 1) * limit;
 
-    const conditions: any[] = [eq(_suppliers.userId, userId)];
+    const conditions: SQL[] = [eq(_suppliers.userId, userId)];
 
     if (options.isActive !== undefined) {
       conditions.push(eq(_suppliers.isActive, options.isActive));
@@ -67,13 +79,12 @@ export class SupplierService {
 
     if (options.search) {
       const pattern = `%${options.search}%`;
-      conditions.push(
-        or(
-          like(_suppliers.businessName, pattern),
-          like(_suppliers.contactName, pattern),
-          like(_suppliers.abn, pattern),
-        ),
+      const searchCondition = or(
+        like(_suppliers.businessName, pattern),
+        like(_suppliers.contactName, pattern),
+        like(_suppliers.abn, pattern),
       );
+      if (searchCondition) conditions.push(searchCondition);
     }
 
     const whereClause = conditions.length === 1 ? conditions[0] : and(...conditions);
@@ -85,19 +96,13 @@ export class SupplierService {
       .get();
     const total = Number(countResult?.count ?? 0);
 
-    let orderByClause: any;
     const sortOrder = options.sortOrder ?? 'asc';
     const sortFn = sortOrder === 'desc' ? desc : asc;
 
-    switch (options.sortBy) {
-      case 'createdAt':
-        orderByClause = sortFn(_suppliers.createdAt);
-        break;
-      case 'businessName':
-      default:
-        orderByClause = sortFn(_suppliers.businessName);
-        break;
-    }
+    const orderByClause =
+      options.sortBy === 'createdAt'
+        ? sortFn(_suppliers.createdAt)
+        : sortFn(_suppliers.businessName);
 
     const rows = await db
       .select()
@@ -108,7 +113,7 @@ export class SupplierService {
       .offset(offset)
       .all();
 
-    const data = rows.map((row: any) => this.rowToSupplier(row, true));
+    const data = rows.map((row: Record<string, unknown>) => this.rowToSupplier(row, true));
 
     return { data, total };
   }
@@ -130,7 +135,7 @@ export class SupplierService {
     let averageDaysToPayment = 0;
 
     if (_bills) {
-      const bills = await db
+      const billRows = await db
         .select()
         .from(_bills)
         .where(eq(_bills.supplierId, supplierId))
@@ -138,7 +143,7 @@ export class SupplierService {
         .limit(10)
         .all();
 
-      recentBills = bills.map((b: any) => ({
+      recentBills = billRows.map((b: BillRow) => ({
         id: b.id,
         billNumber: b.billNumber ?? '',
         totalAmountCents: Number(b.totalAmount ?? b.total_amount ?? 0),
@@ -233,7 +238,7 @@ export class SupplierService {
       .limit(10)
       .all();
 
-    return rows.map((row: any) => this.rowToSupplier(row, true));
+    return rows.map((row: Record<string, unknown>) => this.rowToSupplier(row, true));
   }
 
   // --- Get Supplier Bank Details (internal use -- decrypted) ---
@@ -247,7 +252,10 @@ export class SupplierService {
     const row = await db.select().from(_suppliers).where(eq(_suppliers.id, supplierId)).get();
     if (!row) return null;
 
-    const rawAccountNumber = (row as any).bankAccountNumber ?? (row as any).bank_account_number;
+    const rowData = row as Record<string, unknown>;
+    const rawAccountNumber = (rowData.bankAccountNumber ?? rowData.bank_account_number) as
+      | string
+      | null;
     if (!rawAccountNumber) return null;
 
     let accountNumber: string;
@@ -262,16 +270,18 @@ export class SupplierService {
     }
 
     return {
-      bsb: (row as any).bankBsb ?? (row as any).bank_bsb ?? '',
+      bsb: ((rowData.bankBsb ?? rowData.bank_bsb) as string) ?? '',
       accountNumber,
-      accountName: (row as any).bankAccountName ?? (row as any).bank_account_name ?? '',
+      accountName: ((rowData.bankAccountName ?? rowData.bank_account_name) as string) ?? '',
     };
   }
 
   // --- Row Mapper ---
 
-  rowToSupplier(row: any, maskBank: boolean): Supplier {
-    const rawAccountNumber = row.bankAccountNumber ?? row.bank_account_number ?? null;
+  rowToSupplier(row: Record<string, unknown>, maskBank: boolean): Supplier {
+    const rawAccountNumber = (row.bankAccountNumber ?? row.bank_account_number ?? null) as
+      | string
+      | null;
 
     let displayAccountNumber: string | null = null;
     if (rawAccountNumber && maskBank) {
@@ -290,21 +300,21 @@ export class SupplierService {
     }
 
     return {
-      id: row.id,
-      userId: row.userId ?? row.user_id,
-      businessName: row.businessName ?? row.business_name ?? '',
-      contactName: row.contactName ?? row.contact_name ?? null,
-      email: row.email ?? null,
-      phone: row.phone ?? null,
-      address: row.address ?? null,
-      abn: row.abn ?? null,
+      id: row.id as string,
+      userId: (row.userId ?? row.user_id) as string,
+      businessName: ((row.businessName ?? row.business_name) as string) ?? '',
+      contactName: ((row.contactName ?? row.contact_name) as string | null) ?? null,
+      email: (row.email as string | null) ?? null,
+      phone: (row.phone as string | null) ?? null,
+      address: (row.address as string | null) ?? null,
+      abn: (row.abn as string | null) ?? null,
       paymentTermsDays: Number(row.paymentTermsDays ?? row.payment_terms_days ?? 30),
-      bankBsb: row.bankBsb ?? row.bank_bsb ?? null,
+      bankBsb: ((row.bankBsb ?? row.bank_bsb) as string | null) ?? null,
       bankAccountNumber: displayAccountNumber,
-      bankAccountName: row.bankAccountName ?? row.bank_account_name ?? null,
-      notes: row.notes ?? null,
-      isActive: row.isActive ?? row.is_active ?? true,
-      createdAt: row.createdAt ?? row.created_at ?? '',
+      bankAccountName: ((row.bankAccountName ?? row.bank_account_name) as string | null) ?? null,
+      notes: (row.notes as string | null) ?? null,
+      isActive: (row.isActive ?? row.is_active ?? true) as boolean,
+      createdAt: ((row.createdAt ?? row.created_at) as string) ?? '',
     };
   }
 }

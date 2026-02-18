@@ -224,7 +224,7 @@ export async function getSubscriptionHistory(tenantId: string): Promise<Subscrip
 
   const results: Subscription[] = [];
   for (const row of rows) {
-    const planId = row.planId ?? (row as any).plan_id;
+    const planId = row.planId;
     const plan = await getPlan(planId);
     if (plan) {
       results.push(dbRowToSubscription(row, plan));

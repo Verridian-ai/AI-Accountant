@@ -6,6 +6,7 @@
  */
 
 import { cogneeTools, COGNEE_DATASETS } from '../claude/cognee-tools.js';
+import type { EconomicIndicator, MarketPrice, SentimentSnapshot } from '../../db/market-schema.js';
 
 // Re-export RBA/ABS from their own file for convenience
 export { indexRbaData, indexAbsData } from './statistical-indexers.js';
@@ -71,8 +72,10 @@ export async function indexMarketIntelligence(
     }
 
     return { count: texts.length, errors };
-  } catch (err: any) {
-    errors.push(`Market intelligence indexing failed: ${err.message}`);
+  } catch (err: unknown) {
+    errors.push(
+      `Market intelligence indexing failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return { count: 0, errors };
   }
 }
@@ -82,7 +85,7 @@ export async function indexMarketIntelligence(
 // --------------------------------------------------------------------------
 
 export async function indexSentimentData(
-  sentiments: any[],
+  sentiments: SentimentSnapshot[],
 ): Promise<{ count: number; errors: string[] }> {
   const errors: string[] = [];
 
@@ -110,8 +113,8 @@ export async function indexSentimentData(
     }
 
     return { count: texts.length, errors };
-  } catch (err: any) {
-    errors.push(`Sentiment indexing failed: ${err.message}`);
+  } catch (err: unknown) {
+    errors.push(`Sentiment indexing failed: ${err instanceof Error ? err.message : String(err)}`);
     return { count: 0, errors };
   }
 }
@@ -121,7 +124,7 @@ export async function indexSentimentData(
 // --------------------------------------------------------------------------
 
 export async function indexMarketPrices(
-  prices: any[],
+  prices: MarketPrice[],
 ): Promise<{ count: number; errors: string[] }> {
   const errors: string[] = [];
 
@@ -157,8 +160,10 @@ export async function indexMarketPrices(
     }
 
     return { count: texts.length, errors };
-  } catch (err: any) {
-    errors.push(`Market price indexing failed: ${err.message}`);
+  } catch (err: unknown) {
+    errors.push(
+      `Market price indexing failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return { count: 0, errors };
   }
 }
@@ -177,10 +182,10 @@ export type IntelligenceSnapshot = {
 };
 
 export function buildIntelligenceSnapshots(
-  rbaIndicators: any[],
-  absIndicators: any[],
-  sentiments: any[],
-  prices: any[],
+  rbaIndicators: EconomicIndicator[],
+  absIndicators: EconomicIndicator[],
+  sentiments: SentimentSnapshot[],
+  prices: MarketPrice[],
 ): IntelligenceSnapshot[] {
   const snapshots: IntelligenceSnapshot[] = [];
   const today = new Date().toISOString().split('T')[0];
@@ -188,10 +193,10 @@ export function buildIntelligenceSnapshots(
   if (rbaIndicators.length) {
     snapshots.push({
       topic: 'RBA Economic Overview',
-      summary: `${rbaIndicators.length} RBA indicators tracked across ${new Set(rbaIndicators.map((i: any) => i.category)).size} categories`,
+      summary: `${rbaIndicators.length} RBA indicators tracked across ${new Set(rbaIndicators.map((i) => i.category)).size} categories`,
       sentimentLabel: 'informational',
       observationDate: today,
-      indicators: rbaIndicators.slice(0, 10).map((i: any) => ({
+      indicators: rbaIndicators.slice(0, 10).map((i) => ({
         name: i.indicatorName,
         value: Number(i.value),
         unit: i.unit,
@@ -203,10 +208,10 @@ export function buildIntelligenceSnapshots(
   if (absIndicators.length) {
     snapshots.push({
       topic: 'ABS Economic Overview',
-      summary: `${absIndicators.length} ABS indicators tracked across ${new Set(absIndicators.map((i: any) => i.category)).size} categories`,
+      summary: `${absIndicators.length} ABS indicators tracked across ${new Set(absIndicators.map((i) => i.category)).size} categories`,
       sentimentLabel: 'informational',
       observationDate: today,
-      indicators: absIndicators.slice(0, 10).map((i: any) => ({
+      indicators: absIndicators.slice(0, 10).map((i) => ({
         name: i.indicatorName,
         value: Number(i.value),
         unit: i.unit,
@@ -218,10 +223,10 @@ export function buildIntelligenceSnapshots(
   if (prices.length) {
     snapshots.push({
       topic: 'Market Prices Overview',
-      summary: `${prices.length} assets tracked across ${new Set(prices.map((p: any) => p.assetType)).size} asset types`,
+      summary: `${prices.length} assets tracked across ${new Set(prices.map((p) => p.assetType)).size} asset types`,
       sentimentLabel: 'informational',
       observationDate: today,
-      prices: prices.slice(0, 15).map((p: any) => ({
+      prices: prices.slice(0, 15).map((p) => ({
         symbol: p.symbol,
         name: p.name,
         price: Number(p.price),

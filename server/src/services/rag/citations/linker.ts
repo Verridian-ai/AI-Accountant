@@ -97,7 +97,7 @@ export async function cleanupOrphanedCitations(): Promise<number> {
     return 0;
   }
 
-  const orphanedIds = orphanedCitations.map((c: any) => c.id);
+  const orphanedIds = (orphanedCitations as Record<string, unknown>[]).map((c) => c.id as string);
 
   await db.delete(ragCitations).where(inArray(ragCitations.id, orphanedIds));
 

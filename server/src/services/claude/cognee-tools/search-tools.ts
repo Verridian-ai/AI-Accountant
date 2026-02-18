@@ -6,7 +6,7 @@
  */
 
 import { cogneeClient, CogneeClient } from '../../cognee_client.js';
-import type { CogneeSearchType } from '../../cognee_client.js';
+import type { CogneeSearchType, CogneeSearchResult } from '../../cognee_client.js';
 import {
   type CogneeToolConfig,
   DEFAULT_CONFIG,
@@ -58,8 +58,20 @@ export class CogneeToolsBase {
     query: string,
     dataset: string,
     searchType: CogneeSearchType = 'GRAPH_COMPLETION',
-  ): Promise<string[]> {
-    return this.client.search(
+    sessionId?: string,
+  ): Promise<CogneeSearchResult[]> {
+    if (sessionId) {
+      return this.client.searchWithSession(
+        query,
+        this.prefixDataset(dataset),
+        sessionId,
+        this.config.searchTopK,
+        searchType,
+        this.config.userId,
+        this.config.tenantId,
+      );
+    }
+    return this.client.searchRich(
       query,
       this.prefixDataset(dataset),
       this.config.searchTopK,
@@ -115,17 +127,25 @@ export class CogneeToolsBase {
   /**
    * Search using a DataPoint-structured entity query.
    */
-  async searchWithDataPoint(query: string, dataPointType: string): Promise<string[]> {
+  async searchWithDataPoint(
+    query: string,
+    dataPointType: string,
+    sessionId?: string,
+  ): Promise<CogneeSearchResult[]> {
     const dataset = `datapoint_${dataPointType.toLowerCase()}`;
-    return this.search(query, dataset, 'CHUNKS');
+    return this.search(query, dataset, 'CHUNKS', sessionId);
   }
 
   /**
    * Search with ontology-based context.
    */
-  async searchWithOntology(query: string, ontologyType: string): Promise<string[]> {
+  async searchWithOntology(
+    query: string,
+    ontologyType: string,
+    sessionId?: string,
+  ): Promise<CogneeSearchResult[]> {
     const dataset = `ontology_${ontologyType.toLowerCase()}`;
-    return this.search(query, dataset, 'GRAPH_COMPLETION');
+    return this.search(query, dataset, 'GRAPH_COMPLETION', sessionId);
   }
 
   /**
@@ -152,16 +172,17 @@ export class CogneeToolsBase {
     query: string,
     dataset: string,
     timeRange: { start: string; end: string },
-  ): Promise<string[]> {
+    sessionId?: string,
+  ): Promise<CogneeSearchResult[]> {
     const augmented = `${query} [period: ${timeRange.start} to ${timeRange.end}]`;
-    return this.search(augmented, dataset, 'CHUNKS');
+    return this.search(augmented, dataset, 'CHUNKS', sessionId);
   }
 
   /**
    * Cross-module search — search across multiple datasets and merge results.
    */
-  async crossModuleSearch(query: string, modules: string[]): Promise<string[]> {
-    const allResults: string[] = [];
+  async crossModuleSearch(query: string, modules: string[]): Promise<CogneeSearchResult[]> {
+    const allResults: CogneeSearchResult[] = [];
     for (const mod of modules) {
       try {
         const results = await this.search(query, mod, 'CHUNKS');
@@ -180,7 +201,7 @@ export class CogneeToolsBase {
     query: string,
     timeRange: { start: string; end: string },
     modules: string[],
-  ): Promise<string[]> {
+  ): Promise<CogneeSearchResult[]> {
     const augmented = `${query} [timeline: ${timeRange.start} to ${timeRange.end}]`;
     return this.crossModuleSearch(augmented, modules);
   }

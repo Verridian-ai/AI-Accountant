@@ -17,7 +17,7 @@ export async function scanTaxOpportunities(
   const insights: CrossModuleInsight[] = [];
 
   try {
-    const taxSummaries: any[] = await (db as any)
+    const taxSummaries = await db
       .select()
       .from(taxYearSummary)
       .where(eq(taxYearSummary.userId, userId))
@@ -33,7 +33,7 @@ export async function scanTaxOpportunities(
 
     // Low deduction ratio for businesses earning > $50k
     if (deductionRatio < 0.15 && grossIncome > 5000000) {
-      const expenseResult = await (db as any)
+      const expenseResult = await db
         .select({ total: sql`sum(abs(${transactions.amount}))` })
         .from(transactions)
         .where(

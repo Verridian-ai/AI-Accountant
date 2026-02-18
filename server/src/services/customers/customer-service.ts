@@ -9,6 +9,7 @@
  */
 
 import { eq, and, or, like, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { validateABN, normalizeABN } from '../../utils/abn.js';
 import { ABNLookupService } from '../enrichment/abn-lookup.js';
 import { logger } from '../../utils/logger.js';
@@ -21,8 +22,10 @@ import {
 } from './customer-queries.js';
 
 export class CustomerService {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private db: any;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(database?: any) {
     this.db = database ?? db;
   }
@@ -44,7 +47,7 @@ export class CustomerService {
     const limit = Math.min(Math.max(1, options.limit ?? 50), 100);
     const isActive = options.isActive ?? true;
 
-    const conditions: any[] = [eq(customers.userId, userId)];
+    const conditions: SQL[] = [eq(customers.userId, userId)];
 
     if (isActive !== undefined) {
       conditions.push(eq(customers.isActive, isActive));
@@ -52,16 +55,17 @@ export class CustomerService {
 
     if (options.search) {
       const pattern = `%${options.search}%`;
-      conditions.push(
-        or(
-          like(customers.businessName, pattern),
-          like(customers.contactName, pattern),
-          like(customers.email, pattern),
-        ),
+      const searchCond = or(
+        like(customers.businessName, pattern),
+        like(customers.contactName, pattern),
+        like(customers.email, pattern),
       );
+      if (searchCond) conditions.push(searchCond);
     }
 
-    const where = and(...conditions);
+    // conditions always has at least one element (userId filter)
+
+    const where = and(...conditions)!;
 
     const countResult = await this.db
       .select({ count: sql<number>`count(*)` })

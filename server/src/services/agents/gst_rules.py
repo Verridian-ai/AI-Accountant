@@ -1,3 +1,6 @@
+# Refactored: gst_rules/ package replaces this file.
+# Python resolves 'from .gst_rules import X' via gst_rules/__init__.py.
+# This file is unreachable — the package directory takes priority in Python's import resolution.
 """
 Australian GST Categorization Rules
 

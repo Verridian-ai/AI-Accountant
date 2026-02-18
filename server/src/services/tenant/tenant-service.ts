@@ -9,7 +9,7 @@ import type {
   TenantContext,
   TenantRole,
   CreateTenantOptions,
-} from '../tenant-types.js';
+} from './types.js';
 import * as crud from './tenant-crud.js';
 import * as inv from './invitations.js';
 

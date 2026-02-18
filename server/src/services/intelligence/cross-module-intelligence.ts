@@ -5,6 +5,7 @@
  */
 import { db, crossModuleInsights, moduleConnections } from '../../schema.js';
 import { eq, and, gte, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import type {
   CrossModuleInsight,
   Correlation,
@@ -31,6 +32,24 @@ import { scanComplianceRisks } from './scanners/compliance-risk.js';
 import { scanForecastDeviations } from './scanners/forecast-deviation.js';
 import { scanTaxOpportunities } from './scanners/tax-opportunity.js';
 import { scanSpendingPatterns } from './scanners/spending-pattern.js';
+
+interface ModuleConnectionRow {
+  id: string;
+  sourceModule: string;
+  source_module?: string;
+  targetModule: string;
+  target_module?: string;
+  connectionType: string;
+  connection_type?: string;
+  description: string;
+  strength: number;
+  isBidirectional: boolean | number;
+  is_bidirectional?: boolean | number;
+  activityCount: number;
+  activity_count?: number;
+  lastActivityAt: string | null;
+  last_activity_at?: string | null;
+}
 
 export class CrossModuleIntelligenceService {
   // --------------------------------------------------------------------------
@@ -103,7 +122,7 @@ export class CrossModuleIntelligenceService {
     // Persist new insights
     for (const insight of allInsights) {
       try {
-        await (db as any)
+        await db
           .insert(crossModuleInsights)
           .values({
             id: insight.id,
@@ -189,7 +208,7 @@ export class CrossModuleIntelligenceService {
   // --------------------------------------------------------------------------
 
   async getModuleConnections(filters: ConnectionFilters = {}): Promise<ModuleConnection[]> {
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
 
     if (filters.sourceModule) {
       conditions.push(eq(moduleConnections.sourceModule, filters.sourceModule));
@@ -204,15 +223,15 @@ export class CrossModuleIntelligenceService {
       conditions.push(gte(moduleConnections.strength, filters.minStrength));
     }
 
-    const query = (db as any).select().from(moduleConnections);
-    const rows: any[] =
+    const query = db.select().from(moduleConnections);
+    const rows: ModuleConnectionRow[] =
       conditions.length > 0 ? await query.where(and(...conditions)).all() : await query.all();
 
-    return rows.map((r: any) => ({
+    return rows.map((r: ModuleConnectionRow) => ({
       id: r.id,
-      sourceModule: r.sourceModule ?? r.source_module,
-      targetModule: r.targetModule ?? r.target_module,
-      connectionType: r.connectionType ?? r.connection_type,
+      sourceModule: r.sourceModule ?? r.source_module ?? '',
+      targetModule: r.targetModule ?? r.target_module ?? '',
+      connectionType: r.connectionType ?? r.connection_type ?? '',
       description: r.description,
       strength: r.strength,
       isBidirectional: Boolean(r.isBidirectional ?? r.is_bidirectional),
@@ -226,7 +245,7 @@ export class CrossModuleIntelligenceService {
     targetModule: string,
     connectionType: string,
   ): Promise<void> {
-    await (db as any)
+    await db
       .update(moduleConnections)
       .set({
         activityCount: sql`${moduleConnections.activityCount} + 1`,

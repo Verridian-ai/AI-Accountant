@@ -101,8 +101,12 @@ export async function executeFullCrawl(
 
       collectRejections(results, allErrors);
     }
-  } catch (err: any) {
-    allErrors.push({ stage: 'discovery', message: err.message });
+  } catch (err: unknown) {
+    allErrors.push({
+      stage: 'discovery',
+      message:
+        err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err),
+    });
   }
 
   const durationMs = Date.now() - start;
@@ -191,8 +195,12 @@ export async function executeIncrementalCrawl(
 
       collectRejections(results, allErrors);
     }
-  } catch (err: any) {
-    allErrors.push({ stage: 'discovery', message: err.message });
+  } catch (err: unknown) {
+    allErrors.push({
+      stage: 'discovery',
+      message:
+        err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err),
+    });
   }
 
   const durationMs = Date.now() - start;

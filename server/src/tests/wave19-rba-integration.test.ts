@@ -324,7 +324,7 @@ describe('RbaDataFeed — Malformed CSV returns empty results', async () => {
     const indicators = await feed.parseTable('A2', MALFORMED_CSV);
     assert(Array.isArray(indicators), 'Malformed CSV still returns an array');
     assertEqual(indicators.length, 0, 'Malformed CSV produces zero indicators');
-  } catch (err: any) {
+  } catch {
     // Either returning empty or throwing is acceptable
     assert(true, 'Malformed CSV handled (threw or returned empty)');
   }
@@ -336,7 +336,7 @@ describe('RbaDataFeed — Empty CSV returns empty results', async () => {
     const indicators = await feed.parseTable('A2', EMPTY_CSV);
     assert(Array.isArray(indicators), 'Empty CSV returns an array');
     assertEqual(indicators.length, 0, 'Empty CSV produces zero indicators');
-  } catch (err: any) {
+  } catch {
     assert(true, 'Empty CSV handled (threw or returned empty)');
   }
 });

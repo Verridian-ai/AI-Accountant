@@ -12,14 +12,32 @@ import {
   cdrFeatures,
 } from '../../schema.js';
 import { eq, and, like, inArray, sql } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import type { ProductSearchFilters, EnrichedProduct, ProductSearchResult } from './types.js';
+
+interface LendingRateRow {
+  rate: number;
+  comparisonRate: number | null;
+  lendingRateType: string;
+  loanPurpose: string | null;
+  repaymentType: string | null;
+}
+
+interface DepositRateRow {
+  rate: number;
+  depositRateType: string;
+}
+
+interface FeatureRow {
+  featureType: string;
+}
 
 export async function searchProducts(filters: ProductSearchFilters): Promise<ProductSearchResult> {
   const limit = filters.limit ?? 20;
   const offset = filters.offset ?? 0;
 
   // Build WHERE conditions
-  const conditions: any[] = [];
+  const conditions: SQL[] = [];
 
   if (filters.productCategory) {
     conditions.push(eq(cdrProducts.productCategory, filters.productCategory));
@@ -77,12 +95,16 @@ export async function searchProducts(filters: ProductSearchFilters): Promise<Pro
     let rateType: string | null = null;
 
     if (lendingRates.length > 0) {
-      const sorted = [...lendingRates].sort((a: any, b: any) => a.rate - b.rate);
+      const sorted = [...lendingRates].sort(
+        (a: LendingRateRow, b: LendingRateRow) => a.rate - b.rate,
+      );
       bestRate = sorted[0].rate;
       comparisonRate = sorted[0].comparisonRate ?? null;
       rateType = sorted[0].lendingRateType;
     } else if (depositRates.length > 0) {
-      const sorted = [...depositRates].sort((a: any, b: any) => b.rate - a.rate);
+      const sorted = [...depositRates].sort(
+        (a: DepositRateRow, b: DepositRateRow) => b.rate - a.rate,
+      );
       bestRate = sorted[0].rate;
       rateType = sorted[0].depositRateType;
     }
@@ -93,28 +115,34 @@ export async function searchProducts(filters: ProductSearchFilters): Promise<Pro
 
     // Apply rate type filter
     if (filters.rateType) {
-      const matchesLending = lendingRates.some((r: any) => r.lendingRateType === filters.rateType);
-      const matchesDeposit = depositRates.some((r: any) => r.depositRateType === filters.rateType);
+      const matchesLending = lendingRates.some(
+        (r: LendingRateRow) => r.lendingRateType === filters.rateType,
+      );
+      const matchesDeposit = depositRates.some(
+        (r: DepositRateRow) => r.depositRateType === filters.rateType,
+      );
       if (!matchesLending && !matchesDeposit) continue;
     }
 
     // Apply loan purpose filter
     if (filters.loanPurpose) {
-      const matchesPurpose = lendingRates.some((r: any) => r.loanPurpose === filters.loanPurpose);
+      const matchesPurpose = lendingRates.some(
+        (r: LendingRateRow) => r.loanPurpose === filters.loanPurpose,
+      );
       if (!matchesPurpose) continue;
     }
 
     // Apply repayment type filter
     if (filters.repaymentType) {
       const matchesRepayment = lendingRates.some(
-        (r: any) => r.repaymentType === filters.repaymentType,
+        (r: LendingRateRow) => r.repaymentType === filters.repaymentType,
       );
       if (!matchesRepayment) continue;
     }
 
     // Apply feature filter
     if (filters.features && filters.features.length > 0) {
-      const productFeatureTypes = featureRows.map((f: any) => f.featureType);
+      const productFeatureTypes = featureRows.map((f: FeatureRow) => f.featureType);
       const hasAll = filters.features.every((f) => productFeatureTypes.includes(f));
       if (!hasAll) continue;
     }
@@ -137,7 +165,7 @@ export async function searchProducts(filters: ProductSearchFilters): Promise<Pro
       rateType,
       featureCount: featureRows.length,
       feeCount: feeRows.length,
-      features: featureRows.map((f: any) => f.featureType),
+      features: featureRows.map((f: FeatureRow) => f.featureType),
       applicationUri: row.applicationUri ?? null,
     });
   }

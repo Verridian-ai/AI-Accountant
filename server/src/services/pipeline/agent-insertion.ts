@@ -2,6 +2,7 @@
  * Pipeline stage: Claude agent path — insert transactions, index, and finalize.
  */
 import { db, statements, transactions, pendingCategorization } from '../../schema.js';
+import type { DbInstance } from '../../db/queries/types.js';
 import { ragService } from '../rag.js';
 import { accountService } from '../accounts.js';
 import { cogneeClient } from '../cognee_client.js';
@@ -78,7 +79,7 @@ export async function handleAgentPathInsertion(
   }
 
   if (toInsert.length > 0) {
-    await db.transaction(async (tx: Record<string, (...args: any[]) => any>) => {
+    await db.transaction(async (tx: DbInstance) => {
       await tx.insert(transactions).values(toInsert);
 
       const pendingItems: (typeof pendingCategorization.$inferInsert)[] = [];

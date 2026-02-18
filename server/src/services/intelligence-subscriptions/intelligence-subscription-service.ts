@@ -9,6 +9,7 @@
 
 import { randomUUID } from 'crypto';
 import { eq, and, desc } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import { db, intelligenceSubscriptions } from '../../schema.js';
 import type {
   SubscriptionInput,
@@ -97,7 +98,7 @@ export class IntelligenceSubscriptionService {
     userId: string,
     filters?: SubscriptionFilters,
   ): Promise<IntelligenceSubscription[]> {
-    const conditions: any[] = [eq(intelligenceSubscriptions.userId, userId)];
+    const conditions: SQL[] = [eq(intelligenceSubscriptions.userId, userId)];
 
     if (filters?.subscriptionType) {
       conditions.push(eq(intelligenceSubscriptions.subscriptionType, filters.subscriptionType));
@@ -118,7 +119,7 @@ export class IntelligenceSubscriptionService {
       .orderBy(desc(intelligenceSubscriptions.createdAt))
       .all();
 
-    return rows.map((r: any) => mapDbRow(r));
+    return (rows as Record<string, unknown>[]).map((r) => mapDbRow(r));
   }
 
   async updateSubscription(

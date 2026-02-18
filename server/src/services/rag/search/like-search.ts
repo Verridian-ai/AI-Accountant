@@ -81,7 +81,25 @@ export async function searchWithLike(
     .where(and(...conditions))
     .limit(topK * 2);
 
-  const scoredResults = chunks.map((chunk: any) => {
+  interface ChunkRow {
+    id: string | null;
+    documentId: string | null;
+    content: string;
+    chunkType: string | null;
+    category: string | null;
+    dateStart: string | null;
+    dateEnd: string | null;
+    accountId: string | null;
+    totalAmount: number | null;
+    transactionCount: number | null;
+    merchantNormalized: string | null;
+  }
+  interface ScoredChunk {
+    chunk: ChunkRow;
+    score: number;
+    matchedTerms: string[];
+  }
+  const scoredResults: ScoredChunk[] = chunks.map((chunk: (typeof chunks)[number]) => {
     const contentLower = chunk.content.toLowerCase();
     let score = 0;
     const matchedTerms: string[] = [];
@@ -103,25 +121,25 @@ export async function searchWithLike(
     return { chunk, score, matchedTerms };
   });
 
-  scoredResults.sort((a: any, b: any) => b.score - a.score);
+  scoredResults.sort((a, b) => b.score - a.score);
   const topResults = scoredResults.slice(0, topK);
 
-  return topResults.map((result: any, index: number) => ({
-    chunkId: result.chunk.id,
-    documentId: result.chunk.documentId,
+  return topResults.map((result, index) => ({
+    chunkId: result.chunk.id ?? '',
+    documentId: result.chunk.documentId ?? '',
     content: result.chunk.content,
     bm25Score: result.score,
     rank: index + 1,
     matchedTerms: result.matchedTerms,
     metadata: {
-      chunkType: result.chunk.chunkType,
-      category: result.chunk.category,
-      dateStart: result.chunk.dateStart,
-      dateEnd: result.chunk.dateEnd,
-      accountId: result.chunk.accountId,
+      chunkType: result.chunk.chunkType ?? '',
+      category: result.chunk.category ?? '',
+      dateStart: result.chunk.dateStart ?? '',
+      dateEnd: result.chunk.dateEnd ?? '',
+      accountId: result.chunk.accountId ?? '',
       totalAmount: result.chunk.totalAmount,
       transactionCount: result.chunk.transactionCount,
-      merchantNormalized: result.chunk.merchantNormalized,
+      merchantNormalized: result.chunk.merchantNormalized ?? '',
     },
   }));
 }

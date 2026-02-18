@@ -3,6 +3,7 @@
  */
 
 import { logger } from '../../lib/logger.js';
+import type { Context } from 'hono';
 import type {
   HealthCheckResult,
   SystemHealthReport,
@@ -100,7 +101,7 @@ export class SystemHealthService {
   // --------------------------------------------------------------------------
 
   requestLatencyMiddleware() {
-    return async (c: any, next: () => Promise<void>) => {
+    return async (c: Context, next: () => Promise<void>) => {
       const start = Date.now();
       await next();
       const duration = Date.now() - start;

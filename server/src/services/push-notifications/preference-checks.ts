@@ -6,8 +6,8 @@
 
 import { db, notificationPreferences } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
-import type { NotificationCategory } from '../push-notification-types.js';
-import { CATEGORY_TO_COLUMN } from '../push-notification-types.js';
+import type { NotificationCategory } from './types.js';
+import { CATEGORY_TO_COLUMN } from './types.js';
 import { getCurrentTimeInTimezone, isTimeInRange } from './helpers.js';
 
 /**
@@ -28,10 +28,10 @@ export async function checkQuietHours(userId: string, tenantId: string): Promise
 
   if (!prefs) return false;
 
-  const row = prefs as any;
-  const start = row.quietHoursStart ?? row.quiet_hours_start;
-  const end = row.quietHoursEnd ?? row.quiet_hours_end;
-  const timezone = row.timezone ?? 'Australia/Sydney';
+  const row = prefs as Record<string, unknown>;
+  const start = (row.quietHoursStart ?? row.quiet_hours_start) as string | null;
+  const end = (row.quietHoursEnd ?? row.quiet_hours_end) as string | null;
+  const timezone = (row.timezone as string) ?? 'Australia/Sydney';
 
   if (!start || !end) return false;
 
@@ -63,10 +63,10 @@ export async function isNotificationEnabled(
   // No preferences row = all defaults = enabled
   if (!prefs) return true;
 
-  const row = prefs as any;
+  const row = prefs as Record<string, unknown>;
 
   // Check master push toggle
-  const pushEnabled = row.pushEnabled ?? row.push_enabled;
+  const pushEnabled = (row.pushEnabled ?? row.push_enabled) as boolean | number | null;
   if (pushEnabled === false || pushEnabled === 0) return false;
 
   // Check category-specific toggle

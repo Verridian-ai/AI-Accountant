@@ -60,7 +60,7 @@ export async function getDataHolderById(id: string): Promise<DataHolderRecord | 
 export async function getDataHoldersByIds(ids: string[]): Promise<DataHolderRecord[]> {
   const rows = await db.select().from(cdrDataHolders).where(inArray(cdrDataHolders.id, ids)).all();
 
-  return (rows as any[]).map((r) => ({
+  return rows.map((r: (typeof rows)[number]) => ({
     id: r.id,
     dataHolderBrandId: r.dataHolderBrandId,
     brandName: r.brandName,

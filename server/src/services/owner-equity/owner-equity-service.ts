@@ -75,7 +75,7 @@ export async function getEquitySummary(
   let totalDrawings = 0;
   const monthlyMap = new Map<string, { contributions: number; drawings: number }>();
 
-  for (const event of events as any[]) {
+  for (const event of events) {
     const amount = Math.abs(event.amount);
 
     // Extract month from associated transaction or use createdAt

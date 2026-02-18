@@ -44,7 +44,7 @@ export interface DataHolderRecord {
   dataHolderBrandId: string;
   brandName: string;
   publicBaseUri: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // ============================================================================
@@ -117,9 +117,9 @@ export interface CdrProductDetail extends CdrProductSummary {
     feesAndPricingUri?: string;
     bundleUri?: string;
   };
-  bundles?: any[];
+  bundles?: unknown[];
   features?: CdrFeatureData[];
-  constraints?: any[];
+  constraints?: unknown[];
   eligibility?: CdrEligibilityData[];
   fees?: CdrFeeData[];
   depositRates?: CdrDepositRateData[];
@@ -153,7 +153,7 @@ export interface CdrFeeData {
   additionalValue?: string;
   additionalInfo?: string;
   additionalInfoUri?: string;
-  discounts?: any[];
+  discounts?: unknown[];
 }
 
 export interface CdrDepositRateData {
@@ -161,7 +161,7 @@ export interface CdrDepositRateData {
   rate: string;
   calculationFrequency?: string;
   applicationFrequency?: string;
-  tiers?: any[];
+  tiers?: unknown[];
   additionalValue?: string;
   additionalInfo?: string;
   additionalInfoUri?: string;
@@ -176,7 +176,7 @@ export interface CdrLendingRateData {
   interestPaymentDue?: string;
   repaymentType?: string;
   loanPurpose?: string;
-  tiers?: any[];
+  tiers?: unknown[];
   additionalValue?: string;
   additionalInfo?: string;
   additionalInfoUri?: string;

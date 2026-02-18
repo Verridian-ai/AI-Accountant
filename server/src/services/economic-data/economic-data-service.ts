@@ -15,7 +15,7 @@
 
 import { rbaDataFeed, RbaDataFeed } from '../rba-data-feed.js';
 import { absDataFeed, AbsDataFeed } from '../abs-data-feed.js';
-import type { EconomicSnapshot as EnhancedEconomicSnapshot } from '../economic-data-types.js';
+import type { EnhancedEconomicSnapshot } from './enhanced-types.js';
 import { getEnhancedEconomicSnapshot } from './enhanced-snapshot.js';
 import type {
   CashRateData,

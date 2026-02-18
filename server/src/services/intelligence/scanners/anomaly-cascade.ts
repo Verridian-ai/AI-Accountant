@@ -17,7 +17,7 @@ export async function scanAnomalyCascades(
   const insights: CrossModuleInsight[] = [];
 
   try {
-    const alerts: any[] = await (db as any)
+    const alerts = await db
       .select()
       .from(reconciliationAlerts)
       .where(
@@ -31,13 +31,13 @@ export async function scanAnomalyCascades(
 
     if (alerts.length === 0) return insights;
 
-    const overdueBasPeriods: any[] = await (db as any)
+    const overdueBasPeriods = await db
       .select()
       .from(basPeriods)
       .where(and(eq(basPeriods.userId, userId), eq(basPeriods.status, 'overdue')))
       .all();
 
-    const lowConfResult = await (db as any)
+    const lowConfResult = await db
       .select({ count: sql`count(*)` })
       .from(transactions)
       .where(
@@ -65,7 +65,9 @@ export async function scanAnomalyCascades(
             alertCount: alerts.length,
             overdueBasCount: overdueBasPeriods.length,
             lowConfidenceTxCount: lowConfCount,
-            alertTypes: alerts.map((a: any) => a.alertType ?? a.alert_type),
+            alertTypes: (alerts as Record<string, unknown>[]).map(
+              (a) => a.alertType ?? a.alert_type,
+            ),
           },
           modules,
           Math.min(0.5 + alerts.length * 0.1 + overdueBasPeriods.length * 0.15, 0.95),

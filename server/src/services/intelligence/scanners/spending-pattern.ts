@@ -18,7 +18,7 @@ export async function scanSpendingPatterns(
 
   try {
     // Spending by category per month
-    const categoryMonthly: any[] = await (db as any)
+    const categoryMonthly: Record<string, unknown>[] = await db
       .select({
         category: transactions.category,
         month: sql`substr(${transactions.date}, 1, 7)`,
@@ -41,7 +41,7 @@ export async function scanSpendingPatterns(
     // Group by category -> totals array
     const categoryMap = new Map<string, number[]>();
     for (const row of categoryMonthly) {
-      const cat = row.category;
+      const cat = row.category as string | null;
       if (!cat) continue;
       if (!categoryMap.has(cat)) categoryMap.set(cat, []);
       categoryMap.get(cat)!.push(Number(row.total ?? 0));
@@ -81,7 +81,7 @@ export async function scanSpendingPatterns(
     }
 
     // Account concentration -- one account dominates spending
-    const accountSpend: any[] = await (db as any)
+    const accountSpend: Record<string, unknown>[] = await db
       .select({
         accountId: transactions.accountId,
         total: sql`sum(abs(${transactions.amount}))`,
@@ -100,7 +100,7 @@ export async function scanSpendingPatterns(
       .all();
 
     if (accountSpend.length >= 2) {
-      const totals = accountSpend.map((a: any) => Number(a.total ?? 0));
+      const totals = accountSpend.map((a) => Number(a.total ?? 0));
       const grandTotal = totals.reduce((a, b) => a + b, 0);
       const maxSpend = Math.max(...totals);
 
@@ -111,7 +111,7 @@ export async function scanSpendingPatterns(
             'High account concentration in spending',
             `Over ${((maxSpend / grandTotal) * 100).toFixed(0)}% of spending flows through a single account. Consider diversifying for better tracking.`,
             {
-              accountBreakdown: accountSpend.map((a: any) => ({
+              accountBreakdown: accountSpend.map((a) => ({
                 accountId: a.accountId ?? a.account_id,
                 total: Number(a.total ?? 0),
               })),

@@ -43,7 +43,7 @@ export class StreamingService {
 
     // Best-effort DB persistence
     try {
-      await (db as any).run(
+      await db.run(
         `INSERT INTO agent_stream_sessions (id, agent_type, user_id, session_status, model_id, provider, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
         [id, agentType, userId, 'pending', 'default', 'anthropic'],
@@ -65,8 +65,8 @@ export class StreamingService {
 
   async *streamAgentResponse(
     sessionId: string,
-    agent: VercelAgent<any, any>,
-    input: any,
+    agent: VercelAgent<unknown, unknown>,
+    input: unknown,
   ): AsyncGenerator<SSEStreamEvent> {
     const session = this.sessions.get(sessionId);
     if (!session) {
@@ -185,7 +185,7 @@ export class StreamingService {
 
     // Fall back to DB lookup
     try {
-      const rows = await (db as any).all(
+      const rows = await db.all(
         `SELECT id, agent_type, session_status, token_usage, latency_ms
          FROM agent_stream_sessions WHERE id = $1`,
         [sessionId],
@@ -278,7 +278,7 @@ export class StreamingService {
     const sqlStr = `UPDATE agent_stream_sessions SET ${setClauses.join(', ')} WHERE id = $${paramIdx}`;
 
     // Fire-and-forget -- do not await
-    (db as any).run(sqlStr, values).catch(() => {
+    db.run(sqlStr, values).catch(() => {
       // Silently ignore DB write failures
     });
   }

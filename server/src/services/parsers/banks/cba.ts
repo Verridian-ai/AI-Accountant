@@ -20,161 +20,10 @@
  *   "Value Date: 30/09/20234.39$$524.59CR"
  */
 
-import { BankParserConfig, ParsedTransaction, AccountInfo, AccountType } from '../types';
+import { ParsedTransaction, AccountInfo, AccountType } from '../types';
 import { BaseBankParser, parseAmount } from '../base-parser';
-
-const MONTH_MAP: Record<string, string> = {
-  jan: '01',
-  feb: '02',
-  mar: '03',
-  apr: '04',
-  may: '05',
-  jun: '06',
-  jul: '07',
-  aug: '08',
-  sep: '09',
-  oct: '10',
-  nov: '11',
-  dec: '12',
-};
-
-const CBA_CONFIG: BankParserConfig = {
-  bankId: 'cba',
-  bankName: 'Commonwealth Bank',
-  displayName: 'Commonwealth Bank of Australia',
-
-  dateFormats: ['DD/MM/YYYY', 'DD/MM/YY', 'DD MMM YYYY', 'DD MMM'],
-
-  headerPatterns: [
-    /Commonwealth\s*Bank/i,
-    /CommBank/i,
-    /CBA/i,
-    /NetBank/i,
-    /BSB:\s*06\d{4}/i,
-    /Account\s+Statement/i,
-  ],
-
-  minHeaderMatches: 2,
-
-  accountPatterns: [
-    /Account\s*(?:Number|No\.?)[\s:]*(\d{4}\s*\d{4}\s*\d{4})/i,
-    /BSB[\s:]*(\d{3}[\s-]?\d{3})[\s,]*Account[\s:]*(\d+)/i,
-    /(\d{2}\s+\d{4}\s+\d{8,10})/,
-  ],
-
-  transactionPatterns: {
-    datePattern: /(\d{1,2}\s+\w{3})/,
-    amountPattern: /\$?([\d,]+\.\d{2})/,
-    transactionLinePattern: /(\d{1,2}\s+\w{3})/,
-    debitIndicators: ['-', 'DR'],
-    creditIndicators: ['+', 'CR'],
-    separateDebitCreditColumns: true,
-  },
-
-  accountTypes: {
-    'Smart Access': 'transaction',
-    'Complete Access': 'transaction',
-    Streamline: 'transaction',
-    'Goal Saver': 'savings',
-    'NetBank Saver': 'savings',
-    Youthsaver: 'savings',
-    Mastercard: 'credit',
-    'Credit Card': 'credit',
-    Business: 'business',
-    Offset: 'offset',
-    'Home Loan': 'loan',
-  },
-
-  periodPatterns: [
-    /Period\s*(\d{1,2}\s+\w{3}\s+\d{4})\s*[-–]\s*(\d{1,2}\s+\w{3}\s+\d{4})/i,
-    /Statement\s+Period[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})\s*(?:to|-)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i,
-    /From[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})\s*To[\s:]*(\d{1,2}\/\d{1,2}\/\d{2,4})/i,
-  ],
-
-  openingBalancePattern: /OPENING\s+BALANCE\s*\$?([\d,]+\.\d{2})/i,
-  closingBalancePattern: /CLOSING\s+BALANCE\s*\$?([\d,]+\.\d{2})/i,
-};
-
-const AMT = '(\\d{1,3}(?:,\\d{3}){0,2}\\.\\d{2})';
-
-/** Try to extract debit amount+balance from a text ending in amount$$balanceCR/DR.
- *  Parses right-to-left: first extract $$balance, then find amount before $$.
- *  Uses lookbehind to prevent matching amounts concatenated with reference numbers.
- *  If lookbehind fails, falls back to extracting just the raw decimal number. */
-function tryDebitAmountBalance(
-  text: string,
-): { desc: string; amount: number; balance: number } | null {
-  // Find $$ separator
-  const ddIdx = text.lastIndexOf('$$');
-  if (ddIdx < 0) return null;
-
-  // Parse balance after $$
-  const afterDD = text.substring(ddIdx + 2);
-  const balMatch = afterDD.match(new RegExp(`^${AMT}(CR|DR)\\s*$`));
-  if (!balMatch) return null;
-  const balance = parseAmount(balMatch[1] + balMatch[2]);
-  if (balance === null) return null;
-
-  // Before $$ is "description + amount" — extract amount from end
-  const beforeDD = text.substring(0, ddIdx);
-
-  // First try: clean amount with non-digit boundary (best case)
-  const cleanAmtMatch = beforeDD.match(/(?<!\d)(\d{1,3}(?:,\d{3}){0,2}\.\d{2})$/);
-  if (cleanAmtMatch) {
-    const amount = parseAmount(cleanAmtMatch[1]);
-    if (amount !== null) {
-      const desc = beforeDD.substring(0, beforeDD.length - cleanAmtMatch[0].length);
-      return { desc, amount: -Math.abs(amount), balance };
-    }
-  }
-
-  // Fallback: when reference number is concatenated with amount (e.g., "100015641,372.76")
-  // Extract just the last decimal portion as the amount — everything before . that forms
-  // a valid amount. Take the shortest valid amount (most conservative).
-  const rawMatch = beforeDD.match(/(\d{1,3}\.\d{2})$/);
-  if (rawMatch) {
-    const amount = parseAmount(rawMatch[1]);
-    if (amount !== null) {
-      const desc = beforeDD.substring(0, beforeDD.length - rawMatch[0].length);
-      return { desc, amount: -Math.abs(amount), balance };
-    }
-  }
-
-  return null;
-}
-
-/** Try to extract credit amount+balance from a text ending in $amount$balanceCR/DR.
- *  Credit format has $ before amount and $ before balance. */
-function tryCreditAmountBalance(
-  text: string,
-): { desc: string; amount: number; balance: number } | null {
-  // Match from the right: $balance(CR|DR) at end
-  const balRe = new RegExp(`\\$${AMT}(CR|DR)\\s*$`);
-  const balMatch = text.match(balRe);
-  if (!balMatch || balMatch.index === undefined) return null;
-  const balance = parseAmount(balMatch[1] + balMatch[2]);
-  if (balance === null) return null;
-
-  // Before the balance, find $amount
-  const beforeBal = text.substring(0, balMatch.index);
-  const amtRe = new RegExp(`\\$${AMT}$`);
-  const amtMatch = beforeBal.match(amtRe);
-  if (!amtMatch) return null;
-  const amount = parseAmount(amtMatch[1]);
-  if (amount === null) return null;
-
-  const desc = beforeBal.substring(0, beforeBal.length - amtMatch[0].length);
-  return { desc, amount: Math.abs(amount), balance };
-}
-
-/** Try to extract amount+balance from a line (debit first, then credit) */
-function tryAmountBalance(text: string): { desc: string; amount: number; balance: number } | null {
-  // Check for $$ (debit indicator) first
-  if (text.includes('$$')) {
-    return tryDebitAmountBalance(text);
-  }
-  return tryCreditAmountBalance(text);
-}
+import { MONTH_MAP, CBA_CONFIG } from './cba-config';
+import { tryAmountBalance } from './cba-amount-helpers';
 
 export class CBAParser extends BaseBankParser {
   config = CBA_CONFIG;
@@ -304,7 +153,7 @@ export class CBAParser extends BaseBankParser {
       // Try to find amount+balance in continuation lines (last continuation often has it)
       let amount: number | null = null;
       let balance: number | null = null;
-      let descParts = [pendingDesc];
+      const descParts = [pendingDesc];
 
       for (let i = 0; i < pendingContLines.length; i++) {
         const contLine = pendingContLines[i];

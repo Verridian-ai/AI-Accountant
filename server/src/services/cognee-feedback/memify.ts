@@ -10,6 +10,20 @@ import type { CogneeFeedbackService } from './feedback-service.js';
 
 const DEFAULT_AUTO_MEMIFY_THRESHOLD = 10;
 
+interface FeedbackRow {
+  id: string;
+  userId: string;
+  entityType: string;
+  entityId: string;
+  feedbackType: string;
+  originalValue: string | null;
+  correctedValue: string | null;
+  context: string | null;
+  datapointConfigId: string | null;
+  appliedToMemify: boolean;
+  createdAt: string;
+}
+
 /**
  * Trigger memify (memory consolidation) for unapplied feedback.
  * Groups feedback by dataset, sends to Cognee, and marks as applied.
@@ -20,7 +34,7 @@ export async function triggerMemify(
   options?: MemifyOptions,
 ): Promise<MemifyResult> {
   // Get unapplied feedback
-  const unapplied = await db
+  const unapplied: FeedbackRow[] = await db
     .select()
     .from(cogneeFeedback)
     .where(and(eq(cogneeFeedback.userId, userId), eq(cogneeFeedback.appliedToMemify, false)))
@@ -47,7 +61,7 @@ export async function triggerMemify(
   }
 
   // Group by dataset from context
-  const datasetGroups: Record<string, any[]> = {};
+  const datasetGroups: Record<string, FeedbackRow[]> = {};
   for (const fb of unapplied) {
     let dataset = 'general_feedback';
     if (fb.context) {
@@ -70,11 +84,11 @@ export async function triggerMemify(
 
   // Trigger memify for each dataset group
   for (const dataset of targetDatasets) {
-    const feedbackData = datasetGroups[dataset].map((fb: any) => ({
+    const feedbackData = datasetGroups[dataset].map((fb: FeedbackRow) => ({
       entity_id: fb.entityId,
       feedback_type: fb.feedbackType,
-      original_value: fb.originalValue,
-      corrected_value: fb.correctedValue,
+      original_value: fb.originalValue ?? undefined,
+      corrected_value: fb.correctedValue ?? undefined,
     }));
 
     await cogneeClient.triggerMemify(
@@ -89,7 +103,7 @@ export async function triggerMemify(
 
   // Mark all as applied
   const appliedIds = unapplied
-    .filter((fb: any) => {
+    .filter((fb: FeedbackRow) => {
       let dataset = 'general_feedback';
       if (fb.context) {
         try {
@@ -101,7 +115,7 @@ export async function triggerMemify(
       }
       return targetDatasets.includes(dataset);
     })
-    .map((fb: any) => fb.id);
+    .map((fb: FeedbackRow) => fb.id);
 
   for (const fbId of appliedIds) {
     await db
@@ -115,8 +129,8 @@ export async function triggerMemify(
   const newAccuracyScores: Record<string, number> = {};
   const configIds = new Set(
     unapplied
-      .filter((fb: any) => fb.datapointConfigId)
-      .map((fb: any) => fb.datapointConfigId as string),
+      .filter((fb: FeedbackRow) => fb.datapointConfigId)
+      .map((fb: FeedbackRow) => fb.datapointConfigId as string),
   );
 
   for (const configId of configIds) {
@@ -153,9 +167,9 @@ export async function autoTriggerMemify(
     .where(and(eq(cogneeFeedback.userId, userId), eq(cogneeFeedback.appliedToMemify, false)))
     .get();
 
-  const total = (unappliedCount as any)?.count ?? 0;
+  const total = (unappliedCount as Record<string, unknown>)?.count ?? 0;
 
-  if (total < DEFAULT_AUTO_MEMIFY_THRESHOLD) {
+  if (Number(total) < DEFAULT_AUTO_MEMIFY_THRESHOLD) {
     return null;
   }
 

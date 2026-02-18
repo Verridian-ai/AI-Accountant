@@ -23,7 +23,7 @@ export const generateToken = async (userId: string) => {
 export const verifyToken = async (token: string) => {
   try {
     return await verify(token, JWT_SECRET);
-  } catch (_e) {
+  } catch {
     return null;
   }
 };

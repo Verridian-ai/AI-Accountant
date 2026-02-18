@@ -7,7 +7,7 @@
 import { db, transactions } from '../../schema.js';
 import { eq, and, gte } from 'drizzle-orm';
 import crypto from 'crypto';
-import type { AnomalyAlertResult } from './types.js';
+import type { AnomalyAlertResult, TransactionLike } from './types.js';
 import { categoryProportions, findRecurringPatterns, daysBetween } from './utils.js';
 
 export async function detectCategoryDrift(
@@ -21,7 +21,7 @@ export async function detectCategoryDrift(
   const startDate = new Date(now);
   startDate.setMonth(startDate.getMonth() - months);
 
-  const allTxns: any[] = await db
+  const allTxns: TransactionLike[] = await db
     .select()
     .from(transactions)
     .where(
@@ -34,8 +34,8 @@ export async function detectCategoryDrift(
   if (allTxns.length < 20) return alerts;
 
   const halfwayStr = halfwayDate.toISOString().slice(0, 10);
-  const historical = allTxns.filter((t: any) => t.date < halfwayStr);
-  const recent = allTxns.filter((t: any) => t.date >= halfwayStr);
+  const historical = allTxns.filter((t) => t.date < halfwayStr);
+  const recent = allTxns.filter((t) => t.date >= halfwayStr);
   if (historical.length < 5 || recent.length < 5) return alerts;
 
   const histProportions = categoryProportions(historical);
@@ -76,7 +76,7 @@ export async function detectScheduleDeviation(userId: string): Promise<AnomalyAl
   const cutoff = new Date();
   cutoff.setMonth(cutoff.getMonth() - 12);
 
-  const txns: any[] = await db
+  const txns: TransactionLike[] = await db
     .select()
     .from(transactions)
     .where(
@@ -113,7 +113,7 @@ export async function detectScheduleDeviation(userId: string): Promise<AnomalyAl
     }
     const lastTx = txns
       .filter(
-        (t: any) =>
+        (t) =>
           (t.merchantNormalized ?? t.description ?? '').toLowerCase().trim() ===
           pattern.merchant.toLowerCase(),
       )
@@ -138,7 +138,7 @@ export async function detectScheduleDeviation(userId: string): Promise<AnomalyAl
             pctChange: Math.round(pctChange * 1000) / 10,
           },
           transactionId: lastTx.id,
-          accountId: lastTx.accountId,
+          accountId: lastTx.accountId ?? undefined,
         });
       }
     }

@@ -19,9 +19,9 @@ import type {
   TenantRole,
   CreateTenantOptions,
   SubscriptionInfo,
-} from '../tenant-types.js';
-import { TENANT_ROLES } from '../tenant-types.js';
-import { seedDefaultPermissions } from '../tenant-defaults.js';
+} from './types.js';
+import { TENANT_ROLES } from './types.js';
+import { seedDefaultPermissions } from './defaults.js';
 import { rbacService } from '../rbac.js';
 import { rowToTenant, rowToMember, DEFAULT_SUBSCRIPTION, parseJsonArray } from './helpers.js';
 
@@ -176,7 +176,7 @@ export async function removeMember(tenantId: string, userId: string): Promise<vo
     .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
     .get();
   if (!member) throw new Error('Member not found in this tenant');
-  if ((member as any).role === 'owner') {
+  if ((member as Record<string, unknown>).role === 'owner') {
     const ownerCount = await countMembersWithRole(tenantId, 'owner');
     if (ownerCount <= 1) throw new Error('Cannot remove the last owner. Transfer ownership first.');
   }
@@ -200,7 +200,7 @@ export async function updateMemberRole(
     .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
     .get();
   if (!member) throw new Error('Member not found in this tenant');
-  if ((member as any).role === 'owner' && newRole !== 'owner') {
+  if ((member as Record<string, unknown>).role === 'owner' && newRole !== 'owner') {
     const ownerCount = await countMembersWithRole(tenantId, 'owner');
     if (ownerCount <= 1)
       throw new Error('Cannot demote the last owner. Assign another owner first.');
@@ -226,7 +226,7 @@ export async function getMembers(tenantId: string): Promise<TenantMember[]> {
     .from(tenantMembers)
     .where(eq(tenantMembers.tenantId, tenantId))
     .all();
-  return (rows as any[]).map(rowToMember);
+  return (rows as Record<string, unknown>[]).map(rowToMember);
 }
 
 export async function getMemberTenants(
@@ -238,8 +238,8 @@ export async function getMemberTenants(
     .where(eq(tenantMembers.userId, userId))
     .all();
   const results: Array<{ tenant: Tenant; role: TenantRole }> = [];
-  for (const m of memberships as any[]) {
-    const tenant = await getTenant(m.tenantId ?? m.tenant_id);
+  for (const m of memberships as Record<string, unknown>[]) {
+    const tenant = await getTenant((m.tenantId ?? m.tenant_id) as string);
     if (tenant && tenant.isActive)
       results.push({ tenant, role: (m.role ?? 'viewer') as TenantRole });
   }
@@ -252,7 +252,7 @@ export async function getMemberCount(tenantId: string): Promise<number> {
     .from(tenantMembers)
     .where(eq(tenantMembers.tenantId, tenantId))
     .all();
-  return (rows as any[]).length;
+  return rows.length;
 }
 
 export async function countMembersWithRole(tenantId: string, role: TenantRole): Promise<number> {
@@ -261,7 +261,7 @@ export async function countMembersWithRole(tenantId: string, role: TenantRole): 
     .from(tenantMembers)
     .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.role, role)))
     .all();
-  return (rows as any[]).length;
+  return rows.length;
 }
 
 export async function getPermissionsForRole(tenantId: string, role: TenantRole): Promise<string[]> {
@@ -270,11 +270,14 @@ export async function getPermissionsForRole(tenantId: string, role: TenantRole):
     .from(rolePermissions)
     .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
     .all();
-  const permIds = (rps as any[]).map((rp) => rp.permissionId ?? rp.permission_id);
+  const permIds = (rps as Record<string, unknown>[]).map(
+    (rp) => (rp.permissionId ?? rp.permission_id) as string,
+  );
   if (permIds.length === 0) return [];
   const allPerms = await db.select().from(permissions).all();
   const permMap = new Map<string, string>();
-  for (const p of allPerms as any[]) permMap.set(p.id, p.name);
+  for (const p of allPerms as Record<string, unknown>[])
+    permMap.set(p.id as string, p.name as string);
   return permIds.map((id) => permMap.get(id)).filter((name): name is string => !!name);
 }
 
@@ -287,28 +290,32 @@ export async function getSubscriptionInfo(tenantId: string): Promise<Subscriptio
     )
     .get();
   if (!sub) return { ...DEFAULT_SUBSCRIPTION };
-  const subRow = sub as any;
-  const planId = subRow.planId ?? subRow.plan_id;
+  const subRow = sub as Record<string, unknown>;
+  const planId = (subRow.planId ?? subRow.plan_id) as string;
   const plan = await db
     .select()
     .from(subscriptionPlans)
     .where(eq(subscriptionPlans.id, planId))
     .get();
   if (!plan) return { ...DEFAULT_SUBSCRIPTION };
-  const planRow = plan as any;
+  const planRow = plan as Record<string, unknown>;
   return {
-    planId: planRow.id,
-    planName: planRow.displayName ?? planRow.display_name ?? planRow.name,
-    status: subRow.status,
-    billingCycle: subRow.billingCycle ?? subRow.billing_cycle ?? 'monthly',
-    maxMembers: planRow.maxMembers ?? planRow.max_members ?? 3,
-    maxAccounts: planRow.maxAccounts ?? planRow.max_accounts ?? 2,
-    maxTransactionsPerMonth:
-      planRow.maxTransactionsPerMonth ?? planRow.max_transactions_per_month ?? 500,
-    maxAiQueriesPerMonth: planRow.maxAiQueriesPerMonth ?? planRow.max_ai_queries_per_month ?? 50,
-    maxStorageMb: planRow.maxStorageMb ?? planRow.max_storage_mb ?? 100,
-    currentPeriodEnd:
-      subRow.currentPeriodEnd ?? subRow.current_period_end ?? DEFAULT_SUBSCRIPTION.currentPeriodEnd,
+    planId: planRow.id as string,
+    planName: (planRow.displayName ?? planRow.display_name ?? planRow.name) as string,
+    status: subRow.status as string,
+    billingCycle: (subRow.billingCycle ?? subRow.billing_cycle ?? 'monthly') as string,
+    maxMembers: (planRow.maxMembers ?? planRow.max_members ?? 3) as number,
+    maxAccounts: (planRow.maxAccounts ?? planRow.max_accounts ?? 2) as number,
+    maxTransactionsPerMonth: (planRow.maxTransactionsPerMonth ??
+      planRow.max_transactions_per_month ??
+      500) as number,
+    maxAiQueriesPerMonth: (planRow.maxAiQueriesPerMonth ??
+      planRow.max_ai_queries_per_month ??
+      50) as number,
+    maxStorageMb: (planRow.maxStorageMb ?? planRow.max_storage_mb ?? 100) as number,
+    currentPeriodEnd: (subRow.currentPeriodEnd ??
+      subRow.current_period_end ??
+      DEFAULT_SUBSCRIPTION.currentPeriodEnd) as string,
     features: parseJsonArray(planRow.featuresJson ?? planRow.features_json),
   };
 }

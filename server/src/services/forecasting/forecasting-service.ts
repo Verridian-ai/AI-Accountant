@@ -83,7 +83,7 @@ export class ForecastingService {
       .orderBy(sql`${forecastScenarios.createdAt} DESC`)
       .all();
 
-    return scenarios.map((s: any) => ({
+    return (scenarios as Record<string, unknown>[]).map((s: Record<string, unknown>) => ({
       ...s,
       assumptions: typeof s.assumptions === 'string' ? JSON.parse(s.assumptions) : s.assumptions,
     }));

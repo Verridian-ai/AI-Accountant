@@ -35,6 +35,49 @@ export { safeParseMetadata, extractSnippet } from './helpers.js';
 // Re-export verification functions for consumers
 export { verifySourceExists, verifySourcesExist, getVerificationDetails } from './verification.js';
 
+// Typed interfaces for DB result rows
+interface CitationRecord {
+  id: string;
+  queryId: string;
+  chunkId: string;
+  documentId: string;
+  relevanceScore: number | null;
+  rerankScore: number | null;
+  position: number;
+  excerptUsed: string | null;
+  wasHelpful: boolean | null;
+  createdAt: string;
+}
+
+interface ChunkRow {
+  id: string;
+  content: string;
+  metadata: string | null;
+}
+
+interface DocumentRow {
+  id: string;
+  sourceType: string;
+  title: string | null;
+}
+
+interface TransactionRow {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  category: string | null;
+  balance: number | null;
+}
+
+interface AccountRow {
+  id: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string | null;
+  accountType: string;
+}
+
 // ============================================================================
 // CITATION CREATION
 // ============================================================================
@@ -128,7 +171,7 @@ export async function createCitation(
  * Retrieve all citations for a given answer
  */
 export async function getCitationsForAnswer(answerId: string): Promise<CitationWithSource[]> {
-  const citationRecords = await db
+  const citationRecords: CitationRecord[] = await db
     .select({
       id: ragCitations.id,
       queryId: ragCitations.queryId,
@@ -150,23 +193,25 @@ export async function getCitationsForAnswer(answerId: string): Promise<CitationW
   }
 
   // Fetch chunk and document details
-  const chunkIds = citationRecords.map((c: any) => c.chunkId);
-  const documentIds = [...new Set(citationRecords.map((c: any) => c.documentId))] as string[];
+  const chunkIds = citationRecords.map((c: CitationRecord) => c.chunkId);
+  const documentIds = [
+    ...new Set(citationRecords.map((c: CitationRecord) => c.documentId)),
+  ] as string[];
 
   const [chunks, documents] = await Promise.all([
     db.select().from(ragChunks).where(inArray(ragChunks.id, chunkIds)),
     db.select().from(ragDocuments).where(inArray(ragDocuments.id, documentIds)),
   ]);
 
-  const chunkMap = new Map(chunks.map((c: any) => [c.id, c]));
-  const documentMap = new Map(documents.map((d: any) => [d.id, d]));
+  const chunkMap = new Map((chunks as ChunkRow[]).map((c: ChunkRow) => [c.id, c]));
+  const documentMap = new Map((documents as DocumentRow[]).map((d: DocumentRow) => [d.id, d]));
 
   // Collect all transaction and account IDs to batch fetch
   const transactionIds = new Set<string>();
   const accountIds = new Set<string>();
 
   const metadataMap = new Map<string, ChunkMetadata>();
-  for (const chunk of chunks) {
+  for (const chunk of chunks as ChunkRow[]) {
     const metadata = safeParseMetadata(chunk.metadata);
     metadataMap.set(chunk.id, metadata);
 
@@ -203,8 +248,10 @@ export async function getCitationsForAnswer(answerId: string): Promise<CitationW
       : Promise.resolve([]),
   ]);
 
-  const transactionMap = new Map(transactionResults.map((t: any) => [t.id, t]));
-  const accountMap = new Map(accountResults.map((a: any) => [a.id, a]));
+  const transactionMap = new Map(
+    (transactionResults as TransactionRow[]).map((t: TransactionRow) => [t.id, t]),
+  );
+  const accountMap = new Map((accountResults as AccountRow[]).map((a: AccountRow) => [a.id, a]));
 
   // Build enriched citations
   const enrichedCitations: CitationWithSource[] = [];
@@ -215,9 +262,7 @@ export async function getCitationsForAnswer(answerId: string): Promise<CitationW
 
     if (!chunk || !document) continue;
 
-    const chunkAny = chunk as any;
-    const documentAny = document as any;
-    const metadata = metadataMap.get(chunkAny.id) || {};
+    const metadata = metadataMap.get(chunk.id) || {};
 
     // Get transaction and account details from pre-fetched maps
     const transactionDetails: TransactionDetails | null = metadata.transactionId
@@ -240,9 +285,9 @@ export async function getCitationsForAnswer(answerId: string): Promise<CitationW
       snippet: citation.excerptUsed || '',
       wasHelpful: citation.wasHelpful,
       createdAt: citation.createdAt,
-      sourceType: documentAny.sourceType,
-      sourceTitle: documentAny.title,
-      chunkContent: chunkAny.content,
+      sourceType: document.sourceType,
+      sourceTitle: document.title,
+      chunkContent: chunk.content,
       transactionDetails,
       accountDetails,
     });

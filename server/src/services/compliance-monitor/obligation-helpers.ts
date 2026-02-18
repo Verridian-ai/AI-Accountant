@@ -7,13 +7,29 @@
 
 import { db, complianceChecks } from '../../schema.js';
 import { eq, and, gte, lte } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import crypto from 'crypto';
 import type { ObligationType, ObligationStatus, RiskLevel, ComplianceObligation } from './types.js';
 
 /**
  * Map a raw DB row to a ComplianceObligation, computing status and risk.
  */
-export function mapObligationRow(row: any, now: Date): ComplianceObligation {
+interface ComplianceCheckRow {
+  id: string;
+  userId: string;
+  obligationType: string;
+  period: string;
+  dueDate: string;
+  status: string;
+  riskLevel: string;
+  lodgedDate?: string | null;
+  amountDue?: number | null;
+  amountPaid?: number | null;
+  referenceNumber?: string | null;
+  notes?: string | null;
+}
+
+export function mapObligationRow(row: ComplianceCheckRow, now: Date): ComplianceObligation {
   const dueDate = new Date(row.dueDate);
   const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / 86400000);
 
@@ -59,7 +75,7 @@ export async function queryObligations(
     dateTo?: string;
   },
 ): Promise<ComplianceObligation[]> {
-  const conditions: any[] = [eq(complianceChecks.userId, userId)];
+  const conditions: SQL[] = [eq(complianceChecks.userId, userId)];
 
   if (options?.obligationType)
     conditions.push(eq(complianceChecks.obligationType, options.obligationType));
@@ -67,7 +83,7 @@ export async function queryObligations(
   if (options?.dateFrom) conditions.push(gte(complianceChecks.dueDate, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(complianceChecks.dueDate, options.dateTo));
 
-  const rows: any[] = await db
+  const rows = await db
     .select()
     .from(complianceChecks)
     .where(and(...conditions))
@@ -75,7 +91,7 @@ export async function queryObligations(
     .all();
 
   const now = new Date();
-  return rows.map((row: any) => mapObligationRow(row, now));
+  return (rows as ComplianceCheckRow[]).map((row) => mapObligationRow(row, now));
 }
 
 /**
