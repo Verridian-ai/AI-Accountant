@@ -14,7 +14,7 @@ import {
   Briefcase,
   Wallet,
 } from 'lucide-react';
-import { Sparkline, CHART_COLORS } from '../../../components/charts';
+import { Sparkline, CHART_COLORS } from '@/components/charts';
 import { GSTSummary } from './GSTSummary';
 import { GSTReviewQueue } from './GSTReviewQueue';
 import { InputTaxCredits } from './InputTaxCredits';

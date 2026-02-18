@@ -1,7 +1,12 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3501';
-export const API_URL = `${BASE_URL}/api`;
+const envUrl: string | undefined = import.meta.env.VITE_API_URL;
+// undefined = local dev (use localhost), "" = Docker (use nginx proxy), URL = production
+export const BASE_URL =
+  envUrl === undefined ? 'http://localhost:3501' : envUrl === '' ? '' : envUrl;
+export const API_URL = BASE_URL ? `${BASE_URL}/api` : '/api';
+
+export const getToken = (): string | null => localStorage.getItem('token');
 
 export const getAuthHeaders = (): HeadersInit => {
-  const token = localStorage.getItem('token');
+  const token = getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };

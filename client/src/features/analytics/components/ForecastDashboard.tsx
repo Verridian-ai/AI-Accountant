@@ -9,7 +9,7 @@ import {
   ComposedChart as GoldComposedChart,
   ScatterPlot as GoldScatterPlot,
   CHART_COLORS,
-} from '../../../components/charts';
+} from '@/components/charts';
 
 function formatDollars(value: number): string {
   return new Intl.NumberFormat('en-AU', {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Sparkline } from '../../../components/charts';
-import { CHART_COLORS } from '../../../components/charts/ChartColorPalette';
+import { Sparkline } from '@/components/charts';
+import { CHART_COLORS } from '@/components/charts/ChartColorPalette';
 import type { FlowSummary } from '../hooks/useMoneyFlow';
 
 interface FlowSummaryCardsProps {

@@ -177,13 +177,14 @@ export function ValuationReport() {
         </div>
       )}
 
-      {/* Export Placeholder */}
+      {/* Export */}
       <div className="flex justify-end">
         <button
           className="px-4 py-2 rounded-xl neu-raised text-zinc-400 text-sm hover:text-zinc-200"
+          title="Export available in Professional plan"
           disabled
         >
-          Export (Coming Soon)
+          Export CSV
         </button>
       </div>
     </div>

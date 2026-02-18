@@ -35,8 +35,7 @@ export const forecastApi: StubApi = {
 };
 
 export const intelligenceApi: StubApi = {
-  findCorrelations: async (..._args: unknown[]) =>
-    Promise.resolve([] as Record<string, unknown>[]),
+  findCorrelations: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   listInsights: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   updateInsightStatus: async (..._args: unknown[]) =>
     Promise.resolve({} as Record<string, unknown>),
@@ -46,10 +45,8 @@ export const intelligenceApi: StubApi = {
   getTimeline: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   getConnections: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   subscribe: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  deleteSubscription: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
-  listSavedQueries: async (..._args: unknown[]) =>
-    Promise.resolve([] as Record<string, unknown>[]),
+  deleteSubscription: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  listSavedQueries: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   executeQuery: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   saveQuery: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
@@ -59,8 +56,7 @@ export const knowledgeApi: StubApi = {
   createDataPoint: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   deactivateDataPoint: async (..._args: unknown[]) =>
     Promise.resolve({} as Record<string, unknown>),
-  activateDataPoint: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
+  activateDataPoint: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   feedbackStats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   triggerMemify: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   graphStats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
@@ -102,8 +98,7 @@ export const reconApi: StubApi = {
   autoMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   completeSession: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   confirmMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  createManualMatch: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
+  createManualMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   getRules: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   createRule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
@@ -115,15 +110,13 @@ export const budgetsApi: StubApi = {
   list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   create: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   getVariance: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  getVarianceSummary: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
+  getVarianceSummary: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
 export const loanApi: StubApi = {
   calculateCarFinance: async (..._args: unknown[]) =>
     Promise.resolve({} as Record<string, unknown>),
-  calculateHomeLoan: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
+  calculateHomeLoan: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   calculateRefinanceSavings: async (..._args: unknown[]) =>
     Promise.resolve({} as Record<string, unknown>),
   calculateBorrowingCapacity: async (..._args: unknown[]) =>
@@ -146,18 +139,15 @@ export const complianceApi: StubApi = {
   obligations: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   risk: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   report: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  generateSchedule: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
+  generateSchedule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   lodge: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
 export const consolidationApi: StubApi = {
   generate: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   getSnapshots: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
-  getSnapshotDetail: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
-  finalizeSnapshot: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
+  getSnapshotDetail: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  finalizeSnapshot: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
 export const documentsApi: StubApi = {
@@ -174,11 +164,9 @@ export const documentsApi: StubApi = {
 export const forecastsApi: StubApi = {
   listScenarios: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   createScenario: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  generateForecast: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
+  generateForecast: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   getScenario: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  compareScenarios: async (..._args: unknown[]) =>
-    Promise.resolve({} as Record<string, unknown>),
+  compareScenarios: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
 export const transactionsApi = {
@@ -187,41 +175,42 @@ export const transactionsApi = {
 };
 
 export const adminLogin = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchActivityLog = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchActivitySummary = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchAdminProfile = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchAdminUsers = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchAgentConfigs = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchAgentCosts = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchAgentExecutions = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchAgentStats = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchBestRates = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchCdrAlerts = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchCdrProducts = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
+  username: string,
+  password: string,
+): Promise<{ token: string; refreshToken?: string; user?: { username: string; role: string } }> => {
+  const res = await fetch(`${API_URL}/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({ error: 'Login failed' }));
+    throw new Error(data.error || `Login failed (${res.status})`);
+  }
+  return res.json();
+};
+export const fetchActivityLog = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchActivitySummary = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchAdminProfile = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchAdminUsers = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchAgentConfigs = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchAgentCosts = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchAgentExecutions = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchAgentStats = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchBestRates = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchCdrAlerts = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchCdrProducts = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
 export const fetchCogneeAdminDatasets = async (
   ..._args: unknown[]
 ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
@@ -231,63 +220,44 @@ export const fetchCogneeDatasetDetail = async (
 export const fetchCogneeGraphStats = async (
   ..._args: unknown[]
 ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchDataHolders = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchDiskUsage = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchFeatureFlags = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchHealthHistory = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchSystemHealth = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const fetchSystemMetrics = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const testCogneeSearch = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const reindexCogneeDataset = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const triggerCdrCrawl = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const compareCdrProducts = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const calculateSavings = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const createAdminUser = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const createCdrAlert = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const createFeatureFlag = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const deleteAdminUser = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const deleteCdrAlert = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const updateAdminUser = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const updateAgentConfig = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
-export const updateFeatureFlag = async (
-  ..._args: unknown[]
-): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
+export const fetchDataHolders = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchDiskUsage = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchFeatureFlags = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchHealthHistory = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchSystemHealth = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const fetchSystemMetrics = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const testCogneeSearch = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const reindexCogneeDataset = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const triggerCdrCrawl = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const compareCdrProducts = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const calculateSavings = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const createAdminUser = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const createCdrAlert = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const createFeatureFlag = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const deleteAdminUser = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const deleteCdrAlert = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const updateAdminUser = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const updateAgentConfig = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
+export const updateFeatureFlag = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+  Promise.resolve({} as Record<string, unknown>);
 
 export const dashboardApi = {
   fetchDashboards: async (): Promise<unknown[]> => {

@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, RotateCcw, LineChart, Target, ShieldAlert, TrendingUp } from 'lucide-react';
-import { Sparkline, CHART_COLORS } from '../../../components/charts';
+import { Sparkline, CHART_COLORS } from '@/components/charts';
 import { CategoryBreakdown } from './CategoryBreakdown';
 import { RecurringPayments } from './RecurringPayments';
 import { SpendingTrends } from './SpendingTrends';

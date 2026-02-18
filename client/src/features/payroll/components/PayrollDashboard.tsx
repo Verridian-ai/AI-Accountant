@@ -177,7 +177,9 @@ export function PayrollDashboard() {
         <div className="neu-raised rounded-2xl p-8 text-center">
           <Briefcase className="h-12 w-12 text-zinc-600 mx-auto mb-3" />
           <p className="text-zinc-400 font-medium">Pay Runs</p>
-          <p className="text-xs text-zinc-500 mt-1">Coming soon in a future wave</p>
+          <p className="text-xs text-zinc-500 mt-1">
+            Pay runs will appear here once payroll processing is configured.
+          </p>
         </div>
       )}
     </div>

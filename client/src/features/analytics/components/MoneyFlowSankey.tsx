@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Sankey as RechartsSankey, Tooltip, Layer, Rectangle } from 'recharts';
-import { ChartContainer, CHART_COLORS } from '../../../components/charts';
+import { ChartContainer, CHART_COLORS } from '@/components/charts';
 import {
   getCategoryColor as getCatColor,
   isRevenueCategory,

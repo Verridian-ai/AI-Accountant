@@ -40,6 +40,20 @@ import { BillingHistory } from './features/subscription/components/BillingHistor
 import { PayrollDashboard } from './features/payroll/components/PayrollDashboard';
 import { APDashboard } from './features/ap/components/APDashboard';
 import { InvoicingDashboard } from './features/invoicing/components/InvoicingDashboard';
+import { ReportsDashboard } from './features/reports/components/ReportsDashboard';
+import { BudgetsDashboard } from './features/budgets/components/BudgetsDashboard';
+import { ForecastDashboard as ForecastingPage } from './features/forecasting/components/ForecastDashboard';
+import { ComplianceDashboard } from './features/compliance/components/ComplianceDashboard';
+import { DocumentsDashboard } from './features/documents/components/DocumentsDashboard';
+import { MatchingDashboard } from './features/matching/components/MatchingDashboard';
+import { IntelligenceDashboard } from './features/intelligence/components/IntelligenceDashboard';
+import { KnowledgeDashboard } from './features/knowledge/components/KnowledgeDashboard';
+import { LoanDashboard } from './features/loans/components/LoanDashboard';
+import { BankingProductsDashboard } from './features/banking-products/components/BankingProductsDashboard';
+import { AssetsDashboard } from './features/assets/components/AssetsDashboard';
+import { EntitiesDashboard } from './features/entities/components/EntitiesDashboard';
+import { InventoryDashboard } from './features/inventory/components/InventoryDashboard';
+import { ReconDashboard } from './features/reconciliation/components/ReconDashboard';
 import { InstallPrompt } from './components/pwa/InstallPrompt';
 import { UpdatePrompt } from './components/pwa/UpdatePrompt';
 import { PushPermissionPrompt, NotificationPreferences } from './features/notifications';
@@ -383,6 +397,120 @@ function AppContent() {
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
                 <SyncStatus />
                 <ConflictResolver />
+              </div>
+            }
+          />
+
+          {/* Wave 13–20 feature routes */}
+          <Route
+            path="/reports"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <ReportsDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/budgets"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <BudgetsDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/forecasting"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <ForecastingPage />
+              </div>
+            }
+          />
+          <Route
+            path="/compliance"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <ComplianceDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/documents"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <DocumentsDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/matching"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <MatchingDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/intelligence"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <IntelligenceDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/knowledge"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <KnowledgeDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/loans"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <LoanDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/banking-products"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <BankingProductsDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/assets"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <AssetsDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/entities"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <EntitiesDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/inventory"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <InventoryDashboard />
+              </div>
+            }
+          />
+          <Route
+            path="/reconciliation"
+            element={
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <ReconDashboard />
               </div>
             }
           />

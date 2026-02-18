@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 import type { Transaction } from '../types/ledger';
 import { api } from '@/api';
 
@@ -109,7 +110,9 @@ export function useInlineEdit({
         await api.updateTransaction(id, savedForm);
         onDataChange?.();
       } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('[useInlineEdit] Failed to save changes:', err);
+        toast.error(`Failed to save: ${message}`);
         // Revert: reopen edit form with original values on error
         setEditingId(id);
         setEditForm(savedForm);
@@ -143,9 +146,9 @@ export function useInlineEdit({
         await api.deleteTransaction(id);
         onDataChange?.();
       } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('[useInlineEdit] Failed to delete transaction:', err);
-        // TODO: Replace with toast notification when available
-        // toast.error('Failed to delete transaction');
+        toast.error(`Failed to delete: ${message}`);
       } finally {
         setIsDeleting(false);
       }

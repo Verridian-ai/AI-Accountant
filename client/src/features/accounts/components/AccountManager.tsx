@@ -16,7 +16,7 @@ import {
   Hash,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Sparkline, CHART_COLORS } from '../../../components/charts';
+import { Sparkline, CHART_COLORS } from '@/components/charts';
 
 const ACCOUNT_TYPE_ICONS: Record<string, React.ElementType> = {
   checking: Wallet,
