@@ -133,3 +133,15 @@ export const customerContacts = exportedModule.customerContacts;
 export const invoices = exportedModule.invoices;
 export const invoiceLines = exportedModule.invoiceLines;
 export const userSettings = exportedModule.userSettings;
+// Payroll tables (schema/payroll.ts) — previously missing from exports
+export const employees = exportedModule.employees;
+export const employeeBankDetails = exportedModule.employeeBankDetails;
+export const employeeSuperFunds = exportedModule.employeeSuperFunds;
+export const employeeTaxDeclarations = exportedModule.employeeTaxDeclarations;
+export const payCategories = exportedModule.payCategories;
+export const payStructures = exportedModule.payStructures;
+export const employeeDocuments = exportedModule.employeeDocuments;
+// Banking / invoicing tables (schema/banking.ts, schema/invoicing.ts) — previously missing
+export const accountBalanceHistory = exportedModule.accountBalanceHistory;
+export const invoiceNumberSequences = exportedModule.invoiceNumberSequences;
+export const invoicePayments = exportedModule.invoicePayments;

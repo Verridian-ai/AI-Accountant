@@ -223,7 +223,6 @@ app.use('/api/*', async (c, next) => {
     '/api/vertex-ai/models',
     '/api/vertex-ai/test',
     '/api/subscriptions/plans',
-    '/api/invitations/accept',
     '/api/auth/login',
     '/api/auth/register',
     '/api/auth/refresh',
