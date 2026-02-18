@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { DashboardService } from '../services/dashboard.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { getUserId } from '../utils/auth-helpers.js';
 
 const createDashboardSchema = z.object({
   name: z.string().min(1),
@@ -35,8 +36,7 @@ dashboardRoutes.use('/*', tenantAuthMiddleware());
 
 // 1. GET /dashboards — list all dashboards for a user
 dashboardRoutes.get('/', async (c) => {
-  const payload = c.get('jwtPayload');
-  return c.json(await dashboardService.getDashboards(payload.userId));
+  return c.json(await dashboardService.getDashboards(getUserId(c)));
 });
 
 // 2. GET /dashboards/:id — get a single dashboard
@@ -47,10 +47,9 @@ dashboardRoutes.get('/:id', async (c) => {
 
 // 3. POST /dashboards — create a new dashboard
 dashboardRoutes.post('/', zValidator('json', createDashboardSchema), async (c) => {
-  const payload = c.get('jwtPayload');
   const { name, description, layout } = c.req.valid('json');
   return c.json(
-    await dashboardService.createDashboard(payload.userId, name, description, layout),
+    await dashboardService.createDashboard(getUserId(c), name, description, layout),
     201,
   );
 });

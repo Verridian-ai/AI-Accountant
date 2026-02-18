@@ -5,6 +5,7 @@ import { db, transactions } from '../schema.js';
 import { eq, and, gte, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { getUserId } from '../utils/auth-helpers.js';
 import { anomalyDetectionService } from '../services/anomaly-detection.js';
 import { cashFlowForecastService } from '../services/cash-flow-forecast.js';
 
@@ -37,15 +38,15 @@ async function getRelativeCutoff(userId: string, months: number): Promise<string
 // Category Breakdown
 analyticsRoutes.get('/category-breakdown', analyticsQuery, async (c) => {
   try {
-    const payload = c.get('jwtPayload');
-    const months = parseInt(c.req.query('months') || '6');
-    const cutoffStr = await getRelativeCutoff(payload.userId, months);
+    const userId = getUserId(c);
+    const months = parseInt(c.req.query('months') || '6', 10);
+    const cutoffStr = await getRelativeCutoff(userId, months);
     const txns = await db
       .select()
       .from(transactions)
       .where(
         and(
-          eq(transactions.userId, payload.userId),
+          eq(transactions.userId, userId),
           gte(transactions.date, cutoffStr),
           eq(transactions.isTransfer, false),
         ),
@@ -72,17 +73,14 @@ analyticsRoutes.get('/category-breakdown', analyticsQuery, async (c) => {
 // Spending Trends
 analyticsRoutes.get('/spending-trends', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
-    const cutoffStr = await getRelativeCutoff(
-      payload.userId,
-      parseInt(c.req.query('months') || '6'),
-    );
+    const userId = getUserId(c);
+    const cutoffStr = await getRelativeCutoff(userId, parseInt(c.req.query('months') || '6', 10));
     const txns = await db
       .select()
       .from(transactions)
       .where(
         and(
-          eq(transactions.userId, payload.userId),
+          eq(transactions.userId, userId),
           gte(transactions.date, cutoffStr),
           eq(transactions.isTransfer, false),
         ),
@@ -114,11 +112,11 @@ analyticsRoutes.get('/spending-trends', async (c) => {
 // Recurring Payments
 analyticsRoutes.get('/recurring-payments', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
+    const userId = getUserId(c);
     const txns = await db
       .select()
       .from(transactions)
-      .where(and(eq(transactions.userId, payload.userId), eq(transactions.isTransfer, false)))
+      .where(and(eq(transactions.userId, userId), eq(transactions.isTransfer, false)))
       .all();
     const byMerchant: Record<string, Array<{ amount: number; date: string }>> = {};
     for (const t of txns) {
@@ -162,11 +160,11 @@ analyticsRoutes.get('/recurring-payments', async (c) => {
 // Budget vs Actual
 analyticsRoutes.get('/budget-vs-actual', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
+    const userId = getUserId(c);
     const latestResult = await db
       .select({ maxDate: sql<string>`MAX(${transactions.date})` })
       .from(transactions)
-      .where(eq(transactions.userId, payload.userId))
+      .where(eq(transactions.userId, userId))
       .get();
     const refDate = latestResult?.maxDate ? new Date(latestResult.maxDate) : new Date();
     const monthStart = `${refDate.getFullYear()}-${String(refDate.getMonth() + 1).padStart(2, '0')}-01`;
@@ -175,7 +173,7 @@ analyticsRoutes.get('/budget-vs-actual', async (c) => {
       .from(transactions)
       .where(
         and(
-          eq(transactions.userId, payload.userId),
+          eq(transactions.userId, userId),
           gte(transactions.date, monthStart),
           eq(transactions.isTransfer, false),
         ),
@@ -203,10 +201,10 @@ analyticsRoutes.get('/budget-vs-actual', async (c) => {
 // Anomaly Detection — wired to AnomalyDetectionService
 analyticsRoutes.get('/anomalies', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
+    const userId = getUserId(c);
     const severity = c.req.query('severity') as 'low' | 'medium' | 'high' | 'critical' | undefined;
     const status = c.req.query('status');
-    const alerts = await anomalyDetectionService.getAlerts(payload.userId, {
+    const alerts = await anomalyDetectionService.getAlerts(userId, {
       severity,
       status: status as 'open' | 'acknowledged' | 'resolved' | 'dismissed' | undefined,
     });
@@ -220,12 +218,9 @@ analyticsRoutes.get('/anomalies', async (c) => {
 // Cash Flow Forecast — wired to CashFlowForecastService
 analyticsRoutes.get('/cash-flow-forecast', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
+    const userId = getUserId(c);
     const status = c.req.query('status');
-    const forecasts = await cashFlowForecastService.getForecasts(
-      payload.userId,
-      status ?? undefined,
-    );
+    const forecasts = await cashFlowForecastService.getForecasts(userId, status ?? undefined);
     return c.json({ data: forecasts });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to get cash flow forecast';

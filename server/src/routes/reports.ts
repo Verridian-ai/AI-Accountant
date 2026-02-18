@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db, transactions } from '../schema.js';
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { getUserId } from '../utils/auth-helpers.js';
 
 // Zod used for type inference in report response types
 const _periodQuerySchema = z.object({
@@ -18,8 +19,7 @@ reportRoutes.use('/*', tenantAuthMiddleware());
 
 // Get consolidated report for a period
 reportRoutes.get('/consolidated/:period', async (c) => {
-  const payload = c.get('jwtPayload');
-  const userId = payload.userId;
+  const userId = getUserId(c);
   const period = c.req.param('period'); // Format: YYYY-MM or YYYY
 
   let startDate: string;

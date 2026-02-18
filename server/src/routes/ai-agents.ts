@@ -11,6 +11,7 @@ import {
   FINTECH_MODEL_PRESETS,
 } from '../services/vertex-ai.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { getUserId } from '../utils/auth-helpers.js';
 
 const PYTHON_AGENT_TYPES: readonly PythonAgentType[] = [
   'financial_analyst',
@@ -49,7 +50,6 @@ agentRoutes.get('/:type', async (c) => {
 });
 
 agentRoutes.post('/:type/run', zValidator('json', runAgentSchema), async (c) => {
-  const payload = c.get('jwtPayload');
   const rawType = c.req.param('type');
   if (!PYTHON_AGENT_TYPES.includes(rawType as PythonAgentType)) {
     return c.json({ error: `Invalid agent type: ${rawType}` }, 400);
@@ -59,7 +59,7 @@ agentRoutes.post('/:type/run', zValidator('json', runAgentSchema), async (c) => 
   const txs = await db
     .select()
     .from(transactions)
-    .where(eq(transactions.userId, payload.userId))
+    .where(eq(transactions.userId, getUserId(c)))
     .orderBy(desc(transactions.date));
   const result = await agentService.runAgent(agentType, query, { transactions: txs });
   return c.json(result);

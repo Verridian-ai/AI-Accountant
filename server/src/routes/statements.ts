@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { statementService } from '../services/statements/statement-service.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { getUserId } from '../utils/auth-helpers.js';
 
 // Upload uses multipart/form-data — no JSON body; reprocess takes no body
 const _statementReprocessShape = z.object({ force: z.boolean().optional() });
@@ -14,8 +15,7 @@ statementRoutes.use('/*', tenantAuthMiddleware());
 // Get all statements
 statementRoutes.get('/', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
-    return c.json(await statementService.getAll(payload.userId));
+    return c.json(await statementService.getAll(getUserId(c)));
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to get statements';
     return c.json({ error: message, code: 'GET_STATEMENTS_FAILED' }, 500);
@@ -25,12 +25,11 @@ statementRoutes.get('/', async (c) => {
 // Authenticated Upload
 statementRoutes.post('/upload', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
     const body = await c.req.parseBody();
     const file = body['file'];
     if (!file || !(file instanceof File))
       return c.json({ error: 'No file provided', code: 'NO_FILE' }, 400);
-    const result = await statementService.upload(payload.userId, file);
+    const result = await statementService.upload(getUserId(c), file);
     return c.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Upload failed';
@@ -41,8 +40,7 @@ statementRoutes.post('/upload', async (c) => {
 // Reprocess
 statementRoutes.post('/:id/reprocess', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
-    const result = await statementService.reprocess(payload.userId, c.req.param('id'));
+    const result = await statementService.reprocess(getUserId(c), c.req.param('id'));
     return c.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Reprocess failed';
@@ -53,8 +51,7 @@ statementRoutes.post('/:id/reprocess', async (c) => {
 // Gap Analysis
 statementRoutes.get('/gap-analysis', async (c) => {
   try {
-    const payload = c.get('jwtPayload');
-    return c.json(await statementService.getGapAnalysis(payload.userId));
+    return c.json(await statementService.getGapAnalysis(getUserId(c)));
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to get gap analysis';
     return c.json({ error: message, code: 'GAP_ANALYSIS_FAILED' }, 500);
