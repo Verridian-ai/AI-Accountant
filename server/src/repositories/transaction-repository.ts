@@ -14,6 +14,10 @@ export interface TransactionFilters {
 }
 
 export class TransactionRepository {
+  /**
+   * Paginated transaction query with total count.
+   * Data fetch and count query run in parallel via Promise.all — not N+1.
+   */
   async findMany(filters: TransactionFilters): Promise<{
     data: Array<typeof transactions.$inferSelect>;
     total: number;
@@ -104,7 +108,12 @@ export class TransactionRepository {
     );
   }
 
+  /**
+   * Batch-insert multiple transactions in a single DB round-trip.
+   * Uses Drizzle's array insert — NOT an N+1 loop.
+   */
   async createMany(data: (typeof transactions.$inferInsert)[]): Promise<void> {
+    if (data.length === 0) return;
     await insert(db, transactions, data);
   }
 
