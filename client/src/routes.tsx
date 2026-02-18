@@ -84,11 +84,8 @@ const GSTPage = lazy(() =>
   })),
 );
 
-const AnalyticsPage = lazy(() =>
-  import('./features/analytics/components/AnalyticsDashboard').then((m) => ({
-    default: m.AnalyticsDashboard,
-  })),
-);
+// AnalyticsPage reuses the same component as DashboardPage — avoids duplicate chunk
+const AnalyticsPage = DashboardPage;
 
 const MarketPage = lazy(() =>
   import('./features/market').then((m) => ({
