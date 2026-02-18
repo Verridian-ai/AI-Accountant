@@ -161,22 +161,33 @@ const getRateLimitKey = (c: Context) => {
   return realIp || remoteAddr;
 };
 
-// General API rate limiter: relaxed for development
+const isProd = process.env.NODE_ENV === 'production';
+
+// General API rate limiter: production-safe limits gated by NODE_ENV
 const generalLimiter = rateLimiter({
   windowMs: 60 * 1000,
-  limit: 1000, // Increased from 30 to 1000 for local development
+  limit: isProd ? 100 : 1000,
   standardHeaders: true,
   keyGenerator: getRateLimitKey,
   message: { error: 'Too many requests, please try again later.' },
 });
 
-// Strict limiter for expensive AI endpoints: relaxed for development
+// Strict limiter for expensive AI endpoints
 const chatLimiter = rateLimiter({
   windowMs: 60 * 1000,
-  limit: 100, // Increased from 5 to 100 for local development
+  limit: isProd ? 10 : 100,
   standardHeaders: true,
   keyGenerator: getRateLimitKey,
   message: { error: 'Chat limit reached. Please wait a minute before trying again.' },
+});
+
+// Strict limiter for authentication endpoints — 5 attempts per 15 min in production
+const authLimiter = rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: isProd ? 5 : 100,
+  standardHeaders: true,
+  keyGenerator: getRateLimitKey,
+  message: { error: 'Too many login attempts. Please try again later.' },
 });
 
 app.use(
@@ -204,6 +215,11 @@ setInterval(
   },
   5 * 60 * 1000,
 );
+
+// Apply strict auth rate limiter to all login endpoints
+app.use('/api/admin/login', authLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/auth/login', authLimiter);
 
 // Apply rate limiting to API routes, but exclude statement upload/processing
 app.use('/api/*', async (c, next) => {
