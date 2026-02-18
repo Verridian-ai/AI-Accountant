@@ -1,9 +1,21 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { db, transactions, accounts, statements } from '../schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { agentService, type PythonAgentType } from '../services/agents.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import {
+  agentRunSchema,
+  codeExecuteSchema,
+  agentAnalyzeSchema,
+  agentBASSchema,
+  agentTaxSchema,
+} from '../validation/agents.js';
 
 const agentsExtRoutes = new Hono();
+
+// Require valid JWT + tenant context for all agent routes
+agentsExtRoutes.use('/*', tenantAuthMiddleware());
 
 // GET /api/agents/:type — Get specific agent info
 agentsExtRoutes.get('/agents/:type', async (c) => {
@@ -18,15 +30,12 @@ agentsExtRoutes.get('/agents/:type', async (c) => {
 });
 
 // POST /api/agents/:type/run — Run an agent with a query
-agentsExtRoutes.post('/agents/:type/run', async (c) => {
+agentsExtRoutes.post('/agents/:type/run', zValidator('json', agentRunSchema), async (c) => {
   try {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
     const agentType = c.req.param('type') as PythonAgentType;
-    const body = await c.req.json();
-    const { query } = body;
-
-    if (!query) return c.json({ error: 'Query is required' }, 400);
+    const { query } = c.req.valid('json');
 
     const userTransactions = await db
       .select()
@@ -51,17 +60,14 @@ agentsExtRoutes.post('/agents/:type/run', async (c) => {
 });
 
 // POST /api/agents/code/execute — Execute Python code in sandbox
-agentsExtRoutes.post('/agents/code/execute', async (c) => {
+agentsExtRoutes.post('/agents/code/execute', zValidator('json', codeExecuteSchema), async (c) => {
   try {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
-    const body = await c.req.json();
-    const { code, context } = body;
+    const { code, context, includeTransactions } = c.req.valid('json');
 
-    if (!code) return c.json({ error: 'Code is required' }, 400);
-
-    const codeContext = context || {};
-    if (body.includeTransactions) {
+    const codeContext: Record<string, unknown> = context ?? {};
+    if (includeTransactions) {
       const userTransactions = await db
         .select()
         .from(transactions)
@@ -78,40 +84,42 @@ agentsExtRoutes.post('/agents/code/execute', async (c) => {
 });
 
 // POST /api/agents/analyze-finances — Financial analysis endpoint
-agentsExtRoutes.post('/agents/analyze-finances', async (c) => {
-  try {
-    const payload = c.get('jwtPayload');
-    const userId = payload.userId;
-    const body = await c.req.json();
-    const { query } = body;
+agentsExtRoutes.post(
+  '/agents/analyze-finances',
+  zValidator('json', agentAnalyzeSchema),
+  async (c) => {
+    try {
+      const payload = c.get('jwtPayload');
+      const userId = payload.userId;
+      const { query } = c.req.valid('json');
 
-    const userTransactions = await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.userId, userId))
-      .orderBy(desc(transactions.date));
+      const userTransactions = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.userId, userId))
+        .orderBy(desc(transactions.date));
 
-    const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
+      const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
 
-    const result = await agentService.analyzeFinances(
-      query || 'Analyze my spending patterns and provide insights',
-      { transactions: userTransactions, accounts: userAccounts },
-    );
+      const result = await agentService.analyzeFinances(
+        query ?? 'Analyze my spending patterns and provide insights',
+        { transactions: userTransactions, accounts: userAccounts },
+      );
 
-    return c.json(result);
-  } catch (err) {
-    console.error('Financial analysis failed:', err);
-    return c.json({ error: 'Financial analysis failed' }, 500);
-  }
-});
+      return c.json(result);
+    } catch (err) {
+      console.error('Financial analysis failed:', err);
+      return c.json({ error: 'Financial analysis failed' }, 500);
+    }
+  },
+);
 
 // POST /api/agents/calculate-bas — BAS calculation endpoint
-agentsExtRoutes.post('/agents/calculate-bas', async (c) => {
+agentsExtRoutes.post('/agents/calculate-bas', zValidator('json', agentBASSchema), async (c) => {
   try {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
-    const body = await c.req.json();
-    const { query, quarter } = body;
+    const { query, quarter } = c.req.valid('json');
 
     const userTransactions = await db
       .select()
@@ -120,7 +128,7 @@ agentsExtRoutes.post('/agents/calculate-bas', async (c) => {
       .orderBy(desc(transactions.date));
 
     const result = await agentService.calculateBAS(
-      query || `Calculate BAS for ${quarter || 'the current period'}`,
+      query ?? `Calculate BAS for ${quarter ?? 'the current period'}`,
       { transactions: userTransactions },
     );
 
@@ -132,12 +140,11 @@ agentsExtRoutes.post('/agents/calculate-bas', async (c) => {
 });
 
 // POST /api/agents/calculate-tax — Tax calculation endpoint
-agentsExtRoutes.post('/agents/calculate-tax', async (c) => {
+agentsExtRoutes.post('/agents/calculate-tax', zValidator('json', agentTaxSchema), async (c) => {
   try {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
-    const body = await c.req.json();
-    const { query, grossIncome, taxWithheld } = body;
+    const { query, grossIncome, taxWithheld } = c.req.valid('json');
 
     const userTransactions = await db
       .select()
@@ -146,8 +153,8 @@ agentsExtRoutes.post('/agents/calculate-tax', async (c) => {
       .orderBy(desc(transactions.date));
 
     const result = await agentService.calculateTax(
-      query ||
-        `Calculate my tax liability. Gross income: $${grossIncome || 'unknown'}, Tax withheld: $${taxWithheld || 'unknown'}`,
+      query ??
+        `Calculate my tax liability. Gross income: $${grossIncome ?? 'unknown'}, Tax withheld: $${taxWithheld ?? 'unknown'}`,
       { transactions: userTransactions },
     );
 
@@ -159,12 +166,11 @@ agentsExtRoutes.post('/agents/calculate-tax', async (c) => {
 });
 
 // POST /api/agents/reconcile — Reconciliation endpoint
-agentsExtRoutes.post('/agents/reconcile', async (c) => {
+agentsExtRoutes.post('/agents/reconcile', zValidator('json', agentAnalyzeSchema), async (c) => {
   try {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
-    const body = await c.req.json();
-    const { query } = body;
+    const { query } = c.req.valid('json');
 
     const userTransactions = await db
       .select()
@@ -175,7 +181,7 @@ agentsExtRoutes.post('/agents/reconcile', async (c) => {
     const userStatements = await db.select().from(statements).where(eq(statements.userId, userId));
 
     const result = await agentService.reconcileTransactions(
-      query || 'Find duplicate transactions and verify statement balances',
+      query ?? 'Find duplicate transactions and verify statement balances',
       { transactions: userTransactions, statements: userStatements },
     );
 
