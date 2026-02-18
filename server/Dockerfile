@@ -32,6 +32,10 @@ RUN mkdir -p /app/uploads && chown -R nodeuser:nodejs /app/uploads
 
 USER nodeuser
 
+# Health check — uses /health (public endpoint, no auth required)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3501/health || exit 1
+
 # Server runs on port 3501
 ENV PORT=3501
 EXPOSE 3501

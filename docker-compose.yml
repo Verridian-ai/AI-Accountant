@@ -195,6 +195,9 @@ services:
       - PORT=3501
       - NODE_ENV=production
       - JWT_SECRET=${JWT_SECRET}
+      # Admin auth
+      - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET:-goldledger-admin-jwt-secret-2025}
+      - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD:-Admin123!}
       # AI Keys
       - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
       - VITE_OPENROUTER_API_KEY=${VITE_OPENROUTER_API_KEY}
@@ -228,8 +231,10 @@ services:
       - TFN_ENCRYPTION_KEY=${TFN_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
       # Wave 8: Payment gateway key
       - PAYMENT_ENCRYPTION_KEY=${PAYMENT_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
-      # Wave 10: Bank encryption key
+      # Wave 10: Bank encryption key (BANK_ENCRYPTION_KEY for external reference)
       - BANK_ENCRYPTION_KEY=${BANK_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      # ENCRYPTION_KEY: internal name used by config.ts (mapped from BANK_ENCRYPTION_KEY)
+      - ENCRYPTION_KEY=${BANK_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3501/health"]
       interval: 30s
@@ -242,6 +247,8 @@ services:
       - cba-network
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   # ---------------------------------------------------------------------------
@@ -266,7 +273,8 @@ services:
     networks:
       - cba-network
     depends_on:
-      - server
+      server:
+        condition: service_healthy
 
 # =============================================================================
 # Volumes
