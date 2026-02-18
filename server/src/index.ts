@@ -95,7 +95,7 @@ app.use(
   }),
 );
 
-// Global body limit — applies to all API routes before any route handler runs
+// Global body limit — applied before route handlers to cap all API request sizes
 app.use(
   '/api/*',
   bodyLimit({

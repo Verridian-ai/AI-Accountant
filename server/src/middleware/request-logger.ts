@@ -4,8 +4,8 @@ import crypto from 'crypto';
 
 export const requestLogger = createMiddleware(async (c, next) => {
   const rawId = c.req.header('x-request-id');
-  const requestId =
-    rawId && /^[a-zA-Z0-9\-]{1,64}$/.test(rawId) ? rawId : crypto.randomUUID();
+  // Validate header to prevent log injection — accept only safe alphanumeric IDs
+  const requestId = rawId && /^[a-zA-Z0-9-]{1,64}$/.test(rawId) ? rawId : crypto.randomUUID();
   const startTime = Date.now();
 
   // Create request-scoped logger

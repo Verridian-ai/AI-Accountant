@@ -86,60 +86,6 @@ streamSchemaRoutes.post(
   },
 );
 
-// GET /api/stream/session/:sessionId
-streamSchemaRoutes.get('/stream/session/:sessionId', async (c) => {
-  try {
-    const sessionId = c.req.param('sessionId');
-    const session = await db.get(sql`SELECT id, agent_type as "agentType", user_id as "userId",
-        session_status as "sessionStatus", input_payload as "inputPayload", output_payload as "outputPayload",
-        token_usage as "tokenUsage", stream_started_at as "streamStartedAt", stream_completed_at as "streamCompletedAt",
-        error_message as "errorMessage", model_id as "modelId", provider, latency_ms as "latencyMs",
-        created_at as "createdAt", updated_at as "updatedAt"
-        FROM agent_stream_sessions WHERE id = ${sessionId}`);
-    if (!session) return c.json({ error: 'Session not found' }, 404);
-    return c.json(session);
-  } catch (err) {
-    console.error('Get stream session failed:', err);
-    return c.json({ error: 'Failed to get session' }, 500);
-  }
-});
-
-// GET /api/stream/history
-streamSchemaRoutes.get('/stream/history', async (c) => {
-  try {
-    const userId = c.req.query('userId') || 'default';
-    const limit = parseInt(c.req.query('limit') || '20', 10);
-    const offset = parseInt(c.req.query('offset') || '0', 10);
-    const sessions = await db.all(sql`SELECT id, agent_type as "agentType", user_id as "userId",
-        session_status as "sessionStatus", model_id as "modelId", provider,
-        latency_ms as "latencyMs", error_message as "errorMessage",
-        stream_started_at as "streamStartedAt", stream_completed_at as "streamCompletedAt",
-        created_at as "createdAt"
-        FROM agent_stream_sessions
-        WHERE user_id = ${userId}
-        ORDER BY created_at DESC
-        LIMIT ${limit} OFFSET ${offset}`);
-    return c.json({ sessions, userId, limit, offset });
-  } catch (err) {
-    console.error('Get stream history failed:', err);
-    return c.json({ sessions: [], userId: 'default', limit: 20, offset: 0 });
-  }
-});
-
-// DELETE /api/stream/session/:sessionId
-streamSchemaRoutes.delete('/stream/session/:sessionId', async (c) => {
-  try {
-    const sessionId = c.req.param('sessionId');
-    await db.run(sql`UPDATE agent_stream_sessions
-        SET session_status = 'cancelled', updated_at = NOW()
-        WHERE id = ${sessionId} AND session_status = 'streaming'`);
-    return c.json({ success: true, sessionId });
-  } catch (err) {
-    console.error('Cancel stream session failed:', err);
-    return c.json({ error: 'Failed to cancel session' }, 500);
-  }
-});
-
 // POST /api/schemas/:agentType/validate
 streamSchemaRoutes.post('/schemas/:agentType/validate', async (c) => {
   try {

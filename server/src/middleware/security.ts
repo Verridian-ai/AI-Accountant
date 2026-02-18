@@ -216,6 +216,7 @@ function buildCSPHeader(directives: CSPDirectives): string {
  */
 export function securityHeaders(customConfig?: Partial<SecurityHeadersConfig>): MiddlewareHandler {
   if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
     console.warn('[Security] DEV_SECURITY_CONFIG active — relaxed CSP. DO NOT USE IN PRODUCTION.');
   }
   const config = {
