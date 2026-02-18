@@ -192,13 +192,29 @@ export class ConfirmationFlowManager {
   /**
    * REVISION (D02-CRIT-02): Validate that a user owns the session associated
    * with a mutation. Throws an error if the session belongs to a different user.
+   *
+   * ISSUE-05-002 fix: The original condition `sessions[0].user_id && ...` was falsy
+   * when user_id is NULL, silently permitting ANY authenticated user to confirm or
+   * reject mutations from anonymous sessions. Fixed to explicitly reject NULL-owner sessions.
    */
   protected async validateSessionOwnership(sessionId: string, userId: string): Promise<void> {
     const sessions = await this.db.all('SELECT user_id FROM agent_sessions WHERE id = ?', [
       sessionId,
     ]);
 
-    if (sessions.length > 0 && sessions[0].user_id && sessions[0].user_id !== userId) {
+    if (sessions.length === 0) {
+      throw new Error('Session not found');
+    }
+
+    const sessionUserId: string | null = sessions[0].user_id ?? null;
+
+    // Anonymous sessions (NULL user_id) have no owner to verify against —
+    // disallow mutations to prevent privilege escalation via unowned sessions.
+    if (sessionUserId === null) {
+      throw new Error('Cannot confirm mutations from an unowned session');
+    }
+
+    if (sessionUserId !== userId) {
       throw new Error('Cannot perform action: session belongs to a different user');
     }
   }

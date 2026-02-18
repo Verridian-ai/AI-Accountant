@@ -6,7 +6,7 @@ import { db, rolePermissions, permissions } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
 import type { TenantRole } from '../tenant-types.js';
 import { TENANT_ROLES } from '../tenant-types.js';
-import { PermissionCache } from '../rbac-cache.js';
+import { PermissionCache } from './cache.js';
 import { seedDefaultPermissions } from '../tenant-defaults.js';
 import { getRoleForUser } from './permission-checking.js';
 import crypto from 'crypto';

@@ -85,36 +85,43 @@ export class ConfirmationFlowService extends ConfirmationFlowManager {
     });
 
     // Step 4: Auto-execute if eligible
+    // Track whether execution actually succeeded — canAutoExec only means "eligible",
+    // not "did execute". Using canAutoExec for the SSE event type would be wrong if
+    // execution fails (ISSUE-05-006 fix).
+    let actuallyAutoExecuted = false;
     if (canAutoExec) {
       const execResult = await tools.executeMutation(mutation.id);
       if (execResult.success) {
         mutation.status = 'executed' as MutationStatus;
         mutation.executedAt = new Date().toISOString();
+        actuallyAutoExecuted = true;
       } else {
         logger.warn(
           { err: execResult.error },
           `[ConfirmationFlow] Auto-execute failed for ${mutation.id}`,
         );
-        // Fall back to requiring confirmation
+        // Fall back to requiring confirmation — mutation stays in pending_confirmation
         mutation.status = 'pending_confirmation' as MutationStatus;
       }
     }
 
-    // Step 5: Broadcast SSE event via global events emitter
+    // Step 5: Broadcast SSE event via global events emitter.
+    // Use actuallyAutoExecuted (not canAutoExec) so a failed auto-exec correctly
+    // emits 'mutation_pending' instead of the misleading 'mutation_auto_executed'.
     events.emit('update', {
-      type: canAutoExec ? 'mutation_auto_executed' : 'mutation_pending',
+      type: actuallyAutoExecuted ? 'mutation_auto_executed' : 'mutation_pending',
       data: {
         mutationId: mutation.id,
         agentType,
         description: proposal.description,
         targetTable: proposal.targetTable,
-        requiresConfirmation: !canAutoExec,
+        requiresConfirmation: !actuallyAutoExecuted,
         confidence: proposal.confidence,
       },
       timestamp: new Date().toISOString(),
     });
 
-    return { mutation, autoExecuted: canAutoExec };
+    return { mutation, autoExecuted: actuallyAutoExecuted };
   }
 
   // ── Confirm ─────────────────────────────────────────────────────────────
@@ -146,22 +153,22 @@ export class ConfirmationFlowService extends ConfirmationFlowManager {
     // REVISION (D02-CRIT-02): Validate that the confirming user owns the session
     await this.validateSessionOwnership(mutation.sessionId, userId);
 
-    // Check expiration
-    if (mutation.expiresAt && new Date(mutation.expiresAt) < new Date()) {
-      await this.db.run('UPDATE agent_mutations SET status = ?, updated_at = ? WHERE id = ?', [
-        'expired',
-        new Date().toISOString(),
-        mutationId,
-      ]);
-      throw new Error('Mutation has expired');
-    }
-
-    // Mark as confirmed
+    // TOCTOU fix (ISSUE-05-003): Use a single atomic conditional UPDATE instead of
+    // a separate expiry check + separate status update. Two concurrent confirm() calls
+    // can both pass the status check above, but only one can win the atomic UPDATE below.
+    // The WHERE clause simultaneously guards both status AND expiry atomically at the DB level.
     const now = new Date().toISOString();
-    await this.db.run(
-      'UPDATE agent_mutations SET status = ?, confirmed_at = ?, updated_at = ? WHERE id = ?',
-      ['confirmed', now, now, mutationId],
+    const atomicResult = await this.db.run(
+      `UPDATE agent_mutations
+       SET status = 'confirmed', confirmed_at = ?, updated_at = ?
+       WHERE id = ? AND status = 'pending_confirmation'
+         AND (expires_at IS NULL OR expires_at > ?)`,
+      [now, now, mutationId, now],
     );
+    if ((atomicResult?.changes ?? 0) === 0) {
+      // Another concurrent request won the race, or the mutation expired
+      throw new Error('Mutation already confirmed, rejected, or expired');
+    }
 
     // Execute the mutation
     const result = await tools.executeMutation(mutationId);

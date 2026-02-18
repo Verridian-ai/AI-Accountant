@@ -5,8 +5,8 @@
 import { db, rolePermissions, permissions, tenantMembers } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
 import type { TenantRole } from '../tenant-types.js';
-import { ForbiddenError } from '../rbac-errors.js';
-import { PermissionCache } from '../rbac-cache.js';
+import { ForbiddenError } from './errors.js';
+import { PermissionCache } from './cache.js';
 
 /** Numeric ordering for role hierarchy comparison: higher = more privileged */
 export const ROLE_LEVEL: Record<TenantRole, number> = {

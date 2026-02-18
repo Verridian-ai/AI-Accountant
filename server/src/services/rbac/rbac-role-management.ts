@@ -6,8 +6,8 @@ import { db, tenantMembers } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
 import type { TenantRole, TenantMember } from '../tenant-types.js';
 import { TENANT_ROLES } from '../tenant-types.js';
-import { ForbiddenError } from '../rbac-errors.js';
-import { PermissionCache } from '../rbac-cache.js';
+import { ForbiddenError } from './errors.js';
+import { PermissionCache } from './cache.js';
 import { getRoleForUser, checkPermission as checkPermissionFn } from './permission-checking.js';
 
 export async function getUsersWithRoleImpl(

@@ -4,8 +4,8 @@
 
 import type { Context, Next } from 'hono';
 import type { TenantRole } from '../tenant-types.js';
-import { ForbiddenError } from '../rbac-errors.js';
-import { PermissionCache } from '../rbac-cache.js';
+import { ForbiddenError } from './errors.js';
+import { PermissionCache } from './cache.js';
 import {
   ROLE_LEVEL,
   getRoleForUser,
