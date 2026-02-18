@@ -11,9 +11,9 @@ transactionRoutes.use('/*', tenantAuthMiddleware());
 
 // Get transactions list
 transactionRoutes.get('/', async (c) => {
-  // Tenant auth middleware sets userId directly
-  const userId = c.get('userId') as string;
-  const _tenantId = c.get('tenantId') as string;
+  const payload = c.get('jwtPayload');
+  const userId = payload.userId as string;
+  const _tenantId = payload.tenantId as string;
   const limit = Math.min(parseInt(c.req.query('limit') || '100'), 500);
   const offset = parseInt(c.req.query('offset') || '0');
 
@@ -33,7 +33,7 @@ transactionRoutes.get('/', async (c) => {
 
 // Update transaction
 transactionRoutes.patch('/:id', zValidator('json', transactionUpdateSchema), async (c) => {
-  const userId = c.get('userId') as string;
+  const userId = c.get('jwtPayload').userId as string;
   const id = c.req.param('id');
   const body = c.req.valid('json');
 
@@ -45,7 +45,7 @@ transactionRoutes.patch('/:id', zValidator('json', transactionUpdateSchema), asy
 
 // Split transaction
 transactionRoutes.post('/:id/split', zValidator('json', transactionSplitSchema), async (c) => {
-  const userId = c.get('userId') as string;
+  const userId = c.get('jwtPayload').userId as string;
   const id = c.req.param('id');
   const { splits } = c.req.valid('json');
 
@@ -57,7 +57,7 @@ transactionRoutes.post('/:id/split', zValidator('json', transactionSplitSchema),
 
 // Delete transaction
 transactionRoutes.delete('/:id', async (c) => {
-  const userId = c.get('userId') as string;
+  const userId = c.get('jwtPayload').userId as string;
   const id = c.req.param('id');
 
   const result = await transactionService.deleteTransaction(userId, id);
@@ -68,7 +68,7 @@ transactionRoutes.delete('/:id', async (c) => {
 
 // Export transactions
 transactionRoutes.get('/export', async (c) => {
-  const userId = c.get('userId') as string;
+  const userId = c.get('jwtPayload').userId as string;
   const format = (c.req.query('format') || 'csv') as 'csv' | 'xlsx';
 
   const filters = {
