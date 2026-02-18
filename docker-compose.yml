@@ -1,12 +1,14 @@
 # =============================================================================
-# CBA Statements Parse — Full Stack Docker Compose
+# GoldLedger — Docker Compose (Neon Cloud + Cognee Cloud)
 # =============================================================================
 # Services:
-#   - postgres:  PostgreSQL 17 + pgvector (shared by CBA app + Cognee)
-#   - cognee:    Cognee AI knowledge graph (built from cloned repo)
-#   - redis:     Redis 7 (caching for Cognee + session management)
-#   - server:    Hono API server (Node.js + Python)
-#   - client:    React frontend (nginx with API proxy)
+#   - redis:    Redis 7 (queue + session caching)
+#   - server:   Hono API server (connects to Neon Cloud + Cognee Cloud)
+#   - client:   React frontend (nginx with API proxy)
+#
+# External services (no Docker needed):
+#   - Neon Cloud PostgreSQL (NEON_DATABASE_URL)
+#   - Cognee Cloud knowledge graph (https://api.cognee.ai)
 #
 # Usage:
 #   docker compose up --build -d
@@ -16,146 +18,7 @@
 services:
 
   # ---------------------------------------------------------------------------
-  # PostgreSQL + pgvector (shared database)
-  # ---------------------------------------------------------------------------
-  postgres:
-    image: pgvector/pgvector:pg17
-    container_name: cba-postgres
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-app_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-ai_accountant}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./server/drizzle/0006_postgres_migration.sql:/docker-entrypoint-initdb.d/01-cba-schema.sql:ro
-      - ./docker/init-cognee-db.sql:/docker-entrypoint-initdb.d/02-extensions.sql:ro
-      - ./docker/init-cognee-db.sh:/docker-entrypoint-initdb.d/03-cognee-db.sh:ro
-      - ./server/drizzle/0007_missing_tables.sql:/docker-entrypoint-initdb.d/04-missing-tables.sql:ro
-      - ./server/drizzle/0008_account_ownership.sql:/docker-entrypoint-initdb.d/05-account-ownership.sql:ro
-      - ./docker/migrations/0009_complete_schema.sql:/docker-entrypoint-initdb.d/06-complete-schema.sql:ro
-      - ./docker/migrations/0010_add_missing_columns.sql:/docker-entrypoint-initdb.d/07-migration-0010.sql:ro
-      - ./docker/migrations/0011_final_schema_sync.sql:/docker-entrypoint-initdb.d/08-migration-0011.sql:ro
-      - ./docker/migrations/0012_tax_return_platform.sql:/docker-entrypoint-initdb.d/09-migration-0012.sql:ro
-      - ./docker/migrations/0013_postgres_schema_sync.sql:/docker-entrypoint-initdb.d/10-migration-0013.sql:ro
-      - ./docker/migrations/0014_agent_mutations.sql:/docker-entrypoint-initdb.d/11-migration-0014.sql:ro
-      - ./docker/migrations/0015_cognee_multi_user.sql:/docker-entrypoint-initdb.d/12-migration-0015.sql:ro
-      - ./docker/migrations/0016_employee_management.sql:/docker-entrypoint-initdb.d/13-migration-0016.sql:ro
-      - ./docker/migrations/0017_pay_runs_leave.sql:/docker-entrypoint-initdb.d/14-migration-0017.sql:ro
-      - ./docker/migrations/0018_stp_payslips_timesheets.sql:/docker-entrypoint-initdb.d/15-migration-0018.sql:ro
-      - ./docker/migrations/0019_customers_invoices.sql:/docker-entrypoint-initdb.d/16-migration-0019.sql:ro
-      - ./docker/migrations/0020_recurring_payments.sql:/docker-entrypoint-initdb.d/17-migration-0020.sql:ro
-      - ./docker/migrations/0021_ar_multicurrency.sql:/docker-entrypoint-initdb.d/18-migration-0021.sql:ro
-      - ./docker/migrations/0022_ap_purchase_orders.sql:/docker-entrypoint-initdb.d/19-migration-0022.sql:ro
-      - ./docker/migrations/0023_inventory_bank_recon.sql:/docker-entrypoint-initdb.d/20-migration-0023.sql:ro
-      - ./docker/migrations/0024_fixed_assets_multi_entity.sql:/docker-entrypoint-initdb.d/21-migration-0024.sql:ro
-      - ./docker/migrations/0025_financial_reporting.sql:/docker-entrypoint-initdb.d/22-migration-0025.sql:ro
-      - ./docker/migrations/0026_ai_ocr_payment_matching.sql:/docker-entrypoint-initdb.d/23-migration-0026.sql:ro
-      - ./docker/migrations/0027_predictive_analytics.sql:/docker-entrypoint-initdb.d/24-migration-0027.sql:ro
-      - ./docker/migrations/0028_cognee_datapoints.sql:/docker-entrypoint-initdb.d/25-migration-0028.sql:ro
-      - ./docker/migrations/0029_temporal_intelligence.sql:/docker-entrypoint-initdb.d/26-migration-0029.sql:ro
-      - ./docker/migrations/0030_cdr_open_banking.sql:/docker-entrypoint-initdb.d/27-migration-0030.sql:ro
-      - ./docker/migrations/0031_market_intelligence.sql:/docker-entrypoint-initdb.d/28-migration-0031.sql:ro
-      - ./docker/migrations/0032_admin_backend.sql:/docker-entrypoint-initdb.d/29-migration-0032.sql:ro
-      - ./docker/migrations/0033_vercel_ai_sdk.sql:/docker-entrypoint-initdb.d/30-migration-0033.sql:ro
-      - ./docker/migrations/0034_custom_dashboards.sql:/docker-entrypoint-initdb.d/31-migration-0034.sql:ro
-      - ./docker/migrations/0035_multi_tenant.sql:/docker-entrypoint-initdb.d/32-migration-0035.sql:ro
-      - ./docker/migrations/0036_pwa_support.sql:/docker-entrypoint-initdb.d/33-migration-0036.sql:ro
-    networks:
-      - cba-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app_user} -d ${POSTGRES_DB:-ai_accountant}"]
-      interval: 5s
-      timeout: 5s
-      retries: 15
-      start_period: 30s
-
-  # ---------------------------------------------------------------------------
-  # Cognee — AI Knowledge Graph (built from cloned repo)
-  # ---------------------------------------------------------------------------
-  cognee:
-    container_name: cba-cognee
-    restart: unless-stopped
-    build:
-      context: ./cognee-repo
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - HOST=0.0.0.0
-      - ENVIRONMENT=local
-      - DEBUG=false
-      - LOG_LEVEL=INFO
-      - CORS_ALLOWED_ORIGINS=*
-      # LLM via OpenRouter (Gemini 3 Flash Preview)
-      - LLM_PROVIDER=custom
-      - LLM_MODEL=openrouter/google/gemini-3-flash-preview
-      - LLM_ENDPOINT=https://openrouter.ai/api/v1
-      - LLM_API_KEY=${VITE_OPENROUTER_API_KEY}
-      - LLM_MAX_TOKENS=16384
-      # Embeddings via OpenRouter (text-embedding-3-small)
-      - EMBEDDING_PROVIDER=openai
-      - EMBEDDING_MODEL=text-embedding-3-small
-      - EMBEDDING_DIMENSIONS=1536
-      - EMBEDDING_MAX_TOKENS=8191
-      - EMBEDDING_API_KEY=${VITE_OPENROUTER_API_KEY}
-      - EMBEDDING_ENDPOINT=https://openrouter.ai/api/v1
-      # Database — shared PostgreSQL
-      - DB_PROVIDER=postgres
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=cognee_db
-      - DB_USERNAME=${POSTGRES_USER:-app_user}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      # Vector store — pgvector (same Postgres instance)
-      - VECTOR_DB_PROVIDER=pgvector
-      - VECTOR_DB_URL=postgresql://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD}@postgres:5432/cognee_db
-      # Graph store — embedded Kuzu (no extra service needed)
-      - GRAPH_DATABASE_PROVIDER=kuzu
-      # Security
-      - REQUIRE_AUTHENTICATION=false
-      - ENABLE_BACKEND_ACCESS_CONTROL=false
-      - ACCEPT_LOCAL_FILE_PATH=true
-      - ALLOW_HTTP_REQUESTS=true
-      - TELEMETRY_DISABLED=1
-      # Wave 3: Redis caching for Cognee
-      - CACHING=true
-      - CACHE_BACKEND=redis
-      - CACHE_HOST=redis
-      - CACHE_PORT=6379
-      # Wave 3: Admin credentials (used by CogneeClient for admin operations)
-      - COGNEE_ADMIN_EMAIL=${COGNEE_ADMIN_EMAIL:-admin@cognee-cba.dev}
-      - COGNEE_ADMIN_PASSWORD=${COGNEE_ADMIN_PASSWORD:-CbaAdmin2026}
-      # F4 Memify: Custom enrichment rules path
-      - MEMIFY_CUSTOM_RULES_PATH=/app/custom_models/tasks/memify_enrichment.py
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/settings')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    volumes:
-      - cognee-data:/app/.cognee_system
-      - ./server/cognee-models:/app/custom_models:ro
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - cba-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 4G
-
-  # ---------------------------------------------------------------------------
-  # Redis — Caching layer for Cognee + session management
+  # Redis — Queue + session caching
   # ---------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
@@ -180,7 +43,7 @@ services:
       start_period: 10s
 
   # ---------------------------------------------------------------------------
-  # CBA Server — Hono API (Node.js + Python for agents)
+  # CBA Server — Hono API (Node.js)
   # ---------------------------------------------------------------------------
   server:
     build:
@@ -205,35 +68,26 @@ services:
       # Claude Agents
       - USE_CLAUDE_AGENTS=${USE_CLAUDE_AGENTS:-true}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-5-20250929}
-      # Cognee
+      # Cognee Cloud
       - USE_COGNEE=${USE_COGNEE:-true}
-      - COGNEE_API_URL=http://cognee:8000
+      - COGNEE_API_URL=${COGNEE_API_URL:-https://api.cognee.ai}
+      - COGNEE_API_KEY=${COGNEE_API_KEY}
       # Enrichment APIs
       - ABNLOOKUP_GUID=${ABNLOOKUP_GUID}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      # Database — shared PostgreSQL (triggers usePostgres in schema.ts)
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ai_accountant}
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=${POSTGRES_DB:-ai_accountant}
-      - DB_USER=${POSTGRES_USER:-app_user}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_SSL=false
-      - REDIS_URL=redis://redis:6379
-      # Neon Database Cloud (production data + masked AI branch)
+      # Neon Cloud PostgreSQL (primary database)
+      - USE_NEON=true
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - NEON_AI_DATABASE_URL=${NEON_AI_DATABASE_URL}
       - NEON_API_KEY=${NEON_API_KEY}
       - NEON_PROJECT_ID=${NEON_PROJECT_ID}
       - NEON_ORG_ID=${NEON_ORG_ID}
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
-      - NEON_AI_DATABASE_URL=${NEON_AI_DATABASE_URL}
-      - USE_NEON=${USE_NEON:-true}
-      # Wave 4: TFN encryption key (AES-256-GCM for TFN + bank account numbers)
+      # Redis (queue + caching)
+      - REDIS_URL=redis://redis:6379
+      # Encryption keys
       - TFN_ENCRYPTION_KEY=${TFN_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
-      # Wave 8: Payment gateway key
       - PAYMENT_ENCRYPTION_KEY=${PAYMENT_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
-      # Wave 10: Bank encryption key (BANK_ENCRYPTION_KEY for external reference)
       - BANK_ENCRYPTION_KEY=${BANK_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
-      # ENCRYPTION_KEY: internal name used by config.ts (mapped from BANK_ENCRYPTION_KEY)
       - ENCRYPTION_KEY=${BANK_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3501/health"]
@@ -246,8 +100,6 @@ services:
     networks:
       - cba-network
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
 
@@ -280,10 +132,6 @@ services:
 # Volumes
 # =============================================================================
 volumes:
-  postgres-data:
-    driver: local
-  cognee-data:
-    driver: local
   redis-data:
     driver: local
 

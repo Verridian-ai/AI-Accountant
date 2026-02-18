@@ -123,8 +123,8 @@ export async function refreshAccessToken(
   const payload = await verifyToken(refreshToken);
   if (!payload || payload.type !== 'refresh') return null;
 
-  // Verify admin still exists and is active
-  const admin = await db.select().from(adminUsers).where(eq(adminUsers.id, payload.adminId)).get();
+  const rows = await db.select().from(adminUsers).where(eq(adminUsers.id, payload.adminId));
+  const admin = rows[0];
   if (!admin || !admin.isActive) return null;
 
   const newToken = await generateToken(admin);
@@ -146,7 +146,8 @@ export async function login(
   password: string,
   ipAddress?: string,
 ): Promise<LoginResult> {
-  const admin = await db.select().from(adminUsers).where(eq(adminUsers.username, username)).get();
+  const rows = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
+  const admin = rows[0];
 
   if (!admin) {
     return { success: false, error: 'Invalid credentials' };
@@ -172,8 +173,7 @@ export async function login(
     await db
       .update(adminUsers)
       .set({ lockedUntil: null, failedLoginCount: 0 })
-      .where(eq(adminUsers.id, admin.id))
-      .run();
+      .where(eq(adminUsers.id, admin.id));
     admin.failedLoginCount = 0;
     admin.lockedUntil = null;
   }
@@ -189,7 +189,7 @@ export async function login(
     const newFailCount = (admin.failedLoginCount ?? 0) + 1;
     const remaining = MAX_LOGIN_ATTEMPTS - newFailCount;
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       failedLoginCount: newFailCount,
       updatedAt: new Date().toISOString(),
     };
@@ -198,7 +198,7 @@ export async function login(
       updateData.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS).toISOString();
     }
 
-    await db.update(adminUsers).set(updateData).where(eq(adminUsers.id, admin.id)).run();
+    await db.update(adminUsers).set(updateData).where(eq(adminUsers.id, admin.id));
 
     return {
       success: false,
@@ -220,8 +220,7 @@ export async function login(
       loginCount: (admin.loginCount ?? 0) + 1,
       updatedAt: new Date().toISOString(),
     })
-    .where(eq(adminUsers.id, admin.id))
-    .run();
+    .where(eq(adminUsers.id, admin.id));
 
   const token = await generateToken(admin);
   const refreshToken = await generateRefreshToken(admin);
