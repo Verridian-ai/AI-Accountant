@@ -22,6 +22,21 @@ export const loginSchema = z.object({
 
 export const registerSchema = loginSchema.extend({
   email: emailSchema.optional(),
+  tenantName: z.string().min(1).max(100).optional(),
+  tenantSlug: z
+    .string()
+    .min(1)
+    .max(50)
+    .regex(/^[a-z0-9-]+$/, 'Slug may only contain lowercase letters, numbers, and hyphens')
+    .optional(),
+});
+
+export const loginWithTenantSchema = loginSchema.extend({
+  tenantId: z.string().uuid().optional(),
+});
+
+export const refreshSchema = z.object({
+  tenantId: z.string().uuid().optional(),
 });
 
 export const passwordChangeSchema = z.object({
@@ -51,4 +66,6 @@ export const mfaVerifySchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
+export type LoginWithTenantInput = z.infer<typeof loginWithTenantSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type RefreshInput = z.infer<typeof refreshSchema>;

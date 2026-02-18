@@ -4,21 +4,21 @@
  * they include tenant context in tokens and JWT payloads.
  */
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { db, users } from '../schema.js';
 import { eq } from 'drizzle-orm';
 import { hashPassword, comparePassword, generateToken, verifyToken } from '../auth.js';
 import { tenantService } from '../services/tenant.js';
 import { adminAuthService } from '../services/admin-auth.js';
 import { getErrorMessage } from '../utils/error.js';
+import { loginWithTenantSchema, registerSchema, refreshSchema } from '../validation/auth.js';
 
 const apiAuthRoutes = new Hono();
 
 // POST /api/auth/login — tenant-aware login
-apiAuthRoutes.post('/login', async (c) => {
+apiAuthRoutes.post('/login', zValidator('json', loginWithTenantSchema), async (c) => {
   try {
-    const body = (await c.req.json()) as { username: string; password: string; tenantId?: string };
-    if (!body.username || !body.password)
-      return c.json({ error: 'username and password are required' }, 400);
+    const body = c.req.valid('json');
 
     const user = await db.select().from(users).where(eq(users.username, body.username)).get();
     if (!user || !(await comparePassword(body.password, user.passwordHash)))
@@ -54,16 +54,9 @@ apiAuthRoutes.post('/login', async (c) => {
 });
 
 // POST /api/auth/register
-apiAuthRoutes.post('/register', async (c) => {
+apiAuthRoutes.post('/register', zValidator('json', registerSchema), async (c) => {
   try {
-    const body = (await c.req.json()) as {
-      username: string;
-      password: string;
-      tenantName?: string;
-      tenantSlug?: string;
-    };
-    if (!body.username || !body.password)
-      return c.json({ error: 'username and password are required' }, 400);
+    const body = c.req.valid('json');
 
     const passwordHash = await hashPassword(body.password);
     const userId = crypto.randomUUID();
@@ -89,13 +82,13 @@ apiAuthRoutes.post('/register', async (c) => {
 });
 
 // POST /api/auth/refresh
-apiAuthRoutes.post('/refresh', async (c) => {
+apiAuthRoutes.post('/refresh', zValidator('json', refreshSchema), async (c) => {
   try {
     const authHeader = c.req.header('Authorization');
     if (!authHeader?.startsWith('Bearer '))
       return c.json({ error: 'Authorization token required' }, 401);
     const currentToken = authHeader.slice(7);
-    const body = (await c.req.json().catch(() => ({}))) as { tenantId?: string };
+    const body = c.req.valid('json');
     const result = await adminAuthService.refreshTenantToken(currentToken, body.tenantId);
     if (!result) return c.json({ error: 'Token refresh failed' }, 401);
     return c.json({ token: result.token, payload: result.payload });
