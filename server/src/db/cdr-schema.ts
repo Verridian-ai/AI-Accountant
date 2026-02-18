@@ -5,6 +5,7 @@
  */
 
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { users } from '../schema/core.js';
 
 // ============================================================================
 // CDR DATA HOLDERS
@@ -177,7 +178,9 @@ export const cdrCrawlLog = sqliteTable('cdr_crawl_log', {
 
 export const cdrRateAlerts = sqliteTable('cdr_rate_alerts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().default('default'),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   alertType: text('alert_type').notNull(),
   productCategory: text('product_category'),
   rateType: text('rate_type'),

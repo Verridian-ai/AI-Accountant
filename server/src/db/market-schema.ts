@@ -5,6 +5,7 @@
  */
 
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { users } from '../schema/core.js';
 
 // ============================================================================
 // MARKET DATA FEEDS
@@ -109,7 +110,9 @@ export const sentimentSnapshots = sqliteTable('sentiment_snapshots', {
 
 export const marketAlerts = sqliteTable('market_alerts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().default('default'),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   alertType: text('alert_type').notNull(),
   targetType: text('target_type').notNull(),
   targetSymbol: text('target_symbol'),

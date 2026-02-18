@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { users } from './core.js';
 
 // ============================================================================
 // DASHBOARDS & CHARTS (Wave 22)
@@ -6,7 +7,9 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export const dashboardLayouts = sqliteTable('dashboard_layouts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().default('default'),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   layoutJson: text('layout_json').notNull().default('{}'),
@@ -15,13 +18,15 @@ export const dashboardLayouts = sqliteTable('dashboard_layouts', {
   isShared: integer('is_shared', { mode: 'boolean' }).notNull().default(false),
   thumbnailUrl: text('thumbnail_url'),
   sortOrder: integer('sort_order').notNull().default(0),
-  createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const savedCharts = sqliteTable('saved_charts', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().default('default'),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   dashboardId: text('dashboard_id').references(() => dashboardLayouts.id),
   chartType: text('chart_type').notNull(),
   title: text('title').notNull(),
@@ -32,8 +37,8 @@ export const savedCharts = sqliteTable('saved_charts', {
   refreshIntervalSeconds: integer('refresh_interval_seconds').default(0),
   pinned: integer('pinned', { mode: 'boolean' }).notNull().default(false),
   sortOrder: integer('sort_order').notNull().default(0),
-  createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 // Type exports

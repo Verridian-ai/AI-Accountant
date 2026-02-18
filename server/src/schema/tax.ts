@@ -205,7 +205,9 @@ export const taxYearSummary = sqliteTable('tax_year_summary', {
 
 export const taxOffsets = sqliteTable('tax_offsets', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   taxYear: text('tax_year').notNull(),
   offsetType: text('offset_type').notNull(),
   amount: integer('amount').notNull(),
@@ -215,7 +217,9 @@ export const taxOffsets = sqliteTable('tax_offsets', {
 
 export const capitalLosses = sqliteTable('capital_losses', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   taxYear: text('tax_year').notNull(),
   assetDescription: text('asset_description').notNull(),
   acquisitionDate: text('acquisition_date'),

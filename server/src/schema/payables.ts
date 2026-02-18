@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 import { users } from './core.js';
 import { transactions } from './transactions.js';
 
@@ -49,20 +49,26 @@ export const bills = sqliteTable('bills', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const billLines = sqliteTable('bill_lines', {
-  id: text('id').primaryKey(),
-  billId: text('bill_id')
-    .notNull()
-    .references(() => bills.id, { onDelete: 'cascade' }),
-  description: text('description').notNull(),
-  quantity: real('quantity').notNull().default(1),
-  unitPrice: integer('unit_price').notNull().default(0),
-  amount: integer('amount').notNull().default(0),
-  gstRate: real('gst_rate').default(0.1),
-  gstAmount: integer('gst_amount').default(0),
-  accountCode: text('account_code'),
-  taxCode: text('tax_code'),
-});
+export const billLines = sqliteTable(
+  'bill_lines',
+  {
+    id: text('id').primaryKey(),
+    billId: text('bill_id')
+      .notNull()
+      .references(() => bills.id, { onDelete: 'cascade' }),
+    description: text('description').notNull(),
+    quantity: real('quantity').notNull().default(1),
+    unitPrice: integer('unit_price').notNull().default(0),
+    amount: integer('amount').notNull().default(0),
+    gstRate: real('gst_rate').default(0.1),
+    gstAmount: integer('gst_amount').default(0),
+    accountCode: text('account_code'),
+    taxCode: text('tax_code'),
+  },
+  (t) => ({
+    billIdx: index('idx_bill_lines_bill_id').on(t.billId),
+  }),
+);
 
 export const billPayments = sqliteTable('bill_payments', {
   id: text('id').primaryKey(),

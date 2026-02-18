@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 import { users } from './core.js';
 import { accounts, statements } from './banking.js';
 
@@ -6,31 +6,44 @@ import { accounts, statements } from './banking.js';
 // TRANSACTIONS
 // ============================================================================
 
-export const transactions = sqliteTable('transactions', {
-  id: text('id').primaryKey(),
-  date: text('date').notNull(),
-  description: text('description').notNull(),
-  amount: integer('amount').notNull(),
-  balance: integer('balance'),
-  category: text('category'),
-  gstApplicable: integer('gst_applicable', { mode: 'boolean' }).default(false),
-  gstAmount: integer('gst_amount').default(0),
-  gstCategory: text('gst_category'),
-  aiReasoningNotes: text('ai_reasoning_notes'),
-  confidenceScore: real('confidence_score').default(1.0),
-  isEdited: integer('is_edited', { mode: 'boolean' }).default(false),
-  isTransfer: integer('is_transfer', { mode: 'boolean' }).default(false),
-  transferLinkId: text('transfer_link_id'),
-  isOwnerContribution: integer('is_owner_contribution', { mode: 'boolean' }).default(false),
-  transactionHash: text('transaction_hash'),
-  merchantNormalized: text('merchant_normalized'),
-  parserVersion: text('parser_version'),
-  extractionHash: text('extraction_hash'),
-  parentTransactionId: text('parent_transaction_id'),
-  statementId: text('statement_id').references(() => statements.id, { onDelete: 'set null' }),
-  accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
-  userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
-});
+export const transactions = sqliteTable(
+  'transactions',
+  {
+    id: text('id').primaryKey(),
+    date: text('date').notNull(),
+    description: text('description').notNull(),
+    amount: integer('amount').notNull(),
+    balance: integer('balance'),
+    category: text('category'),
+    gstApplicable: integer('gst_applicable', { mode: 'boolean' }).default(false),
+    gstAmount: integer('gst_amount').default(0),
+    gstCategory: text('gst_category'),
+    aiReasoningNotes: text('ai_reasoning_notes'),
+    confidenceScore: real('confidence_score').default(1.0),
+    isEdited: integer('is_edited', { mode: 'boolean' }).default(false),
+    isTransfer: integer('is_transfer', { mode: 'boolean' }).default(false),
+    transferLinkId: text('transfer_link_id'),
+    isOwnerContribution: integer('is_owner_contribution', { mode: 'boolean' }).default(false),
+    transactionHash: text('transaction_hash'),
+    merchantNormalized: text('merchant_normalized'),
+    parserVersion: text('parser_version'),
+    extractionHash: text('extraction_hash'),
+    parentTransactionId: text('parent_transaction_id'),
+    statementId: text('statement_id').references(() => statements.id, { onDelete: 'set null' }),
+    accountId: text('account_id').references(() => accounts.id, { onDelete: 'set null' }),
+    userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+  },
+  (t) => ({
+    userIdx: index('idx_transactions_user_id').on(t.userId),
+    userAccountDateIdx: index('idx_transactions_user_account_date').on(
+      t.userId,
+      t.accountId,
+      t.date,
+    ),
+    dateIdx: index('idx_transactions_date').on(t.date),
+    categoryIdx: index('idx_transactions_category').on(t.category),
+  }),
+);
 
 export const transactionHistory = sqliteTable('transaction_history', {
   id: text('id').primaryKey(),

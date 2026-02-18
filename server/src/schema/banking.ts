@@ -1,56 +1,68 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 import { users } from './core.js';
 
 // ============================================================================
 // ACCOUNTS
 // ============================================================================
 
-export const accounts = sqliteTable('accounts', {
-  id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  accountNumber: text('account_number').notNull(),
-  accountNumberHash: text('account_number_hash').notNull(),
-  accountName: text('account_name').notNull(),
-  accountType: text('account_type').notNull(),
-  bankName: text('bank_name'),
-  currentBalance: integer('current_balance').default(0),
-  lastStatementDate: text('last_statement_date'),
-  interestRate: real('interest_rate'),
-  creditLimit: integer('credit_limit'),
-  minimumPayment: integer('minimum_payment'),
-  paymentDueDay: integer('payment_due_day'),
-  linkedPaymentAccountId: text('linked_payment_account_id'),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true),
-  ownershipTag: text('ownership_tag').default('business'),
-  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
-});
+export const accounts = sqliteTable(
+  'accounts',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accountNumber: text('account_number').notNull(),
+    accountNumberHash: text('account_number_hash').notNull(),
+    accountName: text('account_name').notNull(),
+    accountType: text('account_type').notNull(),
+    bankName: text('bank_name'),
+    currentBalance: integer('current_balance').default(0),
+    lastStatementDate: text('last_statement_date'),
+    interestRate: real('interest_rate'),
+    creditLimit: integer('credit_limit'),
+    minimumPayment: integer('minimum_payment'),
+    paymentDueDay: integer('payment_due_day'),
+    linkedPaymentAccountId: text('linked_payment_account_id'),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true),
+    ownershipTag: text('ownership_tag').default('business'),
+    createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+    updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
+  },
+  (t) => ({
+    userIdx: index('idx_accounts_user_id').on(t.userId),
+  }),
+);
 
 // ============================================================================
 // STATEMENTS
 // ============================================================================
 
-export const statements = sqliteTable('statements', {
-  id: text('id').primaryKey(),
-  filename: text('filename').notNull(),
-  hash: text('hash').notNull().unique(),
-  uploadDate: text('upload_date').notNull(),
-  parsingStatus: text('parsing_status').notNull().default('PENDING'),
-  aiModelUsed: text('ai_model_used'),
-  errorMessage: text('error_message'),
-  errorType: text('error_type'),
-  errorDetails: text('error_details'),
-  userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
-  periodStartDate: text('period_start_date'),
-  periodEndDate: text('period_end_date'),
-  openingBalance: integer('opening_balance'),
-  closingBalance: integer('closing_balance'),
-  transactionCount: integer('transaction_count').default(0),
-  isComplete: integer('is_complete', { mode: 'boolean' }).default(true),
-  validationErrors: text('validation_errors'),
-});
+export const statements = sqliteTable(
+  'statements',
+  {
+    id: text('id').primaryKey(),
+    filename: text('filename').notNull(),
+    hash: text('hash').notNull().unique(),
+    uploadDate: text('upload_date').notNull(),
+    parsingStatus: text('parsing_status').notNull().default('PENDING'),
+    aiModelUsed: text('ai_model_used'),
+    errorMessage: text('error_message'),
+    errorType: text('error_type'),
+    errorDetails: text('error_details'),
+    userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+    periodStartDate: text('period_start_date'),
+    periodEndDate: text('period_end_date'),
+    openingBalance: integer('opening_balance'),
+    closingBalance: integer('closing_balance'),
+    transactionCount: integer('transaction_count').default(0),
+    isComplete: integer('is_complete', { mode: 'boolean' }).default(true),
+    validationErrors: text('validation_errors'),
+  },
+  (t) => ({
+    userIdx: index('idx_statements_user_id').on(t.userId),
+  }),
+);
 
 export const statementAccounts = sqliteTable('statement_accounts', {
   statementId: text('statement_id')

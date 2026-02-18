@@ -33,7 +33,7 @@ export const employeeBankDetails = sqliteTable('employee_bank_details', {
   bsb: text('bsb').notNull(), // AES-256-GCM encrypted
   accountNumber: text('account_number').notNull(), // AES-256-GCM encrypted
   accountName: text('account_name').notNull(),
-  splitPercentage: real('split_percentage').notNull().default(100.0),
+  splitPercentage: integer('split_percentage').notNull().default(10000),
   isPrimary: integer('is_primary', { mode: 'boolean' }).default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
@@ -47,7 +47,7 @@ export const employeeSuperFunds = sqliteTable('employee_super_funds', {
   fundABN: text('fund_abn'),
   usi: text('usi'),
   memberNumber: text('member_number'),
-  contributionRate: real('contribution_rate').notNull().default(11.5),
+  contributionRate: integer('contribution_rate').notNull().default(1150),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 

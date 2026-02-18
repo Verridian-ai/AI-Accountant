@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 import { users } from './core.js';
 import { transactions } from './transactions.js';
 
@@ -66,20 +66,26 @@ export const invoices = sqliteTable('invoices', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const invoiceLines = sqliteTable('invoice_lines', {
-  id: text('id').primaryKey(),
-  invoiceId: text('invoice_id')
-    .notNull()
-    .references(() => invoices.id, { onDelete: 'cascade' }),
-  description: text('description').notNull(),
-  quantity: real('quantity').notNull().default(1),
-  unitPrice: integer('unit_price').notNull().default(0),
-  amount: integer('amount').notNull().default(0),
-  gstRate: real('gst_rate').notNull().default(0.1),
-  gstAmount: integer('gst_amount').notNull().default(0),
-  accountCode: text('account_code'),
-  taxCode: text('tax_code'),
-});
+export const invoiceLines = sqliteTable(
+  'invoice_lines',
+  {
+    id: text('id').primaryKey(),
+    invoiceId: text('invoice_id')
+      .notNull()
+      .references(() => invoices.id, { onDelete: 'cascade' }),
+    description: text('description').notNull(),
+    quantity: real('quantity').notNull().default(1),
+    unitPrice: integer('unit_price').notNull().default(0),
+    amount: integer('amount').notNull().default(0),
+    gstRate: real('gst_rate').notNull().default(0.1),
+    gstAmount: integer('gst_amount').notNull().default(0),
+    accountCode: text('account_code'),
+    taxCode: text('tax_code'),
+  },
+  (t) => ({
+    invoiceIdx: index('idx_invoice_lines_invoice_id').on(t.invoiceId),
+  }),
+);
 
 export const invoiceNumberSequences = sqliteTable('invoice_number_sequences', {
   id: text('id').primaryKey(),

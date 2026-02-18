@@ -40,7 +40,9 @@ export const cogneeSessions = sqliteTable('cognee_sessions', {
 
 export const datapointConfigs = sqliteTable('datapoint_configs', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   datapointType: text('datapoint_type').notNull(),
@@ -58,7 +60,9 @@ export const datapointConfigs = sqliteTable('datapoint_configs', {
 
 export const graphSchemas = sqliteTable('graph_schemas', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
   ontologyType: text('ontology_type').notNull(),
@@ -75,7 +79,9 @@ export const graphSchemas = sqliteTable('graph_schemas', {
 
 export const cogneeFeedback = sqliteTable('cognee_feedback', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   entityType: text('entity_type').notNull(),
   entityId: text('entity_id').notNull(),
   feedbackType: text('feedback_type').notNull(),

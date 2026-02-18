@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 import { users } from './core.js';
 import { accounts, statements } from './banking.js';
 import { transactions } from './transactions.js';
@@ -67,22 +67,28 @@ export const journalEntries = sqliteTable('journal_entries', {
   postedAt: text('posted_at'),
 });
 
-export const journalEntryLines = sqliteTable('journal_entry_lines', {
-  id: text('id').primaryKey(),
-  entryId: text('entry_id')
-    .notNull()
-    .references(() => journalEntries.id, { onDelete: 'cascade' }),
-  accountId: text('account_id')
-    .notNull()
-    .references(() => chartOfAccounts.id),
-  debit: integer('debit').default(0),
-  credit: integer('credit').default(0),
-  description: text('description'),
-  lineOrder: integer('line_order').notNull().default(0),
-  journalEntryId: text('journal_entry_id'),
-  debitAmount: integer('debit_amount'),
-  creditAmount: integer('credit_amount'),
-});
+export const journalEntryLines = sqliteTable(
+  'journal_entry_lines',
+  {
+    id: text('id').primaryKey(),
+    entryId: text('entry_id')
+      .notNull()
+      .references(() => journalEntries.id, { onDelete: 'cascade' }),
+    accountId: text('account_id')
+      .notNull()
+      .references(() => chartOfAccounts.id),
+    debit: integer('debit').default(0),
+    credit: integer('credit').default(0),
+    description: text('description'),
+    lineOrder: integer('line_order').notNull().default(0),
+    journalEntryId: text('journal_entry_id'),
+    debitAmount: integer('debit_amount'),
+    creditAmount: integer('credit_amount'),
+  },
+  (t) => ({
+    entryIdx: index('idx_journal_entry_lines_entry_id').on(t.entryId),
+  }),
+);
 
 export const accountingPeriods = sqliteTable('accounting_periods', {
   id: text('id').primaryKey(),

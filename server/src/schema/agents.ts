@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { users } from './core.js';
 
 // ============================================================================
 // WAVE 2: Agent Sessions, Mutations & Audit Log
@@ -6,9 +7,11 @@ import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
 export const agentSessions = sqliteTable('agent_sessions', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
-  startedAt: text('started_at').default('CURRENT_TIMESTAMP'),
-  lastActivityAt: text('last_activity_at').default('CURRENT_TIMESTAMP'),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  startedAt: text('started_at').notNull().default('CURRENT_TIMESTAMP'),
+  lastActivityAt: text('last_activity_at').notNull().default('CURRENT_TIMESTAMP'),
   status: text('status').notNull().default('active'),
   context: text('context'),
   totalMutations: integer('total_mutations').notNull().default(0),
@@ -16,7 +19,7 @@ export const agentSessions = sqliteTable('agent_sessions', {
   rejectedMutations: integer('rejected_mutations').notNull().default(0),
   queryCount: integer('query_count').notNull().default(0),
   agentTypesUsed: text('agent_types_used'),
-  createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const agentMutations = sqliteTable('agent_mutations', {
@@ -43,8 +46,8 @@ export const agentMutations = sqliteTable('agent_mutations', {
   rejectionReason: text('rejection_reason'),
   errorMessage: text('error_message'),
   expiresAt: text('expires_at'),
-  createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const agentAuditLog = sqliteTable('agent_audit_log', {
