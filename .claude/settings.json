@@ -1,4 +1,15 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SPAWN_BACKEND": "tmux"
+  },
+  "permissions": {
+    "allow": [],
+    "deny": []
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "teammateMode": "tmux",
+  "model": "sonnet",
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,

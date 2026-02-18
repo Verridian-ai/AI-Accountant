@@ -199,6 +199,49 @@ grep -rn ': any' server/src/ --include='*.ts' | grep -v test | grep -v .d.ts | w
 grep -rn 'as any' server/src/ --include='*.ts' | grep -v test | grep -v .d.ts | wc -l
 ```
 
+## Refactoring Rules — File Splitting
+
+**Active Task**: Split all files over 500 lines into modular directory structures.
+
+### Split Pattern (MANDATORY for every file)
+
+1. **Read** the file fully before editing
+2. **Identify** logical groupings (types, helpers, main logic, constants, etc.)
+3. **Create** a directory with the same name as the file (minus extension)
+4. **Extract** code into sub-modules within that directory
+5. **Create** an `index.ts` barrel that re-exports all public API symbols
+6. **Replace** the original file with a 1-line shim: `export * from './name/index.js';`
+7. **Verify** with `npx tsc --noEmit` — zero new errors allowed
+8. **Commit** with: `refactor: split {filename} into {dirname}/ modules`
+
+### For React Components (.tsx)
+
+- Main component stays in `ComponentName/ComponentName.tsx`
+- Extract sub-components into `ComponentName/SubComponent.tsx`
+- Extract hooks into `ComponentName/hooks.ts` or `ComponentName/useX.ts`
+- Extract types into `ComponentName/types.ts`
+- Barrel: `ComponentName/index.tsx` re-exports the default/named exports
+
+### For Route Extraction (server/src/index.ts)
+
+- Each domain group goes into `server/src/routes/{domain}.ts`
+- Route file exports a Hono sub-app via `new Hono()`
+- Main `index.ts` wires via `app.route('/api/domain', domainRoutes)`
+- Keep middleware, app init, SSE setup in `index.ts`
+
+### File Ownership
+
+- Each teammate owns a specific, non-overlapping set of files
+- **NEVER** edit a file assigned to another teammate
+- If you need something from another teammate's file, message them
+
+### Quality Gates
+
+- `npx tsc --noEmit` must pass after every file split
+- All existing imports must continue to resolve
+- No `@ts-ignore` or `@ts-expect-error` — fix the types properly
+- No `: any` in new code
+
 ## References
 
 - [Agent Teams Docs](https://code.claude.com/docs/en/agent-teams)
