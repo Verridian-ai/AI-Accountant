@@ -17,25 +17,29 @@ import {
   COMMON_ANZSIC_CODES,
 } from '../utils/abn.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { abnValidationSchema } from '../validation/settings.js';
 
-const updateSettingsSchema = z.object({
-  modelParsingText: z.string().optional(),
-  modelParsingVision: z.string().optional(),
-  modelCategorization: z.string().optional(),
-  modelChat: z.string().optional(),
-  modelEmbedding: z.string().optional(),
-}).passthrough();
+const updateSettingsSchema = z
+  .object({
+    modelParsingText: z.string().optional(),
+    modelParsingVision: z.string().optional(),
+    modelCategorization: z.string().optional(),
+    modelChat: z.string().optional(),
+    modelEmbedding: z.string().optional(),
+  })
+  .passthrough();
 
-const businessProfileSchema = z.object({
-  abn: z.string().optional(),
-  entityType: z.string().optional(),
-  entityName: z.string().optional(),
-  basFrequency: z.string().optional(),
-  industryCode: z.string().optional(),
-  taxAgentNumber: z.string().optional(),
-  gstRegistered: z.boolean().optional(),
-}).passthrough();
-
+const businessProfileSchema = z
+  .object({
+    abn: z.string().optional(),
+    entityType: z.string().optional(),
+    entityName: z.string().optional(),
+    basFrequency: z.string().optional(),
+    industryCode: z.string().optional(),
+    taxAgentNumber: z.string().optional(),
+    gstRegistered: z.boolean().optional(),
+  })
+  .passthrough();
 
 const settingsRoutes = new Hono();
 
@@ -228,13 +232,8 @@ settingsRoutes.post('/business-profile', zValidator('json', businessProfileSchem
 });
 
 // Validate ABN endpoint (for real-time validation in UI)
-settingsRoutes.post('/validate-abn', async (c) => {
-  const { abn } = await c.req.json();
-
-  if (!abn) {
-    return c.json({ isValid: false, error: 'ABN is required' });
-  }
-
+settingsRoutes.post('/validate-abn', zValidator('json', abnValidationSchema), async (c) => {
+  const { abn } = c.req.valid('json');
   const result = validateABN(abn);
   return c.json(result);
 });

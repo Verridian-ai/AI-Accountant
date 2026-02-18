@@ -53,4 +53,9 @@ export const inviteTeamMemberSchema = z.object({
   role: teamRoleEnum,
 });
 
+/** POST /settings/validate-abn */
+export const abnValidationSchema = z.object({
+  abn: z.string().min(1, 'ABN is required'),
+});
+
 export type ExportRequest = z.infer<typeof exportRequestSchema>;

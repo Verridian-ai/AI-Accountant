@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { rateLimiter } from 'hono-rate-limiter';
 import { validateBody, chatMessageSchema, ValidationError } from '../validation/index.js';
 import { getErrorMessage } from '../utils/error.js';
@@ -36,6 +38,15 @@ const chatLimiter = rateLimiter({
   standardHeaders: true,
   keyGenerator: getRateLimitKey,
   message: { error: 'Chat limit reached. Please wait a minute before trying again.' },
+});
+
+const streamChatSchema = z.object({
+  query: z.string().min(1, 'Query is required'),
+  sessionId: z.string().optional(),
+});
+
+const actionReasonSchema = z.object({
+  reason: z.string().max(500).optional(),
 });
 
 // POST /api/chat — main chat with Cognee context
@@ -152,97 +163,98 @@ chatRoutes.post('/', async (c) => {
 });
 
 // POST /api/chat/stream — SSE streaming chat
-chatRoutes.post('/stream', chatLimiter, streamingRateLimiter(), async (c) => {
-  try {
-    const body = (await c.req.json()) as { query?: string; sessionId?: string };
-    const query = body?.query;
-    if (!query || typeof query !== 'string') {
-      return c.json({ error: 'Query is required', code: 400 }, 400);
-    }
-
-    const userId = 'default';
-    const sessionId = body.sessionId;
-    const session = await confirmationFlow.getOrCreateSession({ userId });
-    const activeSessionId = sessionId ?? session.id;
-
-    const writer = streamingService.createStream(c);
-    await confirmationFlow.incrementQueryCount(activeSessionId);
-    writer.sendProgress(1, 3, 'Gathering context...');
-
-    let settings = await db
-      .select()
-      .from(userSettings)
-      .where(eq(userSettings.userId, userId))
-      .get();
-    if (!settings) {
-      settings = {
-        userId,
-        modelParsingText: 'google/gemini-3-flash-preview',
-        modelParsingVision: 'google/gemini-3-flash-preview',
-        modelCategorization: 'google/gemini-3-flash-preview',
-        modelChat: 'google/gemini-3-flash-preview',
-        modelEmbedding: 'openai/text-embedding-3-large',
-      };
-    }
-
-    let ragContext = '';
+chatRoutes.post(
+  '/stream',
+  chatLimiter,
+  streamingRateLimiter(),
+  zValidator('json', streamChatSchema),
+  async (c) => {
     try {
-      const multiResults = await ragService.searchMulti(query);
-      const allResults = [...multiResults.chunks, ...multiResults.summary];
-      if (allResults.length > 0) {
-        ragContext = JSON.stringify({
-          directMatches: multiResults.chunks,
-          contextualAnalysis: multiResults.summary,
+      const { query, sessionId: bodySessionId } = c.req.valid('json');
+      const userId = 'default';
+      const sessionId = bodySessionId;
+      const session = await confirmationFlow.getOrCreateSession({ userId });
+      const activeSessionId = sessionId ?? session.id;
+
+      const writer = streamingService.createStream(c);
+      await confirmationFlow.incrementQueryCount(activeSessionId);
+      writer.sendProgress(1, 3, 'Gathering context...');
+
+      let settings = await db
+        .select()
+        .from(userSettings)
+        .where(eq(userSettings.userId, userId))
+        .get();
+      if (!settings) {
+        settings = {
+          userId,
+          modelParsingText: 'google/gemini-3-flash-preview',
+          modelParsingVision: 'google/gemini-3-flash-preview',
+          modelCategorization: 'google/gemini-3-flash-preview',
+          modelChat: 'google/gemini-3-flash-preview',
+          modelEmbedding: 'openai/text-embedding-3-large',
+        };
+      }
+
+      let ragContext = '';
+      try {
+        const multiResults = await ragService.searchMulti(query);
+        const allResults = [...multiResults.chunks, ...multiResults.summary];
+        if (allResults.length > 0) {
+          ragContext = JSON.stringify({
+            directMatches: multiResults.chunks,
+            contextualAnalysis: multiResults.summary,
+          });
+        }
+      } catch {
+        // Cognee unavailable — continue without it
+      }
+
+      const recentTxns = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.userId, userId))
+        .orderBy(desc(transactions.date))
+        .limit(50);
+
+      const combinedContext = { recentTransactions: recentTxns, semanticSearchResults: ragContext };
+      writer.sendProgress(2, 3, 'Generating response...');
+
+      const answer = await aiService.generateInsight(query, combinedContext, settings.modelChat);
+      await confirmationFlow.recordAgentUsage(activeSessionId, 'budget_analyzer');
+      auditService
+        .logQueryExecuted(activeSessionId, 'budget_analyzer', query)
+        .catch((err: unknown) => console.warn('[Audit] Log query failed:', err));
+
+      writer.sendProgress(3, 3, 'Done');
+      writer.sendComplete({ answer, agentType: 'chat', sessionId: activeSessionId });
+
+      const stream = streamingService.getStream(c);
+      if (stream) {
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            Connection: 'keep-alive',
+            'X-Accel-Buffering': 'no',
+          },
         });
       }
-    } catch {
-      // Cognee unavailable — continue without it
+      return c.json({ answer, sessionId: activeSessionId });
+    } catch (err) {
+      console.error('[Chat/Stream Error]', err);
+      return c.json({ error: 'Streaming chat failed', code: 500 }, 500);
     }
-
-    const recentTxns = await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.userId, userId))
-      .orderBy(desc(transactions.date))
-      .limit(50);
-
-    const combinedContext = { recentTransactions: recentTxns, semanticSearchResults: ragContext };
-    writer.sendProgress(2, 3, 'Generating response...');
-
-    const answer = await aiService.generateInsight(query, combinedContext, settings.modelChat);
-    await confirmationFlow.recordAgentUsage(activeSessionId, 'budget_analyzer');
-    auditService
-      .logQueryExecuted(activeSessionId, 'budget_analyzer', query)
-      .catch((err: unknown) => console.warn('[Audit] Log query failed:', err));
-
-    writer.sendProgress(3, 3, 'Done');
-    writer.sendComplete({ answer, agentType: 'chat', sessionId: activeSessionId });
-
-    const stream = streamingService.getStream(c);
-    if (stream) {
-      return new Response(stream, {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive',
-          'X-Accel-Buffering': 'no',
-        },
-      });
-    }
-    return c.json({ answer, sessionId: activeSessionId });
-  } catch (err) {
-    console.error('[Chat/Stream Error]', err);
-    return c.json({ error: 'Streaming chat failed', code: 500 }, 500);
-  }
-});
+  },
+);
 
 // POST /api/chat/confirm/:actionId
-chatRoutes.post('/confirm/:actionId', async (c) => {
+chatRoutes.post('/confirm/:actionId', zValidator('json', actionReasonSchema), async (c) => {
   try {
     const actionId = c.req.param('actionId');
-    const body = (await c.req.json().catch(() => ({}))) as { reason?: string };
+    const { reason } = c.req.valid('json');
     const userId = 'default';
-    const mutation = await confirmationFlow.confirm(actionId, userId, body.reason);
+    const mutation = await confirmationFlow.confirm(actionId, userId, reason);
     await auditService
       .logMutationConfirmed(actionId, mutation.sessionId, mutation.agentType as AgentType, userId)
       .catch((err: unknown) => console.warn('[Audit] Log confirm failed:', err));
@@ -254,18 +266,18 @@ chatRoutes.post('/confirm/:actionId', async (c) => {
 });
 
 // POST /api/chat/reject/:actionId
-chatRoutes.post('/reject/:actionId', async (c) => {
+chatRoutes.post('/reject/:actionId', zValidator('json', actionReasonSchema), async (c) => {
   try {
     const actionId = c.req.param('actionId');
-    const body = (await c.req.json().catch(() => ({}))) as { reason?: string };
+    const { reason } = c.req.valid('json');
     const userId = 'default';
-    const mutation = await confirmationFlow.reject(actionId, userId, body.reason);
+    const mutation = await confirmationFlow.reject(actionId, userId, reason);
     await auditService
       .logMutationRejected(
         actionId,
         mutation.sessionId,
         mutation.agentType as AgentType,
-        body.reason,
+        reason,
         userId,
       )
       .catch((err: unknown) => console.warn('[Audit] Log reject failed:', err));
