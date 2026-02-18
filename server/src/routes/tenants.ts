@@ -10,6 +10,8 @@ import { getUserId } from '../utils/auth-helpers.js';
 import type { TenantRole } from '../services/tenant-types.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 import { subscriptionService } from '../services/subscriptions.js';
+import { db, tenantMembers } from '../schema.js';
+import { and, eq } from 'drizzle-orm';
 
 const createTenantSchema = z
   .object({
@@ -30,6 +32,31 @@ const updateTenantSchema = z
 
 const updatePermissionsSchema = z.object({
   permissions: z.array(z.string()),
+});
+
+const tenantRoleEnum = z.enum(['owner', 'admin', 'accountant', 'bookkeeper', 'viewer']);
+
+const addTenantMemberSchema = z.object({
+  userId: z.string().min(1),
+  role: tenantRoleEnum,
+});
+
+const updateMemberRoleSchema = z.object({
+  role: tenantRoleEnum,
+});
+
+const createTenantInvitationSchema = z.object({
+  email: z.string().email(),
+  role: tenantRoleEnum,
+});
+
+const createSubscriptionSchema = z.object({
+  planName: z.string().min(1),
+  billingCycle: z.enum(['monthly', 'annual']).optional(),
+});
+
+const changePlanSchema = z.object({
+  newPlanName: z.string().min(1),
 });
 
 const tenantRoutes = new Hono();
@@ -83,10 +110,17 @@ tenantRoutes.post('/:id/switch', async (c) => {
   try {
     const tenantId = c.req.param('id');
     const userId = getUserId(c);
+    const membership = await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+      .get();
+    if (!membership) return c.json({ error: 'User is not a member of this tenant' }, 403);
     const context = await tenantService.switchTenant(userId, tenantId);
     const token = await adminAuthService.generateTenantToken(userId, tenantId);
     return c.json({ ...context, token });
-  } catch {
+  } catch (err: unknown) {
+    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
     return c.json({ error: 'Failed' }, 400);
   }
 });
@@ -151,18 +185,17 @@ tenantRoutes.get('/:tenantId/members', async (c) => {
   }
 });
 
-tenantRoutes.post('/:tenantId/members', async (c) => {
+tenantRoutes.post('/:tenantId/members', zValidator('json', addTenantMemberSchema), async (c) => {
   try {
     const tenantId = c.req.param('tenantId');
-    const userId = getUserId(c);
-    await rbacService.requirePermission(tenantId, userId, 'members.manage');
-    const body = (await c.req.json()) as { userId: string; role: string };
-    if (!body.userId || !body.role) return c.json({ error: 'userId and role are required' }, 400);
+    const currentUserId = getUserId(c);
+    await rbacService.requirePermission(tenantId, currentUserId, 'members.manage');
+    const { userId: targetUserId, role } = c.req.valid('json');
     const member = await tenantService.addMember(
       tenantId,
-      body.userId,
-      body.role as TenantRole,
-      userId,
+      targetUserId,
+      role as TenantRole,
+      currentUserId,
     );
     return c.json(member, 201);
   } catch (err: unknown) {
@@ -171,22 +204,25 @@ tenantRoutes.post('/:tenantId/members', async (c) => {
   }
 });
 
-tenantRoutes.put('/:tenantId/members/:userId/role', async (c) => {
-  try {
-    const tenantId = c.req.param('tenantId');
-    const targetUserId = c.req.param('userId');
-    const currentUserId = getUserId(c);
-    await rbacService.requirePermission(tenantId, currentUserId, 'members.manage');
-    const body = (await c.req.json()) as { role: string };
-    if (!body.role) return c.json({ error: 'role is required' }, 400);
-    return c.json(
-      await tenantService.updateMemberRole(tenantId, targetUserId, body.role as TenantRole),
-    );
-  } catch (err: unknown) {
-    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
-    return c.json({ error: getErrorMessage(err) || 'Failed to update member role' }, 400);
-  }
-});
+tenantRoutes.put(
+  '/:tenantId/members/:userId/role',
+  zValidator('json', updateMemberRoleSchema),
+  async (c) => {
+    try {
+      const tenantId = c.req.param('tenantId');
+      const targetUserId = c.req.param('userId');
+      const currentUserId = getUserId(c);
+      await rbacService.requirePermission(tenantId, currentUserId, 'members.manage');
+      const { role } = c.req.valid('json');
+      return c.json(
+        await tenantService.updateMemberRole(tenantId, targetUserId, role as TenantRole),
+      );
+    } catch (err: unknown) {
+      if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
+      return c.json({ error: getErrorMessage(err) || 'Failed to update member role' }, 400);
+    }
+  },
+);
 
 tenantRoutes.delete('/:tenantId/members/:userId', async (c) => {
   try {
@@ -202,25 +238,28 @@ tenantRoutes.delete('/:tenantId/members/:userId', async (c) => {
   }
 });
 
-tenantRoutes.post('/:tenantId/invitations', async (c) => {
-  try {
-    const tenantId = c.req.param('tenantId');
-    const userId = getUserId(c);
-    await rbacService.requirePermission(tenantId, userId, 'members.manage');
-    const body = (await c.req.json()) as { email: string; role: string };
-    if (!body.email || !body.role) return c.json({ error: 'email and role are required' }, 400);
-    const invitation = await tenantService.inviteMember(
-      tenantId,
-      body.email,
-      body.role as TenantRole,
-      userId,
-    );
-    return c.json(invitation, 201);
-  } catch (err: unknown) {
-    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
-    return c.json({ error: getErrorMessage(err) || 'Failed to send invitation' }, 400);
-  }
-});
+tenantRoutes.post(
+  '/:tenantId/invitations',
+  zValidator('json', createTenantInvitationSchema),
+  async (c) => {
+    try {
+      const tenantId = c.req.param('tenantId');
+      const userId = getUserId(c);
+      await rbacService.requirePermission(tenantId, userId, 'members.manage');
+      const { email, role } = c.req.valid('json');
+      const invitation = await tenantService.inviteMember(
+        tenantId,
+        email,
+        role as TenantRole,
+        userId,
+      );
+      return c.json(invitation, 201);
+    } catch (err: unknown) {
+      if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
+      return c.json({ error: getErrorMessage(err) || 'Failed to send invitation' }, 400);
+    }
+  },
+);
 
 tenantRoutes.post('/:tenantId/permissions/reset', async (c) => {
   try {
@@ -248,50 +287,56 @@ tenantRoutes.get('/:tenantId/subscription', async (c) => {
   }
 });
 
-tenantRoutes.post('/:tenantId/subscription', async (c) => {
-  try {
-    const tenantId = c.req.param('tenantId');
-    const userId = getUserId(c);
-    await rbacService.requirePermission(tenantId, userId, 'settings.manage');
-    const body = (await c.req.json()) as { planName: string; billingCycle?: 'monthly' | 'annual' };
-    if (!body.planName) return c.json({ error: 'planName is required' }, 400);
-    return c.json(
-      await subscriptionService.subscribe(tenantId, body.planName, body.billingCycle),
-      201,
-    );
-  } catch (err: unknown) {
-    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
-    return c.json({ error: getErrorMessage(err) || 'Failed to subscribe' }, 400);
-  }
-});
+tenantRoutes.post(
+  '/:tenantId/subscription',
+  zValidator('json', createSubscriptionSchema),
+  async (c) => {
+    try {
+      const tenantId = c.req.param('tenantId');
+      const userId = getUserId(c);
+      await rbacService.requirePermission(tenantId, userId, 'settings.manage');
+      const { planName, billingCycle } = c.req.valid('json');
+      return c.json(await subscriptionService.subscribe(tenantId, planName, billingCycle), 201);
+    } catch (err: unknown) {
+      if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
+      return c.json({ error: getErrorMessage(err) || 'Failed to subscribe' }, 400);
+    }
+  },
+);
 
-tenantRoutes.put('/:tenantId/subscription/upgrade', async (c) => {
-  try {
-    const tenantId = c.req.param('tenantId');
-    const userId = getUserId(c);
-    await rbacService.requirePermission(tenantId, userId, 'settings.manage');
-    const body = (await c.req.json()) as { newPlanName: string };
-    if (!body.newPlanName) return c.json({ error: 'newPlanName is required' }, 400);
-    return c.json(await subscriptionService.upgrade(tenantId, body.newPlanName));
-  } catch (err: unknown) {
-    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
-    return c.json({ error: getErrorMessage(err) || 'Failed to upgrade' }, 400);
-  }
-});
+tenantRoutes.put(
+  '/:tenantId/subscription/upgrade',
+  zValidator('json', changePlanSchema),
+  async (c) => {
+    try {
+      const tenantId = c.req.param('tenantId');
+      const userId = getUserId(c);
+      await rbacService.requirePermission(tenantId, userId, 'settings.manage');
+      const { newPlanName } = c.req.valid('json');
+      return c.json(await subscriptionService.upgrade(tenantId, newPlanName));
+    } catch (err: unknown) {
+      if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
+      return c.json({ error: getErrorMessage(err) || 'Failed to upgrade' }, 400);
+    }
+  },
+);
 
-tenantRoutes.put('/:tenantId/subscription/downgrade', async (c) => {
-  try {
-    const tenantId = c.req.param('tenantId');
-    const userId = getUserId(c);
-    await rbacService.requirePermission(tenantId, userId, 'settings.manage');
-    const body = (await c.req.json()) as { newPlanName: string };
-    if (!body.newPlanName) return c.json({ error: 'newPlanName is required' }, 400);
-    return c.json(await subscriptionService.downgrade(tenantId, body.newPlanName));
-  } catch (err: unknown) {
-    if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
-    return c.json({ error: getErrorMessage(err) || 'Failed to downgrade' }, 400);
-  }
-});
+tenantRoutes.put(
+  '/:tenantId/subscription/downgrade',
+  zValidator('json', changePlanSchema),
+  async (c) => {
+    try {
+      const tenantId = c.req.param('tenantId');
+      const userId = getUserId(c);
+      await rbacService.requirePermission(tenantId, userId, 'settings.manage');
+      const { newPlanName } = c.req.valid('json');
+      return c.json(await subscriptionService.downgrade(tenantId, newPlanName));
+    } catch (err: unknown) {
+      if (err instanceof ForbiddenError) return c.json({ error: getErrorMessage(err) }, 403);
+      return c.json({ error: getErrorMessage(err) || 'Failed to downgrade' }, 400);
+    }
+  },
+);
 
 tenantRoutes.delete('/:tenantId/subscription', async (c) => {
   try {
