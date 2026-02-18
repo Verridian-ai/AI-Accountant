@@ -24,21 +24,32 @@ const confirmationFlow = new ConfirmationFlowService(db);
 // Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
 streamingRoutes.use('/*', tenantAuthMiddleware());
 
-streamingRoutes.post('/agent/:agentType', sseStreamMiddleware(), streamingRateLimiter(), zValidator('json', agentStreamInputSchema), async (c) => {
-  const agentType = c.req.param('agentType') as AgentType;
-  const input = c.req.valid('json');
-  const _userId = c.req.query('userId') || 'default';
-  const agent = streamingRegistry.getAgent(agentType);
-  if (!agent) return c.json({ error: 'Not found' }, 404);
-  return streamingService.handleSSE(c, async (writer) => {
-    let _fullText = '';
-    for await (const chunk of agent.stream(input)) { writer.sendToken(chunk); _fullText += chunk; }
-    writer.sendComplete({ agentType, status: 'completed' });
-  });
-});
+streamingRoutes.post(
+  '/agent/:agentType',
+  sseStreamMiddleware(),
+  streamingRateLimiter(),
+  zValidator('json', agentStreamInputSchema),
+  async (c) => {
+    const agentType = c.req.param('agentType') as AgentType;
+    const input = c.req.valid('json');
+    const _userId = c.req.query('userId') || 'default';
+    const agent = streamingRegistry.getAgent(agentType);
+    if (!agent) return c.json({ error: 'Not found' }, 404);
+    return streamingService.handleSSE(c, async (writer) => {
+      let _fullText = '';
+      for await (const chunk of agent.stream(input)) {
+        writer.sendToken(chunk);
+        _fullText += chunk;
+      }
+      writer.sendComplete({ agentType, status: 'completed' });
+    });
+  },
+);
 
 streamingRoutes.get('/session/:sessionId', async (c) => {
-  const session = await db.get(sql`SELECT * FROM agent_stream_sessions WHERE id = ${c.req.param('sessionId')}`);
+  const session = await db.get(
+    sql`SELECT * FROM agent_stream_sessions WHERE id = ${c.req.param('sessionId')}`,
+  );
   return session ? c.json(session) : c.json({ error: 'Not found' }, 404);
 });
 
@@ -47,11 +58,15 @@ streamingRoutes.post('/confirm/:actionId', async (c) => {
   try {
     const mutation = await confirmationFlow.confirm(c.req.param('actionId'), 'default');
     return c.json({ success: true, mutation });
-  } catch { return c.json({ error: 'Failed' }, 400); }
+  } catch {
+    return c.json({ error: 'Failed' }, 400);
+  }
 });
 
 streamingRoutes.get('/pending', async (c) => {
-  return c.json({ mutations: await confirmationFlow.getPendingMutations(c.req.query('sessionId')!) });
+  const sessionId = c.req.query('sessionId');
+  if (!sessionId) return c.json({ error: 'sessionId query parameter required' }, 400);
+  return c.json({ mutations: await confirmationFlow.getPendingMutations(sessionId) });
 });
 
 export default streamingRoutes;
