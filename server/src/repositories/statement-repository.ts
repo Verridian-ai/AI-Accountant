@@ -36,7 +36,8 @@ export class StatementRepository {
   }
 
   /**
-   * Get all statements for a user.
+   * Get all statements for a user, ordered by most recent upload.
+   * Capped at 1000 rows — users with more than 1000 statements should use pagination.
    */
   async getByUserId(userId: string): Promise<Array<typeof statements.$inferSelect>> {
     const results: Array<typeof statements.$inferSelect> = await db
@@ -44,6 +45,7 @@ export class StatementRepository {
       .from(statements)
       .where(eq(statements.userId, userId))
       .orderBy(desc(statements.uploadDate))
+      .limit(1000)
       .all();
     return results;
   }

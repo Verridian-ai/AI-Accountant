@@ -56,8 +56,15 @@ export class TransactionRepository {
     return { data: result, total: countResult?.count ?? 0 };
   }
 
-  async findAll(filters: Omit<TransactionFilters, 'limit' | 'offset'>): Promise<Array<typeof transactions.$inferSelect>> {
-    const { accountId, startDate, endDate, category, search, userId } = filters;
+  /**
+   * Fetch all matching transactions without pagination.
+   * Capped at 1000 rows by default to prevent unbounded result sets.
+   * For larger exports use findMany() with explicit pagination.
+   */
+  async findAll(
+    filters: Omit<TransactionFilters, 'limit' | 'offset'> & { limit?: number },
+  ): Promise<Array<typeof transactions.$inferSelect>> {
+    const { accountId, startDate, endDate, category, search, userId, limit } = filters;
     const conditions: SQL[] = [eq(transactions.userId, userId)];
 
     if (accountId) conditions.push(eq(transactions.accountId, accountId));
@@ -71,6 +78,7 @@ export class TransactionRepository {
       .from(transactions)
       .where(and(...conditions))
       .orderBy(desc(transactions.date))
+      .limit(limit ?? 1000)
       .all();
     return results;
   }

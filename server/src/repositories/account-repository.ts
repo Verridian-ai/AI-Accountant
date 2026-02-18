@@ -72,12 +72,13 @@ export class AccountRepository {
   }
 
   async getChartOfAccounts(userId: string): Promise<Array<typeof chartOfAccounts.$inferSelect>> {
-    // For queries with ORDER BY, use raw db API with explicit typing
+    // Cap at 500 — a chart of accounts with >500 entries would be unusual
     const results: Array<typeof chartOfAccounts.$inferSelect> = await db
       .select()
       .from(chartOfAccounts)
       .where(eq(chartOfAccounts.userId, userId))
       .orderBy(chartOfAccounts.accountCode)
+      .limit(500)
       .all();
     return results;
   }
@@ -85,7 +86,14 @@ export class AccountRepository {
   // --- Merchant Memory ---
 
   async findMerchantMemory(userId: string): Promise<Array<typeof merchantMemory.$inferSelect>> {
-    return selectMany(db, merchantMemory, eq(merchantMemory.userId, userId));
+    // Cap at 1000 to prevent unbounded scans — merchant memory grows with usage
+    const results: Array<typeof merchantMemory.$inferSelect> = await db
+      .select()
+      .from(merchantMemory)
+      .where(eq(merchantMemory.userId, userId))
+      .limit(1000)
+      .all();
+    return results;
   }
 
   async findMerchantMemoryByPattern(userId: string, pattern: string): Promise<typeof merchantMemory.$inferSelect | undefined> {
@@ -119,14 +127,19 @@ export class AccountRepository {
   // --- Pending Categorization ---
 
   async findPendingCategorizations(userId: string): Promise<Array<typeof pendingCategorization.$inferSelect>> {
-    return selectMany(
-      db,
-      pendingCategorization,
-      and(
-        eq(pendingCategorization.userId, userId),
-        eq(pendingCategorization.status, 'pending')
+    // Cap at 500 — callers should process in batches for large backlogs
+    const results: Array<typeof pendingCategorization.$inferSelect> = await db
+      .select()
+      .from(pendingCategorization)
+      .where(
+        and(
+          eq(pendingCategorization.userId, userId),
+          eq(pendingCategorization.status, 'pending'),
+        ),
       )
-    );
+      .limit(500)
+      .all();
+    return results;
   }
 
   async findPendingCategorizationById(userId: string, id: string): Promise<typeof pendingCategorization.$inferSelect | undefined> {
@@ -147,7 +160,14 @@ export class AccountRepository {
   // --- Transfers ---
 
   async findTransferLinks(userId: string): Promise<Array<typeof transferLinks.$inferSelect>> {
-    return selectMany(db, transferLinks, eq(transferLinks.userId, userId));
+    // Cap at 1000 — transfer links grow linearly with transaction count
+    const results: Array<typeof transferLinks.$inferSelect> = await db
+      .select()
+      .from(transferLinks)
+      .where(eq(transferLinks.userId, userId))
+      .limit(1000)
+      .all();
+    return results;
   }
 
   async findTransferLinkById(userId: string, id: string): Promise<typeof transferLinks.$inferSelect | undefined> {
@@ -169,28 +189,33 @@ export class AccountRepository {
   // --- Balance History & Alerts ---
 
   async findBalanceHistory(accountId: string): Promise<Array<typeof accountBalanceHistory.$inferSelect>> {
-    // For complex queries with ORDER BY, we use the raw db API but add explicit typing
+    // Cap at 500 — return most recent 500 balance snapshots (ordered DESC)
     const results: Array<typeof accountBalanceHistory.$inferSelect> = await db
       .select()
       .from(accountBalanceHistory)
       .where(eq(accountBalanceHistory.accountId, accountId))
       .orderBy(desc(accountBalanceHistory.balanceDate))
+      .limit(500)
       .all();
     return results;
   }
 
-  async findReconciliationAlerts(userId: string, showResolved: boolean): Promise<Array<typeof reconciliationAlerts.$inferSelect>> {
-    // For complex queries with conditional WHERE and ORDER BY, use raw db API with explicit typing
+  async findReconciliationAlerts(
+    userId: string,
+    showResolved: boolean,
+  ): Promise<Array<typeof reconciliationAlerts.$inferSelect>> {
+    // Cap at 500 — unresolved alerts should be reviewed and cleared regularly
     const results: Array<typeof reconciliationAlerts.$inferSelect> = await db
       .select()
       .from(reconciliationAlerts)
       .where(
         and(
           eq(reconciliationAlerts.userId, userId),
-          showResolved ? undefined : eq(reconciliationAlerts.isResolved, false)
-        )
+          showResolved ? undefined : eq(reconciliationAlerts.isResolved, false),
+        ),
       )
       .orderBy(desc(reconciliationAlerts.createdAt))
+      .limit(500)
       .all();
     return results;
   }

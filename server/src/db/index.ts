@@ -1,4 +1,19 @@
 /**
+ * @deprecated This module is NOT used by the application.
+ * All routes and services import from '../schema.js' which resolves to
+ * schema/index.ts → schema/connection.ts → Neon Cloud PostgreSQL.
+ *
+ * This file implements SQLite/PostgreSQL switching logic that is currently
+ * bypassed. Do not import from this module.
+ *
+ * TODO: Either wire this as the canonical DB entry point (replacing schema.ts)
+ * or delete it in a future cleanup pass.
+ *
+ * @see server/src/schema/connection.ts — actual DB connection
+ * @see server/src/schema.ts — canonical import shim used by all routes/services
+ */
+
+/**
  * Database entry point - exports correct schema and db based on environment
  *
  * In production (NODE_ENV=production): Uses PostgreSQL
