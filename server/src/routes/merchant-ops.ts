@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import {
   db,
   transactions,
@@ -11,98 +12,111 @@ import { eq, and, desc } from 'drizzle-orm';
 import crypto from 'crypto';
 import { accountService } from '../services/accounts.js';
 import { events } from '../events.js';
+import {
+  resolvePendingSchema,
+  updateMerchantMemorySchema,
+  linkTransferSchema,
+  resolveAlertSchema,
+} from '../validation/operations.js';
 
 const merchantOpsRoutes = new Hono();
 
 // POST /api/pending-categorizations/:id/resolve
-merchantOpsRoutes.post('/pending-categorizations/:id/resolve', async (c) => {
-  const payload = c.get('jwtPayload');
-  const userId = payload.userId;
-  const pendingId = c.req.param('id');
-  const body = await c.req.json();
-  const { action, category, gstApplicable } = body;
+merchantOpsRoutes.post(
+  '/pending-categorizations/:id/resolve',
+  zValidator('json', resolvePendingSchema),
+  async (c) => {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+    const pendingId = c.req.param('id');
+    const { action, category, gstApplicable } = c.req.valid('json');
 
-  const pending = await db
-    .select()
-    .from(pendingCategorization)
-    .where(and(eq(pendingCategorization.id, pendingId), eq(pendingCategorization.userId, userId)))
-    .get();
-
-  if (!pending) {
-    return c.json({ error: 'Pending categorization not found' }, 404);
-  }
-
-  const now = new Date().toISOString();
-
-  if (action === 'approve') {
-    await db
-      .update(transactions)
-      .set({ category: pending.suggestedCategory, confidenceScore: 1.0 })
-      .where(eq(transactions.id, pending.transactionId));
-  } else if (action === 'modify' && category) {
-    await db
-      .update(transactions)
-      .set({ category, gstApplicable: gstApplicable ?? false, confidenceScore: 1.0 })
-      .where(eq(transactions.id, pending.transactionId));
-
-    const tx = await db
+    const pending = await db
       .select()
-      .from(transactions)
-      .where(eq(transactions.id, pending.transactionId))
+      .from(pendingCategorization)
+      .where(and(eq(pendingCategorization.id, pendingId), eq(pendingCategorization.userId, userId)))
       .get();
-    if (tx?.merchantNormalized) {
-      await accountService.updateMerchantMemory({
-        userId,
-        merchantPattern: tx.merchantNormalized,
-        merchantDisplayName: tx.description,
-        category,
-        gstApplicable: gstApplicable ?? false,
-        isUserConfirmed: true,
-      });
+
+    if (!pending) {
+      return c.json({ error: 'Pending categorization not found' }, 404);
     }
-  }
 
-  await db
-    .update(pendingCategorization)
-    .set({
-      status: action,
-      userSelectedCategory: action === 'modify' ? category : pending.suggestedCategory,
-      resolvedAt: now,
-    })
-    .where(eq(pendingCategorization.id, pendingId));
+    const now = new Date().toISOString();
 
-  events.emit('update', { type: 'transactions_updated' });
-  return c.json({ success: true });
-});
+    if (action === 'approve') {
+      await db
+        .update(transactions)
+        .set({ category: pending.suggestedCategory, confidenceScore: 1.0 })
+        .where(eq(transactions.id, pending.transactionId));
+    } else if (action === 'modify' && category) {
+      await db
+        .update(transactions)
+        .set({ category, gstApplicable: gstApplicable ?? false, confidenceScore: 1.0 })
+        .where(eq(transactions.id, pending.transactionId));
+
+      const tx = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.id, pending.transactionId))
+        .get();
+      if (tx?.merchantNormalized) {
+        await accountService.updateMerchantMemory({
+          userId,
+          merchantPattern: tx.merchantNormalized,
+          merchantDisplayName: tx.description,
+          category,
+          gstApplicable: gstApplicable ?? false,
+          isUserConfirmed: true,
+        });
+      }
+    }
+
+    await db
+      .update(pendingCategorization)
+      .set({
+        status: action,
+        userSelectedCategory: action === 'modify' ? category : pending.suggestedCategory,
+        resolvedAt: now,
+      })
+      .where(eq(pendingCategorization.id, pendingId));
+
+    events.emit('update', { type: 'transactions_updated' });
+    return c.json({ success: true });
+  },
+);
 
 // PATCH /api/merchant-memory/:id
-merchantOpsRoutes.patch('/merchant-memory/:id', async (c) => {
-  const payload = c.get('jwtPayload');
-  const userId = payload.userId;
-  const memoryId = c.req.param('id');
-  const body = await c.req.json();
+merchantOpsRoutes.patch(
+  '/merchant-memory/:id',
+  zValidator('json', updateMerchantMemorySchema),
+  async (c) => {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+    const memoryId = c.req.param('id');
+    const { category, gstApplicable, merchantDisplayName } = c.req.valid('json');
 
-  const existing = await db
-    .select()
-    .from(merchantMemory)
-    .where(and(eq(merchantMemory.id, memoryId), eq(merchantMemory.userId, userId)))
-    .get();
+    const existing = await db
+      .select()
+      .from(merchantMemory)
+      .where(and(eq(merchantMemory.id, memoryId), eq(merchantMemory.userId, userId)))
+      .get();
 
-  if (!existing) return c.json({ error: 'Merchant memory entry not found' }, 404);
+    if (!existing) return c.json({ error: 'Merchant memory entry not found' }, 404);
 
-  await db
-    .update(merchantMemory)
-    .set({
-      category: body.category ?? existing.category,
-      gstApplicable: body.gstApplicable ?? existing.gstApplicable,
-      merchantDisplayName: body.merchantDisplayName ?? existing.merchantDisplayName,
-      isUserConfirmed: true,
-    })
-    .where(eq(merchantMemory.id, memoryId));
+    await db
+      .update(merchantMemory)
+      .set({
+        category: category ?? existing.category,
+        gstApplicable: gstApplicable ?? existing.gstApplicable,
+        merchantDisplayName: merchantDisplayName ?? existing.merchantDisplayName,
+        isUserConfirmed: true,
+      })
+      .where(eq(merchantMemory.id, memoryId));
 
-  events.emit('update', { type: 'merchant_memory_updated' });
-  return c.json({ success: true });
-});
+    events.emit('update', { type: 'merchant_memory_updated' });
+    return c.json({ success: true });
+  },
+);
 
 // DELETE /api/merchant-memory/:id
 merchantOpsRoutes.delete('/merchant-memory/:id', async (c) => {
@@ -124,11 +138,10 @@ merchantOpsRoutes.delete('/merchant-memory/:id', async (c) => {
 });
 
 // POST /api/transfers — Manually link two transactions as a transfer
-merchantOpsRoutes.post('/transfers', async (c) => {
+merchantOpsRoutes.post('/transfers', zValidator('json', linkTransferSchema), async (c) => {
   const payload = c.get('jwtPayload');
   const userId = payload.userId;
-  const body = await c.req.json();
-  const { sourceTransactionId, destinationTransactionId } = body;
+  const { sourceTransactionId, destinationTransactionId } = c.req.valid('json');
 
   const sourceTx = await db
     .select()
@@ -223,30 +236,34 @@ merchantOpsRoutes.get('/reconciliation-alerts', async (c) => {
 });
 
 // POST /api/reconciliation-alerts/:id/resolve
-merchantOpsRoutes.post('/reconciliation-alerts/:id/resolve', async (c) => {
-  const payload = c.get('jwtPayload');
-  const userId = payload.userId;
-  const alertId = c.req.param('id');
-  const body = await c.req.json();
+merchantOpsRoutes.post(
+  '/reconciliation-alerts/:id/resolve',
+  zValidator('json', resolveAlertSchema),
+  async (c) => {
+    const payload = c.get('jwtPayload');
+    const userId = payload.userId;
+    const alertId = c.req.param('id');
+    const { notes } = c.req.valid('json');
 
-  const alert = await db
-    .select()
-    .from(reconciliationAlerts)
-    .where(and(eq(reconciliationAlerts.id, alertId), eq(reconciliationAlerts.userId, userId)))
-    .get();
+    const alert = await db
+      .select()
+      .from(reconciliationAlerts)
+      .where(and(eq(reconciliationAlerts.id, alertId), eq(reconciliationAlerts.userId, userId)))
+      .get();
 
-  if (!alert) return c.json({ error: 'Alert not found' }, 404);
+    if (!alert) return c.json({ error: 'Alert not found' }, 404);
 
-  await db
-    .update(reconciliationAlerts)
-    .set({
-      isResolved: true,
-      resolvedAt: new Date().toISOString(),
-      resolutionNotes: body.notes || null,
-    })
-    .where(eq(reconciliationAlerts.id, alertId));
+    await db
+      .update(reconciliationAlerts)
+      .set({
+        isResolved: true,
+        resolvedAt: new Date().toISOString(),
+        resolutionNotes: notes ?? null,
+      })
+      .where(eq(reconciliationAlerts.id, alertId));
 
-  return c.json({ success: true });
-});
+    return c.json({ success: true });
+  },
+);
 
 export default merchantOpsRoutes;
