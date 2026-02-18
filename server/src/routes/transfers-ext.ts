@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { db, transactions, accounts, transferLinks } from '../schema.js';
 import { eq, and, gte, lte, type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -8,109 +9,118 @@ import {
   markOwnerContributions,
 } from '../services/transfers/index.js';
 import { events } from '../events.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { autoDetectTransfersSchema, bulkLinkTransfersSchema } from '../validation/operations.js';
 
 const transfersExtRoutes = new Hono();
 
+// Require valid JWT + tenant context for all routes
+transfersExtRoutes.use('/*', tenantAuthMiddleware());
+
 // POST /api/transfers/auto-detect — Auto-detect transfers (with optional persist)
-transfersExtRoutes.post('/auto-detect', async (c) => {
-  try {
-    const payload = c.get('jwtPayload');
-    const userId = payload.userId;
-    const body = await c.req.json().catch(() => ({}));
-    const persist = body.persist === true;
+transfersExtRoutes.post(
+  '/auto-detect',
+  zValidator('json', autoDetectTransfersSchema),
+  async (c) => {
+    try {
+      const payload = c.get('jwtPayload');
+      const userId = payload.userId;
+      const { persist = false } = c.req.valid('json');
 
-    const userTransactions = await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.userId, userId))
-      .all();
+      const userTransactions = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.userId, userId))
+        .all();
 
-    const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId)).all();
+      const userAccounts = await db
+        .select()
+        .from(accounts)
+        .where(eq(accounts.userId, userId))
+        .all();
 
-    const existingLinks = await db
-      .select()
-      .from(transferLinks)
-      .where(eq(transferLinks.userId, userId))
-      .all();
+      const existingLinks = await db
+        .select()
+        .from(transferLinks)
+        .where(eq(transferLinks.userId, userId))
+        .all();
 
-    type DetTxRow = typeof transactions.$inferSelect;
-    type DetAcctRow = typeof accounts.$inferSelect;
-    type DetLinkRow = typeof transferLinks.$inferSelect;
+      type DetTxRow = typeof transactions.$inferSelect;
+      type DetAcctRow = typeof accounts.$inferSelect;
+      type DetLinkRow = typeof transferLinks.$inferSelect;
 
-    const candidates = (userTransactions as DetTxRow[]).map((t: DetTxRow) => ({
-      id: parseInt(t.id) || 0,
-      accountId: parseInt(t.accountId || '0') || 0,
-      date: t.date,
-      description: t.description,
-      amount: t.amount,
-      isLinked: t.isTransfer ?? undefined,
-      linkedTransactionId: t.transferLinkId ? parseInt(t.transferLinkId) : undefined,
-    }));
+      const candidates = (userTransactions as DetTxRow[]).map((t: DetTxRow) => ({
+        id: parseInt(t.id) || 0,
+        accountId: parseInt(t.accountId || '0') || 0,
+        date: t.date,
+        description: t.description,
+        amount: t.amount,
+        isLinked: t.isTransfer ?? undefined,
+        linkedTransactionId: t.transferLinkId ? parseInt(t.transferLinkId) : undefined,
+      }));
 
-    const accountContexts = (userAccounts as DetAcctRow[]).map((a: DetAcctRow) => ({
-      id: parseInt(a.id) || 0,
-      accountNumber: a.accountNumber,
-      bankId: a.bankName || 'unknown',
-      accountName: a.accountName,
-      accountType: a.accountType,
-      ownershipTag: (a.ownershipTag || 'business') as 'personal' | 'business',
-    }));
+      const accountContexts = (userAccounts as DetAcctRow[]).map((a: DetAcctRow) => ({
+        id: parseInt(a.id) || 0,
+        accountNumber: a.accountNumber,
+        bankId: a.bankName || 'unknown',
+        accountName: a.accountName,
+        accountType: a.accountType,
+        ownershipTag: (a.ownershipTag || 'business') as 'personal' | 'business',
+      }));
 
-    const existingLinkPairs = (existingLinks as DetLinkRow[]).map((l: DetLinkRow) => ({
-      sourceId: parseInt(l.sourceTransactionId) || 0,
-      targetId: parseInt(l.destinationTransactionId) || 0,
-    }));
+      const existingLinkPairs = (existingLinks as DetLinkRow[]).map((l: DetLinkRow) => ({
+        sourceId: parseInt(l.sourceTransactionId) || 0,
+        targetId: parseInt(l.destinationTransactionId) || 0,
+      }));
 
-    const matches = detectTransfers(candidates, accountContexts, existingLinkPairs);
+      const matches = detectTransfers(candidates, accountContexts, existingLinkPairs);
 
-    let persistResult = null;
-    if (persist && matches.length > 0) {
-      persistResult = await persistTransferMatches(matches, { userId });
+      let persistResult = null;
+      if (persist && matches.length > 0) {
+        persistResult = await persistTransferMatches(matches, { userId });
 
-      const ownerContribIds: string[] = [];
-      for (const match of matches) {
-        const srcAcct = (userAccounts as DetAcctRow[]).find(
-          (a: DetAcctRow) => (parseInt(a.id) || 0) === match.sourceTransaction.accountId,
-        );
-        const dstAcct = (userAccounts as DetAcctRow[]).find(
-          (a: DetAcctRow) => (parseInt(a.id) || 0) === match.targetTransaction.accountId,
-        );
-        if (srcAcct?.ownershipTag === 'personal' && dstAcct?.ownershipTag === 'business') {
-          ownerContribIds.push(String(match.targetTransaction.id));
+        const ownerContribIds: string[] = [];
+        for (const match of matches) {
+          const srcAcct = (userAccounts as DetAcctRow[]).find(
+            (a: DetAcctRow) => (parseInt(a.id) || 0) === match.sourceTransaction.accountId,
+          );
+          const dstAcct = (userAccounts as DetAcctRow[]).find(
+            (a: DetAcctRow) => (parseInt(a.id) || 0) === match.targetTransaction.accountId,
+          );
+          if (srcAcct?.ownershipTag === 'personal' && dstAcct?.ownershipTag === 'business') {
+            ownerContribIds.push(String(match.targetTransaction.id));
+          }
         }
-      }
-      if (ownerContribIds.length > 0) {
-        await markOwnerContributions(ownerContribIds);
+        if (ownerContribIds.length > 0) {
+          await markOwnerContributions(ownerContribIds);
+        }
+
+        events.emit('update', { type: 'transfers_updated' });
       }
 
-      events.emit('update', { type: 'transfers_updated' });
+      return c.json({
+        matchesFound: matches.length,
+        persisted: persist ? persistResult?.created || 0 : 0,
+        matches: matches.map((m) => ({
+          sourceTransaction: m.sourceTransaction,
+          targetTransaction: m.targetTransaction,
+          confidence: m.confidence,
+          reasons: m.matchReasons,
+        })),
+      });
+    } catch (err) {
+      console.error('Transfer detection failed:', err);
+      return c.json({ error: 'Transfer detection failed' }, 500);
     }
-
-    return c.json({
-      matchesFound: matches.length,
-      persisted: persist ? persistResult?.created || 0 : 0,
-      matches: matches.map((m) => ({
-        sourceTransaction: m.sourceTransaction,
-        targetTransaction: m.targetTransaction,
-        confidence: m.confidence,
-        reasons: m.matchReasons,
-      })),
-    });
-  } catch (err) {
-    console.error('Transfer detection failed:', err);
-    return c.json({ error: 'Transfer detection failed' }, 500);
-  }
-});
+  },
+);
 
 // POST /api/transfers/bulk-link — Bulk link transfers
-transfersExtRoutes.post('/bulk-link', async (c) => {
+transfersExtRoutes.post('/bulk-link', zValidator('json', bulkLinkTransfersSchema), async (c) => {
   try {
     const payload = c.get('jwtPayload');
     const userId = payload.userId;
-    const body = await c.req.json();
-    const { pairs } = body;
-
-    if (!Array.isArray(pairs)) return c.json({ error: 'Pairs must be an array' }, 400);
+    const { pairs } = c.req.valid('json');
 
     const now = new Date().toISOString();
     const created: string[] = [];
