@@ -35,6 +35,8 @@ import {
   autoDetectTransfersSchema,
   bulkLinkTransfersSchema,
   acceptInvitationSchema,
+  ingestKnowledgeSchema,
+  approveReasonSchema,
 } from '../validation/operations.js';
 
 const createBudgetSchema = z.object({
@@ -604,29 +606,33 @@ accountMiscRoutes.post(
 );
 
 // POST /api/admin/ingest-knowledge
-accountMiscRoutes.post('/admin/ingest-knowledge', async (c) => {
-  try {
-    const { datasetName } = await c.req.json();
-    const targetDataset = datasetName || 'production_handbooks';
-    const knowledgeDir = path.resolve(process.cwd(), 'knowledge');
-    if (!fs.existsSync(knowledgeDir))
-      return c.json({ error: 'Knowledge directory not found' }, 404);
-    const files = fs.readdirSync(knowledgeDir);
-    const documents: string[] = [];
-    for (const file of files) {
-      if (file.endsWith('.md')) {
-        const content = fs.readFileSync(path.join(knowledgeDir, file), 'utf-8');
-        documents.push(`Source: ${file}\nContent:\n${content}`);
+accountMiscRoutes.post(
+  '/admin/ingest-knowledge',
+  zValidator('json', ingestKnowledgeSchema),
+  async (c) => {
+    try {
+      const { datasetName } = c.req.valid('json');
+      const targetDataset = datasetName || 'production_handbooks';
+      const knowledgeDir = path.resolve(process.cwd(), 'knowledge');
+      if (!fs.existsSync(knowledgeDir))
+        return c.json({ error: 'Knowledge directory not found' }, 404);
+      const files = fs.readdirSync(knowledgeDir);
+      const documents: string[] = [];
+      for (const file of files) {
+        if (file.endsWith('.md')) {
+          const content = fs.readFileSync(path.join(knowledgeDir, file), 'utf-8');
+          documents.push(`Source: ${file}\nContent:\n${content}`);
+        }
       }
+      if (documents.length === 0) return c.json({ message: 'No markdown files found to ingest' });
+      const result = await ragService.addDocuments(documents, targetDataset);
+      return c.json(result);
+    } catch (err) {
+      console.error('Ingestion failed:', err);
+      return c.json({ error: 'Ingestion failed' }, 500);
     }
-    if (documents.length === 0) return c.json({ message: 'No markdown files found to ingest' });
-    const result = await ragService.addDocuments(documents, targetDataset);
-    return c.json(result);
-  } catch (err) {
-    console.error('Ingestion failed:', err);
-    return c.json({ error: 'Ingestion failed' }, 500);
-  }
-});
+  },
+);
 
 // GET /api/analytics/budgets
 accountMiscRoutes.get('/analytics/budgets', async (c) => {
@@ -655,17 +661,21 @@ accountMiscRoutes.post('/analytics/budgets', zValidator('json', createBudgetSche
 });
 
 // POST /api/analytics/anomalies/:id/dismiss
-accountMiscRoutes.post('/analytics/anomalies/:id/dismiss', async (c) => {
-  try {
-    const alertId = c.req.param('id');
-    const body = (await c.req.json().catch(() => ({}))) as { reason?: string };
-    const reason = typeof body.reason === 'string' ? body.reason : 'dismissed';
-    await anomalyDetectionService.dismissAlert(alertId, reason);
-    return c.json({ data: { success: true, alertId } });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to dismiss alert';
-    return c.json({ error: message, code: 'DISMISS_ALERT_FAILED' }, 500);
-  }
-});
+accountMiscRoutes.post(
+  '/analytics/anomalies/:id/dismiss',
+  zValidator('json', approveReasonSchema),
+  async (c) => {
+    try {
+      const alertId = c.req.param('id');
+      const { reason: bodyReason } = c.req.valid('json');
+      const reason = bodyReason ?? 'dismissed';
+      await anomalyDetectionService.dismissAlert(alertId, reason);
+      return c.json({ data: { success: true, alertId } });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to dismiss alert';
+      return c.json({ error: message, code: 'DISMISS_ALERT_FAILED' }, 500);
+    }
+  },
+);
 
 export default accountMiscRoutes;
