@@ -51,6 +51,11 @@ const syncResolveSchema = z.object({
   resolution: z.enum(['client_wins', 'server_wins']),
 });
 
+const syncLogQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().nonnegative().default(0),
+});
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 const miscRoutes = new Hono();
@@ -221,12 +226,11 @@ miscRoutes.post('/sync/resolve/:conflictId', zValidator('json', syncResolveSchem
   }
 });
 
-miscRoutes.get('/sync/log', async (c) => {
+miscRoutes.get('/sync/log', zValidator('query', syncLogQuerySchema), async (c) => {
   try {
     const userId = getUserId(c);
     const tenantId = c.req.header('X-Tenant-Id') ?? 'default';
-    const limit = parseInt(c.req.query('limit') ?? '20');
-    const offset = parseInt(c.req.query('offset') ?? '0');
+    const { limit, offset } = c.req.valid('query');
     const entries = await syncService.getSyncLog(userId, tenantId, limit, offset);
     return c.json({ data: { entries, count: entries.length } });
   } catch (err) {

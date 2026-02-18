@@ -7,6 +7,7 @@ import { validateTFN, validateBSB, isEncryptionConfigured } from '../services/en
 import { logger } from '../lib/logger.js';
 import { config } from '../lib/config.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
+import { paginationSchema } from '../validation/settings.js';
 
 const payrollRoutes = new Hono();
 
@@ -93,16 +94,14 @@ const payStructureSchema = z.object({
 
 // --- Employee CRUD ---
 
-payrollRoutes.get('/employees', async (c) => {
+payrollRoutes.get('/employees', zValidator('query', paginationSchema), async (c) => {
   const userId = c.req.query('userId');
   if (!userId) return c.json({ error: 'userId required' }, 400);
 
-  const offset = Math.max(0, parseInt(c.req.query('offset') ?? '0'));
-  const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit') ?? '50')));
+  const { page, limit } = c.req.valid('query');
   const status = c.req.query('status') ?? undefined;
   const search = c.req.query('search') ?? undefined;
 
-  const page = Math.floor(offset / limit) + 1;
   const result = await employeeService.listEmployees(userId, { page, limit, status, search });
   return c.json(result);
 });
@@ -173,10 +172,7 @@ payrollRoutes.post(
 
     if (!isEncryptionConfigured()) {
       if (config.isProduction) {
-        return c.json(
-          { error: 'Encryption service unavailable — cannot store bank details' },
-          503,
-        );
+        return c.json({ error: 'Encryption service unavailable — cannot store bank details' }, 503);
       }
     }
 
@@ -221,14 +217,11 @@ payrollRoutes.post(
 
 // --- Pay Categories ---
 
-payrollRoutes.get('/pay-categories', async (c) => {
+payrollRoutes.get('/pay-categories', zValidator('query', paginationSchema), async (c) => {
   const userId = c.req.query('userId');
   if (!userId) return c.json({ error: 'userId required' }, 400);
 
-  const offset = Math.max(0, parseInt(c.req.query('offset') ?? '0'));
-  const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit') ?? '50')));
-
-  const page = Math.floor(offset / limit) + 1;
+  const { page, limit } = c.req.valid('query');
   const result = await payStructureService.listPayCategories(userId, { page, limit });
   return c.json(result);
 });
