@@ -36,3 +36,9 @@ export {
 export { flagLikelyTransfersByDescription, detectTransfers } from './transfer-detection.js';
 
 export { PipelineService, pipeline } from './pipeline.js';
+
+// v4 streaming masking pipeline
+export { AmountTagger } from './amount-tagger.js';
+export { TokenMapBuilder } from './token-map-builder.js';
+export type { TokenMap } from './token-map-builder.js';
+export { StreamingUnredactor, wrapWithUnredactor } from './streaming-unredactor.js';
