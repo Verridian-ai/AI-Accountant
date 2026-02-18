@@ -6,7 +6,7 @@ import { validateBody, chatMessageSchema, ValidationError } from '../validation/
 import { getErrorMessage } from '../utils/error.js';
 import type { AgentType } from '../services/claude/types.js';
 import { db, transactions, userSettings, cogneeUserAccounts } from '../schema.js';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql as drizzleSql } from 'drizzle-orm';
 import { aiService } from '../services/ai.js';
 import { ragService } from '../services/rag.js';
 import { orchestrator } from '../services/claude/orchestrator.js';
@@ -15,11 +15,26 @@ import { StreamingService } from '../services/claude/streaming.js';
 import { ConfirmationFlowService } from '../services/claude/confirmation-flow.js';
 import { AuditService } from '../services/claude/audit.js';
 import { streamingRateLimiter } from '../services/streaming-middleware.js';
+// Neon dual-pool
+import { getMaskedDb, getProductionDb, isMaskedBranchActive } from '../db/neon-connection.js';
+// v4 streaming masking pipeline
+import { AmountTagger, TokenMapBuilder, wrapWithUnredactor } from '../services/pipeline/index.js';
+import type { TokenMap } from '../services/pipeline/index.js';
+// Aggregate tool (Vercel AI SDK compatible)
+import { getExactTotalsTool } from '../services/tools/index.js';
+// Vercel AI SDK for tool-aware generation in Neon path
+import { generateText, stepCountIs } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 
 const chatRoutes = new Hono();
 const streamingService = new StreamingService();
 const confirmationFlow = new ConfirmationFlowService(db);
 const auditService = new AuditService(db);
+
+const USE_NEON_RUNTIME = process.env.USE_NEON === 'true';
+// Singletons — AmountTagger uses lazy Redis connect (safe even when USE_NEON=false)
+const amountTagger = new AmountTagger(process.env.REDIS_URL);
+const tokenMapBuilder = new TokenMapBuilder();
 
 const getRateLimitKey = (
   c: Parameters<typeof rateLimiter>[0]['keyGenerator'] extends (c: infer C) => unknown ? C : never,
@@ -97,12 +112,45 @@ chatRoutes.post('/', async (c) => {
       }
     }
 
-    const context = await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.userId, userId))
-      .orderBy(desc(transactions.date))
-      .limit(50);
+    // ─── Neon dual-pool path (masking + unredaction) ─────────────────────
+    let transactionContext: Record<string, unknown>[];
+    let activeTokenMap: TokenMap | null = null;
+
+    if (USE_NEON_RUNTIME && isMaskedBranchActive()) {
+      const sessionKey = cogneeSessionId ?? userId;
+      // Use raw SQL to avoid SQLiteTable vs PgTable type mismatch (the schema uses
+      // SQLite table definitions but Neon pools are PG — execute() accepts SQL templates
+      // on both, while .select().from() requires PgTable at the type level).
+      const [maskedResult, realResult] = await Promise.all([
+        getMaskedDb().execute<Record<string, unknown>>(
+          drizzleSql`SELECT * FROM transactions WHERE user_id = ${userId} ORDER BY date DESC LIMIT 50`,
+        ),
+        getProductionDb().execute<Record<string, unknown>>(
+          drizzleSql`SELECT * FROM transactions WHERE user_id = ${userId} ORDER BY date DESC LIMIT 50`,
+        ),
+      ]);
+      const maskedRows = maskedResult.rows;
+      const realRows = realResult.rows;
+      const { tagged, tokenMap: amountTokenMap } = await amountTagger.tagObjects(
+        maskedRows,
+        ['amount', 'gst_amount', 'balance'],
+        sessionKey,
+      );
+      activeTokenMap = tokenMapBuilder.buildTokenMap({
+        maskedData: maskedRows as Record<string, unknown>[],
+        realData: realRows as Record<string, unknown>[],
+        amountTokenMap,
+      });
+      transactionContext = tagged as Record<string, unknown>[];
+    } else {
+      // ─── Legacy path — unchanged behaviour ───────────────────────────
+      transactionContext = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.userId, userId))
+        .orderBy(desc(transactions.date))
+        .limit(50);
+    }
 
     let settings = await db
       .select()
@@ -136,12 +184,41 @@ chatRoutes.post('/', async (c) => {
     }
 
     const combinedContext = {
-      recentTransactions: context,
+      recentTransactions: transactionContext,
       semanticSearchResults: ragContext,
       ...(conversationContext ? { conversationHistory: conversationContext } : {}),
     };
 
-    const answer = await aiService.generateInsight(query, combinedContext, settings.modelChat);
+    // ─── AI generation — Neon path uses Vercel AI SDK with tools ──────────
+    let answer: string;
+    if (USE_NEON_RUNTIME && isMaskedBranchActive() && activeTokenMap) {
+      const openrouterKey =
+        process.env.VITE_OPENROUTER_API_KEY ?? process.env.OPENROUTER_API_KEY ?? '';
+      const openrouter = createOpenAI({
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKey: openrouterKey,
+      });
+      const { text } = await generateText({
+        model: openrouter(settings.modelChat ?? 'google/gemini-3-flash-preview'),
+        prompt: buildChatPrompt(query, combinedContext),
+        tools: { get_exact_totals: getExactTotalsTool },
+        stopWhen: stepCountIs(3),
+      });
+      // Unredact: replace masked tokens (pseudonyms + [[amt:ID]]) with real values
+      const unredactedChunks: string[] = [];
+      for await (const chunk of wrapWithUnredactor(
+        (async function* () {
+          yield text;
+        })(),
+        activeTokenMap,
+      )) {
+        unredactedChunks.push(chunk);
+      }
+      answer = unredactedChunks.join('');
+    } else {
+      // Legacy path — unchanged
+      answer = await aiService.generateInsight(query, combinedContext, settings.modelChat);
+    }
 
     if (cogneeSessionId && userId) {
       try {
@@ -318,5 +395,20 @@ chatRoutes.get('/history', async (c) => {
     return c.json({ error: 'Failed to fetch session history', code: 500 }, 500);
   }
 });
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Build a structured prompt for the Neon-enabled chat path.
+ * Instructs Claude to use get_exact_totals instead of summing [[amt:ID]] tokens.
+ */
+function buildChatPrompt(query: string, context: Record<string, unknown>): string {
+  return `You are a helpful financial assistant. Transaction amounts appear as [[amt:ID]] tokens — use the get_exact_totals tool for any dollar calculations instead of attempting to sum these tokens yourself.
+
+Context:
+${JSON.stringify(context, null, 2)}
+
+User question: ${query}`;
+}
 
 export default chatRoutes;

@@ -10,6 +10,7 @@ import { securityHeaders } from './middleware/security.js';
 import { auditMiddleware } from './middleware/audit.js';
 import { ConfirmationFlowService } from './services/claude/confirmation-flow.js';
 import { SchemaRegistry } from './services/claude/schemas/schema-registry.js';
+import { neonHealthCheck } from './db/neon-connection.js';
 
 // Route file imports
 import authRoutes from './routes/auth-routes.js';
@@ -287,8 +288,25 @@ app.get('/', (c) => {
 });
 
 // Health check for Cloud Run
-app.get('/health', (c) => {
-  return c.json({ status: 'healthy', timestamp: new Date().toISOString() });
+app.get('/health', async (c) => {
+  const response: Record<string, unknown> = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+  };
+
+  if (process.env.USE_NEON === 'true') {
+    try {
+      const neonHealth = await neonHealthCheck();
+      response.neon = neonHealth;
+    } catch (err) {
+      response.neon = {
+        status: 'error',
+        error: err instanceof Error ? err.message : 'unknown',
+      };
+    }
+  }
+
+  return c.json(response);
 });
 
 const port = parseInt(process.env.PORT || '3501', 10);
