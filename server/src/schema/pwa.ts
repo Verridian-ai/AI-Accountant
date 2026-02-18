@@ -2,6 +2,11 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { users } from './core.js';
 import { tenants } from './multitenant.js';
 
+// IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
+// The wrapPgDb() proxy stores the literal string 'CURRENT_TIMESTAMP' in PostgreSQL
+// instead of evaluating it. All inserts MUST set timestamp fields explicitly:
+//   createdAt: new Date().toISOString()   (see repositories/*.ts)
+
 // ============================================================================
 // PWA SUPPORT (Wave 24)
 // ============================================================================

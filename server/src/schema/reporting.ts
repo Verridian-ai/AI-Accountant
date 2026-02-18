@@ -3,6 +3,11 @@ import { users } from './core.js';
 import { accounts, statements } from './banking.js';
 import { transactions } from './transactions.js';
 
+// IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
+// The wrapPgDb() proxy stores the literal string 'CURRENT_TIMESTAMP' in PostgreSQL
+// instead of evaluating it. All inserts MUST set timestamp fields explicitly:
+//   createdAt: new Date().toISOString()   (see repositories/*.ts)
+
 // ============================================================================
 // PARSER METRICS & FEEDBACK
 // ============================================================================
