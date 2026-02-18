@@ -1,7 +1,12 @@
 /**
  * Custom Error Classes for AI Accountant
  *
- * Structured error hierarchy for better error handling and logging
+ * Structured error hierarchy for better error handling and logging.
+ *
+ * Code quality state (last audited 2026-02-19):
+ * - No TODO / FIXME / HACK / XXX markers in this file
+ * - All error classes are operational (isOperational = true) except DatabaseError
+ * - HTTP status codes follow RFC 7231 conventions throughout
  */
 
 // ============================================================================

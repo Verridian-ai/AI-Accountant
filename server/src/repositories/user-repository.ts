@@ -30,9 +30,14 @@ export class UserRepository {
    */
   async create(data: { username: string; passwordHash: string }): Promise<typeof users.$inferSelect | null> {
     const id = randomUUID();
+    // Set timestamps explicitly — `.default('CURRENT_TIMESTAMP')` in Drizzle SQLite-mode
+    // inserts the literal string "CURRENT_TIMESTAMP" when proxied to PostgreSQL via wrapPgDb().
+    const now = new Date().toISOString();
     await insert(db, users, {
       id,
       ...data,
+      createdAt: now,
+      updatedAt: now,
     });
     return this.getById(id);
   }

@@ -114,6 +114,16 @@ export const DEV_SECURITY_CONFIG: SecurityHeadersConfig = {
   },
 };
 
+// Production config — removes unsafe-inline for XSS hardening (ISSUE-03-007)
+export const PRODUCTION_SECURITY_CONFIG: SecurityHeadersConfig = {
+  ...DEFAULT_SECURITY_CONFIG,
+  csp: {
+    ...(DEFAULT_SECURITY_CONFIG.csp as CSPDirectives),
+    scriptSrc: ["'self'"], // No unsafe-inline in production
+    styleSrc: ["'self'"], // No unsafe-inline in production
+  },
+};
+
 // ============================================================================
 // HEADER BUILDERS
 // ============================================================================
@@ -205,8 +215,11 @@ function buildCSPHeader(directives: CSPDirectives): string {
  * Security headers middleware factory
  */
 export function securityHeaders(customConfig?: Partial<SecurityHeadersConfig>): MiddlewareHandler {
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('[Security] DEV_SECURITY_CONFIG active — relaxed CSP. DO NOT USE IN PRODUCTION.');
+  }
   const config = {
-    ...(process.env.NODE_ENV === 'production' ? DEFAULT_SECURITY_CONFIG : DEV_SECURITY_CONFIG),
+    ...(process.env.NODE_ENV === 'production' ? PRODUCTION_SECURITY_CONFIG : DEV_SECURITY_CONFIG),
     ...customConfig,
   };
 

@@ -106,7 +106,7 @@ export function auditMiddleware(customConfig?: Partial<AuditConfig>): Middleware
           timestamp: new Date().toISOString(),
         });
       } catch (dbError) {
-        console.error('Failed to write audit log:', dbError);
+        console.error('[AUDIT] COMPLIANCE RISK — audit log write failed:', dbError);
       }
     }
   };

@@ -95,6 +95,15 @@ app.use(
   }),
 );
 
+// Global body limit — applies to all API routes before any route handler runs
+app.use(
+  '/api/*',
+  bodyLimit({
+    maxSize: 10 * 1024 * 1024, // 10MB global limit
+    onError: (c) => c.json({ error: 'Payload Too Large' }, 413),
+  }),
+);
+
 // Mount auth routes
 app.route('/auth', authRoutes);
 

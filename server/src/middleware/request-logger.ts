@@ -3,7 +3,9 @@ import { logger as baseLogger } from '../lib/logger.js';
 import crypto from 'crypto';
 
 export const requestLogger = createMiddleware(async (c, next) => {
-  const requestId = c.req.header('x-request-id') || crypto.randomUUID();
+  const rawId = c.req.header('x-request-id');
+  const requestId =
+    rawId && /^[a-zA-Z0-9\-]{1,64}$/.test(rawId) ? rawId : crypto.randomUUID();
   const startTime = Date.now();
 
   // Create request-scoped logger

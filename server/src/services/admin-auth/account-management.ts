@@ -78,7 +78,7 @@ export async function resetPassword(id: string, newPassword: string): Promise<bo
   const passwordHash = await hashPassword(newPassword);
   await db
     .update(adminUsers)
-    .set({ passwordHash, updatedAt: new Date().toISOString() })
+    .set({ passwordHash, lockedUntil: null, failedLoginCount: 0, updatedAt: new Date().toISOString() })
     .where(eq(adminUsers.id, id));
   return true;
 }

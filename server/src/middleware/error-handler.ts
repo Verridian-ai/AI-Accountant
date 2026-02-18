@@ -12,7 +12,6 @@ import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { BaseError, isOperationalError, toHttpError } from '../errors.js';
 import { logger } from '../lib/logger.js';
-import { config } from '../lib/config.js';
 
 export function globalErrorHandler(err: Error, c: Context): Response {
   const httpError = toHttpError(err);
@@ -43,10 +42,6 @@ export function globalErrorHandler(err: Error, c: Context): Response {
     body.errors = (err as BaseError & { errors: unknown }).errors;
   }
 
-  // Include stack trace in non-production for debugging
-  if (!config.isProduction && err.stack) {
-    body.stack = err.stack;
-  }
-
+  // Stack trace is logged server-side (above) — never exposed in HTTP responses
   return c.json(body, httpError.status as ContentfulStatusCode);
 }
