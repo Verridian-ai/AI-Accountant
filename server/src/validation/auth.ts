@@ -37,6 +37,7 @@ export const loginWithTenantSchema = loginSchema.extend({
 
 export const refreshSchema = z.object({
   tenantId: z.string().uuid().optional(),
+  refreshToken: z.string().min(1).optional(),
 });
 
 export const passwordChangeSchema = z.object({

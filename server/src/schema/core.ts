@@ -59,6 +59,7 @@ export const sessions = pgTable('sessions', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
+  tenantId: text('tenant_id'),
   refreshTokenHash: text('refresh_token_hash').notNull(),
   deviceFingerprint: text('device_fingerprint'),
   ipAddress: text('ip_address'),

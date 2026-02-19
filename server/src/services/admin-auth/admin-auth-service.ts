@@ -19,6 +19,8 @@ import {
   generateTenantToken,
   verifyTenantToken,
   refreshTenantToken,
+  generateTenantTokenWithRefresh,
+  rotateTenantRefreshToken,
   login,
 } from './authentication.js';
 import {
@@ -100,6 +102,20 @@ export class AdminAuthService {
     newTenantId?: string,
   ): Promise<{ token: string; payload: JWTPayload } | null> {
     return refreshTenantToken(token, newTenantId);
+  }
+
+  async generateTenantTokenWithRefresh(
+    userId: string,
+    tenantId: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    return generateTenantTokenWithRefresh(userId, tenantId);
+  }
+
+  async rotateTenantRefreshToken(
+    rawRefreshToken: string,
+    newTenantId?: string,
+  ): Promise<{ accessToken: string; refreshToken: string; payload: JWTPayload } | null> {
+    return rotateTenantRefreshToken(rawRefreshToken, newTenantId);
   }
 
   // --------------------------------------------------------------------------

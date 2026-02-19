@@ -28,6 +28,8 @@ export {
   generateTenantToken,
   verifyTenantToken,
   refreshTenantToken,
+  generateTenantTokenWithRefresh,
+  rotateTenantRefreshToken,
 } from './authentication.js';
 
 export { adminAuthMiddleware } from './authorization.js';

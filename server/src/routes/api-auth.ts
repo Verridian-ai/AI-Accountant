@@ -24,7 +24,7 @@ apiAuthRoutes.post('/login', zValidator('json', loginWithTenantSchema), async (c
     let username: string;
 
     // Try regular users table first
-    const user = await db.select().from(users).where(eq(users.username, body.username)).get();
+    const user = (await db.select().from(users).where(eq(users.username, body.username)))[0];
     if (user && (await comparePassword(body.password, user.passwordHash))) {
       userId = user.id;
       username = user.username;
@@ -53,10 +53,11 @@ apiAuthRoutes.post('/login', zValidator('json', loginWithTenantSchema), async (c
     const match = memberTenants.find((mt) => mt.tenant.id === targetTenantId);
     if (!match) return c.json({ error: 'User is not a member of the specified tenant' }, 403);
 
-    const token = await adminAuthService.generateTenantToken(userId, targetTenantId);
+    const tokenPair = await adminAuthService.generateTenantTokenWithRefresh(userId, targetTenantId);
     const context = await tenantService.getTenantContext(userId, targetTenantId);
     return c.json({
-      token,
+      token: tokenPair.accessToken,
+      refreshToken: tokenPair.refreshToken,
       user: { id: userId, username },
       tenants: memberTenants,
       activeTenant: context,
@@ -82,13 +83,19 @@ apiAuthRoutes.post('/register', zValidator('json', registerSchema), async (c) =>
 
     let tenant = null;
     let token: string;
+    let refreshToken: string | undefined;
     if (body.tenantName && body.tenantSlug) {
       tenant = await tenantService.createTenant(body.tenantName, body.tenantSlug, userId);
-      token = await adminAuthService.generateTenantToken(userId, tenant.id);
+      const tokenPair = await adminAuthService.generateTenantTokenWithRefresh(userId, tenant.id);
+      token = tokenPair.accessToken;
+      refreshToken = tokenPair.refreshToken;
     } else {
       token = await generateToken(userId);
     }
-    return c.json({ token, user: { id: userId, username: body.username }, tenant }, 201);
+    return c.json(
+      { token, refreshToken, user: { id: userId, username: body.username }, tenant },
+      201,
+    );
   } catch (err: unknown) {
     console.error('[Auth] Register failed:', err);
     return c.json({ error: getErrorMessage(err) || 'Registration failed' }, 400);
@@ -98,11 +105,27 @@ apiAuthRoutes.post('/register', zValidator('json', registerSchema), async (c) =>
 // POST /api/auth/refresh
 apiAuthRoutes.post('/refresh', zValidator('json', refreshSchema), async (c) => {
   try {
+    const body = c.req.valid('json');
+
+    // If a refresh token is provided, use rotation (preferred path)
+    if (body.refreshToken) {
+      const rotated = await adminAuthService.rotateTenantRefreshToken(
+        body.refreshToken,
+        body.tenantId,
+      );
+      if (!rotated) return c.json({ error: 'Token refresh failed' }, 401);
+      return c.json({
+        token: rotated.accessToken,
+        refreshToken: rotated.refreshToken,
+        payload: rotated.payload,
+      });
+    }
+
+    // Legacy path: refresh using the access token from Authorization header
     const authHeader = c.req.header('Authorization');
     if (!authHeader?.startsWith('Bearer '))
-      return c.json({ error: 'Authorization token required' }, 401);
+      return c.json({ error: 'Authorization token or refresh token required' }, 401);
     const currentToken = authHeader.slice(7);
-    const body = c.req.valid('json');
     const result = await adminAuthService.refreshTenantToken(currentToken, body.tenantId);
     if (!result) return c.json({ error: 'Token refresh failed' }, 401);
     return c.json({ token: result.token, payload: result.payload });
@@ -121,7 +144,7 @@ apiAuthRoutes.get('/me', async (c) => {
 
     const tenantPayload = await adminAuthService.verifyTenantToken(token);
     if (tenantPayload) {
-      const user = await db.select().from(users).where(eq(users.id, tenantPayload.userId)).get();
+      const user = (await db.select().from(users).where(eq(users.id, tenantPayload.userId)))[0];
       if (!user) return c.json({ error: 'User not found' }, 404);
       const memberTenants = await tenantService.getMemberTenants(tenantPayload.userId);
       let activeTenantContext = null;
@@ -144,11 +167,12 @@ apiAuthRoutes.get('/me', async (c) => {
 
     const legacyPayload = await verifyToken(token);
     if (!legacyPayload) return c.json({ error: 'Invalid token' }, 401);
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, legacyPayload.userId as string))
-      .get();
+    const user = (
+      await db
+        .select()
+        .from(users)
+        .where(eq(users.id, legacyPayload.userId as string))
+    )[0];
     if (!user) return c.json({ error: 'User not found' }, 404);
     const memberTenants = await tenantService.getMemberTenants(user.id);
     return c.json({

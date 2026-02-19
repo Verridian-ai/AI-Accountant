@@ -10,7 +10,7 @@
  */
 
 import { adaptLegacyTool } from '../claude/tool-adapter.js';
-import { db } from '../../schema.js';
+import { pool } from '../../schema.js';
 import { logger } from '../../lib/logger.js';
 
 // ---------------------------------------------------------------------------
@@ -129,8 +129,8 @@ export async function executeGetExactTotals(input: GetExactTotalsInput): Promise
   logger.info(`[AggregateTool] Executing: ${aggregation} on ${account_ids.length} accounts`);
 
   try {
-    const rows = await db.all(sql, params);
-    const row = Array.isArray(rows) ? rows[0] : rows;
+    const queryResult = await pool.query(sql, params);
+    const row = queryResult.rows[0];
 
     if (!row) {
       return { total: 0, currency: 'AUD', count: 0 };

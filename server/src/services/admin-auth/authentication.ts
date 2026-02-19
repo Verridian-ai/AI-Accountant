@@ -22,7 +22,13 @@ import {
 } from './types.js';
 
 // Re-export tenant JWT functions for backward compatibility
-export { generateTenantToken, verifyTenantToken, refreshTenantToken } from './tenant-jwt.js';
+export {
+  generateTenantToken,
+  verifyTenantToken,
+  refreshTenantToken,
+  generateTenantTokenWithRefresh,
+  rotateTenantRefreshToken,
+} from './tenant-jwt.js';
 
 // ============================================================================
 // JWT SECRET HELPERS
