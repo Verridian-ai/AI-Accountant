@@ -41,12 +41,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     if (!isOpen) return;
     let active = true;
     getSettings()
-      .then((data) => { if (active) setFetchState({ settings: data, loading: false }); })
+      .then((data) => {
+        if (active) setFetchState({ settings: data, loading: false });
+      })
       .catch((error: unknown) => {
         console.error('Failed to fetch settings:', error);
         if (active) setFetchState((s) => ({ ...s, loading: false }));
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [isOpen]);
 
   const handleSave = async () => {
@@ -130,7 +134,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   description="Model used to extract transactions from text-based PDFs"
                   value={settings?.modelParsingText || ''}
                   onChange={(val) =>
-                    setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelParsingText: val  } : null }))
+                    setFetchState((fs) => ({
+                      ...fs,
+                      settings: fs.settings ? { ...fs.settings, modelParsingText: val } : null,
+                    }))
                   }
                   models={chatModels}
                   onHover={setHoveredModel}
@@ -142,7 +149,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   description="Requires vision capability for scanned or image-based statements"
                   value={settings?.modelParsingVision || ''}
                   onChange={(val) =>
-                    setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelParsingVision: val  } : null }))
+                    setFetchState((fs) => ({
+                      ...fs,
+                      settings: fs.settings ? { ...fs.settings, modelParsingVision: val } : null,
+                    }))
                   }
                   models={visionModels}
                   onHover={setHoveredModel}
@@ -154,7 +164,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   description="Model that assigns tax categories and GST status"
                   value={settings?.modelCategorization || ''}
                   onChange={(val) =>
-                    setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelCategorization: val  } : null }))
+                    setFetchState((fs) => ({
+                      ...fs,
+                      settings: fs.settings ? { ...fs.settings, modelCategorization: val } : null,
+                    }))
                   }
                   models={chatModels}
                   onHover={setHoveredModel}
@@ -165,7 +178,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   label="Chat Assistant"
                   description="The model you interact with in the sidebar"
                   value={settings?.modelChat || ''}
-                  onChange={(val) => setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelChat: val  } : null }))}
+                  onChange={(val) =>
+                    setFetchState((fs) => ({
+                      ...fs,
+                      settings: fs.settings ? { ...fs.settings, modelChat: val } : null,
+                    }))
+                  }
                   models={chatModels}
                   onHover={setHoveredModel}
                   icon={<Sparkles className="w-4 h-4" />}
@@ -175,7 +193,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   label="Embedding Model"
                   description="Used for semantic search and RAG knowledge base"
                   value={settings?.modelEmbedding || ''}
-                  onChange={(val) => setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelEmbedding: val  } : null }))}
+                  onChange={(val) =>
+                    setFetchState((fs) => ({
+                      ...fs,
+                      settings: fs.settings ? { ...fs.settings, modelEmbedding: val } : null,
+                    }))
+                  }
                   models={embeddingModels}
                   onHover={setHoveredModel}
                   icon={<Info className="w-4 h-4" />}

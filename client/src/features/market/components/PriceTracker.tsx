@@ -1,14 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback, Suspense } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, Search } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from 'recharts';
 import {
   fetchMarketPrices,
   fetchPriceHistory,
@@ -41,176 +32,157 @@ const TABS: { id: PriceTab; label: string }[] = [
   { id: 'crypto', label: 'Cryptocurrency' },
 ];
 
+const FALLBACK_PRICES: PriceItem[] = [
+  { symbol: 'ASX:CBA', name: 'Commonwealth Bank', type: 'equity', price: 128.45, change: 1.23, changePercent: 0.97 },
+  { symbol: 'ASX:BHP', name: 'BHP Group', type: 'equity', price: 45.67, change: -0.45, changePercent: -0.98 },
+  { symbol: 'ASX:CSL', name: 'CSL Limited', type: 'equity', price: 298.5, change: 3.2, changePercent: 1.08 },
+  { symbol: 'ASX:WBC', name: 'Westpac Banking', type: 'equity', price: 28.9, change: 0.15, changePercent: 0.52 },
+  { symbol: 'ASX:NAB', name: 'National Australia Bank', type: 'equity', price: 35.6, change: -0.3, changePercent: -0.84 },
+  { symbol: 'ASX:ANZ', name: 'ANZ Banking Group', type: 'equity', price: 29.45, change: 0.22, changePercent: 0.75 },
+  { symbol: 'BTC-AUD', name: 'Bitcoin', type: 'crypto', price: 148523.0, change: 2456.0, changePercent: 1.68 },
+  { symbol: 'ETH-AUD', name: 'Ethereum', type: 'crypto', price: 5243.0, change: -87.0, changePercent: -1.63 },
+  { symbol: 'SOL-AUD', name: 'Solana', type: 'crypto', price: 245.8, change: 12.3, changePercent: 5.27 },
+  { symbol: 'XRP-AUD', name: 'Ripple', type: 'crypto', price: 3.82, change: 0.08, changePercent: 2.14 },
+];
+
+interface State {
+  prices: PriceItem[];
+  loading: boolean;
+  activeTab: PriceTab;
+  selectedSymbol: string | null;
+  history: HistoryPoint[];
+  historyLoading: boolean;
+  searchQuery: string;
+  searchResults: PriceItem[];
+  searching: boolean;
+  refreshing: boolean;
+}
+
+type Action =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; prices: PriceItem[] }
+  | { type: 'LOAD_ERROR'; prices: PriceItem[] }
+  | { type: 'SET_TAB'; tab: PriceTab }
+  | { type: 'SELECT_SYMBOL'; symbol: string }
+  | { type: 'CLEAR_SYMBOL' }
+  | { type: 'HISTORY_SUCCESS'; history: HistoryPoint[] }
+  | { type: 'SET_SEARCH'; query: string }
+  | { type: 'SEARCH_START' }
+  | { type: 'SEARCH_SUCCESS'; results: PriceItem[] }
+  | { type: 'SEARCH_ERROR' }
+  | { type: 'SET_REFRESHING'; value: boolean };
+
+const INITIAL: State = {
+  prices: [],
+  loading: true,
+  activeTab: 'all',
+  selectedSymbol: null,
+  history: [],
+  historyLoading: false,
+  searchQuery: '',
+  searchResults: [],
+  searching: false,
+  refreshing: false,
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'LOAD_START':
+      return { ...state, loading: true };
+    case 'LOAD_SUCCESS':
+    case 'LOAD_ERROR':
+      return { ...state, loading: false, prices: action.prices };
+    case 'SET_TAB':
+      return { ...state, activeTab: action.tab, searchResults: [] };
+    case 'SELECT_SYMBOL':
+      return { ...state, selectedSymbol: action.symbol, historyLoading: true, history: [] };
+    case 'CLEAR_SYMBOL':
+      return { ...state, selectedSymbol: null };
+    case 'HISTORY_SUCCESS':
+      return { ...state, historyLoading: false, history: action.history };
+    case 'SET_SEARCH':
+      return { ...state, searchQuery: action.query };
+    case 'SEARCH_START':
+      return { ...state, searching: true };
+    case 'SEARCH_SUCCESS':
+      return { ...state, searching: false, searchResults: action.results };
+    case 'SEARCH_ERROR':
+      return { ...state, searching: false, searchResults: [] };
+    case 'SET_REFRESHING':
+      return { ...state, refreshing: action.value };
+  }
+}
+
+const LazyPriceHistoryChart = React.lazy(() => import('./PriceHistoryChart'));
+const LazyPriceSparkline = React.lazy(() => import('./PriceSparkline'));
+
 export function PriceTracker() {
-  const [prices, setPrices] = useState<PriceItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<PriceTab>('all');
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
-  const [history, setHistory] = useState<HistoryPoint[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<PriceItem[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [state, dispatch] = useReducer(reducer, INITIAL);
 
   const loadPrices = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
     try {
-      setLoading(true);
-      const type = activeTab === 'all' ? undefined : activeTab;
+      const type = state.activeTab === 'all' ? undefined : state.activeTab;
       const data = await fetchMarketPrices(type);
       const items = Array.isArray(data) ? data : (data as { prices: PriceItem[] }).prices || [];
-      setPrices(items);
+      dispatch({ type: 'LOAD_SUCCESS', prices: items });
     } catch {
-      // Fallback data
-      setPrices([
-        {
-          symbol: 'ASX:CBA',
-          name: 'Commonwealth Bank',
-          type: 'equity',
-          price: 128.45,
-          change: 1.23,
-          changePercent: 0.97,
-        },
-        {
-          symbol: 'ASX:BHP',
-          name: 'BHP Group',
-          type: 'equity',
-          price: 45.67,
-          change: -0.45,
-          changePercent: -0.98,
-        },
-        {
-          symbol: 'ASX:CSL',
-          name: 'CSL Limited',
-          type: 'equity',
-          price: 298.5,
-          change: 3.2,
-          changePercent: 1.08,
-        },
-        {
-          symbol: 'ASX:WBC',
-          name: 'Westpac Banking',
-          type: 'equity',
-          price: 28.9,
-          change: 0.15,
-          changePercent: 0.52,
-        },
-        {
-          symbol: 'ASX:NAB',
-          name: 'National Australia Bank',
-          type: 'equity',
-          price: 35.6,
-          change: -0.3,
-          changePercent: -0.84,
-        },
-        {
-          symbol: 'ASX:ANZ',
-          name: 'ANZ Banking Group',
-          type: 'equity',
-          price: 29.45,
-          change: 0.22,
-          changePercent: 0.75,
-        },
-        {
-          symbol: 'BTC-AUD',
-          name: 'Bitcoin',
-          type: 'crypto',
-          price: 148523.0,
-          change: 2456.0,
-          changePercent: 1.68,
-        },
-        {
-          symbol: 'ETH-AUD',
-          name: 'Ethereum',
-          type: 'crypto',
-          price: 5243.0,
-          change: -87.0,
-          changePercent: -1.63,
-        },
-        {
-          symbol: 'SOL-AUD',
-          name: 'Solana',
-          type: 'crypto',
-          price: 245.8,
-          change: 12.3,
-          changePercent: 5.27,
-        },
-        {
-          symbol: 'XRP-AUD',
-          name: 'Ripple',
-          type: 'crypto',
-          price: 3.82,
-          change: 0.08,
-          changePercent: 2.14,
-        },
-      ]);
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'LOAD_ERROR', prices: FALLBACK_PRICES });
     }
-  }, [activeTab]);
+  }, [state.activeTab, dispatch]);
 
   useEffect(() => {
     loadPrices();
   }, [loadPrices]);
 
   const loadHistory = useCallback(async (symbol: string) => {
-    setSelectedSymbol(symbol);
-    setHistoryLoading(true);
+    dispatch({ type: 'SELECT_SYMBOL', symbol });
     try {
       const data = await fetchPriceHistory(symbol, 30);
       const points = Array.isArray(data)
         ? data
         : (data as { history: HistoryPoint[] }).history || [];
-      setHistory(points);
+      dispatch({ type: 'HISTORY_SUCCESS', history: points });
     } catch {
-      // Mock history
       const mock: HistoryPoint[] = [];
       const now = new Date();
       for (let i = 29; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(d.getDate() - i);
-        mock.push({
-          date: d.toISOString().slice(0, 10),
-          price: Number((Math.random() * 20 + 100).toFixed(2)),
-        });
+        mock.push({ date: d.toISOString().slice(0, 10), price: Number((Math.random() * 20 + 100).toFixed(2)) });
       }
-      setHistory(mock);
-    } finally {
-      setHistoryLoading(false);
+      dispatch({ type: 'HISTORY_SUCCESS', history: mock });
     }
-  }, []);
+  }, [dispatch]);
 
   const handleSearch = useCallback(async () => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
+    if (!state.searchQuery.trim()) {
+      dispatch({ type: 'SEARCH_ERROR' });
       return;
     }
-    setSearching(true);
+    dispatch({ type: 'SEARCH_START' });
     try {
-      const data = await searchSymbol(searchQuery);
+      const data = await searchSymbol(state.searchQuery);
       const results = Array.isArray(data) ? data : (data as { results: PriceItem[] }).results || [];
-      setSearchResults(results);
+      dispatch({ type: 'SEARCH_SUCCESS', results });
     } catch {
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
+      dispatch({ type: 'SEARCH_ERROR' });
     }
-  }, [searchQuery]);
+  }, [state.searchQuery, dispatch]);
 
   const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
+    dispatch({ type: 'SET_REFRESHING', value: true });
     try {
       await refreshMarketPrices();
-      await loadPrices();
     } catch {
-      await loadPrices();
-    } finally {
-      setRefreshing(false);
+      // ignore refresh error, still reload
     }
-  }, [loadPrices]);
+    await loadPrices();
+    dispatch({ type: 'SET_REFRESHING', value: false });
+  }, [loadPrices, dispatch]);
 
-  const filtered = activeTab === 'all' ? prices : prices.filter((p) => p.type === activeTab);
-  const displayPrices = searchResults.length > 0 ? searchResults : filtered;
+  const filtered = state.activeTab === 'all' ? state.prices : state.prices.filter((p) => p.type === state.activeTab);
+  const displayPrices = state.searchResults.length > 0 ? state.searchResults : filtered;
 
   const formatPrice = (price: number) => {
     if (price >= 1000)
@@ -226,12 +198,9 @@ export function PriceTracker() {
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setSearchResults([]);
-              }}
+              onClick={() => dispatch({ type: 'SET_TAB', tab: tab.id })}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === tab.id
+                state.activeTab === tab.id
                   ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
               }`}
@@ -246,77 +215,53 @@ export function PriceTracker() {
             <input
               type="text"
               placeholder="Search symbol..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={state.searchQuery}
+              onChange={(e) => dispatch({ type: 'SET_SEARCH', query: e.target.value })}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="neu-inset pl-8 pr-3 py-1.5 rounded-lg text-xs text-white bg-transparent w-40 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <button
             onClick={handleRefresh}
-            disabled={refreshing}
+            disabled={state.refreshing}
             className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-[#FFCC00] transition-colors"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${state.refreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {searching && <div className="text-xs text-zinc-500">Searching...</div>}
+      {state.searching && <div className="text-xs text-zinc-500">Searching...</div>}
 
       {/* Price History Chart */}
-      {selectedSymbol && (
+      {state.selectedSymbol && (
         <div className="neu-raised rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-white">{selectedSymbol} - 30 Day History</h3>
+            <h3 className="text-sm font-bold text-white">{state.selectedSymbol} - 30 Day History</h3>
             <button
-              onClick={() => setSelectedSymbol(null)}
+              onClick={() => dispatch({ type: 'CLEAR_SYMBOL' })}
               className="text-xs text-zinc-500 hover:text-white"
             >
               Close
             </button>
           </div>
-          {historyLoading ? (
+          {state.historyLoading ? (
             <div className="h-48 flex items-center justify-center text-zinc-500 text-sm">
               Loading...
             </div>
           ) : (
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={history}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis dataKey="date" stroke="#666" fontSize={10} />
-                  <YAxis stroke="#666" fontSize={10} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1a1a2e',
-                      border: '1px solid rgba(255,204,0,0.2)',
-                      borderRadius: '0.75rem',
-                      color: '#fff',
-                      fontSize: '12px',
-                    }}
-                    formatter={(value: number) => [`$${formatPrice(value)}`, 'Price']}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="price"
-                    stroke="#FFCC00"
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 4, fill: '#FFCC00' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <Suspense fallback={<div className="h-48 animate-pulse bg-white/5 rounded-xl" />}>
+              <LazyPriceHistoryChart data={state.history} formatPrice={formatPrice} />
+            </Suspense>
           )}
         </div>
       )}
 
       {/* Price Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {loading ? (
+        {state.loading ? (
           Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="neu-raised rounded-2xl p-4 animate-pulse">
+            <div key={`skel-${i}`} className="neu-raised rounded-2xl p-4 animate-pulse">
               <div className="h-4 w-20 bg-zinc-700 rounded mb-2" />
               <div className="h-6 w-24 bg-zinc-700 rounded mb-1" />
               <div className="h-3 w-16 bg-zinc-700 rounded" />
@@ -334,7 +279,7 @@ export function PriceTracker() {
                 key={item.symbol}
                 onClick={() => loadHistory(item.symbol)}
                 className={`neu-raised rounded-2xl p-4 text-left hover:scale-[1.02] transition-all border ${
-                  selectedSymbol === item.symbol
+                  state.selectedSymbol === item.symbol
                     ? 'border-[#FFCC00]/40'
                     : isUp
                       ? 'border-emerald-500/10 hover:border-emerald-500/30'
@@ -371,24 +316,9 @@ export function PriceTracker() {
                     {item.changePercent.toFixed(2)}%
                   </span>
                 </div>
-                {/* Mini sparkline placeholder */}
-                <div className="mt-2 h-6">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={Array.from({ length: 10 }, (_, i) => ({
-                        v: item.price + (Math.random() - 0.5) * item.price * 0.02 * (i + 1),
-                      }))}
-                    >
-                      <Line
-                        type="monotone"
-                        dataKey="v"
-                        stroke={isUp ? '#34d399' : '#f87171'}
-                        strokeWidth={1.5}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                <Suspense fallback={<div className="mt-2 h-6" />}>
+                  <LazyPriceSparkline price={item.price} isUp={isUp} />
+                </Suspense>
               </button>
             );
           })

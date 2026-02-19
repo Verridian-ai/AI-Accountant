@@ -7,7 +7,7 @@ export function FeedbackQueueSkeleton({ className }: { className?: string }) {
     <div className={cn('space-y-6', className)}>
       <div className="grid grid-cols-3 gap-4">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="neu-raised rounded-2xl p-4 border border-white/5">
+          <div key={`sk-${i}`} className="neu-raised rounded-2xl p-4 border border-white/5">
             <Skeleton className="w-24 h-3 rounded mb-2" />
             <Skeleton className="w-12 h-8 rounded" />
           </div>
@@ -28,7 +28,7 @@ export function FeedbackQueueSkeleton({ className }: { className?: string }) {
         </div>
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="w-full h-40 rounded-xl" />
+            <Skeleton key={`sk-${i}`} className="w-full h-40 rounded-xl" />
           ))}
         </div>
       </div>

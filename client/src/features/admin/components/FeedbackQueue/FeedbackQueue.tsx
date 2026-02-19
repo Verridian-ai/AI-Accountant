@@ -67,9 +67,10 @@ export function FeedbackQueue({
     <div className={cn('space-y-6', className)}>
       {/* Stats Overview */}
       <div className="grid grid-cols-3 gap-4">
-        <div
+        <button
+          type="button"
           className={cn(
-            'neu-raised rounded-2xl p-4 border transition-all cursor-pointer',
+            'neu-raised rounded-2xl p-4 border transition-all cursor-pointer w-full text-left',
             statusFilter === 'pending'
               ? 'border-amber-500/30 bg-amber-500/5'
               : 'border-white/5 hover:border-white/10',
@@ -83,10 +84,11 @@ export function FeedbackQueue({
             </span>
           </div>
           <p className="text-2xl font-bold text-amber-400">{pendingCount}</p>
-        </div>
-        <div
+        </button>
+        <button
+          type="button"
           className={cn(
-            'neu-raised rounded-2xl p-4 border transition-all cursor-pointer',
+            'neu-raised rounded-2xl p-4 border transition-all cursor-pointer w-full text-left',
             statusFilter === 'approved'
               ? 'border-emerald-500/30 bg-emerald-500/5'
               : 'border-white/5 hover:border-white/10',
@@ -100,10 +102,11 @@ export function FeedbackQueue({
             </span>
           </div>
           <p className="text-2xl font-bold text-emerald-400">{approvedCount}</p>
-        </div>
-        <div
+        </button>
+        <button
+          type="button"
           className={cn(
-            'neu-raised rounded-2xl p-4 border transition-all cursor-pointer',
+            'neu-raised rounded-2xl p-4 border transition-all cursor-pointer w-full text-left',
             statusFilter === 'rejected'
               ? 'border-red-500/30 bg-red-500/5'
               : 'border-white/5 hover:border-white/10',
@@ -117,7 +120,7 @@ export function FeedbackQueue({
             </span>
           </div>
           <p className="text-2xl font-bold text-red-400">{rejectedCount}</p>
-        </div>
+        </button>
       </div>
 
       {/* Main Queue */}

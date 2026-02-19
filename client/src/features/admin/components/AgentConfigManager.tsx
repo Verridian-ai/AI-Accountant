@@ -19,10 +19,6 @@ export function AgentConfigManager() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    loadConfigs();
-  }, []);
-
   const loadConfigs = async () => {
     setLoading(true);
     try {
@@ -33,6 +29,11 @@ export function AgentConfigManager() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadConfigs();
+  }, []);
 
   const handleSave = async () => {
     if (!editingAgent) return;
@@ -156,9 +157,11 @@ export function AgentConfigManager() {
       {/* Edit Modal */}
       {editingAgent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
+          <button
+            type="button"
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setEditingAgent(null)}
+            aria-label="Close dialog"
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
@@ -176,8 +179,11 @@ export function AgentConfigManager() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Model</label>
+                <label htmlFor="agent-model" className="block text-xs text-zinc-400 mb-1">
+                  Model
+                </label>
                 <input
+                  id="agent-model"
                   type="text"
                   value={editingAgent.model}
                   onChange={(e) => setEditingAgent({ ...editingAgent, model: e.target.value })}
@@ -185,10 +191,11 @@ export function AgentConfigManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="agent-max-tokens" className="block text-xs text-zinc-400 mb-1">
                   Max Tokens: {editingAgent.maxTokens}
                 </label>
                 <input
+                  id="agent-max-tokens"
                   type="range"
                   min={256}
                   max={16384}
@@ -201,10 +208,11 @@ export function AgentConfigManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="agent-temperature" className="block text-xs text-zinc-400 mb-1">
                   Temperature: {editingAgent.temperature}
                 </label>
                 <input
+                  id="agent-temperature"
                   type="range"
                   min={0}
                   max={2}
@@ -217,8 +225,11 @@ export function AgentConfigManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Rate Limit (per minute)</label>
+                <label htmlFor="agent-rate-limit" className="block text-xs text-zinc-400 mb-1">
+                  Rate Limit (per minute)
+                </label>
                 <input
+                  id="agent-rate-limit"
                   type="number"
                   min={1}
                   max={100}
@@ -233,8 +244,11 @@ export function AgentConfigManager() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <label className="text-xs text-zinc-400">Enabled</label>
+                <label htmlFor="agent-enabled" className="text-xs text-zinc-400">
+                  Enabled
+                </label>
                 <button
+                  id="agent-enabled"
                   type="button"
                   onClick={() =>
                     setEditingAgent({ ...editingAgent, enabled: !editingAgent.enabled })

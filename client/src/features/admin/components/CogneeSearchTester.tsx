@@ -71,11 +71,14 @@ export function CogneeSearchTester() {
       {/* Search Form */}
       <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 space-y-4">
         <div>
-          <label className="block text-xs text-zinc-400 mb-2">Search Query</label>
+          <label htmlFor="search-query" className="block text-xs text-zinc-400 mb-2">
+            Search Query
+          </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input
+                id="search-query"
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -146,8 +149,11 @@ export function CogneeSearchTester() {
 
         {/* Top K */}
         <div className="flex items-center gap-3">
-          <label className="text-xs text-zinc-400">Top K:</label>
+          <label htmlFor="search-top-k" className="text-xs text-zinc-400">
+            Top K:
+          </label>
           <input
+            id="search-top-k"
             type="number"
             min={1}
             max={20}

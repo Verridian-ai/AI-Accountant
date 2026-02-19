@@ -24,10 +24,6 @@ export function AgentCostDashboard() {
   const [data, setData] = useState<CostData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadCosts();
-  }, [period]);
-
   const loadCosts = async () => {
     setLoading(true);
     try {
@@ -38,6 +34,11 @@ export function AgentCostDashboard() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadCosts();
+  }, [period]);
 
   const maxAgentCost = data?.byAgent?.reduce((max, a) => Math.max(max, a.costCents), 0) || 1;
   const maxDailyCost = data?.dailyTrend?.reduce((max, d) => Math.max(max, d.costCents), 0) || 1;
@@ -150,7 +151,10 @@ export function AgentCostDashboard() {
         </h3>
         <div className="flex items-end gap-1 h-40">
           {(data?.dailyTrend || []).map((d, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
+            <div
+              key={d.date ?? `sk-${i}`}
+              className="flex-1 flex flex-col items-center gap-1 group relative"
+            >
               <div
                 className="w-full rounded-t bg-gradient-to-t from-[#FFCC00]/60 to-[#FFCC00] hover:from-[#FFCC00] transition-all"
                 style={{ height: `${Math.max((d.costCents / maxDailyCost) * 100, 2)}%` }}
@@ -186,7 +190,10 @@ export function AgentCostDashboard() {
               </thead>
               <tbody>
                 {data.topExecutions.map((ex, i) => (
-                  <tr key={i} className="border-b border-white/5">
+                  <tr
+                    key={`${ex.agentType ?? ''}${ex.period ?? ''}${i}`}
+                    className="border-b border-white/5"
+                  >
                     <td className="py-3 pr-4 text-zinc-300">{ex.agentType?.replace(/_/g, ' ')}</td>
                     <td className="py-3 pr-4 text-zinc-400 text-xs">{ex.model}</td>
                     <td className="py-3 pr-4 text-zinc-400">{ex.totalTokens?.toLocaleString()}</td>

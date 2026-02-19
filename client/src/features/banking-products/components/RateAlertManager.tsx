@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect, useCallback } from 'react';
 import { Bell, BellOff, Plus, Trash2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fetchCdrAlerts, createCdrAlert, deleteCdrAlert } from '@/api';
@@ -18,60 +18,119 @@ interface CdrAlert {
 const ALERT_TYPES = ['rate_change', 'rate_below', 'rate_above', 'new_product'];
 const CATEGORIES = ['HOME_LOAN', 'PERSONAL_LOAN', 'SAVINGS', 'TERM_DEPOSIT', 'CREDIT_CARD'];
 
+interface State {
+  alerts: CdrAlert[];
+  loading: boolean;
+  showForm: boolean;
+  deleting: string | null;
+  alertType: string;
+  alertCategory: string;
+  thresholdRate: number;
+  creating: boolean;
+}
+
+type Action =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; alerts: CdrAlert[] }
+  | { type: 'LOAD_ERROR' }
+  | { type: 'TOGGLE_FORM' }
+  | { type: 'SET_ALERT_TYPE'; value: string }
+  | { type: 'SET_CATEGORY'; value: string }
+  | { type: 'SET_THRESHOLD'; value: number }
+  | { type: 'CREATE_START' }
+  | { type: 'CREATE_DONE' }
+  | { type: 'DELETE_START'; id: string }
+  | { type: 'DELETE_DONE'; id: string }
+  | { type: 'DELETE_ERROR' };
+
+const INITIAL: State = {
+  alerts: [],
+  loading: true,
+  showForm: false,
+  deleting: null,
+  alertType: 'rate_below',
+  alertCategory: 'HOME_LOAN',
+  thresholdRate: 5.0,
+  creating: false,
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'LOAD_START':
+      return { ...state, loading: true };
+    case 'LOAD_SUCCESS':
+      return { ...state, loading: false, alerts: action.alerts };
+    case 'LOAD_ERROR':
+      return { ...state, loading: false };
+    case 'TOGGLE_FORM':
+      return { ...state, showForm: !state.showForm };
+    case 'SET_ALERT_TYPE':
+      return { ...state, alertType: action.value };
+    case 'SET_CATEGORY':
+      return { ...state, alertCategory: action.value };
+    case 'SET_THRESHOLD':
+      return { ...state, thresholdRate: action.value };
+    case 'CREATE_START':
+      return { ...state, creating: true };
+    case 'CREATE_DONE':
+      return { ...state, creating: false, showForm: false };
+    case 'DELETE_START':
+      return { ...state, deleting: action.id };
+    case 'DELETE_DONE':
+      return {
+        ...state,
+        deleting: null,
+        alerts: state.alerts.filter((a) => a.id !== action.id),
+      };
+    case 'DELETE_ERROR':
+      return { ...state, deleting: null };
+    default:
+      return state;
+  }
+}
+
 export function RateAlertManager() {
-  const [alerts, setAlerts] = useState<CdrAlert[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(reducer, INITIAL);
 
-  // Form state
-  const [alertType, setAlertType] = useState('rate_below');
-  const [alertCategory, setAlertCategory] = useState('HOME_LOAN');
-  const [thresholdRate, setThresholdRate] = useState(5.0);
-  const [creating, setCreating] = useState(false);
-
-  const load = async () => {
-    setLoading(true);
+  const loadAlerts = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
     try {
       const result = await fetchCdrAlerts();
-      setAlerts(result.alerts ?? result ?? []);
+      dispatch({ type: 'LOAD_SUCCESS', alerts: result.alerts ?? result ?? [] });
     } catch (e) {
       console.error('Failed to load alerts', e);
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'LOAD_ERROR' });
     }
-  };
+  }, [dispatch]);
 
   useEffect(() => {
-    load();
-  }, []);
+    loadAlerts();
+  }, [loadAlerts]);
 
   const handleCreate = async () => {
-    setCreating(true);
+    dispatch({ type: 'CREATE_START' });
     try {
       await createCdrAlert({
-        type: alertType,
-        category: alertCategory,
-        thresholdRate: thresholdRate / 100,
+        type: state.alertType,
+        category: state.alertCategory,
+        thresholdRate: state.thresholdRate / 100,
       });
-      setShowForm(false);
-      load();
+      dispatch({ type: 'CREATE_DONE' });
+      loadAlerts();
     } catch (e) {
       console.error('Failed to create alert', e);
-    } finally {
-      setCreating(false);
+      dispatch({ type: 'CREATE_DONE' });
     }
   };
 
   const handleDelete = async (id: string) => {
-    setDeleting(id);
+    dispatch({ type: 'DELETE_START', id });
     try {
       await deleteCdrAlert(id);
-      setAlerts((prev) => prev.filter((a) => a.id !== id));
+      dispatch({ type: 'DELETE_DONE', id });
     } catch (e) {
       console.error('Failed to delete alert', e);
-    } finally {
-      setDeleting(null);
+      dispatch({ type: 'DELETE_ERROR' });
     }
   };
 
@@ -99,34 +158,40 @@ export function RateAlertManager() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-zinc-500">
-            {alerts.filter((a) => a.isActive).length} active alert
-            {alerts.filter((a) => a.isActive).length !== 1 ? 's' : ''}
+            {state.alerts.filter((a) => a.isActive).length} active alert
+            {state.alerts.filter((a) => a.isActive).length !== 1 ? 's' : ''}
           </p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => dispatch({ type: 'TOGGLE_FORM' })}
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all',
-            showForm
+            state.showForm
               ? 'neu-raised-sm text-zinc-400'
               : 'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]',
           )}
         >
           <Plus className="h-4 w-4" />
-          {showForm ? 'Cancel' : 'New Alert'}
+          {state.showForm ? 'Cancel' : 'New Alert'}
         </button>
       </div>
 
       {/* Create Form */}
-      {showForm && (
+      {state.showForm && (
         <div className="neu-raised rounded-2xl p-5 space-y-4 border border-[#FFCC00]/20">
           <h3 className="text-sm font-bold text-zinc-300">Create Rate Alert</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-xs text-zinc-500 font-semibold block mb-1">Alert Type</label>
+              <label
+                htmlFor="ram-type"
+                className="text-xs text-zinc-500 font-semibold block mb-1"
+              >
+                Alert Type
+              </label>
               <select
-                value={alertType}
-                onChange={(e) => setAlertType(e.target.value)}
+                id="ram-type"
+                value={state.alertType}
+                onChange={(e) => dispatch({ type: 'SET_ALERT_TYPE', value: e.target.value })}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {ALERT_TYPES.map((t) => (
@@ -137,10 +202,16 @@ export function RateAlertManager() {
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold block mb-1">Category</label>
+              <label
+                htmlFor="ram-cat"
+                className="text-xs text-zinc-500 font-semibold block mb-1"
+              >
+                Category
+              </label>
               <select
-                value={alertCategory}
-                onChange={(e) => setAlertCategory(e.target.value)}
+                id="ram-cat"
+                value={state.alertCategory}
+                onChange={(e) => dispatch({ type: 'SET_CATEGORY', value: e.target.value })}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {CATEGORIES.map((c) => (
@@ -151,36 +222,42 @@ export function RateAlertManager() {
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold block mb-1">
+              <label
+                htmlFor="ram-rate"
+                className="text-xs text-zinc-500 font-semibold block mb-1"
+              >
                 Threshold Rate (%)
               </label>
               <input
+                id="ram-rate"
                 type="number"
                 step="0.01"
-                value={thresholdRate}
-                onChange={(e) => setThresholdRate(Number(e.target.value))}
+                value={state.thresholdRate}
+                onChange={(e) =>
+                  dispatch({ type: 'SET_THRESHOLD', value: Number(e.target.value) })
+                }
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               />
             </div>
           </div>
           <button
             onClick={handleCreate}
-            disabled={creating}
+            disabled={state.creating}
             className="px-4 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] text-sm font-bold hover:bg-[#FFD633] transition-colors disabled:opacity-50"
           >
-            {creating ? 'Creating...' : 'Create Alert'}
+            {state.creating ? 'Creating...' : 'Create Alert'}
           </button>
         </div>
       )}
 
       {/* Alert List */}
-      {loading ? (
+      {state.loading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="neu-raised rounded-2xl p-5 animate-pulse h-20" />
+            <div key={`skel-${i}`} className="neu-raised rounded-2xl p-5 animate-pulse h-20" />
           ))}
         </div>
-      ) : alerts.length === 0 ? (
+      ) : state.alerts.length === 0 ? (
         <div className="neu-raised rounded-2xl p-12 text-center">
           <BellOff className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
           <p className="text-zinc-500">No alerts configured</p>
@@ -190,7 +267,7 @@ export function RateAlertManager() {
         </div>
       ) : (
         <div className="space-y-2">
-          {alerts.map((alert) => (
+          {state.alerts.map((alert) => (
             <div
               key={alert.id}
               className={cn(
@@ -229,10 +306,12 @@ export function RateAlertManager() {
               </div>
               <button
                 onClick={() => handleDelete(alert.id)}
-                disabled={deleting === alert.id}
+                disabled={state.deleting === alert.id}
                 className="shrink-0 p-2 rounded-lg text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50"
               >
-                <Trash2 className={cn('h-4 w-4', deleting === alert.id && 'animate-pulse')} />
+                <Trash2
+                  className={cn('h-4 w-4', state.deleting === alert.id && 'animate-pulse')}
+                />
               </button>
             </div>
           ))}

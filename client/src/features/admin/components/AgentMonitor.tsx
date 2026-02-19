@@ -48,7 +48,7 @@ export function AgentMonitor() {
     ]);
     return {
       stats: s as AgentMonitorStats,
-      executions: Array.isArray(e) ? e : (e as { executions: Execution[] }).executions ?? [],
+      executions: Array.isArray(e) ? e : ((e as { executions: Execution[] }).executions ?? []),
     };
   };
 
@@ -62,9 +62,15 @@ export function AgentMonitor() {
   useEffect(() => {
     let active = true;
     fetchMonitorData()
-      .then((data) => { if (active) setFetchState({ ...data, loading: false }); })
-      .catch(() => { if (active) setFetchState((s) => ({ ...s, loading: false })); });
-    return () => { active = false; };
+      .then((data) => {
+        if (active) setFetchState({ ...data, loading: false });
+      })
+      .catch(() => {
+        if (active) setFetchState((s) => ({ ...s, loading: false }));
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const loadMore = async () => {
@@ -73,7 +79,7 @@ export function AgentMonitor() {
       const params: Record<string, string> = { limit: '20', offset: String(nextPage * 20) };
       if (selectedAgent) params.agentType = selectedAgent;
       const e = await fetchAgentExecutions(params);
-      const list = Array.isArray(e) ? e : (e as { executions: Execution[] }).executions ?? [];
+      const list = Array.isArray(e) ? e : ((e as { executions: Execution[] }).executions ?? []);
       setFetchState((prev) => ({ ...prev, executions: [...prev.executions, ...list] }));
       setPage(nextPage);
     } catch {
@@ -90,7 +96,7 @@ export function AgentMonitor() {
       const e = await fetchAgentExecutions(params);
       setFetchState((prev) => ({
         ...prev,
-        executions: Array.isArray(e) ? e : (e as { executions: Execution[] }).executions ?? [],
+        executions: Array.isArray(e) ? e : ((e as { executions: Execution[] }).executions ?? []),
       }));
     } catch {
       /* */
@@ -120,7 +126,10 @@ export function AgentMonitor() {
         </div>
         <button
           type="button"
-          onClick={() => { setFetchState((s) => ({ ...s, loading: true })); void loadData(); }}
+          onClick={() => {
+            setFetchState((s) => ({ ...s, loading: true }));
+            void loadData();
+          }}
           className="p-2 rounded-xl bg-[#16213e] text-zinc-400 hover:text-[#FFCC00] transition-colors"
         >
           <RefreshCw className="w-4 h-4" />

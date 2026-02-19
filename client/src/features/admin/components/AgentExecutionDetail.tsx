@@ -43,7 +43,12 @@ export function AgentExecutionDetail({ execution, onClose }: AgentExecutionDetai
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+        aria-label="Close dialog"
+      />
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
@@ -169,7 +174,7 @@ export function AgentExecutionDetail({ execution, onClose }: AgentExecutionDetai
                   <div className="space-y-2">
                     {execution.toolCalls.map((tc, i) => (
                       <div
-                        key={i}
+                        key={tc.name ?? `sk-${i}`}
                         className="flex items-center justify-between text-xs py-2 border-b border-white/5 last:border-0"
                       >
                         <span className="text-zinc-300 font-mono">{tc.name}</span>

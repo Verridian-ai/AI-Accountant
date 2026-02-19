@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useReducer } from 'react';
 import {
   Calendar as CalendarIcon,
   List,
@@ -39,143 +39,102 @@ const IMPORTANCE_DOT: Record<string, string> = {
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-export function EconomicCalendar() {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<ViewMode>('month');
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [importanceFilter, setImportanceFilter] = useState<string>('all');
-  const [error, setError] = useState<string | null>(null);
+interface State {
+  events: CalendarEvent[];
+  loading: boolean;
+  viewMode: ViewMode;
+  currentDate: Date;
+  importanceFilter: string;
+  error: string | null;
+}
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+type Action =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; events: CalendarEvent[] }
+  | { type: 'LOAD_ERROR'; error: string }
+  | { type: 'SET_VIEW'; value: ViewMode }
+  | { type: 'SET_DATE'; date: Date }
+  | { type: 'SET_FILTER'; value: string };
+
+const INITIAL: State = {
+  events: [],
+  loading: true,
+  viewMode: 'month',
+  currentDate: new Date(),
+  importanceFilter: 'all',
+  error: null,
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'LOAD_START':
+      return { ...state, loading: true, error: null };
+    case 'LOAD_SUCCESS':
+      return { ...state, loading: false, events: action.events };
+    case 'LOAD_ERROR':
+      return { ...state, loading: false, error: action.error };
+    case 'SET_VIEW':
+      return { ...state, viewMode: action.value };
+    case 'SET_DATE':
+      return { ...state, currentDate: action.date };
+    case 'SET_FILTER':
+      return { ...state, importanceFilter: action.value };
+    default:
+      return state;
+  }
+}
+
+export function EconomicCalendar() {
+  const [state, dispatch] = useReducer(reducer, INITIAL);
+
+  const year = state.currentDate.getFullYear();
+  const month = state.currentDate.getMonth();
 
   const loadEvents = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
     try {
-      setError(null);
-      setLoading(true);
       const from = new Date(year, month, 1).toISOString().slice(0, 10);
       const to = new Date(year, month + 1, 0).toISOString().slice(0, 10);
-      const imp = importanceFilter !== 'all' ? importanceFilter : undefined;
+      const imp = state.importanceFilter !== 'all' ? state.importanceFilter : undefined;
       const data = await fetchEconomicCalendar(from, to, imp);
       const items = Array.isArray(data) ? data : (data as { events: CalendarEvent[] }).events || [];
       if (items.length > 0) {
-        setEvents(items);
+        dispatch({ type: 'LOAD_SUCCESS', events: items });
       } else {
         throw new Error('empty');
       }
     } catch {
-      // Fallback events
+      const mm = String(month + 1).padStart(2, '0');
       const mockEvents: CalendarEvent[] = [
-        {
-          id: '1',
-          title: 'RBA Board Meeting',
-          date: `${year}-${String(month + 1).padStart(2, '0')}-04`,
-          time: '14:30',
-          importance: 'high',
-          source: 'RBA',
-          category: 'Monetary Policy',
-        },
-        {
-          id: '2',
-          title: 'Employment Data',
-          date: `${year}-${String(month + 1).padStart(2, '0')}-13`,
-          time: '11:30',
-          importance: 'high',
-          source: 'ABS',
-          category: 'Labour',
-          forecast: '20,000',
-          previous: '14,200',
-        },
-        {
-          id: '3',
-          title: 'CPI Release',
-          date: `${year}-${String(month + 1).padStart(2, '0')}-15`,
-          time: '11:30',
-          importance: 'high',
-          source: 'ABS',
-          category: 'Inflation',
-          forecast: '3.4%',
-          previous: '3.6%',
-        },
-        {
-          id: '4',
-          title: 'Retail Sales',
-          date: `${year}-${String(month + 1).padStart(2, '0')}-07`,
-          time: '11:30',
-          importance: 'medium',
-          source: 'ABS',
-          category: 'Consumer',
-        },
-        {
-          id: '5',
-          title: 'Trade Balance',
-          date: `${year}-${String(month + 1).padStart(2, '0')}-09`,
-          time: '11:30',
-          importance: 'medium',
-          source: 'ABS',
-          category: 'Trade',
-        },
-        {
-          id: '6',
-          title: 'Business Confidence',
-          date: `${year}-${String(month + 1).padStart(2, '0')}-11`,
-          time: '11:30',
-          importance: 'medium',
-          source: 'NAB',
-          category: 'Business',
-        },
-        {
-          id: '7',
-          title: 'Consumer Sentiment',
-          date: `${year}-${String(month + 1).padStart(2, '0')}-18`,
-          time: '10:30',
-          importance: 'low',
-          source: 'Westpac',
-          category: 'Consumer',
-        },
-        {
-          id: '8',
-          title: 'Building Approvals',
-          date: `${year}-${String(month + 1).padStart(2, '0')}-22`,
-          time: '11:30',
-          importance: 'low',
-          source: 'ABS',
-          category: 'Housing',
-        },
+        { id: '1', title: 'RBA Board Meeting', date: `${year}-${mm}-04`, time: '14:30', importance: 'high', source: 'RBA', category: 'Monetary Policy' },
+        { id: '2', title: 'Employment Data', date: `${year}-${mm}-13`, time: '11:30', importance: 'high', source: 'ABS', category: 'Labour', forecast: '20,000', previous: '14,200' },
+        { id: '3', title: 'CPI Release', date: `${year}-${mm}-15`, time: '11:30', importance: 'high', source: 'ABS', category: 'Inflation', forecast: '3.4%', previous: '3.6%' },
+        { id: '4', title: 'Retail Sales', date: `${year}-${mm}-07`, time: '11:30', importance: 'medium', source: 'ABS', category: 'Consumer' },
+        { id: '5', title: 'Trade Balance', date: `${year}-${mm}-09`, time: '11:30', importance: 'medium', source: 'ABS', category: 'Trade' },
+        { id: '6', title: 'Business Confidence', date: `${year}-${mm}-11`, time: '11:30', importance: 'medium', source: 'NAB', category: 'Business' },
+        { id: '7', title: 'Consumer Sentiment', date: `${year}-${mm}-18`, time: '10:30', importance: 'low', source: 'Westpac', category: 'Consumer' },
+        { id: '8', title: 'Building Approvals', date: `${year}-${mm}-22`, time: '11:30', importance: 'low', source: 'ABS', category: 'Housing' },
       ];
-      setEvents(mockEvents);
-      setError('Using sample calendar data');
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'LOAD_SUCCESS', events: mockEvents });
+      dispatch({ type: 'LOAD_ERROR', error: 'Using sample calendar data' });
     }
-  }, [year, month, importanceFilter]);
+  }, [year, month, state.importanceFilter, dispatch]);
 
   useEffect(() => {
     loadEvents();
   }, [loadEvents]);
 
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+  const prevMonth = () => dispatch({ type: 'SET_DATE', date: new Date(year, month - 1, 1) });
+  const nextMonth = () => dispatch({ type: 'SET_DATE', date: new Date(year, month + 1, 1) });
 
   // Build calendar grid
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  const startPadding = (firstDay.getDay() + 6) % 7; // Monday-based
+  const startPadding = (firstDay.getDay() + 6) % 7;
   const totalDays = lastDay.getDate();
 
   const calendarDays: (number | null)[] = [];
@@ -185,7 +144,7 @@ export function EconomicCalendar() {
 
   const getEventsForDay = (day: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return events.filter((e) => e.date === dateStr);
+    return state.events.filter((e) => e.date === dateStr);
   };
 
   const isToday = (day: number) => {
@@ -194,13 +153,13 @@ export function EconomicCalendar() {
   };
 
   const filteredEvents =
-    importanceFilter === 'all' ? events : events.filter((e) => e.importance === importanceFilter);
-
+    state.importanceFilter === 'all'
+      ? state.events
+      : state.events.filter((e) => e.importance === state.importanceFilter);
   const sortedEvents = [...filteredEvents].sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <div className="space-y-4">
-      {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -221,13 +180,12 @@ export function EconomicCalendar() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Importance filter */}
           {['all', 'high', 'medium', 'low'].map((level) => (
             <button
               key={level}
-              onClick={() => setImportanceFilter(level)}
+              onClick={() => dispatch({ type: 'SET_FILTER', value: level })}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                importanceFilter === level
+                state.importanceFilter === level
                   ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
               }`}
@@ -238,32 +196,30 @@ export function EconomicCalendar() {
 
           <div className="w-px h-6 bg-zinc-700" />
 
-          {/* View toggle */}
           <button
-            onClick={() => setViewMode('month')}
-            className={`p-1.5 rounded-lg transition-all ${viewMode === 'month' ? 'text-[#FFCC00] bg-[#FFCC00]/10' : 'text-zinc-500 hover:text-zinc-300'}`}
+            onClick={() => dispatch({ type: 'SET_VIEW', value: 'month' })}
+            className={`p-1.5 rounded-lg transition-all ${state.viewMode === 'month' ? 'text-[#FFCC00] bg-[#FFCC00]/10' : 'text-zinc-500 hover:text-zinc-300'}`}
           >
             <CalendarIcon className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'text-[#FFCC00] bg-[#FFCC00]/10' : 'text-zinc-500 hover:text-zinc-300'}`}
+            onClick={() => dispatch({ type: 'SET_VIEW', value: 'list' })}
+            className={`p-1.5 rounded-lg transition-all ${state.viewMode === 'list' ? 'text-[#FFCC00] bg-[#FFCC00]/10' : 'text-zinc-500 hover:text-zinc-300'}`}
           >
             <List className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {error && (
-        <div className="text-xs text-amber-400 neu-inset px-3 py-2 rounded-lg">{error}</div>
+      {state.error && (
+        <div className="text-xs text-amber-400 neu-inset px-3 py-2 rounded-lg">{state.error}</div>
       )}
 
-      {loading ? (
+      {state.loading ? (
         <div className="neu-raised rounded-2xl p-8 animate-pulse">
           <div className="h-64 bg-zinc-800/50 rounded-xl" />
         </div>
-      ) : viewMode === 'month' ? (
-        /* Month View */
+      ) : state.viewMode === 'month' ? (
         <div className="neu-raised rounded-2xl overflow-hidden">
           <div className="grid grid-cols-7 border-b border-white/5">
             {DAYS.map((day) => (
@@ -280,7 +236,7 @@ export function EconomicCalendar() {
               const dayEvents = day ? getEventsForDay(day) : [];
               return (
                 <div
-                  key={idx}
+                  key={`cell-${idx}`}
                   className={`min-h-[80px] sm:min-h-[100px] p-1.5 border-b border-r border-white/5 ${
                     day === null ? 'bg-white/[0.01]' : 'hover:bg-white/[0.02]'
                   } ${isToday(day ?? 0) ? 'bg-[#FFCC00]/[0.03]' : ''}`}
@@ -318,7 +274,6 @@ export function EconomicCalendar() {
           </div>
         </div>
       ) : (
-        /* List View */
         <div className="space-y-2">
           {sortedEvents.length === 0 ? (
             <div className="neu-raised rounded-2xl p-8 text-center text-zinc-500 text-sm">

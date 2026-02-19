@@ -42,7 +42,7 @@ export function CogneeManager() {
         ds.status === 'fulfilled'
           ? Array.isArray(ds.value)
             ? ds.value
-            : (ds.value as { datasets: Dataset[] })?.datasets ?? []
+            : ((ds.value as { datasets: Dataset[] })?.datasets ?? [])
           : [],
       graphStats: gs.status === 'fulfilled' ? (gs.value as GraphStats) : null,
     };
@@ -58,9 +58,15 @@ export function CogneeManager() {
   useEffect(() => {
     let active = true;
     fetchCogneeData()
-      .then((data) => { if (active) setFetchState({ ...data, loading: false }); })
-      .catch(() => { if (active) setFetchState((s) => ({ ...s, loading: false })); });
-    return () => { active = false; };
+      .then((data) => {
+        if (active) setFetchState({ ...data, loading: false });
+      })
+      .catch(() => {
+        if (active) setFetchState((s) => ({ ...s, loading: false }));
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleReindex = async (name: string) => {
@@ -124,7 +130,10 @@ export function CogneeManager() {
           </button>
           <button
             type="button"
-            onClick={() => { setFetchState((s) => ({ ...s, loading: true })); void loadData(); }}
+            onClick={() => {
+              setFetchState((s) => ({ ...s, loading: true }));
+              void loadData();
+            }}
             className="p-2 rounded-xl bg-[#16213e] text-zinc-400 hover:text-[#FFCC00]"
           >
             <RefreshCw className="w-4 h-4" />

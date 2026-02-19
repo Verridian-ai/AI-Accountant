@@ -40,10 +40,6 @@ export function SystemHealthDashboard() {
   >([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAll();
-  }, []);
-
   const loadAll = async () => {
     setLoading(true);
     try {
@@ -62,6 +58,11 @@ export function SystemHealthDashboard() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadAll();
+  }, []);
 
   const statusIcon = (s: string) => {
     switch (s) {
@@ -173,7 +174,7 @@ export function SystemHealthDashboard() {
           </h3>
           <div className="space-y-4">
             {disk.map((d, i) => (
-              <div key={i}>
+              <div key={d.path ?? `sk-${i}`}>
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="text-zinc-300 font-mono">{d.path}</span>
                   <span
@@ -206,7 +207,7 @@ export function SystemHealthDashboard() {
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {history.slice(0, 50).map((h, i) => (
               <div
-                key={i}
+                key={h.id ?? `${h.service ?? ''}-${i}`}
                 className="flex items-center justify-between py-2 border-b border-white/5 last:border-0 text-xs"
               >
                 <div className="flex items-center gap-2">

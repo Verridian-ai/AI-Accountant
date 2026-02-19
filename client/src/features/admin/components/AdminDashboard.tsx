@@ -192,7 +192,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
             <div
-              key={i}
+              key={`sk-${i}`}
               className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 animate-pulse h-32"
             />
           ))}

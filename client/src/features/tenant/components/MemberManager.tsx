@@ -139,12 +139,16 @@ export function MemberManager() {
               </button>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              <label
+                htmlFor="invite-email"
+                className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5"
+              >
                 Email Address
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                 <input
+                  id="invite-email"
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
@@ -154,10 +158,14 @@ export function MemberManager() {
               </div>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              <label
+                htmlFor="invite-role"
+                className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5"
+              >
                 Role
               </label>
               <select
+                id="invite-role"
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
                 className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -208,7 +216,7 @@ export function MemberManager() {
             <tbody>
               {members.map((member) => {
                 const style = ROLE_STYLES[member.role] ?? ROLE_STYLES.viewer;
-                const RoleIcon = style.icon;
+                const _RoleIcon = style.icon;
                 return (
                   <tr
                     key={member.id}

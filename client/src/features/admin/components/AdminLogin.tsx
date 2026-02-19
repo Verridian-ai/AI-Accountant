@@ -54,7 +54,12 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Username</label>
+            <label
+              htmlFor="login-username"
+              className="block text-sm font-medium text-zinc-400 mb-2"
+            >
+              Username
+            </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input
@@ -69,10 +74,16 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Password</label>
+            <label
+              htmlFor="login-password"
+              className="block text-sm font-medium text-zinc-400 mb-2"
+            >
+              Password
+            </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input
+                id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

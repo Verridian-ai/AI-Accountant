@@ -1,15 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback, Suspense } from 'react';
 import { Percent, ArrowUp, ArrowDown, Minus, Calculator } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  ReferenceLine,
-} from 'recharts';
 import { fetchCashRate, fetchIndicatorHistory } from '../../../api';
 
 interface CashRateData {
@@ -27,22 +17,82 @@ interface RateDecision {
   direction: 'hold' | 'increase' | 'decrease';
 }
 
-export function RateDecisionTracker() {
-  const [rateData, setRateData] = useState<CashRateData | null>(null);
-  const [history, setHistory] = useState<RateDecision[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const FALLBACK_RATE_DATA: CashRateData = {
+  currentRate: 4.35,
+  previousRate: 4.35,
+  lastDecision: '2024-11-05',
+  nextMeeting: '2026-03-18',
+  direction: 'hold',
+};
 
-  // Impact calculator state
-  const [loanAmount, setLoanAmount] = useState(500000);
-  const [currentLoanRate, setCurrentLoanRate] = useState(6.5);
-  const [rateChange, setRateChange] = useState(25); // basis points
+const FALLBACK_HISTORY: RateDecision[] = [
+  { date: '2023-06', rate: 4.1, change: 25, direction: 'increase' },
+  { date: '2023-08', rate: 4.1, change: 0, direction: 'hold' },
+  { date: '2023-09', rate: 4.1, change: 0, direction: 'hold' },
+  { date: '2023-11', rate: 4.35, change: 25, direction: 'increase' },
+  { date: '2023-12', rate: 4.35, change: 0, direction: 'hold' },
+  { date: '2024-02', rate: 4.35, change: 0, direction: 'hold' },
+  { date: '2024-03', rate: 4.35, change: 0, direction: 'hold' },
+  { date: '2024-05', rate: 4.35, change: 0, direction: 'hold' },
+  { date: '2024-06', rate: 4.35, change: 0, direction: 'hold' },
+  { date: '2024-08', rate: 4.35, change: 0, direction: 'hold' },
+  { date: '2024-09', rate: 4.35, change: 0, direction: 'hold' },
+  { date: '2024-11', rate: 4.35, change: 0, direction: 'hold' },
+];
+
+interface State {
+  rateData: CashRateData | null;
+  history: RateDecision[];
+  loading: boolean;
+  error: string | null;
+  loanAmount: number;
+  currentLoanRate: number;
+  rateChange: number;
+}
+
+type Action =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; rateData: CashRateData; history: RateDecision[] }
+  | { type: 'LOAD_ERROR'; error: string; rateData: CashRateData; history: RateDecision[] }
+  | { type: 'SET_LOAN_AMOUNT'; value: number }
+  | { type: 'SET_LOAN_RATE'; value: number }
+  | { type: 'SET_RATE_CHANGE'; value: number };
+
+const INITIAL: State = {
+  rateData: null,
+  history: [],
+  loading: true,
+  error: null,
+  loanAmount: 500000,
+  currentLoanRate: 6.5,
+  rateChange: 25,
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'LOAD_START':
+      return { ...state, loading: true, error: null };
+    case 'LOAD_SUCCESS':
+      return { ...state, loading: false, rateData: action.rateData, history: action.history };
+    case 'LOAD_ERROR':
+      return { ...state, loading: false, error: action.error, rateData: action.rateData, history: action.history };
+    case 'SET_LOAN_AMOUNT':
+      return { ...state, loanAmount: action.value };
+    case 'SET_LOAN_RATE':
+      return { ...state, currentLoanRate: action.value };
+    case 'SET_RATE_CHANGE':
+      return { ...state, rateChange: action.value };
+  }
+}
+
+const LazyRateDecisionChart = React.lazy(() => import('./RateDecisionChart'));
+
+export function RateDecisionTracker() {
+  const [state, dispatch] = useReducer(reducer, INITIAL);
 
   const loadData = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
     try {
-      setError(null);
-      setLoading(true);
-
       let cashRateResponse: CashRateData | null = null;
       try {
         const data = await fetchCashRate();
@@ -61,57 +111,36 @@ export function RateDecisionTracker() {
         // ignore
       }
 
-      if (cashRateResponse && cashRateResponse.currentRate != null) {
-        setRateData(cashRateResponse);
-      } else {
-        setRateData({
-          currentRate: 4.35,
-          previousRate: 4.35,
-          lastDecision: '2024-11-05',
-          nextMeeting: '2026-03-18',
-          direction: 'hold',
-        });
-      }
+      const finalRate =
+        cashRateResponse?.currentRate != null ? cashRateResponse : FALLBACK_RATE_DATA;
 
-      if (historyPoints.length > 0) {
-        const decisions: RateDecision[] = historyPoints.map((p, i) => ({
-          date: p.date,
-          rate: p.value,
-          change: i > 0 ? Number(((p.value - historyPoints[i - 1].value) * 100).toFixed(0)) : 0,
-          direction:
-            i > 0
-              ? p.value > historyPoints[i - 1].value
-                ? 'increase'
-                : p.value < historyPoints[i - 1].value
-                  ? 'decrease'
-                  : 'hold'
-              : 'hold',
-        }));
-        setHistory(decisions);
-      } else {
-        // Fallback history
-        const fallback: RateDecision[] = [
-          { date: '2023-06', rate: 4.1, change: 25, direction: 'increase' },
-          { date: '2023-08', rate: 4.1, change: 0, direction: 'hold' },
-          { date: '2023-09', rate: 4.1, change: 0, direction: 'hold' },
-          { date: '2023-11', rate: 4.35, change: 25, direction: 'increase' },
-          { date: '2023-12', rate: 4.35, change: 0, direction: 'hold' },
-          { date: '2024-02', rate: 4.35, change: 0, direction: 'hold' },
-          { date: '2024-03', rate: 4.35, change: 0, direction: 'hold' },
-          { date: '2024-05', rate: 4.35, change: 0, direction: 'hold' },
-          { date: '2024-06', rate: 4.35, change: 0, direction: 'hold' },
-          { date: '2024-08', rate: 4.35, change: 0, direction: 'hold' },
-          { date: '2024-09', rate: 4.35, change: 0, direction: 'hold' },
-          { date: '2024-11', rate: 4.35, change: 0, direction: 'hold' },
-        ];
-        setHistory(fallback);
-      }
+      const finalHistory: RateDecision[] =
+        historyPoints.length > 0
+          ? historyPoints.map((p, i) => ({
+              date: p.date,
+              rate: p.value,
+              change: i > 0 ? Number(((p.value - historyPoints[i - 1].value) * 100).toFixed(0)) : 0,
+              direction:
+                i > 0
+                  ? p.value > historyPoints[i - 1].value
+                    ? 'increase'
+                    : p.value < historyPoints[i - 1].value
+                      ? 'decrease'
+                      : 'hold'
+                  : 'hold',
+            }))
+          : FALLBACK_HISTORY;
+
+      dispatch({ type: 'LOAD_SUCCESS', rateData: finalRate, history: finalHistory });
     } catch {
-      setError('Failed to load rate data');
-    } finally {
-      setLoading(false);
+      dispatch({
+        type: 'LOAD_ERROR',
+        error: 'Failed to load rate data',
+        rateData: FALLBACK_RATE_DATA,
+        history: FALLBACK_HISTORY,
+      });
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     loadData();
@@ -127,9 +156,9 @@ export function RateDecisionTracker() {
     );
   };
 
-  const currentRepayment = calcMonthlyRepayment(loanAmount, currentLoanRate);
-  const newRate = currentLoanRate + rateChange / 100;
-  const newRepayment = calcMonthlyRepayment(loanAmount, newRate);
+  const currentRepayment = calcMonthlyRepayment(state.loanAmount, state.currentLoanRate);
+  const newRate = state.currentLoanRate + state.rateChange / 100;
+  const newRepayment = calcMonthlyRepayment(state.loanAmount, newRate);
   const monthlyDiff = newRepayment - currentRepayment;
   const annualDiff = monthlyDiff * 12;
 
@@ -155,11 +184,11 @@ export function RateDecisionTracker() {
     }
   };
 
-  if (loading) {
+  if (state.loading) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="neu-raised rounded-2xl p-6 animate-pulse">
+          <div key={`skel-${i}`} className="neu-raised rounded-2xl p-6 animate-pulse">
             <div className="h-6 w-32 bg-zinc-700 rounded mb-3" />
             <div className="h-12 w-24 bg-zinc-700 rounded" />
           </div>
@@ -170,12 +199,12 @@ export function RateDecisionTracker() {
 
   return (
     <div className="space-y-6">
-      {error && (
-        <div className="text-xs text-amber-400 neu-inset px-3 py-2 rounded-lg">{error}</div>
+      {state.error && (
+        <div className="text-xs text-amber-400 neu-inset px-3 py-2 rounded-lg">{state.error}</div>
       )}
 
       {/* Current Rate Card */}
-      {rateData && (
+      {state.rateData && (
         <div className="neu-raised rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-1">
@@ -183,11 +212,11 @@ export function RateDecisionTracker() {
             </p>
             <div className="flex items-center gap-3">
               <span className="text-4xl font-bold text-[#FFCC00]">
-                {rateData.currentRate.toFixed(2)}%
+                {state.rateData.currentRate.toFixed(2)}%
               </span>
-              <div className={`flex items-center gap-1 ${getDirectionColor(rateData.direction)}`}>
-                {getDirectionIcon(rateData.direction)}
-                <span className="text-sm font-bold capitalize">{rateData.direction}</span>
+              <div className={`flex items-center gap-1 ${getDirectionColor(state.rateData.direction)}`}>
+                {getDirectionIcon(state.rateData.direction)}
+                <span className="text-sm font-bold capitalize">{state.rateData.direction}</span>
               </div>
             </div>
           </div>
@@ -195,7 +224,7 @@ export function RateDecisionTracker() {
             <div>
               <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Last Decision</p>
               <p className="text-sm text-white font-medium">
-                {new Date(rateData.lastDecision).toLocaleDateString('en-AU', {
+                {new Date(state.rateData.lastDecision).toLocaleDateString('en-AU', {
                   day: 'numeric',
                   month: 'short',
                   year: 'numeric',
@@ -205,7 +234,7 @@ export function RateDecisionTracker() {
             <div>
               <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Next Meeting</p>
               <p className="text-sm text-[#FFCC00] font-medium">
-                {new Date(rateData.nextMeeting).toLocaleDateString('en-AU', {
+                {new Date(state.rateData.nextMeeting).toLocaleDateString('en-AU', {
                   day: 'numeric',
                   month: 'short',
                   year: 'numeric',
@@ -219,52 +248,23 @@ export function RateDecisionTracker() {
       {/* Rate History Chart */}
       <div className="neu-raised rounded-2xl p-4">
         <h3 className="text-sm font-bold text-white mb-4">Rate Decision History</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={history}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis dataKey="date" stroke="#666" fontSize={10} />
-              <YAxis stroke="#666" fontSize={10} domain={['dataMin - 0.5', 'dataMax + 0.5']} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1a1a2e',
-                  border: '1px solid rgba(255,204,0,0.2)',
-                  borderRadius: '0.75rem',
-                  color: '#fff',
-                  fontSize: '12px',
-                }}
-                formatter={(value: number) => [`${value.toFixed(2)}%`, 'Cash Rate']}
-              />
-              {rateData && (
-                <ReferenceLine
-                  y={rateData.currentRate}
-                  stroke="#FFCC00"
-                  strokeDasharray="5 5"
-                  label={{ value: 'Current', fill: '#FFCC00', fontSize: 10 }}
-                />
-              )}
-              <Line
-                type="stepAfter"
-                dataKey="rate"
-                stroke="#FFCC00"
-                strokeWidth={2}
-                dot={{ fill: '#FFCC00', r: 4 }}
-                activeDot={{ r: 6, fill: '#FFCC00' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <Suspense fallback={<div className="h-64 animate-pulse bg-white/5 rounded-xl" />}>
+          <LazyRateDecisionChart
+            history={state.history}
+            currentRate={state.rateData?.currentRate}
+          />
+        </Suspense>
       </div>
 
       {/* Decision Timeline */}
       <div className="neu-raised rounded-2xl p-4">
         <h3 className="text-sm font-bold text-white mb-4">Recent Decisions</h3>
         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-          {[...history]
+          {[...state.history]
             .reverse()
             .slice(0, 12)
-            .map((decision, idx) => (
-              <div key={idx} className="flex items-center gap-4 pl-2">
+            .map((decision) => (
+              <div key={`decision-${decision.date}`} className="flex items-center gap-4 pl-2">
                 <div className="relative">
                   <div
                     className={`w-3 h-3 rounded-full ${
@@ -275,9 +275,6 @@ export function RateDecisionTracker() {
                           : 'bg-zinc-600'
                     }`}
                   />
-                  {idx < Math.min(history.length, 12) - 1 && (
-                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-px h-8 bg-zinc-700" />
-                  )}
                 </div>
                 <div className="flex-1 flex items-center justify-between py-1">
                   <div>
@@ -306,35 +303,39 @@ export function RateDecisionTracker() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="text-xs text-zinc-500 font-medium block mb-1">Loan Amount ($)</label>
+            <label htmlFor="rdt-loan" className="text-xs text-zinc-500 font-medium block mb-1">
+              Loan Amount ($)
+            </label>
             <input
+              id="rdt-loan"
               type="number"
-              value={loanAmount}
-              onChange={(e) => setLoanAmount(Number(e.target.value))}
+              value={state.loanAmount}
+              onChange={(e) => dispatch({ type: 'SET_LOAN_AMOUNT', value: Number(e.target.value) })}
               className="w-full neu-inset px-3 py-2 rounded-lg text-sm text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-medium block mb-1">Current Rate (%)</label>
+            <label htmlFor="rdt-rate" className="text-xs text-zinc-500 font-medium block mb-1">
+              Current Rate (%)
+            </label>
             <input
+              id="rdt-rate"
               type="number"
               step="0.01"
-              value={currentLoanRate}
-              onChange={(e) => setCurrentLoanRate(Number(e.target.value))}
+              value={state.currentLoanRate}
+              onChange={(e) => dispatch({ type: 'SET_LOAN_RATE', value: Number(e.target.value) })}
               className="w-full neu-inset px-3 py-2 rounded-lg text-sm text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-medium block mb-1">
-              Rate Change (bps)
-            </label>
+            <p className="text-xs text-zinc-500 font-medium block mb-1">Rate Change (bps)</p>
             <div className="flex gap-1">
               {[-50, -25, 25, 50].map((bp) => (
                 <button
                   key={bp}
-                  onClick={() => setRateChange(bp)}
+                  onClick={() => dispatch({ type: 'SET_RATE_CHANGE', value: bp })}
                   className={`flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all ${
-                    rateChange === bp
+                    state.rateChange === bp
                       ? bp > 0
                         ? 'bg-red-500/20 text-red-400 ring-1 ring-red-500/30'
                         : 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30'
@@ -352,49 +353,27 @@ export function RateDecisionTracker() {
         {/* Results */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="neu-inset rounded-xl p-3 text-center">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">
-              Current Monthly
-            </p>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Current Monthly</p>
             <p className="text-sm font-bold text-white">
-              $
-              {currentRepayment.toLocaleString('en-AU', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}
+              ${currentRepayment.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
           <div className="neu-inset rounded-xl p-3 text-center">
             <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">New Monthly</p>
             <p className="text-sm font-bold text-white">
-              $
-              {newRepayment.toLocaleString('en-AU', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}
+              ${newRepayment.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
           <div className="neu-inset rounded-xl p-3 text-center">
             <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Monthly Diff</p>
-            <p
-              className={`text-sm font-bold ${monthlyDiff > 0 ? 'text-red-400' : monthlyDiff < 0 ? 'text-emerald-400' : 'text-zinc-400'}`}
-            >
-              {monthlyDiff > 0 ? '+' : ''}$
-              {monthlyDiff.toLocaleString('en-AU', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}
+            <p className={`text-sm font-bold ${monthlyDiff > 0 ? 'text-red-400' : monthlyDiff < 0 ? 'text-emerald-400' : 'text-zinc-400'}`}>
+              {monthlyDiff > 0 ? '+' : ''}${monthlyDiff.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
           <div className="neu-inset rounded-xl p-3 text-center">
             <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Annual Impact</p>
-            <p
-              className={`text-sm font-bold ${annualDiff > 0 ? 'text-red-400' : annualDiff < 0 ? 'text-emerald-400' : 'text-zinc-400'}`}
-            >
-              {annualDiff > 0 ? '+' : ''}$
-              {annualDiff.toLocaleString('en-AU', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}
+            <p className={`text-sm font-bold ${annualDiff > 0 ? 'text-red-400' : annualDiff < 0 ? 'text-emerald-400' : 'text-zinc-400'}`}>
+              {annualDiff > 0 ? '+' : ''}${annualDiff.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
         </div>
@@ -402,8 +381,8 @@ export function RateDecisionTracker() {
         <div className="mt-3 flex items-center gap-2 text-[10px] text-zinc-600">
           <Percent className="w-3 h-3" />
           <span>
-            Based on 30-year P&I loan at {newRate.toFixed(2)}% ({rateChange > 0 ? '+' : ''}
-            {rateChange}bps from {currentLoanRate}%)
+            Based on 30-year P&I loan at {newRate.toFixed(2)}% ({state.rateChange > 0 ? '+' : ''}
+            {state.rateChange}bps from {state.currentLoanRate}%)
           </span>
         </div>
       </div>

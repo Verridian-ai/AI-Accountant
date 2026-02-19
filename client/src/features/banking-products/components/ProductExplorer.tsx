@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useReducer } from 'react';
 import {
   Search,
   SlidersHorizontal,
@@ -32,13 +32,7 @@ interface ProductExplorerProps {
 }
 
 const CATEGORIES = [
-  'ALL',
-  'HOME_LOAN',
-  'PERSONAL_LOAN',
-  'SAVINGS',
-  'TERM_DEPOSIT',
-  'CREDIT_CARD',
-  'TRANSACTION',
+  'ALL', 'HOME_LOAN', 'PERSONAL_LOAN', 'SAVINGS', 'TERM_DEPOSIT', 'CREDIT_CARD', 'TRANSACTION',
 ];
 const RATE_TYPES = ['ALL', 'FIXED', 'VARIABLE', 'INTRODUCTORY'];
 const SORT_OPTIONS = [
@@ -49,59 +43,113 @@ const SORT_OPTIONS = [
 ];
 const PAGE_SIZE = 20;
 
+interface State {
+  products: CdrProduct[];
+  loading: boolean;
+  error: string | null;
+  category: string;
+  rateType: string;
+  search: string;
+  sort: string;
+  page: number;
+  total: number;
+  selectedIds: Set<string>;
+  showFilters: boolean;
+}
+
+type Action =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; products: CdrProduct[]; total: number }
+  | { type: 'LOAD_ERROR' }
+  | { type: 'SET_CATEGORY'; value: string }
+  | { type: 'SET_RATE_TYPE'; value: string }
+  | { type: 'SET_SEARCH'; value: string }
+  | { type: 'SET_SORT'; value: string }
+  | { type: 'SET_PAGE'; value: number }
+  | { type: 'TOGGLE_SELECT'; id: string }
+  | { type: 'CLEAR_SELECTED' }
+  | { type: 'TOGGLE_FILTERS' };
+
+const INITIAL: State = {
+  products: [],
+  loading: true,
+  error: null,
+  category: 'ALL',
+  rateType: 'ALL',
+  search: '',
+  sort: 'rate_asc',
+  page: 1,
+  total: 0,
+  selectedIds: new Set(),
+  showFilters: false,
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'LOAD_START':
+      return { ...state, loading: true, error: null };
+    case 'LOAD_SUCCESS':
+      return { ...state, loading: false, products: action.products, total: action.total };
+    case 'LOAD_ERROR':
+      return { ...state, loading: false, error: 'Failed to load products' };
+    case 'SET_CATEGORY':
+      return { ...state, category: action.value, page: 1 };
+    case 'SET_RATE_TYPE':
+      return { ...state, rateType: action.value, page: 1 };
+    case 'SET_SEARCH':
+      return { ...state, search: action.value, page: 1 };
+    case 'SET_SORT':
+      return { ...state, sort: action.value };
+    case 'SET_PAGE':
+      return { ...state, page: action.value };
+    case 'TOGGLE_SELECT': {
+      const next = new Set(state.selectedIds);
+      if (next.has(action.id)) {
+        next.delete(action.id);
+      } else if (next.size < 5) {
+        next.add(action.id);
+      }
+      return { ...state, selectedIds: next };
+    }
+    case 'CLEAR_SELECTED':
+      return { ...state, selectedIds: new Set() };
+    case 'TOGGLE_FILTERS':
+      return { ...state, showFilters: !state.showFilters };
+    default:
+      return state;
+  }
+}
+
 export function ProductExplorer({ onCompare }: ProductExplorerProps) {
-  const [products, setProducts] = useState<CdrProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [category, setCategory] = useState('ALL');
-  const [rateType, setRateType] = useState('ALL');
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState('rate_asc');
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [showFilters, setShowFilters] = useState(false);
+  const [state, dispatch] = useReducer(reducer, INITIAL);
 
   const loadProducts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    dispatch({ type: 'LOAD_START' });
     try {
       const filters: Record<string, string> = {};
-      if (category !== 'ALL') filters.category = category;
-      if (rateType !== 'ALL') filters.rateType = rateType;
-      if (search) filters.search = search;
-      filters.sort = sort;
-      filters.page = String(page);
+      if (state.category !== 'ALL') filters.category = state.category;
+      if (state.rateType !== 'ALL') filters.rateType = state.rateType;
+      if (state.search) filters.search = state.search;
+      filters.sort = state.sort;
+      filters.page = String(state.page);
       filters.limit = String(PAGE_SIZE);
       const result = await fetchCdrProducts(filters);
-      setProducts(result.products ?? result ?? []);
-      setTotal(result.total ?? (result.products ?? result)?.length ?? 0);
+      dispatch({
+        type: 'LOAD_SUCCESS',
+        products: result.products ?? result ?? [],
+        total: result.total ?? (result.products ?? result)?.length ?? 0,
+      });
     } catch (e) {
-      setError('Failed to load products');
+      dispatch({ type: 'LOAD_ERROR' });
       console.error(e);
-    } finally {
-      setLoading(false);
     }
-  }, [category, rateType, search, sort, page]);
+  }, [state.category, state.rateType, state.search, state.sort, state.page, dispatch]);
 
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else if (next.size < 5) {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
+  const totalPages = Math.max(1, Math.ceil(state.total / PAGE_SIZE));
   const formatRate = (rate: number | null) =>
     rate != null ? `${(rate * 100).toFixed(2)}%` : 'N/A';
 
@@ -115,37 +163,35 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
             <input
               type="text"
               placeholder="Search products, providers..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              value={state.search}
+              onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
               className="w-full neu-inset rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-100 bg-transparent placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <button
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => dispatch({ type: 'TOGGLE_FILTERS' })}
             className={cn(
               'neu-raised-sm p-2.5 rounded-xl transition-colors',
-              showFilters ? 'text-[#FFCC00]' : 'text-zinc-400 hover:text-zinc-200',
+              state.showFilters ? 'text-[#FFCC00]' : 'text-zinc-400 hover:text-zinc-200',
             )}
           >
             <SlidersHorizontal className="h-5 w-5" />
           </button>
         </div>
 
-        {showFilters && (
+        {state.showFilters && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-white/5">
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">
+              <label
+                htmlFor="pe-category"
+                className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block"
+              >
                 Category
               </label>
               <select
-                value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value);
-                  setPage(1);
-                }}
+                id="pe-category"
+                value={state.category}
+                onChange={(e) => dispatch({ type: 'SET_CATEGORY', value: e.target.value })}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {CATEGORIES.map((c) => (
@@ -156,15 +202,16 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">
+              <label
+                htmlFor="pe-rate-type"
+                className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block"
+              >
                 Rate Type
               </label>
               <select
-                value={rateType}
-                onChange={(e) => {
-                  setRateType(e.target.value);
-                  setPage(1);
-                }}
+                id="pe-rate-type"
+                value={state.rateType}
+                onChange={(e) => dispatch({ type: 'SET_RATE_TYPE', value: e.target.value })}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {RATE_TYPES.map((r) => (
@@ -175,12 +222,16 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block">
+              <label
+                htmlFor="pe-sort"
+                className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block"
+              >
                 Sort
               </label>
               <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
+                id="pe-sort"
+                value={state.sort}
+                onChange={(e) => dispatch({ type: 'SET_SORT', value: e.target.value })}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-100 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {SORT_OPTIONS.map((s) => (
@@ -194,11 +245,10 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
         )}
       </div>
 
-      {/* Loading / Error */}
-      {loading && (
+      {state.loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="neu-raised rounded-2xl p-5 animate-pulse space-y-3">
+            <div key={`skel-${i}`} className="neu-raised rounded-2xl p-5 animate-pulse space-y-3">
               <div className="h-4 w-2/3 bg-zinc-700/40 rounded" />
               <div className="h-8 w-1/2 bg-zinc-700/40 rounded" />
               <div className="h-3 w-full bg-zinc-700/40 rounded" />
@@ -207,34 +257,33 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
         </div>
       )}
 
-      {error && (
+      {state.error && (
         <div className="neu-raised rounded-2xl p-6 text-center text-red-400">
-          <p>{error}</p>
+          <p>{state.error}</p>
           <button onClick={loadProducts} className="mt-2 text-sm text-[#FFCC00] hover:underline">
             Retry
           </button>
         </div>
       )}
 
-      {/* Product Grid */}
-      {!loading && !error && (
+      {!state.loading && !state.error && (
         <>
           <div className="flex items-center justify-between text-sm text-zinc-500">
             <span>
-              {total} product{total !== 1 ? 's' : ''} found
+              {state.total} product{state.total !== 1 ? 's' : ''} found
             </span>
             <span>
-              Page {page} of {totalPages}
+              Page {state.page} of {totalPages}
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {products.map((product) => (
+            {state.products.map((product) => (
               <div
                 key={product.id}
                 className={cn(
                   'neu-raised rounded-2xl p-5 space-y-3 transition-all duration-200 border',
-                  selectedIds.has(product.id)
+                  state.selectedIds.has(product.id)
                     ? 'border-[#FFCC00]/50 shadow-[0_0_20px_rgba(255,204,0,0.1)]'
                     : 'border-transparent hover:border-white/10',
                 )}
@@ -250,18 +299,20 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                     </div>
                   </div>
                   <button
-                    onClick={() => toggleSelect(product.id)}
+                    onClick={() => dispatch({ type: 'TOGGLE_SELECT', id: product.id })}
                     className={cn(
                       'shrink-0 p-1 rounded-lg transition-colors',
-                      selectedIds.has(product.id)
+                      state.selectedIds.has(product.id)
                         ? 'bg-[#FFCC00]/20 text-[#FFCC00]'
                         : 'text-zinc-600 hover:text-zinc-400',
                     )}
                     title={
-                      selectedIds.has(product.id) ? 'Remove from comparison' : 'Add to comparison'
+                      state.selectedIds.has(product.id)
+                        ? 'Remove from comparison'
+                        : 'Add to comparison'
                     }
                   >
-                    {selectedIds.has(product.id) ? (
+                    {state.selectedIds.has(product.id) ? (
                       <Check className="h-4 w-4" />
                     ) : (
                       <ArrowUpDown className="h-4 w-4" />
@@ -293,9 +344,9 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
 
                 {product.features && product.features.length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {product.features.slice(0, 3).map((f, i) => (
+                    {product.features.slice(0, 3).map((f) => (
                       <span
-                        key={i}
+                        key={f}
                         className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium"
                       >
                         {f}
@@ -312,33 +363,32 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
             ))}
           </div>
 
-          {products.length === 0 && (
+          {state.products.length === 0 && (
             <div className="neu-raised rounded-2xl p-12 text-center">
               <p className="text-zinc-500">No products match your filters</p>
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
+                onClick={() => dispatch({ type: 'SET_PAGE', value: Math.max(1, state.page - 1) })}
+                disabled={state.page <= 1}
                 className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-zinc-200 disabled:opacity-30"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+                const start = Math.max(1, Math.min(state.page - 2, totalPages - 4));
                 const n = start + i;
                 if (n > totalPages) return null;
                 return (
                   <button
                     key={n}
-                    onClick={() => setPage(n)}
+                    onClick={() => dispatch({ type: 'SET_PAGE', value: n })}
                     className={cn(
                       'w-8 h-8 rounded-lg text-sm font-bold transition-colors',
-                      page === n
+                      state.page === n
                         ? 'bg-[#FFCC00] text-[#0a0a0f]'
                         : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
                     )}
@@ -348,8 +398,10 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                 );
               })}
               <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
+                onClick={() =>
+                  dispatch({ type: 'SET_PAGE', value: Math.min(totalPages, state.page + 1) })
+                }
+                disabled={state.page >= totalPages}
                 className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-zinc-200 disabled:opacity-30"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -359,18 +411,17 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
         </>
       )}
 
-      {/* Sticky Comparison Bar */}
-      {selectedIds.size >= 2 && (
+      {state.selectedIds.size >= 2 && (
         <div className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-40 neu-raised rounded-2xl px-5 py-3 flex items-center gap-4 shadow-[0_0_30px_rgba(255,204,0,0.15)] border border-[#FFCC00]/20">
-          <span className="text-sm font-bold text-zinc-200">{selectedIds.size} selected</span>
+          <span className="text-sm font-bold text-zinc-200">{state.selectedIds.size} selected</span>
           <button
-            onClick={() => onCompare?.(Array.from(selectedIds))}
+            onClick={() => onCompare?.(Array.from(state.selectedIds))}
             className="px-4 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] text-sm font-bold hover:bg-[#FFD633] transition-colors"
           >
             Compare
           </button>
           <button
-            onClick={() => setSelectedIds(new Set())}
+            onClick={() => dispatch({ type: 'CLEAR_SELECTED' })}
             className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200"
           >
             <X className="h-4 w-4" />

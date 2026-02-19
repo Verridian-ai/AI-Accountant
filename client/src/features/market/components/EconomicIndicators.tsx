@@ -1,14 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback, Suspense } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink, Search } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from 'recharts';
 import { fetchIndicators, fetchIndicatorHistory } from '../../../api';
 
 interface Indicator {
@@ -32,127 +23,103 @@ interface HistoryPoint {
 const CATEGORIES = ['All', 'Interest Rates', 'Inflation', 'Employment', 'GDP', 'Wages', 'Housing'];
 const SOURCES = ['All', 'RBA', 'ABS'];
 
+const FALLBACK_INDICATORS: Indicator[] = [
+  { code: 'RBA_CASH_RATE', name: 'Cash Rate Target', category: 'Interest Rates', currentValue: 4.35, previousValue: 4.35, changePercent: 0, period: 'Feb 2026', source: 'RBA', unit: '%' },
+  { code: 'ABS_CPI', name: 'Consumer Price Index', category: 'Inflation', currentValue: 3.6, previousValue: 3.8, changePercent: -5.26, period: 'Dec 2025', source: 'ABS', unit: '%' },
+  { code: 'ABS_UNEMPLOYMENT', name: 'Unemployment Rate', category: 'Employment', currentValue: 4.1, previousValue: 4.0, changePercent: 2.5, period: 'Jan 2026', source: 'ABS', unit: '%' },
+  { code: 'ABS_GDP', name: 'GDP Growth (Annual)', category: 'GDP', currentValue: 1.5, previousValue: 1.1, changePercent: 36.36, period: 'Sep 2025', source: 'ABS', unit: '%' },
+  { code: 'ABS_WAGES', name: 'Wage Price Index', category: 'Wages', currentValue: 4.1, previousValue: 4.2, changePercent: -2.38, period: 'Sep 2025', source: 'ABS', unit: '%' },
+  { code: 'RBA_DWELLING', name: 'Housing Credit Growth', category: 'Housing', currentValue: 5.3, previousValue: 5.1, changePercent: 3.92, period: 'Jan 2026', source: 'RBA', unit: '%' },
+  { code: 'ABS_EMPLOYMENT_CHANGE', name: 'Employment Change', category: 'Employment', currentValue: 14200, previousValue: 61300, changePercent: -76.8, period: 'Jan 2026', source: 'ABS', unit: 'persons' },
+  { code: 'RBA_INFLATION_EXPECT', name: 'Inflation Expectations', category: 'Inflation', currentValue: 4.3, previousValue: 4.5, changePercent: -4.44, period: 'Feb 2026', source: 'RBA', unit: '%' },
+];
+
+interface State {
+  indicators: Indicator[];
+  loading: boolean;
+  error: string | null;
+  activeCategory: string;
+  activeSource: string;
+  expandedCode: string | null;
+  historyData: Record<string, HistoryPoint[]>;
+  historyLoading: string | null;
+  searchQuery: string;
+}
+
+type Action =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; indicators: Indicator[] }
+  | { type: 'LOAD_ERROR'; error: string; indicators: Indicator[] }
+  | { type: 'SET_CATEGORY'; value: string }
+  | { type: 'SET_SOURCE'; value: string }
+  | { type: 'SET_SEARCH'; value: string }
+  | { type: 'EXPAND'; code: string }
+  | { type: 'COLLAPSE' }
+  | { type: 'HISTORY_START'; code: string }
+  | { type: 'HISTORY_SUCCESS'; code: string; history: HistoryPoint[] };
+
+const INITIAL: State = {
+  indicators: [],
+  loading: true,
+  error: null,
+  activeCategory: 'All',
+  activeSource: 'All',
+  expandedCode: null,
+  historyData: {},
+  historyLoading: null,
+  searchQuery: '',
+};
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'LOAD_START':
+      return { ...state, loading: true, error: null };
+    case 'LOAD_SUCCESS':
+      return { ...state, loading: false, indicators: action.indicators };
+    case 'LOAD_ERROR':
+      return { ...state, loading: false, error: action.error, indicators: action.indicators };
+    case 'SET_CATEGORY':
+      return { ...state, activeCategory: action.value };
+    case 'SET_SOURCE':
+      return { ...state, activeSource: action.value };
+    case 'SET_SEARCH':
+      return { ...state, searchQuery: action.value };
+    case 'EXPAND':
+      return { ...state, expandedCode: action.code };
+    case 'COLLAPSE':
+      return { ...state, expandedCode: null };
+    case 'HISTORY_START':
+      return { ...state, historyLoading: action.code };
+    case 'HISTORY_SUCCESS':
+      return {
+        ...state,
+        historyLoading: null,
+        historyData: { ...state.historyData, [action.code]: action.history },
+      };
+  }
+}
+
+const LazyIndicatorHistoryChart = React.lazy(() => import('./IndicatorHistoryChart'));
+
 export function EconomicIndicators() {
-  const [indicators, setIndicators] = useState<Indicator[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeSource, setActiveSource] = useState('All');
-  const [expandedCode, setExpandedCode] = useState<string | null>(null);
-  const [historyData, setHistoryData] = useState<Record<string, HistoryPoint[]>>({});
-  const [historyLoading, setHistoryLoading] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [state, dispatch] = useReducer(reducer, INITIAL);
 
   const loadIndicators = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
     try {
-      setError(null);
-      setLoading(true);
       const params: Record<string, string> = {};
-      if (activeCategory !== 'All') params.category = activeCategory;
-      if (activeSource !== 'All') params.source = activeSource;
+      if (state.activeCategory !== 'All') params.category = state.activeCategory;
+      if (state.activeSource !== 'All') params.source = state.activeSource;
       const data = await fetchIndicators(params);
       if (Array.isArray(data)) {
-        setIndicators(data);
+        dispatch({ type: 'LOAD_SUCCESS', indicators: data });
       } else if (data && Array.isArray((data as { indicators: Indicator[] }).indicators)) {
-        setIndicators((data as { indicators: Indicator[] }).indicators);
+        dispatch({ type: 'LOAD_SUCCESS', indicators: (data as { indicators: Indicator[] }).indicators });
       }
     } catch {
-      setError('Failed to load indicators');
-      // Fallback data
-      setIndicators([
-        {
-          code: 'RBA_CASH_RATE',
-          name: 'Cash Rate Target',
-          category: 'Interest Rates',
-          currentValue: 4.35,
-          previousValue: 4.35,
-          changePercent: 0,
-          period: 'Feb 2026',
-          source: 'RBA',
-          unit: '%',
-        },
-        {
-          code: 'ABS_CPI',
-          name: 'Consumer Price Index',
-          category: 'Inflation',
-          currentValue: 3.6,
-          previousValue: 3.8,
-          changePercent: -5.26,
-          period: 'Dec 2025',
-          source: 'ABS',
-          unit: '%',
-        },
-        {
-          code: 'ABS_UNEMPLOYMENT',
-          name: 'Unemployment Rate',
-          category: 'Employment',
-          currentValue: 4.1,
-          previousValue: 4.0,
-          changePercent: 2.5,
-          period: 'Jan 2026',
-          source: 'ABS',
-          unit: '%',
-        },
-        {
-          code: 'ABS_GDP',
-          name: 'GDP Growth (Annual)',
-          category: 'GDP',
-          currentValue: 1.5,
-          previousValue: 1.1,
-          changePercent: 36.36,
-          period: 'Sep 2025',
-          source: 'ABS',
-          unit: '%',
-        },
-        {
-          code: 'ABS_WAGES',
-          name: 'Wage Price Index',
-          category: 'Wages',
-          currentValue: 4.1,
-          previousValue: 4.2,
-          changePercent: -2.38,
-          period: 'Sep 2025',
-          source: 'ABS',
-          unit: '%',
-        },
-        {
-          code: 'RBA_DWELLING',
-          name: 'Housing Credit Growth',
-          category: 'Housing',
-          currentValue: 5.3,
-          previousValue: 5.1,
-          changePercent: 3.92,
-          period: 'Jan 2026',
-          source: 'RBA',
-          unit: '%',
-        },
-        {
-          code: 'ABS_EMPLOYMENT_CHANGE',
-          name: 'Employment Change',
-          category: 'Employment',
-          currentValue: 14200,
-          previousValue: 61300,
-          changePercent: -76.8,
-          period: 'Jan 2026',
-          source: 'ABS',
-          unit: 'persons',
-        },
-        {
-          code: 'RBA_INFLATION_EXPECT',
-          name: 'Inflation Expectations',
-          category: 'Inflation',
-          currentValue: 4.3,
-          previousValue: 4.5,
-          changePercent: -4.44,
-          period: 'Feb 2026',
-          source: 'RBA',
-          unit: '%',
-        },
-      ]);
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'LOAD_ERROR', error: 'Failed to load indicators', indicators: FALLBACK_INDICATORS });
     }
-  }, [activeCategory, activeSource]);
+  }, [state.activeCategory, state.activeSource, dispatch]);
 
   useEffect(() => {
     loadIndicators();
@@ -160,43 +127,37 @@ export function EconomicIndicators() {
 
   const toggleExpand = useCallback(
     async (code: string) => {
-      if (expandedCode === code) {
-        setExpandedCode(null);
+      if (state.expandedCode === code) {
+        dispatch({ type: 'COLLAPSE' });
         return;
       }
-      setExpandedCode(code);
-      if (!historyData[code]) {
-        setHistoryLoading(code);
+      dispatch({ type: 'EXPAND', code });
+      if (!state.historyData[code]) {
+        dispatch({ type: 'HISTORY_START', code });
         try {
           const data = await fetchIndicatorHistory(code, 24);
           const points = Array.isArray(data)
             ? data
             : (data as { history: HistoryPoint[] }).history || [];
-          setHistoryData((prev) => ({ ...prev, [code]: points }));
+          dispatch({ type: 'HISTORY_SUCCESS', code, history: points });
         } catch {
-          // Generate mock history
           const mockHistory: HistoryPoint[] = [];
           const now = new Date();
           for (let i = 23; i >= 0; i--) {
             const d = new Date(now);
             d.setMonth(d.getMonth() - i);
-            mockHistory.push({
-              date: d.toISOString().slice(0, 7),
-              value: Number((Math.random() * 2 + 3).toFixed(2)),
-            });
+            mockHistory.push({ date: d.toISOString().slice(0, 7), value: Number((Math.random() * 2 + 3).toFixed(2)) });
           }
-          setHistoryData((prev) => ({ ...prev, [code]: mockHistory }));
-        } finally {
-          setHistoryLoading(null);
+          dispatch({ type: 'HISTORY_SUCCESS', code, history: mockHistory });
         }
       }
     },
-    [expandedCode, historyData],
+    [state.expandedCode, state.historyData, dispatch],
   );
 
-  const filtered = indicators.filter((ind) => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
+  const filtered = state.indicators.filter((ind) => {
+    if (state.searchQuery) {
+      const q = state.searchQuery.toLowerCase();
       return ind.name.toLowerCase().includes(q) || ind.code.toLowerCase().includes(q);
     }
     return true;
@@ -217,9 +178,9 @@ export function EconomicIndicators() {
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => dispatch({ type: 'SET_CATEGORY', value: cat })}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                activeCategory === cat
+                state.activeCategory === cat
                   ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
               }`}
@@ -232,9 +193,9 @@ export function EconomicIndicators() {
           {SOURCES.map((src) => (
             <button
               key={src}
-              onClick={() => setActiveSource(src)}
+              onClick={() => dispatch({ type: 'SET_SOURCE', value: src })}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeSource === src
+                state.activeSource === src
                   ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30'
                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
               }`}
@@ -247,16 +208,16 @@ export function EconomicIndicators() {
             <input
               type="text"
               placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={state.searchQuery}
+              onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
               className="neu-inset pl-8 pr-3 py-1.5 rounded-lg text-xs text-white bg-transparent w-36 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
         </div>
       </div>
 
-      {error && (
-        <div className="text-xs text-amber-400 neu-inset px-3 py-2 rounded-lg">{error}</div>
+      {state.error && (
+        <div className="text-xs text-amber-400 neu-inset px-3 py-2 rounded-lg">{state.error}</div>
       )}
 
       {/* Table */}
@@ -275,9 +236,9 @@ export function EconomicIndicators() {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
+              {state.loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} className="border-b border-white/5 animate-pulse">
+                  <tr key={`skel-${i}`} className="border-b border-white/5 animate-pulse">
                     <td className="px-4 py-3">
                       <div className="h-4 w-32 bg-zinc-700 rounded" />
                     </td>
@@ -350,46 +311,23 @@ export function EconomicIndicators() {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-zinc-500">
-                            {expandedCode === ind.code ? (
+                            {state.expandedCode === ind.code ? (
                               <ChevronUp className="w-4 h-4" />
                             ) : (
                               <ChevronDown className="w-4 h-4" />
                             )}
                           </td>
                         </button>
-                        {expandedCode === ind.code && (
+                        {state.expandedCode === ind.code && (
                           <div className="px-4 py-4 bg-white/[0.02] border-b border-white/5">
-                            {historyLoading === ind.code ? (
+                            {state.historyLoading === ind.code ? (
                               <div className="h-48 flex items-center justify-center text-zinc-500 text-sm">
                                 Loading history...
                               </div>
-                            ) : historyData[ind.code] && historyData[ind.code].length > 0 ? (
-                              <div className="h-48">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <LineChart data={historyData[ind.code]}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                                    <XAxis dataKey="date" stroke="#666" fontSize={11} />
-                                    <YAxis stroke="#666" fontSize={11} />
-                                    <Tooltip
-                                      contentStyle={{
-                                        backgroundColor: '#1a1a2e',
-                                        border: '1px solid rgba(255,204,0,0.2)',
-                                        borderRadius: '0.75rem',
-                                        color: '#fff',
-                                        fontSize: '12px',
-                                      }}
-                                    />
-                                    <Line
-                                      type="monotone"
-                                      dataKey="value"
-                                      stroke="#FFCC00"
-                                      strokeWidth={2}
-                                      dot={false}
-                                      activeDot={{ r: 4, fill: '#FFCC00' }}
-                                    />
-                                  </LineChart>
-                                </ResponsiveContainer>
-                              </div>
+                            ) : state.historyData[ind.code] && state.historyData[ind.code].length > 0 ? (
+                              <Suspense fallback={<div className="h-48 animate-pulse bg-white/5 rounded-xl" />}>
+                                <LazyIndicatorHistoryChart data={state.historyData[ind.code]} />
+                              </Suspense>
                             ) : (
                               <div className="h-48 flex items-center justify-center text-zinc-500 text-sm">
                                 No history available

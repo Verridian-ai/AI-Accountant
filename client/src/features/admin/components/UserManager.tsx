@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchAdminUsers, createAdminUser, updateAdminUser, deleteAdminUser } from '../../../api';
-import { Users, Plus, Edit2, Trash2, X, Save, Shield } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Save, Shield } from 'lucide-react';
 
 interface AdminUser {
   id: string;
@@ -26,10 +26,6 @@ export function UserManager() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
   const loadUsers = async () => {
     setLoading(true);
     try {
@@ -40,6 +36,11 @@ export function UserManager() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadUsers();
+  }, []);
 
   const handleCreate = async () => {
     if (!formData.username || !formData.password) return;
@@ -196,9 +197,11 @@ export function UserManager() {
       {/* Create Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
+          <button
+            type="button"
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowForm(false)}
+            aria-label="Close dialog"
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
@@ -213,8 +216,11 @@ export function UserManager() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Username *</label>
+                <label htmlFor="create-username" className="block text-xs text-zinc-400 mb-1">
+                  Username *
+                </label>
                 <input
+                  id="create-username"
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
@@ -222,8 +228,11 @@ export function UserManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Email</label>
+                <label htmlFor="create-email" className="block text-xs text-zinc-400 mb-1">
+                  Email
+                </label>
                 <input
+                  id="create-email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -231,8 +240,11 @@ export function UserManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Password *</label>
+                <label htmlFor="create-password" className="block text-xs text-zinc-400 mb-1">
+                  Password *
+                </label>
                 <input
+                  id="create-password"
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -240,8 +252,11 @@ export function UserManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Role</label>
+                <label htmlFor="create-role" className="block text-xs text-zinc-400 mb-1">
+                  Role
+                </label>
                 <select
+                  id="create-role"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
@@ -277,9 +292,11 @@ export function UserManager() {
       {/* Edit Modal */}
       {editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
+          <button
+            type="button"
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setEditingUser(null)}
+            aria-label="Close dialog"
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
@@ -294,8 +311,11 @@ export function UserManager() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Username</label>
+                <label htmlFor="edit-username" className="block text-xs text-zinc-400 mb-1">
+                  Username
+                </label>
                 <input
+                  id="edit-username"
                   type="text"
                   value={editingUser.username}
                   onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
@@ -303,8 +323,11 @@ export function UserManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Email</label>
+                <label htmlFor="edit-email" className="block text-xs text-zinc-400 mb-1">
+                  Email
+                </label>
                 <input
+                  id="edit-email"
                   type="email"
                   value={editingUser.email || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
@@ -312,8 +335,11 @@ export function UserManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Role</label>
+                <label htmlFor="edit-role" className="block text-xs text-zinc-400 mb-1">
+                  Role
+                </label>
                 <select
+                  id="edit-role"
                   value={editingUser.role}
                   onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
                   className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
@@ -325,8 +351,11 @@ export function UserManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Status</label>
+                <label htmlFor="edit-status" className="block text-xs text-zinc-400 mb-1">
+                  Status
+                </label>
                 <select
+                  id="edit-status"
                   value={editingUser.status || 'active'}
                   onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
                   className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"

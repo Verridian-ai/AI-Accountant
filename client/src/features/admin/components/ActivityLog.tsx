@@ -30,10 +30,6 @@ export function ActivityLog() {
   const [filters, setFilters] = useState({ action: '', status: '' });
   const [showSummary, setShowSummary] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     setLoading(true);
     try {
@@ -48,6 +44,11 @@ export function ActivityLog() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData();
+  }, []);
 
   const loadSummary = async () => {
     try {
@@ -177,7 +178,7 @@ export function ActivityLog() {
               <p className="text-xs text-zinc-500 mb-2">Daily Activity</p>
               <div className="flex items-end gap-px h-20">
                 {summary.dailyCounts.map((d, i) => (
-                  <div key={i} className="flex-1 group relative">
+                  <div key={d.date ?? `sk-${i}`} className="flex-1 group relative">
                     <div
                       className="w-full bg-[#FFCC00]/60 hover:bg-[#FFCC00] rounded-t transition-all"
                       style={{ height: `${Math.max((d.count / maxDailyCount) * 100, 2)}%` }}

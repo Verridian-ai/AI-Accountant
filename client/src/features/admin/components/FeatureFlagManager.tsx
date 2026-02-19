@@ -25,10 +25,6 @@ export function FeatureFlagManager() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    loadFlags();
-  }, []);
-
   const loadFlags = async () => {
     setLoading(true);
     try {
@@ -39,6 +35,11 @@ export function FeatureFlagManager() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadFlags();
+  }, []);
 
   const toggleFlag = async (flag: FeatureFlag) => {
     try {
@@ -204,9 +205,11 @@ export function FeatureFlagManager() {
       {/* Create Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
+          <button
+            type="button"
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowForm(false)}
+            aria-label="Close dialog"
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
@@ -221,8 +224,11 @@ export function FeatureFlagManager() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Flag Name *</label>
+                <label htmlFor="flag-name" className="block text-xs text-zinc-400 mb-1">
+                  Flag Name *
+                </label>
                 <input
+                  id="flag-name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -231,8 +237,11 @@ export function FeatureFlagManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Description</label>
+                <label htmlFor="flag-description" className="block text-xs text-zinc-400 mb-1">
+                  Description
+                </label>
                 <input
+                  id="flag-description"
                   type="text"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -240,8 +249,11 @@ export function FeatureFlagManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Category</label>
+                <label htmlFor="flag-category" className="block text-xs text-zinc-400 mb-1">
+                  Category
+                </label>
                 <select
+                  id="flag-category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
