@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "cognee-hive-local": {
+      "type": "http",
+      "url": "http://localhost:8001/mcp",
+      "description": "Local Cognee hive memory — high-speed, runs on Docker. Start with: docker compose -f hive-memory/docker-compose.hive.yml up -d"
+    },
+    "cognee-hive-cloud": {
+      "type": "http",
+      "url": "https://api.cognee.ai/mcp",
+      "description": "Cognee Cloud hive memory — persistent, always-on backup",
+      "headers": {
+        "Authorization": "Bearer f056b134c9fe54f4adb59bf77b855af01a9ce5081886e3d7"
+      }
+    }
+  }
+}
