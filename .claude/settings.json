@@ -18,8 +18,7 @@
             "command": "bash '/mnt/c/Users/Danie/Desktop/CBA Statements Parse/.claude/hooks/pre-commit-gate.sh'",
             "timeout": 30
           }
-        ],
-        "description": "Pre-commit quality gate — blocks @ts-ignore and @ts-expect-error in staged changes"
+        ]
       },
       {
         "matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\"",
@@ -29,8 +28,7 @@
             "command": "bash '/mnt/c/Users/Danie/Desktop/CBA Statements Parse/.claude/hooks/block-dangerous-patterns.sh'",
             "timeout": 10
           }
-        ],
-        "description": "Block @ts-ignore, hardcoded secrets in new TypeScript files"
+        ]
       }
     ],
     "PostToolUse": [
@@ -42,8 +40,7 @@
             "command": "bash '/mnt/c/Users/Danie/Desktop/CBA Statements Parse/.claude/hooks/post-edit-tsc.sh'",
             "timeout": 120
           }
-        ],
-        "description": "Run tsc after TypeScript file edits — shows error count"
+        ]
       },
       {
         "matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\"",
@@ -53,8 +50,7 @@
             "command": "bash '/mnt/c/Users/Danie/Desktop/CBA Statements Parse/.claude/hooks/post-edit-tsc.sh'",
             "timeout": 120
           }
-        ],
-        "description": "Run tsc after new TypeScript files are created — shows error count"
+        ]
       }
     ]
   },
@@ -64,7 +60,6 @@
     "superpowers@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
@@ -74,20 +69,34 @@
     "explanatory-output-style@claude-plugins-official": true,
     "huggingface-skills@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
-    "greptile@claude-plugins-official": true,
     "coderabbit@claude-plugins-official": true,
     "sonatype-guide@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
-    "serena@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
     "hookify@claude-plugins-official": true,
     "firecrawl@claude-plugins-official": true,
     "everything-claude-code@everything-claude-code": true,
-    "circleback@claude-plugins-official": true,
     "cognee-expert@cognee-expert": true,
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
-    "playground@claude-plugins-official": true
+    "playground@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "php-lsp@claude-plugins-official": true,
+    "qodo-skills@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "semgrep@claude-plugins-official": true,
+    "jdtls-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "laravel-boost@claude-plugins-official": true,
+    "csharp-lsp@claude-plugins-official": true,
+    "kotlin-lsp@claude-plugins-official": true,
+    "learning-output-style@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true,
+    "serena@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "cognee-expert": {
