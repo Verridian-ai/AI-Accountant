@@ -2,8 +2,12 @@ import { Hono } from 'hono';
 import path from 'path';
 import fs from 'fs';
 import { ragService } from '../services/rag.js';
+import { adminAuthMiddleware } from '../services/admin-auth/index.js';
 
 const adminExtRoutes = new Hono();
+
+// Require valid admin JWT for all routes in this file
+adminExtRoutes.use('/*', adminAuthMiddleware());
 
 // POST /api/admin/ingest-knowledge — Ingest markdown docs into Cognee
 adminExtRoutes.post('/admin/ingest-knowledge', async (c) => {

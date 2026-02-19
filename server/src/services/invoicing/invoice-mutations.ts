@@ -79,26 +79,10 @@ export async function createInvoice(
     return { ...li, amount, gstAmount, gstRate };
   });
 
-  const { subtotal, gstAmount, totalAmount, amountDue } = calculateInvoiceTotals(
-    calculatedLines,
-    0,
-  );
+  const { subtotal, gstAmount, totalAmount } = calculateInvoiceTotals(calculatedLines, 0);
 
-  const issueDate = data.issueDate ?? today();
-  let dueDate = data.dueDate;
-
-  if (!dueDate) {
-    const customer = await db
-      .select()
-      .from(customers)
-      .where(eq(customers.id, data.customerId))
-      .get();
-
-    const termsDays = customer?.paymentTermsDays ?? 30;
-    const due = new Date(issueDate);
-    due.setDate(due.getDate() + termsDays);
-    dueDate = due.toISOString().slice(0, 10);
-  }
+  const invoiceDate = data.issueDate ?? today();
+  let dueDate = data.dueDate ?? invoiceDate;
 
   const now = nowISO();
 
@@ -109,20 +93,13 @@ export async function createInvoice(
       userId,
       customerId: data.customerId,
       invoiceNumber,
-      type: 'invoice',
       status: 'draft',
-      issueDate,
+      invoiceDate,
       dueDate,
       subtotal,
       gstAmount,
       totalAmount,
-      amountPaid: 0,
-      amountDue,
-      currency: 'AUD',
-      notes: data.notes ?? null,
-      termsAndConditions: data.termsAndConditions ?? null,
       createdAt: now,
-      updatedAt: now,
     })
     .run();
 
@@ -133,15 +110,13 @@ export async function createInvoice(
     const lineValues = {
       id: lineId,
       invoiceId,
-      lineOrder: i + 1,
       description: li.description,
       quantity: li.quantity,
       unitPrice: li.unitPriceCents,
       amount: li.amount,
-      gstRate: li.gstRate,
-      gstAmount: li.gstAmount,
-      accountCode: li.accountCode ?? null,
+      gstAmount: li.gstAmount ?? null,
       taxCode: li.taxCode ?? null,
+      createdAt: now,
     };
     await db.insert(invoiceLines).values(lineValues).run();
     insertedLines.push(lineValues);
@@ -153,21 +128,18 @@ export async function createInvoice(
       userId,
       customerId: data.customerId,
       invoiceNumber,
-      type: 'invoice',
       status: 'draft',
-      issueDate,
+      invoiceDate,
       dueDate,
       subtotal,
       gstAmount,
       totalAmount,
-      amountPaid: 0,
-      amountDue,
-      currency: 'AUD',
-      notes: data.notes ?? null,
+      amountPaid: null,
+      amountDue: null,
       termsAndConditions: data.termsAndConditions ?? null,
-      pdfPath: null,
+      notes: data.notes ?? null,
       createdAt: now,
-      updatedAt: now,
+      tenantId: null,
     },
     lines: insertedLines,
   };
@@ -198,12 +170,10 @@ export async function updateInvoice(
     );
   }
 
-  const updates: Record<string, unknown> = { updatedAt: nowISO() };
+  const updates: Record<string, unknown> = {};
   if (data.customerId !== undefined) updates.customerId = data.customerId;
-  if (data.issueDate !== undefined) updates.issueDate = data.issueDate;
+  if (data.issueDate !== undefined) updates.invoiceDate = data.issueDate;
   if (data.dueDate !== undefined) updates.dueDate = data.dueDate;
-  if (data.notes !== undefined) updates.notes = data.notes;
-  if (data.termsAndConditions !== undefined) updates.termsAndConditions = data.termsAndConditions;
 
   if (data.lineItems && data.lineItems.length > 0) {
     await db.delete(invoiceLines).where(eq(invoiceLines.invoiceId, invoiceId)).run();
@@ -213,16 +183,13 @@ export async function updateInvoice(
       return { ...li, amount, gstAmount, gstRate };
     });
 
-    const { subtotal, gstAmount, totalAmount, amountDue } = calculateInvoiceTotals(
-      calculatedLines,
-      existing.amountPaid ?? 0,
-    );
+    const { subtotal, gstAmount, totalAmount } = calculateInvoiceTotals(calculatedLines, 0);
 
     updates.subtotal = subtotal;
     updates.gstAmount = gstAmount;
     updates.totalAmount = totalAmount;
-    updates.amountDue = amountDue;
 
+    const now = nowISO();
     for (let i = 0; i < calculatedLines.length; i++) {
       const li = calculatedLines[i];
       await db
@@ -230,15 +197,12 @@ export async function updateInvoice(
         .values({
           id: randomUUID(),
           invoiceId,
-          lineOrder: i + 1,
           description: li.description,
           quantity: li.quantity,
           unitPrice: li.unitPriceCents,
           amount: li.amount,
-          gstRate: li.gstRate,
-          gstAmount: li.gstAmount,
-          accountCode: li.accountCode ?? null,
           taxCode: li.taxCode ?? null,
+          createdAt: now,
         })
         .run();
     }
@@ -269,19 +233,11 @@ export async function sendInvoice(userId: string, invoiceId: string): Promise<vo
     );
   }
 
-  const updates: Record<string, unknown> = {
-    status: 'sent',
-    updatedAt: nowISO(),
-  };
+  const updates: Record<string, unknown> = { status: 'sent' };
 
-  if (!invoice.issueDate) {
-    updates.issueDate = today();
+  if (!invoice.invoiceDate) {
+    updates.invoiceDate = today();
   }
 
   await db.update(invoices).set(updates).where(eq(invoices.id, invoiceId)).run();
-
-  return {
-    ...invoice,
-    ...updates,
-  };
 }

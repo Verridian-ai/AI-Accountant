@@ -22,10 +22,7 @@ export async function createBill(userId: string, data: CreateBillInput) {
 
   // Calculate line items
   const computedLines = data.lineItems.map((item) => {
-    const gstRate = item.gstRate ?? 0.1;
     const amount = calcLineAmount(item.quantity, item.unitPriceCents);
-    const gstAmt = calcGst(amount, gstRate);
-
     return {
       id: crypto.randomUUID(),
       billId,
@@ -33,10 +30,8 @@ export async function createBill(userId: string, data: CreateBillInput) {
       quantity: item.quantity,
       unitPrice: item.unitPriceCents,
       amount,
-      gstRate,
-      gstAmount: gstAmt,
-      accountCode: item.accountCode ?? null,
       taxCode: item.taxCode ?? null,
+      createdAt: now,
     };
   });
 
@@ -52,17 +47,12 @@ export async function createBill(userId: string, data: CreateBillInput) {
       supplierId: data.supplierId,
       billNumber: data.billNumber ?? null,
       status: 'draft',
-      issueDate: data.issueDate,
+      billDate: data.issueDate,
       dueDate: data.dueDate,
       subtotal: totals.subtotal,
       gstAmount: totals.gstAmount,
       totalAmount: totals.totalAmount,
-      amountPaid: 0,
-      amountDue: totals.totalAmount,
-      currency: data.currency ?? 'AUD',
-      notes: data.notes ?? null,
       createdAt: now,
-      updatedAt: now,
     })
     .run();
 
@@ -77,13 +67,11 @@ export async function createBill(userId: string, data: CreateBillInput) {
     supplierId: data.supplierId,
     billNumber: data.billNumber ?? null,
     status: 'draft',
+    billDate: data.issueDate,
     issueDate: data.issueDate,
     dueDate: data.dueDate,
     ...totals,
-    amountPaid: 0,
     amountDue: totals.totalAmount,
-    currency: data.currency ?? 'AUD',
-    notes: data.notes ?? null,
     lineItemCount: computedLines.length,
   };
 }
@@ -106,12 +94,11 @@ export async function updateBill(billId: string, data: UpdateBillInput) {
   }
 
   const now = new Date().toISOString();
-  const updates: Record<string, unknown> = { updatedAt: now };
+  const updates: Record<string, unknown> = {};
 
   if (data.billNumber !== undefined) updates.billNumber = data.billNumber;
-  if (data.issueDate !== undefined) updates.issueDate = data.issueDate;
+  if (data.issueDate !== undefined) updates.billDate = data.issueDate;
   if (data.dueDate !== undefined) updates.dueDate = data.dueDate;
-  if (data.notes !== undefined) updates.notes = data.notes;
 
   // If line items provided, replace all and recalculate
   if (data.lineItems && data.lineItems.length > 0) {
@@ -120,9 +107,7 @@ export async function updateBill(billId: string, data: UpdateBillInput) {
 
     // Insert new lines
     const computedLines = data.lineItems.map((item) => {
-      const gstRate = item.gstRate ?? 0.1;
       const amount = calcLineAmount(item.quantity, item.unitPriceCents);
-      const gstAmt = calcGst(amount, gstRate);
       return {
         id: item.id ?? crypto.randomUUID(),
         billId,
@@ -130,10 +115,8 @@ export async function updateBill(billId: string, data: UpdateBillInput) {
         quantity: item.quantity,
         unitPrice: item.unitPriceCents,
         amount,
-        gstRate,
-        gstAmount: gstAmt,
-        accountCode: item.accountCode ?? null,
         taxCode: item.taxCode ?? null,
+        createdAt: now,
       };
     });
 
@@ -143,12 +126,9 @@ export async function updateBill(billId: string, data: UpdateBillInput) {
 
     // Recalculate totals
     const totals = calcBillTotals(computedLines);
-    const currentPaid = Number(existing.amountPaid) || 0;
-
     updates.subtotal = totals.subtotal;
     updates.gstAmount = totals.gstAmount;
     updates.totalAmount = totals.totalAmount;
-    updates.amountDue = totals.totalAmount - currentPaid;
   }
 
   await db.update(bills).set(updates).where(eq(bills.id, billId)).run();

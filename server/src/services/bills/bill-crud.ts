@@ -45,7 +45,7 @@ export async function listBills(
     conditions.push(eq(bills.supplierId, supplierId));
   }
 
-  const dateCol = dateField === 'issueDate' ? bills.issueDate : bills.dueDate;
+  const dateCol = dateField === 'issueDate' ? bills.billDate : bills.dueDate;
   if (dateFrom) {
     conditions.push(gte(dateCol, dateFrom));
   }
@@ -70,18 +70,14 @@ export async function listBills(
       supplierId: bills.supplierId,
       billNumber: bills.billNumber,
       status: bills.status,
-      issueDate: bills.issueDate,
+      billDate: bills.billDate,
       dueDate: bills.dueDate,
       subtotal: bills.subtotal,
       gstAmount: bills.gstAmount,
       totalAmount: bills.totalAmount,
-      amountPaid: bills.amountPaid,
-      amountDue: bills.amountDue,
-      currency: bills.currency,
-      notes: bills.notes,
       createdAt: bills.createdAt,
-      updatedAt: bills.updatedAt,
-      supplierName: suppliers.businessName,
+      tenantId: bills.tenantId,
+      supplierName: suppliers.name,
     })
     .from(bills)
     .leftJoin(suppliers, eq(bills.supplierId, suppliers.id))
@@ -99,17 +95,14 @@ export async function listBills(
     supplierId: r.supplierId,
     billNumber: r.billNumber,
     status: r.status,
-    issueDate: r.issueDate,
+    billDate: r.billDate,
+    issueDate: r.issueDate ?? null,
     dueDate: r.dueDate,
     subtotal: Number(r.subtotal) || 0,
     gstAmount: Number(r.gstAmount) || 0,
     totalAmount: Number(r.totalAmount) || 0,
-    amountPaid: Number(r.amountPaid) || 0,
-    amountDue: Number(r.amountDue) || 0,
-    currency: r.currency ?? 'AUD',
-    notes: r.notes,
+    amountDue: r.amountDue ?? null,
     createdAt: String(r.createdAt),
-    updatedAt: String(r.updatedAt),
     supplierName: r.supplierName ?? 'Unknown Supplier',
   }));
 
@@ -131,18 +124,14 @@ export async function getBill(billId: string): Promise<BillDetail> {
       supplierId: bills.supplierId,
       billNumber: bills.billNumber,
       status: bills.status,
-      issueDate: bills.issueDate,
+      billDate: bills.billDate,
       dueDate: bills.dueDate,
       subtotal: bills.subtotal,
       gstAmount: bills.gstAmount,
       totalAmount: bills.totalAmount,
-      amountPaid: bills.amountPaid,
-      amountDue: bills.amountDue,
-      currency: bills.currency,
-      notes: bills.notes,
       createdAt: bills.createdAt,
-      updatedAt: bills.updatedAt,
-      supplierName: suppliers.businessName,
+      tenantId: bills.tenantId,
+      supplierName: suppliers.name,
     })
     .from(bills)
     .leftJoin(suppliers, eq(bills.supplierId, suppliers.id))
@@ -186,9 +175,6 @@ export async function getBill(billId: string): Promise<BillDetail> {
     quantity: Number(l.quantity) || 0,
     unitPrice: Number(l.unitPrice) || 0,
     amount: Number(l.amount) || 0,
-    gstRate: l.gstRate != null ? Number(l.gstRate) : 0.1,
-    gstAmount: Number(l.gstAmount) || 0,
-    accountCode: l.accountCode,
     taxCode: l.taxCode,
   }));
 
@@ -199,8 +185,8 @@ export async function getBill(billId: string): Promise<BillDetail> {
     amount: Number(p.amount) || 0,
     paymentMethod: p.paymentMethod,
     reference: p.reference,
-    transactionId: p.transactionId,
-    notes: p.notes,
+    transactionId: p.transactionId ?? null,
+    notes: p.notes ?? null,
     createdAt: String(p.createdAt),
   }));
 
@@ -210,17 +196,14 @@ export async function getBill(billId: string): Promise<BillDetail> {
     supplierId: row.supplierId,
     billNumber: row.billNumber,
     status: row.status,
-    issueDate: row.issueDate,
+    billDate: row.billDate,
+    issueDate: row.issueDate ?? null,
     dueDate: row.dueDate,
     subtotal: Number(row.subtotal) || 0,
     gstAmount: Number(row.gstAmount) || 0,
     totalAmount: Number(row.totalAmount) || 0,
-    amountPaid: Number(row.amountPaid) || 0,
-    amountDue: Number(row.amountDue) || 0,
-    currency: row.currency ?? 'AUD',
-    notes: row.notes,
+    amountDue: row.amountDue ?? null,
     createdAt: String(row.createdAt),
-    updatedAt: String(row.updatedAt),
     supplierName: row.supplierName ?? 'Unknown Supplier',
     lineItems,
     payments: paymentList,

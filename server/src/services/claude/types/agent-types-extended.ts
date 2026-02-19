@@ -135,6 +135,7 @@ export interface PayrollAgentInput {
     category?: string;
   }>;
   financialYear?: string;
+  quarter?: number;
   employeeId?: string; // Wave 4: for employee-specific queries
   hoursWorked?: number; // Wave 4: for pay calculations
 }
@@ -170,6 +171,9 @@ export interface PersonalTaxClaimsInput {
     amount: number;
     category?: string;
   }>;
+  occupation?: string;
+  hasHomeOffice?: boolean;
+  motorVehicleKm?: number;
 }
 
 export interface PersonalTaxClaimsOutput {

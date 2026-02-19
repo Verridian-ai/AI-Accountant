@@ -40,19 +40,13 @@ export async function voidInvoice(userId: string, invoiceId: string): Promise<In
 
   await db
     .update(invoices)
-    .set({
-      status: 'void',
-      amountDue: 0,
-      updatedAt: nowISO(),
-    })
+    .set({ status: 'void' })
     .where(eq(invoices.id, invoiceId))
     .run();
 
   return {
     ...invoice,
     status: 'void',
-    amountDue: 0,
-    updatedAt: nowISO(),
   };
 }
 
@@ -96,20 +90,15 @@ export async function recordPayment(
     })
     .run();
 
-  const newAmountPaid = (invoice.amountPaid ?? 0) + data.amountCents;
-  const newAmountDue = (invoice.totalAmount ?? 0) - newAmountPaid;
+  const invoiceUpdates: Record<string, unknown> = {};
 
-  const invoiceUpdates: Record<string, unknown> = {
-    amountPaid: newAmountPaid,
-    amountDue: newAmountDue,
-    updatedAt: now,
-  };
-
-  if (newAmountPaid >= (invoice.totalAmount ?? 0)) {
+  if (data.amountCents >= (invoice.totalAmount ?? 0)) {
     invoiceUpdates.status = 'paid';
   }
 
-  await db.update(invoices).set(invoiceUpdates).where(eq(invoices.id, invoiceId)).run();
+  if (Object.keys(invoiceUpdates).length > 0) {
+    await db.update(invoices).set(invoiceUpdates).where(eq(invoices.id, invoiceId)).run();
+  }
 
   return {
     id: paymentId,
@@ -153,19 +142,13 @@ export async function createCreditNote(
       userId,
       customerId: data.customerId,
       invoiceNumber,
-      type: 'credit_note',
       status: 'draft',
-      issueDate: issueDateStr,
+      invoiceDate: issueDateStr,
       dueDate: issueDateStr,
       subtotal,
       gstAmount,
       totalAmount,
-      amountPaid: 0,
-      amountDue: 0,
-      currency: 'AUD',
-      notes: data.notes ?? null,
       createdAt: now,
-      updatedAt: now,
     })
     .run();
 
@@ -176,15 +159,13 @@ export async function createCreditNote(
     const lineValues = {
       id: lineId,
       invoiceId,
-      lineOrder: i + 1,
       description: li.description,
       quantity: li.quantity,
       unitPrice: li.unitPriceCents,
       amount: li.amount,
-      gstRate: li.gstRate,
-      gstAmount: li.gstAmount,
-      accountCode: li.accountCode ?? null,
+      gstAmount: li.gstAmount ?? null,
       taxCode: li.taxCode ?? null,
+      createdAt: now,
     };
     await db.insert(invoiceLines).values(lineValues).run();
     insertedLines.push(lineValues);
@@ -196,21 +177,18 @@ export async function createCreditNote(
       userId,
       customerId: data.customerId,
       invoiceNumber,
-      type: 'credit_note',
       status: 'draft',
-      issueDate: issueDateStr,
+      invoiceDate: issueDateStr,
       dueDate: issueDateStr,
       subtotal,
       gstAmount,
       totalAmount,
-      amountPaid: 0,
-      amountDue: 0,
-      currency: 'AUD',
-      notes: data.notes ?? null,
-      pdfPath: null,
+      amountPaid: null,
+      amountDue: null,
       termsAndConditions: null,
+      notes: null,
       createdAt: now,
-      updatedAt: now,
+      tenantId: null,
     },
     lines: insertedLines,
   };

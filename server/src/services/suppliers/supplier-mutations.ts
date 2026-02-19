@@ -91,25 +91,21 @@ export function validateBSB(bsb: string): void {
 interface SupplierRecord {
   id: string;
   userId: string;
-  businessName: string;
-  contactName: string | null;
+  name: string;
   email: string | null;
   phone: string | null;
   address: string | null;
   abn: string | null;
-  paymentTermsDays: number;
-  bankBsb: string | null;
-  bankAccountNumber: string | null;
-  bankAccountName: string | null;
-  notes: string | null;
+  paymentTerms: string | null;
   isActive: boolean;
   createdAt: string;
+  tenantId: string | null;
 }
 
 export async function createSupplierRecord(
   userId: string,
   data: CreateSupplierInput,
-  rowToSupplier: (row: Record<string, unknown>, maskBank: boolean) => Supplier,
+  rowToSupplier: (row: Record<string, unknown>) => Supplier,
 ): Promise<Supplier> {
   await ensureTables();
 
@@ -118,43 +114,30 @@ export async function createSupplierRecord(
     if (!validation.valid) {
       throw new Error(`Invalid ABN: ${validation.error}`);
     }
-    if (validation.businessName && !data.businessName) {
-      data.businessName = validation.businessName;
-    }
-  }
-
-  if (data.bankBsb) {
-    validateBSB(data.bankBsb);
   }
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
-  const encryptedAccountNumber = data.bankAccountNumber ? encrypt(data.bankAccountNumber) : null;
-
   const record: SupplierRecord = {
     id,
     userId,
-    businessName: data.businessName,
-    contactName: data.contactName ?? null,
+    name: data.businessName ?? data.name ?? '',
     email: data.email ?? null,
     phone: data.phone ?? null,
     address: data.address ?? null,
     abn: data.abn ? (normalizeABN(data.abn) ?? data.abn) : null,
-    paymentTermsDays: data.paymentTermsDays ?? 30,
-    bankBsb: data.bankBsb ?? null,
-    bankAccountNumber: encryptedAccountNumber,
-    bankAccountName: data.bankAccountName ?? null,
-    notes: data.notes ?? null,
+    paymentTerms: data.paymentTerms ?? null,
     isActive: true,
     createdAt: now,
+    tenantId: null,
   };
 
   if (_suppliers) {
     await db.insert(_suppliers).values(record).run();
   }
 
-  return rowToSupplier(record as unknown as Record<string, unknown>, true);
+  return rowToSupplier(record as unknown as Record<string, unknown>);
 }
 
 // ---------------------------------------------------------------------------
@@ -164,7 +147,7 @@ export async function createSupplierRecord(
 export async function updateSupplierRecord(
   supplierId: string,
   data: UpdateSupplierInput,
-  rowToSupplier: (row: Record<string, unknown>, maskBank: boolean) => Supplier,
+  rowToSupplier: (row: Record<string, unknown>) => Supplier,
 ): Promise<Supplier> {
   await ensureTables();
   if (!_suppliers) throw new Error('Suppliers table not available');
@@ -182,26 +165,14 @@ export async function updateSupplierRecord(
     }
   }
 
-  if (data.bankBsb !== undefined && data.bankBsb !== null) {
-    validateBSB(data.bankBsb);
-  }
-
   const updates: Record<string, unknown> = {};
 
-  if (data.businessName !== undefined) updates.businessName = data.businessName;
-  if (data.contactName !== undefined) updates.contactName = data.contactName;
+  if (data.name !== undefined) updates.name = data.name;
   if (data.email !== undefined) updates.email = data.email;
   if (data.phone !== undefined) updates.phone = data.phone;
   if (data.address !== undefined) updates.address = data.address;
   if (data.abn !== undefined) updates.abn = data.abn ? (normalizeABN(data.abn) ?? data.abn) : null;
-  if (data.paymentTermsDays !== undefined) updates.paymentTermsDays = data.paymentTermsDays;
-  if (data.bankBsb !== undefined) updates.bankBsb = data.bankBsb;
-  if (data.bankAccountName !== undefined) updates.bankAccountName = data.bankAccountName;
-  if (data.notes !== undefined) updates.notes = data.notes;
-
-  if (data.bankAccountNumber !== undefined) {
-    updates.bankAccountNumber = data.bankAccountNumber ? encrypt(data.bankAccountNumber) : null;
-  }
+  if (data.paymentTerms !== undefined) updates.paymentTerms = data.paymentTerms;
 
   if (Object.keys(updates).length > 0) {
     await db.update(_suppliers).set(updates).where(eq(_suppliers.id, supplierId)).run();
@@ -209,7 +180,7 @@ export async function updateSupplierRecord(
 
   const updated = await db.select().from(_suppliers).where(eq(_suppliers.id, supplierId)).get();
 
-  return rowToSupplier(updated, true);
+  return rowToSupplier(updated);
 }
 
 // ---------------------------------------------------------------------------

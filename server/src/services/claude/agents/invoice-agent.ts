@@ -180,7 +180,7 @@ Key rules:
               gstCents: inv.gstAmount,
               totalCents: inv.totalAmount,
               status: inv.status,
-              issueDate: inv.issueDate,
+              issueDate: inv.invoiceDate,
               dueDate: inv.dueDate,
             },
           };

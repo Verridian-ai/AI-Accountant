@@ -16,19 +16,17 @@ export const suppliers = sqliteTable('suppliers', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  businessName: text('business_name').notNull(),
+  name: text('name').notNull(),
+  businessName: text('business_name'),
   contactName: text('contact_name'),
+  abn: text('abn'),
   email: text('email'),
   phone: text('phone'),
   address: text('address'),
-  abn: text('abn'),
-  paymentTermsDays: integer('payment_terms_days').notNull().default(30),
-  bankBsb: text('bank_bsb'),
-  bankAccountNumber: text('bank_account_number'),
-  bankAccountName: text('bank_account_name'),
-  notes: text('notes'),
+  paymentTerms: text('payment_terms'),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+  tenantId: text('tenant_id'),
 });
 
 export const bills = sqliteTable('bills', {
@@ -40,18 +38,17 @@ export const bills = sqliteTable('bills', {
     .notNull()
     .references(() => suppliers.id),
   billNumber: text('bill_number'),
-  status: text('status').notNull().default('draft'),
-  issueDate: text('issue_date').notNull(),
+  billDate: text('bill_date').notNull(),
+  issueDate: text('issue_date'),
   dueDate: text('due_date').notNull(),
   subtotal: integer('subtotal').notNull().default(0),
   gstAmount: integer('gst_amount').notNull().default(0),
   totalAmount: integer('total_amount').notNull().default(0),
-  amountPaid: integer('amount_paid').notNull().default(0),
-  amountDue: integer('amount_due').notNull().default(0),
-  currency: text('currency').notNull().default('AUD'),
+  amountDue: integer('amount_due'),
+  status: text('status').notNull().default('draft'),
   notes: text('notes'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
+  tenantId: text('tenant_id'),
 });
 
 export const billLines = sqliteTable(
@@ -65,10 +62,8 @@ export const billLines = sqliteTable(
     quantity: real('quantity').notNull().default(1),
     unitPrice: integer('unit_price').notNull().default(0),
     amount: integer('amount').notNull().default(0),
-    gstRate: real('gst_rate').default(0.1),
-    gstAmount: integer('gst_amount').default(0),
-    accountCode: text('account_code'),
     taxCode: text('tax_code'),
+    createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   },
   (t) => ({
     billIdx: index('idx_bill_lines_bill_id').on(t.billId),
@@ -84,7 +79,7 @@ export const billPayments = sqliteTable('bill_payments', {
   amount: integer('amount').notNull(),
   paymentMethod: text('payment_method'),
   reference: text('reference'),
-  transactionId: text('transaction_id').references(() => transactions.id),
+  transactionId: text('transaction_id'),
   notes: text('notes'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
@@ -98,32 +93,27 @@ export const purchaseOrders = sqliteTable('purchase_orders', {
     .notNull()
     .references(() => suppliers.id),
   poNumber: text('po_number').notNull().unique(),
+  poDate: text('po_date').notNull(),
   status: text('status').notNull().default('draft'),
-  issueDate: text('issue_date').notNull(),
-  expectedDate: text('expected_date'),
-  subtotal: integer('subtotal').notNull().default(0),
-  gstAmount: integer('gst_amount').notNull().default(0),
   totalAmount: integer('total_amount').notNull().default(0),
-  notes: text('notes'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const poLines = sqliteTable('po_lines', {
   id: text('id').primaryKey(),
-  purchaseOrderId: text('purchase_order_id')
+  poId: text('po_id')
     .notNull()
     .references(() => purchaseOrders.id, { onDelete: 'cascade' }),
   description: text('description').notNull(),
   quantity: real('quantity').notNull().default(1),
   unitPrice: integer('unit_price').notNull().default(0),
   amount: integer('amount').notNull().default(0),
-  quantityReceived: real('quantity_received').notNull().default(0),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const poReceipts = sqliteTable('po_receipts', {
   id: text('id').primaryKey(),
-  purchaseOrderId: text('purchase_order_id')
+  poId: text('po_id')
     .notNull()
     .references(() => purchaseOrders.id),
   receiptDate: text('receipt_date').notNull(),
@@ -141,6 +131,7 @@ export const poReceiptLines = sqliteTable('po_receipt_lines', {
     .notNull()
     .references(() => poLines.id),
   quantityReceived: real('quantity_received').notNull(),
+  createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const supplierPaymentRuns = sqliteTable('supplier_payment_runs', {
@@ -148,16 +139,15 @@ export const supplierPaymentRuns = sqliteTable('supplier_payment_runs', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  paymentDate: text('payment_date').notNull(),
+  runDate: text('run_date').notNull(),
   status: text('status').notNull().default('draft'),
   totalAmount: integer('total_amount').notNull().default(0),
-  bankReference: text('bank_reference'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const supplierPaymentRunItems = sqliteTable('supplier_payment_run_items', {
   id: text('id').primaryKey(),
-  paymentRunId: text('payment_run_id')
+  runId: text('run_id')
     .notNull()
     .references(() => supplierPaymentRuns.id, { onDelete: 'cascade' }),
   billId: text('bill_id')

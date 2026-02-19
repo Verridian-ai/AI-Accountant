@@ -50,17 +50,14 @@ export interface BillWithSupplier {
   supplierId: string;
   billNumber: string | null;
   status: string;
-  issueDate: string;
+  billDate: string;
+  issueDate: string | null;
   dueDate: string;
   subtotal: number;
   gstAmount: number;
   totalAmount: number;
-  amountPaid: number;
-  amountDue: number;
-  currency: string;
-  notes: string | null;
+  amountDue: number | null;
   createdAt: string;
-  updatedAt: string;
   supplierName: string;
 }
 
@@ -71,9 +68,6 @@ export interface BillLine {
   quantity: number;
   unitPrice: number;
   amount: number;
-  gstRate: number;
-  gstAmount: number;
-  accountCode: string | null;
   taxCode: string | null;
 }
 
@@ -158,17 +152,16 @@ export function calcGst(amountCents: number, gstRate: number): number {
 }
 
 /** Calculate bill totals from line items. */
-export function calcBillTotals(lines: Array<{ amount: number; gstAmount: number }>): {
+export function calcBillTotals(lines: Array<{ amount: number }>): {
   subtotal: number;
   gstAmount: number;
   totalAmount: number;
 } {
   let subtotal = 0;
-  let gstAmount = 0;
   for (const line of lines) {
     subtotal += line.amount;
-    gstAmount += line.gstAmount;
   }
+  const gstAmount = Math.round(subtotal * 0.1);
   return { subtotal, gstAmount, totalAmount: subtotal + gstAmount };
 }
 

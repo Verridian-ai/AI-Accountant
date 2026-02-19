@@ -5,28 +5,26 @@
 export interface Supplier {
   id: string;
   userId: string;
-  businessName: string;
-  contactName: string | null;
+  name: string;
   email: string | null;
   phone: string | null;
   address: string | null;
   abn: string | null;
-  paymentTermsDays: number;
-  bankBsb: string | null;
-  bankAccountNumber: string | null; // masked in listings, encrypted in DB
-  bankAccountName: string | null;
-  notes: string | null;
+  paymentTerms: string | null;
   isActive: boolean;
   createdAt: string;
+  tenantId: string | null;
 }
 
 export interface CreateSupplierInput {
-  businessName: string;
+  name?: string;
+  businessName?: string;
   contactName?: string;
   email?: string;
   phone?: string;
   address?: string;
   abn?: string;
+  paymentTerms?: string;
   paymentTermsDays?: number;
   bankBsb?: string;
   bankAccountNumber?: string;
@@ -35,12 +33,14 @@ export interface CreateSupplierInput {
 }
 
 export interface UpdateSupplierInput {
+  name?: string;
   businessName?: string;
   contactName?: string;
   email?: string;
   phone?: string;
   address?: string;
   abn?: string;
+  paymentTerms?: string;
   paymentTermsDays?: number;
   bankBsb?: string;
   bankAccountNumber?: string;
@@ -66,6 +66,6 @@ export interface ListOptions {
   limit?: number;
   isActive?: boolean;
   search?: string;
-  sortBy?: 'businessName' | 'createdAt' | 'totalSpend';
+  sortBy?: 'name' | 'createdAt' | 'totalSpend';
   sortOrder?: 'asc' | 'desc';
 }

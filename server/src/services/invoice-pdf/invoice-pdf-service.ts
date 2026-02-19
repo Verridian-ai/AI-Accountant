@@ -118,7 +118,7 @@ export class InvoicePDFService {
   ): number {
     let y = startY;
     const invoiceNumber = sanitizePDFText(invoice?.invoiceNumber ?? '', 50);
-    const issueDate = formatDate(invoice?.issueDate);
+    const issueDate = formatDate(invoice?.invoiceDate);
     const dueDate = formatDate(invoice?.dueDate);
     const status = sanitizePDFText(invoice?.status ?? 'draft', 20).toUpperCase();
 
@@ -138,7 +138,7 @@ export class InvoicePDFService {
 
     const terms = invoice?.termsAndConditions
       ? sanitizePDFText(invoice.termsAndConditions, 50)
-      : `Net ${invoice?.dueDate && invoice?.issueDate ? Math.round((new Date(invoice.dueDate).getTime() - new Date(invoice.issueDate).getTime()) / 86400000) : 30} days`;
+      : `Net ${invoice?.dueDate && invoice?.invoiceDate ? Math.round((new Date(invoice.dueDate).getTime() - new Date(invoice.invoiceDate).getTime()) / 86400000) : 30} days`;
     drawText(page, 'Terms:', MARGIN_LEFT, y, boldFont, BODY_SIZE, GREY_TEXT);
     drawText(page, terms, MARGIN_LEFT + 95, y, font, BODY_SIZE, DARK_TEXT);
 

@@ -16,20 +16,20 @@ export const customers = sqliteTable('customers', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  businessName: text('business_name').notNull(),
-  contactName: text('contact_name'),
+  name: text('name').notNull(),
+  abn: text('abn'),
   email: text('email'),
   phone: text('phone'),
   address: text('address'),
+  paymentTerms: text('payment_terms'),
+  businessName: text('business_name'),
+  contactName: text('contact_name'),
   city: text('city'),
   state: text('state'),
   postcode: text('postcode'),
-  country: text('country').notNull().default('AU'),
-  abn: text('abn'),
-  paymentTermsDays: integer('payment_terms_days').notNull().default(30),
-  notes: text('notes'),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+  tenantId: text('tenant_id'),
 });
 
 export const customerContacts = sqliteTable('customer_contacts', {
@@ -40,7 +40,6 @@ export const customerContacts = sqliteTable('customer_contacts', {
   name: text('name').notNull(),
   email: text('email'),
   phone: text('phone'),
-  role: text('role'),
   isPrimary: integer('is_primary', { mode: 'boolean' }).default(false),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
@@ -54,21 +53,18 @@ export const invoices = sqliteTable('invoices', {
     .notNull()
     .references(() => customers.id),
   invoiceNumber: text('invoice_number').notNull(),
-  type: text('type').notNull().default('tax_invoice'),
-  status: text('status').notNull().default('draft'),
-  issueDate: text('issue_date').notNull(),
+  invoiceDate: text('invoice_date').notNull(),
   dueDate: text('due_date').notNull(),
   subtotal: integer('subtotal').notNull().default(0),
   gstAmount: integer('gst_amount').notNull().default(0),
   totalAmount: integer('total_amount').notNull().default(0),
-  amountPaid: integer('amount_paid').notNull().default(0),
-  amountDue: integer('amount_due').notNull().default(0),
-  currency: text('currency').notNull().default('AUD'),
-  notes: text('notes'),
+  amountPaid: integer('amount_paid').default(0),
+  amountDue: integer('amount_due'),
+  status: text('status').notNull().default('draft'),
   termsAndConditions: text('terms_and_conditions'),
-  pdfPath: text('pdf_path'),
+  notes: text('notes'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-  updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
+  tenantId: text('tenant_id'),
 });
 
 export const invoiceLines = sqliteTable(
@@ -82,10 +78,9 @@ export const invoiceLines = sqliteTable(
     quantity: real('quantity').notNull().default(1),
     unitPrice: integer('unit_price').notNull().default(0),
     amount: integer('amount').notNull().default(0),
-    gstRate: real('gst_rate').notNull().default(0.1),
-    gstAmount: integer('gst_amount').notNull().default(0),
-    accountCode: text('account_code'),
+    gstAmount: integer('gst_amount').default(0),
     taxCode: text('tax_code'),
+    createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   },
   (t) => ({
     invoiceIdx: index('idx_invoice_lines_invoice_id').on(t.invoiceId),

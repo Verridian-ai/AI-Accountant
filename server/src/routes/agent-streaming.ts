@@ -52,8 +52,13 @@ streamingRoutes.post(
 );
 
 streamingRoutes.get('/session/:sessionId', async (c) => {
+  const sessionId = c.req.param('sessionId');
+  // Reject anything that isn't a plain UUID to prevent unexpected query shapes
+  if (!/^[0-9a-f-]{36}$/i.test(sessionId)) {
+    return c.json({ error: 'Invalid session ID' }, 400);
+  }
   const session = await db.get(
-    sql`SELECT * FROM agent_stream_sessions WHERE id = ${c.req.param('sessionId')}`,
+    sql`SELECT * FROM agent_stream_sessions WHERE id = ${sessionId}`,
   );
   return session ? c.json(session) : c.json({ error: 'Not found' }, 404);
 });
