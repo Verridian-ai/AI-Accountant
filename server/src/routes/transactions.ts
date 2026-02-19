@@ -13,7 +13,6 @@ transactionRoutes.use('/*', tenantAuthMiddleware());
 transactionRoutes.get('/', async (c) => {
   const payload = c.get('jwtPayload');
   const userId = payload.userId as string;
-  const _tenantId = payload.tenantId as string;
   const limit = Math.min(parseInt(c.req.query('limit') || '100'), 500);
   const offset = parseInt(c.req.query('offset') || '0');
 

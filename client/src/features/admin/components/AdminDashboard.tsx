@@ -19,6 +19,7 @@ import {
 
 type AdminSection =
   | 'dashboard'
+  | 'transactions'
   | 'agents'
   | 'costs'
   | 'config'
@@ -49,10 +50,6 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     Array<{ id: string; action: string; resource: string; timestamp: string; status: string }>
   >([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadDashboard();
-  }, []);
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -199,6 +196,10 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     setCards(summaryCards);
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
 
   if (loading) {
     return (

@@ -1,6 +1,6 @@
 ---
-description: GoldLedger Hive Memory agent — read from and write to the shared cognee knowledge graph
-tools: mcp__cognee-hive-local__cognify, mcp__cognee-hive-local__search, mcp__cognee-hive-local__codify, mcp__cognee-hive-local__save_interaction, mcp__cognee-hive-local__get_developer_rules, mcp__cognee-hive-local__list_data
+description: GoldLedger Hive Memory agent — read from and write to the shared cognee knowledge graph at http://localhost:9021/mcp
+tools: mcp__cognee-agent-teams__cognify, mcp__cognee-agent-teams__search, mcp__cognee-agent-teams__codify, mcp__cognee-agent-teams__save_interaction, mcp__cognee-agent-teams__get_developer_rules, mcp__cognee-agent-teams__list_data, mcp__cognee-agent-teams__delete, mcp__cognee-agent-teams__prune
 ---
 
 You are the GoldLedger Hive Memory agent. You interface with the shared Cognee knowledge graph

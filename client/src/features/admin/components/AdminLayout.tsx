@@ -12,6 +12,7 @@ import { UserManager } from './UserManager';
 import { ActivityLog } from './ActivityLog';
 import { FeatureFlagManager } from './FeatureFlagManager';
 import { SystemMetricsCharts } from './SystemMetricsCharts';
+import { AdminTransactionsView } from '../../../components/admin/AdminTransactionsView';
 import {
   LayoutDashboard,
   Bot,
@@ -29,10 +30,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  Receipt,
 } from 'lucide-react';
 
 type AdminSection =
   | 'dashboard'
+  | 'transactions'
   | 'agents'
   | 'costs'
   | 'config'
@@ -50,6 +53,7 @@ interface AdminLayoutProps {
 
 const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType; group: string }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Overview' },
+  { id: 'transactions', label: 'Transactions', icon: Receipt, group: 'Overview' },
   { id: 'agents', label: 'Agent Monitor', icon: Bot, group: 'AI Agents' },
   { id: 'costs', label: 'Cost Analysis', icon: DollarSign, group: 'AI Agents' },
   { id: 'config', label: 'Agent Config', icon: Settings, group: 'AI Agents' },
@@ -98,6 +102,8 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
     switch (activeSection) {
       case 'dashboard':
         return <AdminDashboard onNavigate={setActiveSection} />;
+      case 'transactions':
+        return <AdminTransactionsView />;
       case 'agents':
         return <AgentMonitor />;
       case 'costs':
@@ -123,8 +129,6 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
     }
   };
 
-  let lastGroup = '';
-
   return (
     <div className="min-h-screen bg-[#0a0a1a] flex">
       {/* Sidebar */}
@@ -144,9 +148,8 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-4 space-y-1 px-2">
-          {NAV_ITEMS.map((item) => {
-            const showGroup = item.group !== lastGroup;
-            lastGroup = item.group;
+          {NAV_ITEMS.map((item, index) => {
+            const showGroup = index === 0 || item.group !== NAV_ITEMS[index - 1].group;
             return (
               <div key={item.id}>
                 {showGroup && !sidebarCollapsed && (
