@@ -1,4 +1,5 @@
 import type { Hono } from 'hono';
+import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { tenantService } from '../../services/tenant.js';
 import { rbacService } from '../../services/rbac.js';
@@ -114,17 +115,21 @@ export function registerMemberHandlers(app: Hono): void {
   );
 
   // POST /:tenantId/permissions/reset — Reset permissions to defaults
-  app.post('/:tenantId/permissions/reset', async (c) => {
-    try {
-      const tenantId = c.req.param('tenantId');
-      const userId = getUserId(c);
-      const role = await rbacService.getRoleForUser(tenantId, userId);
-      if (role !== 'owner')
-        return c.json({ error: 'Only tenant owners can reset permissions' }, 403);
-      await rbacService.resetToDefaults(tenantId);
-      return c.json({ message: 'Permissions reset to defaults' });
-    } catch (err: unknown) {
-      return c.json({ error: getErrorMessage(err) || 'Failed to reset permissions' }, 500);
-    }
-  });
+  app.post(
+    '/:tenantId/permissions/reset',
+    zValidator('json', z.object({}).optional()),
+    async (c) => {
+      try {
+        const tenantId = c.req.param('tenantId');
+        const userId = getUserId(c);
+        const role = await rbacService.getRoleForUser(tenantId, userId);
+        if (role !== 'owner')
+          return c.json({ error: 'Only tenant owners can reset permissions' }, 403);
+        await rbacService.resetToDefaults(tenantId);
+        return c.json({ message: 'Permissions reset to defaults' });
+      } catch (err: unknown) {
+        return c.json({ error: getErrorMessage(err) || 'Failed to reset permissions' }, 500);
+      }
+    },
+  );
 }

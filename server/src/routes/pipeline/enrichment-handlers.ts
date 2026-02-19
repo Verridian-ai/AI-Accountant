@@ -18,7 +18,7 @@ export function registerEnrichmentHandlers(app: Hono): void {
    * POST /api/enrichment/run
    * Trigger batch enrichment for uncategorized transactions.
    */
-  app.post('/enrichment/run', async (c) => {
+  app.post('/enrichment/run', zValidator('json', z.object({}).optional()), async (c) => {
     try {
       const payload = c.get('jwtPayload');
       const userId = payload.userId;
@@ -57,31 +57,35 @@ export function registerEnrichmentHandlers(app: Hono): void {
    * POST /api/enrichment/transaction/:id
    * Enrich a single transaction by ID.
    */
-  app.post('/enrichment/transaction/:id', async (c) => {
-    try {
-      const payload = c.get('jwtPayload');
-      const userId = payload.userId;
-      const transactionId = c.req.param('id');
+  app.post(
+    '/enrichment/transaction/:id',
+    zValidator('json', z.object({}).optional()),
+    async (c) => {
+      try {
+        const payload = c.get('jwtPayload');
+        const userId = payload.userId;
+        const transactionId = c.req.param('id');
 
-      const [tx] = await db
-        .select()
-        .from(transactions)
-        .where(and(eq(transactions.id, transactionId), eq(transactions.userId, userId)))
-        .all();
+        const [tx] = await db
+          .select()
+          .from(transactions)
+          .where(and(eq(transactions.id, transactionId), eq(transactions.userId, userId)))
+          .all();
 
-      if (!tx) {
-        return c.json({ error: 'Transaction not found' }, 404);
+        if (!tx) {
+          return c.json({ error: 'Transaction not found' }, 404);
+        }
+
+        const result = await enrichmentService.enrichTransactions([transactionId], userId);
+        events.emit('update', { type: 'transactions_updated' });
+
+        return c.json({ message: 'Transaction enriched', transactionId, ...result });
+      } catch (err) {
+        console.error('Single transaction enrichment failed:', err);
+        return c.json({ error: 'Transaction enrichment failed' }, 500);
       }
-
-      const result = await enrichmentService.enrichTransactions([transactionId], userId);
-      events.emit('update', { type: 'transactions_updated' });
-
-      return c.json({ message: 'Transaction enriched', transactionId, ...result });
-    } catch (err) {
-      console.error('Single transaction enrichment failed:', err);
-      return c.json({ error: 'Transaction enrichment failed' }, 500);
-    }
-  });
+    },
+  );
 
   /**
    * GET /api/bas/prefill?period=YYYY-QN

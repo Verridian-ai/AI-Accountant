@@ -235,26 +235,30 @@ streamSchemaRoutes.get('/migration/benchmarks', async (c) => {
 });
 
 // POST /api/migration/rollback/:agentType
-streamSchemaRoutes.post('/migration/rollback/:agentType', async (c) => {
-  try {
-    const agentType = c.req.param('agentType');
-    const existing = await db.get(sql`SELECT id, migration_phase as "migrationPhase"
+streamSchemaRoutes.post(
+  '/migration/rollback/:agentType',
+  zValidator('json', z.object({}).optional()),
+  async (c) => {
+    try {
+      const agentType = c.req.param('agentType');
+      const existing = await db.get(sql`SELECT id, migration_phase as "migrationPhase"
         FROM agent_migration_status WHERE agent_type = ${agentType}`);
-    if (!existing)
-      return c.json({ error: `No migration status found for agent: ${agentType}` }, 404);
-    await db.run(sql`UPDATE agent_migration_status
+      if (!existing)
+        return c.json({ error: `No migration status found for agent: ${agentType}` }, 404);
+      await db.run(sql`UPDATE agent_migration_status
         SET migration_phase = 'legacy', rollback_count = rollback_count + 1, updated_at = NOW()
         WHERE agent_type = ${agentType}`);
-    return c.json({
-      success: true,
-      agentType,
-      migrationPhase: 'legacy',
-      message: `Agent ${agentType} rolled back to legacy implementation`,
-    });
-  } catch (err) {
-    console.error('Migration rollback failed:', err);
-    return c.json({ error: 'Failed to rollback agent' }, 500);
-  }
-});
+      return c.json({
+        success: true,
+        agentType,
+        migrationPhase: 'legacy',
+        message: `Agent ${agentType} rolled back to legacy implementation`,
+      });
+    } catch (err) {
+      console.error('Migration rollback failed:', err);
+      return c.json({ error: 'Failed to rollback agent' }, 500);
+    }
+  },
+);
 
 export default streamSchemaRoutes;

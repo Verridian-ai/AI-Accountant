@@ -1,4 +1,6 @@
 import type { Hono } from 'hono';
+import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { db, transactions, accounts, transferLinks } from '../../schema.js';
 import { eq } from 'drizzle-orm';
 import {
@@ -17,7 +19,7 @@ export function registerTransferHandlers(app: Hono): void {
    * POST /api/transfers/detect
    * Trigger transfer detection across all user accounts.
    */
-  app.post('/transfers/detect', async (c) => {
+  app.post('/transfers/detect', zValidator('json', z.object({}).optional()), async (c) => {
     try {
       const payload = c.get('jwtPayload');
       const userId = payload.userId;
