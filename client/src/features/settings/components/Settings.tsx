@@ -35,20 +35,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { saving, saved } = saveState;
   const [hoveredModel, setHoveredModel] = useState<ModelInfo | null>(null);
 
-  const fetchSettings = async () => {
-    try {
-      const data = await api.fetchSettings();
-      setFetchState({ settings: data, loading: false });
-    } catch (error) {
-      console.error('Failed to fetch settings:', error);
-      setFetchState((s) => ({ ...s, loading: false }));
-    }
-  };
+  const getSettings = () => api.fetchSettings();
 
   useEffect(() => {
-    if (isOpen) {
-      fetchSettings();
-    }
+    if (!isOpen) return;
+    let active = true;
+    getSettings()
+      .then((data) => { if (active) setFetchState({ settings: data, loading: false }); })
+      .catch((error: unknown) => {
+        console.error('Failed to fetch settings:', error);
+        if (active) setFetchState((s) => ({ ...s, loading: false }));
+      });
+    return () => { active = false; };
   }, [isOpen]);
 
   const handleSave = async () => {

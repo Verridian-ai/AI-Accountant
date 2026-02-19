@@ -41,24 +41,30 @@ export function AgentMonitor() {
   const [page, setPage] = useState(0);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
 
-  const loadData = async () => {
-    try {
-      const [s, e] = await Promise.all([
-        fetchAgentStats(),
-        fetchAgentExecutions({ limit: '20', offset: '0' }),
-      ]);
-      setFetchState({
-        stats: s as AgentMonitorStats,
-        executions: Array.isArray(e) ? e : (e as { executions: Execution[] }).executions ?? [],
-        loading: false,
-      });
-    } catch {
-      setFetchState((s) => ({ ...s, loading: false }));
-    }
+  const fetchMonitorData = async () => {
+    const [s, e] = await Promise.all([
+      fetchAgentStats(),
+      fetchAgentExecutions({ limit: '20', offset: '0' }),
+    ]);
+    return {
+      stats: s as AgentMonitorStats,
+      executions: Array.isArray(e) ? e : (e as { executions: Execution[] }).executions ?? [],
+    };
+  };
+
+  const loadData = () => {
+    setFetchState((s) => ({ ...s, loading: true }));
+    fetchMonitorData()
+      .then((data) => setFetchState({ ...data, loading: false }))
+      .catch(() => setFetchState((s) => ({ ...s, loading: false })));
   };
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    fetchMonitorData()
+      .then((data) => { if (active) setFetchState({ ...data, loading: false }); })
+      .catch(() => { if (active) setFetchState((s) => ({ ...s, loading: false })); });
+    return () => { active = false; };
   }, []);
 
   const loadMore = async () => {

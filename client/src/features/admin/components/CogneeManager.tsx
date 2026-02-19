@@ -32,29 +32,35 @@ export function CogneeManager() {
   const [reindexing, setReindexing] = useState<string | null>(null);
   const [message, setMessage] = useState('');
 
-  const loadData = async () => {
-    try {
-      const [ds, gs] = await Promise.allSettled([
-        fetchCogneeAdminDatasets(),
-        fetchCogneeGraphStats(),
-      ]);
-      setFetchState({
-        datasets:
-          ds.status === 'fulfilled'
-            ? Array.isArray(ds.value)
-              ? ds.value
-              : (ds.value as { datasets: Dataset[] })?.datasets ?? []
-            : [],
-        graphStats: gs.status === 'fulfilled' ? (gs.value as GraphStats) : null,
-        loading: false,
-      });
-    } catch {
-      setFetchState((s) => ({ ...s, loading: false }));
-    }
+  const fetchCogneeData = async () => {
+    const [ds, gs] = await Promise.allSettled([
+      fetchCogneeAdminDatasets(),
+      fetchCogneeGraphStats(),
+    ]);
+    return {
+      datasets:
+        ds.status === 'fulfilled'
+          ? Array.isArray(ds.value)
+            ? ds.value
+            : (ds.value as { datasets: Dataset[] })?.datasets ?? []
+          : [],
+      graphStats: gs.status === 'fulfilled' ? (gs.value as GraphStats) : null,
+    };
+  };
+
+  const loadData = () => {
+    setFetchState((s) => ({ ...s, loading: true }));
+    fetchCogneeData()
+      .then((data) => setFetchState({ ...data, loading: false }))
+      .catch(() => setFetchState((s) => ({ ...s, loading: false })));
   };
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    fetchCogneeData()
+      .then((data) => { if (active) setFetchState({ ...data, loading: false }); })
+      .catch(() => { if (active) setFetchState((s) => ({ ...s, loading: false })); });
+    return () => { active = false; };
   }, []);
 
   const handleReindex = async (name: string) => {
