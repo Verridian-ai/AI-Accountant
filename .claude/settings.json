@@ -7,8 +7,6 @@
     "allow": [],
     "deny": []
   },
-  "skipDangerousModePermissionPrompt": true,
-  "teammateMode": "tmux",
   "model": "sonnet",
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
@@ -36,7 +34,10 @@
     "firecrawl@claude-plugins-official": true,
     "everything-claude-code@everything-claude-code": true,
     "circleback@claude-plugins-official": true,
-    "cognee-expert@cognee-expert": true
+    "cognee-expert@cognee-expert": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "playground@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "cognee-expert": {
@@ -45,5 +46,7 @@
         "path": "C:\\Users\\Danie\\Desktop\\cognee-expert"
       }
     }
-  }
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "teammateMode": "tmux"
 }
