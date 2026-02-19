@@ -22,13 +22,8 @@ export async function getCreditAnalytics(
   if (!account) return null;
   if (account.accountType !== 'credit_card') throw new Error('Not a credit card');
 
-  // Fetch all transactions for this account
-  const txsResult = await transactionRepository.findMany({
-    userId,
-    accountId,
-    limit: 10000, // Fetch all reasonably
-  });
-  const txs = txsResult.data as TransactionRow[];
+  // Fetch all transactions for this account — no artificial cap
+  const txs = (await transactionRepository.findAll({ userId, accountId })) as TransactionRow[];
 
   const interestTransactions = txs.filter(
     (t: TransactionRow) =>
@@ -79,9 +74,8 @@ export async function getCreditAnalytics(
 
 export async function getConsolidatedSummary(userId: string) {
   const userAccounts = (await accountRepository.findAll(userId)) as AccountRow[];
-  // Fetch all user transactions
-  const txsResult = await transactionRepository.findMany({ userId, limit: 100000 });
-  const userTransactions = txsResult.data as TransactionRow[];
+  // Fetch all user transactions — no artificial cap
+  const userTransactions = (await transactionRepository.findAll({ userId })) as TransactionRow[];
 
   const accountSummaries = userAccounts.map((account: AccountRow) => {
     const accountTxs = userTransactions.filter((t: TransactionRow) => t.accountId === account.id);
