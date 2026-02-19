@@ -193,8 +193,9 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
               </div>
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Base Period Start</label>
+              <label htmlFor="forecast-base-start" className="block text-xs text-zinc-500 mb-1">Base Period Start</label>
               <input
+                id="forecast-base-start"
                 type="date"
                 value={basePeriodStart}
                 onChange={(e) => setBasePeriodStart(e.target.value)}
@@ -202,8 +203,9 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Base Period End</label>
+              <label htmlFor="forecast-base-end" className="block text-xs text-zinc-500 mb-1">Base Period End</label>
               <input
+                id="forecast-base-end"
                 type="date"
                 value={basePeriodEnd}
                 onChange={(e) => setBasePeriodEnd(e.target.value)}
@@ -215,8 +217,9 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
           {scenarioType === 'custom' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/5">
               <div>
-                <label className="block text-xs text-zinc-500 mb-1">Growth Rate (%)</label>
+                <label htmlFor="forecast-growth-rate" className="block text-xs text-zinc-500 mb-1">Growth Rate (%)</label>
                 <input
+                  id="forecast-growth-rate"
                   type="number"
                   step="0.1"
                   value={growthRate}
@@ -226,8 +229,9 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-500 mb-1">Seasonal Weight</label>
+                <label htmlFor="forecast-seasonal-weight" className="block text-xs text-zinc-500 mb-1">Seasonal Weight</label>
                 <input
+                  id="forecast-seasonal-weight"
                   type="number"
                   step="0.1"
                   value={seasonalWeight}
@@ -290,7 +294,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                   {selectedIds.has(s.id) && <Check className="w-3 h-3 text-[#FFCC00]" />}
                 </button>
 
-                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleExpand(s.id)}>
+                <button type="button" className="flex-1 min-w-0 text-left" onClick={() => handleExpand(s.id)}>
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="text-sm font-bold text-zinc-200 truncate">{s.name}</h4>
                     <span
@@ -302,7 +306,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                   <p className="text-xs text-zinc-500">
                     {s.forecastMonths} months &middot; {s.basePeriodStart} to {s.basePeriodEnd}
                   </p>
-                </div>
+                </button>
 
                 <button
                   onClick={() => handleGenerate(s.id)}

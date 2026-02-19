@@ -284,8 +284,9 @@ export function BudgetsDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-500 mb-1">Period End</label>
+                <label htmlFor="budget-create-end" className="block text-xs text-zinc-500 mb-1">Period End</label>
                 <input
+                  id="budget-create-end"
                   type="date"
                   value={createEnd}
                   onChange={(e) => setCreateEnd(e.target.value)}

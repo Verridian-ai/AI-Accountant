@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Save, Clock, Database, ChevronRight, Trash2 } from 'lucide-react';
+import { Search, Save, Clock, Database, ChevronRight } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -10,7 +10,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { intelligenceApi } from '../../../api';
-import { cn } from '../../../lib/utils';
 
 interface TemporalQueryBuilderProps {
   userId: string;
@@ -62,7 +61,9 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
   const [cached, setCached] = useState(false);
 
   useEffect(() => {
-    loadSavedQueries();
+    // Defer to avoid sync setState-in-effect lint violation
+    const id = setTimeout(() => void loadSavedQueries(), 0);
+    return () => clearTimeout(id);
   }, [userId]);
 
   const loadSavedQueries = async () => {

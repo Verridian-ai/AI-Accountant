@@ -36,10 +36,18 @@ const moduleConfig: Record<string, { icon: typeof Clock; color: string; bg: stri
 
 type Granularity = 'day' | 'week' | 'month';
 
+interface FetchState {
+  events: TimelineEvent[];
+  loading: boolean;
+  error: string | null;
+}
+
 export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
-  const [events, setEvents] = useState<TimelineEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [fetchState, setFetchState] = useState<FetchState>({
+    events: [],
+    loading: true,
+    error: null,
+  });
   const [granularity, setGranularity] = useState<Granularity>('day');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -47,25 +55,27 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
     new Set(Object.keys(moduleConfig)),
   );
 
-  useEffect(() => {
-    loadTimeline();
-  }, [userId, granularity, startDate, endDate]);
-
   const loadTimeline = async () => {
     try {
-      setLoading(true);
+      setFetchState((prev) => ({ ...prev, loading: true, error: null }));
       const params: Record<string, string> = { granularity };
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
       const data = await intelligenceApi.getTimeline(userId, params);
-      setEvents(Array.isArray(data) ? data : (data.events ?? []));
-      setError(null);
+      setFetchState({
+        events: Array.isArray(data) ? data : (data.events ?? []),
+        loading: false,
+        error: null,
+      });
     } catch {
-      setError('Failed to load timeline');
-    } finally {
-      setLoading(false);
+      setFetchState((prev) => ({ ...prev, loading: false, error: 'Failed to load timeline' }));
     }
   };
+
+  useEffect(() => {
+    const id = setTimeout(() => void loadTimeline(), 0);
+    return () => clearTimeout(id);
+  }, [userId, granularity, startDate, endDate]);
 
   const toggleModule = (mod: string) => {
     setActiveModules((prev) => {
@@ -76,6 +86,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
     });
   };
 
+  const { events, loading, error } = fetchState;
   const filteredEvents = events.filter((e) => activeModules.has(e.module));
 
   // Group events by date
@@ -94,8 +105,11 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
       <div className="neu-raised p-4 rounded-lg space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <label className="text-xs text-zinc-500 font-medium">From:</label>
+            <label htmlFor="timeline-start" className="text-xs text-zinc-500 font-medium">
+              From:
+            </label>
             <input
+              id="timeline-start"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
@@ -103,8 +117,11 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-xs text-zinc-500 font-medium">To:</label>
+            <label htmlFor="timeline-end" className="text-xs text-zinc-500 font-medium">
+              To:
+            </label>
             <input
+              id="timeline-end"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
