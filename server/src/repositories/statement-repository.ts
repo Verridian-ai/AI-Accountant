@@ -61,7 +61,10 @@ export class StatementRepository {
   /**
    * Update a statement.
    */
-  async update(id: string, data: Partial<typeof statements.$inferSelect>): Promise<typeof statements.$inferSelect | null> {
+  async update(
+    id: string,
+    data: Partial<typeof statements.$inferSelect>,
+  ): Promise<typeof statements.$inferSelect | null> {
     await typedUpdate(db, statements, data, eq(statements.id, id));
     return this.getById(id);
   }

@@ -28,7 +28,10 @@ export class UserRepository {
   /**
    * Create a new user.
    */
-  async create(data: { username: string; passwordHash: string }): Promise<typeof users.$inferSelect | null> {
+  async create(data: {
+    username: string;
+    passwordHash: string;
+  }): Promise<typeof users.$inferSelect | null> {
     const id = randomUUID();
     // Set timestamps explicitly — `.default('CURRENT_TIMESTAMP')` in Drizzle SQLite-mode
     // inserts the literal string "CURRENT_TIMESTAMP" when proxied to PostgreSQL via wrapPgDb().
@@ -53,7 +56,10 @@ export class UserRepository {
   /**
    * Update or Create user settings.
    */
-  async upsertSettings(userId: string, settings: Partial<typeof userSettings.$inferSelect>): Promise<typeof userSettings.$inferSelect | null> {
+  async upsertSettings(
+    userId: string,
+    settings: Partial<typeof userSettings.$inferSelect>,
+  ): Promise<typeof userSettings.$inferSelect | null> {
     const existing = await this.getSettings(userId);
     if (existing) {
       await typedUpdate(db, userSettings, settings, eq(userSettings.userId, userId));

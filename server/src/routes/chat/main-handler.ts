@@ -14,11 +14,7 @@ import type { TokenMap } from '../../services/pipeline/index.js';
 import { getExactTotalsTool } from '../../services/tools/index.js';
 import { generateText, stepCountIs } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import {
-  USE_NEON_RUNTIME,
-  amountTagger,
-  tokenMapBuilder,
-} from './services.js';
+import { USE_NEON_RUNTIME, amountTagger, tokenMapBuilder } from './services.js';
 import { buildChatPrompt } from './helpers.js';
 
 export function registerMainChatHandler(app: Hono): void {
@@ -27,10 +23,7 @@ export function registerMainChatHandler(app: Hono): void {
     '/',
     zValidator('json', chatMessageSchema, (result, c) => {
       if (!result.success) {
-        return c.json(
-          { answer: result.error.issues.map((i) => i.message).join('; ') },
-          400,
-        );
+        return c.json({ answer: result.error.issues.map((i) => i.message).join('; ') }, 400);
       }
       return;
     }),
