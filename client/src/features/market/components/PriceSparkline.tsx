@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
 interface PriceSparklineProps {
@@ -6,14 +5,16 @@ interface PriceSparklineProps {
   isUp: boolean;
 }
 
+// Deterministic pseudo-random based on seed (pure — same input → same output)
+function pseudoRand(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
 export default function PriceSparkline({ price, isUp }: PriceSparklineProps) {
-  const data = useMemo(
-    () =>
-      Array.from({ length: 10 }, (_, i) => ({
-        v: price + (Math.random() - 0.5) * price * 0.02 * (i + 1),
-      })),
-    [price],
-  );
+  const data = Array.from({ length: 10 }, (_, i) => ({
+    v: price * (1 + (pseudoRand(price + i) - 0.5) * 0.04),
+  }));
 
   return (
     <div className="mt-2 h-6">
