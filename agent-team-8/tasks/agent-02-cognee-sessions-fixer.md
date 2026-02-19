@@ -1,6 +1,6 @@
 # AGENT-02: cognee-sessions-fixer
 # Wave 1 — Fix cognee-sessions.ts using hive memory context
-# Model: claude-sonnet-4-5
+# Model: claude-sonnet-4-6
 
 ## YOUR MISSION
 Use hive memory to understand the codebase context, then audit and fix
@@ -22,22 +22,22 @@ mcp__cognee-agent-teams__get_developer_rules()
 
 ```
 mcp__cognee-agent-teams__search(
-  query_text="cognee sessions service TypeScript implementation",
-  query_type="GRAPH_COMPLETION"
+  search_query="cognee sessions service TypeScript implementation",
+  search_type="GRAPH_COMPLETION"
 )
 ```
 
 ```
 mcp__cognee-agent-teams__search(
-  query_text="cognee service architecture and patterns",
-  query_type="CHUNKS"
+  search_query="cognee service architecture and patterns",
+  search_type="CHUNKS"
 )
 ```
 
 ```
 mcp__cognee-agent-teams__search(
-  query_text="known bugs in cognee services",
-  query_type="CHUNKS"
+  search_query="known bugs in cognee services",
+  search_type="CHUNKS"
 )
 ```
 
@@ -105,15 +105,13 @@ After completing fixes, store what you found:
 
 ```
 mcp__cognee-agent-teams__cognify(
-  data="cognee-sessions.ts audit (agent-team-8): [list issues found and fixed]. Files: server/src/services/cognee-sessions.ts, server/src/services/cognee/. Root causes: [list]. Fixes applied: [list].",
-  dataset_name="hive_audit_fixes"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-8-session-2026-02-19-001] [AGENT_SESSION: agent-02-cognee-sessions-fixer-2026-02-19-001] cognee-sessions.ts audit: [list issues found and fixed]. Files: server/src/services/cognee-sessions.ts, server/src/services/cognee/. Root causes: [list]. Fixes applied: [list]."
 )
 ```
 
 ```
 mcp__cognee-agent-teams__cognify(
-  data="cognee service pattern: [describe the correct pattern for cognee services in this codebase, what you learned]",
-  dataset_name="hive_agent_patterns"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-8-session-2026-02-19-001] [AGENT_SESSION: agent-02-cognee-sessions-fixer-2026-02-19-001] cognee service pattern: [describe the correct pattern for cognee services in this codebase, what you learned]"
 )
 ```
 

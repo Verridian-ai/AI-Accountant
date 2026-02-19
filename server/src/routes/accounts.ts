@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
+import { db, accounts as accountsTable } from '../schema.js';
 import { accountService } from '../services/accounts.js';
 import { events } from '../events.js';
 import { getSupportedBanks, analyzeStatement } from '../services/parsers/index.js';
@@ -61,11 +62,19 @@ accountRoutes.use('/*', tenantAuthMiddleware());
 
 // Get all accounts
 accountRoutes.get('/', async (c) => {
-  const payload = c.get('jwtPayload');
-  const userId = payload.userId;
+  const payload = c.get('jwtPayload') as Record<string, unknown> | undefined;
+  const userId = (payload?.userId as string) ?? '';
   const ownershipTag = c.req.query('ownershipTag');
   const type = c.req.query('type');
   const search = c.req.query('search');
+
+  // Admin detection: admin token has adminId, OR role is super_admin/owner, OR no tenantId
+  const isAdmin = !!payload?.adminId || payload?.role === 'super_admin' || !payload?.tenantId;
+  if (isAdmin) {
+    // Admin sees all accounts (query without userId filter)
+    const allAccounts = await db.select().from(accountsTable).all();
+    return c.json(allAccounts);
+  }
 
   const userAccounts = await accountService.getUserAccounts(userId, { ownershipTag, type, search });
   return c.json(userAccounts);

@@ -715,4 +715,83 @@ accountMiscRoutes.post(
   },
 );
 
+// ============================================================================
+// GET list handlers for pending-categorizations, merchant-memory, transfers
+// These are called by the client and were previously caught by the ai-agents
+// wildcard route. Admin users see all data; regular users see only their own.
+// ============================================================================
+
+// GET /api/pending-categorizations
+accountMiscRoutes.get('/pending-categorizations', async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as Record<string, unknown> | undefined;
+    const userId = (payload?.userId as string) ?? '';
+    const isAdmin = !!payload?.adminId || payload?.role === 'super_admin' || !payload?.tenantId;
+
+    const rows = isAdmin
+      ? await db
+          .select()
+          .from(pendingCategorization)
+          .orderBy(desc(pendingCategorization.createdAt))
+          .all()
+      : await db
+          .select()
+          .from(pendingCategorization)
+          .where(eq(pendingCategorization.userId, userId))
+          .orderBy(desc(pendingCategorization.createdAt))
+          .all();
+
+    return c.json(rows);
+  } catch (err) {
+    console.error('Failed to fetch pending categorizations:', err);
+    return c.json({ error: 'Failed to fetch pending categorizations' }, 500);
+  }
+});
+
+// GET /api/merchant-memory
+accountMiscRoutes.get('/merchant-memory', async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as Record<string, unknown> | undefined;
+    const userId = (payload?.userId as string) ?? '';
+    const isAdmin = !!payload?.adminId || payload?.role === 'super_admin' || !payload?.tenantId;
+
+    const rows = isAdmin
+      ? await db.select().from(merchantMemory).orderBy(desc(merchantMemory.createdAt)).all()
+      : await db
+          .select()
+          .from(merchantMemory)
+          .where(eq(merchantMemory.userId, userId))
+          .orderBy(desc(merchantMemory.createdAt))
+          .all();
+
+    return c.json(rows);
+  } catch (err) {
+    console.error('Failed to fetch merchant memory:', err);
+    return c.json({ error: 'Failed to fetch merchant memory' }, 500);
+  }
+});
+
+// GET /api/transfers
+accountMiscRoutes.get('/transfers', async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as Record<string, unknown> | undefined;
+    const userId = (payload?.userId as string) ?? '';
+    const isAdmin = !!payload?.adminId || payload?.role === 'super_admin' || !payload?.tenantId;
+
+    const rows = isAdmin
+      ? await db.select().from(transferLinks).orderBy(desc(transferLinks.createdAt)).all()
+      : await db
+          .select()
+          .from(transferLinks)
+          .where(eq(transferLinks.userId, userId))
+          .orderBy(desc(transferLinks.createdAt))
+          .all();
+
+    return c.json(rows);
+  } catch (err) {
+    console.error('Failed to fetch transfers:', err);
+    return c.json({ error: 'Failed to fetch transfers' }, 500);
+  }
+});
+
 export default accountMiscRoutes;

@@ -11,8 +11,13 @@ import {
   TaxSummary,
 } from './types';
 
+export interface AvailableQuarter {
+  financialYear: string;
+  quarter: number;
+}
+
 export const basApi = {
-  fetchQuarters: async (): Promise<BASQuarter[]> => {
+  fetchQuarters: async (): Promise<AvailableQuarter[]> => {
     const res = await fetch(`${API_URL}/bas/quarters`, {
       headers: getAuthHeaders(),
     });

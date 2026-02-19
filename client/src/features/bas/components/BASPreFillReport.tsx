@@ -12,7 +12,7 @@ import {
 import { BASPeriodSelector } from './BASPeriodSelector';
 import { formatCurrency } from '@/lib/format';
 import { Loader2, ChevronRight, AlertTriangle, Save, CheckCircle, FileText } from 'lucide-react';
-import { gstApi } from '@/api';
+import { gstApi, basApi } from '@/api';
 import type { BASCalculationEnhanced } from '@/features/gst/types';
 
 type BASStatus = 'draft' | 'review' | 'ready' | 'lodged' | 'amended';
@@ -39,12 +39,34 @@ export function BASPreFillReport() {
   const [basMethod, setBASMethod] = useState<'simpler' | 'full'>('simpler');
   const [status, setStatus] = useState<BASStatus>('draft');
   const [error, setError] = useState<string | null>(null);
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
 
   const quarterKey = `${selectedYear}-Q${selectedQuarter}`;
 
   useEffect(() => {
+    loadAvailableYears();
+  }, []);
+
+  useEffect(() => {
     loadBAS();
   }, [quarterKey, basMethod]);
+
+  const loadAvailableYears = async () => {
+    try {
+      const quarters = await basApi.fetchQuarters();
+      const yearSet = new Set<number>();
+      for (const q of quarters) {
+        yearSet.add(parseInt(q.financialYear.split('-')[0], 10));
+      }
+      // Always include current FY
+      yearSet.add(getCurrentFinancialYear());
+      const sorted = Array.from(yearSet).sort((a, b) => b - a);
+      setAvailableYears(sorted);
+    } catch {
+      // Fallback: just current year
+      setAvailableYears([getCurrentFinancialYear()]);
+    }
+  };
 
   const loadBAS = async () => {
     setLoading(true);
@@ -113,6 +135,7 @@ export function BASPreFillReport() {
         onYearChange={setSelectedYear}
         onQuarterChange={setSelectedQuarter}
         onPeriodTypeChange={setPeriodType}
+        availableYears={availableYears.length > 0 ? availableYears : undefined}
       />
 
       {/* BAS Method & Status */}

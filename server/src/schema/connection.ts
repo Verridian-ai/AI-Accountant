@@ -25,7 +25,7 @@ if (!neonUrl) {
 
 console.log('[DB] Connecting to Neon Cloud PostgreSQL');
 
-const pool = new pg.Pool({
+export const pool = new pg.Pool({
   connectionString: neonUrl,
   ssl: { rejectUnauthorized: false },
   max: 20,

@@ -1,5 +1,11 @@
 import { API_URL, getAuthHeaders } from './client';
 
+/** Auth headers using admin JWT (separate from user JWT). */
+function getAdminAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem('admin_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 type StubApi = Record<string, (...args: unknown[]) => Promise<unknown>>;
 
 export const entityApi: StubApi = {
@@ -193,8 +199,12 @@ export const fetchActivityLog = async (..._args: unknown[]): Promise<Record<stri
   Promise.resolve({} as Record<string, unknown>);
 export const fetchActivitySummary = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
-export const fetchAdminProfile = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-  Promise.resolve({} as Record<string, unknown>);
+export const fetchAdminProfile = async (): Promise<Record<string, unknown>> => {
+  const res = await fetch(`${API_URL}/admin/me`, { headers: getAdminAuthHeaders() });
+  if (!res.ok) throw new Error(`Admin profile fetch failed (${res.status})`);
+  const data = await res.json();
+  return data.admin ?? data;
+};
 export const fetchAdminUsers = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
 export const fetchAgentConfigs = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
@@ -258,6 +268,34 @@ export const updateAgentConfig = async (..._args: unknown[]): Promise<Record<str
   Promise.resolve({} as Record<string, unknown>);
 export const updateFeatureFlag = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+
+export interface LedgerSummary {
+  totalTransactions: number;
+  totalUsers: number;
+  totalIncomeCents: number;
+  totalExpensesCents: number;
+  earliestTransaction: string | null;
+  latestTransaction: string | null;
+}
+
+export interface BASSummary {
+  totalPeriods: number;
+  lodgedCount: number;
+  draftCount: number;
+  usersWithBas: number;
+}
+
+export const fetchAdminLedgerSummary = async (): Promise<LedgerSummary> => {
+  const res = await fetch(`${API_URL}/admin/ledger-summary`, { headers: getAdminAuthHeaders() });
+  if (!res.ok) throw new Error(`Ledger summary failed (${res.status})`);
+  return res.json();
+};
+
+export const fetchAdminBasSummary = async (): Promise<BASSummary> => {
+  const res = await fetch(`${API_URL}/admin/bas-summary`, { headers: getAdminAuthHeaders() });
+  if (!res.ok) throw new Error(`BAS summary failed (${res.status})`);
+  return res.json();
+};
 
 export const dashboardApi = {
   fetchDashboards: async (): Promise<unknown[]> => {

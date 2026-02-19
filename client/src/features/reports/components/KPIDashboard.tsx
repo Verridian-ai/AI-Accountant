@@ -56,11 +56,17 @@ export function KPIDashboard({ period }: Props) {
 
   useEffect(() => {
     if (!period) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     reportsApi
       .fetchKPIs(period)
-      .then((data: unknown) => setKpis(Array.isArray(data) ? data : []))
+      .then((data: unknown) => {
+        // Server returns { period, metrics: [...] }
+        const resp = data as Record<string, unknown>;
+        const metrics = Array.isArray(resp?.metrics) ? resp.metrics : [];
+        setKpis(metrics);
+      })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
       .finally(() => setLoading(false));
   }, [period]);

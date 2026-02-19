@@ -18,7 +18,8 @@ import { Sparkline, CHART_COLORS } from '@/components/charts';
 import { BASRow } from '../components/BASRow.js';
 
 import { SummaryCell } from '../components/SummaryCell.js';
-import { formatCurrencyShort, generateQuarterOptions } from '../utils.js';
+import { formatCurrencyShort } from '../utils.js';
+import type { QuarterOption } from '../hooks/useBASDashboard.js';
 
 interface CalculateTabProps {
   calculating: boolean;
@@ -35,6 +36,7 @@ interface CalculateTabProps {
   netAmount: number;
   onCalculate: () => void;
   onSave: () => void;
+  availableQuarters: QuarterOption[];
 }
 
 export function CalculateTab({
@@ -52,6 +54,7 @@ export function CalculateTab({
   netAmount,
   onCalculate,
   onSave,
+  availableQuarters,
 }: CalculateTabProps) {
   return (
     <div className="space-y-5">
@@ -87,7 +90,7 @@ export function CalculateTab({
           {/* Quarter Selector as pill buttons */}
           <div className="flex-1 min-w-[200px]">
             <div className="flex flex-wrap gap-1.5">
-              {generateQuarterOptions().map((opt) => (
+              {availableQuarters.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"

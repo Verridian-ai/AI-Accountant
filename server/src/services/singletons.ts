@@ -4,7 +4,8 @@
  * Node.js module cache ensures a single instance per process.
  * Import from here to share state across route files.
  */
-import { db } from '../schema.js';
+import { pool } from '../schema/connection.js';
+import { createPgDb } from '../db/pg-db.js';
 import { StreamingService } from './claude/streaming.js';
 import { ConfirmationFlowService } from './claude/confirmation-flow.js';
 import { AuditService } from './claude/audit.js';
@@ -16,5 +17,6 @@ export const schemaRegistry = new SchemaRegistry();
 export const streamingRegistry = new StreamingRegistry();
 schemaRegistry.initializeDefaults();
 
-export const confirmationFlow = new ConfirmationFlowService(db);
-export const auditService = new AuditService(db);
+const pgDb = createPgDb(pool);
+export const confirmationFlow = new ConfirmationFlowService(pgDb);
+export const auditService = new AuditService(pgDb);

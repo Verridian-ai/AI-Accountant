@@ -1,6 +1,6 @@
 # AGENT-03: reviewer
 # Wave 2 — Final Verification, Report, Commit
-# Model: claude-opus-4-5
+# Model: claude-opus-4-6
 # START CONDITION: Both Wave 1 agents have messaged DONE
 
 ## YOUR MISSION
@@ -23,15 +23,15 @@ mcp__cognee-agent-teams__get_developer_rules()
 
 ```
 mcp__cognee-agent-teams__search(
-  query_text="agent team 8 validation results",
-  query_type="GRAPH_COMPLETION"
+  search_query="agent team 8 validation results",
+  search_type="GRAPH_COMPLETION"
 )
 ```
 
 ```
 mcp__cognee-agent-teams__search(
-  query_text="cognee sessions fixer findings",
-  query_type="CHUNKS"
+  search_query="cognee sessions fixer findings",
+  search_type="CHUNKS"
 )
 ```
 
@@ -131,15 +131,13 @@ The hive memory system is now ready. Every future team should:
 
 ```
 mcp__cognee-agent-teams__cognify(
-  data="Agent team 8 complete (reviewer, Opus). Hive memory integration validated. All 5 containers healthy. 15 datasets operational. Read/write cycle confirmed. codify indexing working. cognee-sessions.ts audited and fixed. Future teams: use mcp__cognee-agent-teams__get_developer_rules() at session start, search before reading files, write learnings before DONE.",
-  dataset_name="hive_agent_decisions"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-8-session-2026-02-19-001] [AGENT_SESSION: agent-03-reviewer-2026-02-19-001] Agent team 8 complete (reviewer, Opus). Hive memory integration validated. All 5 containers healthy. 15 datasets operational. Read/write cycle confirmed. codify indexing working. cognee-sessions.ts audited and fixed. Future teams: use mcp__cognee-agent-teams__get_developer_rules() at session start, search before reading files, write learnings before DONE."
 )
 ```
 
 ```
 mcp__cognee-agent-teams__cognify(
-  data="Hive memory integration pattern for agent teams: 1) get_developer_rules() at start, 2) search GRAPH_COMPLETION + CHUNKS before reading files, 3) cognify learnings to appropriate dataset before DONE, 4) MCP server: cognee-agent-teams at http://localhost:9021/mcp, 5) Stack: docker compose -p agent-cognee up -d",
-  dataset_name="hive_agent_patterns"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-8-session-2026-02-19-001] [AGENT_SESSION: agent-03-reviewer-2026-02-19-001] Hive memory integration pattern for agent teams: 1) get_developer_rules() at start, 2) search GRAPH_COMPLETION + CHUNKS before reading files, 3) cognify learnings before DONE, 4) MCP server: cognee-agent-teams at http://localhost:9021/mcp, 5) Stack: docker compose -p agent-cognee up -d"
 )
 ```
 

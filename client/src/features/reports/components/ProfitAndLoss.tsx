@@ -76,6 +76,7 @@ export function ProfitAndLoss({ periodStart, periodEnd, accountId }: Props) {
 
   useEffect(() => {
     if (!periodStart || !periodEnd) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     reportsApi
@@ -147,9 +148,7 @@ export function ProfitAndLoss({ periodStart, periodEnd, accountId }: Props) {
               </span>
             </div>
             <p className={`text-xl font-bold font-mono ${item.color}`}>
-              {item.value !== null
-                ? formatCurrency(item.value)
-                : `${(data.grossMargin * 100).toFixed(1)}%`}
+              {item.value !== null ? formatCurrency(item.value) : `${data.grossMargin.toFixed(1)}%`}
             </p>
           </div>
         ))}

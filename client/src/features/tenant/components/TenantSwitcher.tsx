@@ -39,7 +39,16 @@ export function TenantSwitcher() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    tenantApi.listMyTenants().then(setTenants).catch(console.error);
+    tenantApi
+      .listMyTenants()
+      .then((data: unknown) => {
+        // Server returns { tenants: [...], count: N } — extract the array
+        const list = Array.isArray(data)
+          ? data
+          : ((data as Record<string, unknown>)?.tenants ?? []);
+        setTenants(list as Tenant[]);
+      })
+      .catch(console.error);
   }, []);
 
   useEffect(() => {

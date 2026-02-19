@@ -1,7 +1,21 @@
 import { useState, useEffect, useMemo } from 'react';
 import { basApi } from '@/api';
 import type { BASCalculation, BASQuarter } from '@/types/tax';
-import { getCurrentQuarter } from '../utils.js';
+import { getCurrentQuarter, getQuarterDates } from '../utils.js';
+
+export interface QuarterOption {
+  value: string;
+  label: string;
+  sublabel: string;
+}
+
+function apiQuarterToOption(fy: string, q: number): QuarterOption {
+  const fyStartYear = parseInt(fy.split('-')[0], 10);
+  const value = `${fyStartYear}-Q${q}`;
+  const label = `Q${q} ${fy}`;
+  const sublabel = getQuarterDates(fyStartYear, q as 1 | 2 | 3 | 4);
+  return { value, label, sublabel };
+}
 
 export function useBASDashboard() {
   const [loading, setLoading] = useState(false);
@@ -12,9 +26,11 @@ export function useBASDashboard() {
   const [history, setHistory] = useState<BASQuarter[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'calculate' | 'breakdown' | 'history'>('calculate');
+  const [availableQuarters, setAvailableQuarters] = useState<QuarterOption[]>([]);
 
   useEffect(() => {
     loadHistory();
+    loadAvailableQuarters();
     const { year, quarter } = getCurrentQuarter();
     setSelectedQuarter(`${year}-Q${quarter}`);
   }, []);
@@ -38,6 +54,29 @@ export function useBASDashboard() {
       setError(err instanceof Error ? err.message : 'Failed to calculate BAS');
     } finally {
       setCalculating(false);
+    }
+  };
+
+  const loadAvailableQuarters = async () => {
+    try {
+      const apiQuarters = await basApi.fetchQuarters();
+      const options = apiQuarters.map((q) => apiQuarterToOption(q.financialYear, q.quarter));
+      // Always include current quarter
+      const { year, quarter } = getCurrentQuarter();
+      const currentFy = `${year}-${(year + 1).toString().slice(2)}`;
+      const currentValue = `${year}-Q${quarter}`;
+      if (!options.some((o) => o.value === currentValue)) {
+        options.push(apiQuarterToOption(currentFy, quarter));
+      }
+      // Sort descending by value (newest first)
+      options.sort((a, b) => b.value.localeCompare(a.value));
+      setAvailableQuarters(options);
+    } catch (err) {
+      console.error('Failed to load available quarters:', err);
+      // Fallback: show current quarter only
+      const { year, quarter } = getCurrentQuarter();
+      const currentFy = `${year}-${(year + 1).toString().slice(2)}`;
+      setAvailableQuarters([apiQuarterToOption(currentFy, quarter)]);
     }
   };
 
@@ -106,5 +145,6 @@ export function useBASDashboard() {
     barChartData,
     isRefund,
     netAmount,
+    availableQuarters,
   };
 }

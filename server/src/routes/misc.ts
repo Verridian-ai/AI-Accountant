@@ -250,6 +250,10 @@ miscRoutes.get('/manifest', (c) => {
   });
 });
 
+miscRoutes.get('/health', (c) => {
+  return c.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
 miscRoutes.get('/health/ping', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });

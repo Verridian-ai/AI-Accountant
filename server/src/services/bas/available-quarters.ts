@@ -1,16 +1,18 @@
 /**
  * BAS available quarters — self-contained implementation.
+ * Enumerates quarters by fixed boundary dates (not 3-month jumps) to avoid skipping.
  */
 import { db, transactions } from '../../schema.js';
 import { eq, sql } from 'drizzle-orm';
 
 /**
- * Get available quarters for a user (based on transaction dates)
+ * Get available quarters for a user (based on transaction dates).
+ * Uses explicit quarter boundary enumeration to avoid the 3-month-jump bug
+ * where quarters at the edges of the date range could be skipped.
  */
 export async function getAvailableQuarters(
   userId: string,
 ): Promise<Array<{ financialYear: string; quarter: number }>> {
-  // Get min and max transaction dates
   const result = await db
     .select({
       minDate: sql<string>`MIN(${transactions.date})`,
@@ -24,37 +26,43 @@ export async function getAvailableQuarters(
     return [];
   }
 
-  const quarters: Array<{ financialYear: string; quarter: number }> = [];
   const minDate = new Date(result.minDate);
   const maxDate = new Date(result.maxDate);
+  const quarters: Array<{ financialYear: string; quarter: number }> = [];
 
-  // Iterate through each quarter from min to max date
-  const current = new Date(minDate);
-  while (current <= maxDate) {
-    const month = current.getMonth() + 1;
-    const year = current.getFullYear();
+  // Determine FY range to scan: minDate could be as early as FY starting 2019,
+  // maxDate could be as late as current year + 1
+  const minYear = minDate.getFullYear() - 1; // cover edge: Dec 31 → FY starts prev year
+  const maxYear = maxDate.getFullYear() + 1;
 
-    let financialYear: string;
-    let quarter: number;
+  for (let fyStartYear = minYear; fyStartYear <= maxYear; fyStartYear++) {
+    const fyStr = `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`;
+    const quarterBounds = [
+      { q: 1, start: new Date(`${fyStartYear}-07-01`), end: new Date(`${fyStartYear}-09-30`) },
+      { q: 2, start: new Date(`${fyStartYear}-10-01`), end: new Date(`${fyStartYear}-12-31`) },
+      {
+        q: 3,
+        start: new Date(`${fyStartYear + 1}-01-01`),
+        end: new Date(`${fyStartYear + 1}-03-31`),
+      },
+      {
+        q: 4,
+        start: new Date(`${fyStartYear + 1}-04-01`),
+        end: new Date(`${fyStartYear + 1}-06-30`),
+      },
+    ];
 
-    if (month >= 7) {
-      financialYear = `${year}-${(year + 1).toString().slice(2)}`;
-      if (month >= 7 && month <= 9) quarter = 1;
-      else quarter = 2;
-    } else {
-      financialYear = `${year - 1}-${year.toString().slice(2)}`;
-      if (month >= 1 && month <= 3) quarter = 3;
-      else quarter = 4;
+    for (const { q, start, end } of quarterBounds) {
+      // Quarter overlaps with the transaction date range
+      if (start <= maxDate && end >= minDate) {
+        quarters.push({ financialYear: fyStr, quarter: q });
+      }
     }
-
-    // Check if already added
-    if (!quarters.some((q) => q.financialYear === financialYear && q.quarter === quarter)) {
-      quarters.push({ financialYear, quarter });
-    }
-
-    // Move to next quarter
-    current.setMonth(current.getMonth() + 3);
   }
 
-  return quarters;
+  // Sort descending: newest quarter first
+  return quarters.sort((a, b) => {
+    if (a.financialYear !== b.financialYear) return b.financialYear.localeCompare(a.financialYear);
+    return b.quarter - a.quarter;
+  });
 }

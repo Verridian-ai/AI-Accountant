@@ -36,26 +36,26 @@ All skills researched, built, and seeded to hive memory.
 ## Wave Execution Summary
 
 ### Wave 1 — Research Agents (Haiku)
-**agent-01-research-ui** (claude-haiku-4-5)
+**agent-01-research-ui** (claude-haiku-4-6)
 - Researched: React 19, Radix UI, shadcn/ui, Tailwind CSS, Motion/Framer Motion, GSAP, Storybook, Material Design 3, WCAG/ARIA
 - Sources: Context7 MCP (9 library docs), live documentation
 - Built: 4 skill files (react-component-patterns, animation-motion-design, design-systems-tokens, accessibility-a11y)
 - Commit: fc2a06e8
 
-**agent-02-research-backend** (claude-haiku-4-5)
+**agent-02-research-backend** (claude-haiku-4-6)
 - Researched: Hono framework, Drizzle ORM, OWASP auth, Docker, Playwright, Vitest, pgvector
 - Sources: Context7 MCP (2 library docs), WebFetch (OWASP), hive memory (GoldLedger architecture)
 - Built: 5 skill files (api-design-hono, database-drizzle, security-auth, devops-infrastructure, testing-qa)
 - Commit: a86ccf3b
 
 ### Wave 2 — Skills Builder (Sonnet)
-**agent-03-skills-builder** (claude-sonnet-4-5)
+**agent-03-skills-builder** (claude-sonnet-4-6)
 - Built: 5 new skill files from architectural analysis of GoldLedger codebase
 - Skills: ai-ml-integration, performance-optimization, error-handling-patterns, state-management-patterns, typescript-advanced-patterns
 - Commit: 40ac67d7
 
 ### Wave 3 — Hive Seeder (Sonnet)
-**agent-04-hive-seeder** (claude-sonnet-4-5, this session)
+**agent-04-hive-seeder** (claude-sonnet-4-6, this session)
 - Quality-reviewed all 15 skills
 - Seeded all 15 skills + master index to hive memory (16 cognify calls)
 - Updated orchestration-prompt.md with skills table

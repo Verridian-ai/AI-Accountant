@@ -18,6 +18,7 @@ interface BASPeriodSelectorProps {
   onYearChange: (year: number) => void;
   onQuarterChange: (quarter: number) => void;
   onPeriodTypeChange: (type: PeriodType) => void;
+  availableYears?: number[];
   className?: string;
 }
 
@@ -65,8 +66,10 @@ export function BASPeriodSelector({
   onYearChange,
   onQuarterChange,
   onPeriodTypeChange,
+  availableYears,
   className,
 }: BASPeriodSelectorProps) {
+  const yearOptions = availableYears ?? generateYearOptions();
   const dueDate = getDueDate(selectedQuarter, selectedYear);
   const daysUntilDue = getDaysUntilDue(dueDate);
   const isOverdue = daysUntilDue < 0;
@@ -81,7 +84,7 @@ export function BASPeriodSelector({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {generateYearOptions().map((year) => (
+            {yearOptions.map((year) => (
               <SelectItem key={year} value={String(year)}>
                 FY {year}-{(year + 1).toString().slice(2)}
               </SelectItem>

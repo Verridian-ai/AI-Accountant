@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { adminAuthService } from '../services/admin-auth.js';
 import { transactionRepository } from '../repositories/transaction-repository.js';
+import { pool } from '../schema/connection.js';
+import type { Context } from 'hono';
 
 const adminAuthRoutes = new Hono();
 
@@ -91,6 +93,79 @@ adminAuthRoutes.get('/transactions', async (c) => {
   } catch (err: unknown) {
     console.error('[AdminAuth] Transactions error:', err);
     return c.json({ error: 'Failed to fetch transactions' }, 500);
+  }
+});
+
+/** Verify admin token from Authorization header. Returns adminId or sends 401. */
+async function requireAdmin(c: Context): Promise<string | null> {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    c.status(401);
+    return null;
+  }
+  const payload = await adminAuthService.verifyToken(authHeader.slice(7));
+  if (!payload) {
+    c.status(401);
+    return null;
+  }
+  return payload.adminId;
+}
+
+// GET /admin/ledger-summary — aggregate transaction stats for admin dashboard
+adminAuthRoutes.get('/ledger-summary', async (c) => {
+  try {
+    const adminId = await requireAdmin(c);
+    if (!adminId) return c.json({ error: 'Invalid admin token' }, 401);
+
+    const result = await pool.query(`
+      SELECT
+        COUNT(*)::text AS total_transactions,
+        COUNT(DISTINCT user_id)::text AS total_users,
+        COALESCE(SUM(CASE WHEN amount > 0 AND COALESCE(is_transfer, 0) = 0 THEN amount ELSE 0 END), 0)::text AS total_income_cents,
+        COALESCE(SUM(CASE WHEN amount < 0 AND COALESCE(is_transfer, 0) = 0 THEN ABS(amount) ELSE 0 END), 0)::text AS total_expenses_cents,
+        MIN(date) AS earliest_transaction,
+        MAX(date) AS latest_transaction
+      FROM transactions
+    `);
+    const row = result.rows[0];
+    return c.json({
+      totalTransactions: parseInt(row.total_transactions, 10),
+      totalUsers: parseInt(row.total_users, 10),
+      totalIncomeCents: parseInt(row.total_income_cents, 10),
+      totalExpensesCents: parseInt(row.total_expenses_cents, 10),
+      earliestTransaction: row.earliest_transaction,
+      latestTransaction: row.latest_transaction,
+    });
+  } catch (err: unknown) {
+    console.error('[AdminAuth] Ledger summary error:', err);
+    return c.json({ error: err instanceof Error ? err.message : 'Failed' }, 500);
+  }
+});
+
+// GET /admin/bas-summary — BAS period stats for admin dashboard
+adminAuthRoutes.get('/bas-summary', async (c) => {
+  try {
+    const adminId = await requireAdmin(c);
+    if (!adminId) return c.json({ error: 'Invalid admin token' }, 401);
+
+    const result = await pool.query(`
+      SELECT
+        COUNT(*)::text AS total_periods,
+        COUNT(CASE WHEN status = 'lodged' THEN 1 END)::text AS lodged_count,
+        COUNT(CASE WHEN status = 'draft' THEN 1 END)::text AS draft_count,
+        COUNT(DISTINCT user_id)::text AS users_with_bas
+      FROM bas_periods
+    `);
+    const row = result.rows[0];
+    return c.json({
+      totalPeriods: parseInt(row.total_periods ?? '0', 10),
+      lodgedCount: parseInt(row.lodged_count ?? '0', 10),
+      draftCount: parseInt(row.draft_count ?? '0', 10),
+      usersWithBas: parseInt(row.users_with_bas ?? '0', 10),
+    });
+  } catch (err: unknown) {
+    console.error('[AdminAuth] BAS summary error:', err);
+    return c.json({ error: err instanceof Error ? err.message : 'Failed' }, 500);
   }
 });
 

@@ -30,53 +30,51 @@ The result: data that is both **searchable by meaning** AND **connected by relat
 
 ---
 
-## THE 11 MCP TOOLS
+## THE 7 MCP TOOLS (actual signatures from server.py)
+
+> **IMPORTANT**: These are the REAL parameter names from the MCP server source code.
+> Previous versions of this doc had incorrect names. Use ONLY these.
 
 ### Memory Management
 ```
-mcp__cognee-agent-teams__cognify(data, dataset_name)
+mcp__cognee-agent-teams__cognify(data: str, graph_model_file?: str, graph_model_name?: str, custom_prompt?: str)
   → Transform text/data into structured knowledge graph entries
   → Use for: decisions, patterns, bugs, fixes, architecture notes
-  → dataset_name: one of the 15 hive datasets (see below)
+  → NOTE: NO dataset_name param — all data goes to main_dataset
+  → Embed hierarchical IDs in the data string (see HIERARCHICAL MEMORY below)
 
-mcp__cognee-agent-teams__search(query_text, query_type)
+mcp__cognee-agent-teams__search(search_query: str, search_type: str, top_k?: int)
   → Retrieve memories using semantic search
-  → query_type: GRAPH_COMPLETION | CHUNKS | SUMMARIES | RAG_COMPLETION | INSIGHTS
+  → search_type: GRAPH_COMPLETION | CHUNKS | SUMMARIES | RAG_COMPLETION | INSIGHTS
+  → top_k: number of results (default 10)
+  → NOTE: params are search_query/search_type (NOT query_text/query_type)
+
+mcp__cognee-agent-teams__save_interaction(data: str)
+  → Store user-agent interaction pairs for building development rules
 
 mcp__cognee-agent-teams__prune()
   → Clear ALL memory — use with extreme caution
-
-mcp__cognee-agent-teams__cognee_add_developer_rules(rules_file_path)
-  → Ingest developer rule files into permanent memory
-```
-
-### Code Intelligence
-```
-mcp__cognee-agent-teams__codify(source_code_path, dataset_name?)
-  → Generate code-specific knowledge graphs from source directories
-  → Run BEFORE using search with CODE query type
-  → Best for: routes/, schema/, services/, components/
-
-mcp__cognee-agent-teams__save_interaction(user_message, assistant_message)
-  → Store user-assistant exchanges to build development rules
-  → Use to capture important decisions made in conversation
-
-mcp__cognee-agent-teams__get_developer_rules()
-  → Retrieve ALL stored developer rules and patterns
-  → ALWAYS call this at session start
 ```
 
 ### Data Management
 ```
-mcp__cognee-agent-teams__list_data()
+mcp__cognee-agent-teams__list_data(dataset_id?: str)
   → List all datasets and their data items with IDs
   → Use to audit what's in hive memory
 
-mcp__cognee-agent-teams__delete(data_id)
+mcp__cognee-agent-teams__delete(data_id: str, dataset_id: str, mode?: str)
   → Remove specific data items from datasets
+  → mode: "soft" (default) or "hard"
 
-mcp__cognee-agent-teams__cognify_status(pipeline_run_id?)
+mcp__cognee-agent-teams__cognify_status()
   → Check status of a running cognify pipeline
+```
+
+### Developer Rules
+```
+mcp__cognee-agent-teams__get_developer_rules()
+  → Retrieve ALL stored developer rules and patterns
+  → ALWAYS call this at session start
 ```
 
 ---
@@ -121,17 +119,55 @@ mcp__cognee-agent-teams__cognify_status(pipeline_run_id?)
 ### START OF EVERY SESSION (do before reading any files)
 ```
 1. mcp__cognee-agent-teams__get_developer_rules()
-2. mcp__cognee-agent-teams__search("your task area", "GRAPH_COMPLETION")
-3. mcp__cognee-agent-teams__search("known bugs anti-patterns", "CHUNKS")
+2. mcp__cognee-agent-teams__search(search_query="your task area", search_type="GRAPH_COMPLETION")
+3. mcp__cognee-agent-teams__search(search_query="known bugs anti-patterns", search_type="CHUNKS")
 ```
 
 ### END OF EVERY SESSION (do before messaging DONE)
 ```
 mcp__cognee-agent-teams__cognify(
-  data="[decisions made, root causes found, fixes applied, patterns discovered]",
-  dataset_name="hive_agent_decisions"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-N-session-YYYY-MM-DD-NNN] [AGENT_SESSION: agent-NN-ROLE-YYYY-MM-DD-NNN] [decisions made, root causes found, fixes applied, patterns discovered]"
 )
 ```
+
+---
+
+## HIERARCHICAL MEMORY STRUCTURE
+
+Since the MCP `cognify()` tool does NOT support native metadata fields or dataset_name,
+we embed a 3-level hierarchy directly in the `data` string as structured headers.
+
+### The 3 Levels
+
+| Level | Tag | Example | Purpose |
+|-------|-----|---------|---------|
+| **Project** | `[PROJECT: id]` | `[PROJECT: goldledger-v1]` | Identifies the project across all teams |
+| **Team Session** | `[TEAM_SESSION: id]` | `[TEAM_SESSION: team-10-session-2026-02-19-001]` | Groups all agents in one team run |
+| **Agent Session** | `[AGENT_SESSION: id]` | `[AGENT_SESSION: agent-01-neon-verify-2026-02-19-001]` | Identifies a single agent's work |
+
+### Format for cognify() calls
+```
+mcp__cognee-agent-teams__cognify(
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-10-session-2026-02-19-001] [AGENT_SESSION: agent-01-neon-verify-2026-02-19-001] [AGENT: agent-01-neon-verify] [TEAM: 10] [TIMESTAMP: 2026-02-19T14:30:00Z]\n\nAgent 01 findings: Neon DB has 6520 transactions. Admin user verified. All route limits removed."
+)
+```
+
+### Format for search() queries — filtering by hierarchy
+```
+# Find all memories from a specific team session
+mcp__cognee-agent-teams__search(search_query="[TEAM_SESSION: team-10-session-2026-02-19-001] transaction fixes", search_type="CHUNKS")
+
+# Find all memories from a specific project
+mcp__cognee-agent-teams__search(search_query="[PROJECT: goldledger-v1] database migration", search_type="GRAPH_COMPLETION")
+
+# Find a specific agent's findings
+mcp__cognee-agent-teams__search(search_query="[AGENT_SESSION: agent-03-full-audit] route limits", search_type="CHUNKS")
+```
+
+### ID Naming Convention
+- **Project ID**: `{project-name}-v{version}` → `goldledger-v1`
+- **Team Session ID**: `team-{N}-session-{YYYY-MM-DD}-{NNN}` → `team-10-session-2026-02-19-001`
+- **Agent Session ID**: `agent-{NN}-{role}-{YYYY-MM-DD}-{NNN}` → `agent-01-neon-verify-2026-02-19-001`
 
 ---
 
@@ -220,8 +256,8 @@ mcp__cognee-agent-teams__codify(
 )
 
 # Then search with CODE type
-mcp__cognee-agent-teams__search("JWT verification logic", "CODE")
-mcp__cognee-agent-teams__search("tenantAuthMiddleware", "CODE")
+mcp__cognee-agent-teams__search(search_query="JWT verification logic", search_type="CODE")
+mcp__cognee-agent-teams__search(search_query="tenantAuthMiddleware", search_type="CODE")
 ```
 
 ## ADVANCED: ONTOLOGIES

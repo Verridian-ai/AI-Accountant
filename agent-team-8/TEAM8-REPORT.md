@@ -81,7 +81,7 @@ The complete cycle works: agents can write learnings via `cognify`, read context
 The hive memory system is now ready. Every future team should:
 1. **Start with**: `search(query="[your task area]", search_type="GRAPH_COMPLETION")` to get context
 2. **Search before reading files** — hive memory may already have relevant knowledge
-3. **Write learnings before DONE**: `cognify(data="[decisions, root causes, fixes]", dataset_name="hive_agent_decisions")`
+3. **Write learnings before DONE**: `cognify(data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-N-session-YYYY-MM-DD-NNN] [AGENT_SESSION: agent-NN-ROLE-YYYY-MM-DD-NNN] [decisions, root causes, fixes]")`
 4. **MCP server**: `cognee-agent-teams` at http://localhost:9021/mcp (configured in `.mcp.json`)
 5. **Stack management**: `docker compose -p agent-cognee -f /mnt/c/Users/Danie/Desktop/agent-cognee/docker-compose.yml up -d`
 6. **Wait after cognify**: Allow 15-30s for background processing before search

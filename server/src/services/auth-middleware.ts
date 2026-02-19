@@ -11,10 +11,13 @@
 
 import type { Context, Next } from 'hono';
 import { createMiddleware } from 'hono/factory';
+import { verify } from 'hono/jwt';
 import type { TenantRole } from './tenant-types.js';
 import type { JWTPayload } from './auth-types.js';
 import { adminAuthService } from './admin-auth.js';
 import { tenantService } from './tenant.js';
+
+const JWT_SECRET = process.env.JWT_SECRET || '';
 
 // ============================================================================
 // ROLE HIERARCHY
@@ -34,16 +37,24 @@ const ROLE_LEVEL: Record<TenantRole, number> = {
 // ============================================================================
 
 /**
- * Extract and verify the JWT from an Authorization header.
- * Returns the decoded payload or null if missing/invalid.
+ * Extract the raw Bearer token from the Authorization header.
+ * Returns the token string or null if missing/malformed.
  */
-async function extractAndVerifyToken(c: Context): Promise<JWTPayload | null> {
+function extractBearerToken(c: Context): string | null {
   const authHeader = c.req.header('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return null;
   }
+  return authHeader.slice(7);
+}
 
-  const token = authHeader.slice(7);
+/**
+ * Extract and verify the JWT from an Authorization header.
+ * Returns the decoded payload or null if missing/invalid.
+ */
+async function extractAndVerifyToken(c: Context): Promise<JWTPayload | null> {
+  const token = extractBearerToken(c);
+  if (!token) return null;
   return adminAuthService.verifyTenantToken(token);
 }
 
@@ -60,42 +71,103 @@ async function extractAndVerifyToken(c: Context): Promise<JWTPayload | null> {
  *
  * Sets on Hono context: tenantId, userId, role, permissions
  */
+/** Public paths that should never be blocked by tenant auth */
+const PUBLIC_PATHS = [
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/refresh',
+  '/api/admin/login',
+  '/api/admin/refresh',
+  '/api/vertex-ai/models',
+  '/api/subscriptions/plans',
+  '/auth/login',
+  '/auth/register',
+  '/health',
+];
+
 export function tenantAuthMiddleware() {
   return createMiddleware(async (c: Context, next: Next) => {
-    // 1. Extract and verify JWT
+    // 0. Skip public paths (prevents sub-router middleware from blocking auth endpoints)
+    const reqPath = new URL(c.req.url).pathname;
+    if (PUBLIC_PATHS.some((p) => reqPath === p || reqPath === p + '/')) {
+      return next();
+    }
+
+    // 1. Try tenant token first
     const payload = await extractAndVerifyToken(c);
-    if (!payload) {
-      return c.json({ error: 'Missing or invalid authorization token' }, 401);
+
+    if (payload) {
+      // Standard tenant token flow
+      // 2. Extract X-Tenant-Id header
+      const headerTenantId = c.req.header('X-Tenant-Id');
+      if (!headerTenantId) {
+        return c.json({ error: 'X-Tenant-Id header is required for all API requests' }, 403);
+      }
+
+      // 3. Verify X-Tenant-Id matches the JWT's tenantId (prevent spoofing)
+      if (headerTenantId !== payload.tenantId) {
+        return c.json({ error: 'X-Tenant-Id header does not match token tenant context' }, 403);
+      }
+
+      // 4. Verify tenant exists and is active
+      const tenant = await tenantService.getTenant(payload.tenantId);
+      if (!tenant) {
+        return c.json({ error: 'Tenant not found' }, 403);
+      }
+      if (!tenant.isActive) {
+        return c.json({ error: 'Tenant has been deactivated' }, 403);
+      }
+
+      // 5. Attach context for downstream handlers
+      c.set('jwtPayload', payload);
+      c.set('tenantId', payload.tenantId);
+      c.set('userId', payload.userId);
+      c.set('role', payload.role);
+      c.set('permissions', payload.permissions);
+
+      return next();
     }
 
-    // 2. Extract X-Tenant-Id header
-    const headerTenantId = c.req.header('X-Tenant-Id');
-    if (!headerTenantId) {
-      return c.json({ error: 'X-Tenant-Id header is required for all API requests' }, 403);
+    // 2. Tenant token failed — try admin token or legacy token as fallback
+    const token = extractBearerToken(c);
+    if (token) {
+      // 2a. Try admin token (has adminId)
+      const adminPayload = await adminAuthService.verifyToken(token);
+      if (adminPayload && adminPayload.adminId) {
+        // Admin super-user: bypass tenant checks, grant full access
+        c.set('jwtPayload', { userId: adminPayload.adminId, ...adminPayload });
+        c.set('userId', adminPayload.adminId);
+        c.set('role', 'owner');
+        c.set('permissions', adminPayload.permissions ?? []);
+        const headerTenantId = c.req.header('X-Tenant-Id');
+        if (headerTenantId) {
+          c.set('tenantId', headerTenantId);
+        }
+        return next();
+      }
+
+      // 2b. Try legacy JWT (has userId but no tenantId — from /auth/login)
+      if (JWT_SECRET) {
+        try {
+          const legacyPayload = (await verify(token, JWT_SECRET)) as Record<string, unknown>;
+          if (legacyPayload && legacyPayload.userId) {
+            c.set('jwtPayload', legacyPayload);
+            c.set('userId', legacyPayload.userId as string);
+            c.set('role', 'owner');
+            c.set('permissions', []);
+            const headerTenantId = c.req.header('X-Tenant-Id');
+            if (headerTenantId) {
+              c.set('tenantId', headerTenantId);
+            }
+            return next();
+          }
+        } catch {
+          // Legacy token verification failed — fall through to 401
+        }
+      }
     }
 
-    // 3. Verify X-Tenant-Id matches the JWT's tenantId (prevent spoofing)
-    if (headerTenantId !== payload.tenantId) {
-      return c.json({ error: 'X-Tenant-Id header does not match token tenant context' }, 403);
-    }
-
-    // 4. Verify tenant exists and is active
-    const tenant = await tenantService.getTenant(payload.tenantId);
-    if (!tenant) {
-      return c.json({ error: 'Tenant not found' }, 403);
-    }
-    if (!tenant.isActive) {
-      return c.json({ error: 'Tenant has been deactivated' }, 403);
-    }
-
-    // 5. Attach context for downstream handlers
-    c.set('jwtPayload', payload);
-    c.set('tenantId', payload.tenantId);
-    c.set('userId', payload.userId);
-    c.set('role', payload.role);
-    c.set('permissions', payload.permissions);
-
-    return next();
+    return c.json({ error: 'Missing or invalid authorization token' }, 401);
   });
 }
 

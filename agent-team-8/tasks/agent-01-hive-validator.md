@@ -1,6 +1,6 @@
 # AGENT-01: hive-validator
 # Wave 1 — Hive Memory Validation & Codebase Indexing
-# Model: claude-sonnet-4-5
+# Model: claude-sonnet-4-6
 
 ## YOUR MISSION
 Prove the hive memory system works end-to-end. Read from it, index the codebase into it,
@@ -22,24 +22,24 @@ Record what rules are returned.
 
 ```
 mcp__cognee-agent-teams__search(
-  query_text="GoldLedger code quality rules TypeScript",
-  query_type="GRAPH_COMPLETION"
+  search_query="GoldLedger code quality rules TypeScript",
+  search_type="GRAPH_COMPLETION"
 )
 ```
 Record the response.
 
 ```
 mcp__cognee-agent-teams__search(
-  query_text="agent team patterns and wave structure",
-  query_type="CHUNKS"
+  search_query="agent team patterns and wave structure",
+  search_type="CHUNKS"
 )
 ```
 Record the response.
 
 ```
 mcp__cognee-agent-teams__search(
-  query_text="known bugs and anti-patterns GoldLedger",
-  query_type="CHUNKS"
+  search_query="known bugs and anti-patterns GoldLedger",
+  search_type="CHUNKS"
 )
 ```
 Record the response.
@@ -81,15 +81,13 @@ Store the current state of the codebase as a snapshot:
 
 ```
 mcp__cognee-agent-teams__cognify(
-  data="Codebase snapshot (agent-team-8, 2026-02-19): GoldLedger server has 63 route files, 19 schema files, 26 Claude AI agents. Client has React 19 + TanStack Query. Auth uses JWT + tenantAuthMiddleware + X-Tenant-Id header. All currency in integer cents. Neon PostgreSQL via NEON_DATABASE_URL. wrapPgDb() proxy adds .get()/.all()/.run() for SQLite compat.",
-  dataset_name="hive_codebase_arch"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-8-session-2026-02-19-001] [AGENT_SESSION: agent-01-hive-validator-2026-02-19-001] Codebase snapshot: GoldLedger server has 63 route files, 19 schema files, 26 Claude AI agents. Client has React 19 + TanStack Query. Auth uses JWT + tenantAuthMiddleware + X-Tenant-Id header. All currency in integer cents. Neon PostgreSQL via NEON_DATABASE_URL. wrapPgDb() proxy adds .get()/.all()/.run() for SQLite compat."
 )
 ```
 
 ```
 mcp__cognee-agent-teams__cognify(
-  data="Agent team 8 validation: Hive memory system confirmed operational. MCP server cognee-agent-teams at http://localhost:9021/mcp is healthy. 15 hive datasets seeded. CHUNKS and GRAPH_COMPLETION search types working. codify indexing working. Read/write cycle confirmed.",
-  dataset_name="hive_agent_decisions"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-8-session-2026-02-19-001] [AGENT_SESSION: agent-01-hive-validator-2026-02-19-001] Agent team 8 validation: Hive memory system confirmed operational. MCP server cognee-agent-teams at http://localhost:9021/mcp is healthy. 15 hive datasets seeded. CHUNKS and GRAPH_COMPLETION search types working. codify indexing working. Read/write cycle confirmed."
 )
 ```
 
@@ -158,8 +156,7 @@ git add -A && git commit -m "feat(TEAM8-001): hive memory validation report — 
 
 ```
 mcp__cognee-agent-teams__cognify(
-  data="Hive validation complete (agent-team-8). All 5 containers healthy. 15 datasets seeded. CHUNKS + GRAPH_COMPLETION search working. codify indexing working. MCP at http://localhost:9021/mcp confirmed. Codebase indexed: routes, schema, cognee services.",
-  dataset_name="hive_agent_decisions"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-8-session-2026-02-19-001] [AGENT_SESSION: agent-01-hive-validator-2026-02-19-001] Hive validation complete. All 5 containers healthy. 15 datasets seeded. CHUNKS + GRAPH_COMPLETION search working. codify indexing working. MCP at http://localhost:9021/mcp confirmed. Codebase indexed: routes, schema, cognee services."
 )
 ```
 

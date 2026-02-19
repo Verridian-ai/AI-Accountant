@@ -126,11 +126,30 @@ basRoutes.post('/:quarter/save', zValidator('json', saveBASSchema), async (c) =>
   }
 });
 
-// Get BAS history
+// Get BAS history — merges available quarters (from transaction dates) with saved periods
 basRoutes.get('/history', async (c) => {
   try {
     const payload = c.get('jwtPayload');
-    return c.json(await basService.getUserPeriods(payload.userId));
+    const userId = payload.userId;
+    const [availableQuarters, savedPeriods] = await Promise.all([
+      basService.getAvailableQuarters(userId),
+      basService.getUserPeriods(userId),
+    ]);
+    const history = availableQuarters.map(({ financialYear, quarter }) => {
+      const saved = savedPeriods.find(
+        (p) => p.financialYear === financialYear && p.quarter === quarter,
+      );
+      return {
+        financialYear,
+        quarter,
+        periodId: `${financialYear}-Q${quarter}`,
+        status: saved?.status ?? 'not_saved',
+        lodgementDue: saved?.lodgementDue ?? null,
+        savedAt: saved?.updatedAt ?? null,
+        hasSavedData: !!saved,
+      };
+    });
+    return c.json(history);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to get BAS history';
     return c.json({ error: message, code: 'GET_HISTORY_FAILED' }, 500);

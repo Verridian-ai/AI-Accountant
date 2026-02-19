@@ -6,6 +6,7 @@ import { validateBody, chatMessageSchema, ValidationError } from '../validation/
 import { getErrorMessage } from '../utils/error.js';
 import type { AgentType } from '../services/claude/types.js';
 import { db, transactions, userSettings, cogneeUserAccounts } from '../schema.js';
+import { pool } from '../schema/connection.js';
 import { desc, eq, sql as drizzleSql } from 'drizzle-orm';
 import { aiService } from '../services/ai.js';
 import { ragService } from '../services/rag.js';
@@ -15,7 +16,9 @@ import { StreamingService } from '../services/claude/streaming.js';
 import { ConfirmationFlowService } from '../services/claude/confirmation-flow.js';
 import { AuditService } from '../services/claude/audit.js';
 import { streamingRateLimiter } from '../services/streaming-middleware.js';
+import { createPgDb } from '../db/pg-db.js';
 // Neon dual-pool
+
 import { getMaskedDb, getProductionDb, isMaskedBranchActive } from '../db/neon-connection.js';
 // v4 streaming masking pipeline
 import { AmountTagger, TokenMapBuilder, wrapWithUnredactor } from '../services/pipeline/index.js';
@@ -28,8 +31,9 @@ import { createOpenAI } from '@ai-sdk/openai';
 
 const chatRoutes = new Hono();
 const streamingService = new StreamingService();
-const confirmationFlow = new ConfirmationFlowService(db);
-const auditService = new AuditService(db);
+const pgDb = createPgDb(pool);
+const confirmationFlow = new ConfirmationFlowService(pgDb);
+const auditService = new AuditService(pgDb);
 
 const USE_NEON_RUNTIME = process.env.USE_NEON === 'true';
 // Singletons — AmountTagger uses lazy Redis connect (safe even when USE_NEON=false)

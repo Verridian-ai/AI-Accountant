@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { reportsApi } from '@/api';
-import type { CashFlowReport, CategoryGroup } from '@/api';
+import type { CashFlowReport } from '@/api';
 
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100);
@@ -11,17 +11,15 @@ interface Props {
   periodEnd: string;
 }
 
-function FlowSection({
-  title,
-  inflows,
-  outflows,
-  net,
-}: {
-  title: string;
-  inflows: CategoryGroup[];
-  outflows: CategoryGroup[];
-  net: number;
-}) {
+interface FlowItem {
+  category: string;
+  amount: number;
+}
+
+function FlowSection({ title, items, total }: { title: string; items: FlowItem[]; total: number }) {
+  const inflows = items.filter((i) => i.amount > 0);
+  const outflows = items.filter((i) => i.amount < 0);
+
   return (
     <div className="neu-raised rounded-2xl p-5">
       <h3 className="text-sm font-bold uppercase tracking-wider text-[#FFCC00] mb-4">{title}</h3>
@@ -56,20 +54,20 @@ function FlowSection({
               className="flex justify-between py-1.5 border-b border-white/5"
             >
               <span className="text-sm text-zinc-300">{item.category}</span>
-              <span className="text-sm font-mono text-red-400">-{formatCurrency(item.amount)}</span>
+              <span className="text-sm font-mono text-red-400">{formatCurrency(item.amount)}</span>
             </div>
           ))}
         </div>
       )}
 
-      {inflows.length === 0 && outflows.length === 0 && (
+      {items.length === 0 && (
         <p className="text-xs text-zinc-600 italic">No cash flows in this period</p>
       )}
 
       <div className="border-t border-[#FFCC00]/20 mt-2 pt-3 flex justify-between">
         <span className="font-bold text-zinc-100">Net {title}</span>
-        <span className={`font-bold font-mono ${net >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-          {formatCurrency(net)}
+        <span className={`font-bold font-mono ${total >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          {formatCurrency(total)}
         </span>
       </div>
     </div>
@@ -83,6 +81,7 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
 
   useEffect(() => {
     if (!periodStart || !periodEnd) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     reportsApi
@@ -118,18 +117,18 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
     { label: 'Opening', value: data.openingBalance, color: 'bg-zinc-600' },
     {
       label: 'Operating',
-      value: data.operating.net,
-      color: data.operating.net >= 0 ? 'bg-emerald-500' : 'bg-red-500',
+      value: data.operating.total,
+      color: data.operating.total >= 0 ? 'bg-emerald-500' : 'bg-red-500',
     },
     {
       label: 'Investing',
-      value: data.investing.net,
-      color: data.investing.net >= 0 ? 'bg-emerald-500' : 'bg-red-500',
+      value: data.investing.total,
+      color: data.investing.total >= 0 ? 'bg-emerald-500' : 'bg-red-500',
     },
     {
       label: 'Financing',
-      value: data.financing.net,
-      color: data.financing.net >= 0 ? 'bg-emerald-500' : 'bg-red-500',
+      value: data.financing.total,
+      color: data.financing.total >= 0 ? 'bg-emerald-500' : 'bg-red-500',
     },
     { label: 'Closing', value: data.closingBalance, color: 'bg-[#FFCC00]' },
   ];
@@ -167,21 +166,18 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <FlowSection
           title="Operating"
-          inflows={data.operating.inflows ?? []}
-          outflows={data.operating.outflows ?? []}
-          net={data.operating.net}
+          items={data.operating.items ?? []}
+          total={data.operating.total}
         />
         <FlowSection
           title="Investing"
-          inflows={data.investing.inflows ?? []}
-          outflows={data.investing.outflows ?? []}
-          net={data.investing.net}
+          items={data.investing.items ?? []}
+          total={data.investing.total}
         />
         <FlowSection
           title="Financing"
-          inflows={data.financing.inflows ?? []}
-          outflows={data.financing.outflows ?? []}
-          net={data.financing.net}
+          items={data.financing.items ?? []}
+          total={data.financing.total}
         />
       </div>
 

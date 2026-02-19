@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { reportsApi } from '@/api';
-import type { BalanceSheetReport, CategoryGroup } from '@/api';
+import type { BalanceSheetReport } from '@/api';
 
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100);
@@ -10,43 +10,40 @@ interface Props {
   asAtDate: string;
 }
 
+interface SectionItem {
+  name?: string;
+  category?: string;
+  amount: number;
+}
+
 function SectionColumn({
   title,
-  groups,
+  items,
   total,
   colorClass,
 }: {
   title: string;
-  groups: { label: string; items: CategoryGroup[] }[];
+  items: SectionItem[];
   total: number;
   colorClass: string;
 }) {
   return (
     <div className="neu-raised rounded-2xl p-5 flex flex-col">
       <h3 className={`text-sm font-bold uppercase tracking-wider mb-4 ${colorClass}`}>{title}</h3>
-      <div className="flex-1 space-y-4">
-        {groups.map((group) => (
-          <div key={group.label}>
-            <p className="text-xs text-zinc-500 font-medium uppercase tracking-wide mb-2">
-              {group.label}
-            </p>
-            {group.items.length === 0 ? (
-              <p className="text-xs text-zinc-600 italic">No items</p>
-            ) : (
-              group.items.map((item) => (
-                <div
-                  key={item.category}
-                  className="flex justify-between py-1.5 border-b border-white/5"
-                >
-                  <span className="text-sm text-zinc-300">{item.category}</span>
-                  <span className="text-sm font-mono text-zinc-200">
-                    {formatCurrency(item.amount)}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        ))}
+      <div className="flex-1 space-y-1">
+        {items.length === 0 ? (
+          <p className="text-xs text-zinc-600 italic">No items</p>
+        ) : (
+          items.map((item) => (
+            <div
+              key={item.name ?? item.category ?? 'unknown'}
+              className="flex justify-between py-1.5 border-b border-white/5"
+            >
+              <span className="text-sm text-zinc-300">{item.name ?? item.category}</span>
+              <span className="text-sm font-mono text-zinc-200">{formatCurrency(item.amount)}</span>
+            </div>
+          ))
+        )}
       </div>
       <div className="border-t border-[#FFCC00]/20 mt-4 pt-3 flex justify-between">
         <span className="font-bold text-zinc-100">Total {title}</span>
@@ -63,6 +60,7 @@ export function BalanceSheet({ asAtDate }: Props) {
 
   useEffect(() => {
     if (!asAtDate) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     reportsApi
@@ -93,27 +91,10 @@ export function BalanceSheet({ asAtDate }: Props) {
     );
   }
 
-  const assetGroups = [
-    {
-      label: 'Current Assets',
-      items: Array.isArray(data.assets?.current) ? data.assets.current : [],
-    },
-    {
-      label: 'Non-Current Assets',
-      items: Array.isArray(data.assets?.nonCurrent) ? data.assets.nonCurrent : [],
-    },
-  ];
-  const liabilityGroups = [
-    {
-      label: 'Current Liabilities',
-      items: Array.isArray(data.liabilities?.current) ? data.liabilities.current : [],
-    },
-    {
-      label: 'Non-Current Liabilities',
-      items: Array.isArray(data.liabilities?.nonCurrent) ? data.liabilities.nonCurrent : [],
-    },
-  ];
-  const equityGroups = [{ label: 'Equity', items: Array.isArray(data.equity) ? data.equity : [] }];
+  // Server returns { items: [{name, amount}], total } for each section
+  const assetItems = Array.isArray(data.assets?.items) ? data.assets.items : [];
+  const liabilityItems = Array.isArray(data.liabilities?.items) ? data.liabilities.items : [];
+  const equityItems = Array.isArray(data.equity?.items) ? data.equity.items : [];
 
   return (
     <div className="space-y-6">
@@ -140,19 +121,19 @@ export function BalanceSheet({ asAtDate }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <SectionColumn
           title="Assets"
-          groups={assetGroups}
+          items={assetItems}
           total={data.totalAssets}
           colorClass="text-emerald-400"
         />
         <SectionColumn
           title="Liabilities"
-          groups={liabilityGroups}
+          items={liabilityItems}
           total={data.totalLiabilities}
           colorClass="text-red-400"
         />
         <SectionColumn
           title="Equity"
-          groups={equityGroups}
+          items={equityItems}
           total={data.totalEquity}
           colorClass="text-[#FFCC00]"
         />

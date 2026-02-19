@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { transactionService } from '../services/transaction-service.js';
+import { transactionRepository } from '../repositories/transaction-repository.js';
 import { transactionUpdateSchema, transactionSplitSchema } from '../validation/index.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
@@ -11,10 +12,22 @@ transactionRoutes.use('/*', tenantAuthMiddleware());
 
 // Get transactions list
 transactionRoutes.get('/', async (c) => {
-  const payload = c.get('jwtPayload');
-  const userId = payload.userId as string;
+  const payload = c.get('jwtPayload') as Record<string, unknown> | undefined;
+  const userId = (payload?.userId as string) ?? '';
+  // Admin detection: admin token has adminId, OR role is super_admin/owner, OR no tenantId (legacy single-user)
+  const isAdmin = !!payload?.adminId || payload?.role === 'super_admin' || !payload?.tenantId;
   const limit = parseInt(c.req.query('limit') || '1000', 10);
   const offset = parseInt(c.req.query('offset') || '0', 10);
+
+  // Admin tokens: return all transactions (no userId filter)
+  if (isAdmin) {
+    const { data: transactions, total } = await transactionRepository.findManyAdmin({
+      limit,
+      offset,
+      userId: c.req.query('userId') || undefined,
+    });
+    return c.json({ transactions, total });
+  }
 
   const filters = {
     limit,

@@ -28,6 +28,7 @@ import { VercelFinancialPlanner } from '../agents/vercel/financial-planner.js';
 import { VercelTaxStrategy } from '../agents/vercel/tax-strategy.js';
 import { VercelMerchantIntelligence } from '../agents/vercel/merchant-intelligence.js';
 import { ConfirmationFlowService } from '../confirmation-flow.js';
+import type { PgDbAdapter } from '../../../db/pg-db.js';
 import type {
   AgentType,
   TokenUsage,
@@ -49,7 +50,7 @@ export class AgentOrchestrator {
    * Initialize the mutation framework.
    * Called once during server startup, after db is available.
    */
-  initMutationFramework(db: Record<string, unknown>): void {
+  initMutationFramework(db: PgDbAdapter): void {
     this.confirmationFlow = new ConfirmationFlowService(db);
   }
 

@@ -27,23 +27,41 @@ authRoutes.post('/login', zValidator('json', loginSchema), async (c) => {
   const { username, password, tenantId } = c.req.valid('json');
   if (!username || !password) return c.json({ error: 'username and password are required' }, 400);
 
-  // First level authentication (Username/Password)
-  const authResult = await authService.login(username, password);
-  const user = authResult.user;
+  let user: { id: string; username: string };
+  let baseToken: string;
+
+  try {
+    // Try regular user auth first (users table)
+    const authResult = await authService.login(username, password);
+    user = authResult.user;
+    baseToken = authResult.token;
+  } catch {
+    // Fall back to admin auth (admin_users table)
+    try {
+      const adminResult = await adminAuthService.login(username, password);
+      if (!adminResult.success || !adminResult.token || !adminResult.admin) {
+        return c.json({ error: adminResult.error || 'Invalid credentials' }, 401);
+      }
+      user = { id: adminResult.admin.id, username: adminResult.admin.username };
+      baseToken = adminResult.token;
+    } catch {
+      return c.json({ error: 'Invalid credentials' }, 401);
+    }
+  }
 
   // Multi-tenant check
   const memberTenants = await tenantService.getMemberTenants(user.id);
 
   if (memberTenants.length === 0) {
     // User has no tenants (legacy or new user)
-    return c.json({ token: authResult.token, user, tenants: [], activeTenant: null });
+    return c.json({ token: baseToken, user, tenants: [], activeTenant: null });
   }
 
   // Determine target tenant
   const targetTenantId = tenantId ?? memberTenants[0].tenant.id;
   const match = memberTenants.find((mt) => mt.tenant.id === targetTenantId);
 
-  if (!match) return c.json({ error: 'Not a member of specify tenant' }, 403);
+  if (!match) return c.json({ error: 'Not a member of specified tenant' }, 403);
 
   // Generate Tenant-scoped Token
   const token = await adminAuthService.generateTenantToken(user.id, targetTenantId);

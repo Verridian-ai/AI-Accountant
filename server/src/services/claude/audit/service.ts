@@ -12,6 +12,7 @@
  */
 
 import type { AgentType } from '../types.js';
+import type { PgDbAdapter } from '../../../db/pg-db.js';
 import {
   type AuditEntry,
   type AuditAction,
@@ -24,11 +25,6 @@ import {
 
 export type { AuditEntry, AuditAction, AuditQueryOptions };
 
-type DbLike = {
-  all: (...args: unknown[]) => Promise<unknown[]>;
-  run: (...args: unknown[]) => Promise<unknown>;
-};
-
 /**
  * AuditService manages the immutable audit trail for all agent operations.
  *
@@ -36,10 +32,10 @@ type DbLike = {
  * with parameterized queries for SQL injection safety.
  */
 export class AuditService {
-  private db: DbLike;
+  private db: PgDbAdapter;
 
-  constructor(db: Record<string, unknown>) {
-    this.db = db as unknown as DbLike;
+  constructor(db: PgDbAdapter) {
+    this.db = db;
   }
 
   // ── Mutation Lifecycle Events ────────────────────────
@@ -303,7 +299,9 @@ export class AuditService {
         this.db.all(`SELECT COUNT(*) as count FROM agent_audit_log ${whereClause}`, params),
       ]);
 
-      const redactedEntries = (entries as AuditEntry[]).map((e) => this.redactSensitiveFields(e));
+      const redactedEntries = (entries as unknown as AuditEntry[]).map((e) =>
+        this.redactSensitiveFields(e),
+      );
       return {
         entries: redactedEntries,
         total: ((countResult[0] as Record<string, unknown> | undefined)?.count as number) ?? 0,
@@ -319,7 +317,7 @@ export class AuditService {
       const entries = (await this.db.all(
         `SELECT ${AUDIT_SELECT_COLUMNS} FROM agent_audit_log WHERE mutation_id = ? ORDER BY created_at ASC`,
         [mutationId],
-      )) as AuditEntry[];
+      )) as unknown as AuditEntry[];
       return entries.map((e) => this.redactSensitiveFields(e));
     } catch (error) {
       console.error('[AuditService] Failed to get mutation audit trail:', error);
@@ -332,7 +330,7 @@ export class AuditService {
       const entries = (await this.db.all(
         `SELECT ${AUDIT_SELECT_COLUMNS} FROM agent_audit_log WHERE session_id = ? ORDER BY created_at ASC`,
         [sessionId],
-      )) as AuditEntry[];
+      )) as unknown as AuditEntry[];
       return entries.map((e) => this.redactSensitiveFields(e));
     } catch (error) {
       console.error('[AuditService] Failed to get session audit trail:', error);

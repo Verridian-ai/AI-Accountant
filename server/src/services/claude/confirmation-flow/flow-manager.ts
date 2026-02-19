@@ -9,15 +9,14 @@ import { MutationTools } from '../mutation-tools.js';
 import { MutationAuthService } from '../mutation-auth.js';
 import { logger } from '../../../lib/logger.js';
 import type { AgentType } from '../types.js';
+import type { PgDbAdapter } from '../../../db/pg-db.js';
 import type { CreateSessionOptions, AgentSession } from './types.js';
 
 export class ConfirmationFlowManager {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected db: any;
+  protected db: PgDbAdapter;
   protected authService: MutationAuthService;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(db: any) {
+  constructor(db: PgDbAdapter) {
     this.db = db;
     this.authService = new MutationAuthService();
   }
@@ -42,7 +41,7 @@ export class ConfirmationFlowManager {
             new Date().toISOString(),
             existing[0].id,
           ]);
-          return existing[0] as AgentSession;
+          return existing[0] as unknown as AgentSession;
         }
       } catch (error) {
         logger.error({ err: error }, '[ConfirmationFlow] Error finding existing session:');
@@ -139,8 +138,8 @@ export class ConfirmationFlowManager {
     ]);
 
     return {
-      sessions: sessions as AgentSession[],
-      total: countResult[0]?.count ?? 0,
+      sessions: sessions as unknown as AgentSession[],
+      total: (countResult[0]?.count as number) ?? 0,
     };
   }
 
@@ -149,7 +148,7 @@ export class ConfirmationFlowManager {
    */
   async getSession(sessionId: string): Promise<AgentSession | null> {
     const rows = await this.db.all('SELECT * FROM agent_sessions WHERE id = ?', [sessionId]);
-    return rows.length > 0 ? (rows[0] as AgentSession) : null;
+    return rows.length > 0 ? (rows[0] as unknown as AgentSession) : null;
   }
 
   // ── Session Activity Tracking ───────────────────────────────────────────
@@ -175,7 +174,7 @@ export class ConfirmationFlowManager {
     if (session.length === 0) return;
 
     const existing: string[] = session[0].agent_types_used
-      ? JSON.parse(session[0].agent_types_used)
+      ? JSON.parse(session[0].agent_types_used as string)
       : [];
 
     if (!existing.includes(agentType)) {
@@ -206,7 +205,7 @@ export class ConfirmationFlowManager {
       throw new Error('Session not found');
     }
 
-    const sessionUserId: string | null = sessions[0].user_id ?? null;
+    const sessionUserId: string | null = (sessions[0].user_id as string | null) ?? null;
 
     // Anonymous sessions (NULL user_id) have no owner to verify against —
     // disallow mutations to prevent privilege escalation via unowned sessions.

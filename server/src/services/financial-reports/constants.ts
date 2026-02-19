@@ -21,7 +21,12 @@ export const REVENUE_CATEGORIES = [
 ];
 
 // Cost of Goods Sold categories
-export const COGS_CATEGORIES = ['Cost of Goods Sold', 'Direct Labour', 'Freight Costs', 'Materials'];
+export const COGS_CATEGORIES = [
+  'Cost of Goods Sold',
+  'Direct Labour',
+  'Freight Costs',
+  'Materials',
+];
 
 // System/transfer categories excluded from P&L
 export const SYSTEM_CATEGORIES = [
@@ -30,6 +35,7 @@ export const SYSTEM_CATEGORIES = [
   'Loan Repayment',
   'Mortgage',
   'Refund',
+  'Owner Contributions',
   'Uncategorized',
 ];
 
@@ -37,7 +43,7 @@ export const SYSTEM_CATEGORIES = [
 export const INVESTING_CATEGORIES = ['Depreciation'];
 
 // Financing-related categories for cash flow classification
-export const FINANCING_CATEGORIES = ['Loan Repayment', 'Mortgage'];
+export const FINANCING_CATEGORIES = ['Loan Repayment', 'Mortgage', 'Owner Contributions'];
 
 /** Safe division avoiding divide-by-zero */
 export function safeDivide(numerator: number, denominator: number): number {
@@ -46,7 +52,10 @@ export function safeDivide(numerator: number, denominator: number): number {
 }
 
 /** Calculate previous period dates given current period */
-export function getPriorPeriod(periodStart: string, periodEnd: string): { start: string; end: string } {
+export function getPriorPeriod(
+  periodStart: string,
+  periodEnd: string,
+): { start: string; end: string } {
   const start = new Date(periodStart);
   const end = new Date(periodEnd);
   const durationMs = end.getTime() - start.getTime();

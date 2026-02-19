@@ -20,16 +20,30 @@ apiAuthRoutes.post('/login', zValidator('json', loginWithTenantSchema), async (c
   try {
     const body = c.req.valid('json');
 
-    const user = await db.select().from(users).where(eq(users.username, body.username)).get();
-    if (!user || !(await comparePassword(body.password, user.passwordHash)))
-      return c.json({ error: 'Invalid credentials' }, 401);
+    let userId: string;
+    let username: string;
 
-    const memberTenants = await tenantService.getMemberTenants(user.id);
+    // Try regular users table first
+    const user = await db.select().from(users).where(eq(users.username, body.username)).get();
+    if (user && (await comparePassword(body.password, user.passwordHash))) {
+      userId = user.id;
+      username = user.username;
+    } else {
+      // Fall back to admin_users table
+      const adminResult = await adminAuthService.login(body.username, body.password);
+      if (!adminResult.success || !adminResult.token || !adminResult.admin) {
+        return c.json({ error: 'Invalid credentials' }, 401);
+      }
+      userId = adminResult.admin.id;
+      username = adminResult.admin.username;
+    }
+
+    const memberTenants = await tenantService.getMemberTenants(userId);
     if (memberTenants.length === 0) {
-      const token = await generateToken(user.id);
+      const token = await generateToken(userId);
       return c.json({
         token,
-        user: { id: user.id, username: user.username },
+        user: { id: userId, username },
         tenants: [],
         activeTenant: null,
       });
@@ -39,11 +53,11 @@ apiAuthRoutes.post('/login', zValidator('json', loginWithTenantSchema), async (c
     const match = memberTenants.find((mt) => mt.tenant.id === targetTenantId);
     if (!match) return c.json({ error: 'User is not a member of the specified tenant' }, 403);
 
-    const token = await adminAuthService.generateTenantToken(user.id, targetTenantId);
-    const context = await tenantService.getTenantContext(user.id, targetTenantId);
+    const token = await adminAuthService.generateTenantToken(userId, targetTenantId);
+    const context = await tenantService.getTenantContext(userId, targetTenantId);
     return c.json({
       token,
-      user: { id: user.id, username: user.username },
+      user: { id: userId, username },
       tenants: memberTenants,
       activeTenant: context,
     });

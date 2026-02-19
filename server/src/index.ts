@@ -4,7 +4,8 @@ import { cors } from 'hono/cors';
 import { bodyLimit } from 'hono/body-limit';
 import { rateLimiter } from 'hono-rate-limiter';
 import { jwt, verify } from 'hono/jwt';
-import { db } from './schema.js';
+import { pool } from './schema/connection.js';
+import { createPgDb } from './db/pg-db.js';
 import { orchestrator } from './services/claude/orchestrator.js';
 import { securityHeaders } from './middleware/security.js';
 import { auditMiddleware } from './middleware/audit.js';
@@ -135,7 +136,7 @@ app.route('/api/chat', chatRoutes);
 app.route('/api', settingsRoutes);
 app.route('/api', taxRoutes);
 app.route('/api', budgetsRoutes);
-app.route('/api', aiAgentsRoutes);
+app.route('/api/ai-agents', aiAgentsRoutes);
 app.route('/api', agentRoutesExtended);
 app.route('/api', agentStreamingRoutes);
 app.route('/api', migrationRoutes);
@@ -222,8 +223,9 @@ const schemaRegistry = new SchemaRegistry();
 schemaRegistry.initializeDefaults();
 
 // --- Wave 2: Initialize mutation framework for agent orchestrator ---
-orchestrator.initMutationFramework(db);
-const confirmationFlow = new ConfirmationFlowService(db);
+const pgDb = createPgDb(pool);
+orchestrator.initMutationFramework(pgDb);
+const confirmationFlow = new ConfirmationFlowService(pgDb);
 
 // Start stale mutation expiration timer (every 5 minutes)
 setInterval(
@@ -262,6 +264,8 @@ app.use('/api/*', async (c, next) => {
     '/api/auth/refresh',
     '/api/admin/login',
     '/api/admin/refresh',
+    '/api/health',
+    '/api/health/ping',
   ];
   const reqPath = new URL(c.req.url).pathname;
   if (publicPaths.some((p) => reqPath === p || reqPath === p + '/')) {

@@ -24,6 +24,7 @@ export function BASDashboard() {
     barChartData,
     isRefund,
     netAmount,
+    availableQuarters,
   } = useBASDashboard();
 
   return (
@@ -87,6 +88,7 @@ export function BASDashboard() {
           netAmount={netAmount}
           onCalculate={calculateBAS}
           onSave={saveBAS}
+          availableQuarters={availableQuarters}
         />
       )}
 
@@ -97,6 +99,7 @@ export function BASDashboard() {
       {activeTab === 'history' && (
         <HistoryTab
           history={history}
+          availableQuarters={availableQuarters}
           setSelectedQuarter={setSelectedQuarter}
           setActiveTab={setActiveTab}
           onCalculate={calculateBAS}

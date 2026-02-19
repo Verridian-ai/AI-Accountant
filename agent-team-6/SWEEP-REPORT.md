@@ -1,6 +1,6 @@
 # GoldLedger UI Fix & Sweep — Team 6 Report
 **Date**: 2026-02-19
-**Reviewer**: claude-opus-4-5 (reviewer agent)
+**Reviewer**: claude-opus-4-6 (reviewer agent)
 **Team**: goldledger-ui-fix (4 agents across 3 waves)
 
 ---

@@ -10,8 +10,34 @@ interface Props {
   asAtDate: string;
 }
 
-type SortKey = 'accountName' | 'debit' | 'credit' | 'net';
+type SortKey = 'accountName' | 'debit' | 'credit' | 'netBalance';
 type SortDir = 'asc' | 'desc';
+
+function SortHeader({
+  label,
+  field,
+  sortKey,
+  onSort,
+}: {
+  label: string;
+  field: SortKey;
+  sortKey: SortKey;
+  onSort: (f: SortKey) => void;
+}) {
+  return (
+    <th
+      className="pb-2 font-medium cursor-pointer hover:text-[#FFCC00] transition-colors select-none"
+      onClick={() => onSort(field)}
+    >
+      <span className="flex items-center gap-1 justify-end">
+        {label}
+        <ArrowUpDown
+          className={`h-3 w-3 ${sortKey === field ? 'text-[#FFCC00]' : 'text-zinc-600'}`}
+        />
+      </span>
+    </th>
+  );
+}
 
 export function TrialBalance({ asAtDate }: Props) {
   const [loading, setLoading] = useState(false);
@@ -22,6 +48,7 @@ export function TrialBalance({ asAtDate }: Props) {
 
   useEffect(() => {
     if (!asAtDate) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     reportsApi
@@ -73,20 +100,6 @@ export function TrialBalance({ asAtDate }: Props) {
       : (bVal as number) - (aVal as number);
   });
 
-  const SortHeader = ({ label, field }: { label: string; field: SortKey }) => (
-    <th
-      className="pb-2 font-medium cursor-pointer hover:text-[#FFCC00] transition-colors select-none"
-      onClick={() => handleSort(field)}
-    >
-      <span className="flex items-center gap-1 justify-end">
-        {label}
-        <ArrowUpDown
-          className={`h-3 w-3 ${sortKey === field ? 'text-[#FFCC00]' : 'text-zinc-600'}`}
-        />
-      </span>
-    </th>
-  );
-
   return (
     <div className="space-y-6">
       {/* Balance Check */}
@@ -124,9 +137,9 @@ export function TrialBalance({ asAtDate }: Props) {
                   />
                 </span>
               </th>
-              <SortHeader label="Debit" field="debit" />
-              <SortHeader label="Credit" field="credit" />
-              <SortHeader label="Net" field="net" />
+              <SortHeader label="Debit" field="debit" sortKey={sortKey} onSort={handleSort} />
+              <SortHeader label="Credit" field="credit" sortKey={sortKey} onSort={handleSort} />
+              <SortHeader label="Net" field="netBalance" sortKey={sortKey} onSort={handleSort} />
             </tr>
           </thead>
           <tbody>
@@ -143,9 +156,9 @@ export function TrialBalance({ asAtDate }: Props) {
                   {entry.credit > 0 ? formatCurrency(entry.credit) : '—'}
                 </td>
                 <td
-                  className={`py-2 text-right font-mono ${entry.net >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                  className={`py-2 text-right font-mono ${entry.netBalance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
                 >
-                  {formatCurrency(entry.net)}
+                  {formatCurrency(entry.netBalance)}
                 </td>
               </tr>
             ))}

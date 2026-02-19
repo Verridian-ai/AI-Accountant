@@ -35,7 +35,7 @@ async function runAgent(userMessage: string): Promise<string> {
 
   while (true) {
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
+      model: 'claude-sonnet-4-6-20250929',
       max_tokens: 4096,
       tools,
       messages,
@@ -76,7 +76,7 @@ app.post('/api/chat', async (c) => {
   return streamSSE(c, async (stream) => {
     const anthropic = new Anthropic();
     const messageStream = await anthropic.messages.stream({
-      model: 'claude-sonnet-4-5-20250929',
+      model: 'claude-sonnet-4-6-20250929',
       max_tokens: 2048,
       messages: [{ role: 'user', content: userMessage }],
     });
@@ -158,7 +158,7 @@ const TransactionSchema = z.object({
 
 async function extractTransaction(rawText: string): Promise<z.infer<typeof TransactionSchema>> {
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-haiku-4-6-20251001',
     max_tokens: 512,
     messages: [{
       role: 'user',
@@ -202,9 +202,9 @@ Match model to task complexity to optimize cost vs quality.
 type AgentTask = 'categorize' | 'parse' | 'analyze' | 'strategy';
 
 const MODEL_MAP: Record<AgentTask, string> = {
-  categorize: 'claude-haiku-4-5-20251001',   // Fast, cheap — simple classification
-  parse: 'claude-sonnet-4-5-20250929',        // Balanced — structured extraction
-  analyze: 'claude-sonnet-4-5-20250929',      // Balanced — multi-step reasoning
+  categorize: 'claude-haiku-4-6-20251001',   // Fast, cheap — simple classification
+  parse: 'claude-sonnet-4-6-20250929',        // Balanced — structured extraction
+  analyze: 'claude-sonnet-4-6-20250929',      // Balanced — multi-step reasoning
   strategy: 'claude-opus-4-6',               // Expensive — complex financial advice
 };
 
@@ -215,8 +215,8 @@ function selectModel(task: AgentTask): string {
 
 ## Best Practices
 - Always set `max_tokens` explicitly — never rely on defaults
-- Use `claude-haiku-4-5-20251001` for categorization/simple tasks (10x cheaper than Sonnet)
-- Use `claude-sonnet-4-5-20250929` for parsing and analysis
+- Use `claude-haiku-4-6-20251001` for categorization/simple tasks (10x cheaper than Sonnet)
+- Use `claude-sonnet-4-6-20250929` for parsing and analysis
 - Stream long responses via SSE — never buffer >4KB in memory
 - Validate ALL LLM JSON output with Zod before using
 - Store agent interactions to Cognee for knowledge graph building

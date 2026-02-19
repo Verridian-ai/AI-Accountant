@@ -28,7 +28,7 @@ export function getQuarterDates(financialYear: string, quarter: number): Quarter
     4: {
       startDate: `${startYear + 1}-04-01`,
       endDate: `${startYear + 1}-06-30`,
-      lodgementDue: `${startYear + 1}-07-28`,
+      lodgementDue: `${startYear + 1}-08-28`,
     },
   };
 

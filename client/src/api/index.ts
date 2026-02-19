@@ -66,6 +66,8 @@ import {
   updateAdminUser,
   updateAgentConfig,
   updateFeatureFlag,
+  fetchAdminLedgerSummary,
+  fetchAdminBasSummary,
 } from './misc';
 
 import {
@@ -132,6 +134,8 @@ export const api = {
   updateAdminUser,
   updateAgentConfig,
   updateFeatureFlag,
+  fetchAdminLedgerSummary,
+  fetchAdminBasSummary,
 };
 
 // Apply offline interceptors to the legacy object

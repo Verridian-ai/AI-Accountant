@@ -6,8 +6,8 @@ This team will: read from hive memory, do real work, write back to hive memory, 
 collective intelligence loop is functioning. This is the validation team.
 
 ## MODELS
-- All agents: claude-sonnet-4-5
-- Reviewer: claude-opus-4-5
+- All agents: claude-sonnet-4-6
+- Reviewer: claude-opus-4-6
 
 ## PROJECT ROOT
 /mnt/c/Users/Danie/Desktop/CBA Statements Parse
@@ -19,15 +19,14 @@ collective intelligence loop is functioning. This is the validation team.
 ### EVERY AGENT MUST DO THIS AT SESSION START:
 ```
 1. mcp__cognee-agent-teams__get_developer_rules()
-2. mcp__cognee-agent-teams__search(query_text="[your task area]", query_type="GRAPH_COMPLETION")
-3. mcp__cognee-agent-teams__search(query_text="[your task area]", query_type="CHUNKS")
+2. mcp__cognee-agent-teams__search(search_query="[your task area]", search_type="GRAPH_COMPLETION")
+3. mcp__cognee-agent-teams__search(search_query="[your task area]", search_type="CHUNKS")
 ```
 
 ### EVERY AGENT MUST DO THIS BEFORE MESSAGING DONE:
 ```
 mcp__cognee-agent-teams__cognify(
-  data="[summary of what you did, decisions made, bugs found, fixes applied]",
-  dataset_name="hive_agent_decisions"
+  data="[PROJECT: goldledger-v1] [TEAM_SESSION: team-8-session-YYYY-MM-DD-NNN] [AGENT_SESSION: agent-NN-ROLE-YYYY-MM-DD-NNN] [summary of what you did, decisions made, bugs found, fixes applied]"
 )
 ```
 
@@ -59,17 +58,17 @@ mcp__cognee-agent-teams__cognify(
 
 ## WAVE 1 ASSIGNMENTS
 
-### AGENT-01: hive-validator (model: claude-sonnet-4-5)
+### AGENT-01: hive-validator (model: claude-sonnet-4-6)
 **Task file**: agent-team-8/tasks/agent-01-hive-validator.md
 
-### AGENT-02: cognee-sessions-fixer (model: claude-sonnet-4-5)
+### AGENT-02: cognee-sessions-fixer (model: claude-sonnet-4-6)
 **Task file**: agent-team-8/tasks/agent-02-cognee-sessions-fixer.md
 
 ---
 
 ## WAVE 2 ASSIGNMENTS
 
-### AGENT-03: reviewer (model: claude-opus-4-5)
+### AGENT-03: reviewer (model: claude-opus-4-6)
 **Task file**: agent-team-8/tasks/agent-03-reviewer.md
 **Start condition**: Both Wave 1 agents have messaged DONE
 

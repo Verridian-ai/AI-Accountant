@@ -5,7 +5,11 @@ import {
   fetchCogneeAdminDatasets,
   fetchAdminUsers,
   fetchActivityLog,
+  fetchAdminLedgerSummary,
+  fetchAdminBasSummary,
 } from '../../../api';
+import type { LedgerSummary, BASSummary } from '../../../api/misc';
+import { LedgerSummaryCards } from './LedgerSummaryCards';
 import {
   Bot,
   CheckCircle,
@@ -31,10 +35,6 @@ type AdminSection =
   | 'features'
   | 'metrics';
 
-interface AdminDashboardProps {
-  onNavigate: (section: AdminSection) => void;
-}
-
 interface SummaryCard {
   title: string;
   value: string;
@@ -44,161 +44,145 @@ interface SummaryCard {
   navigateTo: AdminSection;
 }
 
-export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
+interface ActivityItem {
+  id: string;
+  action: string;
+  resource: string;
+  timestamp: string;
+  status: string;
+}
+
+function card(
+  title: string,
+  value: string,
+  subtitle: string,
+  icon: React.ElementType,
+  color: string,
+  navigateTo: AdminSection,
+): SummaryCard {
+  return { title, value, subtitle, icon, color, navigateTo };
+}
+
+export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) => void }) {
   const [cards, setCards] = useState<SummaryCard[]>([]);
-  const [recentActivity, setRecentActivity] = useState<
-    Array<{ id: string; action: string; resource: string; timestamp: string; status: string }>
-  >([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [ledgerSummary, setLedgerSummary] = useState<LedgerSummary | null>(null);
+  const [basSummary, setBasSummary] = useState<BASSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadDashboard = async () => {
     setLoading(true);
-    const summaryCards: SummaryCard[] = [];
-
+    const sc: SummaryCard[] = [];
     try {
-      const [agentStats, health, datasets, users, activity] = await Promise.allSettled([
-        fetchAgentStats(),
-        fetchSystemHealth(),
-        fetchCogneeAdminDatasets(),
-        fetchAdminUsers(),
-        fetchActivityLog({ limit: '5' }),
-      ]);
+      const [agentStats, health, datasets, users, activity, ledger, bas] = await Promise.allSettled(
+        [
+          fetchAgentStats(),
+          fetchSystemHealth(),
+          fetchCogneeAdminDatasets(),
+          fetchAdminUsers(),
+          fetchActivityLog({ limit: '5' }),
+          fetchAdminLedgerSummary(),
+          fetchAdminBasSummary(),
+        ],
+      );
 
       if (agentStats.status === 'fulfilled') {
         const s = agentStats.value;
-        summaryCards.push(
-          {
-            title: 'Executions (24h)',
-            value: String(s.totalExecutions ?? 0),
-            subtitle: 'Agent runs',
-            icon: Bot,
-            color: 'text-blue-400',
-            navigateTo: 'agents',
-          },
-          {
-            title: 'Success Rate',
-            value: `${(s.successRate ?? 0).toFixed(1)}%`,
-            subtitle: 'All agents',
-            icon: CheckCircle,
-            color: 'text-emerald-400',
-            navigateTo: 'agents',
-          },
-          {
-            title: 'Token Cost',
-            value: `$${((s.totalCost ?? 0) / 100).toFixed(2)}`,
-            subtitle: 'Last 24h',
-            icon: DollarSign,
-            color: 'text-[#FFCC00]',
-            navigateTo: 'costs',
-          },
+        sc.push(
+          card(
+            'Executions (24h)',
+            String(s.totalExecutions ?? 0),
+            'Agent runs',
+            Bot,
+            'text-blue-400',
+            'agents',
+          ),
+          card(
+            'Success Rate',
+            `${(s.successRate ?? 0).toFixed(1)}%`,
+            'All agents',
+            CheckCircle,
+            'text-emerald-400',
+            'agents',
+          ),
+          card(
+            'Token Cost',
+            `$${((s.totalCost ?? 0) / 100).toFixed(2)}`,
+            'Last 24h',
+            DollarSign,
+            'text-[#FFCC00]',
+            'costs',
+          ),
         );
       } else {
-        summaryCards.push(
-          {
-            title: 'Executions (24h)',
-            value: '-',
-            subtitle: 'Agent runs',
-            icon: Bot,
-            color: 'text-blue-400',
-            navigateTo: 'agents',
-          },
-          {
-            title: 'Success Rate',
-            value: '-',
-            subtitle: 'All agents',
-            icon: CheckCircle,
-            color: 'text-emerald-400',
-            navigateTo: 'agents',
-          },
-          {
-            title: 'Token Cost',
-            value: '-',
-            subtitle: 'Last 24h',
-            icon: DollarSign,
-            color: 'text-[#FFCC00]',
-            navigateTo: 'costs',
-          },
+        sc.push(
+          card('Executions (24h)', '-', 'Agent runs', Bot, 'text-blue-400', 'agents'),
+          card('Success Rate', '-', 'All agents', CheckCircle, 'text-emerald-400', 'agents'),
+          card('Token Cost', '-', 'Last 24h', DollarSign, 'text-[#FFCC00]', 'costs'),
         );
       }
 
       if (health.status === 'fulfilled') {
-        const h = health.value;
-        const overallStatus = h.status || 'unknown';
-        summaryCards.push({
-          title: 'System Health',
-          value: overallStatus.toUpperCase(),
-          subtitle: `${h.services?.length ?? 0} services`,
-          icon: Server,
-          color: overallStatus === 'healthy' ? 'text-emerald-400' : 'text-yellow-400',
-          navigateTo: 'health',
-        });
+        const st = health.value.status || 'unknown';
+        sc.push(
+          card(
+            'System Health',
+            st.toUpperCase(),
+            `${health.value.services?.length ?? 0} services`,
+            Server,
+            st === 'healthy' ? 'text-emerald-400' : 'text-yellow-400',
+            'health',
+          ),
+        );
       } else {
-        summaryCards.push({
-          title: 'System Health',
-          value: 'UNKNOWN',
-          subtitle: 'No data',
-          icon: Server,
-          color: 'text-zinc-500',
-          navigateTo: 'health',
-        });
+        sc.push(card('System Health', 'UNKNOWN', 'No data', Server, 'text-zinc-500', 'health'));
       }
 
       if (datasets.status === 'fulfilled') {
         const d = Array.isArray(datasets.value) ? datasets.value : datasets.value?.datasets || [];
-        summaryCards.push({
-          title: 'Cognee Datasets',
-          value: String(d.length),
-          subtitle: 'Knowledge base',
-          icon: Database,
-          color: 'text-violet-400',
-          navigateTo: 'cognee',
-        });
+        sc.push(
+          card(
+            'Cognee Datasets',
+            String(d.length),
+            'Knowledge base',
+            Database,
+            'text-violet-400',
+            'cognee',
+          ),
+        );
       } else {
-        summaryCards.push({
-          title: 'Cognee Datasets',
-          value: '-',
-          subtitle: 'Knowledge base',
-          icon: Database,
-          color: 'text-violet-400',
-          navigateTo: 'cognee',
-        });
+        sc.push(
+          card('Cognee Datasets', '-', 'Knowledge base', Database, 'text-violet-400', 'cognee'),
+        );
       }
 
       if (users.status === 'fulfilled') {
         const u = Array.isArray(users.value) ? users.value : users.value?.users || [];
-        summaryCards.push({
-          title: 'Admin Users',
-          value: String(u.length),
-          subtitle: 'Accounts',
-          icon: Users,
-          color: 'text-cyan-400',
-          navigateTo: 'users',
-        });
+        sc.push(card('Admin Users', String(u.length), 'Accounts', Users, 'text-cyan-400', 'users'));
       } else {
-        summaryCards.push({
-          title: 'Admin Users',
-          value: '-',
-          subtitle: 'Accounts',
-          icon: Users,
-          color: 'text-cyan-400',
-          navigateTo: 'users',
-        });
+        sc.push(card('Admin Users', '-', 'Accounts', Users, 'text-cyan-400', 'users'));
       }
 
       if (activity.status === 'fulfilled') {
         const logs = Array.isArray(activity.value) ? activity.value : activity.value?.logs || [];
         setRecentActivity(logs.slice(0, 5));
       }
+      if (ledger.status === 'fulfilled') setLedgerSummary(ledger.value as LedgerSummary);
+      if (bas.status === 'fulfilled') setBasSummary(bas.value as BASSummary);
     } catch {
-      // graceful degradation
+      /* graceful degradation */
     }
-
-    setCards(summaryCards);
+    setCards(sc);
     setLoading(false);
   };
 
   useEffect(() => {
-    loadDashboard();
+    const run = async () => {
+      await loadDashboard();
+    };
+    run().catch(() => {
+      /* errors handled inside loadDashboard */
+    });
   }, []);
 
   if (loading) {
@@ -226,23 +210,23 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cards.map((card) => (
+        {cards.map((c) => (
           <button
-            key={card.title}
+            key={c.title}
             type="button"
-            onClick={() => onNavigate(card.navigateTo)}
+            onClick={() => onNavigate(c.navigateTo)}
             className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 text-left hover:border-[#FFCC00]/20 border border-transparent transition-all group"
           >
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                  {card.title}
+                  {c.title}
                 </p>
-                <p className={`text-3xl font-bold mt-2 ${card.color}`}>{card.value}</p>
-                <p className="text-xs text-zinc-500 mt-1">{card.subtitle}</p>
+                <p className={`text-3xl font-bold mt-2 ${c.color}`}>{c.value}</p>
+                <p className="text-xs text-zinc-500 mt-1">{c.subtitle}</p>
               </div>
               <div className="p-2 rounded-xl bg-[#1a1a2e]">
-                <card.icon className={`w-5 h-5 ${card.color}`} />
+                <c.icon className={`w-5 h-5 ${c.color}`} />
               </div>
             </div>
             <div className="mt-4 flex items-center gap-1 text-xs text-zinc-600 group-hover:text-[#FFCC00] transition-colors">
@@ -252,6 +236,9 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           </button>
         ))}
       </div>
+
+      {/* Ledger Health + BAS Summary */}
+      <LedgerSummaryCards ledger={ledgerSummary} bas={basSummary} />
 
       {/* Recent Activity */}
       <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
@@ -307,15 +294,15 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           { label: 'System Health', section: 'health' as AdminSection, icon: Server },
           { label: 'Cognee Search', section: 'search' as AdminSection, icon: Database },
           { label: 'Feature Flags', section: 'features' as AdminSection, icon: Flag },
-        ].map((action) => (
+        ].map((a) => (
           <button
-            key={action.label}
+            key={a.label}
             type="button"
-            onClick={() => onNavigate(action.section)}
+            onClick={() => onNavigate(a.section)}
             className="flex items-center gap-3 p-4 rounded-xl bg-[#1a1a2e] border border-white/5 hover:border-[#FFCC00]/20 text-zinc-400 hover:text-[#FFCC00] transition-all text-sm font-medium"
           >
-            <action.icon className="w-4 h-4" />
-            {action.label}
+            <a.icon className="w-4 h-4" />
+            {a.label}
           </button>
         ))}
       </div>
