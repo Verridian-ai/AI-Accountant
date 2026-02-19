@@ -40,7 +40,7 @@ export function GSTSummary({ period = 'current', businessOnly: _businessOnly }: 
     return (
       <Card className="neu-raised rounded-xl">
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+          <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
         </CardContent>
       </Card>
     );
@@ -57,7 +57,7 @@ export function GSTSummary({ period = 'current', businessOnly: _businessOnly }: 
         {/* GST Collected (1A) */}
         <Card className="neu-inset rounded-xl">
           <CardContent className="p-4">
-            <p className="text-xs text-zinc-500 mb-1">GST Collected (1A)</p>
+            <p className="text-xs text-muted mb-1">GST Collected (1A)</p>
             <p className="text-2xl font-bold text-emerald-400">
               {formatCurrency(data.gstCollected)}
             </p>
@@ -67,17 +67,17 @@ export function GSTSummary({ period = 'current', businessOnly: _businessOnly }: 
         {/* GST Credits (1B) */}
         <Card className="neu-inset rounded-xl">
           <CardContent className="p-4">
-            <p className="text-xs text-zinc-500 mb-1">GST Credits (1B)</p>
+            <p className="text-xs text-muted mb-1">GST Credits (1B)</p>
             <p className="text-2xl font-bold text-blue-400">{formatCurrency(data.gstCredits)}</p>
           </CardContent>
         </Card>
 
         {/* Net GST Position */}
-        <Card className="neu-inset rounded-xl border-[#FFCC00]/20">
+        <Card className="neu-inset rounded-xl border-cba-gold/20">
           <CardContent className="p-4">
-            <p className="text-xs text-zinc-500 mb-1">Net GST Position</p>
+            <p className="text-xs text-muted mb-1">Net GST Position</p>
             <div className="flex items-center gap-2">
-              <p className="text-2xl font-bold text-[#FFCC00]">{formatCurrency(data.netGST)}</p>
+              <p className="text-2xl font-bold text-cba-gold">{formatCurrency(data.netGST)}</p>
               {netChange !== null && (
                 <span
                   className={`flex items-center text-xs ${netChange > 0 ? 'text-red-400' : 'text-emerald-400'}`}
@@ -106,40 +106,40 @@ export function GSTSummary({ period = 'current', businessOnly: _businessOnly }: 
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Taxable Sales</span>
+              <span className="text-secondary">Taxable Sales</span>
               <span className="font-medium">{formatCurrency(data.breakdown.taxable.sales)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Taxable Purchases</span>
+              <span className="text-secondary">Taxable Purchases</span>
               <span className="font-medium">
                 {formatCurrency(data.breakdown.taxable.purchases)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">GST-Free Sales</span>
+              <span className="text-secondary">GST-Free Sales</span>
               <span className="font-medium">{formatCurrency(data.breakdown.gstFree.sales)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">GST-Free Purchases</span>
+              <span className="text-secondary">GST-Free Purchases</span>
               <span className="font-medium">
                 {formatCurrency(data.breakdown.gstFree.purchases)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Input Taxed</span>
+              <span className="text-secondary">Input Taxed</span>
               <span className="font-medium">{formatCurrency(data.breakdown.inputTaxed)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Capital Acquisitions</span>
+              <span className="text-secondary">Capital Acquisitions</span>
               <span className="font-medium">{formatCurrency(data.breakdown.capital)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-zinc-400">Private/Non-Deductible</span>
+              <span className="text-secondary">Private/Non-Deductible</span>
               <span className="font-medium">{formatCurrency(data.breakdown.private)}</span>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs text-zinc-500">
+          <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted">
             <span>
               {data.transactionsClassified} classified | {data.transactionsNeedReview} need review
             </span>

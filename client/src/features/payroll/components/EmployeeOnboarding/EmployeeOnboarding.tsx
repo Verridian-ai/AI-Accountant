@@ -199,13 +199,13 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
                 }
               />
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                <label className="block text-xs font-medium text-secondary mb-1.5">
                   Employment Type *
                 </label>
                 <select
                   value={employmentType}
                   onChange={(e) => setEmploymentType(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                  className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 >
                   <option value="full_time">Full Time</option>
                   <option value="part_time">Part Time</option>
@@ -271,7 +271,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
               placeholder="MEM123456"
             />
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+              <label className="block text-xs font-medium text-secondary mb-1.5">
                 Contribution Rate (%)
               </label>
               <div className="relative">
@@ -282,7 +282,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
                   max="100"
                   value={contributionRate}
                   onChange={(e) => setContributionRate(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                  className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 />
                 {contributionRate < 11.5 && (
                   <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
@@ -312,13 +312,13 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
             <Toggle label="HELP / HECS debt" checked={helpDebt} onChange={setHelpDebt} />
             <Toggle label="SFSS debt" checked={sfssDebt} onChange={setSfssDebt} />
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Dependents</label>
+              <label className="block text-xs font-medium text-secondary mb-1.5">Dependents</label>
               <input
                 type="number"
                 min="0"
                 value={claimDependents}
                 onChange={(e) => setClaimDependents(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-24 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                className="w-24 px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               />
             </div>
           </div>
@@ -328,7 +328,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+              <label className="block text-xs font-medium text-secondary mb-1.5">
                 Pay Category *
               </label>
               <select
@@ -341,7 +341,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
                     if (cat.defaultRate) setRate(cat.defaultRate / 100);
                   }
                 }}
-                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               >
                 <option value="">Select a category...</option>
                 {payCategories.map((cat) => (
@@ -351,18 +351,18 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
                 ))}
               </select>
               {payCategories.length === 0 && (
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted mt-1">
                   No pay categories found. Create one first in the Pay Categories tab.
                 </p>
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Rate Type</label>
+                <label className="block text-xs font-medium text-secondary mb-1.5">Rate Type</label>
                 <select
                   value={rateType}
                   onChange={(e) => setRateType(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                  className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 >
                   <option value="hourly">Hourly</option>
                   <option value="annual">Annual</option>
@@ -404,10 +404,10 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
               onClick={() => i <= step && setStep(i)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
                 i === step
-                  ? 'bg-[#FFCC00]/10 text-[#FFCC00] ring-1 ring-[#FFCC00]/20'
+                  ? 'bg-cba-gold/10 text-cba-gold ring-1 ring-[#FFCC00]/20'
                   : i < step
                     ? 'bg-emerald-500/10 text-emerald-400'
-                    : 'text-zinc-500 bg-white/5'
+                    : 'text-muted bg-overlay'
               }`}
             >
               <s.icon className="h-4 w-4" />
@@ -425,8 +425,8 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
 
       {/* Step Content */}
       <div className="neu-raised rounded-2xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-1">{STEPS[step].label}</h2>
-        <p className="text-sm text-zinc-500 mb-6">
+        <h2 className="text-lg font-semibold text-primary mb-1">{STEPS[step].label}</h2>
+        <p className="text-sm text-muted mb-6">
           Step {step + 1} of {STEPS.length}
         </p>
         {renderStep()}
@@ -444,7 +444,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
       <div className="flex items-center justify-between">
         <button
           onClick={step === 0 ? onCancel : () => setStep(step - 1)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium hover:bg-white/10 transition"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-overlay text-primary text-sm font-medium hover:bg-overlay-hover transition"
         >
           <ChevronLeft className="h-4 w-4" />
           {step === 0 ? 'Cancel' : 'Back'}
@@ -454,7 +454,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
           <button
             onClick={() => setStep(step + 1)}
             disabled={!canProceed()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFCC00] text-black text-sm font-semibold hover:bg-[#FFCC00]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(255,204,0,0.15)]"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cba-gold text-black text-sm font-semibold hover:bg-cba-gold/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(255,204,0,0.15)]"
           >
             Next
             <ChevronRight className="h-4 w-4" />
@@ -463,7 +463,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
           <button
             onClick={handleSubmit}
             disabled={submitting || !canProceed()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFCC00] text-black text-sm font-semibold hover:bg-[#FFCC00]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(255,204,0,0.15)]"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cba-gold text-black text-sm font-semibold hover:bg-cba-gold/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(255,204,0,0.15)]"
           >
             {submitting ? (
               <>

@@ -152,7 +152,7 @@ export function CreateEntityForm({ existingEntities, onSuccess, onCancel }: Crea
               </SelectContent>
             </Select>
             {selectedTypeInfo && (
-              <p className="text-xs text-zinc-500">{selectedTypeInfo.description}</p>
+              <p className="text-xs text-muted">{selectedTypeInfo.description}</p>
             )}
           </div>
 
@@ -247,7 +247,7 @@ export function CreateEntityForm({ existingEntities, onSuccess, onCancel }: Crea
             <Button
               type="submit"
               disabled={saving || !name.trim()}
-              className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 font-bold flex-1"
+              className="bg-cba-gold text-base hover:bg-cba-gold/90 font-bold flex-1"
             >
               {saving ? (
                 <>

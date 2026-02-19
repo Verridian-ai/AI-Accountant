@@ -32,8 +32,8 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
   lodged: { label: 'Lodged', color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-400/30' },
   in_progress: {
     label: 'In Progress',
-    color: 'text-[#FFCC00]',
-    bg: 'bg-[#FFCC00]/10 border-[#FFCC00]/30',
+    color: 'text-cba-gold',
+    bg: 'bg-cba-gold/10 border-cba-gold/30',
   },
 };
 
@@ -99,7 +99,7 @@ export function ObligationTracker({ userId }: ObligationTrackerProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FFCC00]" />
+        <Loader2 className="h-8 w-8 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -109,11 +109,11 @@ export function ObligationTracker({ userId }: ObligationTrackerProps) {
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2 neu-inset px-3 py-2 rounded-xl">
-          <Filter className="h-4 w-4 text-zinc-400" />
+          <Filter className="h-4 w-4 text-secondary" />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-transparent text-sm text-zinc-300 outline-none"
+            className="bg-transparent text-sm text-primary outline-none"
           >
             <option value="all">All Statuses</option>
             <option value="overdue">Overdue</option>
@@ -127,7 +127,7 @@ export function ObligationTracker({ userId }: ObligationTrackerProps) {
         <button
           onClick={handleGenerateSchedule}
           disabled={generating}
-          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-cba-gold text-base font-bold text-sm hover:bg-[#FFD633] transition-colors disabled:opacity-50"
         >
           {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           Generate Schedule
@@ -139,19 +139,19 @@ export function ObligationTracker({ userId }: ObligationTrackerProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-zinc-400 font-semibold">Type</th>
-                <th className="text-left px-4 py-3 text-zinc-400 font-semibold">Period</th>
-                <th className="text-left px-4 py-3 text-zinc-400 font-semibold">Due Date</th>
-                <th className="text-left px-4 py-3 text-zinc-400 font-semibold">Status</th>
-                <th className="text-left px-4 py-3 text-zinc-400 font-semibold">Risk</th>
-                <th className="text-right px-4 py-3 text-zinc-400 font-semibold">Actions</th>
+              <tr className="border-b border-border/50">
+                <th className="text-left px-4 py-3 text-secondary font-semibold">Type</th>
+                <th className="text-left px-4 py-3 text-secondary font-semibold">Period</th>
+                <th className="text-left px-4 py-3 text-secondary font-semibold">Due Date</th>
+                <th className="text-left px-4 py-3 text-secondary font-semibold">Status</th>
+                <th className="text-left px-4 py-3 text-secondary font-semibold">Risk</th>
+                <th className="text-right px-4 py-3 text-secondary font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-muted">
                     No obligations found. Generate a schedule to get started.
                   </td>
                 </tr>
@@ -162,13 +162,13 @@ export function ObligationTracker({ userId }: ObligationTrackerProps) {
                     <tr
                       key={ob.id}
                       className={cn(
-                        'border-b border-white/5 hover:bg-white/[0.02] transition-colors',
+                        'border-b border-border/50 hover:bg-white/[0.02] transition-colors',
                         isOverdue(ob) && 'border-l-2 border-l-red-500',
                       )}
                     >
-                      <td className="px-4 py-3 text-zinc-200 font-medium">{ob.type}</td>
-                      <td className="px-4 py-3 text-zinc-400">{ob.period}</td>
-                      <td className="px-4 py-3 text-zinc-400">
+                      <td className="px-4 py-3 text-primary font-medium">{ob.type}</td>
+                      <td className="px-4 py-3 text-secondary">{ob.period}</td>
+                      <td className="px-4 py-3 text-secondary">
                         {new Date(ob.dueDate).toLocaleDateString('en-AU')}
                       </td>
                       <td className="px-4 py-3">
@@ -186,7 +186,7 @@ export function ObligationTracker({ userId }: ObligationTrackerProps) {
                         <span
                           className={cn(
                             'text-xs font-bold uppercase',
-                            riskColors[ob.riskLevel] ?? 'text-zinc-400',
+                            riskColors[ob.riskLevel] ?? 'text-secondary',
                           )}
                         >
                           {ob.riskLevel}

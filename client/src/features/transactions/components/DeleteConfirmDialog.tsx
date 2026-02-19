@@ -126,7 +126,7 @@ export function DeleteConfirmDialog({
         aria-describedby="delete-dialog-description"
         className={cn(
           'relative neu-raised rounded-2xl p-6 max-w-md w-full mx-4',
-          'border border-white/10',
+          'border border-border',
           'animate-in zoom-in-95 fade-in duration-200',
         )}
       >
@@ -136,8 +136,8 @@ export function DeleteConfirmDialog({
           onClick={onCancel}
           className={cn(
             'absolute top-4 right-4 p-1.5 rounded-lg',
-            'text-zinc-500 hover:text-zinc-300',
-            'hover:bg-white/5 transition-colors',
+            'text-muted hover:text-primary',
+            'hover:bg-overlay transition-colors',
             'focus:outline-none focus:ring-2 focus:ring-[#FFCC00]/50',
           )}
           aria-label="Close dialog"
@@ -163,7 +163,7 @@ export function DeleteConfirmDialog({
         {/* Message */}
         <p
           id="delete-dialog-description"
-          className="text-sm text-center text-zinc-400 mb-6 leading-relaxed"
+          className="text-sm text-center text-secondary mb-6 leading-relaxed"
         >
           {message}
         </p>
@@ -176,9 +176,9 @@ export function DeleteConfirmDialog({
             onClick={onCancel}
             className={cn(
               'flex-1 py-3 px-4 rounded-xl',
-              'neu-raised-sm border border-white/5',
-              'text-zinc-300 font-black uppercase text-xs tracking-widest',
-              'hover:text-[#FFCC00] hover:border-[#FFCC00]/20',
+              'neu-raised-sm border border-border/50',
+              'text-primary font-black uppercase text-xs tracking-widest',
+              'hover:text-cba-gold hover:border-cba-gold/20',
               'transition-all duration-200',
               'focus:outline-none focus:ring-2 focus:ring-[#FFCC00]/50',
             )}

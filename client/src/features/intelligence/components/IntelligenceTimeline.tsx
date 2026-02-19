@@ -105,7 +105,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
       <div className="neu-raised p-4 rounded-lg space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <label htmlFor="timeline-start" className="text-xs text-zinc-500 font-medium">
+            <label htmlFor="timeline-start" className="text-xs text-muted font-medium">
               From:
             </label>
             <input
@@ -113,11 +113,11 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-primary"
             />
           </div>
           <div className="flex items-center gap-2">
-            <label htmlFor="timeline-end" className="text-xs text-zinc-500 font-medium">
+            <label htmlFor="timeline-end" className="text-xs text-muted font-medium">
               To:
             </label>
             <input
@@ -125,7 +125,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300"
+              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-primary"
             />
           </div>
           <div className="flex rounded-lg overflow-hidden border border-zinc-700">
@@ -136,8 +136,8 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
                 className={cn(
                   'px-3 py-1.5 text-xs font-bold uppercase transition-colors',
                   granularity === g
-                    ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                    : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200',
+                    ? 'bg-cba-gold text-base'
+                    : 'bg-zinc-800 text-secondary hover:text-primary',
                 )}
               >
                 {g}
@@ -169,12 +169,12 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
       {/* Timeline */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#FFCC00] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-cba-gold border-t-transparent rounded-full animate-spin" />
         </div>
       ) : error ? (
         <div className="neu-raised p-4 rounded-lg text-red-400 text-center">{error}</div>
       ) : sortedDates.length === 0 ? (
-        <div className="neu-raised p-8 rounded-lg text-center text-zinc-500">
+        <div className="neu-raised p-8 rounded-lg text-center text-muted">
           <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>No timeline events found for this period.</p>
         </div>
@@ -187,10 +187,10 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
             <div key={date} className="mb-6">
               {/* Date marker */}
               <div className="flex items-center gap-3 mb-3 relative">
-                <div className="absolute left-[-12px] w-6 h-6 rounded-full bg-[#FFCC00] flex items-center justify-center">
-                  <Clock className="w-3 h-3 text-[#0a0a0f]" />
+                <div className="absolute left-[-12px] w-6 h-6 rounded-full bg-cba-gold flex items-center justify-center">
+                  <Clock className="w-3 h-3 text-base" />
                 </div>
-                <h3 className="text-sm font-bold text-[#FFCC00] ml-4">
+                <h3 className="text-sm font-bold text-cba-gold ml-4">
                   {new Date(date + 'T00:00:00').toLocaleDateString('en-AU', {
                     weekday: 'short',
                     day: 'numeric',
@@ -205,7 +205,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
                 {grouped[date].map((evt) => {
                   const cfg = moduleConfig[evt.module] || {
                     icon: Clock,
-                    color: 'text-zinc-400',
+                    color: 'text-secondary',
                     bg: 'bg-zinc-500/10',
                   };
                   const ModIcon = cfg.icon;
@@ -216,7 +216,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-zinc-200">{evt.title}</span>
+                          <span className="text-sm font-medium text-primary">{evt.title}</span>
                           <span
                             className={cn(
                               'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase',
@@ -227,7 +227,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
                             {evt.module}
                           </span>
                         </div>
-                        <p className="text-xs text-zinc-500 mt-0.5">{evt.description}</p>
+                        <p className="text-xs text-muted mt-0.5">{evt.description}</p>
                         <span className="text-[10px] text-zinc-600 mt-1 block">
                           {new Date(evt.timestamp).toLocaleTimeString('en-AU', {
                             hour: '2-digit',

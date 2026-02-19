@@ -16,7 +16,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className 
   return (
     <div
       className={cn(
-        'neu-raised rounded-[2rem] p-6 interactive-card group relative overflow-hidden border border-white/5',
+        'neu-raised rounded-[2rem] p-6 interactive-card group relative overflow-hidden border border-border/50',
         className,
       )}
     >
@@ -30,7 +30,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className 
           'absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-0 group-hover:opacity-40 transition-opacity duration-700',
           trend === 'up' && 'bg-emerald-500',
           trend === 'down' && 'bg-red-500',
-          !trend && 'bg-[#FFCC00]',
+          !trend && 'bg-cba-gold',
         )}
       />
 
@@ -43,7 +43,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className 
                 'w-1.5 h-1.5 rounded-full animate-pulse',
                 trend === 'up' && 'bg-emerald-500',
                 trend === 'down' && 'bg-red-500',
-                !trend && 'bg-[#FFCC00]',
+                !trend && 'bg-cba-gold',
               )}
             />
             <p className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.25em] leading-none">
@@ -66,7 +66,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className 
             {subtitle && (
               <div className="flex items-center gap-1.5 mt-1">
                 <Zap className="w-2.5 h-2.5 text-zinc-700" />
-                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest italic">
+                <span className="text-[10px] font-bold text-muted uppercase tracking-widest italic">
                   {subtitle}
                 </span>
               </div>
@@ -77,13 +77,13 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className 
         {/* Primary Intelligence Module (Icon) */}
         <div
           className={cn(
-            'neu-inset p-4 rounded-2xl transition-all duration-500 shrink-0 border border-white/5',
+            'neu-inset p-4 rounded-2xl transition-all duration-500 shrink-0 border border-border/50',
             trend === 'up' &&
               'group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] group-hover:border-emerald-500/30',
             trend === 'down' &&
               'group-hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] group-hover:border-red-500/30',
             !trend &&
-              'group-hover:shadow-[0_0_20px_rgba(255,204,0,0.2)] group-hover:border-[#FFCC00]/30',
+              'group-hover:shadow-[0_0_20px_rgba(255,204,0,0.2)] group-hover:border-cba-gold/30',
           )}
         >
           <Icon
@@ -91,7 +91,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, className 
               'h-6 w-6 transition-all duration-500 transform group-hover:scale-110',
               trend === 'up' && 'text-emerald-500',
               trend === 'down' && 'text-red-500',
-              !trend && 'text-[#FFCC00]',
+              !trend && 'text-cba-gold',
             )}
           />
         </div>
@@ -117,7 +117,7 @@ export function StatCardSkeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5',
+        'neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50',
         className,
       )}
     >

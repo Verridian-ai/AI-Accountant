@@ -99,13 +99,13 @@ export function CogneeManager() {
     financial: 'bg-emerald-500/10 text-emerald-400',
     knowledge: 'bg-violet-500/10 text-violet-400',
     temporal: 'bg-blue-500/10 text-blue-400',
-    default: 'bg-zinc-500/10 text-zinc-400',
+    default: 'bg-zinc-500/10 text-secondary',
   };
 
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white">Cognee Manager</h2>
+        <h2 className="text-2xl font-bold text-primary">Cognee Manager</h2>
         <div className="animate-pulse h-64 rounded-2xl bg-[#16213e]" />
       </div>
     );
@@ -115,15 +115,15 @@ export function CogneeManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Cognee Manager</h2>
-          <p className="text-sm text-zinc-500">Manage knowledge base datasets and graph</p>
+          <h2 className="text-2xl font-bold text-primary">Cognee Manager</h2>
+          <p className="text-sm text-muted">Manage knowledge base datasets and graph</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleReindexAll}
             disabled={reindexing !== null}
-            className="px-4 py-2 rounded-lg bg-[#FFCC00] text-[#1a1a2e] font-bold text-sm flex items-center gap-2 disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-cba-gold text-[#1a1a2e] font-bold text-sm flex items-center gap-2 disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${reindexing === 'all' ? 'animate-spin' : ''}`} />
             Reindex All
@@ -134,7 +134,7 @@ export function CogneeManager() {
               setFetchState((s) => ({ ...s, loading: true }));
               void loadData();
             }}
-            className="p-2 rounded-xl bg-[#16213e] text-zinc-400 hover:text-[#FFCC00]"
+            className="p-2 rounded-xl bg-[#16213e] text-secondary hover:text-cba-gold"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -153,30 +153,30 @@ export function CogneeManager() {
       {graphStats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="rounded-xl bg-[#16213e] p-4 text-center">
-            <BarChart3 className="w-5 h-5 text-[#FFCC00] mx-auto mb-1" />
-            <p className="text-2xl font-bold text-white">
+            <BarChart3 className="w-5 h-5 text-cba-gold mx-auto mb-1" />
+            <p className="text-2xl font-bold text-primary">
               {graphStats.totalNodes?.toLocaleString()}
             </p>
-            <p className="text-[10px] text-zinc-500 uppercase">Nodes</p>
+            <p className="text-[10px] text-muted uppercase">Nodes</p>
           </div>
           <div className="rounded-xl bg-[#16213e] p-4 text-center">
             <Layers className="w-5 h-5 text-violet-400 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-primary">
               {graphStats.totalEdges?.toLocaleString()}
             </p>
-            <p className="text-[10px] text-zinc-500 uppercase">Edges</p>
+            <p className="text-[10px] text-muted uppercase">Edges</p>
           </div>
           <div className="rounded-xl bg-[#16213e] p-4 text-center">
             <Database className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-primary">
               {Object.keys(graphStats.nodeTypes || {}).length}
             </p>
-            <p className="text-[10px] text-zinc-500 uppercase">Node Types</p>
+            <p className="text-[10px] text-muted uppercase">Node Types</p>
           </div>
           <div className="rounded-xl bg-[#16213e] p-4 text-center">
             <FileText className="w-5 h-5 text-blue-400 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-white">{datasets.length}</p>
-            <p className="text-[10px] text-zinc-500 uppercase">Datasets</p>
+            <p className="text-2xl font-bold text-primary">{datasets.length}</p>
+            <p className="text-[10px] text-muted uppercase">Datasets</p>
           </div>
         </div>
       )}
@@ -186,12 +186,12 @@ export function CogneeManager() {
         {datasets.map((ds) => (
           <div
             key={ds.name}
-            className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-5 border border-white/5 hover:border-[#FFCC00]/10 transition-all"
+            className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-5 border border-border/50 hover:border-cba-gold/10 transition-all"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-[#FFCC00]" />
-                <h4 className="text-sm font-bold text-white truncate">{ds.name}</h4>
+                <Database className="w-4 h-4 text-cba-gold" />
+                <h4 className="text-sm font-bold text-primary truncate">{ds.name}</h4>
               </div>
               {ds.category && (
                 <span
@@ -201,7 +201,7 @@ export function CogneeManager() {
                 </span>
               )}
             </div>
-            <div className="space-y-1 text-xs text-zinc-400 mb-4">
+            <div className="space-y-1 text-xs text-secondary mb-4">
               <p>Documents: {ds.documentCount ?? '-'}</p>
               <p>Entities: {ds.entityCount ?? '-'}</p>
               {ds.lastIndexed && <p>Indexed: {new Date(ds.lastIndexed).toLocaleString()}</p>}
@@ -218,7 +218,7 @@ export function CogneeManager() {
               type="button"
               onClick={() => handleReindex(ds.name)}
               disabled={reindexing !== null}
-              className="w-full py-2 rounded-lg border border-white/10 text-xs font-medium text-zinc-400 hover:text-[#FFCC00] hover:border-[#FFCC00]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-2 rounded-lg border border-border text-xs font-medium text-secondary hover:text-cba-gold hover:border-cba-gold/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <RefreshCw className={`w-3 h-3 ${reindexing === ds.name ? 'animate-spin' : ''}`} />
               Reindex
@@ -230,7 +230,7 @@ export function CogneeManager() {
       {datasets.length === 0 && (
         <div className="rounded-2xl bg-[#16213e] p-12 text-center">
           <Database className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <p className="text-zinc-500">No datasets found</p>
+          <p className="text-muted">No datasets found</p>
         </div>
       )}
     </div>

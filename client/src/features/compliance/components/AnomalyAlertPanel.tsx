@@ -56,7 +56,7 @@ const severityConfig: Record<
     bg: 'bg-yellow-400/10 border-yellow-500/30',
     order: 2,
   },
-  low: { icon: Info, color: 'text-zinc-400', bg: 'bg-zinc-400/10 border-zinc-500/30', order: 3 },
+  low: { icon: Info, color: 'text-secondary', bg: 'bg-zinc-400/10 border-zinc-500/30', order: 3 },
 };
 
 export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
@@ -122,7 +122,7 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FFCC00]" />
+        <Loader2 className="h-8 w-8 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -140,7 +140,7 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
         <button
           onClick={handleScan}
           disabled={scanning}
-          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+          className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-cba-gold text-base font-bold text-sm hover:bg-[#FFD633] transition-colors disabled:opacity-50"
         >
           {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           Run Scan
@@ -152,8 +152,8 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
         {alerts.length === 0 ? (
           <div className="neu-raised rounded-2xl p-8 text-center">
             <CheckCircle className="h-12 w-12 text-emerald-400 mx-auto mb-3" />
-            <p className="text-zinc-300 font-medium">No anomalies detected</p>
-            <p className="text-zinc-500 text-sm mt-1">Run a scan to check for issues</p>
+            <p className="text-primary font-medium">No anomalies detected</p>
+            <p className="text-muted text-sm mt-1">Run a scan to check for issues</p>
           </div>
         ) : (
           alerts.map((alert) => {
@@ -167,7 +167,7 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-zinc-200 font-bold text-sm">{alert.title}</h4>
+                      <h4 className="text-primary font-bold text-sm">{alert.title}</h4>
                       <span
                         className={cn(
                           'px-2 py-0.5 rounded text-[10px] font-bold uppercase',
@@ -178,12 +178,12 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
                         {alert.severity}
                       </span>
                       {alert.status !== 'open' && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase text-zinc-400 bg-zinc-400/10">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase text-secondary bg-zinc-400/10">
                           {alert.status}
                         </span>
                       )}
                     </div>
-                    <p className="text-zinc-400 text-xs">{alert.description}</p>
+                    <p className="text-secondary text-xs">{alert.description}</p>
                     <p className="text-zinc-600 text-[10px] mt-1">
                       Detected: {new Date(alert.detectedAt).toLocaleString('en-AU')}
                     </p>
@@ -207,7 +207,7 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
                       <button
                         onClick={() => handleAction(alert.id, 'dismiss')}
                         title="Dismiss"
-                        className="p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-400/10 transition-colors"
+                        className="p-1.5 rounded-lg text-secondary hover:bg-zinc-400/10 transition-colors"
                       >
                         <XCircle className="h-4 w-4" />
                       </button>

@@ -118,10 +118,10 @@ export function RegisterAssetForm({ onSuccess }: RegisterAssetFormProps) {
   };
 
   return (
-    <Card className="neu-raised border-white/5">
+    <Card className="neu-raised border-border/50">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-zinc-100 flex items-center gap-2">
-          <Plus className="w-5 h-5 text-[#FFCC00]" />
+          <Plus className="w-5 h-5 text-cba-gold" />
           Register New Asset
         </CardTitle>
       </CardHeader>
@@ -234,10 +234,10 @@ export function RegisterAssetForm({ onSuccess }: RegisterAssetFormProps) {
 
         {isWriteOffEligible && (
           <div className="neu-inset rounded-xl p-4 flex items-start gap-3">
-            <Lightbulb className="w-5 h-5 text-[#FFCC00] shrink-0 mt-0.5" />
+            <Lightbulb className="w-5 h-5 text-cba-gold shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-bold text-[#FFCC00]">Instant Write-Off Eligible</p>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-sm font-bold text-cba-gold">Instant Write-Off Eligible</p>
+              <p className="text-xs text-secondary mt-1">
                 This asset costs under $20,000 and may be eligible for the instant asset write-off
                 under the ATO small business rules. Consider selecting "Instant Asset Write-Off" as
                 the depreciation method.
@@ -251,7 +251,7 @@ export function RegisterAssetForm({ onSuccess }: RegisterAssetFormProps) {
             <Lightbulb className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-bold text-blue-400">Low Value Pool</p>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-secondary mt-1">
                 Assets under $1,000 (or with WDV under $1,000) can be allocated to the low value
                 pool. Depreciation rate: 37.5% first year, 30% subsequent years.
               </p>
@@ -264,7 +264,7 @@ export function RegisterAssetForm({ onSuccess }: RegisterAssetFormProps) {
         <Button
           onClick={handleSubmit}
           disabled={submitting || !assetName || !category || !purchaseDate || !purchasePrice}
-          className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 font-bold"
+          className="bg-cba-gold text-base hover:bg-cba-gold/90 font-bold"
         >
           {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
           Register Asset

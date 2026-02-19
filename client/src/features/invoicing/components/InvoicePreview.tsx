@@ -85,7 +85,7 @@ export function InvoicePreview({
           <button
             onClick={handleDownload}
             disabled={downloading}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl neu-raised text-sm font-semibold text-zinc-200 hover:text-zinc-100 transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl neu-raised text-sm font-semibold text-primary hover:text-zinc-100 transition-colors disabled:opacity-40"
           >
             <Download className="w-4 h-4" />
             {downloading ? 'Generating...' : 'Download PDF'}
@@ -93,7 +93,7 @@ export function InvoicePreview({
         )}
         <button
           onClick={handlePrint}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl neu-raised text-sm font-semibold text-zinc-200 hover:text-zinc-100 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl neu-raised text-sm font-semibold text-primary hover:text-zinc-100 transition-colors"
         >
           <Printer className="w-4 h-4" />
           Print
@@ -110,7 +110,7 @@ export function InvoicePreview({
             {businessAddress && <p className="text-sm text-gray-500">{businessAddress}</p>}
           </div>
           <div className="text-right">
-            <h2 className="text-2xl font-bold text-[#FFCC00] tracking-wider">TAX INVOICE</h2>
+            <h2 className="text-2xl font-bold text-cba-gold tracking-wider">TAX INVOICE</h2>
             <p className="text-sm text-gray-600 mt-1 font-mono">{invoice.invoiceNumber}</p>
           </div>
         </div>

@@ -32,7 +32,7 @@ export function ParseErrorBanner({
         <h4 className="text-xs font-black text-red-400 uppercase tracking-[0.2em] mb-1">
           Processing Incomplete
         </h4>
-        <p className="text-[11px] text-zinc-400 font-medium">
+        <p className="text-[11px] text-secondary font-medium">
           {failedCount} of {totalCount} statements failed to parse correctly. Check the list below
           for specific error details and recovery options.
         </p>
@@ -40,7 +40,7 @@ export function ParseErrorBanner({
 
       <button
         onClick={onClear}
-        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+        className="p-2 text-muted hover:text-primary transition-colors"
         aria-label="Dismiss alert"
       >
         <X className="h-4 w-4" />

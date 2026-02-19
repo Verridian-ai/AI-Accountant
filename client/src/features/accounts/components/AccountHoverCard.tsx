@@ -134,18 +134,18 @@ export function AccountHoverCard({
         <div
           ref={popupRef}
           className={cn(
-            'absolute z-50 w-72 neu-raised rounded-2xl border border-white/10 shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200 account-hover-popup',
+            'absolute z-50 w-72 neu-raised rounded-2xl border border-border shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-200 account-hover-popup',
             position === 'top'
               ? 'bottom-full mb-2 left-1/2 -translate-x-1/2'
               : 'top-full mt-2 left-1/2 -translate-x-1/2',
           )}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 pb-3 border-b border-white/5">
+          <div className="flex items-center gap-3 pb-3 border-b border-border/50">
             <div
               className={cn(
                 'neu-inset p-2.5 rounded-xl',
-                account.accountType === 'credit_card' ? 'text-purple-400' : 'text-[#FFCC00]',
+                account.accountType === 'credit_card' ? 'text-purple-400' : 'text-cba-gold',
               )}
             >
               <Icon className="w-5 h-5" />
@@ -155,7 +155,7 @@ export function AccountHoverCard({
                 {account.accountName}
               </p>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] font-bold text-zinc-500 tracking-wider">
+                <span className="text-[9px] font-bold text-muted tracking-wider">
                   {account.accountNumber}
                 </span>
                 {account.bankName && (
@@ -171,7 +171,7 @@ export function AccountHoverCard({
           </div>
 
           {/* Balance Section */}
-          <div className="py-3 border-b border-white/5">
+          <div className="py-3 border-b border-border/50">
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">
                 Current Balance
@@ -210,17 +210,17 @@ export function AccountHoverCard({
                   {/* Credit Limit & Utilization */}
                   {analytics.creditLimit && (
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold text-zinc-500 flex items-center gap-1.5">
+                      <span className="font-bold text-muted flex items-center gap-1.5">
                         <CreditCard className="h-3 w-3" /> Credit Limit
                       </span>
-                      <span className="font-black text-zinc-300">
+                      <span className="font-black text-primary">
                         {formatCurrency(analytics.creditLimit)}
                       </span>
                     </div>
                   )}
                   {analytics.utilization !== null && (
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold text-zinc-500 flex items-center gap-1.5">
+                      <span className="font-bold text-muted flex items-center gap-1.5">
                         <Percent className="h-3 w-3" /> Utilization
                       </span>
                       <span
@@ -239,7 +239,7 @@ export function AccountHoverCard({
                   )}
                   {analytics.interestRate && (
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold text-zinc-500 flex items-center gap-1.5">
+                      <span className="font-bold text-muted flex items-center gap-1.5">
                         <TrendingUp className="h-3 w-3" /> Interest Rate
                       </span>
                       <span className="font-black text-amber-400">{analytics.interestRate}%</span>
@@ -247,7 +247,7 @@ export function AccountHoverCard({
                   )}
                   {analytics.totalInterestPaid > 0 && (
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold text-zinc-500 flex items-center gap-1.5">
+                      <span className="font-bold text-muted flex items-center gap-1.5">
                         <TrendingDown className="h-3 w-3" /> Total Interest Paid
                       </span>
                       <span className="font-black text-red-400">
@@ -257,19 +257,19 @@ export function AccountHoverCard({
                   )}
                   {analytics.avgMonthlySpending > 0 && (
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-bold text-zinc-500 flex items-center gap-1.5">
+                      <span className="font-bold text-muted flex items-center gap-1.5">
                         <DollarSign className="h-3 w-3" /> Avg Monthly Spend
                       </span>
-                      <span className="font-black text-zinc-300">
+                      <span className="font-black text-primary">
                         {formatCurrency(analytics.avgMonthlySpending)}
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between text-[10px] pt-1 border-t border-white/5">
-                    <span className="font-bold text-zinc-500 flex items-center gap-1.5">
+                  <div className="flex items-center justify-between text-[10px] pt-1 border-t border-border/50">
+                    <span className="font-bold text-muted flex items-center gap-1.5">
                       <Activity className="h-3 w-3" /> Transactions
                     </span>
-                    <span className="font-black text-zinc-300">{analytics.transactionCount}</span>
+                    <span className="font-black text-primary">{analytics.transactionCount}</span>
                   </div>
                 </>
               ) : (
@@ -285,7 +285,7 @@ export function AccountHoverCard({
           {account.accountType !== 'credit_card' && account.interestRate && (
             <div className="pt-3">
               <div className="flex items-center justify-between text-[10px]">
-                <span className="font-bold text-zinc-500 flex items-center gap-1.5">
+                <span className="font-bold text-muted flex items-center gap-1.5">
                   <Percent className="h-3 w-3" /> Interest Rate
                 </span>
                 <span className="font-black text-emerald-400">{account.interestRate}%</span>
@@ -296,7 +296,7 @@ export function AccountHoverCard({
           {/* Arrow indicator */}
           <div
             className={cn(
-              'absolute left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 neu-raised border border-white/10',
+              'absolute left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 neu-raised border border-border',
               position === 'top'
                 ? 'bottom-0 translate-y-1/2 border-t-0 border-l-0'
                 : 'top-0 -translate-y-1/2 border-b-0 border-r-0',

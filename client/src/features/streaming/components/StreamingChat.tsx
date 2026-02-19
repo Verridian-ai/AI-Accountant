@@ -55,17 +55,17 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
   return (
     <div className="flex flex-col h-full max-h-[600px]">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5">
-        <div className="w-8 h-8 rounded-lg bg-[#FFCC00]/10 flex items-center justify-center">
-          <Zap className="w-4 h-4 text-[#FFCC00]" />
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50">
+        <div className="w-8 h-8 rounded-lg bg-cba-gold/10 flex items-center justify-center">
+          <Zap className="w-4 h-4 text-cba-gold" />
         </div>
         <div>
           <h3 className="text-sm font-bold text-zinc-100">{formatAgent(agentType)}</h3>
-          <p className="text-xs text-zinc-500">Vercel AI SDK Streaming</p>
+          <p className="text-xs text-muted">Vercel AI SDK Streaming</p>
         </div>
         {isStreaming && (
-          <span className="ml-auto flex items-center gap-1.5 text-xs text-[#FFCC00]">
-            <span className="w-2 h-2 rounded-full bg-[#FFCC00] animate-pulse" />
+          <span className="ml-auto flex items-center gap-1.5 text-xs text-cba-gold">
+            <span className="w-2 h-2 rounded-full bg-cba-gold animate-pulse" />
             Streaming...
           </span>
         )}
@@ -75,15 +75,15 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px]">
         {text ? (
           <div className="neu-inset rounded-xl p-4">
-            <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap text-zinc-200">
+            <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap text-primary">
               {text}
               {isStreaming && (
-                <span className="inline-block w-0.5 h-4 bg-[#FFCC00] animate-pulse ml-0.5 align-text-bottom" />
+                <span className="inline-block w-0.5 h-4 bg-cba-gold animate-pulse ml-0.5 align-text-bottom" />
               )}
             </div>
           </div>
         ) : !isStreaming && !error ? (
-          <div className="flex items-center justify-center h-full text-zinc-500 text-sm">
+          <div className="flex items-center justify-center h-full text-muted text-sm">
             Send a message to start streaming
           </div>
         ) : null}
@@ -97,7 +97,7 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
 
       {/* Stats footer (shown after completion) */}
       {!isStreaming && text && (
-        <div className="flex items-center gap-4 px-4 py-2 border-t border-white/5 text-xs text-zinc-500">
+        <div className="flex items-center gap-4 px-4 py-2 border-t border-border/50 text-xs text-muted">
           <span className="flex items-center gap-1">
             <Hash className="w-3 h-3" />
             {tokenCount} tokens
@@ -110,7 +110,7 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
       )}
 
       {/* Input area */}
-      <div className="p-4 border-t border-white/5">
+      <div className="p-4 border-t border-border/50">
         <div className="flex items-end gap-2">
           <textarea
             ref={textareaRef}
@@ -119,7 +119,7 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
             onKeyDown={handleKeyDown}
             placeholder={`Ask ${formatAgent(agentType)}...`}
             rows={2}
-            className="flex-1 neu-inset rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 bg-transparent border border-[#FFCC00]/20 focus:border-[#FFCC00]/50 focus:outline-none resize-none"
+            className="flex-1 neu-inset rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 bg-transparent border border-cba-gold/20 focus:border-cba-gold/50 focus:outline-none resize-none"
           />
           {isStreaming ? (
             <button
@@ -133,7 +133,7 @@ export function StreamingChat({ agentType, initialPrompt, onComplete }: Streamin
             <button
               onClick={handleSubmit}
               disabled={!input.trim()}
-              className="neu-raised p-3 rounded-xl text-[#FFCC00] hover:text-[#FFD700] disabled:text-zinc-600 transition-colors"
+              className="neu-raised p-3 rounded-xl text-cba-gold hover:text-[#FFD700] disabled:text-zinc-600 transition-colors"
               title="Send"
             >
               <Send className="w-5 h-5" />

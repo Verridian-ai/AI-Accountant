@@ -124,12 +124,12 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FFCC00]/5 rounded-full blur-[200px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cba-gold/5 rounded-full blur-[200px]" />
       </div>
 
-      <div className="neu-raised rounded-[2.5rem] w-full max-w-3xl overflow-hidden relative border border-white/10 shadow-2xl animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+      <div className="neu-raised rounded-[2.5rem] w-full max-w-3xl overflow-hidden relative border border-border shadow-2xl animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="px-6 sm:px-8 py-5 border-b border-white/5 flex items-center justify-between bg-white/[0.01] shrink-0">
+        <div className="px-6 sm:px-8 py-5 border-b border-border/50 flex items-center justify-between bg-white/[0.01] shrink-0">
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2">
               {STEPS.map((step, index) => {
@@ -152,7 +152,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
                       isCompleted && !isCurrent
                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                         : isCurrent
-                          ? 'cba-gold-gradient text-[#0a0a0f] shadow-lg cba-gold-glow'
+                          ? 'cba-gold-gradient text-base shadow-lg cba-gold-glow'
                           : 'neu-inset text-zinc-600',
                       isClickable && !isCurrent && 'cursor-pointer hover:scale-110',
                       !isClickable && 'cursor-not-allowed',
@@ -166,7 +166,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
             </div>
             {/* Mobile step indicator */}
             <div className="sm:hidden flex items-center gap-2">
-              <span className="text-sm font-bold text-zinc-400">
+              <span className="text-sm font-bold text-secondary">
                 Step {currentStep + 1} of {STEPS.length}
               </span>
             </div>
@@ -174,7 +174,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
 
           <button
             onClick={onClose}
-            className="neu-raised-sm p-2 rounded-xl text-zinc-500 hover:text-red-400 btn-press"
+            className="neu-raised-sm p-2 rounded-xl text-muted hover:text-red-400 btn-press"
             aria-label="Close wizard"
             title="Close"
           >
@@ -184,7 +184,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
 
         {/* Progress bar (mobile) */}
         <div className="sm:hidden px-6 py-2 bg-white/[0.01]">
-          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+          <div className="h-1 bg-overlay rounded-full overflow-hidden">
             <div
               className="h-full cba-gold-gradient transition-all duration-500 ease-out"
               style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
@@ -217,7 +217,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
 
         {/* Footer Navigation */}
         {currentStep !== 0 && currentStep !== STEPS.length - 1 && (
-          <div className="px-6 sm:px-8 py-5 bg-white/[0.01] border-t border-white/5 flex items-center justify-between shrink-0">
+          <div className="px-6 sm:px-8 py-5 bg-white/[0.01] border-t border-border/50 flex items-center justify-between shrink-0">
             <button
               onClick={handleBack}
               disabled={isFirstStep}
@@ -225,7 +225,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
                 'flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all',
                 isFirstStep
                   ? 'opacity-30 cursor-not-allowed text-zinc-600'
-                  : 'neu-raised-sm text-zinc-400 hover:text-zinc-200 btn-press',
+                  : 'neu-raised-sm text-secondary hover:text-primary btn-press',
               )}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -236,7 +236,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
               {currentStepConfig.skippable && (
                 <button
                   onClick={handleSkip}
-                  className="px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-muted hover:text-primary transition-colors"
                 >
                   Skip
                 </button>
@@ -244,7 +244,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
 
               <button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-6 py-3 cba-gold-gradient text-[#0a0a0f] font-bold text-xs uppercase tracking-wider rounded-xl btn-press shadow-lg cba-gold-glow"
+                className="flex items-center gap-2 px-6 py-3 cba-gold-gradient text-base font-bold text-xs uppercase tracking-wider rounded-xl btn-press shadow-lg cba-gold-glow"
               >
                 <span>Continue</span>
                 <ChevronRight className="w-4 h-4" />

@@ -42,7 +42,7 @@ const DEFAULT_TOPICS = [
 const SENTIMENT_COLORS: Record<string, string> = {
   bullish: 'text-emerald-400',
   bearish: 'text-red-400',
-  neutral: 'text-zinc-400',
+  neutral: 'text-secondary',
   mixed: 'text-amber-400',
 };
 
@@ -227,8 +227,8 @@ export function SentimentDashboard() {
     <div className="space-y-6">
       {/* Custom Topic Search */}
       <div className="neu-raised rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <Search className="w-4 h-4 text-[#FFCC00]" />
+        <h3 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+          <Search className="w-4 h-4 text-cba-gold" />
           Research Custom Topic
         </h3>
         <div className="flex gap-2">
@@ -238,12 +238,12 @@ export function SentimentDashboard() {
             value={state.customTopic}
             onChange={(e) => dispatch({ type: 'SET_CUSTOM_TOPIC', value: e.target.value })}
             onKeyDown={(e) => e.key === 'Enter' && handleCustomSearch()}
-            className="flex-1 neu-inset px-4 py-2 rounded-xl text-sm text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            className="flex-1 neu-inset px-4 py-2 rounded-xl text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
           />
           <button
             onClick={handleCustomSearch}
             disabled={state.customLoading || !state.customTopic.trim()}
-            className="neu-raised-sm px-4 py-2 rounded-xl text-sm font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 disabled:opacity-50 transition-all flex items-center gap-2"
+            className="neu-raised-sm px-4 py-2 rounded-xl text-sm font-bold text-cba-gold hover:bg-cba-gold/10 disabled:opacity-50 transition-all flex items-center gap-2"
           >
             {state.customLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -273,9 +273,9 @@ export function SentimentDashboard() {
           : state.sentiments.map((item) => (
               <div
                 key={item.topic}
-                className="neu-raised rounded-2xl p-4 border border-transparent hover:border-[#FFCC00]/20 transition-all"
+                className="neu-raised rounded-2xl p-4 border border-transparent hover:border-cba-gold/20 transition-all"
               >
-                <p className="text-xs text-zinc-500 font-medium mb-2 truncate">{item.topic}</p>
+                <p className="text-xs text-muted font-medium mb-2 truncate">{item.topic}</p>
 
                 <div className="flex items-center gap-2 mb-3">
                   <span
@@ -295,14 +295,14 @@ export function SentimentDashboard() {
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-500">Confidence</span>
-                  <span className="text-white font-medium">
+                  <span className="text-muted">Confidence</span>
+                  <span className="text-primary font-medium">
                     {(item.confidence * 100).toFixed(0)}%
                   </span>
                 </div>
 
                 {item.summary && (
-                  <p className="mt-2 text-[11px] text-zinc-500 line-clamp-2">{item.summary}</p>
+                  <p className="mt-2 text-[11px] text-muted line-clamp-2">{item.summary}</p>
                 )}
               </div>
             ))}
@@ -310,7 +310,7 @@ export function SentimentDashboard() {
 
       {/* Impact Analysis */}
       <div className="neu-raised rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-400" />
           Impact Analysis
         </h3>
@@ -321,7 +321,7 @@ export function SentimentDashboard() {
             value={state.impactEvent}
             onChange={(e) => dispatch({ type: 'SET_IMPACT_EVENT', value: e.target.value })}
             onKeyDown={(e) => e.key === 'Enter' && handleImpactAnalysis()}
-            className="flex-1 neu-inset px-4 py-2 rounded-xl text-sm text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            className="flex-1 neu-inset px-4 py-2 rounded-xl text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
           />
           <button
             onClick={handleImpactAnalysis}
@@ -336,28 +336,28 @@ export function SentimentDashboard() {
         {state.impactResult && (
           <div className="neu-inset rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold text-white">{state.impactResult.event}</h4>
+              <h4 className="text-sm font-bold text-primary">{state.impactResult.event}</h4>
               <span
                 className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                   state.impactResult.severity === 'high'
                     ? 'bg-red-500/10 text-red-400'
                     : state.impactResult.severity === 'medium'
                       ? 'bg-amber-500/10 text-amber-400'
-                      : 'bg-zinc-500/10 text-zinc-400'
+                      : 'bg-zinc-500/10 text-secondary'
                 }`}
               >
                 {state.impactResult.severity} impact
               </span>
             </div>
-            <p className="text-sm text-zinc-300">{state.impactResult.impact}</p>
+            <p className="text-sm text-primary">{state.impactResult.impact}</p>
             {state.impactResult.affectedAreas.length > 0 && (
               <div>
-                <p className="text-xs text-zinc-500 mb-1">Affected Areas:</p>
+                <p className="text-xs text-muted mb-1">Affected Areas:</p>
                 <div className="flex flex-wrap gap-1">
                   {state.impactResult.affectedAreas.map((area) => (
                     <span
                       key={area}
-                      className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-zinc-300"
+                      className="text-xs px-2 py-0.5 rounded-full bg-overlay text-primary"
                     >
                       {area}
                     </span>
@@ -366,7 +366,7 @@ export function SentimentDashboard() {
               </div>
             )}
             {state.impactResult.recommendation && (
-              <p className="text-xs text-[#FFCC00] bg-[#FFCC00]/5 px-3 py-2 rounded-lg">
+              <p className="text-xs text-cba-gold bg-cba-gold/5 px-3 py-2 rounded-lg">
                 {state.impactResult.recommendation}
               </p>
             )}

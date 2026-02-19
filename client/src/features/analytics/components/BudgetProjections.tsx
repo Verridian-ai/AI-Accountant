@@ -34,8 +34,8 @@ export function BudgetProjections() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
-        <span className="ml-2 text-zinc-400">Generating projections...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
+        <span className="ml-2 text-secondary">Generating projections...</span>
       </div>
     );
   }
@@ -55,9 +55,9 @@ export function BudgetProjections() {
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-2">
         {revenue && (
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
                 Revenue Trend
               </CardTitle>
@@ -65,7 +65,7 @@ export function BudgetProjections() {
             <CardContent>
               <div className="text-2xl font-bold text-emerald-400">
                 {formatCurrency(revenue.averageMonthly)}
-                <span className="text-sm text-zinc-500">/mo</span>
+                <span className="text-sm text-muted">/mo</span>
               </div>
               <Badge
                 variant="outline"
@@ -78,9 +78,9 @@ export function BudgetProjections() {
           </Card>
         )}
         {expenses && (
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
                 <TrendingDown className="w-4 h-4 text-red-400" />
                 Expense Trend
               </CardTitle>
@@ -88,7 +88,7 @@ export function BudgetProjections() {
             <CardContent>
               <div className="text-2xl font-bold text-red-400">
                 {formatCurrency(expenses.averageMonthly)}
-                <span className="text-sm text-zinc-500">/mo</span>
+                <span className="text-sm text-muted">/mo</span>
               </div>
               <Badge
                 variant="outline"
@@ -104,7 +104,7 @@ export function BudgetProjections() {
 
       {/* Revenue Projections */}
       {revenue && revenue.projections.length > 0 && (
-        <Card className="neu-raised border-white/5">
+        <Card className="neu-raised border-border/50">
           <CardHeader>
             <CardTitle className="text-gradient-gold">Revenue Projections</CardTitle>
             <CardDescription>
@@ -113,7 +113,7 @@ export function BudgetProjections() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <div className="grid grid-cols-4 text-xs font-bold text-zinc-500 uppercase pb-2 border-b border-white/5">
+              <div className="grid grid-cols-4 text-xs font-bold text-muted uppercase pb-2 border-b border-border/50">
                 <span>Month</span>
                 <span className="text-right">Lower</span>
                 <span className="text-right">Projected</span>
@@ -122,14 +122,14 @@ export function BudgetProjections() {
               {revenue.projections.map((p: { month: string; lowerBound: number; projected: number; upperBound: number }) => (
                 <div
                   key={p.month}
-                  className="grid grid-cols-4 text-sm py-1.5 border-b border-white/5 last:border-0"
+                  className="grid grid-cols-4 text-sm py-1.5 border-b border-border/50 last:border-0"
                 >
-                  <span className="text-zinc-400">{p.month}</span>
-                  <span className="text-right text-zinc-500">{formatCurrency(p.lowerBound)}</span>
+                  <span className="text-secondary">{p.month}</span>
+                  <span className="text-right text-muted">{formatCurrency(p.lowerBound)}</span>
                   <span className="text-right font-medium text-emerald-400">
                     {formatCurrency(p.projected)}
                   </span>
-                  <span className="text-right text-zinc-500">{formatCurrency(p.upperBound)}</span>
+                  <span className="text-right text-muted">{formatCurrency(p.upperBound)}</span>
                 </div>
               ))}
             </div>
@@ -139,7 +139,7 @@ export function BudgetProjections() {
 
       {/* Expense Projections */}
       {expenses && expenses.projections.length > 0 && (
-        <Card className="neu-raised border-white/5">
+        <Card className="neu-raised border-border/50">
           <CardHeader>
             <CardTitle>Expense Projections</CardTitle>
             <CardDescription>
@@ -148,7 +148,7 @@ export function BudgetProjections() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <div className="grid grid-cols-4 text-xs font-bold text-zinc-500 uppercase pb-2 border-b border-white/5">
+              <div className="grid grid-cols-4 text-xs font-bold text-muted uppercase pb-2 border-b border-border/50">
                 <span>Month</span>
                 <span className="text-right">Lower</span>
                 <span className="text-right">Projected</span>
@@ -157,14 +157,14 @@ export function BudgetProjections() {
               {expenses.projections.map((p: { month: string; lowerBound: number; projected: number; upperBound: number }) => (
                 <div
                   key={p.month}
-                  className="grid grid-cols-4 text-sm py-1.5 border-b border-white/5 last:border-0"
+                  className="grid grid-cols-4 text-sm py-1.5 border-b border-border/50 last:border-0"
                 >
-                  <span className="text-zinc-400">{p.month}</span>
-                  <span className="text-right text-zinc-500">{formatCurrency(p.lowerBound)}</span>
+                  <span className="text-secondary">{p.month}</span>
+                  <span className="text-right text-muted">{formatCurrency(p.lowerBound)}</span>
                   <span className="text-right font-medium text-red-400">
                     {formatCurrency(p.projected)}
                   </span>
-                  <span className="text-right text-zinc-500">{formatCurrency(p.upperBound)}</span>
+                  <span className="text-right text-muted">{formatCurrency(p.upperBound)}</span>
                 </div>
               ))}
             </div>

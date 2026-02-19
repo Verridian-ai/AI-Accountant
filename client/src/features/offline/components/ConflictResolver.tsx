@@ -37,8 +37,8 @@ export function ConflictResolver() {
       <div className="max-w-2xl mx-auto p-4">
         <div className="neu-raised rounded-2xl p-8 text-center">
           <Check className="h-10 w-10 text-emerald-400 mx-auto mb-3" />
-          <h3 className="text-sm font-bold text-zinc-200">No Conflicts</h3>
-          <p className="text-xs text-zinc-500 mt-1">All data is in sync</p>
+          <h3 className="text-sm font-bold text-primary">No Conflicts</h3>
+          <p className="text-xs text-muted mt-1">All data is in sync</p>
         </div>
       </div>
     );
@@ -49,7 +49,7 @@ export function ConflictResolver() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-amber-400" />
-          <h2 className="text-lg font-bold text-zinc-200">
+          <h2 className="text-lg font-bold text-primary">
             {activeConflicts.length} Conflict{activeConflicts.length !== 1 ? 's' : ''}
           </h2>
         </div>
@@ -57,14 +57,14 @@ export function ConflictResolver() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleResolveAll('client_wins')}
-              className="text-[10px] font-bold text-[#FFCC00] hover:text-[#FFCC00]/80 uppercase tracking-wider"
+              className="text-[10px] font-bold text-cba-gold hover:text-cba-gold/80 uppercase tracking-wider"
             >
               Keep All Mine
             </button>
             <span className="text-zinc-700">|</span>
             <button
               onClick={() => handleResolveAll('server_wins')}
-              className="text-[10px] font-bold text-zinc-500 hover:text-zinc-400 uppercase tracking-wider"
+              className="text-[10px] font-bold text-muted hover:text-secondary uppercase tracking-wider"
             >
               Use All Server
             </button>
@@ -80,7 +80,7 @@ export function ConflictResolver() {
           {/* Header */}
           <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+              <span className="text-xs font-bold text-primary uppercase tracking-wider">
                 {conflict.resourceType}
               </span>
               {conflict.resourceId && (
@@ -97,15 +97,15 @@ export function ConflictResolver() {
           {/* Side by side */}
           <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-zinc-800">
             {/* Client version */}
-            <div className="p-4 border-l-2 border-[#FFCC00]/40">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[#FFCC00] mb-2">
+            <div className="p-4 border-l-2 border-cba-gold/40">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-cba-gold mb-2">
                 Your Change
               </div>
               <div className="space-y-1">
                 {Object.entries(conflict.clientData).map(([key, value]) => (
                   <div key={key} className="flex items-baseline gap-2">
-                    <span className="text-[10px] text-zinc-500 w-24 shrink-0 truncate">{key}</span>
-                    <span className="text-xs text-zinc-300 truncate">{String(value ?? '—')}</span>
+                    <span className="text-[10px] text-muted w-24 shrink-0 truncate">{key}</span>
+                    <span className="text-xs text-primary truncate">{String(value ?? '—')}</span>
                   </div>
                 ))}
               </div>
@@ -119,8 +119,8 @@ export function ConflictResolver() {
               <div className="space-y-1">
                 {Object.entries(conflict.serverData).map(([key, value]) => (
                   <div key={key} className="flex items-baseline gap-2">
-                    <span className="text-[10px] text-zinc-500 w-24 shrink-0 truncate">{key}</span>
-                    <span className="text-xs text-zinc-300 truncate">{String(value ?? '—')}</span>
+                    <span className="text-[10px] text-muted w-24 shrink-0 truncate">{key}</span>
+                    <span className="text-xs text-primary truncate">{String(value ?? '—')}</span>
                   </div>
                 ))}
               </div>
@@ -132,14 +132,14 @@ export function ConflictResolver() {
             <button
               onClick={() => handleResolve(conflict, 'client_wins')}
               disabled={resolving === conflict.syncOperationId}
-              className="flex-1 py-2.5 rounded-xl text-xs font-bold text-black bg-[#FFCC00] hover:bg-[#FFD633] disabled:opacity-50 btn-press flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 rounded-xl text-xs font-bold text-black bg-cba-gold hover:bg-[#FFD633] disabled:opacity-50 btn-press flex items-center justify-center gap-1.5"
             >
               Keep Mine <ArrowRight className="h-3 w-3" />
             </button>
             <button
               onClick={() => handleResolve(conflict, 'server_wins')}
               disabled={resolving === conflict.syncOperationId}
-              className="flex-1 py-2.5 rounded-xl text-xs font-bold text-zinc-300 neu-raised hover:bg-zinc-800/50 disabled:opacity-50 btn-press"
+              className="flex-1 py-2.5 rounded-xl text-xs font-bold text-primary neu-raised hover:bg-zinc-800/50 disabled:opacity-50 btn-press"
             >
               Use Server
             </button>

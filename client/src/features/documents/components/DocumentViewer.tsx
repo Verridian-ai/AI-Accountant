@@ -119,7 +119,7 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
   if (loading) {
     return (
       <div className="neu-raised rounded-xl p-12 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-[#FFCC00] animate-spin" />
+        <Loader2 className="h-8 w-8 text-cba-gold animate-spin" />
       </div>
     );
   }
@@ -128,10 +128,10 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
     return (
       <div className="neu-raised rounded-xl p-8 text-center">
         <XCircle className="h-12 w-12 text-red-400 mx-auto mb-3" />
-        <p className="text-zinc-400">Document not found</p>
+        <p className="text-secondary">Document not found</p>
         <button
           onClick={onBack}
-          className="mt-4 px-4 py-2 rounded-lg bg-white/5 text-zinc-300 hover:bg-white/10 text-sm"
+          className="mt-4 px-4 py-2 rounded-lg bg-overlay text-primary hover:bg-overlay-hover text-sm"
         >
           Go back
         </button>
@@ -151,7 +151,7 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="neu-raised p-2 rounded-xl text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="neu-raised p-2 rounded-xl text-secondary hover:text-primary transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -159,8 +159,8 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
             <h2 className="text-lg font-bold text-zinc-100">{doc.fileName}</h2>
             <div className="flex items-center gap-2 mt-0.5">
               {statusBadge(doc.status)}
-              <span className="text-xs text-zinc-500">{doc.mimeType}</span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-muted">{doc.mimeType}</span>
+              <span className="text-xs text-muted">
                 {new Date(doc.createdAt).toLocaleDateString()}
               </span>
             </div>
@@ -170,7 +170,7 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
           <button
             onClick={handleReprocess}
             disabled={processing}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg neu-raised text-sm font-semibold text-zinc-300 hover:text-[#FFCC00] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg neu-raised text-sm font-semibold text-primary hover:text-cba-gold transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${processing ? 'animate-spin' : ''}`} />
             Re-process
@@ -178,14 +178,14 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
           <button
             onClick={handleClassify}
             disabled={processing}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg neu-raised text-sm font-semibold text-zinc-300 hover:text-blue-400 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg neu-raised text-sm font-semibold text-primary hover:text-blue-400 transition-colors disabled:opacity-50"
           >
             <Search className="h-4 w-4" />
             Classify
           </button>
           <button
             onClick={handleDelete}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg neu-raised text-sm font-semibold text-zinc-300 hover:text-red-400 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg neu-raised text-sm font-semibold text-primary hover:text-red-400 transition-colors"
           >
             <Trash2 className="h-4 w-4" />
             Delete
@@ -199,51 +199,51 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
         <div className="space-y-4">
           {/* Document Info */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-3">
               Document Info
             </h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-zinc-500 text-xs">Type</p>
-                <p className="text-zinc-200 font-medium capitalize">
+                <p className="text-muted text-xs">Type</p>
+                <p className="text-primary font-medium capitalize">
                   {doc.documentType || 'Unknown'}
                 </p>
               </div>
               <div>
-                <p className="text-zinc-500 text-xs">Document Number</p>
-                <p className="text-zinc-200 font-medium">{doc.documentNumber || '-'}</p>
+                <p className="text-muted text-xs">Document Number</p>
+                <p className="text-primary font-medium">{doc.documentNumber || '-'}</p>
               </div>
               <div>
-                <p className="text-zinc-500 text-xs">Document Date</p>
-                <p className="text-zinc-200 font-medium">{doc.documentDate || '-'}</p>
+                <p className="text-muted text-xs">Document Date</p>
+                <p className="text-primary font-medium">{doc.documentDate || '-'}</p>
               </div>
               <div>
-                <p className="text-zinc-500 text-xs">Due Date</p>
-                <p className="text-zinc-200 font-medium">{doc.dueDate || '-'}</p>
+                <p className="text-muted text-xs">Due Date</p>
+                <p className="text-primary font-medium">{doc.dueDate || '-'}</p>
               </div>
             </div>
           </div>
 
           {/* Vendor Info */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-3">
               Vendor
             </h3>
             <div className="space-y-2 text-sm">
               <div>
-                <p className="text-zinc-500 text-xs">Name</p>
-                <p className="text-zinc-200 font-medium">{doc.vendorName || '-'}</p>
+                <p className="text-muted text-xs">Name</p>
+                <p className="text-primary font-medium">{doc.vendorName || '-'}</p>
               </div>
               <div>
-                <p className="text-zinc-500 text-xs">ABN</p>
+                <p className="text-muted text-xs">ABN</p>
                 <div className="flex items-center gap-2">
-                  <p className="text-zinc-200 font-medium">{doc.vendorAbn || '-'}</p>
+                  <p className="text-primary font-medium">{doc.vendorAbn || '-'}</p>
                   {doc.vendorAbn && (
                     <a
                       href={`https://abr.business.gov.au/ABN/View?abn=${doc.vendorAbn}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#FFCC00] hover:text-[#FFCC00]/80"
+                      className="text-cba-gold hover:text-cba-gold/80"
                     >
                       <ExternalLink className="h-3 w-3" />
                     </a>
@@ -255,20 +255,20 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
           {/* GST Summary */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-3">
               Amounts
             </h3>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">Subtotal</span>
-                <span className="text-zinc-200 font-medium">{formatCurrency(doc.subtotal)}</span>
+                <span className="text-muted">Subtotal</span>
+                <span className="text-primary font-medium">{formatCurrency(doc.subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">GST</span>
-                <span className="text-zinc-200 font-medium">{formatCurrency(doc.gstAmount)}</span>
+                <span className="text-muted">GST</span>
+                <span className="text-primary font-medium">{formatCurrency(doc.gstAmount)}</span>
               </div>
-              <div className="border-t border-white/5 pt-2 flex justify-between text-sm">
-                <span className="text-zinc-300 font-semibold">Total</span>
+              <div className="border-t border-border/50 pt-2 flex justify-between text-sm">
+                <span className="text-primary font-semibold">Total</span>
                 <div className="flex items-center gap-2">
                   <span className="text-zinc-100 font-bold">{formatCurrency(doc.totalAmount)}</span>
                   {gstValid !== null &&
@@ -284,7 +284,7 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
           {/* Confidence */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-3">
               Confidence
             </h3>
             <div className="flex items-center gap-3">
@@ -307,30 +307,30 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
         <div className="space-y-4">
           <div className="neu-raised rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide">
+              <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide">
                 Extracted Data
               </h3>
               <button
                 onClick={() => setShowRawData(!showRawData)}
-                className="text-xs px-2 py-1 rounded-md bg-white/5 text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="text-xs px-2 py-1 rounded-md bg-overlay text-secondary hover:text-primary transition-colors"
               >
                 {showRawData ? 'Hide JSON' : 'Show JSON'}
               </button>
             </div>
             {showRawData && doc.extractedData ? (
               <div className="neu-inset rounded-lg p-4 overflow-auto max-h-96">
-                <pre className="text-xs text-zinc-300 whitespace-pre-wrap font-mono">
+                <pre className="text-xs text-primary whitespace-pre-wrap font-mono">
                   {JSON.stringify(doc.extractedData, null, 2)}
                 </pre>
               </div>
             ) : !doc.extractedData ? (
               <div className="neu-inset rounded-lg p-6 text-center">
-                <p className="text-zinc-500 text-sm">No extracted data available</p>
+                <p className="text-muted text-sm">No extracted data available</p>
                 <p className="text-zinc-600 text-xs mt-1">Process the document to extract data</p>
               </div>
             ) : (
               <div className="neu-inset rounded-lg p-4">
-                <p className="text-zinc-400 text-sm">
+                <p className="text-secondary text-sm">
                   Data extracted successfully. Click &quot;Show JSON&quot; to view raw data.
                 </p>
               </div>
@@ -341,7 +341,7 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
       {/* Line Items */}
       <div className="neu-raised rounded-xl p-5">
-        <h3 className="text-sm font-bold text-[#FFCC00] uppercase tracking-wide mb-4">
+        <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-4">
           Line Items
         </h3>
         <LineItemEditor documentId={documentId} />

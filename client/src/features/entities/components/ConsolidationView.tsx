@@ -132,7 +132,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
         <Button
           onClick={handleGenerate}
           disabled={generating || !selectedParentId}
-          className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 font-bold"
+          className="bg-cba-gold text-base hover:bg-cba-gold/90 font-bold"
         >
           {generating ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -152,8 +152,8 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
         <Card className="neu-raised border-0">
           <CardContent className="p-8 text-center">
             <Layers className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-            <h3 className="text-lg font-bold text-zinc-300 mb-1">No Consolidated Parents</h3>
-            <p className="text-sm text-zinc-500">
+            <h3 className="text-lg font-bold text-primary mb-1">No Consolidated Parents</h3>
+            <p className="text-sm text-muted">
               Mark an entity as "Consolidated Parent" to enable group consolidation
             </p>
           </CardContent>
@@ -167,7 +167,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+                <div className="flex items-center gap-2 text-muted text-sm mb-1">
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
                   Total Revenue
                 </div>
@@ -178,7 +178,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
             </Card>
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+                <div className="flex items-center gap-2 text-muted text-sm mb-1">
                   <TrendingDown className="w-4 h-4 text-red-400" />
                   Total Expenses
                 </div>
@@ -189,8 +189,8 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
             </Card>
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
-                  <Minus className="w-4 h-4 text-[#FFCC00]" />
+                <div className="flex items-center gap-2 text-muted text-sm mb-1">
+                  <Minus className="w-4 h-4 text-cba-gold" />
                   Net Profit
                 </div>
                 <p
@@ -206,7 +206,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <p className="text-xs text-zinc-500 mb-1">Total Assets</p>
+                <p className="text-xs text-muted mb-1">Total Assets</p>
                 <p className="text-lg font-bold text-zinc-100">
                   {formatMoney(detail.consolidatedTotals.assets)}
                 </p>
@@ -214,7 +214,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
             </Card>
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <p className="text-xs text-zinc-500 mb-1">Total Liabilities</p>
+                <p className="text-xs text-muted mb-1">Total Liabilities</p>
                 <p className="text-lg font-bold text-zinc-100">
                   {formatMoney(detail.consolidatedTotals.liabilities)}
                 </p>
@@ -222,7 +222,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
             </Card>
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <p className="text-xs text-zinc-500 mb-1">Total Equity</p>
+                <p className="text-xs text-muted mb-1">Total Equity</p>
                 <p className="text-lg font-bold text-zinc-100">
                   {formatMoney(detail.consolidatedTotals.equity)}
                 </p>
@@ -233,7 +233,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
           {/* Per-Entity Breakdown */}
           <Card className="neu-raised border-0">
             <CardHeader>
-              <CardTitle className="text-sm font-bold text-zinc-300">
+              <CardTitle className="text-sm font-bold text-primary">
                 Per-Entity P&L Breakdown
               </CardTitle>
             </CardHeader>
@@ -241,7 +241,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/5 text-xs text-zinc-500 uppercase tracking-wide">
+                    <tr className="border-b border-border/50 text-xs text-muted uppercase tracking-wide">
                       <th className="text-left py-2 pr-4">Entity</th>
                       <th className="text-right py-2 px-2">Revenue</th>
                       <th className="text-right py-2 px-2">Expenses</th>
@@ -253,8 +253,8 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
                       const data = rawData as Record<string, unknown>;
                       const net = data.revenue - data.expenses;
                       return (
-                        <tr key={entityId} className="border-b border-white/5">
-                          <td className="py-2 pr-4 font-medium text-zinc-200">{data.entityName}</td>
+                        <tr key={entityId} className="border-b border-border/50">
+                          <td className="py-2 pr-4 font-medium text-primary">{data.entityName}</td>
                           <td className="py-2 px-2 text-right text-emerald-400">
                             {formatMoney(data.revenue)}
                           </td>
@@ -279,7 +279,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
           {detail.eliminations.length > 0 && (
             <Card className="neu-raised border-0">
               <CardHeader>
-                <CardTitle className="text-sm font-bold text-zinc-300">
+                <CardTitle className="text-sm font-bold text-primary">
                   Elimination Entries
                 </CardTitle>
               </CardHeader>
@@ -288,9 +288,9 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
                   {(detail.eliminations as Array<Record<string, unknown>>).map((elim, idx: number) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                     >
-                      <span className="text-sm text-zinc-400">{elim.description}</span>
+                      <span className="text-sm text-secondary">{elim.description}</span>
                       <span className="text-sm font-bold text-blue-400">
                         {formatMoney(elim.amount)}
                       </span>
@@ -307,23 +307,23 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
       {snapshotsLoaded && snapshots.length > 0 && (
         <Card className="neu-raised border-0">
           <CardHeader>
-            <CardTitle className="text-sm font-bold text-zinc-300">Snapshot History</CardTitle>
+            <CardTitle className="text-sm font-bold text-primary">Snapshot History</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {snapshots.map((snap) => (
                 <div
                   key={snap.id}
-                  className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-zinc-400">
+                    <span className="text-sm text-secondary">
                       {new Date(snap.snapshotDate).toLocaleDateString('en-AU')}
                     </span>
                     <Badge variant="outline" className={SNAPSHOT_STATUS_COLORS[snap.status] ?? ''}>
                       {snap.status}
                     </Badge>
-                    <span className="text-xs text-zinc-500">FY {snap.financialYear}</span>
+                    <span className="text-xs text-muted">FY {snap.financialYear}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -340,7 +340,7 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
                         variant="outline"
                         onClick={() => handleFinalize(snap.id)}
                         disabled={finalizing === snap.id}
-                        className="h-7 text-xs text-[#FFCC00] border-[#FFCC00]/30 hover:bg-[#FFCC00]/10"
+                        className="h-7 text-xs text-cba-gold border-cba-gold/30 hover:bg-cba-gold/10"
                       >
                         {finalizing === snap.id ? (
                           <Loader2 className="w-3 h-3 animate-spin" />

@@ -91,7 +91,7 @@ export function RateScenarios() {
   const sourceLabel = (source: string) => {
     switch (source) {
       case 'cdr':
-        return { text: 'CDR', color: 'bg-[#FFCC00]/10 text-[#FFCC00] border-[#FFCC00]/20' };
+        return { text: 'CDR', color: 'bg-cba-gold/10 text-cba-gold border-cba-gold/20' };
       case 'stress':
         return { text: 'Stress', color: 'bg-red-500/10 text-red-400 border-red-500/20' };
       default:
@@ -116,10 +116,10 @@ export function RateScenarios() {
   return (
     <div className="space-y-6">
       {/* Input Form */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-[#FFCC00]" />
+            <TrendingUp className="w-5 h-5 text-cba-gold" />
             Rate Scenario Modeling
           </CardTitle>
           <CardDescription>
@@ -166,7 +166,7 @@ export function RateScenarios() {
             {customScenarios.map((scenario) => (
               <div
                 key={scenario.id}
-                className="grid gap-3 md:grid-cols-3 items-end p-3 rounded-lg bg-white/5"
+                className="grid gap-3 md:grid-cols-3 items-end p-3 rounded-lg bg-overlay"
               >
                 <div className="space-y-1">
                   <Label className="text-xs">Scenario Name</Label>
@@ -201,7 +201,7 @@ export function RateScenarios() {
           <Button
             onClick={handleGenerate}
             disabled={loading}
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+            className="bg-cba-gold text-base hover:bg-[#e6b800]"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Generate Scenarios
@@ -222,22 +222,22 @@ export function RateScenarios() {
         <>
           {/* Summary Banner */}
           <div className="grid gap-4 md:grid-cols-3">
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardContent className="pt-6 text-center">
-                <p className="text-xs text-zinc-500">Loan Amount</p>
+                <p className="text-xs text-muted">Loan Amount</p>
                 <p className="text-xl font-bold">{formatCurrency(result.loan_amount / 100)}</p>
               </CardContent>
             </Card>
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardContent className="pt-6 text-center">
-                <p className="text-xs text-zinc-500">Term</p>
+                <p className="text-xs text-muted">Term</p>
                 <p className="text-xl font-bold">{result.term_years} years</p>
               </CardContent>
             </Card>
-            <Card className="neu-raised border-[#FFCC00]/10">
+            <Card className="neu-raised border-cba-gold/10">
               <CardContent className="pt-6 text-center">
-                <p className="text-xs text-zinc-500">Base Rate</p>
-                <p className="text-xl font-bold text-[#FFCC00]">
+                <p className="text-xs text-muted">Base Rate</p>
+                <p className="text-xl font-bold text-cba-gold">
                   {(result.base_rate * 100).toFixed(2)}%
                 </p>
               </CardContent>
@@ -245,7 +245,7 @@ export function RateScenarios() {
           </div>
 
           {/* Scenarios Table */}
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader>
               <CardTitle>Scenario Comparison</CardTitle>
             </CardHeader>
@@ -253,7 +253,7 @@ export function RateScenarios() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-xs text-zinc-500 uppercase border-b border-white/5">
+                    <tr className="text-xs text-muted uppercase border-b border-border/50">
                       <th className="text-left py-2 pr-3">Scenario</th>
                       <th className="text-right py-2 px-2">Rate</th>
                       <th className="text-right py-2 px-2">Monthly</th>
@@ -270,7 +270,7 @@ export function RateScenarios() {
                       return (
                         <tr
                           key={i}
-                          className={`border-b border-white/5 last:border-0 ${
+                          className={`border-b border-border/50 last:border-0 ${
                             isBest ? 'bg-emerald-500/5' : isWorst ? 'bg-red-500/5' : ''
                           }`}
                         >
@@ -291,7 +291,7 @@ export function RateScenarios() {
                           <td className="text-right py-3 px-2">
                             {formatCurrency(s.monthly_repayment / 100)}
                           </td>
-                          <td className="text-right py-3 px-2 text-zinc-400">
+                          <td className="text-right py-3 px-2 text-secondary">
                             {formatCurrency(s.total_interest / 100)}
                           </td>
                           <td
@@ -300,7 +300,7 @@ export function RateScenarios() {
                                 ? 'text-emerald-400'
                                 : s.difference_monthly > 0
                                   ? 'text-red-400'
-                                  : 'text-zinc-400'
+                                  : 'text-secondary'
                             }`}
                           >
                             {s.difference_monthly !== 0 && (s.difference_monthly > 0 ? '+' : '')}
@@ -314,7 +314,7 @@ export function RateScenarios() {
                                 ? 'text-emerald-400'
                                 : s.difference_total > 0
                                   ? 'text-red-400'
-                                  : 'text-zinc-400'
+                                  : 'text-secondary'
                             }`}
                           >
                             {s.difference_total !== 0 && (s.difference_total > 0 ? '+' : '')}
@@ -332,7 +332,7 @@ export function RateScenarios() {
           </Card>
 
           {/* Visual Rate Bars */}
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader>
               <CardTitle className="text-base">Monthly Repayment Comparison</CardTitle>
             </CardHeader>
@@ -347,19 +347,19 @@ export function RateScenarios() {
                   return (
                     <div key={i} className="space-y-1">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-zinc-400">{s.scenario}</span>
+                        <span className="text-secondary">{s.scenario}</span>
                         <span className="font-medium">
                           {formatCurrency(s.monthly_repayment / 100)}/mo
                         </span>
                       </div>
-                      <div className="h-3 rounded-full bg-white/5 overflow-hidden">
+                      <div className="h-3 rounded-full bg-overlay overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all ${
                             isBest
                               ? 'bg-emerald-500'
                               : s.source === 'stress'
                                 ? 'bg-red-500'
-                                : 'bg-[#FFCC00]'
+                                : 'bg-cba-gold'
                           }`}
                           style={{ width: `${pct}%` }}
                         />

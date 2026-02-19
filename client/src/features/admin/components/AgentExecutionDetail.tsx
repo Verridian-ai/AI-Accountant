@@ -54,13 +54,13 @@ export function AgentExecutionDetail({ execution, onClose }: AgentExecutionDetai
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-[#1a1a2e]">
-              <Bot className="w-6 h-6 text-[#FFCC00]" />
+              <Bot className="w-6 h-6 text-cba-gold" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-primary">
                 {execution.agentType?.replace(/_/g, ' ')}
               </h3>
-              <p className="text-xs text-zinc-500 font-mono">{execution.id}</p>
+              <p className="text-xs text-muted font-mono">{execution.id}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -78,7 +78,7 @@ export function AgentExecutionDetail({ execution, onClose }: AgentExecutionDetai
             <button
               type="button"
               onClick={onClose}
-              className="text-zinc-500 hover:text-white text-xl"
+              className="text-muted hover:text-primary text-xl"
             >
               &times;
             </button>
@@ -88,34 +88,34 @@ export function AgentExecutionDetail({ execution, onClose }: AgentExecutionDetai
         {/* Stats Row */}
         <div className="grid grid-cols-4 gap-3 mb-6">
           <div className="rounded-xl bg-[#1a1a2e] p-3 text-center">
-            <Clock className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-white">
+            <Clock className="w-4 h-4 text-muted mx-auto mb-1" />
+            <p className="text-lg font-bold text-primary">
               {(execution.durationMs / 1000).toFixed(2)}s
             </p>
-            <p className="text-[10px] text-zinc-500">Duration</p>
+            <p className="text-[10px] text-muted">Duration</p>
           </div>
           <div className="rounded-xl bg-[#1a1a2e] p-3 text-center">
-            <Hash className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-white">{totalTokens.toLocaleString()}</p>
-            <p className="text-[10px] text-zinc-500">Total Tokens</p>
+            <Hash className="w-4 h-4 text-muted mx-auto mb-1" />
+            <p className="text-lg font-bold text-primary">{totalTokens.toLocaleString()}</p>
+            <p className="text-[10px] text-muted">Total Tokens</p>
           </div>
           <div className="rounded-xl bg-[#1a1a2e] p-3 text-center">
-            <DollarSign className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-[#FFCC00]">
+            <DollarSign className="w-4 h-4 text-muted mx-auto mb-1" />
+            <p className="text-lg font-bold text-cba-gold">
               ${((execution.costCents || 0) / 100).toFixed(4)}
             </p>
-            <p className="text-[10px] text-zinc-500">Cost</p>
+            <p className="text-[10px] text-muted">Cost</p>
           </div>
           <div className="rounded-xl bg-[#1a1a2e] p-3 text-center">
-            <Bot className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-white">{execution.toolCalls?.length || 0}</p>
-            <p className="text-[10px] text-zinc-500">Tool Calls</p>
+            <Bot className="w-4 h-4 text-muted mx-auto mb-1" />
+            <p className="text-lg font-bold text-primary">{execution.toolCalls?.length || 0}</p>
+            <p className="text-[10px] text-muted">Tool Calls</p>
           </div>
         </div>
 
         {/* Token Usage Bar */}
         <div className="mb-6">
-          <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+          <div className="flex items-center justify-between text-xs text-muted mb-1">
             <span>Input: {(execution.inputTokens || 0).toLocaleString()}</span>
             <span>Output: {(execution.outputTokens || 0).toLocaleString()}</span>
           </div>
@@ -126,7 +126,7 @@ export function AgentExecutionDetail({ execution, onClose }: AgentExecutionDetai
               style={{ width: `${100 - inputPct}%` }}
             />
           </div>
-          <div className="flex items-center gap-4 mt-1 text-[10px] text-zinc-500">
+          <div className="flex items-center gap-4 mt-1 text-[10px] text-muted">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-blue-500" /> Input
             </span>
@@ -155,7 +155,7 @@ export function AgentExecutionDetail({ execution, onClose }: AgentExecutionDetai
             <button
               type="button"
               onClick={() => toggleSection(section)}
-              className="w-full flex items-center gap-2 py-2 text-sm font-bold text-zinc-400 hover:text-white"
+              className="w-full flex items-center gap-2 py-2 text-sm font-bold text-secondary hover:text-primary"
             >
               {expandedSections[section] ? (
                 <ChevronDown className="w-4 h-4" />
@@ -175,15 +175,15 @@ export function AgentExecutionDetail({ execution, onClose }: AgentExecutionDetai
                     {execution.toolCalls.map((tc, i) => (
                       <div
                         key={tc.name ?? `sk-${i}`}
-                        className="flex items-center justify-between text-xs py-2 border-b border-white/5 last:border-0"
+                        className="flex items-center justify-between text-xs py-2 border-b border-border/50 last:border-0"
                       >
-                        <span className="text-zinc-300 font-mono">{tc.name}</span>
-                        <span className="text-zinc-500">{(tc.durationMs / 1000).toFixed(2)}s</span>
+                        <span className="text-primary font-mono">{tc.name}</span>
+                        <span className="text-muted">{(tc.durationMs / 1000).toFixed(2)}s</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <pre className="text-xs text-zinc-400 whitespace-pre-wrap font-mono">
+                  <pre className="text-xs text-secondary whitespace-pre-wrap font-mono">
                     {JSON.stringify(
                       section === 'input' ? execution.input : execution.output,
                       null,

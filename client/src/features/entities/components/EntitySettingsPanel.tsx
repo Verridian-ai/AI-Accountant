@@ -84,8 +84,8 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
       <Card className="neu-raised border-0">
         <CardContent className="p-8 text-center">
           <Settings className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-          <h3 className="text-lg font-bold text-zinc-300 mb-1">No Entities</h3>
-          <p className="text-sm text-zinc-500">Create an entity first to configure settings</p>
+          <h3 className="text-lg font-bold text-primary mb-1">No Entities</h3>
+          <p className="text-sm text-muted">Create an entity first to configure settings</p>
         </CardContent>
       </Card>
     );
@@ -108,7 +108,7 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
           </SelectContent>
         </Select>
         {saving && (
-          <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+          <span className="flex items-center gap-1.5 text-xs text-muted">
             <Loader2 className="w-3 h-3 animate-spin" />
             Saving...
           </span>
@@ -132,8 +132,8 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
           <Card className="neu-raised border-0">
             <CardContent className="p-4 space-y-3">
               <div>
-                <Label className="text-sm font-bold text-zinc-200">BAS Reporting Frequency</Label>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <Label className="text-sm font-bold text-primary">BAS Reporting Frequency</Label>
+                <p className="text-xs text-muted mt-0.5">
                   How often you lodge your Business Activity Statement
                 </p>
               </div>
@@ -157,8 +157,8 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
           <Card className="neu-raised border-0">
             <CardContent className="p-4 space-y-3">
               <div>
-                <Label className="text-sm font-bold text-zinc-200">GST Registered</Label>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <Label className="text-sm font-bold text-primary">GST Registered</Label>
+                <p className="text-xs text-muted mt-0.5">
                   Required if annual turnover exceeds $75,000 ($150,000 for non-profits)
                 </p>
               </div>
@@ -167,7 +167,7 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
                   checked={settings.gstRegistered}
                   onCheckedChange={(v) => updateSetting('gstRegistered', v)}
                 />
-                <span className="text-sm text-zinc-400">
+                <span className="text-sm text-secondary">
                   {settings.gstRegistered ? 'Registered' : 'Not registered'}
                 </span>
               </div>
@@ -179,8 +179,8 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
             <Card className="neu-raised border-0">
               <CardContent className="p-4 space-y-3">
                 <div>
-                  <Label className="text-sm font-bold text-zinc-200">GST Method</Label>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <Label className="text-sm font-bold text-primary">GST Method</Label>
+                  <p className="text-xs text-muted mt-0.5">
                     Cash: report when paid. Accrual: report when invoiced.
                   </p>
                 </div>
@@ -204,8 +204,8 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
           <Card className="neu-raised border-0">
             <CardContent className="p-4 space-y-3">
               <div>
-                <Label className="text-sm font-bold text-zinc-200">Tax Rate (%)</Label>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <Label className="text-sm font-bold text-primary">Tax Rate (%)</Label>
+                <p className="text-xs text-muted mt-0.5">
                   Company: 25% (base rate) or 30%. Trusts: distributed to beneficiaries.
                 </p>
               </div>
@@ -224,10 +224,10 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
           <Card className="neu-raised border-0">
             <CardContent className="p-4 space-y-3">
               <div>
-                <Label className="text-sm font-bold text-zinc-200">
+                <Label className="text-sm font-bold text-primary">
                   Default Depreciation Method
                 </Label>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-xs text-muted mt-0.5">
                   Method used for new assets unless overridden per asset
                 </p>
               </div>
@@ -250,10 +250,10 @@ export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
           <Card className="neu-raised border-0">
             <CardContent className="p-4 space-y-3">
               <div>
-                <Label className="text-sm font-bold text-zinc-200">
+                <Label className="text-sm font-bold text-primary">
                   Instant Write-Off Threshold ($)
                 </Label>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-xs text-muted mt-0.5">
                   Assets under this value can be immediately deducted. Default: $20,000
                 </p>
               </div>

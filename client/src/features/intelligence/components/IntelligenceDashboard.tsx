@@ -78,11 +78,11 @@ export function IntelligenceDashboard() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="neu-raised p-3 rounded-xl">
-            <Brain className="w-7 h-7 text-[#FFCC00]" />
+            <Brain className="w-7 h-7 text-cba-gold" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-zinc-100">Intelligence Hub</h2>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               Cross-module insights, temporal queries & correlations
             </p>
           </div>
@@ -92,21 +92,21 @@ export function IntelligenceDashboard() {
         {stats && (
           <div className="flex items-center gap-3">
             <div className="neu-raised-sm px-3 py-1.5 rounded-xl flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-[#FFCC00]" />
-              <span className="text-sm font-bold text-zinc-200">{stats.insightCount}</span>
-              <span className="text-[10px] text-zinc-500 uppercase">Insights</span>
+              <Lightbulb className="w-4 h-4 text-cba-gold" />
+              <span className="text-sm font-bold text-primary">{stats.insightCount}</span>
+              <span className="text-[10px] text-muted uppercase">Insights</span>
             </div>
             {stats.criticalAlerts > 0 && (
               <div className="neu-raised-sm px-3 py-1.5 rounded-xl flex items-center gap-2 border border-red-500/30">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-sm font-bold text-red-400">{stats.criticalAlerts}</span>
-                <span className="text-[10px] text-zinc-500 uppercase">Critical</span>
+                <span className="text-[10px] text-muted uppercase">Critical</span>
               </div>
             )}
             <div className="neu-raised-sm px-3 py-1.5 rounded-xl flex items-center gap-2">
               <Bell className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-bold text-zinc-200">{stats.activeSubscriptions}</span>
-              <span className="text-[10px] text-zinc-500 uppercase">Active</span>
+              <span className="text-sm font-bold text-primary">{stats.activeSubscriptions}</span>
+              <span className="text-[10px] text-muted uppercase">Active</span>
             </div>
           </div>
         )}
@@ -117,14 +117,14 @@ export function IntelligenceDashboard() {
         <button
           onClick={scanForInsights}
           disabled={scanning}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFCC00]/90 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cba-gold text-base font-bold text-sm hover:bg-cba-gold/90 transition-colors disabled:opacity-50"
         >
           <Scan className={cn('w-4 h-4', scanning && 'animate-spin')} />
           {scanning ? 'Scanning...' : 'Scan for Insights'}
         </button>
         <button
           onClick={() => setActiveTab('temporal')}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium text-sm transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-primary font-medium text-sm transition-colors"
         >
           <Search className="w-4 h-4" />
           New Temporal Query
@@ -133,21 +133,21 @@ export function IntelligenceDashboard() {
         <div className="flex-1" />
 
         <div className="flex items-center gap-2">
-          <label className="text-xs text-zinc-500 font-medium">From:</label>
+          <label className="text-xs text-muted font-medium">From:</label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300"
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-primary"
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-zinc-500 font-medium">To:</label>
+          <label className="text-xs text-muted font-medium">To:</label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300"
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-primary"
           />
         </div>
       </div>
@@ -161,8 +161,8 @@ export function IntelligenceDashboard() {
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 whitespace-nowrap',
               activeTab === tab.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5',
+                ? 'bg-cba-gold text-base shadow-[0_0_20px_rgba(255,204,0,0.2)]'
+                : 'text-secondary hover:text-zinc-100 hover:bg-overlay',
             )}
           >
             <tab.icon className="w-4 h-4" />

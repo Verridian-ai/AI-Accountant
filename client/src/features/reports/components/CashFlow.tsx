@@ -22,19 +22,19 @@ function FlowSection({ title, items, total }: { title: string; items: FlowItem[]
 
   return (
     <div className="neu-raised rounded-2xl p-5">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-[#FFCC00] mb-4">{title}</h3>
+      <h3 className="text-sm font-bold uppercase tracking-wider text-cba-gold mb-4">{title}</h3>
 
       {inflows.length > 0 && (
         <div className="mb-3">
-          <p className="text-xs text-zinc-500 font-medium uppercase tracking-wide mb-2 flex items-center gap-1">
+          <p className="text-xs text-muted font-medium uppercase tracking-wide mb-2 flex items-center gap-1">
             <ArrowUpRight className="h-3 w-3 text-emerald-400" /> Inflows
           </p>
           {inflows.map((item) => (
             <div
               key={item.category}
-              className="flex justify-between py-1.5 border-b border-white/5"
+              className="flex justify-between py-1.5 border-b border-border/50"
             >
-              <span className="text-sm text-zinc-300">{item.category}</span>
+              <span className="text-sm text-primary">{item.category}</span>
               <span className="text-sm font-mono text-emerald-400">
                 +{formatCurrency(item.amount)}
               </span>
@@ -45,15 +45,15 @@ function FlowSection({ title, items, total }: { title: string; items: FlowItem[]
 
       {outflows.length > 0 && (
         <div className="mb-3">
-          <p className="text-xs text-zinc-500 font-medium uppercase tracking-wide mb-2 flex items-center gap-1">
+          <p className="text-xs text-muted font-medium uppercase tracking-wide mb-2 flex items-center gap-1">
             <ArrowDownRight className="h-3 w-3 text-red-400" /> Outflows
           </p>
           {outflows.map((item) => (
             <div
               key={item.category}
-              className="flex justify-between py-1.5 border-b border-white/5"
+              className="flex justify-between py-1.5 border-b border-border/50"
             >
-              <span className="text-sm text-zinc-300">{item.category}</span>
+              <span className="text-sm text-primary">{item.category}</span>
               <span className="text-sm font-mono text-red-400">{formatCurrency(item.amount)}</span>
             </div>
           ))}
@@ -64,7 +64,7 @@ function FlowSection({ title, items, total }: { title: string; items: FlowItem[]
         <p className="text-xs text-zinc-600 italic">No cash flows in this period</p>
       )}
 
-      <div className="border-t border-[#FFCC00]/20 mt-2 pt-3 flex justify-between">
+      <div className="border-t border-cba-gold/20 mt-2 pt-3 flex justify-between">
         <span className="font-bold text-zinc-100">Net {title}</span>
         <span className={`font-bold font-mono ${total >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
           {formatCurrency(total)}
@@ -94,8 +94,8 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FFCC00]" />
-        <span className="ml-3 text-zinc-400">Generating cash flow statement...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-cba-gold" />
+        <span className="ml-3 text-secondary">Generating cash flow statement...</span>
       </div>
     );
   }
@@ -106,7 +106,7 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
 
   if (!data) {
     return (
-      <div className="neu-inset rounded-2xl p-6 text-center text-zinc-500">
+      <div className="neu-inset rounded-2xl p-6 text-center text-muted">
         Select a date range to generate the Cash Flow statement.
       </div>
     );
@@ -130,7 +130,7 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
       value: data.financing.total,
       color: data.financing.total >= 0 ? 'bg-emerald-500' : 'bg-red-500',
     },
-    { label: 'Closing', value: data.closingBalance, color: 'bg-[#FFCC00]' },
+    { label: 'Closing', value: data.closingBalance, color: 'bg-cba-gold' },
   ];
   const maxVal = Math.max(...segments.map((s) => Math.abs(s.value)), 1);
 
@@ -138,7 +138,7 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
     <div className="space-y-6">
       {/* Waterfall Chart */}
       <div className="neu-raised rounded-2xl p-5">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-4">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-secondary mb-4">
           Cash Flow Waterfall
         </h3>
         <div className="flex items-end gap-3 h-32">
@@ -155,7 +155,7 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
                   className={`w-full rounded-t-lg ${seg.color} transition-all duration-500`}
                   style={{ height: `${height}%`, opacity: 0.8 }}
                 />
-                <span className="text-[10px] text-zinc-500 font-medium">{seg.label}</span>
+                <span className="text-[10px] text-muted font-medium">{seg.label}</span>
               </div>
             );
           })}
@@ -185,13 +185,13 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
       <div className="neu-raised rounded-2xl p-5">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Opening Balance</p>
-            <p className="text-lg font-bold font-mono text-zinc-200">
+            <p className="text-xs text-muted uppercase tracking-wide mb-1">Opening Balance</p>
+            <p className="text-lg font-bold font-mono text-primary">
               {formatCurrency(data.openingBalance)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Net Cash Change</p>
+            <p className="text-xs text-muted uppercase tracking-wide mb-1">Net Cash Change</p>
             <p
               className={`text-lg font-bold font-mono ${data.netCashChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
             >
@@ -200,8 +200,8 @@ export function CashFlow({ periodStart, periodEnd }: Props) {
             </p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Closing Balance</p>
-            <p className="text-lg font-bold font-mono text-[#FFCC00]">
+            <p className="text-xs text-muted uppercase tracking-wide mb-1">Closing Balance</p>
+            <p className="text-lg font-bold font-mono text-cba-gold">
               {formatCurrency(data.closingBalance)}
             </p>
           </div>

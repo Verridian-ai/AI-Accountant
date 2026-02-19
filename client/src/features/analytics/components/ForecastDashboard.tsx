@@ -104,8 +104,8 @@ function ForecastDashboardInner() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
@@ -118,8 +118,8 @@ function ForecastDashboardInner() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <TrendingUp className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Financial Forecast
           </span>
         </div>
@@ -131,7 +131,7 @@ function ForecastDashboardInner() {
               onClick={() => setMonths(m)}
               className={cn(
                 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-                months === m ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'text-zinc-500 hover:text-zinc-300',
+                months === m ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
               )}
             >
               {m}mo
@@ -150,7 +150,7 @@ function ForecastDashboardInner() {
       {/* KPI Row */}
       {hasData && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="neu-raised rounded-xl p-4 border border-white/5">
+          <div className="neu-raised rounded-xl p-4 border border-border/50">
             <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
               Avg Monthly Revenue
             </p>
@@ -158,7 +158,7 @@ function ForecastDashboardInner() {
               {revenueData ? formatDollars(revenueData.averageMonthly / 100) : '—'}
             </p>
           </div>
-          <div className="neu-raised rounded-xl p-4 border border-white/5">
+          <div className="neu-raised rounded-xl p-4 border border-border/50">
             <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
               Revenue Growth
             </p>
@@ -171,7 +171,7 @@ function ForecastDashboardInner() {
               {revenueData ? `${(revenueData.growthRate * 100).toFixed(1)}%` : '—'}
             </p>
           </div>
-          <div className="neu-raised rounded-xl p-4 border border-white/5">
+          <div className="neu-raised rounded-xl p-4 border border-border/50">
             <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
               Avg Monthly Expenses
             </p>
@@ -179,11 +179,11 @@ function ForecastDashboardInner() {
               {expenseData ? formatDollars(expenseData.averageMonthly / 100) : '—'}
             </p>
           </div>
-          <div className="neu-raised rounded-xl p-4 border border-white/5">
+          <div className="neu-raised rounded-xl p-4 border border-border/50">
             <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
               Projected Cash Flow
             </p>
-            <p className="text-lg font-black text-[#FFCC00] tabular-nums mt-1">
+            <p className="text-lg font-black text-cba-gold tabular-nums mt-1">
               {cashFlowChartData.length > 0
                 ? formatDollars(cashFlowChartData[cashFlowChartData.length - 1]!.balance)
                 : '—'}
@@ -193,9 +193,9 @@ function ForecastDashboardInner() {
       )}
 
       {!hasData ? (
-        <div className="neu-raised rounded-2xl p-12 border border-white/5 text-center">
+        <div className="neu-raised rounded-2xl p-12 border border-border/50 text-center">
           <TrendingUp className="w-10 h-10 mx-auto text-zinc-600 mb-3" />
-          <p className="text-sm text-zinc-500">No forecast data available yet.</p>
+          <p className="text-sm text-muted">No forecast data available yet.</p>
           <p className="text-xs text-zinc-600 mt-1">
             Upload statements and categorize transactions to enable projections.
           </p>
@@ -205,7 +205,7 @@ function ForecastDashboardInner() {
           {/* Revenue & Expense Forecasts */}
           <div className="grid gap-4 md:grid-cols-2">
             {/* Revenue Forecast */}
-            <div className="neu-raised rounded-2xl p-4 border border-white/5">
+            <div className="neu-raised rounded-2xl p-4 border border-border/50">
               <GoldLineChart
                 data={revenueChartData}
                 dataKeys={['projected', 'upper95', 'lower95']}
@@ -220,7 +220,7 @@ function ForecastDashboardInner() {
             </div>
 
             {/* Expense Forecast */}
-            <div className="neu-raised rounded-2xl p-4 border border-white/5">
+            <div className="neu-raised rounded-2xl p-4 border border-border/50">
               <GoldLineChart
                 data={expenseChartData}
                 dataKeys={['recurring', 'variable', 'total']}
@@ -236,7 +236,7 @@ function ForecastDashboardInner() {
           {/* Cash Flow & Anomaly Detection */}
           <div className="grid gap-4 md:grid-cols-2">
             {/* Cash Flow Projection */}
-            <div className="neu-raised rounded-2xl p-4 border border-white/5">
+            <div className="neu-raised rounded-2xl p-4 border border-border/50">
               <GoldComposedChart
                 data={cashFlowChartData}
                 xAxisKey="month"
@@ -269,7 +269,7 @@ function ForecastDashboardInner() {
             </div>
 
             {/* Anomaly Detection Scatter */}
-            <div className="neu-raised rounded-2xl p-4 border border-white/5">
+            <div className="neu-raised rounded-2xl p-4 border border-border/50">
               <GoldScatterPlot
                 data={anomalyData}
                 xKey="expected"

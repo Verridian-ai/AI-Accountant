@@ -85,8 +85,8 @@ export function GSTReviewQueue({ businessOnly: _businessOnly }: GSTReviewQueuePr
     return (
       <Card className="neu-raised rounded-xl">
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
-          <span className="ml-2 text-zinc-400">Loading review queue...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
+          <span className="ml-2 text-secondary">Loading review queue...</span>
         </CardContent>
       </Card>
     );
@@ -115,7 +115,7 @@ export function GSTReviewQueue({ businessOnly: _businessOnly }: GSTReviewQueuePr
         <Card className="neu-raised rounded-xl">
           <CardContent className="text-center py-12">
             <ShieldCheck className="w-10 h-10 mx-auto mb-3 text-emerald-400" />
-            <p className="text-zinc-400">All transactions have been reviewed</p>
+            <p className="text-secondary">All transactions have been reviewed</p>
           </CardContent>
         </Card>
       ) : (
@@ -136,7 +136,7 @@ export function GSTReviewQueue({ businessOnly: _businessOnly }: GSTReviewQueuePr
                           size="sm"
                         />
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-zinc-500">
+                      <div className="flex items-center gap-3 text-xs text-muted">
                         <span>{item.date}</span>
                         <span className={item.amount < 0 ? 'text-red-400' : 'text-emerald-400'}>
                           {formatCurrency(item.amount)}
@@ -170,7 +170,7 @@ export function GSTReviewQueue({ businessOnly: _businessOnly }: GSTReviewQueuePr
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-zinc-400 hover:bg-white/5"
+                        className="h-8 w-8 text-secondary hover:bg-overlay"
                         disabled={isProcessing}
                       >
                         <Pencil className="w-4 h-4" />

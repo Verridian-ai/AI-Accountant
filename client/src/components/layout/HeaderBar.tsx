@@ -1,5 +1,6 @@
 import { Search, RefreshCw, LogOut, Brain, Settings as SettingsIcon, User } from 'lucide-react';
 import { NotificationCenter } from '../../features/notifications';
+import { ThemeToggle } from '../ThemeToggle';
 import { cn } from '@/lib/utils';
 
 interface HeaderBarProps {
@@ -37,7 +38,7 @@ export function HeaderBar({
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 neu-raised border-b border-[#FFCC00]/10',
+        'sticky top-0 z-40 neu-raised border-b border-cba-gold/10',
         'bg-[#0d0d14]/95 backdrop-blur-xl',
       )}
     >
@@ -58,9 +59,9 @@ export function HeaderBar({
         {/* Center: Page title (mobile) or Search (desktop) */}
         <div className="flex-1 flex justify-center min-w-0">
           {/* Mobile title */}
-          <h1 className="md:hidden text-sm font-bold text-zinc-200 truncate">{pageTitle}</h1>
+          <h1 className="md:hidden text-sm font-bold text-primary truncate">{pageTitle}</h1>
           {/* Desktop search placeholder */}
-          <div className="hidden md:flex items-center gap-2 neu-inset rounded-xl px-4 py-2 w-full max-w-md text-zinc-500 text-sm">
+          <div className="hidden md:flex items-center gap-2 neu-inset rounded-xl px-4 py-2 w-full max-w-md text-muted text-sm">
             <Search className="h-4 w-4 shrink-0" />
             <span className="truncate">Search transactions, accounts...</span>
           </div>
@@ -70,7 +71,7 @@ export function HeaderBar({
         <div className="flex items-center gap-1.5 shrink-0">
           {/* Sync indicator - desktop only */}
           {lastSynced && (
-            <div className="hidden lg:flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest neu-inset px-3 py-1.5 rounded-full text-zinc-500 mr-1">
+            <div className="hidden lg:flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest neu-inset px-3 py-1.5 rounded-full text-muted mr-1">
               <span className="w-1.5 h-1.5 rounded-full cba-gold-bg animate-pulse" />
               {lastSynced.toLocaleTimeString()}
             </div>
@@ -78,7 +79,7 @@ export function HeaderBar({
 
           {/* User badge - desktop only */}
           {username && (
-            <span className="hidden xl:flex items-center gap-2 text-xs text-zinc-400 font-medium neu-raised-sm px-3 py-1.5 rounded-xl mr-1">
+            <span className="hidden xl:flex items-center gap-2 text-xs text-secondary font-medium neu-raised-sm px-3 py-1.5 rounded-xl mr-1">
               <User className="h-3.5 w-3.5" />
               {username}
             </span>
@@ -91,7 +92,7 @@ export function HeaderBar({
               title="Merchant Memory"
               aria-label="Open merchant memory"
               onClick={onOpenMerchantMemory}
-              className="hidden sm:flex neu-raised-sm p-2 text-zinc-400 hover:text-[#FFCC00] hover:cba-gold-glow rounded-xl btn-press"
+              className="hidden sm:flex neu-raised-sm p-2 text-secondary hover:text-cba-gold hover:cba-gold-glow rounded-xl btn-press"
             >
               <Brain className="h-4 w-4" />
             </button>
@@ -100,6 +101,9 @@ export function HeaderBar({
           {/* Notifications */}
           <NotificationCenter />
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Settings - desktop only */}
           {onOpenSettings && (
             <button
@@ -107,7 +111,7 @@ export function HeaderBar({
               title="Settings"
               aria-label="Open settings"
               onClick={onOpenSettings}
-              className="hidden sm:flex neu-raised-sm p-2 text-zinc-400 hover:text-[#FFCC00] hover:cba-gold-glow rounded-xl btn-press"
+              className="hidden sm:flex neu-raised-sm p-2 text-secondary hover:text-cba-gold hover:cba-gold-glow rounded-xl btn-press"
             >
               <SettingsIcon className="h-4 w-4" />
             </button>
@@ -120,7 +124,7 @@ export function HeaderBar({
               title="Refresh data"
               aria-label="Refresh data"
               onClick={onRefresh}
-              className="hidden sm:flex neu-raised-sm p-2 text-zinc-400 hover:text-emerald-400 hover:glow-success rounded-xl btn-press"
+              className="hidden sm:flex neu-raised-sm p-2 text-secondary hover:text-emerald-400 hover:glow-success rounded-xl btn-press"
             >
               <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             </button>
@@ -133,7 +137,7 @@ export function HeaderBar({
               title="Logout"
               aria-label="Logout"
               onClick={onLogout}
-              className="neu-raised-sm p-2 text-zinc-400 hover:text-red-400 hover:glow-danger rounded-xl btn-press"
+              className="neu-raised-sm p-2 text-secondary hover:text-red-400 hover:glow-danger rounded-xl btn-press"
             >
               <LogOut className="h-4 w-4" />
             </button>

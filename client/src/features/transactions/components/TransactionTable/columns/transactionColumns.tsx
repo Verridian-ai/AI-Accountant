@@ -57,10 +57,10 @@ export function createTransactionColumns({
         <button
           type="button"
           title="Sort by date"
-          className="flex items-center gap-2 hover:text-[#FFCC00] transition-colors group/head"
+          className="flex items-center gap-2 hover:text-cba-gold transition-colors group/head"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          <Calendar className="h-3 w-3 text-zinc-500 group-hover/head:text-[#FFCC00]" />
+          <Calendar className="h-3 w-3 text-muted group-hover/head:text-cba-gold" />
           <span className="uppercase tracking-widest text-[9px] font-black">Date</span>
           <ArrowUpDown className="h-3 w-3 opacity-50" />
         </button>
@@ -69,7 +69,7 @@ export function createTransactionColumns({
         if (!row) return null;
         return (
           <div className="flex flex-col">
-            <span className="font-mono text-[10px] font-black text-zinc-500 tracking-wider neu-inset px-2.5 py-1 rounded-lg border border-white/5 w-fit whitespace-nowrap">
+            <span className="font-mono text-[10px] font-black text-muted tracking-wider neu-inset px-2.5 py-1 rounded-lg border border-border/50 w-fit whitespace-nowrap">
               {row.original.date}
             </span>
           </div>
@@ -82,7 +82,7 @@ export function createTransactionColumns({
       minSize: 200,
       header: () => (
         <div className="flex items-center gap-2">
-          <FileText className="h-3 w-3 text-zinc-500" />
+          <FileText className="h-3 w-3 text-muted" />
           <span className="uppercase tracking-widest text-[9px] font-black">Description</span>
         </div>
       ),
@@ -99,10 +99,10 @@ export function createTransactionColumns({
                 aria-label="Edit description"
                 value={editForm.description || ''}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                className="w-full px-4 py-2 text-sm neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] font-bold"
+                className="w-full px-4 py-2 text-sm neu-inset rounded-xl focus-gold outline-none text-cba-gold font-bold"
                 autoFocus
               />
-              <Edit2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-[#FFCC00]/50" />
+              <Edit2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-cba-gold/50" />
             </div>
           );
         }
@@ -113,10 +113,10 @@ export function createTransactionColumns({
             onClick={() => handleEditStart(tx)}
           >
             <div className="w-8 h-8 neu-inset rounded-lg flex items-center justify-center shrink-0 group-hover:neu-raised transition-all">
-              <Activity className="h-3.5 w-3.5 text-zinc-600 group-hover:text-[#FFCC00] transition-colors" />
+              <Activity className="h-3.5 w-3.5 text-zinc-600 group-hover:text-cba-gold transition-colors" />
             </div>
             <div
-              className="max-w-[140px] sm:max-w-[220px] lg:max-w-[280px] truncate text-zinc-100 font-bold tracking-tight text-sm group-hover:text-[#FFCC00] transition-colors"
+              className="max-w-[140px] sm:max-w-[220px] lg:max-w-[280px] truncate text-zinc-100 font-bold tracking-tight text-sm group-hover:text-cba-gold transition-colors"
               title={tx.description}
             >
               {tx.description}
@@ -130,7 +130,7 @@ export function createTransactionColumns({
               type="button"
               aria-label="Quick edit"
               title="Quick edit"
-              className="opacity-0 group-hover:opacity-100 p-1.5 neu-raised-sm rounded-lg text-[#FFCC00] transition-all transform scale-90 group-hover:scale-100 border border-white/5"
+              className="opacity-0 group-hover:opacity-100 p-1.5 neu-raised-sm rounded-lg text-cba-gold transition-all transform scale-90 group-hover:scale-100 border border-border/50"
             >
               <Edit2 className="h-3 w-3" />
             </button>
@@ -144,7 +144,7 @@ export function createTransactionColumns({
       minSize: 110,
       header: () => (
         <div className="flex items-center gap-2">
-          <DollarSign className="h-3 w-3 text-zinc-500" />
+          <DollarSign className="h-3 w-3 text-muted" />
           <span className="uppercase tracking-widest text-[9px] font-black">Amount</span>
         </div>
       ),
@@ -157,7 +157,7 @@ export function createTransactionColumns({
         if (isEditing) {
           return (
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-zinc-500">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted">
                 $
               </span>
               <input
@@ -171,7 +171,7 @@ export function createTransactionColumns({
                     amount: Math.round(parseFloat(e.target.value) * 100),
                   })
                 }
-                className="w-28 pl-6 pr-3 py-2 text-sm neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] font-bold"
+                className="w-28 pl-6 pr-3 py-2 text-sm neu-inset rounded-xl focus-gold outline-none text-cba-gold font-bold"
               />
             </div>
           );
@@ -186,7 +186,7 @@ export function createTransactionColumns({
       minSize: 150,
       header: () => (
         <div className="flex items-center gap-2">
-          <Tag className="h-3 w-3 text-zinc-500" />
+          <Tag className="h-3 w-3 text-muted" />
           <span className="uppercase tracking-widest text-[9px] font-black">Category</span>
         </div>
       ),
@@ -205,17 +205,17 @@ export function createTransactionColumns({
                 aria-label="Edit category"
                 value={cat}
                 onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                className="w-full pl-4 pr-10 py-2 text-sm neu-inset rounded-xl text-[#FFCC00] font-bold bg-transparent border-none focus:ring-0 appearance-none cursor-pointer"
+                className="w-full pl-4 pr-10 py-2 text-sm neu-inset rounded-xl text-cba-gold font-bold bg-transparent border-none focus:ring-0 appearance-none cursor-pointer"
               >
                 {categories
                   .filter((c) => c !== 'All')
                   .map((c) => (
-                    <option key={c} value={c} className="bg-[#12121a] text-zinc-300">
+                    <option key={c} value={c} className="bg-surface text-primary">
                       {c}
                     </option>
                   ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-[#FFCC00]/50 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-cba-gold/50 pointer-events-none" />
             </div>
           );
         }
@@ -244,7 +244,7 @@ export function createTransactionColumns({
       size: 80,
       minSize: 70,
       header: () => (
-        <span className="uppercase tracking-widest text-[9px] font-black text-zinc-500">Tax</span>
+        <span className="uppercase tracking-widest text-[9px] font-black text-muted">Tax</span>
       ),
       cell: ({ row }) => {
         if (!row) return null;
@@ -278,7 +278,7 @@ export function createTransactionColumns({
       minSize: 120,
       header: () => (
         <div className="flex items-center gap-2">
-          <Wallet className="h-3 w-3 text-zinc-500" />
+          <Wallet className="h-3 w-3 text-muted" />
           <span className="uppercase tracking-widest text-[9px] font-black">Account</span>
         </div>
       ),
@@ -297,7 +297,7 @@ export function createTransactionColumns({
               <div
                 className={cn(
                   'w-6 h-6 rounded-lg flex items-center justify-center neu-inset transition-all group-hover/account:glow-success',
-                  account.accountType === 'credit_card' ? 'text-purple-400' : 'text-[#FFCC00]',
+                  account.accountType === 'credit_card' ? 'text-purple-400' : 'text-cba-gold',
                 )}
               >
                 {account.accountType === 'credit_card' ? (
@@ -308,7 +308,7 @@ export function createTransactionColumns({
                   <Wallet className="h-3 w-3" />
                 )}
               </div>
-              <span className="text-[10px] font-bold text-zinc-400 truncate max-w-[80px] group-hover/account:text-[#FFCC00] transition-colors">
+              <span className="text-[10px] font-bold text-secondary truncate max-w-[80px] group-hover/account:text-cba-gold transition-colors">
                 {account.accountName}
               </span>
             </div>
@@ -322,7 +322,7 @@ export function createTransactionColumns({
       minSize: 100,
       header: () => (
         <div className="flex justify-end pr-4">
-          <span className="uppercase tracking-widest text-[9px] font-black text-zinc-500">
+          <span className="uppercase tracking-widest text-[9px] font-black text-muted">
             Actions
           </span>
         </div>
@@ -347,7 +347,7 @@ export function createTransactionColumns({
                 type="button"
                 onClick={() => setEditingId(null)}
                 title="Cancel"
-                className="p-2 neu-raised-sm text-zinc-500 hover:text-red-400 rounded-xl btn-press border border-white/5"
+                className="p-2 neu-raised-sm text-muted hover:text-red-400 rounded-xl btn-press border border-border/50"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -360,7 +360,7 @@ export function createTransactionColumns({
             <button
               type="button"
               onClick={() => handleSplitStart(tx)}
-              className="p-2.5 neu-raised-sm text-zinc-500 hover:text-purple-400 hover:border-purple-500/30 rounded-xl btn-press border border-white/5 transition-colors"
+              className="p-2.5 neu-raised-sm text-muted hover:text-purple-400 hover:border-purple-500/30 rounded-xl btn-press border border-border/50 transition-colors"
               title="Split Transaction"
             >
               <Scissors className="h-4 w-4" />
@@ -368,7 +368,7 @@ export function createTransactionColumns({
             <button
               type="button"
               onClick={() => handleDelete(tx.id)}
-              className="p-2.5 neu-raised-sm text-zinc-500 hover:text-red-400 hover:border-red-500/30 rounded-xl btn-press border border-white/5 transition-colors"
+              className="p-2.5 neu-raised-sm text-muted hover:text-red-400 hover:border-red-500/30 rounded-xl btn-press border border-border/50 transition-colors"
               title="Delete"
             >
               <Trash2 className="h-4 w-4" />

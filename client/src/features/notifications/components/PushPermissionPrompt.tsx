@@ -73,23 +73,23 @@ export function PushPermissionPrompt() {
 
   return (
     <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-4 sm:bottom-4 sm:w-96 z-50 animate-slide-up">
-      <div className="neu-raised rounded-2xl border border-[#FFCC00]/20 p-5 bg-[#0d0d14]/98 backdrop-blur-xl shadow-2xl">
+      <div className="neu-raised rounded-2xl border border-cba-gold/20 p-5 bg-[#0d0d14]/98 backdrop-blur-xl shadow-2xl">
         {status === 'prompt' && (
           <>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#FFCC00]/10 flex items-center justify-center shrink-0">
-                <Bell className="h-6 w-6 text-[#FFCC00]" />
+              <div className="w-12 h-12 rounded-xl bg-cba-gold/10 flex items-center justify-center shrink-0">
+                <Bell className="h-6 w-6 text-cba-gold" />
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-bold text-zinc-200">Enable Push Notifications</h3>
-                <p className="text-xs text-zinc-500 mt-1">
+                <h3 className="text-sm font-bold text-primary">Enable Push Notifications</h3>
+                <p className="text-xs text-muted mt-1">
                   Get alerts for large transactions, BAS deadlines, and budget warnings
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="text-zinc-600 hover:text-zinc-400 p-1 shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-zinc-600 hover:text-secondary p-1 shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -98,14 +98,14 @@ export function PushPermissionPrompt() {
               <button
                 type="button"
                 onClick={handleEnable}
-                className="flex-1 py-2.5 px-4 rounded-xl text-sm font-bold text-black bg-[#FFCC00] hover:bg-[#FFD633] btn-press min-h-[44px]"
+                className="flex-1 py-2.5 px-4 rounded-xl text-sm font-bold text-black bg-cba-gold hover:bg-[#FFD633] btn-press min-h-[44px]"
               >
                 Enable
               </button>
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="text-xs text-zinc-500 hover:text-zinc-400 min-h-[44px] px-2"
+                className="text-xs text-muted hover:text-secondary min-h-[44px] px-2"
               >
                 Not now
               </button>
@@ -113,8 +113,8 @@ export function PushPermissionPrompt() {
           </>
         )}
         {status === 'subscribing' && (
-          <div className="flex items-center gap-3 text-zinc-400 text-sm py-2">
-            <div className="w-5 h-5 border-2 border-[#FFCC00] border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center gap-3 text-secondary text-sm py-2">
+            <div className="w-5 h-5 border-2 border-cba-gold border-t-transparent rounded-full animate-spin" />
             Setting up notifications...
           </div>
         )}
@@ -126,14 +126,14 @@ export function PushPermissionPrompt() {
         )}
         {status === 'denied' && (
           <div className="text-center py-2">
-            <p className="text-sm text-zinc-400">Notifications blocked</p>
+            <p className="text-sm text-secondary">Notifications blocked</p>
             <p className="text-xs text-zinc-600 mt-1">
               Enable in your browser settings to receive alerts
             </p>
             <button
               type="button"
               onClick={handleDismiss}
-              className="text-xs text-zinc-500 mt-3 hover:text-zinc-400 min-h-[44px] px-2"
+              className="text-xs text-muted mt-3 hover:text-secondary min-h-[44px] px-2"
             >
               Dismiss
             </button>

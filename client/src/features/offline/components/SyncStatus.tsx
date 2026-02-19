@@ -47,7 +47,7 @@ export function SyncStatus() {
 
   return (
     <div className="space-y-5 max-w-2xl mx-auto p-4">
-      <h2 className="text-lg font-bold text-zinc-200">Sync Status</h2>
+      <h2 className="text-lg font-bold text-primary">Sync Status</h2>
 
       {/* Connectivity */}
       <div className="neu-raised rounded-2xl p-5">
@@ -57,9 +57,9 @@ export function SyncStatus() {
               className={`w-3 h-3 rounded-full ${statusDot} ${isOnline ? 'animate-pulse' : ''}`}
             />
             <div>
-              <p className="text-sm font-bold text-zinc-200">{statusLabel}</p>
+              <p className="text-sm font-bold text-primary">{statusLabel}</p>
               {lastSyncAt && (
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-muted">
                   Last sync: {new Date(lastSyncAt).toLocaleString('en-AU')}
                 </p>
               )}
@@ -69,7 +69,7 @@ export function SyncStatus() {
             type="button"
             onClick={handleSync}
             disabled={syncing || syncStatus === 'syncing' || !isOnline}
-            className="neu-raised-sm py-2 px-4 rounded-xl text-xs font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 disabled:opacity-30 btn-press flex items-center gap-2 min-h-[44px]"
+            className="neu-raised-sm py-2 px-4 rounded-xl text-xs font-bold text-cba-gold hover:bg-cba-gold/10 disabled:opacity-30 btn-press flex items-center gap-2 min-h-[44px]"
           >
             <RefreshCw
               className={`h-3.5 w-3.5 ${syncing || syncStatus === 'syncing' ? 'animate-spin' : ''}`}
@@ -82,19 +82,19 @@ export function SyncStatus() {
       {/* Pending changes */}
       <div className="neu-raised rounded-2xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-zinc-300">Pending Changes</h3>
+          <h3 className="text-sm font-bold text-primary">Pending Changes</h3>
           <span
             className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-              pendingChanges > 0 ? 'bg-[#FFCC00]/20 text-[#FFCC00]' : 'bg-zinc-800 text-zinc-500'
+              pendingChanges > 0 ? 'bg-cba-gold/20 text-cba-gold' : 'bg-zinc-800 text-muted'
             }`}
           >
             {pendingChanges}
           </span>
         </div>
         {pendingChanges === 0 ? (
-          <p className="text-xs text-zinc-500">All changes synced</p>
+          <p className="text-xs text-muted">All changes synced</p>
         ) : (
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-secondary">
             {pendingChanges} change{pendingChanges !== 1 ? 's' : ''} waiting to sync
           </p>
         )}
@@ -109,7 +109,7 @@ export function SyncStatus() {
               {conflicts.length} Conflict{conflicts.length !== 1 ? 's' : ''}
             </h3>
           </div>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-secondary">
             Some changes conflict with server data. Open the Conflict Resolver to review.
           </p>
         </div>
@@ -117,9 +117,9 @@ export function SyncStatus() {
 
       {/* Sync log */}
       <div className="neu-raised rounded-2xl p-5">
-        <h3 className="text-sm font-bold text-zinc-300 mb-3">Recent Sync History</h3>
+        <h3 className="text-sm font-bold text-primary mb-3">Recent Sync History</h3>
         {syncLog.length === 0 ? (
-          <p className="text-xs text-zinc-500">No sync history yet</p>
+          <p className="text-xs text-muted">No sync history yet</p>
         ) : (
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {syncLog.map((entry) => (
@@ -137,10 +137,10 @@ export function SyncStatus() {
                   <AlertTriangle className="h-3.5 w-3.5 text-red-400 shrink-0" />
                 )}
                 {!['synced', 'conflict', 'error'].includes(entry.syncStatus) && (
-                  <Clock className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+                  <Clock className="h-3.5 w-3.5 text-muted shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs text-zinc-300">
+                  <span className="text-xs text-primary">
                     {entry.operation} {entry.resourceType}
                   </span>
                 </div>

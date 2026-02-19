@@ -75,25 +75,25 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FFCC00]/5 rounded-full blur-[128px] animate-breathe" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#FFCC00]/5 rounded-full blur-[100px] animate-breathe animate-delay-2s" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cba-gold/5 rounded-full blur-[128px] animate-breathe" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cba-gold/5 rounded-full blur-[100px] animate-breathe animate-delay-2s" />
       </div>
 
-      <div className="neu-raised rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-300 border border-white/5">
+      <div className="neu-raised rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-300 border border-border/50">
         {/* Header */}
-        <div className="px-8 py-6 flex items-center justify-between border-b border-white/5 relative overflow-hidden">
+        <div className="px-8 py-6 flex items-center justify-between border-b border-border/50 relative overflow-hidden">
           <div className="absolute inset-0 bg-linear-to-br from-white/2 to-transparent pointer-events-none" />
           <div className="flex items-center gap-4 relative">
             <div className="relative group">
               <div className="absolute -inset-1 cba-gold-gradient rounded-xl blur opacity-20 group-hover:opacity-30 transition-opacity" />
               <div className="relative cba-gold-gradient p-3 rounded-xl">
-                <Cpu className="w-6 h-6 text-[#0a0a0f]" />
+                <Cpu className="w-6 h-6 text-base" />
               </div>
             </div>
             <div>
               <h2 className="text-2xl font-black text-gradient-gold">AI Model Settings</h2>
-              <p className="text-zinc-500 text-sm font-medium flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-[#FFCC00]" />
+              <p className="text-muted text-sm font-medium flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-cba-gold" />
                 Configure neural engine preferences
               </p>
             </div>
@@ -101,7 +101,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-2 neu-raised-sm rounded-xl text-zinc-400 hover:text-white btn-press"
+            className="p-2 neu-raised-sm rounded-xl text-secondary hover:text-primary btn-press"
             aria-label="Close settings"
           >
             <X className="w-6 h-6" />
@@ -207,20 +207,20 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
               {/* Model Info Card */}
               {hoveredModel && (
-                <div className="p-5 neu-inset rounded-2xl animate-in fade-in slide-in-from-bottom-2 border border-white/5">
+                <div className="p-5 neu-inset rounded-2xl animate-in fade-in slide-in-from-bottom-2 border border-border/50">
                   <div className="flex items-start gap-4">
-                    <div className="p-2.5 neu-raised-sm rounded-xl text-[#FFCC00]">
+                    <div className="p-2.5 neu-raised-sm rounded-xl text-cba-gold">
                       <Info className="h-5 w-5" />
                     </div>
                     <div>
                       <h4 className="font-black text-zinc-100 uppercase tracking-wide text-sm">
                         {hoveredModel.name}
                       </h4>
-                      <p className="text-zinc-500 mt-1 text-sm leading-relaxed">
+                      <p className="text-muted mt-1 text-sm leading-relaxed">
                         {hoveredModel.description}
                       </p>
                       <div className="flex items-center gap-4 mt-3">
-                        <span className="text-[10px] font-black bg-[#FFCC00]/10 text-[#FFCC00] px-2.5 py-1 rounded-lg uppercase tracking-widest">
+                        <span className="text-[10px] font-black bg-cba-gold/10 text-cba-gold px-2.5 py-1 rounded-lg uppercase tracking-widest">
                           {hoveredModel.context} Context
                         </span>
                         <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest font-mono">
@@ -236,7 +236,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-6 border-t border-white/5 bg-white/1 flex items-center justify-between">
+        <div className="px-8 py-6 border-t border-border/50 bg-white/1 flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-600">
             <Activity className="w-3.5 h-3.5" />
             <span className="text-[10px] font-bold uppercase tracking-[0.15em]">
@@ -246,7 +246,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <div className="flex items-center gap-4">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors uppercase tracking-widest"
+              className="px-6 py-2.5 text-xs font-bold text-muted hover:text-primary transition-colors uppercase tracking-widest"
             >
               Cancel
             </button>
@@ -256,8 +256,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               className={cn(
                 'flex items-center gap-2 px-8 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all btn-press',
                 saved
-                  ? 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-                  : 'cba-gold-gradient text-[#0a0a0f] shadow-lg cba-gold-glow disabled:opacity-50',
+                  ? 'bg-emerald-500 text-primary shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                  : 'cba-gold-gradient text-base shadow-lg cba-gold-glow disabled:opacity-50',
               )}
             >
               {saving ? (
@@ -298,11 +298,11 @@ function SettingSection({
   return (
     <div className="group space-y-3">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 neu-inset rounded-lg flex items-center justify-center text-zinc-600 group-hover:text-[#FFCC00] transition-colors">
+        <div className="w-8 h-8 neu-inset rounded-lg flex items-center justify-center text-zinc-600 group-hover:text-cba-gold transition-colors">
           {icon}
         </div>
         <div className="flex flex-col">
-          <label className="text-xs font-black text-zinc-200 uppercase tracking-widest">
+          <label className="text-xs font-black text-primary uppercase tracking-widest">
             {label}
           </label>
           <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tight">
@@ -320,19 +320,19 @@ function SettingSection({
             if (model) onHover(model);
           }}
           onMouseLeave={() => onHover(null)}
-          className="w-full pl-4 pr-10 py-4 neu-inset rounded-2xl text-sm font-bold text-[#FFCC00] bg-transparent border-none focus:ring-0 appearance-none transition-all cursor-pointer hover:bg-white/2"
+          className="w-full pl-4 pr-10 py-4 neu-inset rounded-2xl text-sm font-bold text-cba-gold bg-transparent border-none focus:ring-0 appearance-none transition-all cursor-pointer hover:bg-white/2"
         >
           {models.map((model) => (
             <option
               key={model.id}
               value={model.id}
-              className="bg-[#12121a] text-zinc-300 font-medium"
+              className="bg-surface text-primary font-medium"
             >
               {model.name}
             </option>
           ))}
         </select>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 neu-raised-sm rounded-lg pointer-events-none text-zinc-500 group-hover:text-[#FFCC00] transition-colors">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 neu-raised-sm rounded-lg pointer-events-none text-muted group-hover:text-cba-gold transition-colors">
           <Edit2 className="w-3 h-3" />
         </div>
       </div>

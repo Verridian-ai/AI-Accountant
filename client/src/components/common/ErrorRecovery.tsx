@@ -73,15 +73,15 @@ export function ErrorRecovery({
 
   return (
     <div className="space-y-4">
-      <div className="p-4 rounded-xl bg-zinc-950/50 border border-white/5 space-y-3">
-        <div className="flex items-center gap-2 text-zinc-300">
-          <Wrench className="h-4 w-4 text-[#FFCC00]" />
+      <div className="p-4 rounded-xl bg-zinc-950/50 border border-border/50 space-y-3">
+        <div className="flex items-center gap-2 text-primary">
+          <Wrench className="h-4 w-4 text-cba-gold" />
           <span className="text-xs font-black uppercase tracking-wider">Recovery Protocol</span>
         </div>
 
         <div className="grid gap-2">
           {options.tips.map((tip, idx) => (
-            <div key={idx} className="flex items-start gap-2 text-[11px] text-zinc-400">
+            <div key={idx} className="flex items-start gap-2 text-[11px] text-secondary">
               <span className="mt-1 w-1 h-1 rounded-full bg-zinc-600 shrink-0" />
               <span>{tip}</span>
             </div>
@@ -116,7 +116,7 @@ export function ErrorRecovery({
           <Button
             variant="ghost"
             onClick={onContactSupport}
-            className="ml-auto text-zinc-500 hover:text-zinc-300"
+            className="ml-auto text-muted hover:text-primary"
           >
             <LifeBuoy className="mr-2 h-4 w-4" />
             Support

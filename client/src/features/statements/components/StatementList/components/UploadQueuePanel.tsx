@@ -31,10 +31,10 @@ export function UploadQueuePanel({
   onClear,
 }: UploadQueuePanelProps) {
   return (
-    <div className="border-b border-white/5 p-6 bg-white/[0.01]">
+    <div className="border-b border-border/50 p-6 bg-white/[0.01]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+          <span className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">
             Quantum Queue ({queueStats.complete + queueStats.duplicate}/{queueStats.total})
           </span>
           {queueStats.failed > 0 && (
@@ -66,7 +66,7 @@ export function UploadQueuePanel({
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full h-3 neu-inset rounded-full overflow-hidden mb-4 p-0.5 border border-white/5">
+      <div className="w-full h-3 neu-inset rounded-full overflow-hidden mb-4 p-0.5 border border-border/50">
         <div
           ref={progressBarRef}
           className="progress-bar h-full cba-gold-gradient rounded-full transition-all duration-700 ease-out shadow-[0_0_15px_rgba(255,204,0,0.3)]"
@@ -82,7 +82,7 @@ export function UploadQueuePanel({
           >
             <div className="flex items-center gap-3">
               <div className="shrink-0">{getUploadStatusIcon(item.status)}</div>
-              <span className="flex-1 truncate text-[11px] font-bold text-zinc-300">
+              <span className="flex-1 truncate text-[11px] font-bold text-primary">
                 {item.file.name}
               </span>
               <div className="flex items-center gap-2 shrink-0">

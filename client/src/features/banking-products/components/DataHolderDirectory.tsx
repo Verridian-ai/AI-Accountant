@@ -73,7 +73,7 @@ export function DataHolderDirectory() {
       case 'crawling':
         return 'text-amber-400';
       default:
-        return 'text-zinc-400';
+        return 'text-secondary';
     }
   };
 
@@ -95,7 +95,7 @@ export function DataHolderDirectory() {
     <div className="space-y-6">
       {/* Action Bar */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           {holders.length} data holder{holders.length !== 1 ? 's' : ''} registered
         </p>
         <button
@@ -104,8 +104,8 @@ export function DataHolderDirectory() {
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all',
             crawling
-              ? 'neu-raised-sm text-zinc-500'
-              : 'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]',
+              ? 'neu-raised-sm text-muted'
+              : 'bg-cba-gold text-base hover:bg-[#FFD633]',
           )}
         >
           <RefreshCw className={cn('h-4 w-4', crawling && 'animate-spin')} />
@@ -132,19 +132,19 @@ export function DataHolderDirectory() {
               <div key={holder.id} className="neu-raised rounded-2xl p-5 space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="neu-inset p-2.5 rounded-xl shrink-0">
-                    <Building2 className="h-5 w-5 text-zinc-400" />
+                    <Building2 className="h-5 w-5 text-secondary" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-zinc-100 truncate">{holder.brandName}</p>
-                    {holder.abn && <p className="text-xs text-zinc-500">ABN: {holder.abn}</p>}
+                    {holder.abn && <p className="text-xs text-muted">ABN: {holder.abn}</p>}
                   </div>
                   <div className={cn('shrink-0', statusColor(holder.status))}>
                     <StatusIcon className="h-4 w-4" />
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-500">
-                    <span className="text-zinc-300 font-bold">{holder.productCount}</span> products
+                  <span className="text-muted">
+                    <span className="text-primary font-bold">{holder.productCount}</span> products
                   </span>
                   <span className="text-zinc-600">
                     {holder.lastCrawled
@@ -166,35 +166,35 @@ export function DataHolderDirectory() {
       {/* Crawl Log */}
       {crawlLogs.length > 0 && (
         <div className="neu-raised rounded-2xl p-5 space-y-3">
-          <h3 className="text-sm font-bold text-zinc-300">Recent Crawl History</h3>
+          <h3 className="text-sm font-bold text-primary">Recent Crawl History</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/5">
-                  <th className="text-left py-2 px-3 text-xs text-zinc-500 font-semibold">
+                <tr className="border-b border-border/50">
+                  <th className="text-left py-2 px-3 text-xs text-muted font-semibold">
                     Provider
                   </th>
-                  <th className="text-left py-2 px-3 text-xs text-zinc-500 font-semibold">
+                  <th className="text-left py-2 px-3 text-xs text-muted font-semibold">
                     Status
                   </th>
-                  <th className="text-right py-2 px-3 text-xs text-zinc-500 font-semibold">
+                  <th className="text-right py-2 px-3 text-xs text-muted font-semibold">
                     Products
                   </th>
-                  <th className="text-right py-2 px-3 text-xs text-zinc-500 font-semibold">
+                  <th className="text-right py-2 px-3 text-xs text-muted font-semibold">
                     Duration
                   </th>
-                  <th className="text-right py-2 px-3 text-xs text-zinc-500 font-semibold">Date</th>
+                  <th className="text-right py-2 px-3 text-xs text-muted font-semibold">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {crawlLogs.slice(0, 20).map((log) => (
-                  <tr key={log.id} className="border-b border-white/5 last:border-0">
-                    <td className="py-2 px-3 text-zinc-300">{log.brandName}</td>
+                  <tr key={log.id} className="border-b border-border/50 last:border-0">
+                    <td className="py-2 px-3 text-primary">{log.brandName}</td>
                     <td className={cn('py-2 px-3 font-semibold', statusColor(log.status))}>
                       {log.status}
                     </td>
-                    <td className="py-2 px-3 text-right text-zinc-400">{log.productsFound}</td>
-                    <td className="py-2 px-3 text-right text-zinc-500">
+                    <td className="py-2 px-3 text-right text-secondary">{log.productsFound}</td>
+                    <td className="py-2 px-3 text-right text-muted">
                       {(log.duration / 1000).toFixed(1)}s
                     </td>
                     <td className="py-2 px-3 text-right text-zinc-600">

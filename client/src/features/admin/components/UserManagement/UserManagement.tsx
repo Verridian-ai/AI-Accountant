@@ -196,7 +196,7 @@ export function UserManagement({
   return (
     <div
       className={cn(
-        'neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5',
+        'neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50',
         className,
       )}
     >
@@ -206,12 +206,12 @@ export function UserManagement({
       {/* Header */}
       <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <div className="neu-inset p-3 rounded-xl border border-white/5">
-            <Users className="w-5 h-5 text-[#FFCC00]" />
+          <div className="neu-inset p-3 rounded-xl border border-border/50">
+            <Users className="w-5 h-5 text-cba-gold" />
           </div>
           <div>
             <h3 className="text-lg font-bold text-zinc-100">User Management</h3>
-            <p className="text-xs text-zinc-500">{filteredUsers.length} users total</p>
+            <p className="text-xs text-muted">{filteredUsers.length} users total</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -233,12 +233,12 @@ export function UserManagement({
       {/* Filters */}
       <div className="relative flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <Input
             placeholder="Search users..."
             value={searchQuery}
             onChange={(e) => setFilters((f) => ({ ...f, searchQuery: e.target.value }))}
-            className="pl-9 bg-white/5 border-white/10 rounded-xl"
+            className="pl-9 bg-overlay border-border rounded-xl"
           />
         </div>
         <Select value={roleFilter} onValueChange={(v) => setFilters((f) => ({ ...f, roleFilter: v }))}>
@@ -267,8 +267,8 @@ export function UserManagement({
 
       {/* Bulk Actions */}
       {selectedUsers.size > 0 && (
-        <div className="relative flex items-center gap-3 p-3 mb-4 rounded-xl bg-[#FFCC00]/10 border border-[#FFCC00]/20">
-          <span className="text-sm text-[#FFCC00]">{selectedUsers.size} user(s) selected</span>
+        <div className="relative flex items-center gap-3 p-3 mb-4 rounded-xl bg-cba-gold/10 border border-cba-gold/20">
+          <span className="text-sm text-cba-gold">{selectedUsers.size} user(s) selected</span>
           <Button variant="ghost" size="sm" onClick={() => setSelectedUsers(new Set())}>
             Clear
           </Button>
@@ -277,13 +277,13 @@ export function UserManagement({
 
       {/* User List */}
       <div className="relative space-y-2">
-        <div className="hidden sm:grid grid-cols-[auto_1fr_120px_100px_100px_80px] gap-4 px-4 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-[auto_1fr_120px_100px_100px_80px] gap-4 px-4 py-2 text-xs font-semibold text-muted uppercase tracking-wider">
           <div className="w-5">
             <input
               type="checkbox"
               checked={selectedUsers.size === paginatedUsers.length && paginatedUsers.length > 0}
               onChange={handleSelectAll}
-              className="rounded border-zinc-600 bg-white/5 text-[#FFCC00] focus:ring-[#FFCC00]/20"
+              className="rounded border-zinc-600 bg-overlay text-cba-gold focus:ring-[#FFCC00]/20"
               aria-label="Select all users on this page"
             />
           </div>
@@ -298,8 +298,8 @@ export function UserManagement({
           <div
             key={user.id}
             className={cn(
-              'group grid grid-cols-1 sm:grid-cols-[auto_1fr_120px_100px_100px_80px] gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5 transition-all hover:bg-white/[0.04] hover:border-white/10',
-              selectedUsers.has(user.id) && 'bg-[#FFCC00]/5 border-[#FFCC00]/20',
+              'group grid grid-cols-1 sm:grid-cols-[auto_1fr_120px_100px_100px_80px] gap-4 p-4 rounded-xl bg-white/[0.02] border border-border/50 transition-all hover:bg-white/[0.04] hover:border-border',
+              selectedUsers.has(user.id) && 'bg-cba-gold/5 border-cba-gold/20',
             )}
           >
             <div className="hidden sm:flex items-center">
@@ -307,7 +307,7 @@ export function UserManagement({
                 type="checkbox"
                 checked={selectedUsers.has(user.id)}
                 onChange={() => handleSelectUser(user.id)}
-                className="rounded border-zinc-600 bg-white/5 text-[#FFCC00] focus:ring-[#FFCC00]/20"
+                className="rounded border-zinc-600 bg-overlay text-cba-gold focus:ring-[#FFCC00]/20"
                 aria-label={`Select user ${user.username}`}
               />
             </div>
@@ -316,12 +316,12 @@ export function UserManagement({
               className="flex items-center gap-3 cursor-pointer w-full text-left"
               onClick={() => onViewUser?.(user.id)}
             >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFCC00]/20 to-[#FFCC00]/5 flex items-center justify-center text-[#FFCC00] font-bold text-sm">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFCC00]/20 to-[#FFCC00]/5 flex items-center justify-center text-cba-gold font-bold text-sm">
                 {user.username.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
                 <p className="font-medium text-zinc-100 truncate">{user.username}</p>
-                <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                <div className="flex items-center gap-1.5 text-xs text-muted">
                   <Mail className="w-3 h-3" />
                   <span className="truncate">{user.email || 'No email'}</span>
                 </div>
@@ -331,11 +331,11 @@ export function UserManagement({
               {getStatusBadge(user.status)}
               {getRoleBadge(user.role)}
             </div>
-            <div className="text-sm text-zinc-400">
-              <span className="sm:hidden text-xs text-zinc-500">Statements: </span>
+            <div className="text-sm text-secondary">
+              <span className="sm:hidden text-xs text-muted">Statements: </span>
               {user.statementCount}
             </div>
-            <div className="flex items-center gap-1.5 text-sm text-zinc-400">
+            <div className="flex items-center gap-1.5 text-sm text-secondary">
               <Calendar className="w-3 h-3 sm:hidden" />
               {formatDate(user.lastLoginAt)}
             </div>
@@ -356,12 +356,12 @@ export function UserManagement({
               </Button>
               {actionMenuOpen === user.id && (
                 <div
-                  className="absolute right-0 top-full mt-1 z-10 w-48 rounded-xl bg-[#16161f] border border-white/10 shadow-xl overflow-hidden"
+                  className="absolute right-0 top-full mt-1 z-10 w-48 rounded-xl bg-card border border-border shadow-xl overflow-hidden"
                   role="menu"
                   aria-label="User actions"
                 >
                   <button
-                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2 text-zinc-300"
+                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-overlay flex items-center gap-2 text-primary"
                     onClick={() => onViewUser?.(user.id)}
                     role="menuitem"
                   >
@@ -369,7 +369,7 @@ export function UserManagement({
                     View Details
                   </button>
                   <button
-                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2 text-amber-400"
+                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-overlay flex items-center gap-2 text-amber-400"
                     onClick={() => handleSuspendUser(user.id)}
                     role="menuitem"
                   >
@@ -377,7 +377,7 @@ export function UserManagement({
                     {user.status === 'suspended' ? 'Unsuspend' : 'Suspend'}
                   </button>
                   <button
-                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-white/5 flex items-center gap-2 text-red-400"
+                    className="w-full px-4 py-2.5 text-left text-sm hover:bg-overlay flex items-center gap-2 text-red-400"
                     onClick={() => handleDeleteUser(user.id)}
                     role="menuitem"
                   >
@@ -391,7 +391,7 @@ export function UserManagement({
         ))}
 
         {paginatedUsers.length === 0 && (
-          <div className="py-12 text-center text-zinc-500">
+          <div className="py-12 text-center text-muted">
             <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p>No users found matching your criteria</p>
           </div>
@@ -400,8 +400,8 @@ export function UserManagement({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="relative flex items-center justify-between mt-6 pt-4 border-t border-white/5">
-          <p className="text-sm text-zinc-500">
+        <div className="relative flex items-center justify-between mt-6 pt-4 border-t border-border/50">
+          <p className="text-sm text-muted">
             Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
             {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length}
           </p>
@@ -414,7 +414,7 @@ export function UserManagement({
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <span className="text-sm text-zinc-400">
+            <span className="text-sm text-secondary">
               {currentPage} / {totalPages}
             </span>
             <Button

@@ -35,10 +35,10 @@ export function StatementCard({
         onToggleError(expandedErrorId === stmt.id ? null : stmt.id)
       }
       className={cn(
-        'group p-5 transition-all neu-raised-sm rounded-3xl border border-white/5 hover:neu-float hover:border-white/10',
+        'group p-5 transition-all neu-raised-sm rounded-3xl border border-border/50 hover:neu-float hover:border-border',
         stmt.parsingStatus === 'FAILED'
           ? 'border-l-red-500/50 cursor-pointer'
-          : 'hover:border-[#FFCC00]/20',
+          : 'hover:border-cba-gold/20',
       )}
     >
       <div className="flex items-start justify-between gap-4">
@@ -47,18 +47,18 @@ export function StatementCard({
             {getStatusIcon(stmt.parsingStatus)}
           </div>
           <div className="min-w-0 text-left">
-            <p className="font-black text-[13px] text-zinc-100 truncate pr-2 group-hover:text-[#FFCC00] transition-colors tracking-tight">
+            <p className="font-black text-[13px] text-zinc-100 truncate pr-2 group-hover:text-cba-gold transition-colors tracking-tight">
               {stmt.filename}
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-2.5">
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-black/20 border border-white/5">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-overlay border border-border/50">
                 <Clock className="w-2.5 h-2.5 text-zinc-600" />
-                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">
+                <span className="text-[8px] font-black text-muted uppercase tracking-widest">
                   {new Date(stmt.uploadDate).toLocaleDateString()}
                 </span>
               </div>
               {stmt.aiModelUsed && (
-                <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-[#FFCC00]/5 text-[#FFCC00] rounded-lg border border-[#FFCC00]/20 uppercase font-black tracking-widest shadow-[0_0_15px_rgba(255,204,0,0.05)]">
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-cba-gold/5 text-cba-gold rounded-lg border border-cba-gold/20 uppercase font-black tracking-widest shadow-[0_0_15px_rgba(255,204,0,0.05)]">
                   <Activity className="w-2.5 h-2.5" />
                   <span className="text-[8px]">{stmt.aiModelUsed.split('/').pop()}</span>
                 </div>
@@ -80,7 +80,7 @@ export function StatementCard({
               </button>
             )}
             {stmt.parsingStatus === 'COMPLETED' && (
-              <div className="h-8 w-8 flex items-center justify-center rounded-xl neu-inset border border-white/5 shadow-inner">
+              <div className="h-8 w-8 flex items-center justify-center rounded-xl neu-inset border border-border/50 shadow-inner">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               </div>
             )}
@@ -105,22 +105,22 @@ export function StatementCard({
                 <p className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em] text-left">
                   {stmt.errorType?.replace(/_/g, ' ') || 'PARSING ERROR'}
                 </p>
-                <p className="text-xs text-zinc-400 leading-relaxed text-left font-bold italic">
+                <p className="text-xs text-secondary leading-relaxed text-left font-bold italic">
                   "{stmt.errorMessage}"
                 </p>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/5 text-left">
+            <div className="pt-4 border-t border-border/50 text-left">
               <div className="flex items-start gap-4">
                 <div className="w-8 h-8 neu-raised-sm rounded-xl flex items-center justify-center shrink-0 text-blue-400">
                   <HelpCircle className="h-4 w-4" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+                  <p className="text-[9px] font-black text-muted uppercase tracking-[0.2em]">
                     Remediation Protocol
                   </p>
-                  <p className="text-[11px] text-zinc-300 italic font-bold leading-snug">
+                  <p className="text-[11px] text-primary italic font-bold leading-snug">
                     {getActionableSuggestion(stmt.errorType)}
                   </p>
                 </div>
@@ -131,11 +131,11 @@ export function StatementCard({
           <div className="flex items-center justify-between px-2">
             <button
               type="button"
-              className="text-[9px] font-black text-[#FFCC00] hover:brightness-125 flex items-center gap-2 uppercase tracking-[0.2em] btn-press"
+              className="text-[9px] font-black text-cba-gold hover:brightness-125 flex items-center gap-2 uppercase tracking-[0.2em] btn-press"
             >
               Access Archives <ChevronRight className="h-3 w-3" />
             </button>
-            <span className="text-[8px] text-zinc-700 font-mono font-black tracking-widest bg-white/[0.02] px-2 py-0.5 rounded border border-white/5">
+            <span className="text-[8px] text-zinc-700 font-mono font-black tracking-widest bg-white/[0.02] px-2 py-0.5 rounded border border-border/50">
               NODE_ID: {stmt.id.slice(0, 8).toUpperCase()}
             </span>
           </div>

@@ -134,7 +134,7 @@ export function InterEntityTransactionsView({
         <div className="flex-1" />
         <Button
           onClick={() => setShowRecordForm(true)}
-          className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 font-bold"
+          className="bg-cba-gold text-base hover:bg-cba-gold/90 font-bold"
         >
           <Plus className="w-4 h-4 mr-2" />
           Record Transaction
@@ -152,8 +152,8 @@ export function InterEntityTransactionsView({
         <Card className="neu-raised border-0">
           <CardContent className="p-8 text-center">
             <ArrowLeftRight className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-            <h3 className="text-lg font-bold text-zinc-300 mb-1">No Inter-Entity Transactions</h3>
-            <p className="text-sm text-zinc-500">
+            <h3 className="text-lg font-bold text-primary mb-1">No Inter-Entity Transactions</h3>
+            <p className="text-sm text-muted">
               Record transactions between entities to track inter-company flows
             </p>
           </CardContent>
@@ -161,7 +161,7 @@ export function InterEntityTransactionsView({
       ) : (
         <div className="space-y-2">
           {/* Header */}
-          <div className="hidden lg:grid grid-cols-12 gap-2 px-4 py-2 text-xs font-bold text-zinc-500 uppercase tracking-wide">
+          <div className="hidden lg:grid grid-cols-12 gap-2 px-4 py-2 text-xs font-bold text-muted uppercase tracking-wide">
             <div className="col-span-2">Date</div>
             <div className="col-span-2">From</div>
             <div className="col-span-2">To</div>
@@ -174,13 +174,13 @@ export function InterEntityTransactionsView({
             <Card key={tx.id} className="neu-raised border-0">
               <CardContent className="p-4">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-center">
-                  <div className="col-span-2 text-sm text-zinc-400">
+                  <div className="col-span-2 text-sm text-secondary">
                     {new Date(tx.transactionDate).toLocaleDateString('en-AU')}
                   </div>
-                  <div className="col-span-2 text-sm font-medium text-zinc-200 truncate">
+                  <div className="col-span-2 text-sm font-medium text-primary truncate">
                     {entityMap.get(tx.fromEntityId) ?? tx.fromEntityId}
                   </div>
-                  <div className="col-span-2 text-sm font-medium text-zinc-200 truncate">
+                  <div className="col-span-2 text-sm font-medium text-primary truncate">
                     {entityMap.get(tx.toEntityId) ?? tx.toEntityId}
                   </div>
                   <div className="col-span-1">
@@ -197,7 +197,7 @@ export function InterEntityTransactionsView({
                       </Badge>
                     )}
                   </div>
-                  <div className="col-span-2 text-right text-sm font-bold text-[#FFCC00]">
+                  <div className="col-span-2 text-right text-sm font-bold text-cba-gold">
                     {formatMoney(tx.amount)}
                   </div>
                   <div className="col-span-1">
@@ -235,7 +235,7 @@ export function InterEntityTransactionsView({
                   </div>
                 </div>
                 {tx.description && (
-                  <p className="text-xs text-zinc-500 mt-1 lg:ml-0">{tx.description}</p>
+                  <p className="text-xs text-muted mt-1 lg:ml-0">{tx.description}</p>
                 )}
               </CardContent>
             </Card>
@@ -398,7 +398,7 @@ function RecordTransactionModal({ entities, onClose, onSuccess }: RecordTransact
                 <Button
                   type="submit"
                   disabled={saving}
-                  className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 font-bold flex-1"
+                  className="bg-cba-gold text-base hover:bg-cba-gold/90 font-bold flex-1"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                   {saving ? 'Recording...' : 'Record'}

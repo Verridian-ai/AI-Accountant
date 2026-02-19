@@ -105,9 +105,9 @@ export function TenantSettings() {
   if (!hasPermission) {
     return (
       <div className="neu-raised rounded-2xl p-8 text-center">
-        <AlertTriangle className="w-12 h-12 text-[#FFCC00] mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-zinc-200">No Permission</h3>
-        <p className="text-sm text-zinc-500 mt-2">
+        <AlertTriangle className="w-12 h-12 text-cba-gold mx-auto mb-4" />
+        <h3 className="text-lg font-bold text-primary">No Permission</h3>
+        <p className="text-sm text-muted mt-2">
           You don't have permission to edit settings. Contact your workspace owner.
         </p>
       </div>
@@ -118,20 +118,20 @@ export function TenantSettings() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Workspace Settings</h2>
-        <p className="text-sm text-zinc-500">Configure your workspace details and preferences</p>
+        <p className="text-sm text-muted">Configure your workspace details and preferences</p>
       </div>
 
-      <div className="neu-raised rounded-2xl border border-white/5 p-6 space-y-5">
-        <div className="flex items-center gap-3 pb-4 border-b border-white/5">
+      <div className="neu-raised rounded-2xl border border-border/50 p-6 space-y-5">
+        <div className="flex items-center gap-3 pb-4 border-b border-border/50">
           <div className="neu-inset p-2 rounded-xl">
-            <Building2 className="w-5 h-5 text-[#FFCC00]" />
+            <Building2 className="w-5 h-5 text-cba-gold" />
           </div>
           <h3 className="text-lg font-bold text-zinc-100">Business Details</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label htmlFor="ts-name" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-name" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
               Name
             </label>
             <input
@@ -139,11 +139,11 @@ export function TenantSettings() {
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <div>
-            <label htmlFor="ts-slug" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-slug" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
               Slug
             </label>
             <input
@@ -151,11 +151,11 @@ export function TenantSettings() {
               type="text"
               value={tenant?.slug ?? ''}
               readOnly
-              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-500 bg-transparent outline-none cursor-not-allowed"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-muted bg-transparent outline-none cursor-not-allowed"
             />
           </div>
           <div>
-            <label htmlFor="ts-abn" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-abn" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
               ABN
             </label>
             <input
@@ -164,18 +164,18 @@ export function TenantSettings() {
               value={form.abn}
               onChange={(e) => setForm({ ...form, abn: e.target.value })}
               placeholder="XX XXX XXX XXX"
-              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
             />
           </div>
           <div>
-            <label htmlFor="ts-entity-type" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-entity-type" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
               Entity Type
             </label>
             <select
               id="ts-entity-type"
               value={form.entityType}
               onChange={(e) => setForm({ ...form, entityType: e.target.value })}
-              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {ENTITY_TYPES.map((t) => (
                 <option key={t} value={t} className="bg-[#16213e]">
@@ -185,7 +185,7 @@ export function TenantSettings() {
             </select>
           </div>
           <div>
-            <label htmlFor="ts-industry" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-industry" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
               Industry
             </label>
             <input
@@ -194,18 +194,18 @@ export function TenantSettings() {
               value={form.industry}
               onChange={(e) => setForm({ ...form, industry: e.target.value })}
               placeholder="e.g. Retail, Construction"
-              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
             />
           </div>
           <div>
-            <label htmlFor="ts-fy-end" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-fy-end" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
               Financial Year End
             </label>
             <select
               id="ts-fy-end"
               value={form.financialYearEnd}
               onChange={(e) => setForm({ ...form, financialYearEnd: e.target.value })}
-              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {FY_MONTHS.map((m) => (
                 <option key={m} value={m} className="bg-[#16213e]">
@@ -215,14 +215,14 @@ export function TenantSettings() {
             </select>
           </div>
           <div className="md:col-span-2">
-            <label htmlFor="ts-timezone" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-timezone" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
               Timezone
             </label>
             <select
               id="ts-timezone"
               value={form.timezone}
               onChange={(e) => setForm({ ...form, timezone: e.target.value })}
-              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {TIMEZONES.map((tz) => (
                 <option key={tz} value={tz} className="bg-[#16213e]">
@@ -240,7 +240,7 @@ export function TenantSettings() {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-[#FFD633] transition-colors disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
@@ -251,7 +251,7 @@ export function TenantSettings() {
       {/* Danger Zone */}
       <div className="neu-raised rounded-2xl border border-red-500/20 p-6 space-y-4">
         <h3 className="text-lg font-bold text-red-400">Danger Zone</h3>
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-secondary">
           Deactivating your workspace will remove access for all members. This action can be
           reversed by contacting support.
         </p>
@@ -266,21 +266,21 @@ export function TenantSettings() {
           </button>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-secondary">
               Type <span className="font-bold text-red-400">{tenant?.name}</span> to confirm:
             </p>
             <input
               type="text"
               value={deactivateConfirm}
               onChange={(e) => setDeactivateState((d) => ({ ...d, confirm: e.target.value }))}
-              className="w-full max-w-sm neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-red-500/30"
+              className="w-full max-w-sm neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-red-500/30"
             />
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={handleDeactivate}
                 disabled={deactivateConfirm !== tenant?.name}
-                className="px-4 py-2 rounded-xl text-sm font-bold bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-red-500 text-primary hover:bg-red-600 transition-colors disabled:opacity-50"
               >
                 Confirm Deactivate
               </button>
@@ -290,7 +290,7 @@ export function TenantSettings() {
                   setDeactivateState((d) => ({ ...d, show: false }));
                   setDeactivateState((d) => ({ ...d, confirm: '' }));
                 }}
-                className="px-4 py-2 rounded-xl text-sm font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="px-4 py-2 rounded-xl text-sm font-bold text-secondary hover:text-primary transition-colors"
               >
                 Cancel
               </button>

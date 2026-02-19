@@ -226,19 +226,19 @@ export function AccountBalanceTimeline() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
 
   if (accounts.length === 0 || mergedData.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-10 text-center border border-white/5">
+      <div className="neu-raised rounded-3xl p-10 text-center border border-border/50">
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <TrendingUp className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">
           No Balance Data
         </h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight">
@@ -255,8 +255,8 @@ export function AccountBalanceTimeline() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <TrendingUp className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Balance Timeline
           </span>
         </div>
@@ -266,7 +266,7 @@ export function AccountBalanceTimeline() {
       </div>
 
       {/* Chart */}
-      <div className="neu-raised rounded-2xl border border-white/5 p-4">
+      <div className="neu-raised rounded-2xl border border-border/50 p-4">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${CHART_W} ${CHART_H}`}
@@ -381,8 +381,8 @@ export function AccountBalanceTimeline() {
 
         {/* Hover tooltip detail panel */}
         {hoveredPoint && (
-          <div className="mt-3 p-3 neu-inset rounded-xl border border-white/5">
-            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">
+          <div className="mt-3 p-3 neu-inset rounded-xl border border-border/50">
+            <p className="text-[9px] font-black text-secondary uppercase tracking-widest mb-2">
               {formatDateFull(hoveredPoint.date)}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -399,11 +399,11 @@ export function AccountBalanceTimeline() {
                       className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: color }}
                     />
-                    <span className="text-[9px] text-zinc-400 truncate">
+                    <span className="text-[9px] text-secondary truncate">
                       {acct?.accountName || 'Account'}
                     </span>
                     <div className="ml-auto flex items-center gap-1.5">
-                      <span className="text-[9px] font-bold text-zinc-200 tabular-nums">
+                      <span className="text-[9px] font-bold text-primary tabular-nums">
                         {formatCurrency(balance)}
                       </span>
                       {source === 'statement' && (
@@ -436,9 +436,9 @@ export function AccountBalanceTimeline() {
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border',
                 isSelected
-                  ? 'border-white/20 bg-white/5 text-zinc-200'
+                  ? 'border-border bg-overlay text-primary'
                   : canSelect
-                    ? 'border-transparent text-zinc-600 hover:text-zinc-400'
+                    ? 'border-transparent text-zinc-600 hover:text-secondary'
                     : 'border-transparent text-zinc-700 opacity-40 cursor-not-allowed',
               )}
             >

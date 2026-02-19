@@ -110,7 +110,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
             `$${((s.totalCost ?? 0) / 100).toFixed(2)}`,
             'Last 24h',
             DollarSign,
-            'text-[#FFCC00]',
+            'text-cba-gold',
             'costs',
           ),
         );
@@ -118,7 +118,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
         sc.push(
           card('Executions (24h)', '-', 'Agent runs', Bot, 'text-blue-400', 'agents'),
           card('Success Rate', '-', 'All agents', CheckCircle, 'text-emerald-400', 'agents'),
-          card('Token Cost', '-', 'Last 24h', DollarSign, 'text-[#FFCC00]', 'costs'),
+          card('Token Cost', '-', 'Last 24h', DollarSign, 'text-cba-gold', 'costs'),
         );
       }
 
@@ -135,7 +135,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
           ),
         );
       } else {
-        sc.push(card('System Health', 'UNKNOWN', 'No data', Server, 'text-zinc-500', 'health'));
+        sc.push(card('System Health', 'UNKNOWN', 'No data', Server, 'text-muted', 'health'));
       }
 
       if (datasets.status === 'fulfilled') {
@@ -188,7 +188,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
   if (loading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white">Admin Dashboard</h2>
+        <h2 className="text-2xl font-bold text-primary">Admin Dashboard</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
             <div
@@ -204,8 +204,8 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-white">Admin Dashboard</h2>
-        <p className="text-sm text-zinc-500 mt-1">System overview and quick actions</p>
+        <h2 className="text-2xl font-bold text-primary">Admin Dashboard</h2>
+        <p className="text-sm text-muted mt-1">System overview and quick actions</p>
       </div>
 
       {/* Summary Cards */}
@@ -215,21 +215,21 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
             key={c.title}
             type="button"
             onClick={() => onNavigate(c.navigateTo)}
-            className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 text-left hover:border-[#FFCC00]/20 border border-transparent transition-all group"
+            className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 text-left hover:border-cba-gold/20 border border-transparent transition-all group"
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <p className="text-xs font-medium text-muted uppercase tracking-wider">
                   {c.title}
                 </p>
                 <p className={`text-3xl font-bold mt-2 ${c.color}`}>{c.value}</p>
-                <p className="text-xs text-zinc-500 mt-1">{c.subtitle}</p>
+                <p className="text-xs text-muted mt-1">{c.subtitle}</p>
               </div>
               <div className="p-2 rounded-xl bg-[#1a1a2e]">
                 <c.icon className={`w-5 h-5 ${c.color}`} />
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-1 text-xs text-zinc-600 group-hover:text-[#FFCC00] transition-colors">
+            <div className="mt-4 flex items-center gap-1 text-xs text-zinc-600 group-hover:text-cba-gold transition-colors">
               <span>View details</span>
               <ArrowRight className="w-3 h-3" />
             </div>
@@ -243,27 +243,27 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
       {/* Recent Activity */}
       <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-white">Recent Activity</h3>
+          <h3 className="text-lg font-bold text-primary">Recent Activity</h3>
           <button
             type="button"
             onClick={() => onNavigate('activity')}
-            className="text-xs text-[#FFCC00] hover:underline"
+            className="text-xs text-cba-gold hover:underline"
           >
             View all
           </button>
         </div>
         {recentActivity.length === 0 ? (
-          <p className="text-sm text-zinc-500">No recent activity</p>
+          <p className="text-sm text-muted">No recent activity</p>
         ) : (
           <div className="space-y-3">
             {recentActivity.map((item, i) => (
               <div
                 key={item.id || i}
-                className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
+                className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
               >
                 <div>
-                  <p className="text-sm text-zinc-300">{item.action}</p>
-                  <p className="text-xs text-zinc-500">{item.resource}</p>
+                  <p className="text-sm text-primary">{item.action}</p>
+                  <p className="text-xs text-muted">{item.resource}</p>
                 </div>
                 <div className="text-right">
                   <span
@@ -272,7 +272,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
                         ? 'bg-emerald-500/10 text-emerald-400'
                         : item.status === 'error'
                           ? 'bg-red-500/10 text-red-400'
-                          : 'bg-zinc-500/10 text-zinc-400'
+                          : 'bg-zinc-500/10 text-secondary'
                     }`}
                   >
                     {item.status}
@@ -299,7 +299,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate: (s: AdminSection) =
             key={a.label}
             type="button"
             onClick={() => onNavigate(a.section)}
-            className="flex items-center gap-3 p-4 rounded-xl bg-[#1a1a2e] border border-white/5 hover:border-[#FFCC00]/20 text-zinc-400 hover:text-[#FFCC00] transition-all text-sm font-medium"
+            className="flex items-center gap-3 p-4 rounded-xl bg-[#1a1a2e] border border-border/50 hover:border-cba-gold/20 text-secondary hover:text-cba-gold transition-all text-sm font-medium"
           >
             <a.icon className="w-4 h-4" />
             {a.label}

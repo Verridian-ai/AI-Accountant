@@ -73,13 +73,13 @@ export function FeedbackQueue({
             'neu-raised rounded-2xl p-4 border transition-all cursor-pointer w-full text-left',
             statusFilter === 'pending'
               ? 'border-amber-500/30 bg-amber-500/5'
-              : 'border-white/5 hover:border-white/10',
+              : 'border-border/50 hover:border-border',
           )}
           onClick={() => setStatusFilter('pending')}
         >
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-amber-400" />
-            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">
               Pending Review
             </span>
           </div>
@@ -91,13 +91,13 @@ export function FeedbackQueue({
             'neu-raised rounded-2xl p-4 border transition-all cursor-pointer w-full text-left',
             statusFilter === 'approved'
               ? 'border-emerald-500/30 bg-emerald-500/5'
-              : 'border-white/5 hover:border-white/10',
+              : 'border-border/50 hover:border-border',
           )}
           onClick={() => setStatusFilter('approved')}
         >
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle className="w-4 h-4 text-emerald-400" />
-            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">
               Approved
             </span>
           </div>
@@ -109,13 +109,13 @@ export function FeedbackQueue({
             'neu-raised rounded-2xl p-4 border transition-all cursor-pointer w-full text-left',
             statusFilter === 'rejected'
               ? 'border-red-500/30 bg-red-500/5'
-              : 'border-white/5 hover:border-white/10',
+              : 'border-border/50 hover:border-border',
           )}
           onClick={() => setStatusFilter('rejected')}
         >
           <div className="flex items-center gap-2 mb-2">
             <XCircle className="w-4 h-4 text-red-400" />
-            <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">
               Rejected
             </span>
           </div>
@@ -124,18 +124,18 @@ export function FeedbackQueue({
       </div>
 
       {/* Main Queue */}
-      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
         <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
 
         {/* Header */}
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="neu-inset p-3 rounded-xl border border-white/5">
-              <MessageSquare className="w-5 h-5 text-[#FFCC00]" />
+            <div className="neu-inset p-3 rounded-xl border border-border/50">
+              <MessageSquare className="w-5 h-5 text-cba-gold" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-zinc-100">Feedback Queue</h3>
-              <p className="text-xs text-zinc-500">User corrections and parser feedback</p>
+              <p className="text-xs text-muted">User corrections and parser feedback</p>
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={fetchFeedback}>
@@ -146,12 +146,12 @@ export function FeedbackQueue({
         {/* Filters */}
         <div className="relative flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <Input
               placeholder="Search feedback..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-white/5 border-white/10 rounded-xl"
+              className="pl-9 bg-overlay border-border rounded-xl"
             />
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -188,8 +188,8 @@ export function FeedbackQueue({
               className={cn(
                 'p-4 rounded-xl border transition-all',
                 item.status === 'pending'
-                  ? 'bg-white/[0.02] border-white/10'
-                  : 'bg-white/[0.01] border-white/5',
+                  ? 'bg-white/[0.02] border-border'
+                  : 'bg-white/[0.01] border-border/50',
               )}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
@@ -197,7 +197,7 @@ export function FeedbackQueue({
                   {getFeedbackTypeBadge(item.feedbackType)}
                   {getStatusBadge(item.status)}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-zinc-500">
+                <div className="flex items-center gap-2 text-xs text-muted">
                   <User className="w-3 h-3" />
                   <span>{item.username}</span>
                   <span className="text-zinc-600">|</span>
@@ -208,8 +208,8 @@ export function FeedbackQueue({
 
               <div className="mb-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <FileText className="w-4 h-4 text-zinc-500" />
-                  <span className="text-sm text-zinc-300 font-medium truncate">
+                  <FileText className="w-4 h-4 text-muted" />
+                  <span className="text-sm text-primary font-medium truncate">
                     {item.transactionDescription}
                   </span>
                   <span
@@ -228,7 +228,7 @@ export function FeedbackQueue({
                   <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-1">
                     Original
                   </p>
-                  <p className="text-sm text-zinc-400">{item.originalValue}</p>
+                  <p className="text-sm text-secondary">{item.originalValue}</p>
                 </div>
                 <div className="text-zinc-600">
                   <ChevronRight className="w-5 h-5" />
@@ -237,16 +237,16 @@ export function FeedbackQueue({
                   <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-1">
                     Suggested
                   </p>
-                  <p className="text-sm text-[#FFCC00] font-medium">{item.suggestedValue}</p>
+                  <p className="text-sm text-cba-gold font-medium">{item.suggestedValue}</p>
                 </div>
               </div>
 
               {item.userComment && (
-                <div className="mb-3 p-3 rounded-lg bg-white/[0.01] border border-white/5">
+                <div className="mb-3 p-3 rounded-lg bg-white/[0.01] border border-border/50">
                   <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-1">
                     User Comment
                   </p>
-                  <p className="text-sm text-zinc-400 italic">"{item.userComment}"</p>
+                  <p className="text-sm text-secondary italic">"{item.userComment}"</p>
                 </div>
               )}
 
@@ -299,7 +299,7 @@ export function FeedbackQueue({
           ))}
 
           {paginatedFeedback.length === 0 && (
-            <div className="py-12 text-center text-zinc-500">
+            <div className="py-12 text-center text-muted">
               <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>No feedback items found</p>
             </div>
@@ -308,8 +308,8 @@ export function FeedbackQueue({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="relative flex items-center justify-between mt-6 pt-4 border-t border-white/5">
-            <p className="text-sm text-zinc-500">
+          <div className="relative flex items-center justify-between mt-6 pt-4 border-t border-border/50">
+            <p className="text-sm text-muted">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
               {Math.min(currentPage * itemsPerPage, filteredFeedback.length)} of{' '}
               {filteredFeedback.length}
@@ -323,7 +323,7 @@ export function FeedbackQueue({
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="text-sm text-zinc-400">
+              <span className="text-sm text-secondary">
                 {currentPage} / {totalPages}
               </span>
               <Button

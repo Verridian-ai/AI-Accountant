@@ -92,15 +92,15 @@ export function UserManager() {
 
   const roleColors: Record<string, string> = {
     super_admin: 'bg-red-500/10 text-red-400',
-    admin: 'bg-[#FFCC00]/10 text-[#FFCC00]',
+    admin: 'bg-cba-gold/10 text-cba-gold',
     operator: 'bg-blue-500/10 text-blue-400',
-    viewer: 'bg-zinc-500/10 text-zinc-400',
+    viewer: 'bg-zinc-500/10 text-secondary',
   };
 
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white">User Manager</h2>
+        <h2 className="text-2xl font-bold text-primary">User Manager</h2>
         <div className="animate-pulse h-64 rounded-2xl bg-[#16213e]" />
       </div>
     );
@@ -110,13 +110,13 @@ export function UserManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">User Manager</h2>
-          <p className="text-sm text-zinc-500">Manage admin users and roles</p>
+          <h2 className="text-2xl font-bold text-primary">User Manager</h2>
+          <p className="text-sm text-muted">Manage admin users and roles</p>
         </div>
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-[#FFCC00] text-[#1a1a2e] font-bold rounded-lg text-sm flex items-center gap-2"
+          className="px-4 py-2 bg-cba-gold text-[#1a1a2e] font-bold rounded-lg text-sm flex items-center gap-2"
         >
           <Plus className="w-4 h-4" /> Add User
         </button>
@@ -134,7 +134,7 @@ export function UserManager() {
       <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-zinc-500 text-xs uppercase tracking-wider border-b border-white/5">
+            <tr className="text-left text-muted text-xs uppercase tracking-wider border-b border-border/50">
               <th className="pb-3 pr-4">Username</th>
               <th className="pb-3 pr-4">Email</th>
               <th className="pb-3 pr-4">Role</th>
@@ -145,14 +145,14 @@ export function UserManager() {
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-b border-white/5 hover:bg-[#1a1a2e]/50">
+              <tr key={u.id} className="border-b border-border/50 hover:bg-[#1a1a2e]/50">
                 <td className="py-3 pr-4">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-zinc-500" />
-                    <span className="text-zinc-300 font-medium">{u.username}</span>
+                    <Shield className="w-4 h-4 text-muted" />
+                    <span className="text-primary font-medium">{u.username}</span>
                   </div>
                 </td>
-                <td className="py-3 pr-4 text-zinc-400">{u.email || '-'}</td>
+                <td className="py-3 pr-4 text-secondary">{u.email || '-'}</td>
                 <td className="py-3 pr-4">
                   <span
                     className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${roleColors[u.role] || roleColors.viewer}`}
@@ -164,9 +164,9 @@ export function UserManager() {
                   <span
                     className={`w-2 h-2 inline-block rounded-full mr-1 ${u.status === 'active' ? 'bg-emerald-400' : 'bg-zinc-500'}`}
                   />
-                  <span className="text-xs text-zinc-400">{u.status || 'active'}</span>
+                  <span className="text-xs text-secondary">{u.status || 'active'}</span>
                 </td>
-                <td className="py-3 pr-4 text-xs text-zinc-500">
+                <td className="py-3 pr-4 text-xs text-muted">
                   {u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Never'}
                 </td>
                 <td className="py-3">
@@ -174,14 +174,14 @@ export function UserManager() {
                     <button
                       type="button"
                       onClick={() => setEditingUser({ ...u })}
-                      className="p-1.5 rounded-lg text-zinc-400 hover:text-[#FFCC00] hover:bg-[#FFCC00]/5"
+                      className="p-1.5 rounded-lg text-secondary hover:text-cba-gold hover:bg-cba-gold/5"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDelete(u.id, u.username)}
-                      className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/5"
+                      className="p-1.5 rounded-lg text-secondary hover:text-red-400 hover:bg-red-500/5"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -191,7 +191,7 @@ export function UserManager() {
             ))}
           </tbody>
         </table>
-        {users.length === 0 && <p className="text-sm text-zinc-500 mt-4">No users found</p>}
+        {users.length === 0 && <p className="text-sm text-muted mt-4">No users found</p>}
       </div>
 
       {/* Create Form Modal */}
@@ -205,18 +205,18 @@ export function UserManager() {
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white">Create User</h3>
+              <h3 className="text-lg font-bold text-primary">Create User</h3>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="text-zinc-500 hover:text-white"
+                className="text-muted hover:text-primary"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="create-username" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="create-username" className="block text-xs text-secondary mb-1">
                   Username *
                 </label>
                 <input
@@ -224,11 +224,11 @@ export function UserManager() {
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div>
-                <label htmlFor="create-email" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="create-email" className="block text-xs text-secondary mb-1">
                   Email
                 </label>
                 <input
@@ -236,11 +236,11 @@ export function UserManager() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div>
-                <label htmlFor="create-password" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="create-password" className="block text-xs text-secondary mb-1">
                   Password *
                 </label>
                 <input
@@ -248,18 +248,18 @@ export function UserManager() {
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div>
-                <label htmlFor="create-role" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="create-role" className="block text-xs text-secondary mb-1">
                   Role
                 </label>
                 <select
                   id="create-role"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 >
                   <option value="viewer">Viewer</option>
                   <option value="operator">Operator</option>
@@ -272,7 +272,7 @@ export function UserManager() {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="flex-1 py-2 rounded-lg border border-white/10 text-zinc-400 text-sm"
+                className="flex-1 py-2 rounded-lg border border-border text-secondary text-sm"
               >
                 Cancel
               </button>
@@ -280,7 +280,7 @@ export function UserManager() {
                 type="button"
                 onClick={handleCreate}
                 disabled={saving}
-                className="flex-1 py-2 rounded-lg bg-[#FFCC00] text-[#1a1a2e] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-2 rounded-lg bg-cba-gold text-[#1a1a2e] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {saving ? 'Creating...' : 'Create'}
               </button>
@@ -300,18 +300,18 @@ export function UserManager() {
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white">Edit User</h3>
+              <h3 className="text-lg font-bold text-primary">Edit User</h3>
               <button
                 type="button"
                 onClick={() => setEditingUser(null)}
-                className="text-zinc-500 hover:text-white"
+                className="text-muted hover:text-primary"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="edit-username" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="edit-username" className="block text-xs text-secondary mb-1">
                   Username
                 </label>
                 <input
@@ -319,11 +319,11 @@ export function UserManager() {
                   type="text"
                   value={editingUser.username}
                   onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div>
-                <label htmlFor="edit-email" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="edit-email" className="block text-xs text-secondary mb-1">
                   Email
                 </label>
                 <input
@@ -331,18 +331,18 @@ export function UserManager() {
                   type="email"
                   value={editingUser.email || ''}
                   onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div>
-                <label htmlFor="edit-role" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="edit-role" className="block text-xs text-secondary mb-1">
                   Role
                 </label>
                 <select
                   id="edit-role"
                   value={editingUser.role}
                   onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 >
                   <option value="viewer">Viewer</option>
                   <option value="operator">Operator</option>
@@ -351,14 +351,14 @@ export function UserManager() {
                 </select>
               </div>
               <div>
-                <label htmlFor="edit-status" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="edit-status" className="block text-xs text-secondary mb-1">
                   Status
                 </label>
                 <select
                   id="edit-status"
                   value={editingUser.status || 'active'}
                   onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -370,7 +370,7 @@ export function UserManager() {
               <button
                 type="button"
                 onClick={() => setEditingUser(null)}
-                className="flex-1 py-2 rounded-lg border border-white/10 text-zinc-400 text-sm"
+                className="flex-1 py-2 rounded-lg border border-border text-secondary text-sm"
               >
                 Cancel
               </button>
@@ -378,7 +378,7 @@ export function UserManager() {
                 type="button"
                 onClick={handleUpdate}
                 disabled={saving}
-                className="flex-1 py-2 rounded-lg bg-[#FFCC00] text-[#1a1a2e] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-2 rounded-lg bg-cba-gold text-[#1a1a2e] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
               </button>

@@ -94,7 +94,7 @@ export function FeatureFlagManager() {
   }, {});
 
   const categoryColors: Record<string, string> = {
-    general: 'text-zinc-400',
+    general: 'text-secondary',
     ai: 'text-violet-400',
     ui: 'text-blue-400',
     system: 'text-emerald-400',
@@ -104,7 +104,7 @@ export function FeatureFlagManager() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white">Feature Flags</h2>
+        <h2 className="text-2xl font-bold text-primary">Feature Flags</h2>
         <div className="animate-pulse h-64 rounded-2xl bg-[#16213e]" />
       </div>
     );
@@ -114,13 +114,13 @@ export function FeatureFlagManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Feature Flags</h2>
-          <p className="text-sm text-zinc-500">Manage feature toggles and rollout percentages</p>
+          <h2 className="text-2xl font-bold text-primary">Feature Flags</h2>
+          <p className="text-sm text-muted">Manage feature toggles and rollout percentages</p>
         </div>
         <button
           type="button"
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-[#FFCC00] text-[#1a1a2e] font-bold rounded-lg text-sm flex items-center gap-2"
+          className="px-4 py-2 bg-cba-gold text-[#1a1a2e] font-bold rounded-lg text-sm flex items-center gap-2"
         >
           <Plus className="w-4 h-4" /> New Flag
         </button>
@@ -138,7 +138,7 @@ export function FeatureFlagManager() {
       {Object.entries(grouped).map(([category, categoryFlags]) => (
         <div key={category} className="space-y-3">
           <h3
-            className={`text-xs font-bold uppercase tracking-widest ${categoryColors[category] || 'text-zinc-400'}`}
+            className={`text-xs font-bold uppercase tracking-widest ${categoryColors[category] || 'text-secondary'}`}
           >
             {category}
           </h3>
@@ -154,18 +154,18 @@ export function FeatureFlagManager() {
                       {flag.enabled ? (
                         <ToggleRight className="w-7 h-7 text-emerald-400" />
                       ) : (
-                        <ToggleLeft className="w-7 h-7 text-zinc-500" />
+                        <ToggleLeft className="w-7 h-7 text-muted" />
                       )}
                     </button>
                     <div>
-                      <p className="text-sm font-bold text-white">{flag.name}</p>
+                      <p className="text-sm font-bold text-primary">{flag.name}</p>
                       {flag.description && (
-                        <p className="text-xs text-zinc-500">{flag.description}</p>
+                        <p className="text-xs text-muted">{flag.description}</p>
                       )}
                     </div>
                   </div>
                   <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${flag.enabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-500/10 text-zinc-500'}`}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${flag.enabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-500/10 text-muted'}`}
                   >
                     {flag.enabled ? 'ON' : 'OFF'}
                   </span>
@@ -173,7 +173,7 @@ export function FeatureFlagManager() {
                 {flag.enabled && (
                   <div className="mt-3 pl-10">
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-zinc-500 w-12">Rollout</span>
+                      <span className="text-[10px] text-muted w-12">Rollout</span>
                       <input
                         type="range"
                         min={0}
@@ -183,7 +183,7 @@ export function FeatureFlagManager() {
                         onChange={(e) => updateRollout(flag, parseInt(e.target.value))}
                         className="flex-1 accent-[#FFCC00]"
                       />
-                      <span className="text-xs text-[#FFCC00] font-bold w-10 text-right">
+                      <span className="text-xs text-cba-gold font-bold w-10 text-right">
                         {flag.rolloutPercentage ?? 100}%
                       </span>
                     </div>
@@ -198,7 +198,7 @@ export function FeatureFlagManager() {
       {flags.length === 0 && (
         <div className="rounded-2xl bg-[#16213e] p-12 text-center">
           <Flag className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <p className="text-zinc-500">No feature flags configured</p>
+          <p className="text-muted">No feature flags configured</p>
         </div>
       )}
 
@@ -213,18 +213,18 @@ export function FeatureFlagManager() {
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white">Create Feature Flag</h3>
+              <h3 className="text-lg font-bold text-primary">Create Feature Flag</h3>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="text-zinc-500 hover:text-white"
+                className="text-muted hover:text-primary"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label htmlFor="flag-name" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="flag-name" className="block text-xs text-secondary mb-1">
                   Flag Name *
                 </label>
                 <input
@@ -233,11 +233,11 @@ export function FeatureFlagManager() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="feature_new_dashboard"
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div>
-                <label htmlFor="flag-description" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="flag-description" className="block text-xs text-secondary mb-1">
                   Description
                 </label>
                 <input
@@ -245,18 +245,18 @@ export function FeatureFlagManager() {
                   type="text"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div>
-                <label htmlFor="flag-category" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="flag-category" className="block text-xs text-secondary mb-1">
                   Category
                 </label>
                 <select
                   id="flag-category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 >
                   <option value="general">General</option>
                   <option value="ai">AI</option>
@@ -266,7 +266,7 @@ export function FeatureFlagManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">
+                <label className="block text-xs text-secondary mb-1">
                   Rollout: {formData.rolloutPercentage}%
                 </label>
                 <input
@@ -286,7 +286,7 @@ export function FeatureFlagManager() {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="flex-1 py-2 rounded-lg border border-white/10 text-zinc-400 text-sm"
+                className="flex-1 py-2 rounded-lg border border-border text-secondary text-sm"
               >
                 Cancel
               </button>
@@ -294,7 +294,7 @@ export function FeatureFlagManager() {
                 type="button"
                 onClick={handleCreate}
                 disabled={saving}
-                className="flex-1 py-2 rounded-lg bg-[#FFCC00] text-[#1a1a2e] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-2 rounded-lg bg-cba-gold text-[#1a1a2e] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {saving ? 'Creating...' : 'Create'}
               </button>

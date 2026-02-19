@@ -290,7 +290,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
                   'flex flex-col items-center justify-center px-4',
                   'transition-opacity',
                   action.bgColor,
-                  action.textColor || 'text-white',
+                  action.textColor || 'text-primary',
                 )}
                 style={{ width: ACTION_WIDTH }}
                 onClick={() => handleActionClick(action)}
@@ -318,7 +318,7 @@ export const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
                   'flex flex-col items-center justify-center px-4',
                   'transition-opacity',
                   action.bgColor,
-                  action.textColor || 'text-white',
+                  action.textColor || 'text-primary',
                 )}
                 style={{ width: ACTION_WIDTH }}
                 onClick={() => handleActionClick(action)}

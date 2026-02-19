@@ -101,8 +101,8 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 statusFilter === tab.id
-                  ? 'bg-[#FFCC00]/10 text-[#FFCC00]'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-cba-gold/10 text-cba-gold'
+                  : 'text-secondary hover:text-primary'
               }`}
             >
               {tab.label}
@@ -112,7 +112,7 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
 
         <button
           onClick={onNewBill}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cba-gold text-black font-semibold text-sm hover:bg-cba-gold/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
         >
           <Plus className="h-4 w-4" />
           New Bill
@@ -123,26 +123,26 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
       <div className="neu-raised rounded-2xl overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/5">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+            <tr className="border-b border-border/50">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Bill #
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Supplier
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider hidden md:table-cell">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-secondary uppercase tracking-wider hidden md:table-cell">
                 Issue Date
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider hidden md:table-cell">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-secondary uppercase tracking-wider hidden md:table-cell">
                 Due Date
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              <th className="text-right px-4 py-3 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Total
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Status
               </th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              <th className="text-right px-4 py-3 text-xs font-semibold text-secondary uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -150,9 +150,9 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
           <tbody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-white/5">
+                <tr key={i} className="border-b border-border/50">
                   <td colSpan={7} className="px-4 py-4">
-                    <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
+                    <div className="h-4 w-full bg-overlay rounded animate-pulse" />
                   </td>
                 </tr>
               ))
@@ -160,24 +160,24 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
               <tr>
                 <td colSpan={7} className="px-4 py-12 text-center">
                   <FileText className="h-10 w-10 text-zinc-600 mx-auto mb-2" />
-                  <p className="text-zinc-400 text-sm">No bills found</p>
+                  <p className="text-secondary text-sm">No bills found</p>
                 </td>
               </tr>
             ) : (
               bills.map((bill) => (
                 <tr
                   key={bill.id}
-                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                  className="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
                 >
-                  <td className="px-4 py-3 text-sm text-white font-mono">{bill.billNumber}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-300">{bill.supplierName ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
+                  <td className="px-4 py-3 text-sm text-primary font-mono">{bill.billNumber}</td>
+                  <td className="px-4 py-3 text-sm text-primary">{bill.supplierName ?? '—'}</td>
+                  <td className="px-4 py-3 text-sm text-secondary hidden md:table-cell">
                     {bill.issueDate}
                   </td>
-                  <td className="px-4 py-3 text-sm text-zinc-400 hidden md:table-cell">
+                  <td className="px-4 py-3 text-sm text-secondary hidden md:table-cell">
                     {bill.dueDate}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-white">
+                  <td className="px-4 py-3 text-right text-sm font-medium text-primary">
                     {formatCurrency(bill.total)}
                   </td>
                   <td className="px-4 py-3">
@@ -226,21 +226,21 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted">
             Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
           </p>
           <div className="flex gap-1">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-2 rounded-lg bg-white/5 text-zinc-400 hover:text-white disabled:opacity-30 transition-all"
+              className="p-2 rounded-lg bg-overlay text-secondary hover:text-primary disabled:opacity-30 transition-all"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="p-2 rounded-lg bg-white/5 text-zinc-400 hover:text-white disabled:opacity-30 transition-all"
+              className="p-2 rounded-lg bg-overlay text-secondary hover:text-primary disabled:opacity-30 transition-all"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -253,12 +253,12 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    draft: 'bg-zinc-400/10 text-zinc-400',
+    draft: 'bg-zinc-400/10 text-secondary',
     awaiting_approval: 'bg-amber-400/10 text-amber-400',
     approved: 'bg-emerald-400/10 text-emerald-400',
     overdue: 'bg-red-400/10 text-red-400',
     paid: 'bg-blue-400/10 text-blue-400',
-    void: 'bg-zinc-500/10 text-zinc-500',
+    void: 'bg-zinc-500/10 text-muted',
   };
   const labels: Record<string, string> = {
     draft: 'Draft',
@@ -299,10 +299,10 @@ function ActionButton({
       title={tooltip}
       className={`p-1.5 rounded-lg transition-all ${
         danger
-          ? 'text-zinc-500 hover:text-red-400 hover:bg-red-400/10'
+          ? 'text-muted hover:text-red-400 hover:bg-red-400/10'
           : accent
-            ? 'text-[#FFCC00]/60 hover:text-[#FFCC00] hover:bg-[#FFCC00]/10'
-            : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+            ? 'text-cba-gold/60 hover:text-cba-gold hover:bg-cba-gold/10'
+            : 'text-muted hover:text-primary hover:bg-overlay'
       }`}
     >
       <Icon className="h-3.5 w-3.5" />

@@ -208,7 +208,7 @@ export function MarketAlerts() {
       case 'sentiment':
         return 'bg-purple-500/10 text-purple-400';
       default:
-        return 'bg-zinc-500/10 text-zinc-400';
+        return 'bg-zinc-500/10 text-secondary';
     }
   };
 
@@ -217,14 +217,14 @@ export function MarketAlerts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-sm font-bold text-white">
+          <Bell className="w-4 h-4 text-cba-gold" />
+          <span className="text-sm font-bold text-primary">
             {state.alerts.filter((a) => a.isActive).length} Active Alerts
           </span>
         </div>
         <button
           onClick={() => dispatch({ type: 'TOGGLE_FORM' })}
-          className="neu-raised-sm px-3 py-1.5 rounded-lg text-xs font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 transition-all flex items-center gap-1.5"
+          className="neu-raised-sm px-3 py-1.5 rounded-lg text-xs font-bold text-cba-gold hover:bg-cba-gold/10 transition-all flex items-center gap-1.5"
         >
           <Plus className="w-3.5 h-3.5" />
           New Alert
@@ -237,12 +237,12 @@ export function MarketAlerts() {
 
       {/* Create Form */}
       {state.showForm && (
-        <div className="neu-raised rounded-2xl p-4 space-y-4 border border-[#FFCC00]/10">
-          <h3 className="text-sm font-bold text-white">Create Alert</h3>
+        <div className="neu-raised rounded-2xl p-4 space-y-4 border border-cba-gold/10">
+          <h3 className="text-sm font-bold text-primary">Create Alert</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-zinc-500 font-medium block mb-1">Alert Type</p>
+              <p className="text-xs text-muted font-medium block mb-1">Alert Type</p>
               <div className="flex gap-1">
                 {ALERT_TYPES.map((at) => (
                   <button
@@ -250,8 +250,8 @@ export function MarketAlerts() {
                     onClick={() => dispatch({ type: 'SET_FORM_TYPE', value: at.id })}
                     className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       state.formType === at.id
-                        ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
-                        : 'text-zinc-500 hover:text-zinc-300 neu-raised-sm'
+                        ? 'bg-cba-gold/20 text-cba-gold ring-1 ring-[#FFCC00]/30'
+                        : 'text-muted hover:text-primary neu-raised-sm'
                     }`}
                   >
                     {at.label}
@@ -263,7 +263,7 @@ export function MarketAlerts() {
             <div>
               <label
                 htmlFor="ma-target"
-                className="text-xs text-zinc-500 font-medium block mb-1"
+                className="text-xs text-muted font-medium block mb-1"
               >
                 Target
               </label>
@@ -279,12 +279,12 @@ export function MarketAlerts() {
                 }
                 value={state.formTarget}
                 onChange={(e) => dispatch({ type: 'SET_FORM_TARGET', value: e.target.value })}
-                className="w-full neu-inset px-3 py-1.5 rounded-lg text-xs text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset px-3 py-1.5 rounded-lg text-xs text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               />
             </div>
 
             <div>
-              <p className="text-xs text-zinc-500 font-medium block mb-1">Condition</p>
+              <p className="text-xs text-muted font-medium block mb-1">Condition</p>
               <div className="flex gap-1">
                 {CONDITIONS.map((c) => (
                   <button
@@ -293,7 +293,7 @@ export function MarketAlerts() {
                     className={`flex-1 px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
                       state.formCondition === c.id
                         ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30'
-                        : 'text-zinc-500 hover:text-zinc-300 neu-raised-sm'
+                        : 'text-muted hover:text-primary neu-raised-sm'
                     }`}
                   >
                     {c.label}
@@ -306,7 +306,7 @@ export function MarketAlerts() {
               <div>
                 <label
                   htmlFor="ma-threshold"
-                  className="text-xs text-zinc-500 font-medium block mb-1"
+                  className="text-xs text-muted font-medium block mb-1"
                 >
                   Threshold
                 </label>
@@ -319,7 +319,7 @@ export function MarketAlerts() {
                   onChange={(e) =>
                     dispatch({ type: 'SET_FORM_THRESHOLD', value: e.target.value })
                   }
-                  className="w-full neu-inset px-3 py-1.5 rounded-lg text-xs text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                  className="w-full neu-inset px-3 py-1.5 rounded-lg text-xs text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
                 />
               </div>
             )}
@@ -328,14 +328,14 @@ export function MarketAlerts() {
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => dispatch({ type: 'TOGGLE_FORM' })}
-              className="px-4 py-1.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white transition-colors"
+              className="px-4 py-1.5 rounded-lg text-xs font-bold text-secondary hover:text-primary transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleCreate}
               disabled={state.creating || !state.formTarget.trim()}
-              className="neu-raised-sm px-4 py-1.5 rounded-lg text-xs font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 disabled:opacity-50 transition-all flex items-center gap-1.5"
+              className="neu-raised-sm px-4 py-1.5 rounded-lg text-xs font-bold text-cba-gold hover:bg-cba-gold/10 disabled:opacity-50 transition-all flex items-center gap-1.5"
             >
               {state.creating ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -366,7 +366,7 @@ export function MarketAlerts() {
       ) : state.alerts.length === 0 ? (
         <div className="neu-raised rounded-2xl p-8 text-center">
           <Bell className="w-10 h-10 text-zinc-600 mx-auto mb-2" />
-          <p className="text-sm text-zinc-500">No alerts configured</p>
+          <p className="text-sm text-muted">No alerts configured</p>
           <p className="text-xs text-zinc-600 mt-1">Create alerts to track market conditions</p>
         </div>
       ) : (
@@ -375,7 +375,7 @@ export function MarketAlerts() {
             <div
               key={alert.id}
               className={`neu-raised rounded-xl p-4 flex items-center gap-4 transition-all border border-transparent ${
-                alert.isActive ? 'hover:border-[#FFCC00]/10' : 'opacity-60'
+                alert.isActive ? 'hover:border-cba-gold/10' : 'opacity-60'
               }`}
             >
               <div className={`p-2 rounded-lg ${getTypeColor(alert.type)}`}>
@@ -390,14 +390,14 @@ export function MarketAlerts() {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-bold text-white truncate">{alert.target}</h4>
+                  <h4 className="text-sm font-bold text-primary truncate">{alert.target}</h4>
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${getTypeColor(alert.type)}`}
                   >
                     {alert.type}
                   </span>
                 </div>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-muted">
                   {alert.condition === 'changes'
                     ? 'Notify on any change'
                     : `${alert.condition} ${alert.threshold ?? ''}`}
@@ -412,11 +412,11 @@ export function MarketAlerts() {
 
               <button
                 onClick={() => dispatch({ type: 'TOGGLE_ALERT', id: alert.id })}
-                className="text-zinc-400 hover:text-[#FFCC00] transition-colors shrink-0"
+                className="text-secondary hover:text-cba-gold transition-colors shrink-0"
                 title={alert.isActive ? 'Disable alert' : 'Enable alert'}
               >
                 {alert.isActive ? (
-                  <ToggleRight className="w-6 h-6 text-[#FFCC00]" />
+                  <ToggleRight className="w-6 h-6 text-cba-gold" />
                 ) : (
                   <ToggleLeft className="w-6 h-6" />
                 )}
@@ -424,7 +424,7 @@ export function MarketAlerts() {
 
               <button
                 onClick={() => dispatch({ type: 'DELETE_ALERT', id: alert.id })}
-                className="text-zinc-500 hover:text-red-400 transition-colors shrink-0"
+                className="text-muted hover:text-red-400 transition-colors shrink-0"
                 title="Delete alert"
               >
                 <Trash2 className="w-4 h-4" />

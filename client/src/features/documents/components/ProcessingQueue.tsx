@@ -7,7 +7,7 @@ import type { OCRDocument } from '@/api';
 function statusIcon(status: string) {
   switch (status) {
     case 'pending':
-      return <Clock className="h-4 w-4 text-zinc-400" />;
+      return <Clock className="h-4 w-4 text-secondary" />;
     case 'processing':
       return <Loader2 className="h-4 w-4 text-blue-400 animate-spin" />;
     case 'extracted':
@@ -17,7 +17,7 @@ function statusIcon(status: string) {
     case 'failed':
       return <XCircle className="h-4 w-4 text-red-400" />;
     default:
-      return <Clock className="h-4 w-4 text-zinc-500" />;
+      return <Clock className="h-4 w-4 text-muted" />;
   }
 }
 
@@ -120,7 +120,7 @@ export function ProcessingQueue() {
   if (loading) {
     return (
       <div className="neu-raised rounded-xl p-12 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-[#FFCC00] animate-spin" />
+        <Loader2 className="h-8 w-8 text-cba-gold animate-spin" />
       </div>
     );
   }
@@ -130,25 +130,25 @@ export function ProcessingQueue() {
       {/* Queue Stats */}
       <div className="neu-raised rounded-xl p-4 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-zinc-400" />
-          <span className="text-sm text-zinc-300">{pendingCount} queued</span>
+          <Clock className="h-4 w-4 text-secondary" />
+          <span className="text-sm text-primary">{pendingCount} queued</span>
         </div>
         <div className="flex items-center gap-2">
           <Loader2 className="h-4 w-4 text-blue-400" />
-          <span className="text-sm text-zinc-300">{processingCount} processing</span>
+          <span className="text-sm text-primary">{processingCount} processing</span>
         </div>
         <div className="flex items-center gap-2 ml-auto">
           <button
             onClick={handleProcessAll}
             disabled={pendingCount === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFCC00] text-[#0a0a0f] text-xs font-bold hover:bg-[#FFCC00]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cba-gold text-base text-xs font-bold hover:bg-cba-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Play className="h-3 w-3" />
             Process All Pending
           </button>
           <button
             onClick={handleRetryFailed}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 text-zinc-300 text-xs font-bold hover:bg-white/10 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-overlay text-primary text-xs font-bold hover:bg-overlay-hover transition-colors"
           >
             <RefreshCw className="h-3 w-3" />
             Retry Failed
@@ -160,27 +160,27 @@ export function ProcessingQueue() {
       {documents.length === 0 ? (
         <div className="neu-raised rounded-xl p-8 text-center">
           <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-3" />
-          <p className="text-zinc-400 font-medium">Queue is empty</p>
+          <p className="text-secondary font-medium">Queue is empty</p>
           <p className="text-zinc-600 text-sm mt-1">All documents have been processed</p>
         </div>
       ) : (
         <div className="neu-raised rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02]">
-                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide">
+              <tr className="border-b border-border bg-white/[0.02]">
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted uppercase tracking-wide">
                   Document
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted uppercase tracking-wide w-28">
                   Type
                 </th>
-                <th className="text-center py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">
+                <th className="text-center py-3 px-4 text-xs font-bold text-muted uppercase tracking-wide w-28">
                   Status
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-36">
+                <th className="text-left py-3 px-4 text-xs font-bold text-muted uppercase tracking-wide w-36">
                   Created
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-bold text-zinc-500 uppercase tracking-wide w-28">
+                <th className="text-right py-3 px-4 text-xs font-bold text-muted uppercase tracking-wide w-28">
                   Actions
                 </th>
               </tr>
@@ -189,21 +189,21 @@ export function ProcessingQueue() {
               {documents.map((doc) => (
                 <tr
                   key={doc.id}
-                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                  className="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
                 >
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       {statusIcon(doc.status)}
-                      <span className="text-zinc-200 font-medium truncate max-w-[200px]">
+                      <span className="text-primary font-medium truncate max-w-[200px]">
                         {doc.fileName}
                       </span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-zinc-400 capitalize">
+                  <td className="py-3 px-4 text-secondary capitalize">
                     {doc.documentType || 'Unknown'}
                   </td>
                   <td className="py-3 px-4 text-center">{statusBadgeEl(doc.status)}</td>
-                  <td className="py-3 px-4 text-zinc-500 text-xs">
+                  <td className="py-3 px-4 text-muted text-xs">
                     {new Date(doc.createdAt).toLocaleString()}
                   </td>
                   <td className="py-3 px-4">
@@ -211,7 +211,7 @@ export function ProcessingQueue() {
                       {doc.status === 'pending' && (
                         <button
                           onClick={() => handleProcess(doc.id)}
-                          className="p-1.5 rounded-md hover:bg-white/10 text-zinc-400 hover:text-[#FFCC00] transition-colors"
+                          className="p-1.5 rounded-md hover:bg-overlay-hover text-secondary hover:text-cba-gold transition-colors"
                           title="Process now"
                         >
                           <Play className="h-4 w-4" />
@@ -220,7 +220,7 @@ export function ProcessingQueue() {
                       {doc.status === 'pending' && (
                         <button
                           onClick={() => handleDelete(doc.id)}
-                          className="p-1.5 rounded-md hover:bg-red-500/10 text-zinc-400 hover:text-red-400 transition-colors"
+                          className="p-1.5 rounded-md hover:bg-red-500/10 text-secondary hover:text-red-400 transition-colors"
                           title="Cancel"
                         >
                           <Trash2 className="h-4 w-4" />

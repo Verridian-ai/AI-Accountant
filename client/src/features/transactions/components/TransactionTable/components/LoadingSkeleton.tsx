@@ -6,7 +6,7 @@ export function LoadingSkeleton() {
     <>
       {/* Mobile loading */}
       <div className="md:hidden space-y-4">
-        <div className="p-4 bg-[#0a0a0f] border-b border-white/5 space-y-4">
+        <div className="p-4 bg-base border-b border-border/50 space-y-4">
           <div className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-xl" />
             <div className="space-y-2">
@@ -29,8 +29,8 @@ export function LoadingSkeleton() {
 
       {/* Desktop loading */}
       <div className="hidden md:block space-y-6 p-1">
-        <div className="neu-raised rounded-3xl flex flex-col border border-white/10">
-          <div className="p-6 border-b border-white/5 bg-white/1 space-y-6">
+        <div className="neu-raised rounded-3xl flex flex-col border border-border">
+          <div className="p-6 border-b border-border/50 bg-white/1 space-y-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-4">
                 <Skeleton className="h-12 w-12 rounded-xl" />
@@ -51,7 +51,7 @@ export function LoadingSkeleton() {
           </div>
         </div>
 
-        <div className="bg-black/20 border border-white/5 rounded-3xl overflow-hidden">
+        <div className="bg-overlay border border-border/50 rounded-3xl overflow-hidden">
           <div className="p-8 space-y-4">
             <div className="flex gap-4 mb-6 px-3">
               <Skeleton className="h-4 w-20" />
@@ -62,7 +62,7 @@ export function LoadingSkeleton() {
               <Skeleton className="h-4 w-28" />
             </div>
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex gap-4 items-center py-4 border-b border-white/5 px-3">
+              <div key={i} className="flex gap-4 items-center py-4 border-b border-border/50 px-3">
                 <Skeleton className="h-6 w-20 rounded-lg" />
                 <div className="flex items-center gap-3 w-64">
                   <Skeleton className="h-8 w-8 rounded-lg shrink-0" />

@@ -37,7 +37,7 @@ export function CategoryChart({
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-6 border border-white/5 flex flex-col group">
+      <div className="neu-raised rounded-3xl p-6 border border-border/50 flex flex-col group">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Skeleton className="h-11 w-11 rounded-2xl" />
@@ -64,7 +64,7 @@ export function CategoryChart({
           ))}
         </div>
 
-        <div className="mt-8 pt-5 border-t border-white/5 flex items-center justify-between px-1">
+        <div className="mt-8 pt-5 border-t border-border/50 flex items-center justify-between px-1">
           <div className="space-y-2">
             <Skeleton className="h-2 w-16" />
             <Skeleton className="h-4 w-24" />
@@ -77,12 +77,12 @@ export function CategoryChart({
 
   if (entries.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5">
+      <div className="neu-raised rounded-3xl p-8 border border-border/50">
         <div className="flex items-center gap-3 mb-6">
           <div className="neu-inset p-3 rounded-xl">
             <PieChart className="h-5 w-5 text-zinc-700" />
           </div>
-          <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em]">{title}</h3>
+          <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em]">{title}</h3>
         </div>
         <div className="py-12 text-center">
           <p className="text-zinc-600 font-bold uppercase tracking-widest text-[10px]">
@@ -101,10 +101,10 @@ export function CategoryChart({
   };
 
   return (
-    <div className="neu-raised rounded-3xl p-6 border border-white/5 flex flex-col group">
+    <div className="neu-raised rounded-3xl p-6 border border-border/50 flex flex-col group">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className="neu-inset p-3 rounded-2xl text-[#FFCC00] group-hover:glow-success transition-all duration-500">
+          <div className="neu-inset p-3 rounded-2xl text-cba-gold group-hover:glow-success transition-all duration-500">
             <TrendingUp className="h-5 w-5" />
           </div>
           <div>
@@ -117,7 +117,7 @@ export function CategoryChart({
           </div>
         </div>
         <div className="neu-inset px-3 py-1.5 rounded-full">
-          <span className="text-[10px] font-black text-[#FFCC00] uppercase tracking-widest italic">
+          <span className="text-[10px] font-black text-cba-gold uppercase tracking-widest italic">
             Live
           </span>
         </div>
@@ -132,7 +132,7 @@ export function CategoryChart({
           return (
             <div key={category} className="space-y-2.5 group/item">
               <div className="flex items-center justify-between px-1">
-                <span className="text-zinc-400 font-bold text-[11px] uppercase tracking-tight truncate max-w-[60%] flex items-center gap-2 group-hover/item:text-zinc-100 transition-colors">
+                <span className="text-secondary font-bold text-[11px] uppercase tracking-tight truncate max-w-[60%] flex items-center gap-2 group-hover/item:text-zinc-100 transition-colors">
                   <span
                     className={cn(
                       'w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]',
@@ -141,7 +141,7 @@ export function CategoryChart({
                   />
                   {category}
                 </span>
-                <span className="text-zinc-500 font-black font-mono text-[10px] tracking-tighter group-hover/item:text-[#FFCC00] transition-colors">
+                <span className="text-muted font-black font-mono text-[10px] tracking-tighter group-hover/item:text-cba-gold transition-colors">
                   {formatAmount(amount)}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export function CategoryChart({
                     color.gradient,
                   )}
                 >
-                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-overlay-hover opacity-0 group-hover/item:opacity-100 transition-opacity" />
                 </div>
               </div>
             </div>
@@ -163,19 +163,19 @@ export function CategoryChart({
         })}
       </div>
 
-      <div className="mt-8 pt-5 border-t border-white/5 flex items-center justify-between px-1">
+      <div className="mt-8 pt-5 border-t border-border/50 flex items-center justify-between px-1">
         <div className="flex flex-col">
           <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
             Gross Flux
           </span>
-          <span className="text-sm font-black text-[#FFCC00] tracking-tighter">
+          <span className="text-sm font-black text-cba-gold tracking-tighter">
             {formatAmount(total)}
           </span>
         </div>
         <button
           type="button"
           aria-label="View details"
-          className="p-2 neu-raised-sm rounded-xl text-zinc-500 hover:text-[#FFCC00] btn-press border border-white/5"
+          className="p-2 neu-raised-sm rounded-xl text-muted hover:text-cba-gold btn-press border border-border/50"
         >
           <ChevronRight className="w-4 h-4" />
         </button>

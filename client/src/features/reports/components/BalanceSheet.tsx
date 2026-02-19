@@ -37,15 +37,15 @@ function SectionColumn({
           items.map((item) => (
             <div
               key={item.name ?? item.category ?? 'unknown'}
-              className="flex justify-between py-1.5 border-b border-white/5"
+              className="flex justify-between py-1.5 border-b border-border/50"
             >
-              <span className="text-sm text-zinc-300">{item.name ?? item.category}</span>
-              <span className="text-sm font-mono text-zinc-200">{formatCurrency(item.amount)}</span>
+              <span className="text-sm text-primary">{item.name ?? item.category}</span>
+              <span className="text-sm font-mono text-primary">{formatCurrency(item.amount)}</span>
             </div>
           ))
         )}
       </div>
-      <div className="border-t border-[#FFCC00]/20 mt-4 pt-3 flex justify-between">
+      <div className="border-t border-cba-gold/20 mt-4 pt-3 flex justify-between">
         <span className="font-bold text-zinc-100">Total {title}</span>
         <span className={`font-bold font-mono ${colorClass}`}>{formatCurrency(total)}</span>
       </div>
@@ -73,8 +73,8 @@ export function BalanceSheet({ asAtDate }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FFCC00]" />
-        <span className="ml-3 text-zinc-400">Loading balance sheet...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-cba-gold" />
+        <span className="ml-3 text-secondary">Loading balance sheet...</span>
       </div>
     );
   }
@@ -85,7 +85,7 @@ export function BalanceSheet({ asAtDate }: Props) {
 
   if (!data) {
     return (
-      <div className="neu-inset rounded-2xl p-6 text-center text-zinc-500">
+      <div className="neu-inset rounded-2xl p-6 text-center text-muted">
         Select a date to generate the Balance Sheet.
       </div>
     );
@@ -112,7 +112,7 @@ export function BalanceSheet({ asAtDate }: Props) {
             ? 'Balance Sheet is balanced — Assets = Liabilities + Equity'
             : `Balance Sheet is out of balance (difference: ${formatCurrency(data.totalAssets - data.totalLiabilities - data.totalEquity)})`}
         </span>
-        <span className="ml-auto text-xs text-zinc-500">
+        <span className="ml-auto text-xs text-muted">
           As at {new Date(asAtDate).toLocaleDateString('en-AU')}
         </span>
       </div>
@@ -135,7 +135,7 @@ export function BalanceSheet({ asAtDate }: Props) {
           title="Equity"
           items={equityItems}
           total={data.totalEquity}
-          colorClass="text-[#FFCC00]"
+          colorClass="text-cba-gold"
         />
       </div>
 
@@ -143,20 +143,20 @@ export function BalanceSheet({ asAtDate }: Props) {
       <div className="neu-raised rounded-2xl p-5">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Total Assets</p>
+            <p className="text-xs text-muted uppercase tracking-wide mb-1">Total Assets</p>
             <p className="text-lg font-bold font-mono text-emerald-400">
               {formatCurrency(data.totalAssets)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Total Liabilities</p>
+            <p className="text-xs text-muted uppercase tracking-wide mb-1">Total Liabilities</p>
             <p className="text-lg font-bold font-mono text-red-400">
               {formatCurrency(data.totalLiabilities)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Net Equity</p>
-            <p className="text-lg font-bold font-mono text-[#FFCC00]">
+            <p className="text-xs text-muted uppercase tracking-wide mb-1">Net Equity</p>
+            <p className="text-lg font-bold font-mono text-cba-gold">
               {formatCurrency(data.totalEquity)}
             </p>
           </div>

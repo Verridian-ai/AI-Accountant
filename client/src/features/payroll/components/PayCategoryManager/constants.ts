@@ -14,7 +14,7 @@ export const TYPE_STYLES: Record<CategoryType, { bg: string; text: string; label
   overtime: { bg: 'bg-purple-500/10', text: 'text-purple-400', label: 'Overtime' },
   allowance: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: 'Allowance' },
   deduction: { bg: 'bg-red-500/10', text: 'text-red-400', label: 'Deduction' },
-  super: { bg: 'bg-[#FFCC00]/10', text: 'text-[#FFCC00]', label: 'Super' },
+  super: { bg: 'bg-cba-gold/10', text: 'text-cba-gold', label: 'Super' },
   leave: { bg: 'bg-teal-500/10', text: 'text-teal-400', label: 'Leave' },
 };
 

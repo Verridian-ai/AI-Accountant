@@ -103,15 +103,15 @@ export function PayrollDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Payroll</h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h1 className="text-2xl font-bold text-primary">Payroll</h1>
+          <p className="text-sm text-secondary mt-1">
             Manage employees, pay categories, and pay runs
           </p>
         </div>
         {activeTab === 'employees' && view === 'list' && (
           <button
             onClick={() => setView('onboarding')}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cba-gold text-black font-semibold text-sm hover:bg-cba-gold/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
           >
             <UserPlus className="h-4 w-4" />
             Add Employee
@@ -124,19 +124,19 @@ export function PayrollDashboard() {
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="neu-raised rounded-2xl p-5 animate-pulse">
-                <div className="h-4 w-20 bg-white/5 rounded mb-3" />
-                <div className="h-8 w-12 bg-white/5 rounded" />
+                <div className="h-4 w-20 bg-overlay rounded mb-3" />
+                <div className="h-8 w-12 bg-overlay rounded" />
               </div>
             ))
           : statCards.map((card) => (
               <div key={card.label} className="neu-raised rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  <span className="text-xs font-medium text-secondary uppercase tracking-wider">
                     {card.label}
                   </span>
                   <card.icon className={`h-4 w-4 ${card.color}`} />
                 </div>
-                <p className="text-2xl font-bold text-white">{card.value}</p>
+                <p className="text-2xl font-bold text-primary">{card.value}</p>
               </div>
             ))}
       </div>
@@ -155,8 +155,8 @@ export function PayrollDashboard() {
             }}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === tab.id
-                ? 'bg-[#FFCC00]/10 text-[#FFCC00] shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-cba-gold/10 text-cba-gold shadow-sm'
+                : 'text-secondary hover:text-primary'
             }`}
           >
             {tab.label}
@@ -186,16 +186,16 @@ export function PayrollDashboard() {
 
       {activeTab === 'pay-categories' && (
         <div className="neu-raised rounded-2xl p-8 text-center">
-          <p className="text-zinc-400">Pay Categories component loads here</p>
-          <p className="text-xs text-zinc-500 mt-1">Managed by Agent 9</p>
+          <p className="text-secondary">Pay Categories component loads here</p>
+          <p className="text-xs text-muted mt-1">Managed by Agent 9</p>
         </div>
       )}
 
       {activeTab === 'pay-runs' && (
         <div className="neu-raised rounded-2xl p-8 text-center">
           <Briefcase className="h-12 w-12 text-zinc-600 mx-auto mb-3" />
-          <p className="text-zinc-400 font-medium">Pay Runs</p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-secondary font-medium">Pay Runs</p>
+          <p className="text-xs text-muted mt-1">
             Pay runs will appear here once payroll processing is configured.
           </p>
         </div>

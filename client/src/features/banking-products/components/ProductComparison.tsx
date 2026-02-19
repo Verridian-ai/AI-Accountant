@@ -66,7 +66,7 @@ export function ProductComparison({ productIds, onBack }: ProductComparisonProps
       <div className="space-y-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FFCC00]"
+          className="flex items-center gap-2 text-sm text-secondary hover:text-cba-gold"
         >
           <ArrowLeft className="h-4 w-4" /> Back to products
         </button>
@@ -83,7 +83,7 @@ export function ProductComparison({ productIds, onBack }: ProductComparisonProps
       <div className="space-y-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FFCC00]"
+          className="flex items-center gap-2 text-sm text-secondary hover:text-cba-gold"
         >
           <ArrowLeft className="h-4 w-4" /> Back to products
         </button>
@@ -104,7 +104,7 @@ export function ProductComparison({ productIds, onBack }: ProductComparisonProps
           values: products.map((p) => (
             <span
               key={p.id}
-              className={cn('font-bold', p.baseRate === bestBase && 'text-[#FFCC00]')}
+              className={cn('font-bold', p.baseRate === bestBase && 'text-cba-gold')}
             >
               {formatRate(p.baseRate)}
               {p.baseRate === bestBase && <Trophy className="inline h-3 w-3 ml-1" />}
@@ -116,7 +116,7 @@ export function ProductComparison({ productIds, onBack }: ProductComparisonProps
           values: products.map((p) => (
             <span
               key={p.id}
-              className={cn('font-medium', p.comparisonRate === bestComp && 'text-[#FFCC00]')}
+              className={cn('font-medium', p.comparisonRate === bestComp && 'text-cba-gold')}
             >
               {formatRate(p.comparisonRate)}
               {p.comparisonRate === bestComp && <Trophy className="inline h-3 w-3 ml-1" />}
@@ -144,7 +144,7 @@ export function ProductComparison({ productIds, onBack }: ProductComparisonProps
               return (
                 <span
                   key={p.id}
-                  className={cn(fee.amount === lowest && 'text-[#FFCC00] font-bold')}
+                  className={cn(fee.amount === lowest && 'text-cba-gold font-bold')}
                 >
                   ${fee.amount.toFixed(2)}/{fee.frequency}
                   {fee.amount === lowest && <Trophy className="inline h-3 w-3 ml-1" />}
@@ -202,7 +202,7 @@ export function ProductComparison({ productIds, onBack }: ProductComparisonProps
     <div className="space-y-4">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FFCC00] transition-colors"
+        className="flex items-center gap-2 text-sm text-secondary hover:text-cba-gold transition-colors"
       >
         <ArrowLeft className="h-4 w-4" /> Back to products
       </button>
@@ -210,13 +210,13 @@ export function ProductComparison({ productIds, onBack }: ProductComparisonProps
       <div className="neu-raised rounded-2xl overflow-hidden">
         {/* Header Row */}
         <div
-          className="grid border-b border-white/5"
+          className="grid border-b border-border/50"
           style={{ gridTemplateColumns: `200px repeat(${products.length}, 1fr)` }}
         >
           <div className="p-4 bg-[#1a1d23]" />
           {products.map((p) => (
-            <div key={p.id} className="p-4 text-center border-l border-white/5">
-              <p className="text-xs text-zinc-500">{p.dataHolderBrand}</p>
+            <div key={p.id} className="p-4 text-center border-l border-border/50">
+              <p className="text-xs text-muted">{p.dataHolderBrand}</p>
               <p className="text-sm font-bold text-zinc-100 mt-1">{p.name}</p>
             </div>
           ))}
@@ -225,24 +225,24 @@ export function ProductComparison({ productIds, onBack }: ProductComparisonProps
         {/* Sections */}
         {sections.map((section) => (
           <div key={section.title}>
-            <div className="px-4 py-2 bg-[#1a1d23]/60 border-b border-white/5">
-              <h4 className="text-xs font-bold text-[#FFCC00] uppercase tracking-wider">
+            <div className="px-4 py-2 bg-[#1a1d23]/60 border-b border-border/50">
+              <h4 className="text-xs font-bold text-cba-gold uppercase tracking-wider">
                 {section.title}
               </h4>
             </div>
             {section.rows.map((row, ri) => (
               <div
                 key={ri}
-                className="grid border-b border-white/5 last:border-b-0"
+                className="grid border-b border-border/50 last:border-b-0"
                 style={{ gridTemplateColumns: `200px repeat(${products.length}, 1fr)` }}
               >
-                <div className="p-3 text-xs text-zinc-400 font-medium bg-[#1a1d23]/30">
+                <div className="p-3 text-xs text-secondary font-medium bg-[#1a1d23]/30">
                   {row.label}
                 </div>
                 {row.values.map((val, vi) => (
                   <div
                     key={vi}
-                    className="p-3 text-sm text-zinc-200 text-center border-l border-white/5"
+                    className="p-3 text-sm text-primary text-center border-l border-border/50"
                   >
                     {val}
                   </div>

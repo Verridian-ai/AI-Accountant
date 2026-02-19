@@ -50,30 +50,30 @@ export function CompletionStep({ data, onNext }: OnboardingStepProps) {
         <div className="relative inline-block mb-6">
           <div className="absolute inset-0 bg-emerald-500 blur-3xl opacity-20 animate-pulse rounded-full" />
           <div className="relative w-24 h-24 cba-gold-gradient rounded-[2rem] flex items-center justify-center shadow-xl cba-gold-glow">
-            <Trophy className="w-12 h-12 text-[#0a0a0f]" />
+            <Trophy className="w-12 h-12 text-base" />
           </div>
           <div className="absolute -right-2 -top-2 p-2 bg-emerald-500 rounded-xl shadow-lg animate-float">
-            <CheckCircle2 className="w-4 h-4 text-white" />
+            <CheckCircle2 className="w-4 h-4 text-primary" />
           </div>
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-2">
           <span className="text-gradient-gold">You're all set!</span>
         </h2>
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-secondary">
           Your account is configured and ready to analyze your finances.
         </p>
       </div>
 
       {/* Completion Progress */}
-      <div className="neu-raised rounded-2xl p-6 border border-white/5">
+      <div className="neu-raised rounded-2xl p-6 border border-border/50">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">
+          <span className="text-[10px] font-black uppercase text-muted tracking-widest">
             Setup Completion
           </span>
-          <span className="text-sm font-bold text-[#FFCC00]">{completionPercent}%</span>
+          <span className="text-sm font-bold text-cba-gold">{completionPercent}%</span>
         </div>
-        <div className="h-2 bg-white/5 rounded-full overflow-hidden mb-4">
+        <div className="h-2 bg-overlay rounded-full overflow-hidden mb-4">
           <div
             className="h-full cba-gold-gradient transition-all duration-1000 ease-out rounded-full"
             style={{ width: `${completionPercent}%` }}
@@ -85,7 +85,7 @@ export function CompletionStep({ data, onNext }: OnboardingStepProps) {
               key={index}
               className={cn(
                 'flex items-center gap-2 text-xs',
-                item.completed ? 'text-zinc-300' : 'text-zinc-600',
+                item.completed ? 'text-primary' : 'text-zinc-600',
               )}
             >
               <CheckCircle2
@@ -147,16 +147,16 @@ export function CompletionStep({ data, onNext }: OnboardingStepProps) {
       </div>
 
       {/* Next Steps */}
-      <div className="neu-inset rounded-2xl p-6 border border-[#FFCC00]/10 bg-[#FFCC00]/[0.02]">
+      <div className="neu-inset rounded-2xl p-6 border border-cba-gold/10 bg-cba-gold/[0.02]">
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black uppercase text-[#FFCC00] tracking-widest">
+          <Sparkles className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black uppercase text-cba-gold tracking-widest">
             What's Next
           </span>
         </div>
         <ul className="space-y-3">
-          <li className="flex items-start gap-3 text-sm text-zinc-400">
-            <span className="w-5 h-5 rounded-full bg-[#FFCC00]/20 text-[#FFCC00] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+          <li className="flex items-start gap-3 text-sm text-secondary">
+            <span className="w-5 h-5 rounded-full bg-cba-gold/20 text-cba-gold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
               1
             </span>
             <span>
@@ -165,14 +165,14 @@ export function CompletionStep({ data, onNext }: OnboardingStepProps) {
                 : 'Upload your first bank statement to get started'}
             </span>
           </li>
-          <li className="flex items-start gap-3 text-sm text-zinc-400">
-            <span className="w-5 h-5 rounded-full bg-[#FFCC00]/20 text-[#FFCC00] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+          <li className="flex items-start gap-3 text-sm text-secondary">
+            <span className="w-5 h-5 rounded-full bg-cba-gold/20 text-cba-gold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
               2
             </span>
             <span>Explore your spending insights on the Analytics tab</span>
           </li>
-          <li className="flex items-start gap-3 text-sm text-zinc-400">
-            <span className="w-5 h-5 rounded-full bg-[#FFCC00]/20 text-[#FFCC00] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+          <li className="flex items-start gap-3 text-sm text-secondary">
+            <span className="w-5 h-5 rounded-full bg-cba-gold/20 text-cba-gold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
               3
             </span>
             <span>
@@ -190,7 +190,7 @@ export function CompletionStep({ data, onNext }: OnboardingStepProps) {
           onClick={onNext}
           className={cn(
             'group inline-flex items-center gap-3 px-8 py-4',
-            'cba-gold-gradient text-[#0a0a0f] font-black text-sm uppercase tracking-[0.15em]',
+            'cba-gold-gradient text-base font-black text-sm uppercase tracking-[0.15em]',
             'rounded-2xl btn-press shadow-xl cba-gold-glow',
             'transition-all duration-300 hover:scale-105',
           )}
@@ -216,18 +216,18 @@ function SummaryCard({ icon: Icon, title, items, highlight }: SummaryCardProps) 
     <div
       className={cn(
         'neu-raised-sm rounded-xl p-4 border transition-all',
-        highlight ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-white/5',
+        highlight ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-border/50',
       )}
     >
       <div className="flex items-center gap-2 mb-3">
-        <Icon className={cn('w-4 h-4', highlight ? 'text-emerald-400' : 'text-zinc-500')} />
-        <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">
+        <Icon className={cn('w-4 h-4', highlight ? 'text-emerald-400' : 'text-muted')} />
+        <span className="text-[10px] font-black uppercase text-muted tracking-widest">
           {title}
         </span>
       </div>
       <ul className="space-y-1">
         {items.map((item, index) => (
-          <li key={index} className="text-xs text-zinc-400">
+          <li key={index} className="text-xs text-secondary">
             {item}
           </li>
         ))}

@@ -44,8 +44,8 @@ export function Auth({ onLogin }: AuthProps) {
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Ambient background effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FFCC00]/10 rounded-full blur-[128px] animate-breathe" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#FFCC00]/5 rounded-full blur-[100px] animate-breathe animate-delay-2s" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cba-gold/10 rounded-full blur-[128px] animate-breathe" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cba-gold/5 rounded-full blur-[100px] animate-breathe animate-delay-2s" />
       </div>
 
       <div className="w-full max-w-md relative z-10">
@@ -53,7 +53,7 @@ export function Auth({ onLogin }: AuthProps) {
         <div className="flex flex-col items-center mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="relative group mb-4">
             {/* Subtle glow ring */}
-            <div className="absolute -inset-2 rounded-3xl blur-md opacity-30 group-hover:opacity-45 transition-opacity bg-[#FFCC00]/25" />
+            <div className="absolute -inset-2 rounded-3xl blur-md opacity-30 group-hover:opacity-45 transition-opacity bg-cba-gold/25" />
             <div className="relative neu-raised p-1 rounded-2xl flex items-center justify-center overflow-hidden">
               <img
                 src="/cba-logo.svg"
@@ -65,8 +65,8 @@ export function Auth({ onLogin }: AuthProps) {
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-gradient-gold">
             GoldLedger
           </h1>
-          <p className="text-zinc-500 font-medium mt-2 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#FFCC00]" />
+          <p className="text-muted font-medium mt-2 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-cba-gold" />
             AI-Powered Financial Intelligence
           </p>
         </div>
@@ -84,8 +84,8 @@ export function Auth({ onLogin }: AuthProps) {
               className={cn(
                 'flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300',
                 isLogin
-                  ? 'neu-raised-sm text-[#FFCC00] cba-gold-glow'
-                  : 'text-zinc-500 hover:text-zinc-300',
+                  ? 'neu-raised-sm text-cba-gold cba-gold-glow'
+                  : 'text-muted hover:text-primary',
               )}
             >
               Sign In
@@ -96,8 +96,8 @@ export function Auth({ onLogin }: AuthProps) {
               className={cn(
                 'flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300',
                 !isLogin
-                  ? 'neu-raised-sm text-[#FFCC00] cba-gold-glow'
-                  : 'text-zinc-500 hover:text-zinc-300',
+                  ? 'neu-raised-sm text-cba-gold cba-gold-glow'
+                  : 'text-muted hover:text-primary',
               )}
             >
               Register
@@ -107,18 +107,18 @@ export function Auth({ onLogin }: AuthProps) {
           <form onSubmit={handleSubmit} className="space-y-6 relative">
             {/* Username Field */}
             <div className="space-y-2">
-              <label htmlFor="auth-username" className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] ml-1">
+              <label htmlFor="auth-username" className="text-[10px] font-bold text-muted uppercase tracking-[0.15em] ml-1">
                 Username
               </label>
               <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-[#FFCC00] transition-colors" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-cba-gold transition-colors" />
                 <input
                   id="auth-username"
                   type="text"
                   required
                   value={username}
                   onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-                  className="w-full pl-12 pr-4 py-4 neu-inset rounded-xl focus-gold transition-all outline-none text-[#FFCC00] placeholder-zinc-600 font-medium"
+                  className="w-full pl-12 pr-4 py-4 neu-inset rounded-xl focus-gold transition-all outline-none text-cba-gold placeholder-zinc-600 font-medium"
                   placeholder="Enter username"
                 />
               </div>
@@ -126,18 +126,18 @@ export function Auth({ onLogin }: AuthProps) {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label htmlFor="auth-password" className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] ml-1">
+              <label htmlFor="auth-password" className="text-[10px] font-bold text-muted uppercase tracking-[0.15em] ml-1">
                 Password
               </label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-[#FFCC00] transition-colors" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-cba-gold transition-colors" />
                 <input
                   id="auth-password"
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                  className="w-full pl-12 pr-4 py-4 neu-inset rounded-xl focus-gold transition-all outline-none text-[#FFCC00] placeholder-zinc-600 font-medium"
+                  className="w-full pl-12 pr-4 py-4 neu-inset rounded-xl focus-gold transition-all outline-none text-cba-gold placeholder-zinc-600 font-medium"
                   placeholder="••••••••"
                 />
               </div>
@@ -154,7 +154,7 @@ export function Auth({ onLogin }: AuthProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 cba-gold-gradient hover:brightness-105 text-[#0a0a0f] rounded-xl font-black text-base shadow-lg cba-gold-glow btn-press disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              className="w-full py-4 cba-gold-gradient hover:brightness-105 text-base rounded-xl font-black text-base shadow-lg cba-gold-glow btn-press disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -169,14 +169,14 @@ export function Auth({ onLogin }: AuthProps) {
           </form>
 
           {/* Toggle Link */}
-          <div className="mt-8 text-center text-sm text-zinc-500">
+          <div className="mt-8 text-center text-sm text-muted">
             {isLogin ? (
               <p>
                 Don't have an account?{' '}
                 <button
                   type="button"
                   onClick={() => setIsLogin(false)}
-                  className="text-[#FFCC00] font-bold hover:brightness-110 transition-all"
+                  className="text-cba-gold font-bold hover:brightness-110 transition-all"
                 >
                   Register now
                 </button>
@@ -187,7 +187,7 @@ export function Auth({ onLogin }: AuthProps) {
                 <button
                   type="button"
                   onClick={() => setIsLogin(true)}
-                  className="text-[#FFCC00] font-bold hover:brightness-110 transition-all"
+                  className="text-cba-gold font-bold hover:brightness-110 transition-all"
                 >
                   Sign in
                 </button>

@@ -24,16 +24,16 @@ export function TaxReturnSummaryCard({
   };
 
   return (
-    <Card className="neu-raised border-white/5">
+    <Card className="neu-raised border-border/50">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-          {Icon && <Icon className="w-4 h-4 text-[#FFCC00]" />}
+        <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
+          {Icon && <Icon className="w-4 h-4 text-cba-gold" />}
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className={`text-2xl font-bold ${colorMap[variant]}`}>{value}</div>
-        {subtitle && <p className="text-xs text-zinc-500 mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-muted mt-1">{subtitle}</p>}
       </CardContent>
     </Card>
   );

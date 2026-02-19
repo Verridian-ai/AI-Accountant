@@ -100,7 +100,7 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-2 border-[#FFCC00] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-cba-gold border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -196,7 +196,7 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
             {Object.entries(CONNECTION_COLORS).map(([type, color]) => (
               <div key={type} className="flex items-center gap-1.5">
                 <div className="w-4 h-1 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-[10px] text-zinc-500 uppercase font-medium">
+                <span className="text-[10px] text-muted uppercase font-medium">
                   {type.replace('_', ' ')}
                 </span>
               </div>
@@ -208,7 +208,7 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
         {(selectedModule || selectedConnection) && (
           <div className="w-full lg:w-72 neu-raised rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold text-[#FFCC00]">
+              <h4 className="text-sm font-bold text-cba-gold">
                 {selectedModule ? `Module: ${selectedModule}` : 'Connection Detail'}
               </h4>
               <button
@@ -216,7 +216,7 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
                   setSelectedModule(null);
                   setSelectedConnection(null);
                 }}
-                className="text-zinc-500 hover:text-zinc-300"
+                className="text-muted hover:text-primary"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -228,11 +228,11 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
                 return (
                   <>
                     <div>
-                      <p className="text-xs text-zinc-500 font-medium mb-1">
+                      <p className="text-xs text-muted font-medium mb-1">
                         Incoming ({incoming.length})
                       </p>
                       {incoming.map((c) => (
-                        <div key={c.id} className="text-xs text-zinc-400 py-0.5">
+                        <div key={c.id} className="text-xs text-secondary py-0.5">
                           ← {c.sourceModule}{' '}
                           <span className="text-zinc-600">({c.connectionType})</span>
                         </div>
@@ -240,11 +240,11 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
                       {incoming.length === 0 && <p className="text-xs text-zinc-600">None</p>}
                     </div>
                     <div>
-                      <p className="text-xs text-zinc-500 font-medium mb-1">
+                      <p className="text-xs text-muted font-medium mb-1">
                         Outgoing ({outgoing.length})
                       </p>
                       {outgoing.map((c) => (
-                        <div key={c.id} className="text-xs text-zinc-400 py-0.5">
+                        <div key={c.id} className="text-xs text-secondary py-0.5">
                           → {c.targetModule}{' '}
                           <span className="text-zinc-600">({c.connectionType})</span>
                         </div>
@@ -257,13 +257,13 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
 
             {selectedConnection && (
               <>
-                <div className="text-sm text-zinc-300">
+                <div className="text-sm text-primary">
                   <span className="font-medium">{selectedConnection.sourceModule}</span>
                   <span className="text-zinc-600"> → </span>
                   <span className="font-medium">{selectedConnection.targetModule}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-zinc-500">Type:</span>
+                  <span className="text-xs text-muted">Type:</span>
                   <span
                     className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                     style={{
@@ -275,15 +275,15 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
                   </span>
                 </div>
                 <div>
-                  <span className="text-xs text-zinc-500">Strength:</span>
+                  <span className="text-xs text-muted">Strength:</span>
                   <div className="mt-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-[#FFCC00]"
+                      className="h-full rounded-full bg-cba-gold"
                       style={{ width: `${selectedConnection.strength * 100}%` }}
                     />
                   </div>
                 </div>
-                <p className="text-xs text-zinc-400">{selectedConnection.description}</p>
+                <p className="text-xs text-secondary">{selectedConnection.description}</p>
               </>
             )}
           </div>

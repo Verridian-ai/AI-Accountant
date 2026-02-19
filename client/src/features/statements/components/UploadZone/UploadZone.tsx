@@ -52,16 +52,16 @@ export function UploadZone({
 
       {/* ─── Drag Overlay ─────────────────────────────────────────── */}
       {isDragging && (
-        <div className="absolute inset-0 z-50 m-2 rounded-[2rem] border-2 border-dashed border-[#FFCC00]/40 bg-black/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
+        <div className="absolute inset-0 z-50 m-2 rounded-[2rem] border-2 border-dashed border-cba-gold/40 bg-black/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200">
           <div className="flex flex-col items-center gap-4 p-8 pointer-events-none">
-            <div className="w-24 h-24 bg-[#FFCC00] rounded-3xl flex items-center justify-center shadow-[0_0_30px_rgba(255,204,0,0.3)] animate-bounce">
-              <Upload className="h-12 w-12 text-[#0a0a0f]" />
+            <div className="w-24 h-24 bg-cba-gold rounded-3xl flex items-center justify-center shadow-[0_0_30px_rgba(255,204,0,0.3)] animate-bounce">
+              <Upload className="h-12 w-12 text-base" />
             </div>
             <div className="text-center space-y-1">
-              <p className="text-lg font-black uppercase tracking-[0.2em] text-[#FFCC00]">
+              <p className="text-lg font-black uppercase tracking-[0.2em] text-cba-gold">
                 Release to Upload
               </p>
-              <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+              <p className="text-xs font-bold text-secondary uppercase tracking-widest">
                 PDF, CSV, OFX or QIF Statements
               </p>
             </div>
@@ -76,11 +76,11 @@ export function UploadZone({
       {!children && !hasFiles && (
         <div className="flex flex-col items-center justify-center py-12 px-6">
           <div className="relative mb-6">
-            <div className="w-20 h-20 neu-inset rounded-[1.5rem] flex items-center justify-center border border-white/5">
+            <div className="w-20 h-20 neu-inset rounded-[1.5rem] flex items-center justify-center border border-border/50">
               <Upload className="h-8 w-8 text-zinc-600" />
             </div>
           </div>
-          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4">
+          <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-4">
             Drop files here or browse
           </p>
           <button
@@ -90,8 +90,8 @@ export function UploadZone({
             className={cn(
               'flex items-center gap-2 px-5 py-2.5 rounded-xl',
               'text-[10px] font-black uppercase tracking-[0.2em]',
-              'bg-[#FFCC00]/10 text-[#FFCC00] border border-[#FFCC00]/20',
-              'hover:bg-[#FFCC00]/20 hover:border-[#FFCC00]/40',
+              'bg-cba-gold/10 text-cba-gold border border-cba-gold/20',
+              'hover:bg-cba-gold/20 hover:border-cba-gold/40',
               'btn-press transition-all',
               disabled && 'opacity-50 cursor-not-allowed',
             )}
@@ -103,7 +103,7 @@ export function UploadZone({
             {['PDF', 'CSV', 'OFX', 'QIF'].map((ext) => (
               <span
                 key={ext}
-                className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[8px] font-bold text-zinc-500 uppercase tracking-wider"
+                className="px-2 py-0.5 rounded bg-overlay border border-border/50 text-[8px] font-bold text-muted uppercase tracking-wider"
               >
                 {ext}
               </span>
@@ -122,8 +122,8 @@ export function UploadZone({
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-xl',
               'text-[9px] font-black uppercase tracking-[0.2em]',
-              'bg-white/[0.02] text-zinc-500 border border-white/5',
-              'hover:bg-[#FFCC00]/10 hover:text-[#FFCC00] hover:border-[#FFCC00]/20',
+              'bg-white/[0.02] text-muted border border-border/50',
+              'hover:bg-cba-gold/10 hover:text-cba-gold hover:border-cba-gold/20',
               'btn-press transition-all',
               disabled && 'opacity-50 cursor-not-allowed',
             )}
@@ -139,7 +139,7 @@ export function UploadZone({
         <div className="mt-4 space-y-3">
           {/* Batch summary (only for multiple files) */}
           {showBatchSummary && (
-            <div className="p-3 rounded-xl neu-raised-sm border border-white/5">
+            <div className="p-3 rounded-xl neu-raised-sm border border-border/50">
               <BatchSummaryBar files={files} onClearCompleted={clearCompleted} />
             </div>
           )}
@@ -180,8 +180,8 @@ export function UploadZone({
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg',
                 'text-[8px] font-black uppercase tracking-[0.2em]',
-                'text-zinc-600 bg-white/[0.02] border border-white/5',
-                'hover:text-[#FFCC00] hover:bg-[#FFCC00]/5 hover:border-[#FFCC00]/20',
+                'text-zinc-600 bg-white/[0.02] border border-border/50',
+                'hover:text-cba-gold hover:bg-cba-gold/5 hover:border-cba-gold/20',
                 'transition-all',
                 disabled && 'opacity-50 cursor-not-allowed',
               )}

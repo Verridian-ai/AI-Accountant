@@ -201,8 +201,8 @@ export function PriceTracker() {
               onClick={() => dispatch({ type: 'SET_TAB', tab: tab.id })}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 state.activeTab === tab.id
-                  ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                  ? 'bg-cba-gold/20 text-cba-gold ring-1 ring-[#FFCC00]/30'
+                  : 'text-muted hover:text-primary hover:bg-overlay'
               }`}
             >
               {tab.label}
@@ -211,46 +211,46 @@ export function PriceTracker() {
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
             <input
               type="text"
               placeholder="Search symbol..."
               value={state.searchQuery}
               onChange={(e) => dispatch({ type: 'SET_SEARCH', query: e.target.value })}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="neu-inset pl-8 pr-3 py-1.5 rounded-lg text-xs text-white bg-transparent w-40 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="neu-inset pl-8 pr-3 py-1.5 rounded-lg text-xs text-primary bg-transparent w-40 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <button
             onClick={handleRefresh}
             disabled={state.refreshing}
-            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-[#FFCC00] transition-colors"
+            className="neu-raised-sm p-1.5 rounded-lg text-secondary hover:text-cba-gold transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${state.refreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {state.searching && <div className="text-xs text-zinc-500">Searching...</div>}
+      {state.searching && <div className="text-xs text-muted">Searching...</div>}
 
       {/* Price History Chart */}
       {state.selectedSymbol && (
         <div className="neu-raised rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-white">{state.selectedSymbol} - 30 Day History</h3>
+            <h3 className="text-sm font-bold text-primary">{state.selectedSymbol} - 30 Day History</h3>
             <button
               onClick={() => dispatch({ type: 'CLEAR_SYMBOL' })}
-              className="text-xs text-zinc-500 hover:text-white"
+              className="text-xs text-muted hover:text-primary"
             >
               Close
             </button>
           </div>
           {state.historyLoading ? (
-            <div className="h-48 flex items-center justify-center text-zinc-500 text-sm">
+            <div className="h-48 flex items-center justify-center text-muted text-sm">
               Loading...
             </div>
           ) : (
-            <Suspense fallback={<div className="h-48 animate-pulse bg-white/5 rounded-xl" />}>
+            <Suspense fallback={<div className="h-48 animate-pulse bg-overlay rounded-xl" />}>
               <LazyPriceHistoryChart data={state.history} formatPrice={formatPrice} />
             </Suspense>
           )}
@@ -268,7 +268,7 @@ export function PriceTracker() {
             </div>
           ))
         ) : displayPrices.length === 0 ? (
-          <div className="col-span-full text-center py-8 text-zinc-500 text-sm">
+          <div className="col-span-full text-center py-8 text-muted text-sm">
             No prices available
           </div>
         ) : (
@@ -280,14 +280,14 @@ export function PriceTracker() {
                 onClick={() => loadHistory(item.symbol)}
                 className={`neu-raised rounded-2xl p-4 text-left hover:scale-[1.02] transition-all border ${
                   state.selectedSymbol === item.symbol
-                    ? 'border-[#FFCC00]/40'
+                    ? 'border-cba-gold/40'
                     : isUp
                       ? 'border-emerald-500/10 hover:border-emerald-500/30'
                       : 'border-red-500/10 hover:border-red-500/30'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-[#FFCC00] uppercase tracking-wider">
+                  <span className="text-xs font-bold text-cba-gold uppercase tracking-wider">
                     {item.symbol}
                   </span>
                   <span
@@ -300,8 +300,8 @@ export function PriceTracker() {
                     {item.type}
                   </span>
                 </div>
-                <p className="text-xs text-zinc-500 truncate mb-1">{item.name}</p>
-                <p className="text-lg font-bold text-white">${formatPrice(item.price)}</p>
+                <p className="text-xs text-muted truncate mb-1">{item.name}</p>
+                <p className="text-lg font-bold text-primary">${formatPrice(item.price)}</p>
                 <div
                   className={`flex items-center gap-1 mt-1 text-xs font-medium ${isUp ? 'text-emerald-400' : 'text-red-400'}`}
                 >

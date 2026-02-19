@@ -39,7 +39,7 @@ function ratingBg(metric: string, value: number): string {
     if (value <= 25) return 'border-yellow-500/20';
     return 'border-red-500/20';
   }
-  return 'border-white/10';
+  return 'border-border';
 }
 
 const formatDollar = (cents: number) =>
@@ -85,7 +85,7 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
 
   if (!forecastId) {
     return (
-      <div className="neu-inset rounded-2xl p-8 text-center text-zinc-500">
+      <div className="neu-inset rounded-2xl p-8 text-center text-muted">
         Select a forecast to view accuracy metrics
       </div>
     );
@@ -95,8 +95,8 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
     return (
       <div className="neu-inset rounded-2xl p-8 text-center">
         <AlertTriangle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-        <p className="text-zinc-400 text-sm">{error}</p>
-        <button onClick={loadAccuracy} className="mt-3 text-xs text-[#FFCC00] hover:underline">
+        <p className="text-secondary text-sm">{error}</p>
+        <button onClick={loadAccuracy} className="mt-3 text-xs text-cba-gold hover:underline">
           Retry
         </button>
       </div>
@@ -147,7 +147,7 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
         <button
           onClick={updateActuals}
           disabled={loading}
-          className="neu-raised-sm px-3 py-1.5 rounded-xl text-xs font-bold text-[#FFCC00] hover:bg-white/5 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+          className="neu-raised-sm px-3 py-1.5 rounded-xl text-xs font-bold text-cba-gold hover:bg-overlay transition-colors disabled:opacity-50 flex items-center gap-1.5"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Update Actuals
@@ -158,9 +158,9 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="neu-raised rounded-2xl p-5 animate-pulse">
-              <div className="h-4 w-16 bg-white/10 rounded mb-3" />
-              <div className="h-8 w-24 bg-white/10 rounded mb-2" />
-              <div className="h-3 w-20 bg-white/5 rounded" />
+              <div className="h-4 w-16 bg-overlay-hover rounded mb-3" />
+              <div className="h-8 w-24 bg-overlay-hover rounded mb-2" />
+              <div className="h-3 w-20 bg-overlay rounded" />
             </div>
           ))}
         </div>
@@ -177,14 +177,14 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
                   <div className="neu-inset p-1.5 rounded-lg">
                     <Icon className={`w-4 h-4 ${ratingColor(card.metric, card.raw)}`} />
                   </div>
-                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-secondary uppercase tracking-wider">
                     {card.label}
                   </span>
                 </div>
                 <p className={`text-2xl font-bold ${ratingColor(card.metric, card.raw)}`}>
                   {card.value}
                 </p>
-                <p className="text-[11px] text-zinc-500 mt-1">{card.desc}</p>
+                <p className="text-[11px] text-muted mt-1">{card.desc}</p>
               </div>
             );
           })}

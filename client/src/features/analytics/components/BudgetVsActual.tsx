@@ -83,8 +83,8 @@ export function BudgetVsActual() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[200px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[200px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
@@ -94,8 +94,8 @@ export function BudgetVsActual() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <Target className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Budget vs Actual
           </span>
         </div>
@@ -109,8 +109,8 @@ export function BudgetVsActual() {
                 className={cn(
                   'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
                   periodType === pt
-                    ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                    : 'text-zinc-500 hover:text-zinc-300',
+                    ? 'bg-cba-gold text-base'
+                    : 'text-muted hover:text-primary',
                 )}
               >
                 {pt}
@@ -120,7 +120,7 @@ export function BudgetVsActual() {
           <button
             type="button"
             onClick={loadBudgets}
-            className="p-2 rounded-xl text-zinc-600 hover:text-[#FFCC00] hover:bg-white/5 transition-all"
+            className="p-2 rounded-xl text-zinc-600 hover:text-cba-gold hover:bg-overlay transition-all"
             title="Copy from last period"
           >
             <Copy className="w-3.5 h-3.5" />
@@ -129,9 +129,9 @@ export function BudgetVsActual() {
       </div>
 
       {/* Table */}
-      <div className="neu-raised rounded-2xl border border-white/5 overflow-hidden">
+      <div className="neu-raised rounded-2xl border border-border/50 overflow-hidden">
         {/* Desktop table header */}
-        <div className="hidden sm:grid grid-cols-[1fr_100px_100px_100px_140px_60px] gap-3 px-5 py-3 border-b border-white/5 bg-white/[0.01]">
+        <div className="hidden sm:grid grid-cols-[1fr_100px_100px_100px_140px_60px] gap-3 px-5 py-3 border-b border-border/50 bg-white/[0.01]">
           <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
             Category
           </span>
@@ -161,7 +161,7 @@ export function BudgetVsActual() {
               <div key={budget.id} className="group">
                 {/* Desktop layout */}
                 <div className="hidden sm:grid grid-cols-[1fr_100px_100px_100px_140px_60px] gap-3 px-5 py-3 items-center hover:bg-white/[0.02] transition-colors">
-                  <span className="text-xs font-bold text-zinc-200 truncate">
+                  <span className="text-xs font-bold text-primary truncate">
                     {budget.category}
                   </span>
 
@@ -170,16 +170,16 @@ export function BudgetVsActual() {
                       type="number"
                       value={editAmount}
                       onChange={(e) => setEditAmount(e.target.value)}
-                      className="bg-white/5 border border-[#FFCC00]/30 rounded-lg px-2 py-1 text-xs text-zinc-200 text-right outline-none w-full"
+                      className="bg-overlay border border-cba-gold/30 rounded-lg px-2 py-1 text-xs text-primary text-right outline-none w-full"
                       autoFocus
                     />
                   ) : (
-                    <span className="text-xs font-black text-zinc-400 text-right tabular-nums">
+                    <span className="text-xs font-black text-secondary text-right tabular-nums">
                       {formatCurrency(budget.amountCents)}
                     </span>
                   )}
 
-                  <span className="text-xs font-black text-zinc-200 text-right tabular-nums">
+                  <span className="text-xs font-black text-primary text-right tabular-nums">
                     {formatCurrency(budget.actualCents)}
                   </span>
 
@@ -194,7 +194,7 @@ export function BudgetVsActual() {
                   </span>
 
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+                    <div className="flex-1 h-2 rounded-full bg-overlay overflow-hidden">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
@@ -239,7 +239,7 @@ export function BudgetVsActual() {
                     <button
                       type="button"
                       onClick={() => startEdit(budget)}
-                      className="p-1 rounded text-zinc-700 hover:text-[#FFCC00] transition-colors opacity-0 group-hover:opacity-100"
+                      className="p-1 rounded text-zinc-700 hover:text-cba-gold transition-colors opacity-0 group-hover:opacity-100"
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
@@ -249,7 +249,7 @@ export function BudgetVsActual() {
                 {/* Mobile layout */}
                 <div className="sm:hidden px-4 py-3 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-zinc-200">{budget.category}</span>
+                    <span className="text-xs font-bold text-primary">{budget.category}</span>
                     {(overBudget || warning) && (
                       <Badge
                         variant={overBudget ? 'destructive' : 'warning'}
@@ -259,7 +259,7 @@ export function BudgetVsActual() {
                       </Badge>
                     )}
                   </div>
-                  <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div className="h-2 rounded-full bg-overlay overflow-hidden">
                     <div
                       className={cn(
                         'h-full rounded-full',
@@ -268,7 +268,7 @@ export function BudgetVsActual() {
                       style={{ width: `${Math.min(budget.utilizationPercent, 100)}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[9px] text-zinc-500">
+                  <div className="flex justify-between text-[9px] text-muted">
                     <span>Budget: {formatCurrency(budget.amountCents)}</span>
                     <span>Actual: {formatCurrency(budget.actualCents)}</span>
                   </div>
@@ -279,12 +279,12 @@ export function BudgetVsActual() {
         </div>
 
         {/* Total Row */}
-        <div className="px-5 py-4 border-t border-white/10 bg-white/[0.02]">
+        <div className="px-5 py-4 border-t border-border bg-white/[0.02]">
           <div className="hidden sm:grid grid-cols-[1fr_100px_100px_100px_140px_60px] gap-3 items-center">
-            <span className="text-xs font-black text-[#FFCC00] uppercase tracking-wider">
+            <span className="text-xs font-black text-cba-gold uppercase tracking-wider">
               Total
             </span>
-            <span className="text-xs font-black text-zinc-300 text-right tabular-nums">
+            <span className="text-xs font-black text-primary text-right tabular-nums">
               {formatCurrency(totalBudget)}
             </span>
             <span className="text-xs font-black text-zinc-100 text-right tabular-nums">
@@ -300,7 +300,7 @@ export function BudgetVsActual() {
               {formatCurrency(totalVariance)}
             </span>
             <div className="flex items-center gap-2">
-              <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+              <div className="flex-1 h-2 rounded-full bg-overlay overflow-hidden">
                 <div
                   className={cn('h-full rounded-full', utilizationColor(totalUtilization))}
                   style={{ width: `${Math.min(totalUtilization, 100)}%` }}
@@ -318,7 +318,7 @@ export function BudgetVsActual() {
             <span />
           </div>
           <div className="sm:hidden flex justify-between items-center">
-            <span className="text-xs font-black text-[#FFCC00] uppercase">Total</span>
+            <span className="text-xs font-black text-cba-gold uppercase">Total</span>
             <span className="text-sm font-black text-zinc-100">
               {formatCurrency(totalActual)} / {formatCurrency(totalBudget)}
             </span>

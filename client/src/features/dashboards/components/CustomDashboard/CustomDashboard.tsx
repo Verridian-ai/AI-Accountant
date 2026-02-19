@@ -9,6 +9,13 @@ import { BASE_URL, getAuthHeaders } from '../../../../api';
 import { renderWidget } from './widgetRenderer';
 import type { CustomDashboardProps } from './types';
 
+async function fetchWidgetData(url: string, headers: HeadersInit): Promise<unknown[]> {
+  const res = await fetch(url, { headers });
+  const data = (await res.json()) as unknown;
+  const obj = data as Record<string, unknown>;
+  return Array.isArray(data) ? (data as unknown[]) : ((obj.transactions ?? obj.data ?? []) as unknown[]);
+}
+
 export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
   const {
     dashboard,
@@ -33,12 +40,8 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
         const url = w.dataSourceUrl.startsWith('http')
           ? w.dataSourceUrl
           : `${BASE_URL}${w.dataSourceUrl}`;
-        fetch(url, { headers: getAuthHeaders() })
-          .then((res) => res.json())
-          .then((data) => {
-            const items = Array.isArray(data) ? data : (data.transactions ?? data.data ?? []);
-            setWidgetData((prev) => ({ ...prev, [w.id]: items }));
-          })
+        fetchWidgetData(url, getAuthHeaders())
+          .then((items) => setWidgetData((prev) => ({ ...prev, [w.id]: items })))
           .catch(() => {
             // Silently fail - widget will show demo data
           });
@@ -76,7 +79,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 text-[#FFCC00] animate-spin" />
+        <Loader2 className="w-8 h-8 text-cba-gold animate-spin" />
       </div>
     );
   }
@@ -96,14 +99,14 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
         <div>
           <h2 className="text-xl font-bold text-zinc-100">{dashboard?.name ?? 'Dashboard'}</h2>
           {dashboard?.description && (
-            <p className="text-sm text-zinc-500 mt-0.5">{dashboard.description}</p>
+            <p className="text-sm text-muted mt-0.5">{dashboard.description}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
           {editMode && (
             <button
               onClick={() => setShowPicker(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-[#FFCC00] border border-[#FFCC00]/30 rounded-xl hover:bg-[#FFCC00]/10 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-cba-gold border border-cba-gold/30 rounded-xl hover:bg-cba-gold/10 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Widget
@@ -113,7 +116,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-[#FFCC00] text-[#0a0a0f] rounded-xl font-bold text-sm hover:bg-[#FFE066] transition-colors btn-press"
+              className="flex items-center gap-2 px-4 py-2 bg-cba-gold text-base rounded-xl font-bold text-sm hover:bg-cba-gold-light transition-colors btn-press"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save
@@ -121,7 +124,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
           ) : (
             <button
               onClick={() => setEditMode(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-[#FFCC00] neu-raised-sm rounded-xl hover:bg-[#FFCC00]/10 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-bold text-cba-gold neu-raised-sm rounded-xl hover:bg-cba-gold/10 transition-colors"
             >
               <Pencil className="w-4 h-4" />
               Edit
@@ -134,10 +137,10 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
       {widgets.length === 0 ? (
         <div className="neu-inset rounded-2xl p-12 flex flex-col items-center justify-center text-center">
           <div className="neu-raised p-4 rounded-2xl mb-4">
-            <Plus className="w-8 h-8 text-zinc-500" />
+            <Plus className="w-8 h-8 text-muted" />
           </div>
-          <h3 className="text-lg font-bold text-zinc-300 mb-1">No widgets yet</h3>
-          <p className="text-sm text-zinc-500 mb-4">
+          <h3 className="text-lg font-bold text-primary mb-1">No widgets yet</h3>
+          <p className="text-sm text-muted mb-4">
             Click Edit and then Add Widget to start building your dashboard
           </p>
           <button
@@ -145,7 +148,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
               setEditMode(true);
               setShowPicker(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#FFCC00] text-[#0a0a0f] rounded-xl font-bold text-sm hover:bg-[#FFE066] transition-colors btn-press"
+            className="flex items-center gap-2 px-4 py-2.5 bg-cba-gold text-base rounded-xl font-bold text-sm hover:bg-cba-gold-light transition-colors btn-press"
           >
             <Plus className="w-4 h-4" />
             Add Your First Widget
@@ -157,8 +160,8 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
             <div
               key={widget.id}
               className={cn(
-                'neu-raised rounded-2xl overflow-hidden border border-white/5 transition-all duration-200',
-                editMode && 'hover:border-[#FFCC00]/30',
+                'neu-raised rounded-2xl overflow-hidden border border-border/50 transition-all duration-200',
+                editMode && 'hover:border-cba-gold/30',
               )}
               style={{
                 gridColumn: `span ${Math.min(widget.position.width, 12)}`,
@@ -166,19 +169,19 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
               }}
             >
               {editMode && (
-                <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 bg-white/[0.02]">
-                  <span className="text-xs font-bold text-zinc-400 truncate">{widget.title}</span>
+                <div className="flex items-center justify-between px-3 py-2 border-b border-border/50 bg-white/[0.02]">
+                  <span className="text-xs font-bold text-secondary truncate">{widget.title}</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setConfigWidget(widget)}
-                      className="p-1 rounded text-zinc-500 hover:text-[#FFCC00] transition-colors"
+                      className="p-1 rounded text-muted hover:text-cba-gold transition-colors"
                       title="Configure"
                     >
                       <Settings2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => removeWidget(widget.id)}
-                      className="p-1 rounded text-zinc-500 hover:text-red-400 transition-colors"
+                      className="p-1 rounded text-muted hover:text-red-400 transition-colors"
                       title="Remove"
                     >
                       <X className="w-3.5 h-3.5" />

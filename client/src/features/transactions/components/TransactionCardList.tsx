@@ -41,7 +41,7 @@ export function TransactionCardList({
 
   if (transactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
+      <div className="flex flex-col items-center justify-center py-12 text-muted">
         <Search className="h-8 w-8 mb-2 opacity-50" />
         <span className="text-xs font-bold uppercase tracking-widest">No transactions found</span>
       </div>

@@ -90,13 +90,13 @@ export function TransfersPage() {
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
           Cross-Account Intelligence
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Confirm transfer matches, visualise money flow, and calculate net positions
         </p>
       </div>
 
       {/* Header bar: Detect button + Summary stats */}
-      <div className="neu-raised rounded-2xl border border-white/5 p-4">
+      <div className="neu-raised rounded-2xl border border-border/50 p-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {/* Left: Detect button */}
           <button
@@ -105,7 +105,7 @@ export function TransfersPage() {
             disabled={detecting}
             className={cn(
               'flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all btn-press shrink-0',
-              'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFE066] disabled:opacity-60 disabled:cursor-not-allowed',
+              'bg-cba-gold text-base hover:bg-cba-gold-light disabled:opacity-60 disabled:cursor-not-allowed',
             )}
           >
             {detecting ? (
@@ -124,29 +124,29 @@ export function TransfersPage() {
           {/* Right: Summary stats */}
           <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
             <div className="neu-inset rounded-xl px-3 py-2 flex items-center gap-2">
-              <GitCompareArrows className="w-3.5 h-3.5 text-[#FFCC00]" />
-              <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">
+              <GitCompareArrows className="w-3.5 h-3.5 text-cba-gold" />
+              <span className="text-[9px] font-black text-muted uppercase tracking-wider">
                 Matched
               </span>
-              <span className="text-xs font-black text-zinc-200">
+              <span className="text-xs font-black text-primary">
                 {summary ? summary.totalMatched : '\u2014'}
               </span>
             </div>
             <div className="neu-inset rounded-xl px-3 py-2 flex items-center gap-2">
               <Wallet className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">
+              <span className="text-[9px] font-black text-muted uppercase tracking-wider">
                 Owner
               </span>
-              <span className="text-xs font-black text-zinc-200">
+              <span className="text-xs font-black text-primary">
                 {summary ? formatAUD(summary.ownerContributions) : '\u2014'}
               </span>
             </div>
             <div className="neu-inset rounded-xl px-3 py-2 flex items-center gap-2">
               <CreditCard className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">
+              <span className="text-[9px] font-black text-muted uppercase tracking-wider">
                 CC Payments
               </span>
-              <span className="text-xs font-black text-zinc-200">
+              <span className="text-xs font-black text-primary">
                 {summary ? formatAUD(summary.creditCardPayments) : '\u2014'}
               </span>
             </div>
@@ -173,8 +173,8 @@ export function TransfersPage() {
               className={cn(
                 'flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all',
                 activeTab === id
-                  ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                  : 'text-zinc-500 hover:text-zinc-300',
+                  ? 'bg-cba-gold text-base'
+                  : 'text-muted hover:text-primary',
               )}
             >
               <Icon className="w-4 h-4" />

@@ -7,6 +7,6 @@ export const TYPE_STYLES: Record<CategoryType, { bg: string; text: string }> = {
   overtime: { bg: 'bg-purple-500/10', text: 'text-purple-400' },
   allowance: { bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
   deduction: { bg: 'bg-red-500/10', text: 'text-red-400' },
-  super: { bg: 'bg-[#FFCC00]/10', text: 'text-[#FFCC00]' },
+  super: { bg: 'bg-cba-gold/10', text: 'text-cba-gold' },
   leave: { bg: 'bg-teal-500/10', text: 'text-teal-400' },
 };

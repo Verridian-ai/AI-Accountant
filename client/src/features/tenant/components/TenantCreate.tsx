@@ -83,13 +83,13 @@ export function TenantCreate() {
           <Check className="w-8 h-8 text-emerald-400" />
         </div>
         <h2 className="text-2xl font-bold text-zinc-100">Workspace Created!</h2>
-        <p className="text-sm text-zinc-400">
-          Your workspace <span className="text-[#FFCC00] font-bold">{form.name}</span> is ready.
+        <p className="text-sm text-secondary">
+          Your workspace <span className="text-cba-gold font-bold">{form.name}</span> is ready.
         </p>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="px-6 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] transition-colors"
+          className="px-6 py-2.5 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-[#FFD633] transition-colors"
         >
           Go to Workspace
         </button>
@@ -101,7 +101,7 @@ export function TenantCreate() {
     <div className="space-y-6 max-w-3xl mx-auto">
       <div className="text-center">
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Create Workspace</h2>
-        <p className="text-sm text-zinc-500 mt-1">Set up a new workspace for your business</p>
+        <p className="text-sm text-muted mt-1">Set up a new workspace for your business</p>
       </div>
 
       {/* Progress Dots */}
@@ -113,17 +113,17 @@ export function TenantCreate() {
               onClick={() => i < step && setStep(i)}
               className={cn(
                 'flex items-center gap-2 transition-all',
-                i <= step ? 'text-[#FFCC00]' : 'text-zinc-600',
+                i <= step ? 'text-cba-gold' : 'text-zinc-600',
               )}
             >
               <div
                 className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all',
                   i < step
-                    ? 'bg-[#FFCC00] text-[#0a0a0f]'
+                    ? 'bg-cba-gold text-base'
                     : i === step
-                      ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-2 ring-[#FFCC00]/50'
-                      : 'bg-zinc-800 text-zinc-500',
+                      ? 'bg-cba-gold/20 text-cba-gold ring-2 ring-[#FFCC00]/50'
+                      : 'bg-zinc-800 text-muted',
                 )}
               >
                 {i < step ? <Check className="w-4 h-4" /> : i + 1}
@@ -132,7 +132,7 @@ export function TenantCreate() {
             </button>
             {i < STEPS.length - 1 && (
               <div
-                className={cn('w-8 h-0.5 rounded-full', i < step ? 'bg-[#FFCC00]' : 'bg-zinc-800')}
+                className={cn('w-8 h-0.5 rounded-full', i < step ? 'bg-cba-gold' : 'bg-zinc-800')}
               />
             )}
           </div>
@@ -140,12 +140,12 @@ export function TenantCreate() {
       </div>
 
       {/* Step Content */}
-      <div className="neu-raised rounded-2xl border border-white/5 p-6 animate-in fade-in duration-300">
+      <div className="neu-raised rounded-2xl border border-border/50 p-6 animate-in fade-in duration-300">
         {step === 0 && (
           <div className="space-y-5">
             <h3 className="text-lg font-bold text-zinc-100">Business Details</h3>
             <div>
-              <label htmlFor="tenant-name" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              <label htmlFor="tenant-name" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
                 Business Name
               </label>
               <input
@@ -156,27 +156,27 @@ export function TenantCreate() {
                   setForm({ ...form, name: e.target.value, slug: autoSlug(e.target.value) })
                 }
                 placeholder="My Business Pty Ltd"
-                className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
+                className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
                 autoFocus
               />
             </div>
             <div>
-              <label htmlFor="tenant-slug" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              <label htmlFor="tenant-slug" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
                 Workspace URL
               </label>
               <div className="flex items-center neu-inset rounded-xl">
-                <span className="text-sm text-zinc-500 pl-3">goldledger.app/</span>
+                <span className="text-sm text-muted pl-3">goldledger.app/</span>
                 <input
                   id="tenant-slug"
                   type="text"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  className="flex-1 px-1 py-2.5 text-sm text-zinc-200 bg-transparent outline-none"
+                  className="flex-1 px-1 py-2.5 text-sm text-primary bg-transparent outline-none"
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="tenant-abn" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              <label htmlFor="tenant-abn" className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5">
                 ABN (optional)
               </label>
               <input
@@ -185,7 +185,7 @@ export function TenantCreate() {
                 value={form.abn}
                 onChange={(e) => setForm({ ...form, abn: e.target.value })}
                 placeholder="XX XXX XXX XXX"
-                className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
+                className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
               />
             </div>
           </div>
@@ -206,25 +206,25 @@ export function TenantCreate() {
                     className={cn(
                       'flex items-start gap-3 p-4 rounded-xl border text-left transition-all',
                       selected
-                        ? 'border-[#FFCC00]/50 bg-[#FFCC00]/5 shadow-[0_0_20px_rgba(255,204,0,0.08)]'
-                        : 'border-white/5 hover:border-white/10 hover:bg-white/[0.02]',
+                        ? 'border-cba-gold/50 bg-cba-gold/5 shadow-[0_0_20px_rgba(255,204,0,0.08)]'
+                        : 'border-border/50 hover:border-border hover:bg-white/[0.02]',
                     )}
                   >
                     <div
                       className={cn(
                         'neu-inset p-2 rounded-xl shrink-0',
-                        selected ? 'text-[#FFCC00]' : 'text-zinc-500',
+                        selected ? 'text-cba-gold' : 'text-muted',
                       )}
                     >
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className={cn('font-bold', selected ? 'text-[#FFCC00]' : 'text-zinc-200')}>
+                      <p className={cn('font-bold', selected ? 'text-cba-gold' : 'text-primary')}>
                         {et.label}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">{et.desc}</p>
+                      <p className="text-xs text-muted mt-0.5">{et.desc}</p>
                     </div>
-                    {selected && <Check className="w-5 h-5 text-[#FFCC00] shrink-0 ml-auto" />}
+                    {selected && <Check className="w-5 h-5 text-cba-gold shrink-0 ml-auto" />}
                   </button>
                 );
               })}
@@ -249,25 +249,25 @@ export function TenantCreate() {
             <h3 className="text-lg font-bold text-zinc-100">Confirm & Create</h3>
             <div className="neu-inset rounded-xl p-5 text-left space-y-3 max-w-sm mx-auto">
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">Name</span>
-                <span className="text-zinc-200 font-bold">{form.name}</span>
+                <span className="text-muted">Name</span>
+                <span className="text-primary font-bold">{form.name}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">Type</span>
-                <span className="text-zinc-200 font-bold">
+                <span className="text-muted">Type</span>
+                <span className="text-primary font-bold">
                   {form.entityType.replace(/_/g, ' ')}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-500">Plan</span>
-                <span className="text-[#FFCC00] font-bold">
+                <span className="text-muted">Plan</span>
+                <span className="text-cba-gold font-bold">
                   {form.planId.charAt(0).toUpperCase() + form.planId.slice(1)}
                 </span>
               </div>
               {form.abn && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500">ABN</span>
-                  <span className="text-zinc-200 font-bold">{form.abn}</span>
+                  <span className="text-muted">ABN</span>
+                  <span className="text-primary font-bold">{form.abn}</span>
                 </div>
               )}
             </div>
@@ -282,7 +282,7 @@ export function TenantCreate() {
           type="button"
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           disabled={step === 0}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-zinc-400 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-secondary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
@@ -291,7 +291,7 @@ export function TenantCreate() {
             type="button"
             onClick={() => setStep((s) => s + 1)}
             disabled={!canAdvance()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-[#FFD633] transition-colors disabled:opacity-50"
           >
             Next <ArrowRight className="w-4 h-4" />
           </button>
@@ -300,7 +300,7 @@ export function TenantCreate() {
             type="button"
             onClick={handleCreate}
             disabled={creating}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-[#FFD633] transition-colors disabled:opacity-50"
           >
             {creating ? 'Creating...' : 'Create Workspace'}
           </button>

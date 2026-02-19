@@ -86,7 +86,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="p-5 rounded-[1.5rem] neu-raised-sm border border-white/5 flex items-center justify-between"
+              className="p-5 rounded-[1.5rem] neu-raised-sm border border-border/50 flex items-center justify-between"
             >
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-4 w-1/2" />
@@ -127,7 +127,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
             <h3 className="text-xl font-black text-amber-500 uppercase tracking-tight">
               Intelligence Audit
             </h3>
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">
+            <p className="text-[10px] font-bold text-muted uppercase tracking-widest mt-0.5">
               {pending.length} nodes require human verification
             </p>
           </div>
@@ -148,7 +148,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
               'transition-all duration-300 rounded-[1.5rem] overflow-hidden border',
               expandedId === item.id
                 ? 'neu-raised border-amber-500/20 shadow-2xl scale-[1.02] z-10'
-                : 'neu-raised-sm border-white/5 hover:border-amber-500/10',
+                : 'neu-raised-sm border-border/50 hover:border-amber-500/10',
             )}
           >
             <div
@@ -197,20 +197,20 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
             </div>
 
             {expandedId === item.id && (
-              <div className="p-6 bg-black/20 border-t border-white/5 animate-in slide-in-from-top-2 duration-300">
+              <div className="p-6 bg-overlay border-t border-border/50 animate-in slide-in-from-top-2 duration-300">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <div className="p-4 neu-inset rounded-2xl border border-white/5">
+                  <div className="p-4 neu-inset rounded-2xl border border-border/50">
                     <div className="flex items-center gap-2 mb-2">
-                      <Brain className="w-3.5 h-3.5 text-[#FFCC00]" />
-                      <span className="text-[10px] font-black text-[#FFCC00] uppercase tracking-widest">
+                      <Brain className="w-3.5 h-3.5 text-cba-gold" />
+                      <span className="text-[10px] font-black text-cba-gold uppercase tracking-widest">
                         AI Inference
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-200 font-bold mb-2">
-                      Suggested: <span className="text-[#FFCC00]">{item.suggestedCategory}</span>
+                    <p className="text-xs text-primary font-bold mb-2">
+                      Suggested: <span className="text-cba-gold">{item.suggestedCategory}</span>
                     </p>
                     {item.aiReasoning && (
-                      <p className="text-[11px] text-zinc-500 italic leading-relaxed">
+                      <p className="text-[11px] text-muted italic leading-relaxed">
                         "{item.aiReasoning}"
                       </p>
                     )}
@@ -232,8 +232,8 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
                         size="sm"
                       />
                     </div>
-                    <div className="flex items-center justify-between p-3 neu-inset rounded-xl border border-white/5">
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                    <div className="flex items-center justify-between p-3 neu-inset rounded-xl border border-border/50">
+                      <span className="text-[10px] font-bold text-muted uppercase tracking-widest">
                         Apply GST
                       </span>
                       <button
@@ -241,7 +241,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
                         className={cn(
                           'px-4 py-1.5 rounded-lg text-[9px] font-black tracking-widest transition-all',
                           editGst
-                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                            ? 'bg-emerald-500 text-primary shadow-lg shadow-emerald-500/20'
                             : 'bg-zinc-800 text-zinc-600',
                         )}
                       >
@@ -256,7 +256,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
                     type="button"
                     onClick={() => handleResolve(item.id, 'approve')}
                     disabled={resolving === item.id}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 text-[#0a0a0f] rounded-xl text-[10px] font-black uppercase tracking-[0.15em] hover:brightness-110 btn-press disabled:opacity-50 shadow-lg shadow-emerald-500/10"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 text-base rounded-xl text-[10px] font-black uppercase tracking-[0.15em] hover:brightness-110 btn-press disabled:opacity-50 shadow-lg shadow-emerald-500/10"
                   >
                     {resolving === item.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -269,7 +269,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
                     type="button"
                     onClick={() => handleResolve(item.id, 'modify')}
                     disabled={resolving === item.id}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.15em] hover:brightness-110 btn-press disabled:opacity-50 shadow-lg shadow-blue-600/10"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-primary rounded-xl text-[10px] font-black uppercase tracking-[0.15em] hover:brightness-110 btn-press disabled:opacity-50 shadow-lg shadow-blue-600/10"
                   >
                     <Edit2 className="w-4 h-4" /> Override Data
                   </button>
@@ -277,7 +277,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
                     type="button"
                     onClick={() => handleResolve(item.id, 'reject')}
                     disabled={resolving === item.id}
-                    className="px-6 py-3 neu-raised-sm text-zinc-500 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] hover:text-red-400 btn-press border border-white/5"
+                    className="px-6 py-3 neu-raised-sm text-muted rounded-xl text-[10px] font-black uppercase tracking-[0.15em] hover:text-red-400 btn-press border border-border/50"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -293,7 +293,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
           <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">
             + {pending.length - 5} remaining packets in buffer
           </p>
-          <button className="text-[10px] font-black text-[#FFCC00] hover:brightness-110 flex items-center gap-1 uppercase tracking-widest py-2 px-4 neu-raised-sm rounded-xl">
+          <button className="text-[10px] font-black text-cba-gold hover:brightness-110 flex items-center gap-1 uppercase tracking-widest py-2 px-4 neu-raised-sm rounded-xl">
             Process All <ChevronRight className="w-3 h-3" />
           </button>
         </div>

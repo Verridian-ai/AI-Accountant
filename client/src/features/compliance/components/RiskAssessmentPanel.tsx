@@ -69,7 +69,7 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FFCC00]" />
+        <Loader2 className="h-8 w-8 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -85,7 +85,7 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
       <div className="flex items-center justify-end">
         <button
           onClick={loadRisk}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl neu-raised-sm text-zinc-400 hover:text-[#FFCC00] text-sm font-bold transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl neu-raised-sm text-secondary hover:text-cba-gold text-sm font-bold transition-colors"
         >
           <RefreshCw className="h-4 w-4" />
           Refresh
@@ -127,7 +127,7 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
               {scoreLabel(score)}
             </text>
           </svg>
-          <p className="text-zinc-500 text-xs text-center">
+          <p className="text-muted text-xs text-center">
             Risk score: 0 (safest) to 100 (critical)
           </p>
         </div>
@@ -145,20 +145,20 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-zinc-200 text-sm font-bold">
+                      <span className="text-primary text-sm font-bold">
                         {factorLabels[key] ?? key}
                       </span>
-                      <span className="text-xs text-zinc-500 font-medium">
+                      <span className="text-xs text-muted font-medium">
                         Weight: {Math.round(factor.weight * 100)}%
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+                    <div className="w-full h-2 rounded-full bg-overlay overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-700"
                         style={{ width: `${factor.score}%`, backgroundColor: factorColor }}
                       />
                     </div>
-                    <p className="text-zinc-500 text-[11px] mt-1">{factor.details}</p>
+                    <p className="text-muted text-[11px] mt-1">{factor.details}</p>
                   </div>
                   <span className="text-lg font-bold tabular-nums" style={{ color: factorColor }}>
                     {factor.score}
@@ -172,11 +172,11 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
       {/* Recommendations */}
       {risk?.recommendations && risk.recommendations.length > 0 && (
         <div className="neu-raised rounded-2xl p-4">
-          <h4 className="text-zinc-200 font-bold text-sm mb-3">Recommendations</h4>
+          <h4 className="text-primary font-bold text-sm mb-3">Recommendations</h4>
           <ul className="space-y-2">
             {risk.recommendations.map((rec, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-zinc-400">
-                <span className="text-[#FFCC00] font-bold mt-0.5">{i + 1}.</span>
+              <li key={i} className="flex items-start gap-2 text-sm text-secondary">
+                <span className="text-cba-gold font-bold mt-0.5">{i + 1}.</span>
                 <span>{rec}</span>
               </li>
             ))}

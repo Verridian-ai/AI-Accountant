@@ -42,7 +42,7 @@ export function ValuationReport() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -51,13 +51,13 @@ export function ValuationReport() {
     return (
       <div className="neu-raised rounded-2xl p-12 text-center">
         <PieChart className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-        <p className="text-zinc-500">No valuation data available</p>
+        <p className="text-muted">No valuation data available</p>
       </div>
     );
   }
 
   const barColors = [
-    'bg-[#FFCC00]',
+    'bg-cba-gold',
     'bg-emerald-500',
     'bg-blue-500',
     'bg-purple-500',
@@ -71,17 +71,17 @@ export function ValuationReport() {
     <div className="space-y-6">
       {/* Date Selector */}
       <div className="flex items-center gap-3">
-        <label className="text-sm text-zinc-500">As of date:</label>
+        <label className="text-sm text-muted">As of date:</label>
         <input
           type="date"
           value={asOfDate}
           onChange={(e) => setAsOfDate(e.target.value)}
-          className="px-4 py-2 rounded-xl neu-inset bg-transparent text-zinc-300 text-sm"
+          className="px-4 py-2 rounded-xl neu-inset bg-transparent text-primary text-sm"
         />
         {asOfDate && (
           <button
             onClick={() => setAsOfDate('')}
-            className="text-xs text-zinc-500 hover:text-zinc-300"
+            className="text-xs text-muted hover:text-primary"
           >
             Clear
           </button>
@@ -89,19 +89,19 @@ export function ValuationReport() {
       </div>
 
       {/* Total Value Banner */}
-      <div className="neu-raised rounded-2xl p-6 border border-[#FFCC00]/10">
+      <div className="neu-raised rounded-2xl p-6 border border-cba-gold/10">
         <div className="flex items-center gap-4">
           <div className="neu-inset p-3 rounded-xl">
-            <DollarSign className="w-8 h-8 text-[#FFCC00]" />
+            <DollarSign className="w-8 h-8 text-cba-gold" />
           </div>
           <div>
-            <p className="text-xs text-zinc-500 uppercase font-semibold tracking-wider">
+            <p className="text-xs text-muted uppercase font-semibold tracking-wider">
               Total Inventory Value
             </p>
             <p className="text-3xl font-bold text-gradient-gold">
               {formatAUD(data.totalValueCents)}
             </p>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               {data.totalItems} items •{' '}
               {data.asOfDate
                 ? `As of ${new Date(data.asOfDate).toLocaleDateString('en-AU')}`
@@ -114,8 +114,8 @@ export function ValuationReport() {
       {/* Category Breakdown */}
       {data.categories && data.categories.length > 0 && (
         <div className="neu-raised rounded-2xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-white/5">
-            <h3 className="text-sm font-bold text-zinc-200">Category Breakdown</h3>
+          <div className="px-5 py-3 border-b border-border/50">
+            <h3 className="text-sm font-bold text-primary">Category Breakdown</h3>
           </div>
 
           {/* Horizontal Bar Chart */}
@@ -123,8 +123,8 @@ export function ValuationReport() {
             {data.categories.map((cat, i) => (
               <div key={cat.category} className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-zinc-300 font-medium">{cat.category}</span>
-                  <span className="text-zinc-500">{cat.percentOfTotal.toFixed(1)}%</span>
+                  <span className="text-primary font-medium">{cat.category}</span>
+                  <span className="text-muted">{cat.percentOfTotal.toFixed(1)}%</span>
                 </div>
                 <div className="w-full h-3 rounded-full bg-zinc-800">
                   <div
@@ -143,30 +143,30 @@ export function ValuationReport() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-t border-b border-white/5">
-                  <th className="text-left px-5 py-3 text-xs font-bold text-zinc-500 uppercase">
+                <tr className="border-t border-b border-border/50">
+                  <th className="text-left px-5 py-3 text-xs font-bold text-muted uppercase">
                     Category
                   </th>
-                  <th className="text-right px-5 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-right px-5 py-3 text-xs font-bold text-muted uppercase">
                     Items
                   </th>
-                  <th className="text-right px-5 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-right px-5 py-3 text-xs font-bold text-muted uppercase">
                     Total Value
                   </th>
-                  <th className="text-right px-5 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-right px-5 py-3 text-xs font-bold text-muted uppercase">
                     % of Total
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {data.categories.map((cat) => (
-                  <tr key={cat.category} className="border-b border-white/5">
+                  <tr key={cat.category} className="border-b border-border/50">
                     <td className="px-5 py-3 text-zinc-100 font-medium">{cat.category}</td>
-                    <td className="px-5 py-3 text-right text-zinc-400">{cat.itemCount}</td>
-                    <td className="px-5 py-3 text-right text-zinc-200 font-medium">
+                    <td className="px-5 py-3 text-right text-secondary">{cat.itemCount}</td>
+                    <td className="px-5 py-3 text-right text-primary font-medium">
                       {formatAUD(cat.totalValueCents)}
                     </td>
-                    <td className="px-5 py-3 text-right text-zinc-400">
+                    <td className="px-5 py-3 text-right text-secondary">
                       {cat.percentOfTotal.toFixed(1)}%
                     </td>
                   </tr>
@@ -180,7 +180,7 @@ export function ValuationReport() {
       {/* Export */}
       <div className="flex justify-end">
         <button
-          className="px-4 py-2 rounded-xl neu-raised text-zinc-400 text-sm hover:text-zinc-200"
+          className="px-4 py-2 rounded-xl neu-raised text-secondary text-sm hover:text-primary"
           title="Export available in Professional plan"
           disabled
         >

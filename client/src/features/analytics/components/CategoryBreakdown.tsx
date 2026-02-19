@@ -132,8 +132,8 @@ export function CategoryBreakdown() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
@@ -143,8 +143,8 @@ export function CategoryBreakdown() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <PieChart className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <PieChart className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Category Breakdown
           </span>
         </div>
@@ -156,8 +156,8 @@ export function CategoryBreakdown() {
               className={cn(
                 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
                 mode === 'expenses'
-                  ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                  : 'text-zinc-500 hover:text-zinc-300',
+                  ? 'bg-cba-gold text-base'
+                  : 'text-muted hover:text-primary',
               )}
             >
               Expenses
@@ -168,8 +168,8 @@ export function CategoryBreakdown() {
               className={cn(
                 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
                 mode === 'income'
-                  ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                  : 'text-zinc-500 hover:text-zinc-300',
+                  ? 'bg-cba-gold text-base'
+                  : 'text-muted hover:text-primary',
               )}
             >
               Income
@@ -184,8 +184,8 @@ export function CategoryBreakdown() {
                 className={cn(
                   'px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
                   period === p
-                    ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                    : 'text-zinc-500 hover:text-zinc-300',
+                    ? 'bg-cba-gold text-base'
+                    : 'text-muted hover:text-primary',
                 )}
               >
                 {p}
@@ -195,7 +195,7 @@ export function CategoryBreakdown() {
         </div>
       </div>
 
-      <div className="neu-raised rounded-2xl border border-white/5 p-6">
+      <div className="neu-raised rounded-2xl border border-border/50 p-6">
         <div className="flex flex-col md:flex-row items-center gap-8">
           {/* Donut Chart */}
           <div className="relative shrink-0">
@@ -253,18 +253,18 @@ export function CategoryBreakdown() {
                 className={cn(
                   'w-full flex items-center gap-3 p-2.5 rounded-xl transition-all text-left',
                   selectedCategory === seg.category
-                    ? 'neu-inset border border-white/10'
-                    : 'hover:bg-white/5',
+                    ? 'neu-inset border border-border'
+                    : 'hover:bg-overlay',
                 )}
               >
                 <div
                   className="w-3 h-3 rounded-full shrink-0"
                   style={{ backgroundColor: seg.hexColor }}
                 />
-                <span className="text-xs font-bold text-zinc-300 flex-1 truncate">
+                <span className="text-xs font-bold text-primary flex-1 truncate">
                   {seg.category}
                 </span>
-                <span className="text-xs font-black text-zinc-400 tabular-nums">
+                <span className="text-xs font-black text-secondary tabular-nums">
                   {formatCurrency(seg.total)}
                 </span>
                 <span className="text-[9px] font-bold text-zinc-600 w-10 text-right tabular-nums">

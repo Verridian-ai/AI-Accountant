@@ -10,6 +10,17 @@ import { Check, X, Loader2 } from 'lucide-react';
 
 const API_URL = `${BASE_URL}/api`;
 
+async function fetchSessionStatus(apiUrl: string, sessionId: string): Promise<SessionInfo | null> {
+  const res = await fetch(`${apiUrl}/stream/session/${sessionId}`);
+  if (!res.ok) return null;
+  const data = (await res.json()) as Record<string, unknown>;
+  return {
+    status: ((data.status ?? data.session_status ?? 'pending') as SessionStatus),
+    tokenCount: (data.token_usage as Record<string, number> | undefined)?.totalTokens,
+    latencyMs: data.latency_ms as number | undefined,
+  };
+}
+
 interface StreamingIndicatorProps {
   sessionId: string;
   compact?: boolean;
@@ -31,20 +42,10 @@ export function StreamingIndicator({ sessionId, compact = false }: StreamingIndi
   useEffect(() => {
     if (!sessionId) return;
 
-    const poll = async () => {
-      try {
-        const res = await fetch(`${API_URL}/stream/session/${sessionId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setSession({
-            status: data.status ?? data.session_status ?? 'pending',
-            tokenCount: data.token_usage?.totalTokens,
-            latencyMs: data.latency_ms,
-          });
-        }
-      } catch {
-        // Silent fail on poll
-      }
+    const poll = () => {
+      fetchSessionStatus(API_URL, sessionId)
+        .then((info) => { if (info) setSession(info); })
+        .catch(() => { /* Silent fail on poll */ });
     };
 
     poll();
@@ -65,14 +66,14 @@ export function StreamingIndicator({ sessionId, compact = false }: StreamingIndi
     { color: string; label: string; icon: React.ReactNode }
   > = {
     pending: {
-      color: 'text-zinc-400',
+      color: 'text-secondary',
       label: 'Pending',
       icon: <span className="w-2 h-2 rounded-full bg-zinc-400" />,
     },
     streaming: {
-      color: 'text-[#FFCC00]',
+      color: 'text-cba-gold',
       label: 'Thinking...',
-      icon: <Loader2 className="w-3 h-3 animate-spin text-[#FFCC00]" />,
+      icon: <Loader2 className="w-3 h-3 animate-spin text-cba-gold" />,
     },
     completed: {
       color: 'text-emerald-400',
@@ -102,10 +103,10 @@ export function StreamingIndicator({ sessionId, compact = false }: StreamingIndi
       {cfg.icon}
       <span className="font-medium">{cfg.label}</span>
       {session.status === 'streaming' && (
-        <span className="text-zinc-500">{(elapsed / 1000).toFixed(1)}s</span>
+        <span className="text-muted">{(elapsed / 1000).toFixed(1)}s</span>
       )}
       {session.tokenCount != null && (
-        <span className="text-zinc-500">{session.tokenCount} tokens</span>
+        <span className="text-muted">{session.tokenCount} tokens</span>
       )}
     </div>
   );

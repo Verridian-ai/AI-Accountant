@@ -156,7 +156,7 @@ export function GSTPage() {
       );
     }
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.15em] bg-zinc-500/15 text-zinc-400 border border-zinc-500/20">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.15em] bg-zinc-500/15 text-secondary border border-zinc-500/20">
         UNKNOWN
       </span>
     );
@@ -180,7 +180,7 @@ export function GSTPage() {
           <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gradient-gold">
             GST Dashboard
           </h2>
-          <p className="text-xs sm:text-sm text-zinc-500">
+          <p className="text-xs sm:text-sm text-muted">
             Classify transactions, review GST, and track input tax credits
           </p>
         </div>
@@ -193,8 +193,8 @@ export function GSTPage() {
               className={cn(
                 'flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
                 businessOnly
-                  ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-md'
-                  : 'text-zinc-400 hover:text-zinc-200',
+                  ? 'bg-cba-gold text-base shadow-md'
+                  : 'text-secondary hover:text-primary',
               )}
             >
               <Briefcase className="w-3 h-3" />
@@ -205,8 +205,8 @@ export function GSTPage() {
               className={cn(
                 'flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
                 !businessOnly
-                  ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-md'
-                  : 'text-zinc-400 hover:text-zinc-200',
+                  ? 'bg-cba-gold text-base shadow-md'
+                  : 'text-secondary hover:text-primary',
               )}
             >
               <Wallet className="w-3 h-3" />
@@ -219,7 +219,7 @@ export function GSTPage() {
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="bg-transparent text-zinc-200 text-xs font-medium px-3 py-2.5 min-h-[44px] pr-8 rounded-xl border-none outline-none appearance-none cursor-pointer"
+              className="bg-transparent text-primary text-xs font-medium px-3 py-2.5 min-h-[44px] pr-8 rounded-xl border-none outline-none appearance-none cursor-pointer"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23FFCC00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
@@ -227,7 +227,7 @@ export function GSTPage() {
               }}
             >
               {PERIODS.map((p) => (
-                <option key={p.value} value={p.value} className="bg-[#0a0a0f] text-zinc-200">
+                <option key={p.value} value={p.value} className="bg-base text-primary">
                   {p.label}
                 </option>
               ))}
@@ -238,12 +238,12 @@ export function GSTPage() {
 
       {/* ---- GST Category Summary Cards with Sparklines ---- */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <div className="neu-raised rounded-2xl border border-white/5 p-3 sm:p-4 flex items-center justify-between">
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4 flex items-center justify-between">
           <div>
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
               GST Collected
             </p>
-            <p className="text-lg font-black text-[#FFCC00] tabular-nums">10%</p>
+            <p className="text-lg font-black text-cba-gold tabular-nums">10%</p>
           </div>
           <Sparkline
             data={[820, 950, 870, 1100, 1050, 1200]}
@@ -254,12 +254,12 @@ export function GSTPage() {
             trend="up"
           />
         </div>
-        <div className="neu-raised rounded-2xl border border-white/5 p-4 flex items-center justify-between">
+        <div className="neu-raised rounded-2xl border border-border/50 p-4 flex items-center justify-between">
           <div>
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
               GST Free
             </p>
-            <p className="text-lg font-black text-zinc-200 tabular-nums">0%</p>
+            <p className="text-lg font-black text-primary tabular-nums">0%</p>
           </div>
           <Sparkline
             data={[300, 280, 350, 310, 290, 320]}
@@ -269,12 +269,12 @@ export function GSTPage() {
             trend="flat"
           />
         </div>
-        <div className="neu-raised rounded-2xl border border-white/5 p-4 flex items-center justify-between">
+        <div className="neu-raised rounded-2xl border border-border/50 p-4 flex items-center justify-between">
           <div>
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
               Input Taxed
             </p>
-            <p className="text-lg font-black text-zinc-200 tabular-nums">N/A</p>
+            <p className="text-lg font-black text-primary tabular-nums">N/A</p>
           </div>
           <Sparkline
             data={[50, 60, 45, 70, 55, 65]}
@@ -284,9 +284,9 @@ export function GSTPage() {
             trend="flat"
           />
         </div>
-        <div className="neu-raised rounded-2xl border border-white/5 p-4 flex items-center justify-between">
+        <div className="neu-raised rounded-2xl border border-border/50 p-4 flex items-center justify-between">
           <div>
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
               BAS Ready
             </p>
             <p className="text-lg font-black text-emerald-400 tabular-nums">Q1</p>
@@ -303,15 +303,15 @@ export function GSTPage() {
       </div>
 
       {/* ---- Enrichment Status ---- */}
-      <div className="neu-raised rounded-2xl border border-white/5 p-4">
+      <div className="neu-raised rounded-2xl border border-border/50 p-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary mb-2">
               Enrichment Status
             </p>
             <div className="flex items-center gap-2 flex-wrap">
               {enrichmentLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
+                <Loader2 className="w-4 h-4 animate-spin text-muted" />
               ) : enrichmentStats ? (
                 <>
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.12em] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
@@ -322,7 +322,7 @@ export function GSTPage() {
                     <Clock className="w-3 h-3" />
                     {enrichmentStats.pending} pending
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.12em] bg-zinc-500/15 text-zinc-400 border border-zinc-500/20">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.12em] bg-zinc-500/15 text-secondary border border-zinc-500/20">
                     <HelpCircle className="w-3 h-3" />
                     {enrichmentStats.unknown} unknown
                   </span>
@@ -339,8 +339,8 @@ export function GSTPage() {
             className={cn(
               'neu-raised flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200',
               enrichmentRunning
-                ? 'text-zinc-500 cursor-not-allowed opacity-60'
-                : 'text-[#FFCC00] hover:bg-[#FFCC00]/10 border border-[#FFCC00]/20 hover:border-[#FFCC00]/40',
+                ? 'text-muted cursor-not-allowed opacity-60'
+                : 'text-cba-gold hover:bg-cba-gold/10 border border-cba-gold/20 hover:border-cba-gold/40',
             )}
           >
             {enrichmentRunning ? (
@@ -364,8 +364,8 @@ export function GSTPage() {
               className={cn(
                 'flex items-center gap-1.5 px-3 sm:px-4 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-200 whitespace-nowrap',
                 activeTab === tab.id
-                  ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-md'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]',
+                  ? 'bg-cba-gold text-base shadow-md'
+                  : 'text-secondary hover:text-primary hover:bg-white/[0.03]',
               )}
             >
               {tab.icon}
@@ -392,19 +392,19 @@ export function GSTPage() {
 
         {activeTab === 'merchants' && (
           <div className="space-y-3">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">
               Merchant Intelligence
             </p>
 
             {merchantsLoading ? (
-              <div className="neu-raised rounded-2xl border border-white/5 p-8 flex items-center justify-center">
-                <Loader2 className="w-5 h-5 animate-spin text-[#FFCC00]" />
-                <span className="ml-2 text-sm text-zinc-400">Loading merchants...</span>
+              <div className="neu-raised rounded-2xl border border-border/50 p-8 flex items-center justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-cba-gold" />
+                <span className="ml-2 text-sm text-secondary">Loading merchants...</span>
               </div>
             ) : merchants.length === 0 ? (
-              <div className="neu-raised rounded-2xl border border-white/5 p-8 text-center">
+              <div className="neu-raised rounded-2xl border border-border/50 p-8 text-center">
                 <Store className="w-8 h-8 mx-auto mb-3 text-zinc-600" />
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-muted">
                   No merchant data available yet. Run enrichment to populate.
                 </p>
               </div>
@@ -416,14 +416,14 @@ export function GSTPage() {
                     className="neu-inset rounded-xl p-3 flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-zinc-200 truncate">{m.name}</p>
+                      <p className="text-sm font-semibold text-primary truncate">{m.name}</p>
                       {m.abn && (
-                        <p className="text-[10px] font-mono text-zinc-500 mt-0.5">ABN {m.abn}</p>
+                        <p className="text-[10px] font-mono text-muted mt-0.5">ABN {m.abn}</p>
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {gstBadge(resolveGstStatus(m.gstRegistered))}
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.12em] bg-white/5 text-zinc-400 border border-white/5">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.12em] bg-overlay text-secondary border border-border/50">
                         {m.transactionCount} txn{m.transactionCount !== 1 ? 's' : ''}
                       </span>
                     </div>

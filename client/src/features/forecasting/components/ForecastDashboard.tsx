@@ -66,7 +66,7 @@ function statusBadge(status: string) {
     running: { bg: 'bg-blue-500/10', text: 'text-blue-400' },
     pending: { bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
     failed: { bg: 'bg-red-500/10', text: 'text-red-400' },
-    archived: { bg: 'bg-zinc-500/10', text: 'text-zinc-400' },
+    archived: { bg: 'bg-zinc-500/10', text: 'text-secondary' },
   };
   const style = map[status] ?? map.pending;
   return (
@@ -158,7 +158,7 @@ export function ForecastDashboard() {
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
           Cash Flow Forecasting
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Predict future cash flows using historical transaction patterns
         </p>
       </div>
@@ -167,13 +167,13 @@ export function ForecastDashboard() {
       <div className="neu-raised rounded-2xl p-4 sm:p-6">
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider block mb-1.5">
+            <label className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5">
               Method
             </label>
             <select
               value={forecastType}
               onChange={(e) => setForecastType(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300 outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="bg-overlay border border-border rounded-xl px-3 py-2 text-sm text-primary outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {FORECAST_TYPES.map((ft) => (
                 <option key={ft.value} value={ft.value}>
@@ -184,13 +184,13 @@ export function ForecastDashboard() {
           </div>
 
           <div>
-            <label className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider block mb-1.5">
+            <label className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5">
               Financial Year
             </label>
             <select
               value={financialYear}
               onChange={(e) => setFinancialYear(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300 outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="bg-overlay border border-border rounded-xl px-3 py-2 text-sm text-primary outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {getFYOptions().map((fy) => (
                 <option key={fy} value={fy}>
@@ -201,13 +201,13 @@ export function ForecastDashboard() {
           </div>
 
           <div>
-            <label className="text-[11px] text-zinc-500 font-bold uppercase tracking-wider block mb-1.5">
+            <label className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5">
               Granularity
             </label>
             <select
               value={granularity}
               onChange={(e) => setGranularity(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300 outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="bg-overlay border border-border rounded-xl px-3 py-2 text-sm text-primary outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {GRANULARITIES.map((g) => (
                 <option key={g.value} value={g.value}>
@@ -220,7 +220,7 @@ export function ForecastDashboard() {
           <button
             onClick={generateForecast}
             disabled={generating}
-            className="neu-raised-sm px-5 py-2 rounded-xl text-sm font-bold bg-[#FFCC00]/10 text-[#FFCC00] hover:bg-[#FFCC00]/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="neu-raised-sm px-5 py-2 rounded-xl text-sm font-bold bg-cba-gold/10 text-cba-gold hover:bg-cba-gold/20 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {generating ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -233,7 +233,7 @@ export function ForecastDashboard() {
           <button
             onClick={loadForecasts}
             disabled={loading}
-            className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-[#FFCC00] transition-colors"
+            className="neu-raised-sm p-2 rounded-xl text-secondary hover:text-cba-gold transition-colors"
             title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -248,9 +248,9 @@ export function ForecastDashboard() {
             <button
               key={f.id}
               onClick={() => selectForecast(f)}
-              className={`neu-raised rounded-2xl p-4 text-left transition-all hover:border-[#FFCC00]/30 border ${
+              className={`neu-raised rounded-2xl p-4 text-left transition-all hover:border-cba-gold/30 border ${
                 selectedForecast?.id === f.id
-                  ? 'border-[#FFCC00]/50 ring-1 ring-[#FFCC00]/20'
+                  ? 'border-cba-gold/50 ring-1 ring-[#FFCC00]/20'
                   : 'border-transparent'
               }`}
             >
@@ -260,7 +260,7 @@ export function ForecastDashboard() {
                 </span>
                 {statusBadge(f.status)}
               </div>
-              <div className="flex items-center gap-3 text-xs text-zinc-500">
+              <div className="flex items-center gap-3 text-xs text-muted">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   FY {f.financialYear}
@@ -276,7 +276,7 @@ export function ForecastDashboard() {
                     e.stopPropagation();
                     archiveForecast(f.id);
                   }}
-                  className="mt-2 text-[10px] text-zinc-500 hover:text-yellow-400 flex items-center gap-1"
+                  className="mt-2 text-[10px] text-muted hover:text-yellow-400 flex items-center gap-1"
                 >
                   <Archive className="w-3 h-3" /> Archive
                 </button>
@@ -322,14 +322,14 @@ export function ForecastDashboard() {
       )}
 
       {!selectedForecast && forecasts.length > 0 && (
-        <div className="neu-inset rounded-2xl p-8 text-center text-zinc-500">
+        <div className="neu-inset rounded-2xl p-8 text-center text-muted">
           <TrendingUp className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">Select a forecast above to view details</p>
         </div>
       )}
 
       {!loading && forecasts.length === 0 && (
-        <div className="neu-inset rounded-2xl p-8 text-center text-zinc-500">
+        <div className="neu-inset rounded-2xl p-8 text-center text-muted">
           <TrendingUp className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">No forecasts yet. Generate your first forecast above.</p>
         </div>

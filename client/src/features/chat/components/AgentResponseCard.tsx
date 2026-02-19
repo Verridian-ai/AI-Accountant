@@ -54,7 +54,7 @@ const AGENT_DISPLAY: Record<string, { label: string; icon: React.ElementType; co
   budgeting: { label: 'Budgeting', icon: BarChart3, color: 'text-blue-300' },
 };
 
-const DEFAULT_AGENT = { label: 'AI Agent', icon: Briefcase, color: 'text-zinc-400' };
+const DEFAULT_AGENT = { label: 'AI Agent', icon: Briefcase, color: 'text-secondary' };
 
 export function AgentResponseCard({
   agentType,
@@ -86,7 +86,7 @@ export function AgentResponseCard({
               key={f}
               type="button"
               onClick={() => onFollowupClick?.(f)}
-              className="neu-inset px-2.5 py-1 rounded-lg text-[9px] font-bold text-zinc-400 hover:text-[#FFCC00] transition-colors uppercase tracking-wider"
+              className="neu-inset px-2.5 py-1 rounded-lg text-[9px] font-bold text-secondary hover:text-cba-gold transition-colors uppercase tracking-wider"
             >
               {f}
             </button>

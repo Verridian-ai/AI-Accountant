@@ -89,19 +89,19 @@ export function MoneyFlowDiagram() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
 
   if (flows.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-10 text-center border border-white/5">
+      <div className="neu-raised rounded-3xl p-10 text-center border border-border/50">
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <GitBranch className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">No Flow Data</h3>
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">No Flow Data</h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight">
           Transfer data needed to visualize money flow.
         </p>
@@ -114,8 +114,8 @@ export function MoneyFlowDiagram() {
       {/* Period Selector */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <GitBranch className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <GitBranch className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Money Flow
           </span>
         </div>
@@ -127,7 +127,7 @@ export function MoneyFlowDiagram() {
               onClick={() => setPeriod(p)}
               className={cn(
                 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-                period === p ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'text-zinc-500 hover:text-zinc-300',
+                period === p ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
               )}
             >
               {p}
@@ -137,7 +137,7 @@ export function MoneyFlowDiagram() {
       </div>
 
       {/* SVG Diagram */}
-      <div className="neu-raised rounded-2xl border border-white/5 overflow-hidden p-4">
+      <div className="neu-raised rounded-2xl border border-border/50 overflow-hidden p-4">
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full h-auto"
@@ -262,11 +262,11 @@ export function MoneyFlowDiagram() {
       {/* Flow Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {flows.slice(0, 6).map((flow, i) => (
-          <div key={i} className="neu-inset rounded-xl p-3 border border-white/5">
+          <div key={i} className="neu-inset rounded-xl p-3 border border-border/50">
             <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest truncate">
               {flow.fromAccountName} → {flow.toAccountName}
             </p>
-            <p className="text-sm font-black text-[#FFCC00] mt-1">
+            <p className="text-sm font-black text-cba-gold mt-1">
               {formatCurrency(flow.totalAmount)}
             </p>
             <p className="text-[8px] text-zinc-600 mt-0.5">{flow.transactionCount} transfers</p>

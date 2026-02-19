@@ -15,8 +15,8 @@ export function GSTBar({
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between text-[11px]">
-        <span className="text-zinc-500">{label}</span>
-        <span className="font-black text-zinc-300 tabular-nums">{formatCurrency(amount)}</span>
+        <span className="text-muted">{label}</span>
+        <span className="font-black text-primary tabular-nums">{formatCurrency(amount)}</span>
       </div>
       <div className="w-full h-2 rounded-full bg-[#1a1a2e]">
         <div

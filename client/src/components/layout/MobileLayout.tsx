@@ -24,7 +24,7 @@ export function MobileLayout({
   return (
     <div className="flex flex-col min-h-[calc(100vh-80px)] pb-20 md:hidden">
       {/* Sticky Mobile Header */}
-      <div className="sticky top-0 z-40 bg-[#0a0a0f]/95 backdrop-blur-xl border-b border-white/5 pb-2">
+      <div className="sticky top-0 z-40 bg-base/95 backdrop-blur-xl border-b border-border/50 pb-2">
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
@@ -33,9 +33,9 @@ export function MobileLayout({
               className="h-[48px] w-[48px] drop-shadow-[0_0_8px_rgba(255,204,0,0.3)]"
             />
             <div>
-              <h1 className="text-lg font-black text-white uppercase tracking-tight">{title}</h1>
+              <h1 className="text-lg font-black text-primary uppercase tracking-tight">{title}</h1>
               {subtitle && (
-                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                <p className="text-[10px] font-bold text-muted uppercase tracking-widest">
                   {subtitle}
                 </p>
               )}
@@ -49,7 +49,7 @@ export function MobileLayout({
                   'w-10 h-10 rounded-xl flex items-center justify-center transition-all',
                   activeFiltersCount > 0
                     ? 'cba-gold-gradient text-black shadow-lg shadow-[#FFCC00]/20'
-                    : 'neu-raised-sm text-zinc-500 border border-white/5',
+                    : 'neu-raised-sm text-muted border border-border/50',
                 )}
               >
                 <Filter className="h-5 w-5" />

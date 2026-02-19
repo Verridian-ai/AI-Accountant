@@ -231,8 +231,8 @@ export function APDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Accounts Payable</h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h1 className="text-2xl font-bold text-primary">Accounts Payable</h1>
+          <p className="text-sm text-secondary mt-1">
             Manage suppliers, bills, purchase orders, and payment runs
           </p>
         </div>
@@ -241,7 +241,7 @@ export function APDashboard() {
             <button
               key={qa.label}
               onClick={qa.action}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-white/5 text-zinc-300 hover:bg-[#FFCC00]/10 hover:text-[#FFCC00] transition-all border border-white/5"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-overlay text-primary hover:bg-cba-gold/10 hover:text-cba-gold transition-all border border-border/50"
             >
               <qa.icon className="h-3.5 w-3.5" />
               {qa.label}
@@ -255,19 +255,19 @@ export function APDashboard() {
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="neu-raised rounded-2xl p-5 animate-pulse">
-                <div className="h-4 w-20 bg-white/5 rounded mb-3" />
-                <div className="h-8 w-16 bg-white/5 rounded" />
+                <div className="h-4 w-20 bg-overlay rounded mb-3" />
+                <div className="h-8 w-16 bg-overlay rounded" />
               </div>
             ))
           : statCards.map((card) => (
               <div key={card.label} className="neu-raised rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  <span className="text-xs font-medium text-secondary uppercase tracking-wider">
                     {card.label}
                   </span>
                   <card.icon className={`h-4 w-4 ${card.color}`} />
                 </div>
-                <p className="text-2xl font-bold text-white">{card.value}</p>
+                <p className="text-2xl font-bold text-primary">{card.value}</p>
               </div>
             ))}
       </div>
@@ -275,7 +275,7 @@ export function APDashboard() {
       {/* AP Aging Mini-Chart */}
       {aging && aging.buckets.length > 0 && (
         <div className="neu-raised rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-zinc-300 mb-3">AP Aging Distribution</h3>
+          <h3 className="text-sm font-semibold text-primary mb-3">AP Aging Distribution</h3>
           <div className="flex items-end gap-2 h-20">
             {aging.buckets.map((bucket) => {
               const maxAmount = Math.max(...aging.buckets.map((b) => b.amount));
@@ -283,11 +283,11 @@ export function APDashboard() {
               return (
                 <div key={bucket.label} className="flex-1 flex flex-col items-center gap-1">
                   <div
-                    className="w-full rounded-t bg-[#FFCC00]/60 transition-all hover:bg-[#FFCC00]/80"
+                    className="w-full rounded-t bg-cba-gold/60 transition-all hover:bg-cba-gold/80"
                     style={{ height: `${Math.max(height, 4)}%` }}
                     title={`${bucket.label}: ${formatCurrency(bucket.amount)} (${bucket.count} bills)`}
                   />
-                  <span className="text-[10px] text-zinc-500 truncate w-full text-center">
+                  <span className="text-[10px] text-muted truncate w-full text-center">
                     {bucket.label}
                   </span>
                 </div>
@@ -305,8 +305,8 @@ export function APDashboard() {
             onClick={() => handleTabChange(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === tab.id
-                ? 'bg-[#FFCC00]/10 text-[#FFCC00] shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-cba-gold/10 text-cba-gold shadow-sm'
+                : 'text-secondary hover:text-primary'
             }`}
           >
             <tab.icon className="h-4 w-4" />

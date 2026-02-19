@@ -164,10 +164,10 @@ export function EconomicIndicators() {
   });
 
   const getChangeColor = (pct?: number) => {
-    if (pct == null) return 'text-zinc-400';
+    if (pct == null) return 'text-secondary';
     if (pct > 0) return 'text-emerald-400';
     if (pct < 0) return 'text-red-400';
-    return 'text-zinc-400';
+    return 'text-secondary';
   };
 
   return (
@@ -181,8 +181,8 @@ export function EconomicIndicators() {
               onClick={() => dispatch({ type: 'SET_CATEGORY', value: cat })}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                 state.activeCategory === cat
-                  ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                  ? 'bg-cba-gold/20 text-cba-gold ring-1 ring-[#FFCC00]/30'
+                  : 'text-muted hover:text-primary hover:bg-overlay'
               }`}
             >
               {cat}
@@ -197,20 +197,20 @@ export function EconomicIndicators() {
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 state.activeSource === src
                   ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                  : 'text-muted hover:text-primary hover:bg-overlay'
               }`}
             >
               {src}
             </button>
           ))}
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
             <input
               type="text"
               placeholder="Search..."
               value={state.searchQuery}
               onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
-              className="neu-inset pl-8 pr-3 py-1.5 rounded-lg text-xs text-white bg-transparent w-36 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="neu-inset pl-8 pr-3 py-1.5 rounded-lg text-xs text-primary bg-transparent w-36 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
         </div>
@@ -225,7 +225,7 @@ export function EconomicIndicators() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5 text-zinc-500 text-xs uppercase tracking-wider">
+              <tr className="border-b border-border/50 text-muted text-xs uppercase tracking-wider">
                 <th className="text-left px-4 py-3 font-medium">Indicator</th>
                 <th className="text-right px-4 py-3 font-medium">Current</th>
                 <th className="text-right px-4 py-3 font-medium hidden sm:table-cell">Previous</th>
@@ -238,7 +238,7 @@ export function EconomicIndicators() {
             <tbody>
               {state.loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={`skel-${i}`} className="border-b border-white/5 animate-pulse">
+                  <tr key={`skel-${i}`} className="border-b border-border/50 animate-pulse">
                     <td className="px-4 py-3">
                       <div className="h-4 w-32 bg-zinc-700 rounded" />
                     </td>
@@ -262,7 +262,7 @@ export function EconomicIndicators() {
                 ))
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-zinc-500 text-sm">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted text-sm">
                     No indicators found
                   </td>
                 </tr>
@@ -273,19 +273,19 @@ export function EconomicIndicators() {
                       <div>
                         <button
                           onClick={() => toggleExpand(ind.code)}
-                          className="w-full flex items-center border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                          className="w-full flex items-center border-b border-border/50 hover:bg-white/[0.02] transition-colors"
                         >
-                          <td className="px-4 py-3 text-left font-medium text-white">
+                          <td className="px-4 py-3 text-left font-medium text-primary">
                             {ind.name}
                             <span className="ml-2 text-[10px] text-zinc-600 uppercase">
                               {ind.code}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right font-bold text-white whitespace-nowrap">
+                          <td className="px-4 py-3 text-right font-bold text-primary whitespace-nowrap">
                             {ind.currentValue}
                             {ind.unit === '%' ? '%' : ''}
                           </td>
-                          <td className="px-4 py-3 text-right text-zinc-400 hidden sm:table-cell whitespace-nowrap">
+                          <td className="px-4 py-3 text-right text-secondary hidden sm:table-cell whitespace-nowrap">
                             {ind.previousValue ?? '-'}
                             {ind.unit === '%' ? '%' : ''}
                           </td>
@@ -296,7 +296,7 @@ export function EconomicIndicators() {
                               ? `${ind.changePercent > 0 ? '+' : ''}${ind.changePercent.toFixed(1)}%`
                               : '-'}
                           </td>
-                          <td className="px-4 py-3 text-left text-zinc-400 hidden md:table-cell">
+                          <td className="px-4 py-3 text-left text-secondary hidden md:table-cell">
                             {ind.period ?? '-'}
                           </td>
                           <td className="px-4 py-3 text-left hidden lg:table-cell">
@@ -310,7 +310,7 @@ export function EconomicIndicators() {
                               {ind.source}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-zinc-500">
+                          <td className="px-4 py-3 text-muted">
                             {state.expandedCode === ind.code ? (
                               <ChevronUp className="w-4 h-4" />
                             ) : (
@@ -319,21 +319,21 @@ export function EconomicIndicators() {
                           </td>
                         </button>
                         {state.expandedCode === ind.code && (
-                          <div className="px-4 py-4 bg-white/[0.02] border-b border-white/5">
+                          <div className="px-4 py-4 bg-white/[0.02] border-b border-border/50">
                             {state.historyLoading === ind.code ? (
-                              <div className="h-48 flex items-center justify-center text-zinc-500 text-sm">
+                              <div className="h-48 flex items-center justify-center text-muted text-sm">
                                 Loading history...
                               </div>
                             ) : state.historyData[ind.code] && state.historyData[ind.code].length > 0 ? (
-                              <Suspense fallback={<div className="h-48 animate-pulse bg-white/5 rounded-xl" />}>
+                              <Suspense fallback={<div className="h-48 animate-pulse bg-overlay rounded-xl" />}>
                                 <LazyIndicatorHistoryChart data={state.historyData[ind.code]} />
                               </Suspense>
                             ) : (
-                              <div className="h-48 flex items-center justify-center text-zinc-500 text-sm">
+                              <div className="h-48 flex items-center justify-center text-muted text-sm">
                                 No history available
                               </div>
                             )}
-                            <div className="mt-2 flex items-center gap-3 text-xs text-zinc-500">
+                            <div className="mt-2 flex items-center gap-3 text-xs text-muted">
                               <span>Source: {ind.source}</span>
                               <ExternalLink className="w-3 h-3" />
                             </div>

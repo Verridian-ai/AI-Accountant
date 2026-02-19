@@ -120,10 +120,10 @@ export function BorrowingCapacity() {
   return (
     <div className="space-y-6">
       {/* Input Form */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calculator className="w-5 h-5 text-[#FFCC00]" />
+            <Calculator className="w-5 h-5 text-cba-gold" />
             Borrowing Capacity Estimator
           </CardTitle>
           <CardDescription>
@@ -207,7 +207,7 @@ export function BorrowingCapacity() {
             {debts.map((debt) => (
               <div
                 key={debt.id}
-                className="grid gap-3 md:grid-cols-4 items-end p-3 rounded-lg bg-white/5"
+                className="grid gap-3 md:grid-cols-4 items-end p-3 rounded-lg bg-overlay"
               >
                 <div className="space-y-1">
                   <Label className="text-xs">Name</Label>
@@ -244,7 +244,7 @@ export function BorrowingCapacity() {
               </div>
             ))}
             {debts.length === 0 && (
-              <p className="text-xs text-zinc-500 italic">No existing debts added</p>
+              <p className="text-xs text-muted italic">No existing debts added</p>
             )}
           </div>
 
@@ -258,14 +258,14 @@ export function BorrowingCapacity() {
               step="0.5"
               value={sensitivityRange}
               onChange={(e) => setSensitivityRange(e.target.value)}
-              className="w-full max-w-xs h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#FFCC00]"
+              className="w-full max-w-xs h-2 bg-overlay-hover rounded-lg appearance-none cursor-pointer accent-[#FFCC00]"
             />
           </div>
 
           <Button
             onClick={handleCalculate}
             disabled={loading}
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+            className="bg-cba-gold text-base hover:bg-[#e6b800]"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Calculate Capacity
@@ -285,21 +285,21 @@ export function BorrowingCapacity() {
       {result && (
         <>
           {/* Max Borrowing Hero */}
-          <Card className="neu-raised border-[#FFCC00]/20">
+          <Card className="neu-raised border-cba-gold/20">
             <CardContent className="pt-8 pb-8 text-center">
-              <p className="text-sm text-zinc-400 mb-1">Maximum Borrowing Power</p>
-              <p className="text-5xl font-bold text-[#FFCC00] mb-4">
+              <p className="text-sm text-secondary mb-1">Maximum Borrowing Power</p>
+              <p className="text-5xl font-bold text-cba-gold mb-4">
                 {formatCurrency(result.max_borrowing / 100)}
               </p>
               <div className="flex items-center justify-center gap-6 flex-wrap">
                 <div>
-                  <p className="text-xs text-zinc-500">Serviceability Rate</p>
+                  <p className="text-xs text-muted">Serviceability Rate</p>
                   <p className="text-lg font-semibold">
                     {(result.serviceability_rate * 100).toFixed(2)}%
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-500">Monthly Repayment</p>
+                  <p className="text-xs text-muted">Monthly Repayment</p>
                   <p className="text-lg font-semibold">
                     {formatCurrency(result.monthly_repayment / 100)}
                   </p>
@@ -310,10 +310,10 @@ export function BorrowingCapacity() {
 
           {/* Ratios */}
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-zinc-400">Debt-to-Income (DTI) Ratio</p>
+                  <p className="text-sm text-secondary">Debt-to-Income (DTI) Ratio</p>
                   <Badge className={dtiBadge(result.dti_ratio).color}>
                     {dtiBadge(result.dti_ratio).label}
                   </Badge>
@@ -321,7 +321,7 @@ export function BorrowingCapacity() {
                 <p className={`text-3xl font-bold ${dtiColor(result.dti_ratio)}`}>
                   {result.dti_ratio.toFixed(1)}x
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted mt-1">
                   {result.dti_ratio < 6
                     ? 'Within recommended limits'
                     : result.dti_ratio <= 8
@@ -330,13 +330,13 @@ export function BorrowingCapacity() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardContent className="pt-6">
-                <p className="text-sm text-zinc-400 mb-2">Loan-to-Income (LTI) Ratio</p>
+                <p className="text-sm text-secondary mb-2">Loan-to-Income (LTI) Ratio</p>
                 <p className={`text-3xl font-bold ${dtiColor(result.lti_ratio)}`}>
                   {result.lti_ratio.toFixed(1)}x
                 </p>
-                <div className="flex justify-between mt-3 text-xs text-zinc-500">
+                <div className="flex justify-between mt-3 text-xs text-muted">
                   <span>Net Monthly Income: {formatCurrency(result.net_monthly_income / 100)}</span>
                   <span>Surplus: {formatCurrency(result.monthly_surplus / 100)}</span>
                 </div>
@@ -346,7 +346,7 @@ export function BorrowingCapacity() {
 
           {/* Sensitivity Table */}
           {result.sensitivity.length > 0 && (
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-yellow-400" />
@@ -357,7 +357,7 @@ export function BorrowingCapacity() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-xs text-zinc-500 uppercase border-b border-white/5">
+                      <tr className="text-xs text-muted uppercase border-b border-border/50">
                         <th className="text-left py-2 pr-3">Rate Increase</th>
                         <th className="text-right py-2 px-2">Max Borrowing</th>
                         <th className="text-right py-2 px-2">Monthly Repayment</th>
@@ -366,7 +366,7 @@ export function BorrowingCapacity() {
                     </thead>
                     <tbody>
                       {result.sensitivity.map((row, i) => (
-                        <tr key={i} className="border-b border-white/5 last:border-0">
+                        <tr key={i} className="border-b border-border/50 last:border-0">
                           <td className="py-2 pr-3 text-yellow-400">
                             +{(row.rate_increase * 100).toFixed(1)}%
                           </td>
@@ -389,9 +389,9 @@ export function BorrowingCapacity() {
           )}
 
           {/* APRA Disclaimer */}
-          <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-            <p className="text-xs text-zinc-500 leading-relaxed">
-              <strong className="text-zinc-400">Disclaimer:</strong> This is an estimate only and
+          <div className="p-4 rounded-lg bg-overlay border border-border">
+            <p className="text-xs text-muted leading-relaxed">
+              <strong className="text-secondary">Disclaimer:</strong> This is an estimate only and
               does not constitute a loan offer or pre-approval. Actual borrowing capacity depends on
               individual lender criteria, credit history, and APRA regulatory requirements. A 3%
               serviceability buffer rate is applied per APRA guidelines. Consult a licensed mortgage

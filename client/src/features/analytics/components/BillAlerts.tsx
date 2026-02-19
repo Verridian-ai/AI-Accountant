@@ -25,8 +25,8 @@ export function BillAlerts() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
-        <span className="ml-2 text-zinc-400">Detecting recurring bills...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
+        <span className="ml-2 text-secondary">Detecting recurring bills...</span>
       </div>
     );
   }
@@ -63,7 +63,7 @@ export function BillAlerts() {
       case 'amount_changed':
         return 'border-amber-500/20 bg-amber-500/5';
       case 'current':
-        return 'border-white/5';
+        return 'border-border/50';
     }
   };
 
@@ -80,7 +80,7 @@ export function BillAlerts() {
             <Badge variant="outline" className="text-xs">
               {bill.frequency}
             </Badge>
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-muted">
               <Clock className="w-3 h-3 inline mr-1" />
               Next: {new Date(bill.nextDueDate).toLocaleDateString('en-AU')}
             </span>
@@ -97,7 +97,7 @@ export function BillAlerts() {
             {bill.amountChangePercent.toFixed(1)}% change
           </p>
         )}
-        <p className="text-xs text-zinc-500">{bill.occurrenceCount} payments</p>
+        <p className="text-xs text-muted">{bill.occurrenceCount} payments</p>
       </div>
     </div>
   );
@@ -137,7 +137,7 @@ export function BillAlerts() {
       )}
 
       {/* Current */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-emerald-400" />
@@ -147,7 +147,7 @@ export function BillAlerts() {
         </CardHeader>
         <CardContent className="space-y-2">
           {current.length === 0 ? (
-            <p className="text-zinc-500 text-center py-4">No recurring bills detected yet</p>
+            <p className="text-muted text-center py-4">No recurring bills detected yet</p>
           ) : (
             current.map(renderBill)
           )}

@@ -48,10 +48,10 @@ export function WealthProjection() {
 
   return (
     <div className="space-y-6">
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <PiggyBank className="w-5 h-5 text-[#FFCC00]" />
+            <PiggyBank className="w-5 h-5 text-cba-gold" />
             Wealth Projection
           </CardTitle>
           <CardDescription>
@@ -89,7 +89,7 @@ export function WealthProjection() {
           <Button
             onClick={handleCalculate}
             disabled={loading}
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+            className="bg-cba-gold text-base hover:bg-[#e6b800]"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Project Wealth
@@ -111,11 +111,11 @@ export function WealthProjection() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {result.profiles.map((profile: { name: string; annualReturn: number; projections: Array<{ nominalValue: number; realValue: number; years: number }> }) => {
               const lastProjection = profile.projections[profile.projections.length - 1];
-              const colorClass = PROFILE_COLORS[profile.name] ?? 'text-zinc-400 border-white/10';
+              const colorClass = PROFILE_COLORS[profile.name] ?? 'text-secondary border-border';
               return (
-                <Card key={profile.name} className="neu-raised border-white/5">
+                <Card key={profile.name} className="neu-raised border-border/50">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+                    <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
                       <TrendingUp className={`w-4 h-4 ${colorClass.split(' ')[0]}`} />
                       {profile.name}
                     </CardTitle>
@@ -125,7 +125,7 @@ export function WealthProjection() {
                       {lastProjection ? formatCurrency(lastProjection.nominalValue) : '$0'}
                     </div>
                     {lastProjection && (
-                      <p className="text-xs text-zinc-500 mt-1">
+                      <p className="text-xs text-muted mt-1">
                         Real: {formatCurrency(lastProjection.realValue)} in {lastProjection.years}y
                       </p>
                     )}
@@ -139,7 +139,7 @@ export function WealthProjection() {
           </div>
 
           {/* Detailed Timeline Table */}
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader>
               <CardTitle>Projection Timeline</CardTitle>
               <CardDescription>
@@ -150,7 +150,7 @@ export function WealthProjection() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-xs text-zinc-500 uppercase border-b border-white/5">
+                    <tr className="text-xs text-muted uppercase border-b border-border/50">
                       <th className="text-left py-2 pr-4">Years</th>
                       {result.profiles.map((p: { name: string; projections: Array<{ nominalValue: number; realValue: number; years: number }> }) => (
                         <th key={p.name} className="text-right py-2 px-2" colSpan={2}>
@@ -158,7 +158,7 @@ export function WealthProjection() {
                         </th>
                       ))}
                     </tr>
-                    <tr className="text-xs text-zinc-600 border-b border-white/5">
+                    <tr className="text-xs text-zinc-600 border-b border-border/50">
                       <th className="py-1"></th>
                       {result.profiles.map((p: { name: string }) => (
                         <th key={`${p.name}-sub`} className="text-right py-1 px-1" colSpan={2}>
@@ -170,8 +170,8 @@ export function WealthProjection() {
                   </thead>
                   <tbody>
                     {result.profiles[0]?.projections.map((_: { nominalValue: number; realValue: number; years: number }, idx: number) => (
-                      <tr key={idx} className="border-b border-white/5 last:border-0">
-                        <td className="py-2 pr-4 text-zinc-400">
+                      <tr key={idx} className="border-b border-border/50 last:border-0">
+                        <td className="py-2 pr-4 text-secondary">
                           {result.profiles[0]?.projections[idx]?.years}
                         </td>
                         {result.profiles.map((p: { name: string; projections: Array<{ nominalValue: number; realValue: number; years: number }> }) => (
@@ -179,7 +179,7 @@ export function WealthProjection() {
                             <span className="mr-3 font-medium">
                               {formatCurrency(p.projections[idx]?.nominalValue ?? 0)}
                             </span>
-                            <span className="text-zinc-500">
+                            <span className="text-muted">
                               {formatCurrency(p.projections[idx]?.realValue ?? 0)}
                             </span>
                           </td>

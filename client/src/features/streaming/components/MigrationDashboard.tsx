@@ -42,8 +42,8 @@ interface BenchmarkAgent {
 }
 
 const PHASE_COLORS: Record<string, string> = {
-  legacy: 'bg-zinc-500/10 text-zinc-400',
-  pilot: 'bg-[#FFCC00]/10 text-[#FFCC00]',
+  legacy: 'bg-zinc-500/10 text-secondary',
+  pilot: 'bg-cba-gold/10 text-cba-gold',
   parallel: 'bg-blue-500/10 text-blue-400',
   migrated: 'bg-emerald-500/10 text-emerald-400',
   deprecated: 'bg-red-500/10 text-red-400',
@@ -108,7 +108,7 @@ export function MigrationDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-zinc-500">
+      <div className="flex items-center justify-center py-12 text-muted">
         <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading migration data...
       </div>
     );
@@ -120,13 +120,13 @@ export function MigrationDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold text-zinc-100">Vercel AI SDK Migration</h3>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             {migratedCount} of {totalAgents} agents migrated
           </p>
         </div>
         <button
           onClick={fetchData}
-          className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]"
+          className="neu-raised-sm p-2 rounded-lg text-secondary hover:text-cba-gold"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -154,8 +154,8 @@ export function MigrationDashboard() {
             <div key={agent.agent_type} className="neu-inset rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <Zap className="w-4 h-4 text-[#FFCC00]" />
-                  <span className="text-sm font-medium text-zinc-200">
+                  <Zap className="w-4 h-4 text-cba-gold" />
+                  <span className="text-sm font-medium text-primary">
                     {formatAgent(agent.agent_type)}
                   </span>
                   <span
@@ -168,7 +168,7 @@ export function MigrationDashboard() {
                   <button
                     onClick={() => handleRollback(agent.agent_type)}
                     disabled={rollingBack === agent.agent_type}
-                    className="flex items-center gap-1 text-xs text-zinc-500 hover:text-red-400 transition-colors"
+                    className="flex items-center gap-1 text-xs text-muted hover:text-red-400 transition-colors"
                   >
                     <RotateCcw
                       className={`w-3 h-3 ${rollingBack === agent.agent_type ? 'animate-spin' : ''}`}
@@ -181,29 +181,29 @@ export function MigrationDashboard() {
               {/* Stats grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                 <div>
-                  <span className="text-zinc-500">Legacy calls</span>
-                  <p className="text-zinc-300 font-medium">{agent.legacy_invocations}</p>
+                  <span className="text-muted">Legacy calls</span>
+                  <p className="text-primary font-medium">{agent.legacy_invocations}</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Vercel calls</span>
-                  <p className="text-zinc-300 font-medium">{agent.vercel_invocations}</p>
+                  <span className="text-muted">Vercel calls</span>
+                  <p className="text-primary font-medium">{agent.vercel_invocations}</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Rollbacks</span>
-                  <p className="text-zinc-300 font-medium">{agent.rollback_count}</p>
+                  <span className="text-muted">Rollbacks</span>
+                  <p className="text-primary font-medium">{agent.rollback_count}</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Vercel class</span>
-                  <p className="text-zinc-300 font-medium truncate">{agent.vercel_class ?? '—'}</p>
+                  <span className="text-muted">Vercel class</span>
+                  <p className="text-primary font-medium truncate">{agent.vercel_class ?? '—'}</p>
                 </div>
               </div>
 
               {/* Performance comparison */}
               {bench && (
-                <div className="mt-3 pt-3 border-t border-white/5 grid grid-cols-2 gap-4 text-xs">
+                <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 gap-4 text-xs">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-3 h-3 text-zinc-500" />
-                    <span className="text-zinc-500">Latency:</span>
+                    <Clock className="w-3 h-3 text-muted" />
+                    <span className="text-muted">Latency:</span>
                     {bench.improvement.latencyPct < 0 ? (
                       <span className="text-emerald-400 flex items-center gap-0.5">
                         <ArrowDownRight className="w-3 h-3" />
@@ -217,8 +217,8 @@ export function MigrationDashboard() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Shield className="w-3 h-3 text-zinc-500" />
-                    <span className="text-zinc-500">Error rate:</span>
+                    <Shield className="w-3 h-3 text-muted" />
+                    <span className="text-muted">Error rate:</span>
                     {bench.improvement.errorRatePct <= 0 ? (
                       <span className="text-emerald-400 flex items-center gap-0.5">
                         <CheckCircle2 className="w-3 h-3" />

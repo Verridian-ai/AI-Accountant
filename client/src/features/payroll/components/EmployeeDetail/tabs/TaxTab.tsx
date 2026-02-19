@@ -30,26 +30,26 @@ export function TaxTab({ taxDeclaration, employeeId, onRefresh }: TaxTabProps) {
   };
 
   const checkboxField = (key: string, label: string) => (
-    <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer">
+    <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-border/50 cursor-pointer">
       <input
         type="checkbox"
         checked={form[key as keyof typeof form] as boolean}
         onChange={(e) => setForm({ ...form, [key]: e.target.checked })}
         disabled={!editing}
-        className="h-4 w-4 rounded border-zinc-600 text-[#FFCC00] focus:ring-[#FFCC00]/40"
+        className="h-4 w-4 rounded border-zinc-600 text-cba-gold focus:ring-[#FFCC00]/40"
       />
-      <span className="text-sm text-white">{label}</span>
+      <span className="text-sm text-primary">{label}</span>
     </label>
   );
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-white">Tax Declaration</h3>
+        <h3 className="text-lg font-semibold text-primary">Tax Declaration</h3>
         {!editing && taxDeclaration && (
           <button
             onClick={() => setEditing(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-[#FFCC00] border border-white/10 rounded-lg hover:border-[#FFCC00]/30 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary hover:text-cba-gold border border-border rounded-lg hover:border-cba-gold/30 transition-colors"
           >
             <Pencil className="h-3 w-3" />
             Edit
@@ -63,8 +63,8 @@ export function TaxTab({ taxDeclaration, employeeId, onRefresh }: TaxTabProps) {
         {checkboxField('has_sfss_debt', 'Has SFSS debt')}
         {checkboxField('tax_offset_claimed', 'Claiming tax offset')}
 
-        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
-          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+        <div className="p-3 rounded-xl bg-white/[0.02] border border-border/50">
+          <label className="text-xs font-medium text-muted uppercase tracking-wider">
             Number of Dependants
           </label>
           <input
@@ -73,7 +73,7 @@ export function TaxTab({ taxDeclaration, employeeId, onRefresh }: TaxTabProps) {
             value={form.dependants}
             onChange={(e) => setForm({ ...form, dependants: parseInt(e.target.value) || 0 })}
             disabled={!editing}
-            className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40 disabled:opacity-60"
+            className="w-full mt-1 px-3 py-2 rounded-lg bg-overlay border border-border text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40 disabled:opacity-60"
           />
         </div>
       </div>
@@ -83,14 +83,14 @@ export function TaxTab({ taxDeclaration, employeeId, onRefresh }: TaxTabProps) {
           {taxDeclaration && (
             <button
               onClick={() => setEditing(false)}
-              className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+              className="px-3 py-1.5 text-xs text-secondary hover:text-primary transition-colors"
             >
               Cancel
             </button>
           )}
           <button
             onClick={handleSave}
-            className="px-4 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-black bg-cba-gold rounded-lg hover:bg-cba-gold/90 transition-colors"
           >
             Save Declaration
           </button>

@@ -121,7 +121,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -129,8 +129,8 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
   if (!customer) {
     return (
       <div className="neu-raised rounded-2xl p-8 text-center">
-        <p className="text-zinc-400">Customer not found.</p>
-        <button onClick={onBack} className="mt-4 text-[#FFCC00] text-sm hover:underline">
+        <p className="text-secondary">Customer not found.</p>
+        <button onClick={onBack} className="mt-4 text-cba-gold text-sm hover:underline">
           Go back
         </button>
       </div>
@@ -147,7 +147,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-zinc-400 hover:text-zinc-100 text-sm transition-colors"
+          className="flex items-center gap-2 text-secondary hover:text-zinc-100 text-sm transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Customers
@@ -155,7 +155,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
         <div className="flex items-center gap-2">
           <button
             onClick={() => onEdit(customer)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg neu-raised text-zinc-300 hover:text-zinc-100 text-sm transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg neu-raised text-primary hover:text-zinc-100 text-sm transition-colors"
           >
             <Edit2 className="w-3.5 h-3.5" />
             Edit
@@ -173,7 +173,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
       {/* Archive Confirmation */}
       {showArchiveConfirm && (
         <div className="neu-raised rounded-xl p-4 border border-red-500/20">
-          <p className="text-sm text-zinc-300 mb-3">
+          <p className="text-sm text-primary mb-3">
             Are you sure you want to archive <strong>{customer.businessName}</strong>? This will
             hide them from the active list.
           </p>
@@ -187,7 +187,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
             </button>
             <button
               onClick={() => setShowArchiveConfirm(false)}
-              className="px-4 py-1.5 rounded-lg neu-raised text-zinc-400 text-sm"
+              className="px-4 py-1.5 rounded-lg neu-raised text-secondary text-sm"
             >
               Cancel
             </button>
@@ -199,13 +199,13 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 neu-raised rounded-2xl p-5 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="neu-inset p-3 rounded-xl text-[#FFCC00]">
+            <div className="neu-inset p-3 rounded-xl text-cba-gold">
               <Building2 className="w-6 h-6" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-zinc-100">{customer.businessName}</h3>
               {customer.abn && (
-                <p className="text-xs text-zinc-500 font-mono">ABN: {formatABN(customer.abn)}</p>
+                <p className="text-xs text-muted font-mono">ABN: {formatABN(customer.abn)}</p>
               )}
             </div>
             <span
@@ -213,7 +213,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
                 'ml-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
                 customer.isActive !== false
                   ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-zinc-700/50 text-zinc-500',
+                  : 'bg-zinc-700/50 text-muted',
               )}
             >
               {customer.isActive !== false ? 'Active' : 'Archived'}
@@ -222,25 +222,25 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             {customer.contactName && (
-              <div className="flex items-center gap-2 text-zinc-400">
+              <div className="flex items-center gap-2 text-secondary">
                 <UserPlus className="w-4 h-4 text-zinc-600 flex-shrink-0" />
                 {customer.contactName}
               </div>
             )}
             {customer.email && (
-              <div className="flex items-center gap-2 text-zinc-400">
+              <div className="flex items-center gap-2 text-secondary">
                 <Mail className="w-4 h-4 text-zinc-600 flex-shrink-0" />
                 {customer.email}
               </div>
             )}
             {customer.phone && (
-              <div className="flex items-center gap-2 text-zinc-400">
+              <div className="flex items-center gap-2 text-secondary">
                 <Phone className="w-4 h-4 text-zinc-600 flex-shrink-0" />
                 {customer.phone}
               </div>
             )}
             {(customer.address || customer.city) && (
-              <div className="flex items-center gap-2 text-zinc-400">
+              <div className="flex items-center gap-2 text-secondary">
                 <MapPin className="w-4 h-4 text-zinc-600 flex-shrink-0" />
                 {[customer.address, customer.city, customer.state, customer.postcode]
                   .filter(Boolean)
@@ -250,7 +250,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
           </div>
 
           {customer.notes && (
-            <div className="text-xs text-zinc-500 border-t border-zinc-800 pt-3">
+            <div className="text-xs text-muted border-t border-zinc-800 pt-3">
               <span className="text-zinc-600 uppercase tracking-wider font-semibold text-[10px]">
                 Notes:{' '}
               </span>
@@ -259,8 +259,8 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
           )}
 
           {customer.paymentTermsDays && (
-            <p className="text-xs text-zinc-500">
-              Payment terms: <span className="text-zinc-300">{customer.paymentTermsDays} days</span>
+            <p className="text-xs text-muted">
+              Payment terms: <span className="text-primary">{customer.paymentTermsDays} days</span>
             </p>
           )}
         </div>
@@ -269,7 +269,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
         <div className="space-y-4">
           <div className="neu-raised rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-4 h-4 text-[#FFCC00]" />
+              <DollarSign className="w-4 h-4 text-cba-gold" />
               <span className="text-[10px] text-zinc-600 uppercase font-semibold tracking-wider">
                 Outstanding
               </span>
@@ -277,7 +277,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
             <p
               className={cn(
                 'text-2xl font-bold',
-                outstanding > 0 ? 'text-[#FFCC00]' : 'text-zinc-500',
+                outstanding > 0 ? 'text-cba-gold' : 'text-muted',
               )}
             >
               {formatAUD(outstanding)}
@@ -290,7 +290,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
                 Overdue
               </span>
             </div>
-            <p className={cn('text-2xl font-bold', overdue > 0 ? 'text-red-400' : 'text-zinc-500')}>
+            <p className={cn('text-2xl font-bold', overdue > 0 ? 'text-red-400' : 'text-muted')}>
               {formatAUD(overdue)}
             </p>
           </div>
@@ -300,10 +300,10 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
       {/* Contacts */}
       <div className="neu-raised rounded-2xl p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Contacts</h4>
+          <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Contacts</h4>
           <button
             onClick={() => setShowAddContact(!showAddContact)}
-            className="flex items-center gap-1.5 text-[#FFCC00] text-xs font-semibold hover:underline"
+            className="flex items-center gap-1.5 text-cba-gold text-xs font-semibold hover:underline"
           >
             <Plus className="w-3.5 h-3.5" />
             Add Contact
@@ -317,21 +317,21 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
               placeholder="Name *"
               value={newContact.name}
               onChange={(e) => setNewContact((p) => ({ ...p, name: e.target.value }))}
-              className="px-3 py-1.5 rounded-lg neu-inset bg-transparent text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none"
+              className="px-3 py-1.5 rounded-lg neu-inset bg-transparent text-sm text-primary placeholder-zinc-600 focus:outline-none"
             />
             <input
               type="email"
               placeholder="Email"
               value={newContact.email}
               onChange={(e) => setNewContact((p) => ({ ...p, email: e.target.value }))}
-              className="px-3 py-1.5 rounded-lg neu-inset bg-transparent text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none"
+              className="px-3 py-1.5 rounded-lg neu-inset bg-transparent text-sm text-primary placeholder-zinc-600 focus:outline-none"
             />
             <input
               type="text"
               placeholder="Phone"
               value={newContact.phone}
               onChange={(e) => setNewContact((p) => ({ ...p, phone: e.target.value }))}
-              className="px-3 py-1.5 rounded-lg neu-inset bg-transparent text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none"
+              className="px-3 py-1.5 rounded-lg neu-inset bg-transparent text-sm text-primary placeholder-zinc-600 focus:outline-none"
             />
             <div className="flex gap-2">
               <input
@@ -339,12 +339,12 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
                 placeholder="Role"
                 value={newContact.role}
                 onChange={(e) => setNewContact((p) => ({ ...p, role: e.target.value }))}
-                className="flex-1 px-3 py-1.5 rounded-lg neu-inset bg-transparent text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none"
+                className="flex-1 px-3 py-1.5 rounded-lg neu-inset bg-transparent text-sm text-primary placeholder-zinc-600 focus:outline-none"
               />
               <button
                 onClick={handleAddContact}
                 disabled={addingContact || !newContact.name.trim()}
-                className="px-3 py-1.5 rounded-lg bg-[#FFCC00] text-[#0a0a0f] text-xs font-bold disabled:opacity-40"
+                className="px-3 py-1.5 rounded-lg bg-cba-gold text-base text-xs font-bold disabled:opacity-40"
               >
                 {addingContact ? '...' : 'Add'}
               </button>
@@ -361,10 +361,10 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
                 key={c.id ?? i}
                 className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-zinc-800/30 text-sm"
               >
-                <span className="font-medium text-zinc-200">{c.name}</span>
+                <span className="font-medium text-primary">{c.name}</span>
                 {c.role && <span className="text-zinc-600 text-xs">({c.role})</span>}
-                {c.email && <span className="text-zinc-500">{c.email}</span>}
-                {c.phone && <span className="text-zinc-500">{c.phone}</span>}
+                {c.email && <span className="text-muted">{c.email}</span>}
+                {c.phone && <span className="text-muted">{c.phone}</span>}
               </div>
             ))}
           </div>
@@ -373,7 +373,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
 
       {/* Invoice History */}
       <div className="neu-raised rounded-2xl p-5 space-y-3">
-        <h4 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">
+        <h4 className="text-sm font-bold text-primary uppercase tracking-wider">
           Invoice History
         </h4>
         {invoices.length === 0 ? (
@@ -383,16 +383,16 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-zinc-800">
-                  <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
+                  <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-muted font-semibold">
                     Invoice #
                   </th>
-                  <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
+                  <th className="text-left px-3 py-2 text-[10px] uppercase tracking-wider text-muted font-semibold">
                     Date
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
+                  <th className="text-right px-3 py-2 text-[10px] uppercase tracking-wider text-muted font-semibold">
                     Amount
                   </th>
-                  <th className="text-center px-3 py-2 text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
+                  <th className="text-center px-3 py-2 text-[10px] uppercase tracking-wider text-muted font-semibold">
                     Status
                   </th>
                 </tr>
@@ -400,11 +400,11 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
               <tbody>
                 {invoices.map((inv: { id: string; invoiceNumber?: string; issueDate?: string; date?: string; totalCents?: number; total?: number; status?: string }) => (
                   <tr key={inv.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
-                    <td className="px-3 py-2 text-zinc-200 font-mono">
+                    <td className="px-3 py-2 text-primary font-mono">
                       {inv.invoiceNumber ?? inv.id}
                     </td>
-                    <td className="px-3 py-2 text-zinc-400">{inv.issueDate ?? inv.date ?? '—'}</td>
-                    <td className="px-3 py-2 text-right font-semibold text-[#FFCC00]">
+                    <td className="px-3 py-2 text-secondary">{inv.issueDate ?? inv.date ?? '—'}</td>
+                    <td className="px-3 py-2 text-right font-semibold text-cba-gold">
                       {formatAUD(inv.totalCents ?? inv.total ?? 0)}
                     </td>
                     <td className="px-3 py-2 text-center">
@@ -417,7 +417,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
                               ? 'bg-red-500/20 text-red-400'
                               : inv.status === 'sent'
                                 ? 'bg-blue-500/20 text-blue-400'
-                                : 'bg-zinc-700/50 text-zinc-500',
+                                : 'bg-zinc-700/50 text-muted',
                         )}
                       >
                         {inv.status ?? 'draft'}

@@ -169,9 +169,9 @@ export function PayCategoryManager() {
       <div className="neu-raised rounded-2xl p-6 space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 animate-pulse">
-            <div className="h-4 w-32 bg-white/5 rounded" />
-            <div className="h-4 w-16 bg-white/5 rounded" />
-            <div className="h-4 w-20 bg-white/5 rounded" />
+            <div className="h-4 w-32 bg-overlay rounded" />
+            <div className="h-4 w-16 bg-overlay rounded" />
+            <div className="h-4 w-20 bg-overlay rounded" />
           </div>
         ))}
       </div>
@@ -187,7 +187,7 @@ export function PayCategoryManager() {
             resetForm();
             setShowForm(true);
           }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cba-gold text-black font-semibold text-sm hover:bg-cba-gold/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
         >
           <Plus className="h-4 w-4" />
           Add Category
@@ -196,9 +196,9 @@ export function PayCategoryManager() {
           <button
             onClick={handleSeedDefaults}
             disabled={seeding}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-zinc-300 text-sm hover:bg-white/10 transition-all disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-overlay border border-border text-primary text-sm hover:bg-overlay-hover transition-all disabled:opacity-40"
           >
-            <Sparkles className="h-4 w-4 text-[#FFCC00]" />
+            <Sparkles className="h-4 w-4 text-cba-gold" />
             {seeding ? 'Seeding...' : 'Seed Default Categories'}
           </button>
         )}
@@ -208,10 +208,10 @@ export function PayCategoryManager() {
       {showForm && (
         <div className="neu-raised rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-white">
+            <h3 className="text-sm font-semibold text-primary">
               {editingId ? 'Edit Category' : 'New Pay Category'}
             </h3>
-            <button onClick={resetForm} className="p-1 rounded-lg hover:bg-white/5 text-zinc-400">
+            <button onClick={resetForm} className="p-1 rounded-lg hover:bg-overlay text-secondary">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -219,7 +219,7 @@ export function PayCategoryManager() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* A1: Name */}
             <div>
-              <label htmlFor="cat-name" className="block text-xs font-medium text-zinc-400 mb-1">
+              <label htmlFor="cat-name" className="block text-xs font-medium text-secondary mb-1">
                 Name
               </label>
               <input
@@ -228,12 +228,12 @@ export function PayCategoryManager() {
                 value={form.name}
                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g. Base Hourly"
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                className="w-full px-3 py-2 rounded-xl bg-overlay border border-border text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               />
             </div>
             {/* A1: Type */}
             <div>
-              <label htmlFor="cat-type" className="block text-xs font-medium text-zinc-400 mb-1">
+              <label htmlFor="cat-type" className="block text-xs font-medium text-secondary mb-1">
                 Type
               </label>
               <select
@@ -242,7 +242,7 @@ export function PayCategoryManager() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, type: e.target.value as CategoryType }))
                 }
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                className="w-full px-3 py-2 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               >
                 {TYPE_ORDER.map((t) => (
                   <option key={t} value={t}>
@@ -255,7 +255,7 @@ export function PayCategoryManager() {
             <div>
               <label
                 htmlFor="cat-rate-type"
-                className="block text-xs font-medium text-zinc-400 mb-1"
+                className="block text-xs font-medium text-secondary mb-1"
               >
                 Rate Type
               </label>
@@ -265,7 +265,7 @@ export function PayCategoryManager() {
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, rateType: e.target.value as RateType }))
                 }
-                className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                className="w-full px-3 py-2 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               >
                 <option value="hourly">Hourly</option>
                 <option value="annual">Annual</option>
@@ -276,12 +276,12 @@ export function PayCategoryManager() {
             <div>
               <label
                 htmlFor="cat-default-rate"
-                className="block text-xs font-medium text-zinc-400 mb-1"
+                className="block text-xs font-medium text-secondary mb-1"
               >
                 Default Rate ($)
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted" />
                 <input
                   id="cat-default-rate"
                   type="number"
@@ -290,7 +290,7 @@ export function PayCategoryManager() {
                   value={form.defaultRate}
                   onChange={(e) => setForm((prev) => ({ ...prev, defaultRate: e.target.value }))}
                   placeholder="0.00"
-                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-overlay border border-border text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 />
               </div>
             </div>
@@ -299,7 +299,7 @@ export function PayCategoryManager() {
               <div>
                 <label
                   htmlFor="cat-multiplier"
-                  className="block text-xs font-medium text-zinc-400 mb-1"
+                  className="block text-xs font-medium text-secondary mb-1"
                 >
                   Multiplier
                 </label>
@@ -311,7 +311,7 @@ export function PayCategoryManager() {
                   value={form.multiplier}
                   onChange={(e) => setForm((prev) => ({ ...prev, multiplier: e.target.value }))}
                   placeholder="1.5"
-                  className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                  className="w-full px-3 py-2 rounded-xl bg-overlay border border-border text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 />
               </div>
             )}
@@ -322,15 +322,15 @@ export function PayCategoryManager() {
               <button
                 type="button"
                 onClick={() => setForm((prev) => ({ ...prev, isTaxable: !prev.isTaxable }))}
-                className="text-zinc-400 hover:text-white"
+                className="text-secondary hover:text-primary"
               >
                 {form.isTaxable ? (
-                  <ToggleRight className="h-5 w-5 text-[#FFCC00]" />
+                  <ToggleRight className="h-5 w-5 text-cba-gold" />
                 ) : (
                   <ToggleLeft className="h-5 w-5" />
                 )}
               </button>
-              <span className="text-xs text-zinc-300">Taxable</span>
+              <span className="text-xs text-primary">Taxable</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <button
@@ -338,15 +338,15 @@ export function PayCategoryManager() {
                 onClick={() =>
                   setForm((prev) => ({ ...prev, isSuperBearing: !prev.isSuperBearing }))
                 }
-                className="text-zinc-400 hover:text-white"
+                className="text-secondary hover:text-primary"
               >
                 {form.isSuperBearing ? (
-                  <ToggleRight className="h-5 w-5 text-[#FFCC00]" />
+                  <ToggleRight className="h-5 w-5 text-cba-gold" />
                 ) : (
                   <ToggleLeft className="h-5 w-5" />
                 )}
               </button>
-              <span className="text-xs text-zinc-300">Super Bearing</span>
+              <span className="text-xs text-primary">Super Bearing</span>
             </label>
           </div>
 
@@ -355,14 +355,14 @@ export function PayCategoryManager() {
           <div className="flex gap-2">
             <button
               onClick={handleSubmit}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cba-gold text-black font-semibold text-sm hover:bg-cba-gold/90 transition-all"
             >
               <Check className="h-4 w-4" />
               {editingId ? 'Update' : 'Create'}
             </button>
             <button
               onClick={resetForm}
-              className="px-4 py-2 rounded-xl bg-white/5 text-zinc-300 text-sm hover:bg-white/10 transition-all"
+              className="px-4 py-2 rounded-xl bg-overlay text-primary text-sm hover:bg-overlay-hover transition-all"
             >
               Cancel
             </button>
@@ -374,8 +374,8 @@ export function PayCategoryManager() {
       {categories.length === 0 && !showForm ? (
         <div className="neu-raised rounded-2xl p-8 text-center">
           <DollarSign className="h-12 w-12 text-zinc-600 mx-auto mb-3" />
-          <p className="text-zinc-400 font-medium">No pay categories</p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-secondary font-medium">No pay categories</p>
+          <p className="text-xs text-muted mt-1">
             Create categories or seed default Australian pay categories to get started.
           </p>
         </div>
@@ -395,45 +395,45 @@ export function PayCategoryManager() {
                 >
                   <div className="flex items-center gap-2">
                     {isExpanded ? (
-                      <ChevronDown className="h-4 w-4 text-zinc-400" />
+                      <ChevronDown className="h-4 w-4 text-secondary" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-zinc-400" />
+                      <ChevronRight className="h-4 w-4 text-secondary" />
                     )}
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
                     >
                       {style.label}
                     </span>
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-muted">
                       {items.length} {items.length === 1 ? 'category' : 'categories'}
                     </span>
                   </div>
                 </button>
 
                 {isExpanded && (
-                  <div className="border-t border-white/5">
+                  <div className="border-t border-border/50">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b border-white/5">
-                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">
+                        <tr className="border-b border-border/50">
+                          <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-2">
                             Name
                           </th>
-                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden sm:table-cell">
+                          <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-2 hidden sm:table-cell">
                             Rate Type
                           </th>
-                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">
+                          <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-2">
                             Default Rate
                           </th>
-                          <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden md:table-cell">
+                          <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-2 hidden md:table-cell">
                             Multiplier
                           </th>
-                          <th className="text-center text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden lg:table-cell">
+                          <th className="text-center text-xs font-medium text-muted uppercase tracking-wider px-4 py-2 hidden lg:table-cell">
                             Taxable
                           </th>
-                          <th className="text-center text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2 hidden lg:table-cell">
+                          <th className="text-center text-xs font-medium text-muted uppercase tracking-wider px-4 py-2 hidden lg:table-cell">
                             Super
                           </th>
-                          <th className="text-right text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-2">
+                          <th className="text-right text-xs font-medium text-muted uppercase tracking-wider px-4 py-2">
                             Actions
                           </th>
                         </tr>
@@ -442,23 +442,23 @@ export function PayCategoryManager() {
                         {items.map((cat) => (
                           <tr
                             key={cat.id}
-                            className={`border-b border-white/5 last:border-0 ${
+                            className={`border-b border-border/50 last:border-0 ${
                               !cat.isActive ? 'opacity-40' : ''
                             }`}
                           >
                             <td className="px-4 py-2.5">
-                              <span className="text-sm text-white font-medium">{cat.name}</span>
+                              <span className="text-sm text-primary font-medium">{cat.name}</span>
                             </td>
                             <td className="px-4 py-2.5 hidden sm:table-cell">
-                              <span className="text-xs text-zinc-400 bg-white/5 px-2 py-0.5 rounded-md capitalize">
+                              <span className="text-xs text-secondary bg-overlay px-2 py-0.5 rounded-md capitalize">
                                 {cat.rateType}
                               </span>
                             </td>
                             <td className="px-4 py-2.5">
-                              <span className="text-sm text-zinc-300 font-mono">
+                              <span className="text-sm text-primary font-mono">
                                 {centsToDollars(cat.defaultRateCents)}
                                 {cat.defaultRateCents != null && (
-                                  <span className="text-zinc-500 text-xs">
+                                  <span className="text-muted text-xs">
                                     {RATE_SUFFIXES[cat.rateType]}
                                   </span>
                                 )}
@@ -482,7 +482,7 @@ export function PayCategoryManager() {
                             </td>
                             <td className="px-4 py-2.5 text-center hidden lg:table-cell">
                               {cat.isSuperBearing ? (
-                                <Check className="h-4 w-4 text-[#FFCC00] mx-auto" />
+                                <Check className="h-4 w-4 text-cba-gold mx-auto" />
                               ) : (
                                 <X className="h-4 w-4 text-zinc-600 mx-auto" />
                               )}
@@ -492,7 +492,7 @@ export function PayCategoryManager() {
                                 <button
                                   onClick={() => handleToggleActive(cat)}
                                   title={cat.isActive ? 'Deactivate' : 'Activate'}
-                                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+                                  className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay transition-colors"
                                 >
                                   {cat.isActive ? (
                                     <ToggleRight className="h-4 w-4 text-emerald-400" />
@@ -502,13 +502,13 @@ export function PayCategoryManager() {
                                 </button>
                                 <button
                                   onClick={() => handleEdit(cat)}
-                                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+                                  className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay transition-colors"
                                 >
                                   <Pencil className="h-3.5 w-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleDelete(cat.id)}
-                                  className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+                                  className="p-1.5 rounded-lg text-secondary hover:text-red-400 hover:bg-red-500/5 transition-colors"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </button>

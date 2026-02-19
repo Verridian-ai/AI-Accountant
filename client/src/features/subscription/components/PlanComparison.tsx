@@ -115,7 +115,7 @@ export function PlanComparison({
     <div className="space-y-5">
       {/* Billing Toggle */}
       <div className="flex items-center justify-center gap-3">
-        <span className={cn('text-sm font-bold', !annual ? 'text-zinc-200' : 'text-zinc-500')}>
+        <span className={cn('text-sm font-bold', !annual ? 'text-primary' : 'text-muted')}>
           Monthly
         </span>
         <button
@@ -123,17 +123,17 @@ export function PlanComparison({
           onClick={() => setAnnual(!annual)}
           className={cn(
             'relative w-12 h-6 rounded-full transition-colors',
-            annual ? 'bg-[#FFCC00]' : 'bg-zinc-700',
+            annual ? 'bg-cba-gold' : 'bg-zinc-700',
           )}
         >
           <div
             className={cn(
-              'absolute top-0.5 w-5 h-5 rounded-full bg-[#0a0a0f] transition-transform',
+              'absolute top-0.5 w-5 h-5 rounded-full bg-base transition-transform',
               annual ? 'translate-x-6' : 'translate-x-0.5',
             )}
           />
         </button>
-        <span className={cn('text-sm font-bold', annual ? 'text-zinc-200' : 'text-zinc-500')}>
+        <span className={cn('text-sm font-bold', annual ? 'text-primary' : 'text-muted')}>
           Annual
         </span>
         {annual && (
@@ -156,59 +156,59 @@ export function PlanComparison({
               className={cn(
                 'neu-raised rounded-2xl border p-5 flex flex-col transition-all',
                 isSelected
-                  ? 'border-[#FFCC00]/50 shadow-[0_0_24px_rgba(255,204,0,0.1)]'
-                  : 'border-white/5 hover:border-white/10',
+                  ? 'border-cba-gold/50 shadow-[0_0_24px_rgba(255,204,0,0.1)]'
+                  : 'border-border/50 hover:border-border',
               )}
             >
               {isCurrent && (
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#FFCC00]/10 text-[#FFCC00] uppercase tracking-wider self-start mb-2">
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-cba-gold/10 text-cba-gold uppercase tracking-wider self-start mb-2">
                   Current Plan
                 </span>
               )}
 
               <h4
-                className={cn('text-lg font-bold', isSelected ? 'text-[#FFCC00]' : 'text-zinc-200')}
+                className={cn('text-lg font-bold', isSelected ? 'text-cba-gold' : 'text-primary')}
               >
                 {plan.name}
               </h4>
-              <p className="text-xs text-zinc-500 mb-3">{plan.description}</p>
+              <p className="text-xs text-muted mb-3">{plan.description}</p>
 
               <div className="mb-4">
                 <span className="text-3xl font-black text-zinc-100">
                   {price === 0 ? 'Free' : `$${price}`}
                 </span>
-                {price > 0 && <span className="text-sm text-zinc-500">/mo</span>}
+                {price > 0 && <span className="text-sm text-muted">/mo</span>}
               </div>
 
               {/* Limits */}
               <div className="neu-inset rounded-xl p-3 mb-4 space-y-1.5 text-xs">
-                <div className="flex justify-between text-zinc-400">
+                <div className="flex justify-between text-secondary">
                   <span>Members</span>
-                  <span className="font-bold text-zinc-300">
+                  <span className="font-bold text-primary">
                     {formatLimit(plan.limits.members)}
                   </span>
                 </div>
-                <div className="flex justify-between text-zinc-400">
+                <div className="flex justify-between text-secondary">
                   <span>Accounts</span>
-                  <span className="font-bold text-zinc-300">
+                  <span className="font-bold text-primary">
                     {formatLimit(plan.limits.accounts)}
                   </span>
                 </div>
-                <div className="flex justify-between text-zinc-400">
+                <div className="flex justify-between text-secondary">
                   <span>Transactions/mo</span>
-                  <span className="font-bold text-zinc-300">
+                  <span className="font-bold text-primary">
                     {formatLimit(plan.limits.transactionsPerMonth)}
                   </span>
                 </div>
-                <div className="flex justify-between text-zinc-400">
+                <div className="flex justify-between text-secondary">
                   <span>AI Queries</span>
-                  <span className="font-bold text-zinc-300">
+                  <span className="font-bold text-primary">
                     {formatLimit(plan.limits.aiQueries)}
                   </span>
                 </div>
-                <div className="flex justify-between text-zinc-400">
+                <div className="flex justify-between text-secondary">
                   <span>Storage</span>
-                  <span className="font-bold text-zinc-300">
+                  <span className="font-bold text-primary">
                     {plan.limits.storageMB === -1 ? 'Unlimited' : `${plan.limits.storageMB} MB`}
                   </span>
                 </div>
@@ -219,7 +219,7 @@ export function PlanComparison({
                 {plan.features.map((f) => (
                   <div key={f} className="flex items-start gap-2 text-xs">
                     <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                    <span className="text-zinc-300">{f}</span>
+                    <span className="text-primary">{f}</span>
                   </div>
                 ))}
                 {plan.missingFeatures.map((f) => (
@@ -238,8 +238,8 @@ export function PlanComparison({
                   className={cn(
                     'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-colors',
                     isSelected
-                      ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                      : 'border border-white/10 text-zinc-400 hover:text-zinc-200 hover:border-white/20',
+                      ? 'bg-cba-gold text-base'
+                      : 'border border-border text-secondary hover:text-primary hover:border-border',
                   )}
                 >
                   {isSelected ? (
@@ -259,8 +259,8 @@ export function PlanComparison({
                   className={cn(
                     'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-colors',
                     isCurrent
-                      ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                      : 'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]',
+                      ? 'bg-zinc-800 text-muted cursor-not-allowed'
+                      : 'bg-cba-gold text-base hover:bg-[#FFD633]',
                   )}
                 >
                   {isCurrent ? 'Current' : 'Upgrade'}

@@ -55,7 +55,7 @@ export function EntitiesDashboard() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Entities</h2>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Multi-entity management, inter-entity transactions & consolidation
           </p>
         </div>
@@ -105,7 +105,7 @@ export function EntitiesDashboard() {
           <>
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+                <div className="flex items-center gap-2 text-muted text-sm mb-1">
                   <Building2 className="w-4 h-4" />
                   Total Entities
                 </div>
@@ -114,7 +114,7 @@ export function EntitiesDashboard() {
             </Card>
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+                <div className="flex items-center gap-2 text-muted text-sm mb-1">
                   <GitBranch className="w-4 h-4" />
                   Linked Accounts
                 </div>
@@ -123,7 +123,7 @@ export function EntitiesDashboard() {
             </Card>
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+                <div className="flex items-center gap-2 text-muted text-sm mb-1">
                   <Layers className="w-4 h-4" />
                   Consolidated Groups
                 </div>
@@ -132,11 +132,11 @@ export function EntitiesDashboard() {
             </Card>
             <Card className="neu-raised border-0">
               <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+                <div className="flex items-center gap-2 text-muted text-sm mb-1">
                   <ArrowLeftRight className="w-4 h-4" />
                   FY Period
                 </div>
-                <p className="text-2xl font-bold text-[#FFCC00]">{financialYear}</p>
+                <p className="text-2xl font-bold text-cba-gold">{financialYear}</p>
               </CardContent>
             </Card>
           </>

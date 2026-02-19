@@ -98,22 +98,22 @@ export function NotificationPreferences() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto p-4">
       <div className="flex items-center gap-3 mb-6">
-        <Bell className="h-6 w-6 text-[#FFCC00]" />
-        <h2 className="text-lg font-bold text-zinc-200">Notification Preferences</h2>
+        <Bell className="h-6 w-6 text-cba-gold" />
+        <h2 className="text-lg font-bold text-primary">Notification Preferences</h2>
       </div>
 
       {/* Delivery methods */}
       <section className="neu-raised rounded-2xl p-5 space-y-4">
-        <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Delivery</h3>
+        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Delivery</h3>
         <div className="flex items-center justify-between min-h-[44px]">
           <div>
-            <p className="text-sm text-zinc-200">Push Notifications</p>
-            <p className="text-xs text-zinc-500">Browser push alerts</p>
+            <p className="text-sm text-primary">Push Notifications</p>
+            <p className="text-xs text-muted">Browser push alerts</p>
           </div>
           <button
             type="button"
             onClick={() => toggle('pushEnabled')}
-            className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs.pushEnabled ? 'bg-[#FFCC00]' : 'bg-zinc-700'}`}
+            className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs.pushEnabled ? 'bg-cba-gold' : 'bg-zinc-700'}`}
           >
             <div
               className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs.pushEnabled ? 'translate-x-5' : 'translate-x-0'}`}
@@ -122,13 +122,13 @@ export function NotificationPreferences() {
         </div>
         <div className="flex items-center justify-between min-h-[44px]">
           <div>
-            <p className="text-sm text-zinc-200">Email Notifications</p>
-            <p className="text-xs text-zinc-500">Email alerts</p>
+            <p className="text-sm text-primary">Email Notifications</p>
+            <p className="text-xs text-muted">Email alerts</p>
           </div>
           <button
             type="button"
             onClick={() => toggle('emailEnabled')}
-            className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs.emailEnabled ? 'bg-[#FFCC00]' : 'bg-zinc-700'}`}
+            className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs.emailEnabled ? 'bg-cba-gold' : 'bg-zinc-700'}`}
           >
             <div
               className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs.emailEnabled ? 'translate-x-5' : 'translate-x-0'}`}
@@ -139,17 +139,17 @@ export function NotificationPreferences() {
 
       {/* Categories */}
       <section className="neu-raised rounded-2xl p-5 space-y-3">
-        <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Categories</h3>
+        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Categories</h3>
         {CATEGORIES.map(({ key, label, desc }) => (
           <div key={key} className="flex items-center justify-between py-1.5 min-h-[44px]">
             <div>
-              <p className="text-sm text-zinc-200">{label}</p>
-              <p className="text-xs text-zinc-500">{desc}</p>
+              <p className="text-sm text-primary">{label}</p>
+              <p className="text-xs text-muted">{desc}</p>
             </div>
             <button
               type="button"
               onClick={() => toggle(key)}
-              className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs[key] ? 'bg-[#FFCC00]' : 'bg-zinc-700'}`}
+              className={`w-12 h-7 rounded-full transition-colors shrink-0 ${prefs[key] ? 'bg-cba-gold' : 'bg-zinc-700'}`}
             >
               <div
                 className={`w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${prefs[key] ? 'translate-x-5' : 'translate-x-0'}`}
@@ -161,11 +161,11 @@ export function NotificationPreferences() {
 
       {/* Thresholds */}
       <section className="neu-raised rounded-2xl p-5 space-y-4">
-        <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Thresholds</h3>
+        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Thresholds</h3>
         <div>
-          <label className="text-sm text-zinc-200 block mb-2">
+          <label className="text-sm text-primary block mb-2">
             Large transaction:{' '}
-            <span className="text-[#FFCC00] font-bold">${thresholdDollars.toLocaleString()}</span>
+            <span className="text-cba-gold font-bold">${thresholdDollars.toLocaleString()}</span>
           </label>
           <input
             type="range"
@@ -184,9 +184,9 @@ export function NotificationPreferences() {
           </div>
         </div>
         <div>
-          <label className="text-sm text-zinc-200 block mb-2">
+          <label className="text-sm text-primary block mb-2">
             Budget alert at:{' '}
-            <span className="text-[#FFCC00] font-bold">{prefs.budgetAlertThresholdPercent}%</span>
+            <span className="text-cba-gold font-bold">{prefs.budgetAlertThresholdPercent}%</span>
           </label>
           <input
             type="range"
@@ -208,24 +208,24 @@ export function NotificationPreferences() {
 
       {/* Quiet hours */}
       <section className="neu-raised rounded-2xl p-5 space-y-4">
-        <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Quiet Hours</h3>
+        <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Quiet Hours</h3>
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <label className="text-xs text-zinc-500 block mb-1">Start</label>
+            <label className="text-xs text-muted block mb-1">Start</label>
             <input
               type="time"
               value={prefs.quietHoursStart ?? '22:00'}
               onChange={(e) => setPrefs((p) => ({ ...p, quietHoursStart: e.target.value }))}
-              className="w-full neu-inset rounded-xl px-3 py-2 text-sm text-zinc-200 bg-transparent min-h-[44px]"
+              className="w-full neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent min-h-[44px]"
             />
           </div>
           <div className="flex-1">
-            <label className="text-xs text-zinc-500 block mb-1">End</label>
+            <label className="text-xs text-muted block mb-1">End</label>
             <input
               type="time"
               value={prefs.quietHoursEnd ?? '07:00'}
               onChange={(e) => setPrefs((p) => ({ ...p, quietHoursEnd: e.target.value }))}
-              className="w-full neu-inset rounded-xl px-3 py-2 text-sm text-zinc-200 bg-transparent min-h-[44px]"
+              className="w-full neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent min-h-[44px]"
             />
           </div>
         </div>
@@ -237,7 +237,7 @@ export function NotificationPreferences() {
           type="button"
           onClick={save}
           disabled={saving}
-          className="flex-1 flex items-center justify-center gap-2 neu-raised py-3 px-6 rounded-xl text-sm font-bold text-black bg-[#FFCC00] hover:bg-[#FFD633] disabled:opacity-50 btn-press min-h-[44px]"
+          className="flex-1 flex items-center justify-center gap-2 neu-raised py-3 px-6 rounded-xl text-sm font-bold text-black bg-cba-gold hover:bg-[#FFD633] disabled:opacity-50 btn-press min-h-[44px]"
         >
           <Save className="h-4 w-4" />
           {saved ? 'Saved!' : saving ? 'Saving...' : 'Save Preferences'}
@@ -246,7 +246,7 @@ export function NotificationPreferences() {
           type="button"
           onClick={sendTest}
           disabled={testing}
-          className="neu-raised py-3 px-6 rounded-xl text-sm font-medium text-zinc-300 hover:text-[#FFCC00] btn-press min-h-[44px]"
+          className="neu-raised py-3 px-6 rounded-xl text-sm font-medium text-primary hover:text-cba-gold btn-press min-h-[44px]"
         >
           <Send className="h-4 w-4" />
         </button>

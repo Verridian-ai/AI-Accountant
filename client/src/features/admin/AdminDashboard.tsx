@@ -102,8 +102,8 @@ export function AdminDashboard({ className }: AdminDashboardProps) {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
           <div className="flex items-center gap-4">
-            <div className="neu-raised p-4 rounded-2xl border border-white/5">
-              <Shield className="w-8 h-8 text-[#FFCC00]" />
+            <div className="neu-raised p-4 rounded-2xl border border-border/50">
+              <Shield className="w-8 h-8 text-cba-gold" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export function AdminDashboard({ className }: AdminDashboardProps) {
                   Super Admin
                 </Badge>
               </div>
-              <p className="text-sm text-zinc-500">System overview and management controls</p>
+              <p className="text-sm text-muted">System overview and management controls</p>
             </div>
           </div>
 
@@ -177,17 +177,17 @@ export function AdminDashboard({ className }: AdminDashboardProps) {
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {/* Parser Health Summary */}
-            <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+            <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
               <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="neu-inset p-3 rounded-xl border border-white/5">
-                      <FileCheck className="w-5 h-5 text-[#FFCC00]" />
+                    <div className="neu-inset p-3 rounded-xl border border-border/50">
+                      <FileCheck className="w-5 h-5 text-cba-gold" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-zinc-100">Parser Status</h3>
-                      <p className="text-xs text-zinc-500">Quick health overview</p>
+                      <p className="text-xs text-muted">Quick health overview</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('parser')}>
@@ -198,28 +198,28 @@ export function AdminDashboard({ className }: AdminDashboardProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                     <p className="text-2xl font-bold text-emerald-400">96.1%</p>
-                    <p className="text-xs text-zinc-500">Success Rate</p>
+                    <p className="text-xs text-muted">Success Rate</p>
                   </div>
                   <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
                     <p className="text-2xl font-bold text-amber-400">8</p>
-                    <p className="text-xs text-zinc-500">Pending Review</p>
+                    <p className="text-xs text-muted">Pending Review</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Recent Feedback */}
-            <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+            <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
               <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
               <div className="relative">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="neu-inset p-3 rounded-xl border border-white/5">
-                      <MessageSquare className="w-5 h-5 text-[#FFCC00]" />
+                    <div className="neu-inset p-3 rounded-xl border border-border/50">
+                      <MessageSquare className="w-5 h-5 text-cba-gold" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-zinc-100">Feedback Queue</h3>
-                      <p className="text-xs text-zinc-500">User corrections pending</p>
+                      <p className="text-xs text-muted">User corrections pending</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('feedback')}>
@@ -230,15 +230,15 @@ export function AdminDashboard({ className }: AdminDashboardProps) {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 text-center">
                     <p className="text-2xl font-bold text-amber-400">5</p>
-                    <p className="text-xs text-zinc-500">Pending</p>
+                    <p className="text-xs text-muted">Pending</p>
                   </div>
                   <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-center">
                     <p className="text-2xl font-bold text-emerald-400">12</p>
-                    <p className="text-xs text-zinc-500">Approved</p>
+                    <p className="text-xs text-muted">Approved</p>
                   </div>
                   <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/20 text-center">
                     <p className="text-2xl font-bold text-red-400">3</p>
-                    <p className="text-xs text-zinc-500">Rejected</p>
+                    <p className="text-xs text-muted">Rejected</p>
                   </div>
                 </div>
               </div>

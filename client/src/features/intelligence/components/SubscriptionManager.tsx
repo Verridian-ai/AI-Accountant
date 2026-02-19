@@ -125,7 +125,7 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-2 border-[#FFCC00] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-cba-gold border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -135,27 +135,27 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="neu-raised p-3 rounded-lg text-center">
-          <p className="text-2xl font-bold text-[#FFCC00]">{subscriptions.length}</p>
-          <p className="text-[10px] text-zinc-500 uppercase font-bold">Total</p>
+          <p className="text-2xl font-bold text-cba-gold">{subscriptions.length}</p>
+          <p className="text-[10px] text-muted uppercase font-bold">Total</p>
         </div>
         <div className="neu-raised p-3 rounded-lg text-center">
           <p className="text-2xl font-bold text-emerald-400">{activeSubs}</p>
-          <p className="text-[10px] text-zinc-500 uppercase font-bold">Active</p>
+          <p className="text-[10px] text-muted uppercase font-bold">Active</p>
         </div>
         <div className="neu-raised p-3 rounded-lg text-center">
           <p className="text-2xl font-bold text-blue-400">{channelCounts['in_app'] ?? 0}</p>
-          <p className="text-[10px] text-zinc-500 uppercase font-bold">In-App</p>
+          <p className="text-[10px] text-muted uppercase font-bold">In-App</p>
         </div>
         <div className="neu-raised p-3 rounded-lg text-center">
           <p className="text-2xl font-bold text-purple-400">{channelCounts['sse'] ?? 0}</p>
-          <p className="text-[10px] text-zinc-500 uppercase font-bold">SSE</p>
+          <p className="text-[10px] text-muted uppercase font-bold">SSE</p>
         </div>
       </div>
 
       {/* Create Button */}
       <button
         onClick={() => setShowForm(!showForm)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFCC00]/90 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cba-gold text-base font-bold text-sm hover:bg-cba-gold/90 transition-colors"
       >
         <Plus className="w-4 h-4" />
         New Subscription
@@ -163,31 +163,31 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
 
       {/* Create Form */}
       {showForm && (
-        <div className="neu-raised p-4 rounded-lg space-y-3 border border-[#FFCC00]/20">
+        <div className="neu-raised p-4 rounded-lg space-y-3 border border-cba-gold/20">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-bold text-[#FFCC00]">Create Subscription</h4>
-            <button onClick={resetForm} className="text-zinc-500 hover:text-zinc-300">
+            <h4 className="text-sm font-bold text-cba-gold">Create Subscription</h4>
+            <button onClick={resetForm} className="text-muted hover:text-primary">
               <X className="w-4 h-4" />
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Name</label>
+              <label className="text-xs text-muted font-medium block mb-1">Name</label>
               <input
                 type="text"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
                 placeholder="e.g. Critical Alerts"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 placeholder:text-zinc-600"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary placeholder:text-zinc-600"
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Type</label>
+              <label className="text-xs text-muted font-medium block mb-1">Type</label>
               <select
                 value={formType}
                 onChange={(e) => setFormType(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
               >
                 <option value="insight">Insight</option>
                 <option value="anomaly">Anomaly</option>
@@ -196,11 +196,11 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Channel</label>
+              <label className="text-xs text-muted font-medium block mb-1">Channel</label>
               <select
                 value={formChannel}
                 onChange={(e) => setFormChannel(e.target.value as Subscription['channel'])}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
               >
                 {Object.entries(channelLabels).map(([val, label]) => (
                   <option key={val} value={val}>
@@ -210,23 +210,23 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Cooldown (min)</label>
+              <label className="text-xs text-muted font-medium block mb-1">Cooldown (min)</label>
               <input
                 type="number"
                 value={formCooldown}
                 onChange={(e) => setFormCooldown(Number(e.target.value))}
                 min={1}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">
+              <label className="text-xs text-muted font-medium block mb-1">
                 Severity Filter
               </label>
               <select
                 value={formSeverity}
                 onChange={(e) => setFormSeverity(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
               >
                 <option value="">All</option>
                 <option value="info">Info</option>
@@ -235,11 +235,11 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Module Filter</label>
+              <label className="text-xs text-muted font-medium block mb-1">Module Filter</label>
               <select
                 value={formModule}
                 onChange={(e) => setFormModule(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
               >
                 <option value="">All Modules</option>
                 <option value="transactions">Transactions</option>
@@ -254,7 +254,7 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
           <button
             onClick={createSubscription}
             disabled={!formName.trim()}
-            className="px-4 py-2 rounded-lg bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFCC00]/90 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-cba-gold text-base font-bold text-sm hover:bg-cba-gold/90 transition-colors disabled:opacity-50"
           >
             Create
           </button>
@@ -265,7 +265,7 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
       {error && <div className="neu-raised p-4 rounded-lg text-red-400 text-center">{error}</div>}
 
       {subscriptions.length === 0 && !showForm ? (
-        <div className="neu-raised p-8 rounded-lg text-center text-zinc-500">
+        <div className="neu-raised p-8 rounded-lg text-center text-muted">
           <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>No subscriptions yet. Create one to get notified.</p>
         </div>
@@ -278,7 +278,7 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
                 key={sub.id}
                 className={cn(
                   'neu-raised p-4 rounded-lg border-l-4 transition-all',
-                  sub.isActive ? 'border-[#FFCC00]' : 'border-zinc-700',
+                  sub.isActive ? 'border-cba-gold' : 'border-zinc-700',
                 )}
               >
                 <div className="flex items-start justify-between">
@@ -286,16 +286,16 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
                     <div
                       className={cn(
                         'p-2 rounded-lg',
-                        sub.isActive ? 'bg-[#FFCC00]/10' : 'bg-zinc-800',
+                        sub.isActive ? 'bg-cba-gold/10' : 'bg-zinc-800',
                       )}
                     >
                       <ChannelIcon
-                        className={cn('w-5 h-5', sub.isActive ? 'text-[#FFCC00]' : 'text-zinc-600')}
+                        className={cn('w-5 h-5', sub.isActive ? 'text-cba-gold' : 'text-zinc-600')}
                       />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-zinc-200">{sub.name}</h4>
-                      <p className="text-[10px] text-zinc-500 uppercase font-bold mt-0.5">
+                      <h4 className="text-sm font-semibold text-primary">{sub.name}</h4>
+                      <p className="text-[10px] text-muted uppercase font-bold mt-0.5">
                         {sub.type} • {channelLabels[sub.channel]} • {sub.cooldownMinutes}m cooldown
                       </p>
                     </div>
@@ -312,7 +312,7 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
                     {Object.entries(sub.filterCriteria).map(([k, v]) => (
                       <span
                         key={k}
-                        className="px-2 py-0.5 rounded-full text-[9px] bg-zinc-800 text-zinc-400 border border-zinc-700"
+                        className="px-2 py-0.5 rounded-full text-[9px] bg-zinc-800 text-secondary border border-zinc-700"
                       >
                         {k}: {String(v)}
                       </span>

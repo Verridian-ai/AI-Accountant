@@ -51,10 +51,10 @@ export function NetPositionCalculator() {
   const accountBName = accounts.find((a) => a.id === accountBId)?.accountName || 'Account B';
 
   return (
-    <div className="neu-raised rounded-3xl border border-white/5 overflow-hidden">
+    <div className="neu-raised rounded-3xl border border-border/50 overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-white/5 bg-white/[0.01] flex items-center gap-3">
-        <div className="neu-inset p-2.5 rounded-xl text-[#FFCC00]">
+      <div className="px-6 py-5 border-b border-border/50 bg-white/[0.01] flex items-center gap-3">
+        <div className="neu-inset p-2.5 rounded-xl text-cba-gold">
           <Calculator className="w-4 h-4" />
         </div>
         <div>
@@ -78,13 +78,13 @@ export function NetPositionCalculator() {
               value={accountAId}
               onChange={(e) => setAccountAId(e.target.value)}
               disabled={loadingAccounts}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-zinc-200 outline-none focus:border-[#FFCC00]/30"
+              className="w-full bg-overlay border border-border rounded-xl px-3 py-2.5 text-xs text-primary outline-none focus:border-cba-gold/30"
             >
-              <option value="" className="bg-[#0a0a0f]">
+              <option value="" className="bg-base">
                 Select account
               </option>
               {accounts.map((a) => (
-                <option key={a.id} value={a.id} className="bg-[#0a0a0f]">
+                <option key={a.id} value={a.id} className="bg-base">
                   {a.accountName}
                 </option>
               ))}
@@ -98,15 +98,15 @@ export function NetPositionCalculator() {
               value={accountBId}
               onChange={(e) => setAccountBId(e.target.value)}
               disabled={loadingAccounts}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-zinc-200 outline-none focus:border-[#FFCC00]/30"
+              className="w-full bg-overlay border border-border rounded-xl px-3 py-2.5 text-xs text-primary outline-none focus:border-cba-gold/30"
             >
-              <option value="" className="bg-[#0a0a0f]">
+              <option value="" className="bg-base">
                 Select account
               </option>
               {accounts
                 .filter((a) => a.id !== accountAId)
                 .map((a) => (
-                  <option key={a.id} value={a.id} className="bg-[#0a0a0f]">
+                  <option key={a.id} value={a.id} className="bg-base">
                     {a.accountName}
                   </option>
                 ))}
@@ -123,7 +123,7 @@ export function NetPositionCalculator() {
               type="month"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 outline-none focus:border-[#FFCC00]/30"
+              className="w-full bg-overlay border border-border rounded-xl px-3 py-2 text-xs text-primary outline-none focus:border-cba-gold/30"
             />
           </div>
           <div>
@@ -134,7 +134,7 @@ export function NetPositionCalculator() {
               type="month"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 outline-none focus:border-[#FFCC00]/30"
+              className="w-full bg-overlay border border-border rounded-xl px-3 py-2 text-xs text-primary outline-none focus:border-cba-gold/30"
             />
           </div>
         </div>
@@ -143,7 +143,7 @@ export function NetPositionCalculator() {
           type="button"
           onClick={calculate}
           disabled={!accountAId || !accountBId || loading}
-          className="w-full py-3 rounded-xl bg-[#FFCC00] text-[#0a0a0f] text-xs font-black uppercase tracking-widest hover:bg-[#FFE066] transition-colors disabled:opacity-50 disabled:cursor-not-allowed btn-press"
+          className="w-full py-3 rounded-xl bg-cba-gold text-base text-xs font-black uppercase tracking-widest hover:bg-cba-gold-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed btn-press"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Calculate'}
         </button>
@@ -151,9 +151,9 @@ export function NetPositionCalculator() {
         {/* Results */}
         {result && (
           <div className="space-y-3 mt-2">
-            <div className="neu-inset rounded-2xl p-4 border border-white/5">
+            <div className="neu-inset rounded-2xl p-4 border border-border/50">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                <span className="text-[9px] font-black text-muted uppercase tracking-widest">
                   {accountAName} → {accountBName}
                 </span>
                 <span className="text-sm font-black text-red-400">
@@ -161,9 +161,9 @@ export function NetPositionCalculator() {
                 </span>
               </div>
             </div>
-            <div className="neu-inset rounded-2xl p-4 border border-white/5">
+            <div className="neu-inset rounded-2xl p-4 border border-border/50">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+                <span className="text-[9px] font-black text-muted uppercase tracking-widest">
                   {accountBName} → {accountAName}
                 </span>
                 <span className="text-sm font-black text-emerald-400">
@@ -171,15 +171,15 @@ export function NetPositionCalculator() {
                 </span>
               </div>
             </div>
-            <div className="neu-raised rounded-2xl p-4 border border-[#FFCC00]/20">
+            <div className="neu-raised rounded-2xl p-4 border border-cba-gold/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {result.direction === 'A_to_B' && <ArrowRight className="w-4 h-4 text-red-400" />}
                   {result.direction === 'B_to_A' && (
                     <ArrowLeft className="w-4 h-4 text-emerald-400" />
                   )}
-                  {result.direction === 'balanced' && <Equal className="w-4 h-4 text-[#FFCC00]" />}
-                  <span className="text-[10px] font-black text-zinc-300 uppercase tracking-wider">
+                  {result.direction === 'balanced' && <Equal className="w-4 h-4 text-cba-gold" />}
+                  <span className="text-[10px] font-black text-primary uppercase tracking-wider">
                     Net Position
                   </span>
                 </div>
@@ -190,7 +190,7 @@ export function NetPositionCalculator() {
                       ? 'text-red-400'
                       : result.direction === 'B_to_A'
                         ? 'text-emerald-400'
-                        : 'text-[#FFCC00]',
+                        : 'text-cba-gold',
                   )}
                 >
                   {formatCurrency(result.net)}

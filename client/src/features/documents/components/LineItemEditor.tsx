@@ -96,7 +96,7 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 text-[#FFCC00] animate-spin" />
+        <Loader2 className="h-6 w-6 text-cba-gold animate-spin" />
       </div>
     );
   }
@@ -104,7 +104,7 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
   if (items.length === 0) {
     return (
       <div className="neu-inset rounded-lg p-6 text-center">
-        <p className="text-zinc-500 text-sm">No line items extracted</p>
+        <p className="text-muted text-sm">No line items extracted</p>
       </div>
     );
   }
@@ -113,32 +113,32 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-white/10">
-            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-10">
+          <tr className="border-b border-border">
+            <th className="text-left py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide w-10">
               #
             </th>
-            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide">
+            <th className="text-left py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide">
               Description
             </th>
-            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-16">
+            <th className="text-right py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide w-16">
               Qty
             </th>
-            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-24">
+            <th className="text-right py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide w-24">
               Unit Price
             </th>
-            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-24">
+            <th className="text-right py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide w-24">
               Amount
             </th>
-            <th className="text-right py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-20">
+            <th className="text-right py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide w-20">
               GST
             </th>
-            <th className="text-center py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-10">
+            <th className="text-center py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide w-10">
               Inc
             </th>
-            <th className="text-left py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-36">
+            <th className="text-left py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide w-36">
               Category
             </th>
-            <th className="text-center py-2 px-2 text-xs font-bold text-zinc-500 uppercase tracking-wide w-16">
+            <th className="text-center py-2 px-2 text-xs font-bold text-muted uppercase tracking-wide w-16">
               Conf
             </th>
           </tr>
@@ -147,11 +147,11 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
           {items.map((item, i) => (
             <tr
               key={item.id}
-              className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+              className="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
             >
-              <td className="py-2 px-2 text-zinc-500">{item.lineNumber}</td>
+              <td className="py-2 px-2 text-muted">{item.lineNumber}</td>
               <td
-                className={`py-2 px-2 text-zinc-200 ${!readOnly ? 'cursor-pointer hover:bg-white/5 rounded' : ''}`}
+                className={`py-2 px-2 text-primary ${!readOnly ? 'cursor-pointer hover:bg-overlay rounded' : ''}`}
                 onClick={() => startEdit(i, 'description', item.description)}
               >
                 {editingCell?.row === i && editingCell.col === 'description' ? (
@@ -161,14 +161,14 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                     onChange={(e) => setEditValue(e.target.value)}
                     onBlur={commitEdit}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-white/5 border border-[#FFCC00]/30 rounded px-2 py-0.5 text-zinc-200 focus:outline-none"
+                    className="w-full bg-overlay border border-cba-gold/30 rounded px-2 py-0.5 text-primary focus:outline-none"
                   />
                 ) : (
                   item.description
                 )}
               </td>
               <td
-                className={`py-2 px-2 text-right text-zinc-300 ${!readOnly ? 'cursor-pointer hover:bg-white/5 rounded' : ''}`}
+                className={`py-2 px-2 text-right text-primary ${!readOnly ? 'cursor-pointer hover:bg-overlay rounded' : ''}`}
                 onClick={() => startEdit(i, 'quantity', item.quantity)}
               >
                 {editingCell?.row === i && editingCell.col === 'quantity' ? (
@@ -179,14 +179,14 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                     onChange={(e) => setEditValue(e.target.value)}
                     onBlur={commitEdit}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-white/5 border border-[#FFCC00]/30 rounded px-2 py-0.5 text-right text-zinc-200 focus:outline-none"
+                    className="w-full bg-overlay border border-cba-gold/30 rounded px-2 py-0.5 text-right text-primary focus:outline-none"
                   />
                 ) : (
                   item.quantity
                 )}
               </td>
               <td
-                className={`py-2 px-2 text-right text-zinc-300 ${!readOnly ? 'cursor-pointer hover:bg-white/5 rounded' : ''}`}
+                className={`py-2 px-2 text-right text-primary ${!readOnly ? 'cursor-pointer hover:bg-overlay rounded' : ''}`}
                 onClick={() => startEdit(i, 'unitPrice', item.unitPrice ?? 0)}
               >
                 {editingCell?.row === i && editingCell.col === 'unitPrice' ? (
@@ -197,7 +197,7 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                     onChange={(e) => setEditValue(e.target.value)}
                     onBlur={commitEdit}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-white/5 border border-[#FFCC00]/30 rounded px-2 py-0.5 text-right text-zinc-200 focus:outline-none"
+                    className="w-full bg-overlay border border-cba-gold/30 rounded px-2 py-0.5 text-right text-primary focus:outline-none"
                   />
                 ) : item.unitPrice != null ? (
                   formatCurrency(item.unitPrice)
@@ -206,7 +206,7 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                 )}
               </td>
               <td
-                className={`py-2 px-2 text-right text-zinc-200 font-medium ${!readOnly ? 'cursor-pointer hover:bg-white/5 rounded' : ''}`}
+                className={`py-2 px-2 text-right text-primary font-medium ${!readOnly ? 'cursor-pointer hover:bg-overlay rounded' : ''}`}
                 onClick={() => startEdit(i, 'amount', item.amount)}
               >
                 {editingCell?.row === i && editingCell.col === 'amount' ? (
@@ -217,13 +217,13 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                     onChange={(e) => setEditValue(e.target.value)}
                     onBlur={commitEdit}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-white/5 border border-[#FFCC00]/30 rounded px-2 py-0.5 text-right text-zinc-200 focus:outline-none"
+                    className="w-full bg-overlay border border-cba-gold/30 rounded px-2 py-0.5 text-right text-primary focus:outline-none"
                   />
                 ) : (
                   formatCurrency(item.amount)
                 )}
               </td>
-              <td className="py-2 px-2 text-right text-zinc-400">
+              <td className="py-2 px-2 text-right text-secondary">
                 {formatCurrency(item.gstAmount)}
               </td>
               <td className="py-2 px-2 text-center">
@@ -235,7 +235,7 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
               </td>
               <td className="py-2 px-2">
                 {readOnly ? (
-                  <span className="text-zinc-300 text-xs">{item.category || '-'}</span>
+                  <span className="text-primary text-xs">{item.category || '-'}</span>
                 ) : (
                   <select
                     value={item.category || ''}
@@ -246,7 +246,7 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
                         ),
                       );
                     }}
-                    className="w-full bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-xs text-zinc-300 focus:ring-1 focus:ring-[#FFCC00]/20 focus:outline-none"
+                    className="w-full bg-overlay border border-border rounded px-1.5 py-0.5 text-xs text-primary focus:ring-1 focus:ring-[#FFCC00]/20 focus:outline-none"
                   >
                     <option value="">Select...</option>
                     {categoryNames.map((c) => (
@@ -262,17 +262,17 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
           ))}
         </tbody>
         <tfoot>
-          <tr className="border-t border-white/10 bg-white/[0.02]">
+          <tr className="border-t border-border bg-white/[0.02]">
             <td
               colSpan={4}
-              className="py-2 px-2 text-right text-xs font-bold text-zinc-400 uppercase"
+              className="py-2 px-2 text-right text-xs font-bold text-secondary uppercase"
             >
               Total
             </td>
             <td className="py-2 px-2 text-right text-zinc-100 font-bold">
               {formatCurrency(totalAmount)}
             </td>
-            <td className="py-2 px-2 text-right text-zinc-300">{formatCurrency(totalGst)}</td>
+            <td className="py-2 px-2 text-right text-primary">{formatCurrency(totalGst)}</td>
             <td colSpan={3} />
           </tr>
         </tfoot>

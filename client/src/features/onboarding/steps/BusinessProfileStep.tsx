@@ -71,14 +71,14 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
           <span className="text-gradient-gold">Tell us about yourself</span>
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           This helps us customize your experience and tax calculations.
         </p>
       </div>
 
       {/* Entity Type Selection */}
       <div className="space-y-3">
-        <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest ml-1 flex items-center gap-2">
+        <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1 flex items-center gap-2">
           Entity Type
           <HelpCircle className="w-3 h-3 text-zinc-600" />
         </label>
@@ -93,12 +93,12 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
                 className={cn(
                   'relative flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all btn-press text-center',
                   isSelected
-                    ? 'cba-gold-gradient text-[#0a0a0f] border-transparent shadow-lg cba-gold-glow'
-                    : 'neu-raised-sm border-white/5 text-zinc-400 hover:text-zinc-200 hover:border-white/10',
+                    ? 'cba-gold-gradient text-base border-transparent shadow-lg cba-gold-glow'
+                    : 'neu-raised-sm border-border/50 text-secondary hover:text-primary hover:border-border',
                 )}
                 aria-pressed={isSelected}
               >
-                <Icon className={cn('w-6 h-6', isSelected ? 'text-[#0a0a0f]' : 'text-zinc-500')} />
+                <Icon className={cn('w-6 h-6', isSelected ? 'text-base' : 'text-muted')} />
                 <span className="font-bold text-xs uppercase tracking-tight">{type.label}</span>
                 {isSelected && <Check className="w-4 h-4 absolute top-2 right-2" />}
               </button>
@@ -110,7 +110,7 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
       {/* Business Name */}
       {showBusinessFields && (
         <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
-          <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest ml-1">
+          <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
             Business Name
           </label>
           <Input
@@ -118,7 +118,7 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
             value={data.businessName}
             onChange={(e) => updateData({ businessName: e.target.value })}
             placeholder="e.g., Acme Consulting Pty Ltd"
-            className="w-full px-5 py-4 neu-inset rounded-2xl focus-gold outline-none text-zinc-200 font-medium text-sm placeholder-zinc-700 transition-all bg-transparent border-white/10"
+            className="w-full px-5 py-4 neu-inset rounded-2xl focus-gold outline-none text-primary font-medium text-sm placeholder-zinc-700 transition-all bg-transparent border-border"
           />
         </div>
       )}
@@ -129,7 +129,7 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
           className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-300"
           style={{ animationDelay: '50ms' }}
         >
-          <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest ml-1 flex items-center gap-2">
+          <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1 flex items-center gap-2">
             ABN
             <span className="text-zinc-600 font-normal normal-case tracking-normal">
               (optional)
@@ -141,8 +141,8 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
             onChange={(e) => handleABNChange(e.target.value)}
             placeholder="XX XXX XXX XXX"
             className={cn(
-              'w-full px-5 py-4 neu-inset rounded-2xl focus-gold outline-none text-[#FFCC00] font-mono font-bold text-sm placeholder-zinc-700 transition-all bg-transparent',
-              abnError ? 'border-red-500/50' : 'border-white/10',
+              'w-full px-5 py-4 neu-inset rounded-2xl focus-gold outline-none text-cba-gold font-mono font-bold text-sm placeholder-zinc-700 transition-all bg-transparent',
+              abnError ? 'border-red-500/50' : 'border-border',
             )}
           />
           {abnError && <p className="text-xs text-red-400 ml-1">{abnError}</p>}
@@ -151,7 +151,7 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
 
       {/* Industry */}
       <div className="space-y-3" style={{ animationDelay: '100ms' }}>
-        <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest ml-1">
+        <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
           {showBusinessFields ? 'Industry' : 'Primary Income Source'}
         </label>
         <Select value={data.industry} onValueChange={(value) => updateData({ industry: value })}>
@@ -169,9 +169,9 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
       </div>
 
       {/* Info Box */}
-      <div className="neu-inset rounded-2xl p-5 border border-[#FFCC00]/10 bg-[#FFCC00]/[0.02]">
-        <p className="text-xs text-zinc-400 leading-relaxed">
-          <span className="text-[#FFCC00] font-bold">Why do we ask?</span> Your entity type affects
+      <div className="neu-inset rounded-2xl p-5 border border-cba-gold/10 bg-cba-gold/[0.02]">
+        <p className="text-xs text-secondary leading-relaxed">
+          <span className="text-cba-gold font-bold">Why do we ask?</span> Your entity type affects
           tax calculations, GST obligations, and the categories we suggest.
           {showBusinessFields
             ? ' For businesses, your ABN helps with BAS preparation and invoice generation.'

@@ -139,15 +139,15 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
     <div className="min-h-screen bg-[#0a0a1a] flex">
       {/* Sidebar */}
       <aside
-        className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-[#0f0f23] border-r border-white/5 flex flex-col transition-all duration-300 shrink-0`}
+        className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-[#0f0f23] border-r border-border/50 flex flex-col transition-all duration-300 shrink-0`}
       >
         {/* Logo */}
-        <div className="p-4 border-b border-white/5 flex items-center gap-3">
-          <Shield className="w-8 h-8 text-[#FFCC00] shrink-0" />
+        <div className="p-4 border-b border-border/50 flex items-center gap-3">
+          <Shield className="w-8 h-8 text-cba-gold shrink-0" />
           {!sidebarCollapsed && (
             <div>
-              <h1 className="text-lg font-bold text-white">Admin</h1>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest">GoldLedger</p>
+              <h1 className="text-lg font-bold text-primary">Admin</h1>
+              <p className="text-[10px] text-muted uppercase tracking-widest">GoldLedger</p>
             </div>
           )}
         </div>
@@ -169,8 +169,8 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
                   title={item.label}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     activeSection === item.id
-                      ? 'bg-[#FFCC00]/10 text-[#FFCC00] border border-[#FFCC00]/20'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+                      ? 'bg-cba-gold/10 text-cba-gold border border-cba-gold/20'
+                      : 'text-secondary hover:text-primary hover:bg-overlay border border-transparent'
                   }`}
                 >
                   <item.icon className="w-4 h-4 shrink-0" />
@@ -182,11 +182,11 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/5 space-y-3">
+        <div className="p-4 border-t border-border/50 space-y-3">
           <button
             type="button"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-zinc-500 hover:text-zinc-300 transition-colors text-xs"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-muted hover:text-primary transition-colors text-xs"
           >
             {sidebarCollapsed ? (
               <ChevronRight className="w-4 h-4" />
@@ -197,10 +197,10 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
             )}
           </button>
           {!sidebarCollapsed && adminUser && (
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <div className="flex items-center gap-2 text-xs text-muted">
               <Activity className="w-3 h-3" />
               <span>{adminUser.username}</span>
-              <span className="ml-auto px-1.5 py-0.5 rounded bg-[#FFCC00]/10 text-[#FFCC00] text-[10px] font-bold uppercase">
+              <span className="ml-auto px-1.5 py-0.5 rounded bg-cba-gold/10 text-cba-gold text-[10px] font-bold uppercase">
                 {adminUser.role}
               </span>
             </div>

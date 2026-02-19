@@ -31,7 +31,7 @@ interface ScenarioComparerChartProps {
 export default function ScenarioComparerChart({ data, scenarios }: ScenarioComparerChartProps) {
   return (
     <div className="neu-raised rounded-2xl p-4 sm:p-6">
-      <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-4">
+      <h4 className="text-sm font-bold text-secondary uppercase tracking-wider mb-4">
         Net Cash Flow Comparison
       </h4>
       <ResponsiveContainer width="100%" height={320}>
@@ -59,7 +59,7 @@ export default function ScenarioComparerChart({ data, scenarios }: ScenarioCompa
           />
           <Legend
             formatter={(value: string) => (
-              <span className="text-xs text-zinc-400">{value}</span>
+              <span className="text-xs text-secondary">{value}</span>
             )}
           />
           {scenarios.map((s, idx) => (

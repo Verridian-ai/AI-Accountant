@@ -77,7 +77,7 @@ export function UsageDashboard() {
 
   const getBarColor = (percent: number) => {
     if (percent >= 80) return 'bg-red-400';
-    if (percent >= 60) return 'bg-[#FFCC00]';
+    if (percent >= 60) return 'bg-cba-gold';
     return 'bg-emerald-400';
   };
 
@@ -106,16 +106,16 @@ export function UsageDashboard() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Usage</h2>
-        <p className="text-sm text-zinc-500">Monitor your workspace resource consumption</p>
+        <p className="text-sm text-muted">Monitor your workspace resource consumption</p>
       </div>
 
       {/* Warning Banner */}
       {warningMetrics.length > 0 && (
-        <div className="neu-raised rounded-2xl border border-[#FFCC00]/20 p-4 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-[#FFCC00] shrink-0 mt-0.5" />
+        <div className="neu-raised rounded-2xl border border-cba-gold/20 p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-cba-gold shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-bold text-[#FFCC00]">Approaching Limits</p>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-sm font-bold text-cba-gold">Approaching Limits</p>
+            <p className="text-xs text-secondary mt-0.5">
               You're close to your {warningMetrics.map((m) => m.label.toLowerCase()).join(', ')}{' '}
               limit{warningMetrics.length > 1 ? 's' : ''}. Upgrade your plan for more capacity.
             </p>
@@ -136,19 +136,19 @@ export function UsageDashboard() {
             <div key={metric.key} className={cn('neu-inset rounded-2xl p-5 space-y-3', glowColor)}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Icon className="w-4 h-4 text-zinc-500" />
-                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <Icon className="w-4 h-4 text-muted" />
+                  <span className="text-xs font-bold text-secondary uppercase tracking-wider">
                     {metric.label}
                   </span>
                 </div>
-                <span className="text-xs font-bold text-zinc-500">{percent}%</span>
+                <span className="text-xs font-bold text-muted">{percent}%</span>
               </div>
 
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-black text-zinc-100 tabular-nums">
                   {metric.current.toLocaleString()}
                 </span>
-                <span className="text-sm text-zinc-500">of {limitDisplay}</span>
+                <span className="text-sm text-muted">of {limitDisplay}</span>
                 {metric.unit && <span className="text-xs text-zinc-600">{metric.unit}</span>}
               </div>
 

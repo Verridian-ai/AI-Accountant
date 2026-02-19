@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import { SSEProvider } from './context/SSEContext.tsx';
+import { ThemeProvider } from './context/ThemeContext.tsx';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -26,9 +27,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-10 min-h-screen bg-[#0a0a0f] text-white">
-          <h1 className="mb-5 text-2xl font-bold text-[#FFCC00]">Something went wrong</h1>
-          <pre className="p-5 overflow-auto text-red-500 rounded-lg bg-[#1a1a24]">
+        <div className="p-10 min-h-screen bg-base text-primary">
+          <h1 className="mb-5 text-2xl font-bold text-cba-gold">Something went wrong</h1>
+          <pre className="p-5 overflow-auto text-red-500 rounded-lg bg-elevated">
             {this.state.error?.message}
             {'\n\n'}
             {this.state.error?.stack}
@@ -38,7 +39,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
               localStorage.clear();
               window.location.reload();
             }}
-            className="px-6 py-3 mt-5 font-bold text-[#0a0a0f] bg-[#FFCC00] rounded-lg cursor-pointer border-none"
+            className="px-6 py-3 mt-5 font-bold text-base bg-cba-gold rounded-lg cursor-pointer border-none"
           >
             Clear Storage & Reload
           </button>
@@ -53,9 +54,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <SSEProvider>
-        <App />
-      </SSEProvider>
+      <ThemeProvider>
+        <SSEProvider>
+          <App />
+        </SSEProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   </StrictMode>,
 );

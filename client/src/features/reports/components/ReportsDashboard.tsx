@@ -75,7 +75,7 @@ export function ReportsDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gradient-gold">Financial Reports</h2>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Comprehensive financial statements and KPI tracking
           </p>
         </div>
@@ -86,13 +86,13 @@ export function ReportsDashboard() {
         <div className="flex flex-wrap items-center gap-4">
           {/* Financial Year Selector */}
           <div>
-            <label className="block text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">
+            <label className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
               Financial Year
             </label>
             <select
               value={selectedFY}
               onChange={(e) => setSelectedFY(Number(e.target.value))}
-              className="neu-inset rounded-xl px-3 py-2 text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {financialYears.map((y, i) => (
                 <option key={y.label} value={i}>
@@ -104,37 +104,37 @@ export function ReportsDashboard() {
 
           {/* Custom Date Range */}
           <div>
-            <label className="block text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">
+            <label className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
               Period Start
             </label>
             <input
               type="date"
               value={customStart}
               onChange={(e) => setCustomStart(e.target.value)}
-              className="neu-inset rounded-xl px-3 py-2 text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <div>
-            <label className="block text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">
+            <label className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
               Period End
             </label>
             <input
               type="date"
               value={customEnd}
               onChange={(e) => setCustomEnd(e.target.value)}
-              className="neu-inset rounded-xl px-3 py-2 text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
 
           {/* Account Filter */}
           <div>
-            <label className="block text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">
+            <label className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
               Account
             </label>
             <select
               value={selectedAccountId}
               onChange={(e) => setSelectedAccountId(e.target.value)}
-              className="neu-inset rounded-xl px-3 py-2 text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               <option value="">All Accounts</option>
               {accounts.map((acc) => (
@@ -157,8 +157,8 @@ export function ReportsDashboard() {
             className={cn(
               'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap',
               activeTab === tab.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                : 'neu-raised text-zinc-400 hover:text-zinc-100 hover:bg-white/5',
+                ? 'bg-cba-gold text-base shadow-[0_0_20px_rgba(255,204,0,0.2)]'
+                : 'neu-raised text-secondary hover:text-zinc-100 hover:bg-overlay',
             )}
           >
             <tab.icon className="w-4 h-4" />

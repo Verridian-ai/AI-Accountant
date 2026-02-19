@@ -22,8 +22,8 @@ export function FileProgressCard({ fileState, onCancel, onRetry }: FileProgressC
         'p-3 rounded-xl neu-inset border transition-all duration-300',
         isDone && 'border-emerald-500/10 bg-emerald-500/[0.02]',
         isError && 'border-red-500/10 bg-red-500/[0.02]',
-        isActive && 'border-[#FFCC00]/10 bg-[#FFCC00]/[0.01]',
-        !isDone && !isError && !isActive && 'border-white/5 bg-white/[0.01]',
+        isActive && 'border-cba-gold/10 bg-cba-gold/[0.01]',
+        !isDone && !isError && !isActive && 'border-border/50 bg-white/[0.01]',
       )}
     >
       {/* Row 1: File info + actions */}
@@ -32,7 +32,7 @@ export function FileProgressCard({ fileState, onCancel, onRetry }: FileProgressC
           {getFileIcon(fileState.file.name)}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold text-zinc-300 truncate">{fileState.file.name}</p>
+          <p className="text-[11px] font-bold text-primary truncate">{fileState.file.name}</p>
           <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest mt-0.5">
             {formatFileSize(fileState.file.size)}
           </p>
@@ -53,7 +53,7 @@ export function FileProgressCard({ fileState, onCancel, onRetry }: FileProgressC
             <button
               type="button"
               onClick={() => onCancel(fileState.id)}
-              className="w-6 h-6 flex items-center justify-center rounded-lg bg-white/5 hover:bg-red-500/20 text-zinc-600 hover:text-red-400 transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded-lg bg-overlay hover:bg-red-500/20 text-zinc-600 hover:text-red-400 transition-colors"
               title="Cancel upload"
               aria-label={`Cancel ${fileState.file.name}`}
             >
@@ -77,7 +77,7 @@ export function FileProgressCard({ fileState, onCancel, onRetry }: FileProgressC
       {/* Row 3: Progress bar */}
       {(isActive || fileState.status === 'pending') && (
         <div className="mt-2.5 ml-11">
-          <div className="w-full h-1.5 rounded-full bg-black/40 overflow-hidden border border-white/5">
+          <div className="w-full h-1.5 rounded-full bg-overlay-hover overflow-hidden border border-border/50">
             <div
               className={cn(
                 'h-full rounded-full transition-all duration-500 ease-out',

@@ -58,8 +58,8 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
-        <span className="ml-2 text-zinc-400">Loading strategies...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
+        <span className="ml-2 text-secondary">Loading strategies...</span>
       </div>
     );
   }
@@ -79,7 +79,7 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
         <Button
           onClick={handleGenerate}
           disabled={generating}
-          className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+          className="bg-cba-gold text-base hover:bg-[#e6b800]"
         >
           {generating ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -101,16 +101,16 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
       {/* Suggested Strategies */}
       {suggested.length > 0 && (
         <div className="space-y-4">
-          <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Suggested</h4>
+          <h4 className="text-sm font-bold text-secondary uppercase tracking-wider">Suggested</h4>
           {suggested.map((s) => (
             <Card
               key={s.id}
-              className="neu-raised border-[#FFCC00]/10 hover:border-[#FFCC00]/30 transition-colors"
+              className="neu-raised border-cba-gold/10 hover:border-cba-gold/30 transition-colors"
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-[#FFCC00]" />
+                    <Lightbulb className="w-5 h-5 text-cba-gold" />
                     <CardTitle className="text-base">{s.strategyName}</CardTitle>
                   </div>
                   <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
@@ -119,7 +119,7 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-zinc-400 mb-3">{s.description}</p>
+                <p className="text-sm text-secondary mb-3">{s.description}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
@@ -136,14 +136,14 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
                       size="sm"
                       variant="outline"
                       onClick={() => handleUpdateStatus(s.id, 'dismissed')}
-                      className="text-zinc-400 hover:text-red-400"
+                      className="text-secondary hover:text-red-400"
                     >
                       <X className="w-4 h-4 mr-1" /> Dismiss
                     </Button>
                     <Button
                       size="sm"
                       onClick={() => handleUpdateStatus(s.id, 'applied')}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-primary"
                     >
                       <Check className="w-4 h-4 mr-1" /> Apply
                     </Button>
@@ -158,7 +158,7 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
       {/* Applied Strategies */}
       {applied.length > 0 && (
         <div className="space-y-4">
-          <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Applied</h4>
+          <h4 className="text-sm font-bold text-secondary uppercase tracking-wider">Applied</h4>
           {applied.map((s) => (
             <Card key={s.id} className="neu-raised border-emerald-500/20 opacity-80">
               <CardContent className="pt-6 flex items-center justify-between">
@@ -166,7 +166,7 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
                   <Check className="w-5 h-5 text-emerald-400" />
                   <div>
                     <p className="font-medium">{s.strategyName}</p>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-muted">
                       Saving: {formatCurrency(s.estimatedSaving)}
                     </p>
                   </div>
@@ -181,14 +181,14 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
       {/* Dismissed */}
       {dismissed.length > 0 && (
         <details className="group">
-          <summary className="text-sm font-bold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-400">
+          <summary className="text-sm font-bold text-muted uppercase tracking-wider cursor-pointer hover:text-secondary">
             Dismissed ({dismissed.length})
           </summary>
           <div className="mt-3 space-y-2">
             {dismissed.map((s) => (
               <Card key={s.id} className="neu-raised opacity-50">
                 <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                  <span className="text-sm text-zinc-500 line-through">{s.strategyName}</span>
+                  <span className="text-sm text-muted line-through">{s.strategyName}</span>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -204,11 +204,11 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
       )}
 
       {strategies.length === 0 && !generating && (
-        <Card className="neu-raised border-white/5">
+        <Card className="neu-raised border-border/50">
           <CardContent className="pt-6 text-center">
             <Lightbulb className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-            <p className="text-zinc-400">No strategies generated yet.</p>
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-secondary">No strategies generated yet.</p>
+            <p className="text-sm text-muted mt-1">
               Click "Generate Strategies" to analyze your tax position and find savings.
             </p>
           </CardContent>

@@ -13,9 +13,9 @@ interface GSTBreakdownTabProps {
 export function GSTBreakdownTab({ basData, isRefund, netAmount }: GSTBreakdownTabProps) {
   if (!basData) {
     return (
-      <div className="neu-raised rounded-2xl border border-white/5 p-12 text-center">
+      <div className="neu-raised rounded-2xl border border-border/50 p-12 text-center">
         <BarChart3 className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Calculate a BAS period first to see the GST breakdown.
         </p>
       </div>
@@ -27,10 +27,10 @@ export function GSTBreakdownTab({ basData, isRefund, netAmount }: GSTBreakdownTa
   return (
     <div className="space-y-5">
       {/* GST by BAS Category Bars */}
-      <div className="neu-raised rounded-2xl border border-white/5 p-5">
+      <div className="neu-raised rounded-2xl border border-border/50 p-5">
         <div className="flex items-center gap-2 mb-5">
-          <BarChart3 className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <BarChart3 className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             GST by BAS Category
           </span>
         </div>
@@ -70,20 +70,20 @@ export function GSTBreakdownTab({ basData, isRefund, netAmount }: GSTBreakdownTa
 
       {/* 1A vs 1B Comparison */}
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="neu-raised rounded-2xl border border-white/5 p-5">
+        <div className="neu-raised rounded-2xl border border-border/50 p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+            <span className="text-[9px] font-black text-muted uppercase tracking-widest">
               1A — GST Collected
             </span>
-            <TrendingUp className="w-4 h-4 text-[#FFCC00]/40" />
+            <TrendingUp className="w-4 h-4 text-cba-gold/40" />
           </div>
-          <div className="text-3xl font-black text-[#FFCC00] tabular-nums mb-2">
+          <div className="text-3xl font-black text-cba-gold tabular-nums mb-2">
             {formatCurrency(basData.g9_gst_on_sales)}
           </div>
           <p className="text-[10px] text-zinc-600">GST collected on taxable sales (G1 / 11)</p>
           <div className="mt-4 w-full h-2 rounded-full bg-[#1a1a2e]">
             <div
-              className="h-2 rounded-full bg-[#FFCC00] transition-all duration-500"
+              className="h-2 rounded-full bg-cba-gold transition-all duration-500"
               style={{
                 width: `${
                   basData.g1_total_sales > 0
@@ -95,9 +95,9 @@ export function GSTBreakdownTab({ basData, isRefund, netAmount }: GSTBreakdownTa
           </div>
         </div>
 
-        <div className="neu-raised rounded-2xl border border-white/5 p-5">
+        <div className="neu-raised rounded-2xl border border-border/50 p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+            <span className="text-[9px] font-black text-muted uppercase tracking-widest">
               1B — Input Tax Credits
             </span>
             <TrendingDown className="w-4 h-4 text-emerald-500/40" />
@@ -122,11 +122,11 @@ export function GSTBreakdownTab({ basData, isRefund, netAmount }: GSTBreakdownTa
       </div>
 
       {/* BAS Pre-Fill Summary */}
-      <div className="neu-raised rounded-2xl border border-[#FFCC00]/10 p-5">
+      <div className="neu-raised rounded-2xl border border-cba-gold/10 p-5">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#FFCC00]" />
-            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            <ShieldCheck className="w-4 h-4 text-cba-gold" />
+            <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
               BAS Pre-Fill Summary
             </span>
           </div>
@@ -143,10 +143,10 @@ export function GSTBreakdownTab({ basData, isRefund, netAmount }: GSTBreakdownTa
           ].map(({ label, value }) => (
             <div
               key={label}
-              className="flex justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5"
+              className="flex justify-between p-2.5 rounded-xl bg-white/[0.02] border border-border/50"
             >
-              <span className="text-[11px] font-bold text-zinc-400">{label}</span>
-              <span className="text-[11px] font-black text-zinc-200 tabular-nums">
+              <span className="text-[11px] font-bold text-secondary">{label}</span>
+              <span className="text-[11px] font-black text-primary tabular-nums">
                 {formatCurrency(value)}
               </span>
             </div>

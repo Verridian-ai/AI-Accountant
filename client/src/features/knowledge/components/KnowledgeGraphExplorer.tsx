@@ -341,7 +341,7 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -353,7 +353,7 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
         <button
           type="button"
           onClick={loadGraph}
-          className="mt-3 text-xs text-[#FFCC00] hover:underline"
+          className="mt-3 text-xs text-cba-gold hover:underline"
         >
           Retry
         </button>
@@ -367,26 +367,26 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search nodes..."
-            className="w-full pl-9 pr-3 py-2 neu-inset rounded-xl text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            className="w-full pl-9 pr-3 py-2 neu-inset rounded-xl text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
           />
         </div>
 
         {/* Type Filters */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <Filter className="w-4 h-4 text-zinc-500" />
+          <Filter className="w-4 h-4 text-muted" />
           {allTypes.map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => toggleTypeFilter(type)}
               className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                typeFilters.has(type) ? 'text-zinc-100 ring-1' : 'text-zinc-600 hover:text-zinc-400'
+                typeFilters.has(type) ? 'text-zinc-100 ring-1' : 'text-zinc-600 hover:text-secondary'
               }`}
               style={{
                 backgroundColor: typeFilters.has(type)
@@ -410,14 +410,14 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
           <button
             type="button"
             onClick={() => setZoom((z) => Math.min(3, z + 0.2))}
-            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+            className="neu-raised-sm p-1.5 rounded-lg text-secondary hover:text-primary"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
             type="button"
             onClick={() => setZoom((z) => Math.max(0.2, z - 0.2))}
-            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+            className="neu-raised-sm p-1.5 rounded-lg text-secondary hover:text-primary"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
@@ -427,7 +427,7 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
               setZoom(1);
               setPan({ x: 0, y: 0 });
             }}
-            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+            className="neu-raised-sm p-1.5 rounded-lg text-secondary hover:text-primary"
           >
             <Maximize2 className="w-4 h-4" />
           </button>

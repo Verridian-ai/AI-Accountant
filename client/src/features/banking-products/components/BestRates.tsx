@@ -15,8 +15,8 @@ interface RateEntry {
 }
 
 const CATEGORIES = ['HOME_LOAN', 'PERSONAL_LOAN', 'SAVINGS', 'TERM_DEPOSIT'];
-const MEDAL_COLORS = ['text-[#FFCC00]', 'text-zinc-300', 'text-amber-600'];
-const MEDAL_BG = ['bg-[#FFCC00]/10', 'bg-zinc-300/10', 'bg-amber-600/10'];
+const MEDAL_COLORS = ['text-cba-gold', 'text-primary', 'text-amber-600'];
+const MEDAL_BG = ['bg-cba-gold/10', 'bg-zinc-300/10', 'bg-amber-600/10'];
 
 export function BestRates() {
   const [category, setCategory] = useState('HOME_LOAN');
@@ -65,7 +65,7 @@ export function BestRates() {
 
   const renderLeaderboard = (title: string, items: RateEntry[], isLending: boolean) => (
     <div className="neu-raised rounded-2xl p-5 space-y-3">
-      <h3 className="text-sm font-bold text-zinc-300 flex items-center gap-2">
+      <h3 className="text-sm font-bold text-primary flex items-center gap-2">
         {isLending ? (
           <ArrowDown className="h-4 w-4 text-emerald-400" />
         ) : (
@@ -88,7 +88,7 @@ export function BestRates() {
               key={item.id}
               className={cn(
                 'flex items-center gap-3 p-3 rounded-xl transition-colors',
-                idx < 3 ? MEDAL_BG[idx] : 'hover:bg-white/5',
+                idx < 3 ? MEDAL_BG[idx] : 'hover:bg-overlay',
               )}
             >
               <div
@@ -101,19 +101,19 @@ export function BestRates() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-zinc-100 truncate">{item.name}</p>
-                <p className="text-xs text-zinc-500 truncate">{item.dataHolderBrand}</p>
+                <p className="text-xs text-muted truncate">{item.dataHolderBrand}</p>
               </div>
               <div className="text-right shrink-0">
                 <p
                   className={cn(
                     'text-lg font-black',
-                    idx < 3 ? MEDAL_COLORS[idx] : 'text-zinc-300',
+                    idx < 3 ? MEDAL_COLORS[idx] : 'text-primary',
                   )}
                 >
                   {formatRate(item.baseRate)}
                 </p>
                 {item.comparisonRate != null && (
-                  <p className="text-[10px] text-zinc-500">
+                  <p className="text-[10px] text-muted">
                     {formatRate(item.comparisonRate)} comp
                   </p>
                 )}
@@ -121,7 +121,7 @@ export function BestRates() {
               <button
                 onClick={() => handleSetAlert(item)}
                 disabled={alertingId === item.id}
-                className="shrink-0 p-2 rounded-lg text-zinc-500 hover:text-[#FFCC00] transition-colors disabled:opacity-50"
+                className="shrink-0 p-2 rounded-lg text-muted hover:text-cba-gold transition-colors disabled:opacity-50"
                 title="Set rate alert"
               >
                 <Bell className={cn('h-4 w-4', alertingId === item.id && 'animate-pulse')} />
@@ -144,8 +144,8 @@ export function BestRates() {
             className={cn(
               'px-4 py-2 rounded-xl text-sm font-bold transition-all',
               category === c
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_15px_rgba(255,204,0,0.2)]'
-                : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
+                ? 'bg-cba-gold text-base shadow-[0_0_15px_rgba(255,204,0,0.2)]'
+                : 'neu-raised-sm text-secondary hover:text-primary',
             )}
           >
             {c.replace(/_/g, ' ')}

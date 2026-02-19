@@ -145,7 +145,7 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
           <span className="text-gradient-gold">Upload your first statement</span>
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Drop your bank statement here and watch the AI categorize your transactions.
         </p>
       </div>
@@ -160,8 +160,8 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
           'group relative min-h-[250px] w-full flex flex-col items-center justify-center cursor-pointer',
           'rounded-[2rem] border-2 border-dashed transition-all duration-300',
           isDragging
-            ? 'border-[#FFCC00]/50 bg-[#FFCC00]/[0.05] scale-[1.02]'
-            : 'border-white/10 bg-white/[0.01] hover:border-[#FFCC00]/30 hover:bg-[#FFCC00]/[0.02]',
+            ? 'border-cba-gold/50 bg-cba-gold/[0.05] scale-[1.02]'
+            : 'border-border bg-white/[0.01] hover:border-cba-gold/30 hover:bg-cba-gold/[0.02]',
         )}
       >
         <input
@@ -178,20 +178,20 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
         <div className="relative mb-6">
           <div
             className={cn(
-              'absolute inset-0 bg-[#FFCC00] blur-2xl transition-opacity duration-500 rounded-full',
+              'absolute inset-0 bg-cba-gold blur-2xl transition-opacity duration-500 rounded-full',
               isDragging ? 'opacity-30' : 'opacity-0 group-hover:opacity-20',
             )}
           />
           <div
             className={cn(
-              'w-20 h-20 neu-inset rounded-[1.5rem] flex items-center justify-center transition-all duration-300 relative z-10 border border-white/5',
+              'w-20 h-20 neu-inset rounded-[1.5rem] flex items-center justify-center transition-all duration-300 relative z-10 border border-border/50',
               isDragging && 'scale-110 neu-raised',
             )}
           >
             <Upload
               className={cn(
                 'h-9 w-9 transition-colors duration-300',
-                isDragging ? 'text-[#FFCC00]' : 'text-zinc-600 group-hover:text-[#FFCC00]',
+                isDragging ? 'text-cba-gold' : 'text-zinc-600 group-hover:text-cba-gold',
               )}
             />
           </div>
@@ -199,7 +199,7 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
           {/* Floating Indicators */}
           <div
             className={cn(
-              'absolute -right-3 -top-3 bg-[#12121a] border border-white/10 p-2 rounded-xl shadow-xl transition-all duration-500',
+              'absolute -right-3 -top-3 bg-surface border border-border p-2 rounded-xl shadow-xl transition-all duration-500',
               isDragging
                 ? 'translate-y-0 opacity-100'
                 : 'translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100',
@@ -210,7 +210,7 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
           </div>
           <div
             className={cn(
-              'absolute -left-3 -bottom-3 bg-[#12121a] border border-white/10 p-2 rounded-xl shadow-xl transition-all duration-500',
+              'absolute -left-3 -bottom-3 bg-surface border border-border p-2 rounded-xl shadow-xl transition-all duration-500',
               isDragging
                 ? 'translate-y-0 opacity-100'
                 : '-translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100',
@@ -226,22 +226,22 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
           <h3
             className={cn(
               'text-sm font-black uppercase tracking-[0.2em] transition-colors duration-300',
-              isDragging ? 'text-[#FFCC00]' : 'text-zinc-400 group-hover:text-[#FFCC00]',
+              isDragging ? 'text-cba-gold' : 'text-secondary group-hover:text-cba-gold',
             )}
           >
             {isDragging ? 'Drop to Upload' : 'Upload Statements'}
           </h3>
-          <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
+          <p className="text-xs text-muted mt-2 leading-relaxed">
             Drop your PDF or CSV bank statements here, or click to browse files.
           </p>
         </div>
 
         {/* Supported Formats */}
         <div className="mt-6 flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-overlay border border-border/50 text-[9px] font-bold text-secondary uppercase tracking-wider">
             <FileText className="h-3 w-3" /> PDF
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-overlay border border-border/50 text-[9px] font-bold text-secondary uppercase tracking-wider">
             <FileSpreadsheet className="h-3 w-3" /> CSV
           </div>
         </div>
@@ -255,7 +255,7 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
               : 'opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0',
           )}
         >
-          <div className="p-2 rounded-full bg-[#FFCC00]/10 text-[#FFCC00]">
+          <div className="p-2 rounded-full bg-cba-gold/10 text-cba-gold">
             <ArrowUpRight className="h-4 w-4" />
           </div>
         </div>
@@ -265,7 +265,7 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
       {hasUploads && (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-center justify-between">
-            <h3 className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">
+            <h3 className="text-[10px] font-black uppercase text-muted tracking-widest">
               Uploaded Files
             </h3>
             {successCount > 0 && (
@@ -283,13 +283,13 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
                   upload.status === 'success' &&
                     'neu-raised-sm border-emerald-500/20 bg-emerald-500/5',
                   upload.status === 'error' && 'neu-raised-sm border-red-500/20 bg-red-500/5',
-                  upload.status === 'uploading' && 'neu-inset border-[#FFCC00]/20',
-                  upload.status === 'pending' && 'neu-inset border-white/5',
+                  upload.status === 'uploading' && 'neu-inset border-cba-gold/20',
+                  upload.status === 'pending' && 'neu-inset border-border/50',
                 )}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {upload.status === 'uploading' && (
-                    <Loader2 className="w-4 h-4 text-[#FFCC00] animate-spin shrink-0" />
+                    <Loader2 className="w-4 h-4 text-cba-gold animate-spin shrink-0" />
                   )}
                   {upload.status === 'success' && (
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -298,15 +298,15 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
                     <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
                   )}
                   {upload.status === 'pending' && (
-                    <FileText className="w-4 h-4 text-zinc-500 shrink-0" />
+                    <FileText className="w-4 h-4 text-muted shrink-0" />
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-300 truncate">{upload.file.name}</p>
+                    <p className="text-sm font-medium text-primary truncate">{upload.file.name}</p>
                     {upload.message && (
                       <p
                         className={cn(
                           'text-xs truncate',
-                          upload.status === 'error' ? 'text-red-400' : 'text-zinc-500',
+                          upload.status === 'error' ? 'text-red-400' : 'text-muted',
                         )}
                       >
                         {upload.message}
@@ -320,7 +320,7 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
                       e.stopPropagation();
                       removeFile(upload.id, upload.file.name);
                     }}
-                    className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                    className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
                     aria-label={`Remove ${upload.file.name}`}
                   >
                     <X className="w-4 h-4" />
@@ -337,7 +337,7 @@ export function StatementUploadStep({ data: _data, updateData, onSkip }: Onboard
         <div className="text-center">
           <p className="text-xs text-zinc-600">
             Don't have a statement handy? You can{' '}
-            <button onClick={onSkip} className="text-[#FFCC00] hover:underline font-medium">
+            <button onClick={onSkip} className="text-cba-gold hover:underline font-medium">
               skip this step
             </button>{' '}
             and upload later.

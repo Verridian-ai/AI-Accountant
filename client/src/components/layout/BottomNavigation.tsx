@@ -44,7 +44,7 @@ export function BottomNavigation({ activeTab, onTabChange, onShowAgents }: Botto
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom">
       {/* Glass Background with Blur */}
-      <div className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-2xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]" />
+      <div className="absolute inset-0 bg-base/80 backdrop-blur-2xl border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.5)]" />
 
       {/* Central Agent Button - Floating above nav */}
       <button
@@ -57,7 +57,7 @@ export function BottomNavigation({ activeTab, onTabChange, onShowAgents }: Botto
           alt="GoldLedger"
           className="h-16 w-16 drop-shadow-[0_4px_28px_rgba(255,204,0,0.4)] group-hover:drop-shadow-[0_4px_36px_rgba(255,204,0,0.6)] transition-all"
         />
-        <span className="text-[10px] font-bold text-[#FFCC00] uppercase tracking-wide">Menu</span>
+        <span className="text-[10px] font-bold text-cba-gold uppercase tracking-wide">Menu</span>
       </button>
 
       <div className="relative flex justify-between items-end px-2 pb-2 pt-2">
@@ -69,14 +69,14 @@ export function BottomNavigation({ activeTab, onTabChange, onShowAgents }: Botto
               onClick={() => onTabChange(item.id)}
               className={cn(
                 'flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all duration-300 min-w-[64px]',
-                activeTab === item.id ? 'text-[#FFCC00]' : 'text-zinc-500 hover:text-zinc-300',
+                activeTab === item.id ? 'text-cba-gold' : 'text-muted hover:text-primary',
               )}
             >
               <div
                 className={cn(
                   'relative p-1.5 rounded-xl transition-all duration-300',
                   activeTab === item.id &&
-                    'bg-[#FFCC00]/10 ring-1 ring-[#FFCC00]/20 shadow-[0_0_15px_rgba(255,204,0,0.1)]',
+                    'bg-cba-gold/10 ring-1 ring-[#FFCC00]/20 shadow-[0_0_15px_rgba(255,204,0,0.1)]',
                 )}
               >
                 <item.icon
@@ -109,14 +109,14 @@ export function BottomNavigation({ activeTab, onTabChange, onShowAgents }: Botto
               onClick={() => onTabChange(item.id)}
               className={cn(
                 'flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all duration-300 min-w-[64px]',
-                activeTab === item.id ? 'text-[#FFCC00]' : 'text-zinc-500 hover:text-zinc-300',
+                activeTab === item.id ? 'text-cba-gold' : 'text-muted hover:text-primary',
               )}
             >
               <div
                 className={cn(
                   'relative p-1.5 rounded-xl transition-all duration-300',
                   activeTab === item.id &&
-                    'bg-[#FFCC00]/10 ring-1 ring-[#FFCC00]/20 shadow-[0_0_15px_rgba(255,204,0,0.1)]',
+                    'bg-cba-gold/10 ring-1 ring-[#FFCC00]/20 shadow-[0_0_15px_rgba(255,204,0,0.1)]',
                 )}
               >
                 <item.icon

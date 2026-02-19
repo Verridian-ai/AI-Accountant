@@ -24,11 +24,11 @@ interface Invitation {
 const ROLES = ['owner', 'admin', 'accountant', 'bookkeeper', 'viewer'] as const;
 
 const ROLE_STYLES: Record<string, { bg: string; text: string; icon: typeof Crown }> = {
-  owner: { bg: 'bg-[#FFCC00]/10', text: 'text-[#FFCC00]', icon: Crown },
+  owner: { bg: 'bg-cba-gold/10', text: 'text-cba-gold', icon: Crown },
   admin: { bg: 'bg-blue-500/10', text: 'text-blue-400', icon: Shield },
   accountant: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', icon: Calculator },
   bookkeeper: { bg: 'bg-purple-500/10', text: 'text-purple-400', icon: BookOpen },
-  viewer: { bg: 'bg-zinc-500/10', text: 'text-zinc-400', icon: Eye },
+  viewer: { bg: 'bg-zinc-500/10', text: 'text-secondary', icon: Eye },
 };
 
 export function MemberManager() {
@@ -106,12 +106,12 @@ export function MemberManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Team Members</h2>
-          <p className="text-sm text-zinc-500">Manage who has access to this workspace</p>
+          <p className="text-sm text-muted">Manage who has access to this workspace</p>
         </div>
         <button
           type="button"
           onClick={() => setShowInvite(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-[#FFD633] transition-colors"
         >
           <UserPlus className="w-4 h-4" />
           Invite Member
@@ -127,13 +127,13 @@ export function MemberManager() {
       {/* Invite Modal */}
       {showInvite && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="neu-raised rounded-2xl border border-white/10 p-6 w-full max-w-md space-y-4 animate-in fade-in zoom-in-95 duration-200">
+          <div className="neu-raised rounded-2xl border border-border p-6 w-full max-w-md space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-zinc-100">Invite Member</h3>
               <button
                 type="button"
                 onClick={() => setShowInvite(false)}
-                className="p-1 rounded-lg text-zinc-500 hover:text-zinc-300"
+                className="p-1 rounded-lg text-muted hover:text-primary"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -141,26 +141,26 @@ export function MemberManager() {
             <div>
               <label
                 htmlFor="invite-email"
-                className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5"
+                className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5"
               >
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                 <input
                   id="invite-email"
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="colleague@example.com"
-                  className="w-full neu-inset pl-10 pr-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
+                  className="w-full neu-inset pl-10 pr-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
                 />
               </div>
             </div>
             <div>
               <label
                 htmlFor="invite-role"
-                className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5"
+                className="block text-[10px] font-black text-muted uppercase tracking-widest mb-1.5"
               >
                 Role
               </label>
@@ -168,7 +168,7 @@ export function MemberManager() {
                 id="invite-role"
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
-                className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {ROLES.filter((r) => r !== 'owner').map((r) => (
                   <option key={r} value={r} className="bg-[#16213e]">
@@ -181,7 +181,7 @@ export function MemberManager() {
               type="button"
               onClick={handleInvite}
               disabled={inviting || !inviteEmail}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-[#FFD633] transition-colors disabled:opacity-50"
             >
               <UserPlus className="w-4 h-4" />
               {inviting ? 'Sending...' : 'Send Invitation'}
@@ -191,24 +191,24 @@ export function MemberManager() {
       )}
 
       {/* Members Table */}
-      <div className="neu-raised rounded-2xl border border-white/5 overflow-hidden">
+      <div className="neu-raised rounded-2xl border border-border/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+              <tr className="border-b border-border/50">
+                <th className="text-left px-4 py-3 text-[10px] font-black text-muted uppercase tracking-widest">
                   Member
                 </th>
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                <th className="text-left px-4 py-3 text-[10px] font-black text-muted uppercase tracking-widest">
                   Role
                 </th>
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden md:table-cell">
+                <th className="text-left px-4 py-3 text-[10px] font-black text-muted uppercase tracking-widest hidden md:table-cell">
                   Joined
                 </th>
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hidden lg:table-cell">
+                <th className="text-left px-4 py-3 text-[10px] font-black text-muted uppercase tracking-widest hidden lg:table-cell">
                   Last Active
                 </th>
-                <th className="text-right px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                <th className="text-right px-4 py-3 text-[10px] font-black text-muted uppercase tracking-widest">
                   Actions
                 </th>
               </tr>
@@ -220,12 +220,12 @@ export function MemberManager() {
                 return (
                   <tr
                     key={member.id}
-                    className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
+                    className="border-b border-border/50 last:border-0 hover:bg-white/[0.02] transition-colors"
                   >
                     <td className="px-4 py-3">
                       <div>
-                        <p className="font-bold text-zinc-200">{member.name}</p>
-                        <p className="text-xs text-zinc-500">{member.email}</p>
+                        <p className="font-bold text-primary">{member.name}</p>
+                        <p className="text-xs text-muted">{member.email}</p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -241,16 +241,16 @@ export function MemberManager() {
                         )}
                       >
                         {ROLES.map((r) => (
-                          <option key={r} value={r} className="bg-[#16213e] text-zinc-200">
+                          <option key={r} value={r} className="bg-[#16213e] text-primary">
                             {r.charAt(0).toUpperCase() + r.slice(1)}
                           </option>
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-zinc-400 hidden md:table-cell">
+                    <td className="px-4 py-3 text-secondary hidden md:table-cell">
                       {formatDate(member.joinedAt)}
                     </td>
-                    <td className="px-4 py-3 text-zinc-400 hidden lg:table-cell">
+                    <td className="px-4 py-3 text-secondary hidden lg:table-cell">
                       {member.lastActiveAt ? (
                         formatDate(member.lastActiveAt)
                       ) : (
@@ -271,7 +271,7 @@ export function MemberManager() {
                             <button
                               type="button"
                               onClick={() => setConfirmRemove(null)}
-                              className="px-2 py-1 rounded-lg text-xs font-bold text-zinc-500 hover:text-zinc-300"
+                              className="px-2 py-1 rounded-lg text-xs font-bold text-muted hover:text-primary"
                             >
                               Cancel
                             </button>
@@ -280,7 +280,7 @@ export function MemberManager() {
                           <button
                             type="button"
                             onClick={() => setConfirmRemove(member.id)}
-                            className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                            className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-500/10 transition-colors"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -297,18 +297,18 @@ export function MemberManager() {
       {/* Pending Invitations */}
       {invitations.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+          <h3 className="text-sm font-bold text-secondary uppercase tracking-widest flex items-center gap-2">
             <Clock className="w-4 h-4" /> Pending Invitations
           </h3>
-          <div className="neu-raised rounded-2xl border border-white/5 divide-y divide-white/5">
+          <div className="neu-raised rounded-2xl border border-border/50 divide-y divide-white/5">
             {invitations.map((inv) => {
               const style = ROLE_STYLES[inv.role] ?? ROLE_STYLES.viewer;
               return (
                 <div key={inv.id} className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-zinc-500" />
+                    <Mail className="w-4 h-4 text-muted" />
                     <div>
-                      <p className="text-sm font-bold text-zinc-300">{inv.email}</p>
+                      <p className="text-sm font-bold text-primary">{inv.email}</p>
                       <span
                         className={cn('text-[10px] font-bold uppercase tracking-wider', style.text)}
                       >
@@ -317,7 +317,7 @@ export function MemberManager() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-zinc-500">{formatDate(inv.createdAt)}</span>
+                    <span className="text-xs text-muted">{formatDate(inv.createdAt)}</span>
                     <button
                       type="button"
                       onClick={() => handleRevoke(inv.id)}

@@ -101,19 +101,19 @@ export function RecurringPayments() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[200px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[200px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
 
   if (payments.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-10 text-center border border-white/5">
+      <div className="neu-raised rounded-3xl p-10 text-center border border-border/50">
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <RotateCcw className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">
           No Recurring Payments
         </h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight">
@@ -126,11 +126,11 @@ export function RecurringPayments() {
   return (
     <div className="space-y-4">
       {/* Header + Totals */}
-      <div className="neu-raised rounded-2xl p-4 border border-white/5">
+      <div className="neu-raised rounded-2xl p-4 border border-border/50">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <RotateCcw className="w-4 h-4 text-[#FFCC00]" />
-            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            <RotateCcw className="w-4 h-4 text-cba-gold" />
+            <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
               Recurring Payments
             </span>
           </div>
@@ -141,7 +141,7 @@ export function RecurringPayments() {
               </p>
               <p className="text-sm font-black text-red-400">{formatCurrency(totalMonthly)}</p>
             </div>
-            <div className="w-px bg-white/10" />
+            <div className="w-px bg-overlay-hover" />
             <div className="text-right">
               <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">
                 Annual
@@ -160,7 +160,7 @@ export function RecurringPayments() {
               onClick={() => setSortBy(s)}
               className={cn(
                 'px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all',
-                sortBy === s ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'text-zinc-500 hover:text-zinc-300',
+                sortBy === s ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
               )}
             >
               {s === 'nextDue' ? 'Next Due' : s}
@@ -176,14 +176,14 @@ export function RecurringPayments() {
         const isCollapsed = collapsed.has(freq);
 
         return (
-          <div key={freq} className="neu-raised rounded-2xl border border-white/5 overflow-hidden">
+          <div key={freq} className="neu-raised rounded-2xl border border-border/50 overflow-hidden">
             <button
               type="button"
               onClick={() => toggleCollapse(freq)}
-              className="w-full px-5 py-4 flex items-center justify-between border-b border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-colors"
+              className="w-full px-5 py-4 flex items-center justify-between border-b border-border/50 bg-white/[0.01] hover:bg-white/[0.02] transition-colors"
             >
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em]">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
                   {FREQUENCY_LABELS[freq]}
                 </span>
                 <Badge variant="secondary" className="text-[8px]">
@@ -206,7 +206,7 @@ export function RecurringPayments() {
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-xs font-bold text-zinc-200 truncate">
+                        <p className="text-xs font-bold text-primary truncate">
                           {payment.merchantPattern}
                         </p>
                         {payment.isMissed && (

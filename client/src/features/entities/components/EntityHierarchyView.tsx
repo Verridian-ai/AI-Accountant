@@ -13,7 +13,7 @@ const ENTITY_TYPE_COLORS: Record<string, string> = {
   sole_trader: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
   partnership: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   smsf: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  individual: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
+  individual: 'bg-zinc-500/20 text-secondary border-zinc-500/30',
 };
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {
@@ -27,7 +27,7 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-emerald-500/20 text-emerald-400',
-  inactive: 'bg-zinc-500/20 text-zinc-400',
+  inactive: 'bg-zinc-500/20 text-secondary',
   dormant: 'bg-amber-500/20 text-amber-400',
 };
 
@@ -81,12 +81,12 @@ export function EntityHierarchyView({ hierarchy, loading, onRefresh }: EntityHie
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           {rootEntities.length} root {rootEntities.length === 1 ? 'entity' : 'entities'}
         </p>
         <Button
           onClick={() => setShowCreateForm(true)}
-          className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 font-bold"
+          className="bg-cba-gold text-base hover:bg-cba-gold/90 font-bold"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Entity
@@ -97,13 +97,13 @@ export function EntityHierarchyView({ hierarchy, loading, onRefresh }: EntityHie
         <Card className="neu-raised border-0">
           <CardContent className="p-8 text-center">
             <Building2 className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-            <h3 className="text-lg font-bold text-zinc-300 mb-1">No Entities Yet</h3>
-            <p className="text-sm text-zinc-500 mb-4">
+            <h3 className="text-lg font-bold text-primary mb-1">No Entities Yet</h3>
+            <p className="text-sm text-muted mb-4">
               Create your first entity to start managing multi-entity structures
             </p>
             <Button
               onClick={() => setShowCreateForm(true)}
-              className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 font-bold"
+              className="bg-cba-gold text-base hover:bg-cba-gold/90 font-bold"
             >
               <Plus className="w-4 h-4 mr-2" />
               Create Entity
@@ -170,14 +170,14 @@ function EntityNode({
 
   return (
     <div style={{ marginLeft: depth * 24 }}>
-      <Card className="neu-raised border-0 hover:border-[#FFCC00]/20 border border-transparent transition-colors">
+      <Card className="neu-raised border-0 hover:border-cba-gold/20 border border-transparent transition-colors">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             {/* Expand/Collapse */}
             <button
               type="button"
               onClick={() => onToggle(entity.id)}
-              className="p-1 rounded hover:bg-white/5 text-zinc-500 transition-colors"
+              className="p-1 rounded hover:bg-overlay text-muted transition-colors"
             >
               {hasChildren ? (
                 isExpanded ? (
@@ -209,13 +209,13 @@ function EntityNode({
                 {entity.isConsolidatedParent && (
                   <Badge
                     variant="outline"
-                    className="bg-[#FFCC00]/10 text-[#FFCC00] border-[#FFCC00]/30"
+                    className="bg-cba-gold/10 text-cba-gold border-cba-gold/30"
                   >
                     Consolidated Parent
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-4 mt-1 text-xs text-zinc-500">
+              <div className="flex items-center gap-4 mt-1 text-xs text-muted">
                 {entity.abn && <span>ABN: {entity.abn}</span>}
                 <span className="flex items-center gap-1">
                   <Link className="w-3 h-3" />
@@ -235,15 +235,15 @@ function EntityNode({
           {/* Expanded accounts */}
           {isExpanded && accounts.length > 0 && (
             <div className="mt-3 ml-8 space-y-1">
-              <p className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-1">
+              <p className="text-xs font-bold text-muted uppercase tracking-wide mb-1">
                 Linked Accounts
               </p>
               {accounts.map((acc: { id: string; accountId: string; role: string; ownershipPercentage: number }) => (
                 <div
                   key={acc.id}
-                  className="flex items-center gap-2 text-xs text-zinc-400 neu-inset px-3 py-1.5 rounded-lg"
+                  className="flex items-center gap-2 text-xs text-secondary neu-inset px-3 py-1.5 rounded-lg"
                 >
-                  <Link className="w-3 h-3 text-[#FFCC00]" />
+                  <Link className="w-3 h-3 text-cba-gold" />
                   <span>Account {acc.accountId}</span>
                   <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                     {acc.role}

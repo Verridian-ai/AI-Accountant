@@ -22,7 +22,7 @@ export function getFileIcon(filename: string): ReactElement {
     case 'qif':
       return <FileCode className="h-4 w-4 text-blue-400" />;
     default:
-      return <FileText className="h-4 w-4 text-zinc-500" />;
+      return <FileText className="h-4 w-4 text-muted" />;
   }
 }
 

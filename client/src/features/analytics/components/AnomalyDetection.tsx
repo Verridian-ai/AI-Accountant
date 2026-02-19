@@ -93,19 +93,19 @@ export function AnomalyDetection() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[200px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[200px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
 
   if (anomalies.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-10 text-center border border-white/5">
+      <div className="neu-raised rounded-3xl p-10 text-center border border-border/50">
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <ShieldAlert className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">No Anomalies</h3>
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">No Anomalies</h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight">
           All transactions look normal.
         </p>
@@ -116,11 +116,11 @@ export function AnomalyDetection() {
   return (
     <div className="space-y-4">
       {/* Header with counts */}
-      <div className="neu-raised rounded-2xl p-4 border border-white/5">
+      <div className="neu-raised rounded-2xl p-4 border border-border/50">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-[#FFCC00]" />
-            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            <ShieldAlert className="w-4 h-4 text-cba-gold" />
+            <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
               Anomaly Detection
             </span>
           </div>
@@ -139,8 +139,8 @@ export function AnomalyDetection() {
             className={cn(
               'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
               !filterSeverity
-                ? 'border-[#FFCC00]/30 text-[#FFCC00]'
-                : 'border-transparent text-zinc-600 hover:text-zinc-400',
+                ? 'border-cba-gold/30 text-cba-gold'
+                : 'border-transparent text-zinc-600 hover:text-secondary',
             )}
           >
             All
@@ -156,8 +156,8 @@ export function AnomalyDetection() {
                 className={cn(
                   'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
                   filterSeverity === s
-                    ? `border-white/20 ${cfg.color}`
-                    : 'border-transparent text-zinc-600 hover:text-zinc-400',
+                    ? `border-border ${cfg.color}`
+                    : 'border-transparent text-zinc-600 hover:text-secondary',
                 )}
               >
                 {cfg.label}
@@ -197,7 +197,7 @@ export function AnomalyDetection() {
                 return (
                   <div
                     key={anomaly.id}
-                    className="neu-raised rounded-2xl border border-white/5 p-4 group hover:border-white/10 transition-all"
+                    className="neu-raised rounded-2xl border border-border/50 p-4 group hover:border-border transition-all"
                   >
                     <div className="flex items-start gap-3">
                       <Badge
@@ -206,7 +206,7 @@ export function AnomalyDetection() {
                       >
                         {TYPE_LABELS[anomaly.type] || anomaly.type}
                       </Badge>
-                      <p className="text-xs text-zinc-300 flex-1 leading-relaxed">
+                      <p className="text-xs text-primary flex-1 leading-relaxed">
                         {anomaly.description}
                       </p>
                       <button

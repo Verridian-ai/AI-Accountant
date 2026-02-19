@@ -169,7 +169,7 @@ function MarketDashboardInner() {
             <p className="text-xs text-gray-400 mb-1">{kpi.label}</p>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-xl font-bold text-white">{kpi.value}</p>
+                <p className="text-xl font-bold text-primary">{kpi.value}</p>
                 <p
                   className={`text-xs mt-0.5 ${
                     kpi.changeDirection === 'up'
@@ -198,7 +198,7 @@ function MarketDashboardInner() {
       <div className="rounded-xl neu-raised p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="text-[#FFCC00] font-semibold text-sm">RBA Cash Rate History</h3>
+            <h3 className="text-cba-gold font-semibold text-sm">RBA Cash Rate History</h3>
             <p className="text-gray-400 text-xs mt-0.5">
               Monthly target rate — current {currentCashRate}%
             </p>
@@ -210,8 +210,8 @@ function MarketDashboardInner() {
                 onClick={() => setCashRatePeriod(p)}
                 className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
                   cashRatePeriod === p
-                    ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                    : 'text-gray-400 hover:text-white neu-inset'
+                    ? 'bg-cba-gold text-base'
+                    : 'text-gray-400 hover:text-primary neu-inset'
                 }`}
               >
                 {p}

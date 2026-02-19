@@ -22,7 +22,7 @@ const ForecastChartImpl = React.lazy(() => import('./ForecastChartImpl'));
 export function ForecastChart({ periods, granularity }: ForecastChartProps) {
   if (!periods.length) {
     return (
-      <div className="neu-inset rounded-2xl p-8 text-center text-zinc-500">
+      <div className="neu-inset rounded-2xl p-8 text-center text-muted">
         <p className="text-lg font-medium">No forecast data available</p>
         <p className="text-sm mt-1">Generate a forecast to see projections</p>
       </div>

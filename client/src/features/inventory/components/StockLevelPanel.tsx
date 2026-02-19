@@ -60,7 +60,7 @@ export function StockLevelPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -82,7 +82,7 @@ export function StockLevelPanel() {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-sm font-medium text-zinc-100">{item.itemName}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted">
                       {item.sku} • {item.warehouseName}
                     </p>
                   </div>
@@ -100,7 +100,7 @@ export function StockLevelPanel() {
         <select
           value={warehouseFilter}
           onChange={(e) => setWarehouseFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl neu-inset bg-transparent text-zinc-300 text-sm"
+          className="px-4 py-2.5 rounded-xl neu-inset bg-transparent text-primary text-sm"
         >
           <option value="">All Warehouses</option>
           {warehouses.map((w) => (
@@ -110,7 +110,7 @@ export function StockLevelPanel() {
           ))}
         </select>
         <div className="flex gap-2 ml-auto">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl neu-raised text-zinc-300 text-sm hover:text-[#FFCC00]">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl neu-raised text-primary text-sm hover:text-cba-gold">
             <ArrowRightLeft className="w-4 h-4" /> Transfer
           </button>
         </div>
@@ -119,10 +119,10 @@ export function StockLevelPanel() {
       {/* Warehouse Groups */}
       {Object.entries(grouped).map(([warehouse, warehouseItems]) => (
         <div key={warehouse} className="neu-raised rounded-2xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-white/5 flex items-center gap-2">
-            <Warehouse className="w-4 h-4 text-[#FFCC00]" />
-            <h3 className="text-sm font-bold text-zinc-200">{warehouse}</h3>
-            <span className="text-xs text-zinc-500 ml-auto">{warehouseItems.length} items</span>
+          <div className="px-5 py-3 border-b border-border/50 flex items-center gap-2">
+            <Warehouse className="w-4 h-4 text-cba-gold" />
+            <h3 className="text-sm font-bold text-primary">{warehouse}</h3>
+            <span className="text-xs text-muted ml-auto">{warehouseItems.length} items</span>
           </div>
           <div className="divide-y divide-white/5">
             {warehouseItems.map((item) => (
@@ -132,7 +132,7 @@ export function StockLevelPanel() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-zinc-100 truncate">{item.itemName}</p>
-                  <p className="text-xs text-zinc-500">{item.sku}</p>
+                  <p className="text-xs text-muted">{item.sku}</p>
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
                   <div className="text-right">
@@ -171,7 +171,7 @@ export function StockLevelPanel() {
       {levels.length === 0 && (
         <div className="neu-raised rounded-2xl p-12 text-center">
           <Warehouse className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-          <p className="text-zinc-500">No stock levels data available</p>
+          <p className="text-muted">No stock levels data available</p>
         </div>
       )}
     </div>

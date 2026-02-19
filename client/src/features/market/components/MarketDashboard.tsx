@@ -102,7 +102,7 @@ export function MarketDashboard() {
   const getChangeColor = (dir?: string) => {
     if (dir === 'up') return 'text-emerald-400';
     if (dir === 'down') return 'text-red-400';
-    return 'text-zinc-400';
+    return 'text-secondary';
   };
 
   const getChangeIcon = (dir?: string) => {
@@ -119,14 +119,14 @@ export function MarketDashboard() {
           <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
             Market Intelligence
           </h2>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Australian economic indicators, prices, and market sentiment
           </p>
         </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="neu-raised-sm px-4 py-2 rounded-xl text-zinc-400 hover:text-[#FFCC00] transition-colors flex items-center gap-2 text-sm font-medium"
+          className="neu-raised-sm px-4 py-2 rounded-xl text-secondary hover:text-cba-gold transition-colors flex items-center gap-2 text-sm font-medium"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -153,12 +153,12 @@ export function MarketDashboard() {
           : snapshot.map((metric, idx) => (
               <div
                 key={idx}
-                className="neu-raised rounded-2xl p-4 hover:border-[#FFCC00]/20 border border-transparent transition-all"
+                className="neu-raised rounded-2xl p-4 hover:border-cba-gold/20 border border-transparent transition-all"
               >
-                <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-1">
+                <p className="text-xs text-muted font-medium uppercase tracking-wider mb-1">
                   {metric.label}
                 </p>
-                <p className="text-xl font-bold text-white">{metric.value}</p>
+                <p className="text-xl font-bold text-primary">{metric.value}</p>
                 {metric.change && (
                   <div
                     className={`flex items-center gap-1 mt-1 text-xs font-medium ${getChangeColor(metric.changeDirection)}`}
@@ -179,8 +179,8 @@ export function MarketDashboard() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
               activeTab === tab.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5 neu-raised-sm'
+                ? 'bg-cba-gold text-base shadow-[0_0_20px_rgba(255,204,0,0.2)]'
+                : 'text-secondary hover:text-zinc-100 hover:bg-overlay neu-raised-sm'
             }`}
           >
             <tab.icon className="w-4 h-4" />

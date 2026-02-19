@@ -11,10 +11,10 @@ import { CATEGORY_NAMES } from '../../transactions/constants/categories';
 type Tab = 'budgets' | 'create' | 'forecasts';
 
 const statusColors: Record<string, string> = {
-  draft: 'text-zinc-400 bg-zinc-700/50',
+  draft: 'text-secondary bg-zinc-700/50',
   active: 'text-emerald-400 bg-emerald-500/20',
   closed: 'text-amber-400 bg-amber-500/20',
-  archived: 'text-zinc-500 bg-zinc-800',
+  archived: 'text-muted bg-zinc-800',
 };
 
 const typeLabels: Record<string, string> = {
@@ -102,7 +102,7 @@ export function BudgetsDashboard() {
       <div className="space-y-4">
         <button
           onClick={() => setComparisonIds(null)}
-          className="text-sm text-zinc-400 hover:text-[#FFCC00] transition-colors"
+          className="text-sm text-secondary hover:text-cba-gold transition-colors"
         >
           &larr; Back to Forecasts
         </button>
@@ -118,7 +118,7 @@ export function BudgetsDashboard() {
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
           Budgets & Forecasts
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Plan, track, and forecast your financial performance
         </p>
       </div>
@@ -135,8 +135,8 @@ export function BudgetsDashboard() {
             onClick={() => setTab(t.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
               tab === t.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_15px_rgba(255,204,0,0.15)]'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-cba-gold text-base shadow-[0_0_15px_rgba(255,204,0,0.15)]'
+                : 'text-secondary hover:text-primary'
             }`}
           >
             <t.icon className="w-4 h-4" />
@@ -150,11 +150,11 @@ export function BudgetsDashboard() {
         <div className="space-y-4">
           {/* Status Filter */}
           <div className="flex items-center gap-3">
-            <Filter className="w-4 h-4 text-zinc-500" />
+            <Filter className="w-4 h-4 text-muted" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+              className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
             >
               <option value="">All Statuses</option>
               <option value="draft">Draft</option>
@@ -176,7 +176,7 @@ export function BudgetsDashboard() {
               ))}
             </div>
           ) : budgets.length === 0 ? (
-            <div className="neu-inset rounded-2xl p-8 text-center text-zinc-500">
+            <div className="neu-inset rounded-2xl p-8 text-center text-muted">
               <Wallet className="w-10 h-10 mx-auto mb-3 text-zinc-600" />
               <p>No budgets found.</p>
               <p className="text-xs mt-1">Create a new budget to get started.</p>
@@ -186,10 +186,10 @@ export function BudgetsDashboard() {
               {budgets.map((b) => (
                 <div
                   key={b.id}
-                  className="neu-raised rounded-2xl p-5 hover:border-[#FFCC00]/20 border border-transparent transition-all group cursor-pointer"
+                  className="neu-raised rounded-2xl p-5 hover:border-cba-gold/20 border border-transparent transition-all group cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h4 className="text-sm font-bold text-zinc-200 group-hover:text-[#FFCC00] transition-colors truncate">
+                    <h4 className="text-sm font-bold text-primary group-hover:text-cba-gold transition-colors truncate">
                       {b.name}
                     </h4>
                     <span
@@ -200,7 +200,7 @@ export function BudgetsDashboard() {
                   </div>
 
                   <div className="space-y-1 mb-4">
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted">
                       {typeLabels[b.budgetType] ?? b.budgetType} &middot; {b.periodStart} to{' '}
                       {b.periodEnd}
                     </p>
@@ -212,7 +212,7 @@ export function BudgetsDashboard() {
                   </div>
 
                   <div className="flex items-end justify-between">
-                    <p className="text-lg font-bold text-[#FFCC00] font-mono">
+                    <p className="text-lg font-bold text-cba-gold font-mono">
                       {fmt(b.totalAmount)}
                     </p>
                     <div className="flex gap-1">
@@ -221,7 +221,7 @@ export function BudgetsDashboard() {
                           e.stopPropagation();
                           setEditingBudgetId(b.id);
                         }}
-                        className="neu-raised-sm px-3 py-1.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-[#FFCC00] transition-colors"
+                        className="neu-raised-sm px-3 py-1.5 rounded-lg text-xs font-bold text-secondary hover:text-cba-gold transition-colors"
                       >
                         Edit
                       </button>
@@ -230,7 +230,7 @@ export function BudgetsDashboard() {
                           e.stopPropagation();
                           setViewingVarianceId(b.id);
                         }}
-                        className="neu-raised-sm px-3 py-1.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1"
+                        className="neu-raised-sm px-3 py-1.5 rounded-lg text-xs font-bold text-secondary hover:text-emerald-400 transition-colors flex items-center gap-1"
                       >
                         <Target className="w-3 h-3" />
                         Variance
@@ -247,26 +247,26 @@ export function BudgetsDashboard() {
       {/* Create Budget Tab */}
       {tab === 'create' && (
         <div className="neu-raised rounded-2xl p-6 max-w-2xl space-y-5">
-          <h3 className="text-lg font-bold text-zinc-200">Create New Budget</h3>
+          <h3 className="text-lg font-bold text-primary">Create New Budget</h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Budget Name</label>
+              <label className="block text-xs text-muted mb-1">Budget Name</label>
               <input
                 value={createName}
                 onChange={(e) => setCreateName(e.target.value)}
                 placeholder="e.g. Q1 2026 Operating Budget"
-                className="w-full neu-inset rounded-xl px-4 py-3 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                className="w-full neu-inset rounded-xl px-4 py-3 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs text-zinc-500 mb-1">Budget Type</label>
+                <label className="block text-xs text-muted mb-1">Budget Type</label>
                 <select
                   value={createType}
                   onChange={(e) => setCreateType(e.target.value as 'annual' | 'quarterly' | 'monthly' | 'project')}
-                  className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                  className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
                 >
                   <option value="annual">Annual</option>
                   <option value="quarterly">Quarterly</option>
@@ -275,22 +275,22 @@ export function BudgetsDashboard() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-zinc-500 mb-1">Period Start</label>
+                <label className="block text-xs text-muted mb-1">Period Start</label>
                 <input
                   type="date"
                   value={createStart}
                   onChange={(e) => setCreateStart(e.target.value)}
-                  className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                  className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
                 />
               </div>
               <div>
-                <label htmlFor="budget-create-end" className="block text-xs text-zinc-500 mb-1">Period End</label>
+                <label htmlFor="budget-create-end" className="block text-xs text-muted mb-1">Period End</label>
                 <input
                   id="budget-create-end"
                   type="date"
                   value={createEnd}
                   onChange={(e) => setCreateEnd(e.target.value)}
-                  className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                  className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
                 />
               </div>
             </div>
@@ -300,7 +300,7 @@ export function BudgetsDashboard() {
               <button
                 onClick={() => setCreateAutoGenerate(!createAutoGenerate)}
                 className={`w-10 h-6 rounded-full transition-colors relative ${
-                  createAutoGenerate ? 'bg-[#FFCC00]' : 'bg-zinc-700'
+                  createAutoGenerate ? 'bg-cba-gold' : 'bg-zinc-700'
                 }`}
               >
                 <span
@@ -310,8 +310,8 @@ export function BudgetsDashboard() {
                 />
               </button>
               <div>
-                <p className="text-sm font-medium text-zinc-200">Auto-Generate from History</p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-sm font-medium text-primary">Auto-Generate from History</p>
+                <p className="text-xs text-muted">
                   AI will analyze your past transactions to pre-fill budget lines
                 </p>
               </div>
@@ -320,14 +320,14 @@ export function BudgetsDashboard() {
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setTab('budgets')}
-                className="px-4 py-2.5 rounded-xl text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="px-4 py-2.5 rounded-xl text-sm text-secondary hover:text-primary transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!createName || !createStart || !createEnd || creating}
-                className="px-6 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 transition-colors disabled:opacity-40"
+                className="px-6 py-2.5 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-cba-gold/90 transition-colors disabled:opacity-40"
               >
                 {creating ? 'Creating...' : 'Create Budget'}
               </button>

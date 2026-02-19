@@ -22,7 +22,7 @@ export function CurrencyDisplay({ amount, className }: CurrencyDisplayProps) {
   return (
     <div
       className={cn(
-        'font-black text-base tracking-tighter flex items-center gap-2 px-3 py-1.5 rounded-xl neu-inset border border-white/5 whitespace-nowrap',
+        'font-black text-base tracking-tighter flex items-center gap-2 px-3 py-1.5 rounded-xl neu-inset border border-border/50 whitespace-nowrap',
         amount < 0
           ? 'text-red-400'
           : 'text-emerald-400 shadow-[inset_0_0_15px_rgba(34,197,94,0.05)]',

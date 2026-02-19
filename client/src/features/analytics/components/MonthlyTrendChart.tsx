@@ -72,7 +72,7 @@ export function MonthlyTrendChart({
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-6 border border-white/5 flex flex-col group">
+      <div className="neu-raised rounded-3xl p-6 border border-border/50 flex flex-col group">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-4">
             <Skeleton className="h-11 w-11 rounded-2xl" />
@@ -93,7 +93,7 @@ export function MonthlyTrendChart({
           ))}
         </div>
 
-        <div className="mt-8 pt-5 border-t border-white/5 flex items-center justify-between px-1">
+        <div className="mt-8 pt-5 border-t border-border/50 flex items-center justify-between px-1">
           <div className="space-y-2">
             <Skeleton className="h-2 w-16" />
             <Skeleton className="h-4 w-20" />
@@ -109,12 +109,12 @@ export function MonthlyTrendChart({
 
   if (monthlyData.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 group">
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 group">
         <div className="flex items-center gap-4 mb-6">
           <div className="neu-inset p-3 rounded-xl text-zinc-700">
             <BarChart3 className="h-5 w-5" />
           </div>
-          <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em]">{title}</h3>
+          <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em]">{title}</h3>
         </div>
         <div className="py-12 text-center">
           <p className="text-zinc-600 font-bold uppercase tracking-widest text-[10px]">
@@ -126,7 +126,7 @@ export function MonthlyTrendChart({
   }
 
   return (
-    <div className="neu-raised rounded-3xl p-6 border border-white/5 flex flex-col group">
+    <div className="neu-raised rounded-3xl p-6 border border-border/50 flex flex-col group">
       <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-4">
           <div className="neu-inset p-3 rounded-2xl text-red-400 group-hover:glow-danger transition-all duration-500">
@@ -143,7 +143,7 @@ export function MonthlyTrendChart({
         </div>
         <div className="neu-inset px-3 py-1.5 rounded-full flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest italic">
+          <span className="text-[10px] font-black text-secondary uppercase tracking-widest italic">
             Monitoring
           </span>
         </div>
@@ -159,21 +159,21 @@ export function MonthlyTrendChart({
             >
               {/* Augmented Tooltip */}
               <div className="absolute bottom-full mb-4 opacity-0 group-hover/bar:opacity-100 transition-all duration-300 pointer-events-none transform translate-y-2 group-hover/bar:translate-y-0 z-20">
-                <div className="neu-raised-sm bg-[#12121a] border border-white/10 p-3 rounded-2xl shadow-2xl">
-                  <p className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-1">
+                <div className="neu-raised-sm bg-surface border border-border p-3 rounded-2xl shadow-2xl">
+                  <p className="text-[8px] font-black text-muted uppercase tracking-widest mb-1">
                     {d.label} Data
                   </p>
                   <p className="text-sm font-black text-red-400 tracking-tighter">
                     {formatAmount(d.amount)}
                   </p>
                 </div>
-                <div className="w-3 h-3 bg-[#12121a] rotate-45 border-r border-b border-white/10 mx-auto -mt-1.5" />
+                <div className="w-3 h-3 bg-surface rotate-45 border-r border-b border-border mx-auto -mt-1.5" />
               </div>
 
               <div className="w-full neu-inset rounded-xl flex items-end h-full p-1 overflow-hidden group-hover/bar:border-red-500/20 transition-all">
                 <TrendBar height={height} />
               </div>
-              <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest transition-colors group-hover/bar:text-zinc-300">
+              <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest transition-colors group-hover/bar:text-primary">
                 {d.label}
               </span>
             </div>
@@ -181,12 +181,12 @@ export function MonthlyTrendChart({
         })}
       </div>
 
-      <div className="mt-8 pt-5 border-t border-white/5 flex items-center justify-between px-1">
+      <div className="mt-8 pt-5 border-t border-border/50 flex items-center justify-between px-1">
         <div className="flex flex-col">
           <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
             Peak Amplitude
           </span>
-          <span className="text-xs font-bold text-zinc-400 tracking-tight">
+          <span className="text-xs font-bold text-secondary tracking-tight">
             {formatAmount(maxAmount)}
           </span>
         </div>
@@ -195,7 +195,7 @@ export function MonthlyTrendChart({
             <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
               Intervals
             </span>
-            <span className="text-xs font-bold text-zinc-400 tracking-tight">
+            <span className="text-xs font-bold text-secondary tracking-tight">
               {monthlyData.length} MO
             </span>
           </div>

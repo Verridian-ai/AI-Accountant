@@ -159,7 +159,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
       <div className="neu-raised rounded-2xl p-4 space-y-3">
         <div className="flex items-center gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
             <input
               type="text"
               placeholder="Search products, providers..."
@@ -172,7 +172,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
             onClick={() => dispatch({ type: 'TOGGLE_FILTERS' })}
             className={cn(
               'neu-raised-sm p-2.5 rounded-xl transition-colors',
-              state.showFilters ? 'text-[#FFCC00]' : 'text-zinc-400 hover:text-zinc-200',
+              state.showFilters ? 'text-cba-gold' : 'text-secondary hover:text-primary',
             )}
           >
             <SlidersHorizontal className="h-5 w-5" />
@@ -180,11 +180,11 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
         </div>
 
         {state.showFilters && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-white/5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/50">
             <div>
               <label
                 htmlFor="pe-category"
-                className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block"
+                className="text-xs text-muted font-semibold uppercase tracking-wider mb-1 block"
               >
                 Category
               </label>
@@ -204,7 +204,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
             <div>
               <label
                 htmlFor="pe-rate-type"
-                className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block"
+                className="text-xs text-muted font-semibold uppercase tracking-wider mb-1 block"
               >
                 Rate Type
               </label>
@@ -224,7 +224,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
             <div>
               <label
                 htmlFor="pe-sort"
-                className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mb-1 block"
+                className="text-xs text-muted font-semibold uppercase tracking-wider mb-1 block"
               >
                 Sort
               </label>
@@ -260,7 +260,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
       {state.error && (
         <div className="neu-raised rounded-2xl p-6 text-center text-red-400">
           <p>{state.error}</p>
-          <button onClick={loadProducts} className="mt-2 text-sm text-[#FFCC00] hover:underline">
+          <button onClick={loadProducts} className="mt-2 text-sm text-cba-gold hover:underline">
             Retry
           </button>
         </div>
@@ -268,7 +268,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
 
       {!state.loading && !state.error && (
         <>
-          <div className="flex items-center justify-between text-sm text-zinc-500">
+          <div className="flex items-center justify-between text-sm text-muted">
             <span>
               {state.total} product{state.total !== 1 ? 's' : ''} found
             </span>
@@ -284,17 +284,17 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                 className={cn(
                   'neu-raised rounded-2xl p-5 space-y-3 transition-all duration-200 border',
                   state.selectedIds.has(product.id)
-                    ? 'border-[#FFCC00]/50 shadow-[0_0_20px_rgba(255,204,0,0.1)]'
-                    : 'border-transparent hover:border-white/10',
+                    ? 'border-cba-gold/50 shadow-[0_0_20px_rgba(255,204,0,0.1)]'
+                    : 'border-transparent hover:border-border',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="neu-inset p-1.5 rounded-lg shrink-0">
-                      <Building2 className="h-4 w-4 text-zinc-400" />
+                      <Building2 className="h-4 w-4 text-secondary" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs text-zinc-500 truncate">{product.dataHolderBrand}</p>
+                      <p className="text-xs text-muted truncate">{product.dataHolderBrand}</p>
                       <p className="text-sm font-bold text-zinc-100 truncate">{product.name}</p>
                     </div>
                   </div>
@@ -303,8 +303,8 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                     className={cn(
                       'shrink-0 p-1 rounded-lg transition-colors',
                       state.selectedIds.has(product.id)
-                        ? 'bg-[#FFCC00]/20 text-[#FFCC00]'
-                        : 'text-zinc-600 hover:text-zinc-400',
+                        ? 'bg-cba-gold/20 text-cba-gold'
+                        : 'text-zinc-600 hover:text-secondary',
                     )}
                     title={
                       state.selectedIds.has(product.id)
@@ -321,22 +321,22 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                 </div>
 
                 <div>
-                  <span className="text-2xl font-black text-[#FFCC00]">
+                  <span className="text-2xl font-black text-cba-gold">
                     {formatRate(product.baseRate)}
                   </span>
                   {product.comparisonRate != null && (
-                    <span className="text-xs text-zinc-500 ml-2">
+                    <span className="text-xs text-muted ml-2">
                       {formatRate(product.comparisonRate)} comparison
                     </span>
                   )}
                 </div>
 
                 <div className="flex flex-wrap gap-1">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full neu-inset text-zinc-400 font-semibold uppercase">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full neu-inset text-secondary font-semibold uppercase">
                     {product.category?.replace(/_/g, ' ') ?? 'N/A'}
                   </span>
                   {product.rateType && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full neu-inset text-zinc-400 font-semibold uppercase">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full neu-inset text-secondary font-semibold uppercase">
                       {product.rateType}
                     </span>
                   )}
@@ -365,7 +365,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
 
           {state.products.length === 0 && (
             <div className="neu-raised rounded-2xl p-12 text-center">
-              <p className="text-zinc-500">No products match your filters</p>
+              <p className="text-muted">No products match your filters</p>
             </div>
           )}
 
@@ -374,7 +374,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
               <button
                 onClick={() => dispatch({ type: 'SET_PAGE', value: Math.max(1, state.page - 1) })}
                 disabled={state.page <= 1}
-                className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-zinc-200 disabled:opacity-30"
+                className="neu-raised-sm p-2 rounded-xl text-secondary hover:text-primary disabled:opacity-30"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -389,8 +389,8 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                     className={cn(
                       'w-8 h-8 rounded-lg text-sm font-bold transition-colors',
                       state.page === n
-                        ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                        : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
+                        ? 'bg-cba-gold text-base'
+                        : 'neu-raised-sm text-secondary hover:text-primary',
                     )}
                   >
                     {n}
@@ -402,7 +402,7 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
                   dispatch({ type: 'SET_PAGE', value: Math.min(totalPages, state.page + 1) })
                 }
                 disabled={state.page >= totalPages}
-                className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-zinc-200 disabled:opacity-30"
+                className="neu-raised-sm p-2 rounded-xl text-secondary hover:text-primary disabled:opacity-30"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -412,17 +412,17 @@ export function ProductExplorer({ onCompare }: ProductExplorerProps) {
       )}
 
       {state.selectedIds.size >= 2 && (
-        <div className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-40 neu-raised rounded-2xl px-5 py-3 flex items-center gap-4 shadow-[0_0_30px_rgba(255,204,0,0.15)] border border-[#FFCC00]/20">
-          <span className="text-sm font-bold text-zinc-200">{state.selectedIds.size} selected</span>
+        <div className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-40 neu-raised rounded-2xl px-5 py-3 flex items-center gap-4 shadow-[0_0_30px_rgba(255,204,0,0.15)] border border-cba-gold/20">
+          <span className="text-sm font-bold text-primary">{state.selectedIds.size} selected</span>
           <button
             onClick={() => onCompare?.(Array.from(state.selectedIds))}
-            className="px-4 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] text-sm font-bold hover:bg-[#FFD633] transition-colors"
+            className="px-4 py-2 rounded-xl bg-cba-gold text-base text-sm font-bold hover:bg-[#FFD633] transition-colors"
           >
             Compare
           </button>
           <button
             onClick={() => dispatch({ type: 'CLEAR_SELECTED' })}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200"
+            className="p-1.5 rounded-lg text-secondary hover:text-primary"
           >
             <X className="h-4 w-4" />
           </button>

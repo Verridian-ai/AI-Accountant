@@ -149,13 +149,13 @@ export function SupplierForm({ supplierId, onSave, onCancel }: SupplierFormProps
       <div className="space-y-6 animate-in fade-in duration-300">
         <button
           onClick={onCancel}
-          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+          className="flex items-center gap-2 text-secondary hover:text-primary text-sm transition-colors"
         >
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
         <div className="neu-raised rounded-2xl p-6 animate-pulse">
-          <div className="h-6 w-48 bg-white/5 rounded mb-4" />
-          <div className="h-4 w-32 bg-white/5 rounded" />
+          <div className="h-6 w-48 bg-overlay rounded mb-4" />
+          <div className="h-4 w-32 bg-overlay rounded" />
         </div>
       </div>
     );
@@ -165,16 +165,16 @@ export function SupplierForm({ supplierId, onSave, onCancel }: SupplierFormProps
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <button
         onClick={onCancel}
-        className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        className="flex items-center gap-2 text-secondary hover:text-primary text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" /> Back
       </button>
 
       <div>
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-primary">
           {isEdit ? 'Edit Supplier' : 'New Supplier'}
         </h1>
-        <p className="text-sm text-zinc-400 mt-1">
+        <p className="text-sm text-secondary mt-1">
           {isEdit ? 'Update supplier details' : 'Add a new supplier to your directory'}
         </p>
       </div>
@@ -182,7 +182,7 @@ export function SupplierForm({ supplierId, onSave, onCancel }: SupplierFormProps
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Business Details */}
         <div className="neu-raised rounded-2xl p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-zinc-300">Business Details</h3>
+          <h3 className="text-sm font-semibold text-primary">Business Details</h3>
 
           <FormField label="Business Name *" error={errors.businessName}>
             <input
@@ -266,7 +266,7 @@ export function SupplierForm({ supplierId, onSave, onCancel }: SupplierFormProps
 
         {/* Bank Details */}
         <div className="neu-raised rounded-2xl p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-zinc-300">Bank Details</h3>
+          <h3 className="text-sm font-semibold text-primary">Bank Details</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField label="BSB" error={errors.bankBsb}>
@@ -320,14 +320,14 @@ export function SupplierForm({ supplierId, onSave, onCancel }: SupplierFormProps
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-2.5 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium hover:bg-white/10 transition-all"
+            className="px-5 py-2.5 rounded-xl bg-overlay text-primary text-sm font-medium hover:bg-overlay-hover transition-all"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)] disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cba-gold text-black font-semibold text-sm hover:bg-cba-gold/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)] disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {saving ? 'Saving...' : isEdit ? 'Update Supplier' : 'Create Supplier'}
@@ -349,7 +349,7 @@ function FormField({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-zinc-400 mb-1.5">{label}</label>
+      <label className="block text-xs font-medium text-secondary mb-1.5">{label}</label>
       {children}
       {error && (
         <p className="flex items-center gap-1 mt-1 text-xs text-red-400">
@@ -362,10 +362,10 @@ function FormField({
 }
 
 function inputClass(error?: string): string {
-  return `w-full px-3 py-2.5 rounded-xl bg-white/5 border text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 transition-all ${
+  return `w-full px-3 py-2.5 rounded-xl bg-overlay border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:ring-1 transition-all ${
     error
       ? 'border-red-500/50 focus:border-red-500/70 focus:ring-red-500/20'
-      : 'border-white/10 focus:border-[#FFCC00]/30 focus:ring-[#FFCC00]/20'
+      : 'border-border focus:border-cba-gold/30 focus:ring-[#FFCC00]/20'
   }`;
 }
 

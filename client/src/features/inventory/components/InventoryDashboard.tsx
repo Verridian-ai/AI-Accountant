@@ -77,7 +77,7 @@ export function InventoryDashboard() {
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
           Inventory Management
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Track stock, warehouses, movements, valuation & COGS
         </p>
       </div>
@@ -85,7 +85,7 @@ export function InventoryDashboard() {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="neu-raised rounded-2xl p-4 flex items-center gap-3">
-          <div className="neu-inset p-2.5 rounded-xl text-[#FFCC00]">
+          <div className="neu-inset p-2.5 rounded-xl text-cba-gold">
             <Package className="w-5 h-5" />
           </div>
           <div>
@@ -93,7 +93,7 @@ export function InventoryDashboard() {
               Total Items
             </p>
             {statsLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mt-1" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted mt-1" />
             ) : (
               <p className="text-xl font-bold text-zinc-100">{stats?.totalItems ?? 0}</p>
             )}
@@ -108,7 +108,7 @@ export function InventoryDashboard() {
               Total Value
             </p>
             {statsLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mt-1" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted mt-1" />
             ) : (
               <p className="text-xl font-bold text-gradient-gold">
                 {formatAUD(stats?.totalValueCents ?? 0)}
@@ -120,7 +120,7 @@ export function InventoryDashboard() {
           <div
             className={cn(
               'neu-inset p-2.5 rounded-xl',
-              stats && stats.lowStockCount > 0 ? 'text-amber-400' : 'text-zinc-500',
+              stats && stats.lowStockCount > 0 ? 'text-amber-400' : 'text-muted',
             )}
           >
             <AlertTriangle className="w-5 h-5" />
@@ -130,12 +130,12 @@ export function InventoryDashboard() {
               Low Stock Alerts
             </p>
             {statsLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mt-1" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted mt-1" />
             ) : (
               <p
                 className={cn(
                   'text-xl font-bold',
-                  stats && stats.lowStockCount > 0 ? 'text-amber-400' : 'text-zinc-300',
+                  stats && stats.lowStockCount > 0 ? 'text-amber-400' : 'text-primary',
                 )}
               >
                 {stats?.lowStockCount ?? 0}
@@ -154,8 +154,8 @@ export function InventoryDashboard() {
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300',
               activeTab === tab.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                : 'neu-raised text-zinc-400 hover:text-zinc-100',
+                ? 'bg-cba-gold text-base shadow-[0_0_20px_rgba(255,204,0,0.2)]'
+                : 'neu-raised text-secondary hover:text-zinc-100',
             )}
           >
             <tab.icon className="w-4 h-4" />

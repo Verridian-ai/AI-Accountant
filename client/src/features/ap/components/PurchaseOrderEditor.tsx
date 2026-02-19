@@ -184,11 +184,11 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
   if (loading) {
     return (
       <div className="neu-raised rounded-2xl p-8 animate-pulse">
-        <div className="h-6 w-48 bg-white/5 rounded mb-6" />
+        <div className="h-6 w-48 bg-overlay rounded mb-6" />
         <div className="space-y-4">
-          <div className="h-10 w-full bg-white/5 rounded" />
-          <div className="h-10 w-full bg-white/5 rounded" />
-          <div className="h-40 w-full bg-white/5 rounded" />
+          <div className="h-10 w-full bg-overlay rounded" />
+          <div className="h-10 w-full bg-overlay rounded" />
+          <div className="h-40 w-full bg-overlay rounded" />
         </div>
       </div>
     );
@@ -200,15 +200,15 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
       <div className="flex items-center gap-4">
         <button
           onClick={onCancel}
-          className="p-2 rounded-xl bg-white/5 text-zinc-400 hover:text-white transition-all"
+          className="p-2 rounded-xl bg-overlay text-secondary hover:text-primary transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold text-primary">
             {poId ? `Edit PO ${poNumber}` : 'New Purchase Order'}
           </h2>
-          {poNumber && <p className="text-xs text-zinc-500 mt-0.5 font-mono">{poNumber}</p>}
+          {poNumber && <p className="text-xs text-muted mt-0.5 font-mono">{poNumber}</p>}
         </div>
         {!isEditable && (
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-400/10 text-blue-400">
@@ -228,9 +228,9 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         {/* Supplier + Expected Date Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative" ref={dropdownRef}>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Supplier *</label>
+            <label className="block text-xs font-medium text-secondary mb-1.5">Supplier *</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
               <input
                 type="text"
                 value={supplierSearch}
@@ -240,19 +240,19 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                 }}
                 disabled={!isEditable}
                 placeholder="Search supplier..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all disabled:opacity-50"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all disabled:opacity-50"
               />
             </div>
             {showSupplierDropdown && suppliers.length > 0 && (
-              <div className="absolute z-20 mt-1 w-full rounded-xl bg-zinc-800 border border-white/10 shadow-xl max-h-48 overflow-y-auto">
+              <div className="absolute z-20 mt-1 w-full rounded-xl bg-zinc-800 border border-border shadow-xl max-h-48 overflow-y-auto">
                 {suppliers.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => selectSupplier(s)}
-                    className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-white/5 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                    className="w-full text-left px-4 py-2.5 text-sm text-primary hover:bg-overlay transition-colors first:rounded-t-xl last:rounded-b-xl"
                   >
                     <span className="font-medium">{s.businessName}</span>
-                    {s.abn && <span className="text-zinc-500 ml-2 text-xs">ABN: {s.abn}</span>}
+                    {s.abn && <span className="text-muted ml-2 text-xs">ABN: {s.abn}</span>}
                   </button>
                 ))}
               </div>
@@ -260,7 +260,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+            <label className="block text-xs font-medium text-secondary mb-1.5">
               Expected Delivery Date
             </label>
             <input
@@ -268,7 +268,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
               value={expectedDate}
               onChange={(e) => setExpectedDate(e.target.value)}
               disabled={!isEditable}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all disabled:opacity-50"
+              className="w-full px-4 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all disabled:opacity-50"
             />
           </div>
         </div>
@@ -276,13 +276,13 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         {/* Line Items */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+            <label className="text-xs font-medium text-secondary uppercase tracking-wider">
               Line Items
             </label>
             {isEditable && (
               <button
                 onClick={addLine}
-                className="flex items-center gap-1 text-xs text-[#FFCC00] hover:text-[#FFCC00]/80 transition-colors"
+                className="flex items-center gap-1 text-xs text-cba-gold hover:text-cba-gold/80 transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Add Row
@@ -290,20 +290,20 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
             )}
           </div>
 
-          <div className="rounded-xl border border-white/5 overflow-hidden">
+          <div className="rounded-xl border border-border/50 overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/5 bg-white/[0.02]">
-                  <th className="text-left px-3 py-2 text-xs font-semibold text-zinc-400 w-[45%]">
+                <tr className="border-b border-border/50 bg-white/[0.02]">
+                  <th className="text-left px-3 py-2 text-xs font-semibold text-secondary w-[45%]">
                     Description
                   </th>
-                  <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400 w-[15%]">
+                  <th className="text-right px-3 py-2 text-xs font-semibold text-secondary w-[15%]">
                     Qty
                   </th>
-                  <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400 w-[18%]">
+                  <th className="text-right px-3 py-2 text-xs font-semibold text-secondary w-[18%]">
                     Unit Price
                   </th>
-                  <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400 w-[17%]">
+                  <th className="text-right px-3 py-2 text-xs font-semibold text-secondary w-[17%]">
                     Amount
                   </th>
                   <th className="w-[5%]" />
@@ -311,7 +311,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
               </thead>
               <tbody>
                 {lineItems.map((li) => (
-                  <tr key={li.id} className="border-b border-white/5">
+                  <tr key={li.id} className="border-b border-border/50">
                     <td className="px-2 py-1.5">
                       <input
                         type="text"
@@ -319,7 +319,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                         onChange={(e) => updateLine(li.id, 'description', e.target.value)}
                         disabled={!isEditable}
                         placeholder="Item description"
-                        className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-[#FFCC00]/20 transition-all disabled:opacity-50"
+                        className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-primary placeholder-zinc-600 focus:outline-none focus:border-cba-gold/20 transition-all disabled:opacity-50"
                       />
                     </td>
                     <td className="px-2 py-1.5">
@@ -330,7 +330,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                         value={li.quantity}
                         onChange={(e) => updateLine(li.id, 'quantity', Number(e.target.value))}
                         disabled={!isEditable}
-                        className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-white text-right focus:outline-none focus:border-[#FFCC00]/20 transition-all disabled:opacity-50"
+                        className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-primary text-right focus:outline-none focus:border-cba-gold/20 transition-all disabled:opacity-50"
                       />
                     </td>
                     <td className="px-2 py-1.5">
@@ -341,10 +341,10 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                         value={li.unitPrice}
                         onChange={(e) => updateLine(li.id, 'unitPrice', Number(e.target.value))}
                         disabled={!isEditable}
-                        className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-white text-right focus:outline-none focus:border-[#FFCC00]/20 transition-all disabled:opacity-50"
+                        className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-primary text-right focus:outline-none focus:border-cba-gold/20 transition-all disabled:opacity-50"
                       />
                     </td>
-                    <td className="px-3 py-1.5 text-right text-sm font-medium text-zinc-300">
+                    <td className="px-3 py-1.5 text-right text-sm font-medium text-primary">
                       {formatCurrency(li.amount)}
                     </td>
                     <td className="px-1 py-1.5">
@@ -368,30 +368,30 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         <div className="flex justify-end">
           <div className="w-64 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">Subtotal</span>
-              <span className="text-white font-medium">{formatCurrency(subtotal)}</span>
+              <span className="text-secondary">Subtotal</span>
+              <span className="text-primary font-medium">{formatCurrency(subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">GST (10%)</span>
-              <span className="text-white font-medium">{formatCurrency(gst)}</span>
+              <span className="text-secondary">GST (10%)</span>
+              <span className="text-primary font-medium">{formatCurrency(gst)}</span>
             </div>
-            <div className="flex justify-between text-sm border-t border-white/10 pt-2">
-              <span className="text-zinc-300 font-semibold">Total</span>
-              <span className="text-[#FFCC00] font-bold text-lg">{formatCurrency(total)}</span>
+            <div className="flex justify-between text-sm border-t border-border pt-2">
+              <span className="text-primary font-semibold">Total</span>
+              <span className="text-cba-gold font-bold text-lg">{formatCurrency(total)}</span>
             </div>
           </div>
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Notes</label>
+          <label className="block text-xs font-medium text-secondary mb-1.5">Notes</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             disabled={!isEditable}
             rows={3}
             placeholder="Internal notes..."
-            className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all resize-none disabled:opacity-50"
+            className="w-full px-4 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all resize-none disabled:opacity-50"
           />
         </div>
       </div>
@@ -401,14 +401,14 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         <div className="flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2.5 rounded-xl bg-white/5 text-zinc-400 text-sm font-medium hover:text-white transition-all"
+            className="px-4 py-2.5 rounded-xl bg-overlay text-secondary text-sm font-medium hover:text-primary transition-all"
           >
             Cancel
           </button>
           <button
             onClick={() => handleSave(false)}
             disabled={saving || sending}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium hover:bg-white/15 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-overlay-hover text-primary text-sm font-medium hover:bg-white/15 transition-all disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {saving ? 'Saving...' : 'Save Draft'}
@@ -416,7 +416,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
           <button
             onClick={() => handleSave(true)}
             disabled={saving || sending}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC00] text-black text-sm font-semibold hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)] disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cba-gold text-black text-sm font-semibold hover:bg-cba-gold/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)] disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
             {sending ? 'Sending...' : 'Send to Supplier'}

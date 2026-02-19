@@ -54,7 +54,7 @@ export function WarehouseManager() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -63,12 +63,12 @@ export function WarehouseManager() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           {warehouses.length} warehouse{warehouses.length !== 1 ? 's' : ''}
         </p>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFD633] transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cba-gold text-base font-bold text-sm hover:bg-[#FFD633] transition-colors"
         >
           <Plus className="w-4 h-4" /> Add Warehouse
         </button>
@@ -76,11 +76,11 @@ export function WarehouseManager() {
 
       {/* Add Warehouse Form */}
       {showForm && (
-        <div className="neu-raised rounded-2xl p-6 space-y-4 border border-[#FFCC00]/10">
+        <div className="neu-raised rounded-2xl p-6 space-y-4 border border-cba-gold/10">
           <h3 className="text-lg font-bold text-zinc-100">New Warehouse</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">Name</label>
+              <label className="text-xs text-muted font-semibold uppercase">Name</label>
               <input
                 value={formData.name}
                 onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
@@ -89,7 +89,7 @@ export function WarehouseManager() {
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">Location</label>
+              <label className="text-xs text-muted font-semibold uppercase">Location</label>
               <input
                 value={formData.location}
                 onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
@@ -98,7 +98,7 @@ export function WarehouseManager() {
               />
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-primary cursor-pointer">
             <input
               type="checkbox"
               checked={formData.isDefault}
@@ -111,13 +111,13 @@ export function WarehouseManager() {
             <button
               onClick={handleCreate}
               disabled={!formData.name}
-              className="px-5 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-cba-gold text-base font-bold text-sm disabled:opacity-50"
             >
               Create
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="px-5 py-2 rounded-xl neu-raised text-zinc-400 font-bold text-sm"
+              className="px-5 py-2 rounded-xl neu-raised text-secondary font-bold text-sm"
             >
               Cancel
             </button>
@@ -129,7 +129,7 @@ export function WarehouseManager() {
       {warehouses.length === 0 ? (
         <div className="neu-raised rounded-2xl p-12 text-center">
           <Warehouse className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-          <p className="text-zinc-500">No warehouses configured</p>
+          <p className="text-muted">No warehouses configured</p>
           <p className="text-xs text-zinc-600 mt-1">
             Add a warehouse to start tracking stock locations
           </p>
@@ -139,17 +139,17 @@ export function WarehouseManager() {
           {warehouses.map((wh) => (
             <div
               key={wh.id}
-              className="neu-raised rounded-2xl p-5 space-y-3 hover:border-[#FFCC00]/20 border border-transparent transition-colors"
+              className="neu-raised rounded-2xl p-5 space-y-3 hover:border-cba-gold/20 border border-transparent transition-colors"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="neu-inset p-2 rounded-xl text-[#FFCC00]">
+                  <div className="neu-inset p-2 rounded-xl text-cba-gold">
                     <Warehouse className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="font-bold text-zinc-100">{wh.name}</h3>
                     {wh.location && (
-                      <div className="flex items-center gap-1 text-xs text-zinc-500">
+                      <div className="flex items-center gap-1 text-xs text-muted">
                         <MapPin className="w-3 h-3" />
                         {wh.location}
                       </div>
@@ -157,7 +157,7 @@ export function WarehouseManager() {
                   </div>
                 </div>
                 {wh.isDefault && (
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFCC00]/10 text-[#FFCC00] text-[10px] font-bold uppercase">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-cba-gold/10 text-cba-gold text-[10px] font-bold uppercase">
                     <Star className="w-3 h-3" /> Default
                   </span>
                 )}
@@ -165,11 +165,11 @@ export function WarehouseManager() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="neu-inset rounded-xl px-3 py-2">
                   <p className="text-[10px] text-zinc-600 uppercase font-semibold">Items</p>
-                  <p className="text-lg font-bold text-zinc-200">{wh.itemCount ?? 0}</p>
+                  <p className="text-lg font-bold text-primary">{wh.itemCount ?? 0}</p>
                 </div>
                 <div className="neu-inset rounded-xl px-3 py-2">
                   <p className="text-[10px] text-zinc-600 uppercase font-semibold">Value</p>
-                  <p className="text-lg font-bold text-[#FFCC00]">
+                  <p className="text-lg font-bold text-cba-gold">
                     {wh.totalValueCents != null ? formatAUD(wh.totalValueCents) : '—'}
                   </p>
                 </div>

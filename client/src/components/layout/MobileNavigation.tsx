@@ -53,7 +53,7 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
       {/* Bottom Tab Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50">
         {/* Glass background */}
-        <div className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-2xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]" />
+        <div className="absolute inset-0 bg-base/80 backdrop-blur-2xl border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.5)]" />
 
         <nav
           className="relative flex items-end justify-around px-2 pt-2"
@@ -75,7 +75,7 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
                   <div className="w-14 h-14 rounded-full cba-gold-gradient flex items-center justify-center shadow-[0_4px_20px_rgba(255,204,0,0.4)]">
                     <tab.icon className="h-6 w-6 text-black" />
                   </div>
-                  <span className="text-[10px] font-bold text-[#FFCC00] uppercase tracking-wide">
+                  <span className="text-[10px] font-bold text-cba-gold uppercase tracking-wide">
                     {tab.label}
                   </span>
                 </button>
@@ -89,7 +89,7 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
                   key={tab.id}
                   type="button"
                   onClick={() => handleSpecialPress(tab)}
-                  className="flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all duration-300 text-zinc-500 hover:text-zinc-300"
+                  className="flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all duration-300 text-muted hover:text-primary"
                   aria-label={tab.label}
                   style={{ minWidth: 56, minHeight: 44 }}
                 >
@@ -114,7 +114,7 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
                 className={({ isActive }) =>
                   cn(
                     'flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all duration-300',
-                    isActive ? 'text-[#FFCC00]' : 'text-zinc-500 hover:text-zinc-300',
+                    isActive ? 'text-cba-gold' : 'text-muted hover:text-primary',
                   )
                 }
                 aria-label={tab.label}
@@ -126,7 +126,7 @@ export function MobileNavigation({ onScan }: MobileNavigationProps) {
                       className={cn(
                         'relative p-1.5 rounded-xl transition-all duration-300',
                         isActive &&
-                          'bg-[#FFCC00]/10 ring-1 ring-[#FFCC00]/20 shadow-[0_0_15px_rgba(255,204,0,0.1)]',
+                          'bg-cba-gold/10 ring-1 ring-[#FFCC00]/20 shadow-[0_0_15px_rgba(255,204,0,0.1)]',
                       )}
                     >
                       <tab.icon

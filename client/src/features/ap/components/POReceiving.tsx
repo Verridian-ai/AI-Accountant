@@ -160,10 +160,10 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
   if (loading) {
     return (
       <div className="neu-raised rounded-2xl p-8 animate-pulse">
-        <div className="h-6 w-48 bg-white/5 rounded mb-6" />
+        <div className="h-6 w-48 bg-overlay rounded mb-6" />
         <div className="space-y-4">
-          <div className="h-10 w-full bg-white/5 rounded" />
-          <div className="h-40 w-full bg-white/5 rounded" />
+          <div className="h-10 w-full bg-overlay rounded" />
+          <div className="h-40 w-full bg-overlay rounded" />
         </div>
       </div>
     );
@@ -173,7 +173,7 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
     return (
       <div className="neu-raised rounded-2xl p-8 text-center">
         <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3" />
-        <p className="text-zinc-400">Purchase order not found</p>
+        <p className="text-secondary">Purchase order not found</p>
       </div>
     );
   }
@@ -186,13 +186,13 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
-          className="p-2 rounded-xl bg-white/5 text-zinc-400 hover:text-white transition-all"
+          className="p-2 rounded-xl bg-overlay text-secondary hover:text-primary transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-white">Goods Receiving</h2>
-          <p className="text-xs text-zinc-500 mt-0.5 font-mono">{po.poNumber}</p>
+          <h2 className="text-xl font-bold text-primary">Goods Receiving</h2>
+          <p className="text-xs text-muted mt-0.5 font-mono">{po.poNumber}</p>
         </div>
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -211,24 +211,24 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       <div className="neu-raised rounded-2xl p-5">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <span className="text-zinc-500 text-xs">Supplier</span>
-            <p className="text-white font-medium">{po.supplierName ?? '—'}</p>
+            <span className="text-muted text-xs">Supplier</span>
+            <p className="text-primary font-medium">{po.supplierName ?? '—'}</p>
           </div>
           <div>
-            <span className="text-zinc-500 text-xs">Issue Date</span>
-            <p className="text-white">
+            <span className="text-muted text-xs">Issue Date</span>
+            <p className="text-primary">
               {po.issueDate ? new Date(po.issueDate).toLocaleDateString('en-AU') : '—'}
             </p>
           </div>
           <div>
-            <span className="text-zinc-500 text-xs">Expected Delivery</span>
-            <p className="text-white">
+            <span className="text-muted text-xs">Expected Delivery</span>
+            <p className="text-primary">
               {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString('en-AU') : '—'}
             </p>
           </div>
           <div>
-            <span className="text-zinc-500 text-xs">PO Total</span>
-            <p className="text-[#FFCC00] font-semibold">{formatCurrency(po.total)}</p>
+            <span className="text-muted text-xs">PO Total</span>
+            <p className="text-cba-gold font-semibold">{formatCurrency(po.total)}</p>
           </div>
         </div>
       </div>
@@ -242,37 +242,37 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       {/* Receiving Lines Table */}
       {isReceivable && (
         <div className="neu-raised rounded-2xl overflow-hidden">
-          <div className="p-4 border-b border-white/5 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-zinc-300">Receive Items</h3>
+          <div className="p-4 border-b border-border/50 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-primary">Receive Items</h3>
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-zinc-500" />
+              <Calendar className="h-4 w-4 text-muted" />
               <input
                 type="date"
                 value={receiptDate}
                 onChange={(e) => setReceiptDate(e.target.value)}
-                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-[#FFCC00]/30 transition-all"
+                className="px-3 py-1.5 rounded-lg bg-overlay border border-border text-sm text-primary focus:outline-none focus:border-cba-gold/30 transition-all"
               />
             </div>
           </div>
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/5 bg-white/[0.02]">
-                <th className="text-left px-4 py-2 text-xs font-semibold text-zinc-400">
+              <tr className="border-b border-border/50 bg-white/[0.02]">
+                <th className="text-left px-4 py-2 text-xs font-semibold text-secondary">
                   Description
                 </th>
-                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">
+                <th className="text-right px-3 py-2 text-xs font-semibold text-secondary">
                   Ordered
                 </th>
-                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">
+                <th className="text-right px-3 py-2 text-xs font-semibold text-secondary">
                   Prev Recv
                 </th>
-                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400 w-28">
+                <th className="text-right px-3 py-2 text-xs font-semibold text-secondary w-28">
                   Receiving Now
                 </th>
-                <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">
+                <th className="text-right px-3 py-2 text-xs font-semibold text-secondary">
                   Unit Price
                 </th>
-                <th className="text-right px-4 py-2 text-xs font-semibold text-zinc-400">Amount</th>
+                <th className="text-right px-4 py-2 text-xs font-semibold text-secondary">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -281,15 +281,15 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
                 return (
                   <tr
                     key={line.lineId}
-                    className={`border-b border-white/5 transition-colors ${
+                    className={`border-b border-border/50 transition-colors ${
                       willComplete && line.receivingNow > 0 ? 'bg-emerald-400/[0.03]' : ''
                     }`}
                   >
-                    <td className="px-4 py-3 text-sm text-white">{line.description}</td>
-                    <td className="px-3 py-3 text-sm text-zinc-400 text-right">
+                    <td className="px-4 py-3 text-sm text-primary">{line.description}</td>
+                    <td className="px-3 py-3 text-sm text-secondary text-right">
                       {line.orderedQty}
                     </td>
-                    <td className="px-3 py-3 text-sm text-zinc-400 text-right">
+                    <td className="px-3 py-3 text-sm text-secondary text-right">
                       {line.previouslyReceived}
                     </td>
                     <td className="px-3 py-3">
@@ -299,18 +299,18 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
                         max={line.maxReceivable}
                         value={line.receivingNow}
                         onChange={(e) => updateReceivingQty(line.lineId, Number(e.target.value))}
-                        className={`w-full px-2 py-1.5 rounded-lg text-sm text-right text-white bg-white/5 border focus:outline-none focus:ring-1 transition-all ${
+                        className={`w-full px-2 py-1.5 rounded-lg text-sm text-right text-primary bg-overlay border focus:outline-none focus:ring-1 transition-all ${
                           line.receivingNow > 0
-                            ? 'border-[#FFCC00]/30 focus:ring-[#FFCC00]/20'
-                            : 'border-white/10 focus:ring-white/10'
+                            ? 'border-cba-gold/30 focus:ring-[#FFCC00]/20'
+                            : 'border-border focus:ring-white/10'
                         }`}
                       />
                     </td>
-                    <td className="px-3 py-3 text-sm text-zinc-400 text-right">
+                    <td className="px-3 py-3 text-sm text-secondary text-right">
                       {formatCurrency(line.unitPrice)}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-right">
-                      <span className={line.receivingNow > 0 ? 'text-[#FFCC00]' : 'text-zinc-500'}>
+                      <span className={line.receivingNow > 0 ? 'text-cba-gold' : 'text-muted'}>
                         {formatCurrency(line.receivingNow * line.unitPrice)}
                       </span>
                     </td>
@@ -326,18 +326,18 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       <div className="grid grid-cols-3 gap-4">
         <div className="neu-raised rounded-2xl p-4 text-center">
           <CheckCircle2 className="h-5 w-5 text-emerald-400 mx-auto mb-1" />
-          <p className="text-lg font-bold text-white">{linesFullyReceived}</p>
-          <p className="text-xs text-zinc-500">Fully Received</p>
+          <p className="text-lg font-bold text-primary">{linesFullyReceived}</p>
+          <p className="text-xs text-muted">Fully Received</p>
         </div>
         <div className="neu-raised rounded-2xl p-4 text-center">
           <Minus className="h-5 w-5 text-amber-400 mx-auto mb-1" />
-          <p className="text-lg font-bold text-white">{linesPartial}</p>
-          <p className="text-xs text-zinc-500">Partial</p>
+          <p className="text-lg font-bold text-primary">{linesPartial}</p>
+          <p className="text-xs text-muted">Partial</p>
         </div>
         <div className="neu-raised rounded-2xl p-4 text-center">
-          <AlertTriangle className="h-5 w-5 text-zinc-500 mx-auto mb-1" />
-          <p className="text-lg font-bold text-white">{linesOutstanding}</p>
-          <p className="text-xs text-zinc-500">Outstanding</p>
+          <AlertTriangle className="h-5 w-5 text-muted mx-auto mb-1" />
+          <p className="text-lg font-bold text-primary">{linesOutstanding}</p>
+          <p className="text-xs text-muted">Outstanding</p>
         </div>
       </div>
 
@@ -345,20 +345,20 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       {isReceivable && (
         <div className="neu-raised rounded-2xl p-5 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Receipt Notes</label>
+            <label className="block text-xs font-medium text-secondary mb-1.5">Receipt Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="Optional notes for this receipt..."
-              className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all resize-none"
+              className="w-full px-4 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all resize-none"
             />
           </div>
           <div className="flex justify-end">
             <button
               onClick={handleRecordReceipt}
               disabled={saving || totalReceivingNow === 0}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFCC00] text-black text-sm font-semibold hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)] disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cba-gold text-black text-sm font-semibold hover:bg-cba-gold/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)] disabled:opacity-50"
             >
               <PackageCheck className="h-4 w-4" />
               {saving ? 'Recording...' : `Record Receipt (${totalReceivingNow} items)`}
@@ -370,20 +370,20 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       {/* Receipt History */}
       {receipts.length > 0 && (
         <div className="neu-raised rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-zinc-300 mb-3">Receipt History</h3>
+          <h3 className="text-sm font-semibold text-primary mb-3">Receipt History</h3>
           <div className="space-y-2">
             {receipts.map((r, idx) => (
               <div
                 key={r.id ?? idx}
-                className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.02] border border-white/5"
+                className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.02] border border-border/50"
               >
                 <div className="flex items-center gap-3">
                   <PackageCheck className="h-4 w-4 text-emerald-400" />
                   <div>
-                    <p className="text-sm text-white font-medium">
+                    <p className="text-sm text-primary font-medium">
                       {new Date(r.receiptDate).toLocaleDateString('en-AU')}
                     </p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted">
                       {r.lines.reduce((sum, l) => sum + l.quantity, 0)} items received
                     </p>
                   </div>
@@ -398,8 +398,8 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       {threeWay && (
         <div className="neu-raised rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <FileText className="h-4 w-4 text-[#FFCC00]" />
-            <h3 className="text-sm font-semibold text-zinc-300">Three-Way Match</h3>
+            <FileText className="h-4 w-4 text-cba-gold" />
+            <h3 className="text-sm font-semibold text-primary">Three-Way Match</h3>
             <span
               className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium ${
                 threeWay.status === 'matched'
@@ -419,46 +419,46 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
 
           {/* Summary Comparison */}
           <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
-              <p className="text-xs text-zinc-500 mb-1">PO Total</p>
-              <p className="text-sm font-semibold text-white">{formatCurrency(threeWay.poTotal)}</p>
+            <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-border/50">
+              <p className="text-xs text-muted mb-1">PO Total</p>
+              <p className="text-sm font-semibold text-primary">{formatCurrency(threeWay.poTotal)}</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
-              <p className="text-xs text-zinc-500 mb-1">Receipt Total</p>
-              <p className="text-sm font-semibold text-white">
+            <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-border/50">
+              <p className="text-xs text-muted mb-1">Receipt Total</p>
+              <p className="text-sm font-semibold text-primary">
                 {formatCurrency(threeWay.receiptTotal)}
               </p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
-              <p className="text-xs text-zinc-500 mb-1">Bill Total</p>
-              <p className="text-sm font-semibold text-white">
+            <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-border/50">
+              <p className="text-xs text-muted mb-1">Bill Total</p>
+              <p className="text-sm font-semibold text-primary">
                 {formatCurrency(threeWay.billTotal)}
               </p>
             </div>
           </div>
 
           {/* Per-Line Comparison */}
-          <div className="rounded-xl border border-white/5 overflow-hidden">
+          <div className="rounded-xl border border-border/50 overflow-hidden">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-white/5 bg-white/[0.02]">
-                  <th className="text-left px-3 py-2 text-zinc-400">Item</th>
-                  <th className="text-right px-3 py-2 text-zinc-400">PO Qty</th>
-                  <th className="text-right px-3 py-2 text-zinc-400">Recv Qty</th>
-                  <th className="text-right px-3 py-2 text-zinc-400">Bill Qty</th>
-                  <th className="text-center px-3 py-2 text-zinc-400">Match</th>
+                <tr className="border-b border-border/50 bg-white/[0.02]">
+                  <th className="text-left px-3 py-2 text-secondary">Item</th>
+                  <th className="text-right px-3 py-2 text-secondary">PO Qty</th>
+                  <th className="text-right px-3 py-2 text-secondary">Recv Qty</th>
+                  <th className="text-right px-3 py-2 text-secondary">Bill Qty</th>
+                  <th className="text-center px-3 py-2 text-secondary">Match</th>
                 </tr>
               </thead>
               <tbody>
                 {threeWay.lines.map((l, idx) => (
                   <tr
                     key={idx}
-                    className={`border-b border-white/5 ${!l.matched ? 'bg-red-500/[0.03]' : ''}`}
+                    className={`border-b border-border/50 ${!l.matched ? 'bg-red-500/[0.03]' : ''}`}
                   >
-                    <td className="px-3 py-2 text-zinc-300">{l.description}</td>
-                    <td className="px-3 py-2 text-right text-zinc-400">{l.poQty}</td>
-                    <td className="px-3 py-2 text-right text-zinc-400">{l.receivedQty}</td>
-                    <td className="px-3 py-2 text-right text-zinc-400">{l.billedQty}</td>
+                    <td className="px-3 py-2 text-primary">{l.description}</td>
+                    <td className="px-3 py-2 text-right text-secondary">{l.poQty}</td>
+                    <td className="px-3 py-2 text-right text-secondary">{l.receivedQty}</td>
+                    <td className="px-3 py-2 text-right text-secondary">{l.billedQty}</td>
                     <td className="px-3 py-2 text-center">
                       {l.matched ? (
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 inline" />

@@ -15,14 +15,14 @@ interface DocumentSummary {
 function ScoreBar({ score, label, color }: { score: number; label: string; color: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-zinc-500 w-16 shrink-0">{label}</span>
+      <span className="text-[10px] text-muted w-16 shrink-0">{label}</span>
       <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full ${color} transition-all duration-300`}
           style={{ width: `${Math.min(score * 100, 100)}%` }}
         />
       </div>
-      <span className="text-[10px] text-zinc-400 font-mono w-8 text-right">
+      <span className="text-[10px] text-secondary font-mono w-8 text-right">
         {(score * 100).toFixed(0)}%
       </span>
     </div>
@@ -140,39 +140,39 @@ export function MatchReviewPanel() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[500px]">
       {/* Left Panel: Document List */}
       <div className="lg:col-span-1 neu-raised rounded-xl overflow-hidden flex flex-col">
-        <div className="px-4 py-3 border-b border-white/5">
-          <h3 className="text-sm font-semibold text-zinc-200">Documents</h3>
-          <p className="text-[10px] text-zinc-500">{documents.length} pending review</p>
+        <div className="px-4 py-3 border-b border-border/50">
+          <h3 className="text-sm font-semibold text-primary">Documents</h3>
+          <p className="text-[10px] text-muted">{documents.length} pending review</p>
         </div>
         <div className="flex-1 overflow-y-auto divide-y divide-white/5">
           {loadingDocs ? (
             <div className="p-8 text-center">
-              <Loader2 className="h-6 w-6 text-zinc-500 animate-spin mx-auto" />
+              <Loader2 className="h-6 w-6 text-muted animate-spin mx-auto" />
             </div>
           ) : documents.length === 0 ? (
             <div className="p-8 text-center">
               <CheckCircle2 className="h-8 w-8 text-emerald-400/50 mx-auto mb-2" />
-              <p className="text-sm text-zinc-400">All documents matched</p>
+              <p className="text-sm text-secondary">All documents matched</p>
             </div>
           ) : (
             documents.map((doc) => (
               <button
                 key={doc.id}
                 onClick={() => handleSelectDoc(doc.id)}
-                className={`w-full px-4 py-3 text-left hover:bg-white/5 transition-colors ${
+                className={`w-full px-4 py-3 text-left hover:bg-overlay transition-colors ${
                   selectedDocId === doc.id
-                    ? 'bg-[#FFCC00]/5 border-l-2 border-[#FFCC00]'
+                    ? 'bg-cba-gold/5 border-l-2 border-cba-gold'
                     : 'border-l-2 border-transparent'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="min-w-0">
-                    <p className="text-sm text-zinc-200 truncate">{doc.vendorName}</p>
-                    <p className="text-xs text-zinc-500">{doc.date}</p>
+                    <p className="text-sm text-primary truncate">{doc.vendorName}</p>
+                    <p className="text-xs text-muted">{doc.date}</p>
                   </div>
                   <div className="text-right shrink-0 ml-2">
                     {doc.amount !== 0 && (
-                      <p className="text-sm font-mono text-zinc-300">
+                      <p className="text-sm font-mono text-primary">
                         ${Math.abs(doc.amount).toFixed(2)}
                       </p>
                     )}
@@ -182,7 +182,7 @@ export function MatchReviewPanel() {
                           ? 'text-amber-400'
                           : doc.status === 'matched'
                             ? 'text-emerald-400'
-                            : 'text-zinc-500'
+                            : 'text-muted'
                       }`}
                     >
                       {doc.status}
@@ -197,11 +197,11 @@ export function MatchReviewPanel() {
 
       {/* Right Panel: Match Candidates */}
       <div className="lg:col-span-2 neu-raised rounded-xl overflow-hidden flex flex-col">
-        <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+        <div className="px-5 py-3 border-b border-border/50 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-200">Match Candidates</h3>
+            <h3 className="text-sm font-semibold text-primary">Match Candidates</h3>
             {selectedDocId && (
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-[10px] text-muted">
                 {candidates.length} candidate{candidates.length !== 1 ? 's' : ''} found
               </p>
             )}
@@ -233,19 +233,19 @@ export function MatchReviewPanel() {
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <ArrowRightLeft className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
-                <p className="text-sm text-zinc-400">Select a document to view candidates</p>
+                <p className="text-sm text-secondary">Select a document to view candidates</p>
               </div>
             </div>
           ) : loadingCandidates ? (
             <div className="h-full flex items-center justify-center">
-              <Loader2 className="h-8 w-8 text-[#FFCC00] animate-spin" />
+              <Loader2 className="h-8 w-8 text-cba-gold animate-spin" />
             </div>
           ) : candidates.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <FileText className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
-                <p className="text-sm text-zinc-400">No matching candidates found</p>
-                <p className="text-xs text-zinc-500 mt-1">Try adjusting tolerance settings</p>
+                <p className="text-sm text-secondary">No matching candidates found</p>
+                <p className="text-xs text-muted mt-1">Try adjusting tolerance settings</p>
               </div>
             </div>
           ) : (
@@ -263,15 +263,15 @@ export function MatchReviewPanel() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {isTop && (
-                              <span className="text-[10px] font-bold text-[#FFCC00] uppercase">
+                              <span className="text-[10px] font-bold text-cba-gold uppercase">
                                 Best Match
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-zinc-200 truncate">
+                          <p className="text-sm text-primary truncate">
                             {candidate.transactionDescription}
                           </p>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-zinc-400">
+                          <div className="flex items-center gap-3 mt-1 text-xs text-secondary">
                             <span>{candidate.transactionDate}</span>
                             <span className="font-mono">
                               ${Math.abs(candidate.transactionAmount).toFixed(2)}
@@ -317,7 +317,7 @@ export function MatchReviewPanel() {
 
                           {/* Differences */}
                           <div className="flex items-center gap-4 mt-2 text-xs">
-                            <span className="text-zinc-500">
+                            <span className="text-muted">
                               Amount diff:{' '}
                               <span
                                 className={`font-mono ${candidate.score.amountDifference === 0 ? 'text-emerald-400' : 'text-amber-400'}`}
@@ -326,9 +326,9 @@ export function MatchReviewPanel() {
                                 {Math.abs(candidate.score.amountDifference).toFixed(2)}
                               </span>
                             </span>
-                            <span className="text-zinc-500">
+                            <span className="text-muted">
                               Date diff:{' '}
-                              <span className="font-mono text-zinc-300">
+                              <span className="font-mono text-primary">
                                 {candidate.score.dateDifference} days
                               </span>
                             </span>

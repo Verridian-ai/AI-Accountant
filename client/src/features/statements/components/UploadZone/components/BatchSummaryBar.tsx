@@ -39,11 +39,11 @@ export function BatchSummaryBar({ files, onClearCompleted }: BatchSummaryBarProp
     <div className="space-y-3">
       {/* Header line */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+        <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
           {isProcessing ? (
             <>
-              Processing <span className="text-[#FFCC00]">{stats.completed + 1}</span> of{' '}
-              <span className="text-zinc-300">{stats.total}</span> files
+              Processing <span className="text-cba-gold">{stats.completed + 1}</span> of{' '}
+              <span className="text-primary">{stats.total}</span> files
             </>
           ) : allDone ? (
             <>
@@ -58,7 +58,7 @@ export function BatchSummaryBar({ files, onClearCompleted }: BatchSummaryBarProp
             </>
           ) : (
             <>
-              <span className="text-zinc-300">{stats.total}</span> file
+              <span className="text-primary">{stats.total}</span> file
               {stats.total !== 1 ? 's' : ''} queued
             </>
           )}
@@ -75,7 +75,7 @@ export function BatchSummaryBar({ files, onClearCompleted }: BatchSummaryBarProp
       </div>
 
       {/* Overall progress bar */}
-      <div className="w-full h-2 rounded-full bg-black/40 overflow-hidden border border-white/5">
+      <div className="w-full h-2 rounded-full bg-overlay-hover overflow-hidden border border-border/50">
         <div
           className={cn(
             'h-full rounded-full transition-all duration-700 ease-out',

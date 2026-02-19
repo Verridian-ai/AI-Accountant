@@ -22,11 +22,11 @@ interface Tenant {
 }
 
 const ROLE_CONFIG: Record<string, { color: string; icon: typeof Crown }> = {
-  owner: { color: 'text-[#FFCC00]', icon: Crown },
+  owner: { color: 'text-cba-gold', icon: Crown },
   admin: { color: 'text-blue-400', icon: Shield },
   accountant: { color: 'text-emerald-400', icon: Calculator },
   bookkeeper: { color: 'text-purple-400', icon: BookOpen },
-  viewer: { color: 'text-zinc-400', icon: Eye },
+  viewer: { color: 'text-secondary', icon: Eye },
 };
 
 export function TenantSwitcher() {
@@ -96,25 +96,25 @@ export function TenantSwitcher() {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           'neu-raised-sm flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all',
-          'hover:border-[#FFCC00]/30 border border-transparent',
-          isOpen && 'border-[#FFCC00]/30 shadow-[0_0_12px_rgba(255,204,0,0.1)]',
+          'hover:border-cba-gold/30 border border-transparent',
+          isOpen && 'border-cba-gold/30 shadow-[0_0_12px_rgba(255,204,0,0.1)]',
         )}
       >
-        <div className="w-6 h-6 rounded-lg bg-[#FFCC00]/10 flex items-center justify-center text-[#FFCC00] text-xs font-black">
+        <div className="w-6 h-6 rounded-lg bg-cba-gold/10 flex items-center justify-center text-cba-gold text-xs font-black">
           {currentTenant ? getInitial(currentTenant.name) : <Building2 className="w-3.5 h-3.5" />}
         </div>
-        <span className="hidden sm:block text-zinc-200 max-w-[120px] truncate">
+        <span className="hidden sm:block text-primary max-w-[120px] truncate">
           {currentTenant?.name ?? 'Select Workspace'}
         </span>
         <ChevronDown
-          className={cn('w-3.5 h-3.5 text-zinc-500 transition-transform', isOpen && 'rotate-180')}
+          className={cn('w-3.5 h-3.5 text-muted transition-transform', isOpen && 'rotate-180')}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-72 neu-raised rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="px-4 py-3 border-b border-white/5">
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+        <div className="absolute top-full right-0 mt-2 w-72 neu-raised rounded-2xl border border-border shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="px-4 py-3 border-b border-border/50">
+            <p className="text-[10px] font-black text-muted uppercase tracking-widest">
               Workspaces
             </p>
           </div>
@@ -133,14 +133,14 @@ export function TenantSwitcher() {
                   className={cn(
                     'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',
                     isCurrent
-                      ? 'bg-[#FFCC00]/5 border-l-2 border-[#FFCC00]'
-                      : 'hover:bg-white/5 border-l-2 border-transparent',
+                      ? 'bg-cba-gold/5 border-l-2 border-cba-gold'
+                      : 'hover:bg-overlay border-l-2 border-transparent',
                   )}
                 >
                   <div
                     className={cn(
                       'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black shrink-0',
-                      isCurrent ? 'bg-[#FFCC00]/20 text-[#FFCC00]' : 'bg-white/5 text-zinc-400',
+                      isCurrent ? 'bg-cba-gold/20 text-cba-gold' : 'bg-overlay text-secondary',
                     )}
                   >
                     {getInitial(tenant.name)}
@@ -149,7 +149,7 @@ export function TenantSwitcher() {
                     <p
                       className={cn(
                         'text-sm font-bold truncate',
-                        isCurrent ? 'text-[#FFCC00]' : 'text-zinc-200',
+                        isCurrent ? 'text-cba-gold' : 'text-primary',
                       )}
                     >
                       {tenant.name}
@@ -163,13 +163,13 @@ export function TenantSwitcher() {
                       </span>
                     </div>
                   </div>
-                  {isCurrent && <Check className="w-4 h-4 text-[#FFCC00] shrink-0" />}
+                  {isCurrent && <Check className="w-4 h-4 text-cba-gold shrink-0" />}
                 </button>
               );
             })}
           </div>
 
-          <div className="border-t border-white/5 p-2">
+          <div className="border-t border-border/50 p-2">
             <button
               type="button"
               onClick={() => {
@@ -177,7 +177,7 @@ export function TenantSwitcher() {
                 // Parent handles navigation to TenantCreate
                 window.dispatchEvent(new CustomEvent('navigate-tab', { detail: 'settings' }));
               }}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-zinc-400 hover:text-[#FFCC00] hover:bg-[#FFCC00]/5 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-secondary hover:text-cba-gold hover:bg-cba-gold/5 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Create New Workspace

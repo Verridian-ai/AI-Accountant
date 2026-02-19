@@ -31,14 +31,14 @@ export function SidebarNavigation({
   return (
     <aside
       className={cn(
-        'flex flex-col h-screen bg-[#0d0d14] border-r border-white/5 transition-all duration-200 ease-in-out shrink-0 overflow-hidden',
+        'flex flex-col h-screen bg-[#0d0d14] border-r border-border/50 transition-all duration-200 ease-in-out shrink-0 overflow-hidden',
         collapsed ? 'w-16' : 'w-64',
       )}
     >
       {/* Logo */}
       <div
         className={cn(
-          'flex items-center gap-3 px-4 py-4 border-b border-white/5 shrink-0',
+          'flex items-center gap-3 px-4 py-4 border-b border-border/50 shrink-0',
           collapsed && 'justify-center px-2',
         )}
       >
@@ -52,7 +52,7 @@ export function SidebarNavigation({
             <h1 className="text-base font-bold tracking-tight text-gradient-gold whitespace-nowrap">
               GoldLedger
             </h1>
-            <p className="text-[9px] text-zinc-500 uppercase tracking-[0.15em] font-semibold whitespace-nowrap">
+            <p className="text-[9px] text-muted uppercase tracking-[0.15em] font-semibold whitespace-nowrap">
               Financial Intelligence
             </p>
           </div>
@@ -74,7 +74,7 @@ export function SidebarNavigation({
                 <button
                   type="button"
                   onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-zinc-400 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-secondary transition-colors"
                 >
                   <span>{section.title}</span>
                   <ChevronRight
@@ -107,12 +107,12 @@ export function SidebarNavigation({
       </nav>
 
       {/* Collapse Toggle */}
-      <div className="shrink-0 border-t border-white/5 p-2">
+      <div className="shrink-0 border-t border-border/50 p-2">
         <button
           type="button"
           onClick={() => onCollapsedChange?.(!collapsed)}
           className={cn(
-            'w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-all duration-200',
+            'w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-secondary hover:text-primary hover:bg-overlay transition-all duration-200',
             collapsed && 'justify-center px-0',
           )}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -150,8 +150,8 @@ function SidebarItem({ to, icon: Icon, label, collapsed, end }: SidebarItemProps
           'w-full flex items-center gap-3 rounded-xl transition-all duration-200 group relative',
           collapsed ? 'justify-center p-2.5' : 'px-3 py-2',
           isActive
-            ? 'text-[#FFCC00] bg-[#FFCC00]/10'
-            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5',
+            ? 'text-cba-gold bg-cba-gold/10'
+            : 'text-secondary hover:text-primary hover:bg-overlay',
         )
       }
     >
@@ -159,7 +159,7 @@ function SidebarItem({ to, icon: Icon, label, collapsed, end }: SidebarItemProps
         <>
           {/* Gold active indicator */}
           {isActive && (
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-[#FFCC00] shadow-[0_0_8px_rgba(255,204,0,0.4)]" />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-cba-gold shadow-[0_0_8px_rgba(255,204,0,0.4)]" />
           )}
 
           <Icon
@@ -177,7 +177,7 @@ function SidebarItem({ to, icon: Icon, label, collapsed, end }: SidebarItemProps
 
           {/* Tooltip when collapsed */}
           {collapsed && (
-            <div className="absolute left-full ml-2 px-2.5 py-1.5 rounded-lg bg-zinc-800 text-xs font-medium text-zinc-200 whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 shadow-lg z-50">
+            <div className="absolute left-full ml-2 px-2.5 py-1.5 rounded-lg bg-zinc-800 text-xs font-medium text-primary whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 shadow-lg z-50">
               {label}
             </div>
           )}

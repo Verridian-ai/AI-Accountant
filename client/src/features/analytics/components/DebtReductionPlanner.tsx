@@ -58,7 +58,7 @@ export function DebtReductionPlanner() {
       <div
         className={cn(
           'neu-raised-sm rounded-3xl overflow-hidden border transition-all duration-500',
-          isExpanded ? 'border-white/10 scale-[1.02] shadow-2xl' : borderColor,
+          isExpanded ? 'border-border scale-[1.02] shadow-2xl' : borderColor,
           'hover:neu-float',
         )}
       >
@@ -75,7 +75,7 @@ export function DebtReductionPlanner() {
               <h4 className={cn('font-black uppercase tracking-widest text-sm', iconColor)}>
                 {strategy.name}
               </h4>
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight mt-0.5">
+              <p className="text-[10px] font-bold text-muted uppercase tracking-tight mt-0.5">
                 {strategy.description}
               </p>
             </div>
@@ -91,7 +91,7 @@ export function DebtReductionPlanner() {
         </button>
 
         <div className="px-5 pb-5 grid grid-cols-3 gap-3">
-          <div className="text-center neu-inset rounded-2xl p-3 border border-white/5">
+          <div className="text-center neu-inset rounded-2xl p-3 border border-border/50">
             <Calendar className={cn('w-4 h-4 mx-auto mb-2 opacity-50', iconColor)} />
             <p className="text-sm font-black text-zinc-100 tracking-tight">
               {strategy.totalMonths}
@@ -100,7 +100,7 @@ export function DebtReductionPlanner() {
               Months
             </p>
           </div>
-          <div className="text-center neu-inset rounded-2xl p-3 border border-white/5">
+          <div className="text-center neu-inset rounded-2xl p-3 border border-border/50">
             <DollarSign className={cn('w-4 h-4 mx-auto mb-2 opacity-50', iconColor)} />
             <p className="text-sm font-black text-zinc-100 tracking-tight">
               {formatCurrency(strategy.monthlyPayment).split('.')[0]}
@@ -109,7 +109,7 @@ export function DebtReductionPlanner() {
               Monthly
             </p>
           </div>
-          <div className="text-center neu-inset rounded-2xl p-3 border border-white/5">
+          <div className="text-center neu-inset rounded-2xl p-3 border border-border/50">
             <TrendingDown className={cn('w-4 h-4 mx-auto mb-2 opacity-50', iconColor)} />
             <p className="text-sm font-black text-zinc-100 tracking-tight">
               {formatCurrency(strategy.totalInterestPaid).split('.')[0]}
@@ -121,20 +121,20 @@ export function DebtReductionPlanner() {
         </div>
 
         {isExpanded && strategy.payoffOrder.length > 0 && (
-          <div className="px-5 pb-5 pt-2 border-t border-white/5 bg-black/20 animate-in slide-in-from-top-2">
-            <h5 className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-4 text-center">
+          <div className="px-5 pb-5 pt-2 border-t border-border/50 bg-overlay animate-in slide-in-from-top-2">
+            <h5 className="text-[9px] font-black text-muted uppercase tracking-[0.3em] mb-4 text-center">
               Liquidation Sequence
             </h5>
             <div className="space-y-2">
               {strategy.payoffOrder.map((account, idx) => (
                 <div
                   key={account.accountId}
-                  className="flex items-center justify-between text-xs neu-inset rounded-xl p-3 border border-white/5 hover:bg-white/2 transition-colors"
+                  className="flex items-center justify-between text-xs neu-inset rounded-xl p-3 border border-border/50 hover:bg-white/2 transition-colors"
                 >
-                  <span className="flex items-center gap-3 text-zinc-200 font-bold uppercase tracking-tight">
+                  <span className="flex items-center gap-3 text-primary font-bold uppercase tracking-tight">
                     <span
                       className={cn(
-                        'w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-[#0a0a0f] shadow-lg',
+                        'w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-base shadow-lg',
                         'bg-linear-to-br',
                         gradientFrom,
                       )}
@@ -143,7 +143,7 @@ export function DebtReductionPlanner() {
                     </span>
                     {account.accountName}
                   </span>
-                  <span className="text-zinc-500 font-black font-mono text-[10px]">
+                  <span className="text-muted font-black font-mono text-[10px]">
                     {account.monthsToPayoff} MO
                   </span>
                 </div>
@@ -156,7 +156,7 @@ export function DebtReductionPlanner() {
   };
 
   return (
-    <div className="neu-raised rounded-[2.5rem] p-6 border border-white/5 flex flex-col group">
+    <div className="neu-raised rounded-[2.5rem] p-6 border border-border/50 flex flex-col group">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="neu-inset p-3 rounded-2xl text-emerald-400 group-hover:glow-success transition-all duration-500">
@@ -167,13 +167,13 @@ export function DebtReductionPlanner() {
               Strategic Planner
             </h3>
             <p className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-[#FFCC00]" /> Debt Neutralization AI
+              <Sparkles className="w-3 h-3 text-cba-gold" /> Debt Neutralization AI
             </p>
           </div>
         </div>
         <div className="neu-inset px-3 py-1.5 rounded-full flex items-center gap-2">
-          <Zap className="w-2.5 h-2.5 text-[#FFCC00] animate-pulse" />
-          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest italic">
+          <Zap className="w-2.5 h-2.5 text-cba-gold animate-pulse" />
+          <span className="text-[9px] font-black text-secondary uppercase tracking-widest italic">
             Optimizing
           </span>
         </div>
@@ -193,7 +193,7 @@ export function DebtReductionPlanner() {
                 type="number"
                 value={monthlyBudget}
                 onChange={(e) => setMonthlyBudget(e.target.value)}
-                className="w-full pl-8 pr-4 py-4 neu-inset rounded-2xl focus-gold outline-none text-[#FFCC00] font-black text-sm transition-all"
+                className="w-full pl-8 pr-4 py-4 neu-inset rounded-2xl focus-gold outline-none text-cba-gold font-black text-sm transition-all"
                 placeholder="500"
               />
             </div>
@@ -201,7 +201,7 @@ export function DebtReductionPlanner() {
               type="button"
               onClick={handleAnalyze}
               disabled={loading}
-              className="px-6 py-4 cba-gold-gradient text-[#0a0a0f] font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl btn-press disabled:opacity-50 shadow-lg cba-gold-glow flex items-center justify-center min-w-[120px]"
+              className="px-6 py-4 cba-gold-gradient text-base font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl btn-press disabled:opacity-50 shadow-lg cba-gold-glow flex items-center justify-center min-w-[120px]"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Run Analysis'}
             </button>
@@ -220,7 +220,7 @@ export function DebtReductionPlanner() {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="p-5 rounded-3xl neu-raised-sm border border-white/5 space-y-4"
+                className="p-5 rounded-3xl neu-raised-sm border border-border/50 space-y-4"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -243,11 +243,11 @@ export function DebtReductionPlanner() {
         )}
 
         {!loading && recommendations?.message && !recommendations.aggressive && (
-          <div className="text-center py-12 neu-inset rounded-3xl border border-white/5">
+          <div className="text-center py-12 neu-inset rounded-3xl border border-border/50">
             <div className="w-16 h-16 neu-inset rounded-2xl flex items-center justify-center mx-auto mb-4">
               <TrendingDown className="w-8 h-8 text-zinc-800" />
             </div>
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight max-w-[200px] mx-auto leading-relaxed">
+            <p className="text-xs font-bold text-muted uppercase tracking-tight max-w-[200px] mx-auto leading-relaxed">
               {recommendations.message}
             </p>
           </div>

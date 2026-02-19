@@ -41,7 +41,7 @@ export function InputTaxCredits({
     return (
       <Card className="neu-raised rounded-xl">
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+          <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
         </CardContent>
       </Card>
     );
@@ -53,7 +53,7 @@ export function InputTaxCredits({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Input Tax Credits</h3>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Total Claimable:{' '}
             <span className="text-emerald-400 font-medium">{formatCurrency(totalClaimable)}</span>
           </p>
@@ -85,11 +85,11 @@ export function InputTaxCredits({
         </CardHeader>
         <CardContent>
           {credits.length === 0 ? (
-            <p className="text-zinc-500 text-center py-8">No input tax credits for this period</p>
+            <p className="text-muted text-center py-8">No input tax credits for this period</p>
           ) : (
             <div className="space-y-1">
               {/* Header */}
-              <div className="grid grid-cols-4 gap-4 text-xs text-zinc-500 pb-2 border-b border-white/5">
+              <div className="grid grid-cols-4 gap-4 text-xs text-muted pb-2 border-b border-border/50">
                 <span>Category</span>
                 <span className="text-right">GST Credits</span>
                 <span className="text-center">Invoice</span>
@@ -116,16 +116,16 @@ export function InputTaxCredits({
                         <span className="text-xs text-zinc-600">N/A</span>
                       )}
                     </span>
-                    <span className="text-right text-zinc-400">{credit.transactionCount}</span>
+                    <span className="text-right text-secondary">{credit.transactionCount}</span>
                   </div>
                 );
               })}
               {/* Total */}
-              <div className="grid grid-cols-4 gap-4 pt-3 border-t border-white/10 text-sm font-semibold">
+              <div className="grid grid-cols-4 gap-4 pt-3 border-t border-border text-sm font-semibold">
                 <span>Total</span>
-                <span className="text-right text-[#FFCC00]">{formatCurrency(totalClaimable)}</span>
+                <span className="text-right text-cba-gold">{formatCurrency(totalClaimable)}</span>
                 <span />
-                <span className="text-right text-zinc-400">
+                <span className="text-right text-secondary">
                   {credits.reduce((sum, c) => sum + c.transactionCount, 0)}
                 </span>
               </div>

@@ -1,4 +1,13 @@
 import React, { useState, useEffect } from 'react';
+
+async function fetchDatasetList(baseUrl: string): Promise<string[]> {
+  const r = await fetch(`${baseUrl}/api/knowledge/datasets`);
+  if (!r.ok) return [];
+  const data = (await r.json()) as Array<Record<string, unknown> | string>;
+  return data
+    .map((d) => (typeof d === 'string' ? d : ((d.name ?? d.datasetName ?? '') as string)))
+    .filter(Boolean);
+}
 import { Network, Database, GitBranch, MessageSquare, BarChart3, Loader2 } from 'lucide-react';
 import { knowledgeApi } from '../../../api';
 import { KnowledgeGraphExplorer } from './KnowledgeGraphExplorer';
@@ -33,19 +42,14 @@ export function KnowledgeDashboard() {
 
   // Load datasets — initialized to true via useState(true), no sync setState needed
   useEffect(() => {
+    const baseUrl = (window as unknown as Record<string, string>).__BASE_URL ?? '';
     knowledgeApi
       .getGraph('', { maxNodes: 0 })
-      .then(() => {
-        // Attempt to load dataset list — fallback to placeholder if the endpoint doesn't exist yet
-        return fetch(`${(window as unknown as Record<string, string>).__BASE_URL || ''}/api/knowledge/datasets`)
-          .then((r) => (r.ok ? r.json() : []))
-          .catch(() => []);
-      })
-      .then((list: Array<Record<string, unknown> | string>) => {
-        const names = list.map((d) => (typeof d === 'string' ? d : (d.name || d.datasetName || '')) as string).filter(Boolean);
-        setDatasets(names.length > 0 ? names : ['transactions', 'gst-rulings', 'merchants']);
-        if (names.length > 0) setSelectedDataset(names[0]);
-        else setSelectedDataset('transactions');
+      .then(() => fetchDatasetList(baseUrl).catch(() => [] as string[]))
+      .then((names) => {
+        const list = names.length > 0 ? names : ['transactions', 'gst-rulings', 'merchants'];
+        setDatasets(list);
+        setSelectedDataset(list[0]);
       })
       .catch(() => {
         setDatasets(['transactions', 'gst-rulings', 'merchants']);
@@ -61,7 +65,7 @@ export function KnowledgeDashboard() {
       .graphStats(selectedDataset)
       .then((stats: Record<string, unknown>) => {
         setQuickStats([
-          { label: 'Total Nodes', value: stats.nodeCount ?? 0, color: 'text-[#FFCC00]' },
+          { label: 'Total Nodes', value: stats.nodeCount ?? 0, color: 'text-cba-gold' },
           { label: 'Total Edges', value: stats.edgeCount ?? 0, color: 'text-blue-400' },
           {
             label: 'DataPoints Active',
@@ -77,7 +81,7 @@ export function KnowledgeDashboard() {
       })
       .catch(() => {
         setQuickStats([
-          { label: 'Total Nodes', value: '-', color: 'text-[#FFCC00]' },
+          { label: 'Total Nodes', value: '-', color: 'text-cba-gold' },
           { label: 'Total Edges', value: '-', color: 'text-blue-400' },
           { label: 'DataPoints Active', value: '-', color: 'text-emerald-400' },
           { label: 'Feedback Score', value: '-', color: 'text-purple-400' },
@@ -91,22 +95,23 @@ export function KnowledgeDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Knowledge Graph</h2>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Explore, manage, and improve your AI knowledge base
           </p>
         </div>
         {/* Dataset Selector */}
         <div className="flex items-center gap-2">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+          <label htmlFor="knowledge-dataset-select" className="text-[10px] font-bold uppercase tracking-wider text-muted">
             Dataset:
           </label>
           {loadingDatasets ? (
-            <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
+            <Loader2 className="w-4 h-4 animate-spin text-muted" />
           ) : (
             <select
+              id="knowledge-dataset-select"
               value={selectedDataset}
               onChange={(e) => setSelectedDataset(e.target.value)}
-              className="neu-inset rounded-lg px-3 py-1.5 text-sm text-zinc-200 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="neu-inset rounded-lg px-3 py-1.5 text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             >
               {datasets.map((ds) => (
                 <option key={ds} value={ds}>
@@ -123,7 +128,7 @@ export function KnowledgeDashboard() {
         {quickStats.map((stat) => (
           <div key={stat.label} className="neu-raised rounded-xl p-3 text-center">
             <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
               {stat.label}
             </p>
           </div>
@@ -139,8 +144,8 @@ export function KnowledgeDashboard() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 whitespace-nowrap ${
               activeTab === tab.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
+                ? 'bg-cba-gold text-base shadow-[0_0_20px_rgba(255,204,0,0.2)]'
+                : 'text-secondary hover:text-zinc-100 hover:bg-overlay'
             }`}
           >
             <tab.icon className="w-4 h-4" />

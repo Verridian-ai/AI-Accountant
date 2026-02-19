@@ -26,13 +26,13 @@ function SortHeader({
 }) {
   return (
     <th
-      className="pb-2 font-medium cursor-pointer hover:text-[#FFCC00] transition-colors select-none"
+      className="pb-2 font-medium cursor-pointer hover:text-cba-gold transition-colors select-none"
       onClick={() => onSort(field)}
     >
       <span className="flex items-center gap-1 justify-end">
         {label}
         <ArrowUpDown
-          className={`h-3 w-3 ${sortKey === field ? 'text-[#FFCC00]' : 'text-zinc-600'}`}
+          className={`h-3 w-3 ${sortKey === field ? 'text-cba-gold' : 'text-zinc-600'}`}
         />
       </span>
     </th>
@@ -70,8 +70,8 @@ export function TrialBalance({ asAtDate }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FFCC00]" />
-        <span className="ml-3 text-zinc-400">Loading trial balance...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-cba-gold" />
+        <span className="ml-3 text-secondary">Loading trial balance...</span>
       </div>
     );
   }
@@ -82,7 +82,7 @@ export function TrialBalance({ asAtDate }: Props) {
 
   if (!data) {
     return (
-      <div className="neu-inset rounded-2xl p-6 text-center text-zinc-500">
+      <div className="neu-inset rounded-2xl p-6 text-center text-muted">
         Select a date to generate the Trial Balance.
       </div>
     );
@@ -116,7 +116,7 @@ export function TrialBalance({ asAtDate }: Props) {
             ? 'Trial Balance is balanced — Debits = Credits'
             : `Trial Balance is out by ${formatCurrency(data.difference)}`}
         </span>
-        <span className="ml-auto text-xs text-zinc-500">
+        <span className="ml-auto text-xs text-muted">
           As at {new Date(asAtDate).toLocaleDateString('en-AU')}
         </span>
       </div>
@@ -125,15 +125,15 @@ export function TrialBalance({ asAtDate }: Props) {
       <div className="neu-raised rounded-2xl p-5 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-zinc-500 border-b border-white/5">
+            <tr className="text-muted border-b border-border/50">
               <th
-                className="text-left pb-2 font-medium cursor-pointer hover:text-[#FFCC00] transition-colors"
+                className="text-left pb-2 font-medium cursor-pointer hover:text-cba-gold transition-colors"
                 onClick={() => handleSort('accountName')}
               >
                 <span className="flex items-center gap-1">
                   Account
                   <ArrowUpDown
-                    className={`h-3 w-3 ${sortKey === 'accountName' ? 'text-[#FFCC00]' : 'text-zinc-600'}`}
+                    className={`h-3 w-3 ${sortKey === 'accountName' ? 'text-cba-gold' : 'text-zinc-600'}`}
                   />
                 </span>
               </th>
@@ -146,9 +146,9 @@ export function TrialBalance({ asAtDate }: Props) {
             {entries.map((entry, idx) => (
               <tr
                 key={`${entry.accountName}-${idx}`}
-                className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                className="border-b border-border/50 hover:bg-overlay transition-colors"
               >
-                <td className="py-2 text-zinc-200">{entry.accountName}</td>
+                <td className="py-2 text-primary">{entry.accountName}</td>
                 <td className="py-2 text-right font-mono text-emerald-400">
                   {entry.debit > 0 ? formatCurrency(entry.debit) : '—'}
                 </td>
@@ -164,7 +164,7 @@ export function TrialBalance({ asAtDate }: Props) {
             ))}
           </tbody>
           <tfoot>
-            <tr className="border-t-2 border-[#FFCC00]/30">
+            <tr className="border-t-2 border-cba-gold/30">
               <td className="pt-3 font-bold text-zinc-100">Totals</td>
               <td className="pt-3 text-right font-bold font-mono text-emerald-400">
                 {formatCurrency(data.totalDebits)}
@@ -173,7 +173,7 @@ export function TrialBalance({ asAtDate }: Props) {
                 {formatCurrency(data.totalCredits)}
               </td>
               <td
-                className={`pt-3 text-right font-bold font-mono ${data.difference === 0 ? 'text-[#FFCC00]' : 'text-red-400'}`}
+                className={`pt-3 text-right font-bold font-mono ${data.difference === 0 ? 'text-cba-gold' : 'text-red-400'}`}
               >
                 {formatCurrency(data.difference)}
               </td>

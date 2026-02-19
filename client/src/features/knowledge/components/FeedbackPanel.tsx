@@ -77,7 +77,7 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -89,7 +89,7 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
         <button
           type="button"
           onClick={loadStats}
-          className="mt-3 text-xs text-[#FFCC00] hover:underline"
+          className="mt-3 text-xs text-cba-gold hover:underline"
         >
           Retry
         </button>
@@ -104,16 +104,16 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
       ? 'text-emerald-400'
       : stats?.trend === 'down'
         ? 'text-red-400'
-        : 'text-zinc-400';
+        : 'text-secondary';
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="neu-raised rounded-xl p-4 text-center">
-          <MessageSquare className="w-5 h-5 mx-auto mb-2 text-[#FFCC00]" />
+          <MessageSquare className="w-5 h-5 mx-auto mb-2 text-cba-gold" />
           <p className="text-2xl font-bold text-zinc-100">{stats?.totalCount ?? 0}</p>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
             Total Feedback
           </p>
         </div>
@@ -122,14 +122,14 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
           <p className="text-2xl font-bold text-zinc-100">
             {((stats?.accuracyRate ?? 0) * 100).toFixed(1)}%
           </p>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
             Accuracy Rate
           </p>
         </div>
         <div className="neu-raised rounded-xl p-4 text-center">
           <TrendIcon className={`w-5 h-5 mx-auto mb-2 ${trendColor}`} />
           <p className={`text-2xl font-bold ${trendColor}`}>{stats?.trend ?? 'N/A'}</p>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Trend</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted">Trend</p>
         </div>
       </div>
 
@@ -137,10 +137,10 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
       <div className="neu-raised rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h4 className="text-sm font-bold text-zinc-200 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-[#FFCC00]" /> Trigger Memify
+            <h4 className="text-sm font-bold text-primary flex items-center gap-2">
+              <Zap className="w-4 h-4 text-cba-gold" /> Trigger Memify
             </h4>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               Consolidate feedback into knowledge graph improvements
             </p>
           </div>
@@ -148,7 +148,7 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
             type="button"
             onClick={handleMemify}
             disabled={memifying}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-cba-gold/90 disabled:opacity-50 transition-colors"
           >
             {memifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
             {memifying ? 'Processing...' : 'Run Memify'}
@@ -166,17 +166,17 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
       {/* Feedback by Type */}
       {stats?.byType && Object.keys(stats.byType).length > 0 && (
         <div className="neu-raised rounded-xl p-4">
-          <h4 className="text-sm font-bold text-zinc-200 mb-3">By Type</h4>
+          <h4 className="text-sm font-bold text-primary mb-3">By Type</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Object.entries(stats.byType).map(([type, count]) => {
               const colors = FEEDBACK_TYPE_COLORS[type] ?? {
-                bg: 'bg-white/5',
-                text: 'text-zinc-400',
+                bg: 'bg-overlay',
+                text: 'text-secondary',
               };
               return (
                 <div key={type} className={`${colors.bg} rounded-lg p-3 text-center`}>
                   <p className={`text-lg font-bold ${colors.text}`}>{count}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
                     {type}
                   </p>
                 </div>
@@ -189,11 +189,11 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
       {/* Recent Feedback */}
       <div className="neu-raised rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-bold text-zinc-200">Recent Feedback</h4>
+          <h4 className="text-sm font-bold text-primary">Recent Feedback</h4>
           <button
             type="button"
             onClick={loadStats}
-            className="text-zinc-400 hover:text-[#FFCC00] transition-colors"
+            className="text-secondary hover:text-cba-gold transition-colors"
             aria-label="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -201,17 +201,17 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
         </div>
         <div className="space-y-2 max-h-80 overflow-y-auto">
           {(stats?.recent ?? []).length === 0 ? (
-            <p className="text-xs text-zinc-500 text-center py-4">No feedback yet</p>
+            <p className="text-xs text-muted text-center py-4">No feedback yet</p>
           ) : (
             stats!.recent.map((item) => {
               const colors = FEEDBACK_TYPE_COLORS[item.feedbackType] ?? {
-                bg: 'bg-white/5',
-                text: 'text-zinc-400',
+                bg: 'bg-overlay',
+                text: 'text-secondary',
               };
               return (
                 <div
                   key={item.id}
-                  className="flex items-start gap-3 py-2 border-b border-white/5 last:border-0"
+                  className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0"
                 >
                   <span
                     className={`shrink-0 mt-0.5 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${colors.bg} ${colors.text}`}
@@ -219,7 +219,7 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
                     {item.feedbackType}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-zinc-300 truncate">
+                    <p className="text-xs text-primary truncate">
                       {item.details || `Feedback on ${item.entityType}`}
                     </p>
                     <p className="text-[10px] text-zinc-600 mt-0.5">

@@ -44,7 +44,7 @@ const generateQuarters = (): { value: string; label: string }[] => {
 
 function VarianceCell({ change, variance }: { change: number; variance: number }) {
   const absVariance = Math.abs(variance);
-  let color = 'text-zinc-300';
+  let color = 'text-primary';
   if (absVariance > 50) color = 'text-red-400';
   else if (absVariance > 20) color = 'text-amber-400';
 
@@ -130,7 +130,7 @@ export function BASComparison() {
           </SelectContent>
         </Select>
 
-        <span className="text-zinc-500 text-sm">vs</span>
+        <span className="text-muted text-sm">vs</span>
 
         <Select value={quarterB} onValueChange={setQuarterB}>
           <SelectTrigger className="w-[180px]">
@@ -149,7 +149,7 @@ export function BASComparison() {
       {loading ? (
         <Card className="neu-raised rounded-xl">
           <CardContent className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+            <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
           </CardContent>
         </Card>
       ) : data ? (
@@ -160,7 +160,7 @@ export function BASComparison() {
           <CardContent>
             <div className="space-y-0.5">
               {/* Header */}
-              <div className="grid grid-cols-5 gap-2 text-xs text-zinc-500 pb-2 border-b border-white/5">
+              <div className="grid grid-cols-5 gap-2 text-xs text-muted pb-2 border-b border-border/50">
                 <span>Label</span>
                 <span className="text-right">{data.periodA.quarter}</span>
                 <span className="text-right">{data.periodB.quarter}</span>
@@ -181,13 +181,13 @@ export function BASComparison() {
                       }`}
                   >
                     <div>
-                      <span className="font-mono text-xs text-[#FFCC00] mr-2">{label}</span>
-                      <span className="text-xs text-zinc-500">{BAS_LABELS[label] || ''}</span>
+                      <span className="font-mono text-xs text-cba-gold mr-2">{label}</span>
+                      <span className="text-xs text-muted">{BAS_LABELS[label] || ''}</span>
                     </div>
                     <span className="text-right font-medium">{formatCurrency(valA)}</span>
                     <span className="text-right font-medium">{formatCurrency(valB)}</span>
                     <span
-                      className={`text-right text-xs ${change > 0 ? 'text-emerald-400' : change < 0 ? 'text-red-400' : 'text-zinc-500'}`}
+                      className={`text-right text-xs ${change > 0 ? 'text-emerald-400' : change < 0 ? 'text-red-400' : 'text-muted'}`}
                     >
                       {change === 0 ? '-' : formatCurrency(change)}
                     </span>
@@ -198,7 +198,7 @@ export function BASComparison() {
             </div>
 
             {/* Legend */}
-            <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-4 text-[10px] text-zinc-600">
+            <div className="mt-4 pt-3 border-t border-border/50 flex items-center gap-4 text-[10px] text-zinc-600">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-amber-500/30" /> &gt;20% variance
               </span>
@@ -210,7 +210,7 @@ export function BASComparison() {
         </Card>
       ) : (
         <Card className="neu-raised rounded-xl">
-          <CardContent className="text-center py-12 text-zinc-500">
+          <CardContent className="text-center py-12 text-muted">
             Select two periods to compare
           </CardContent>
         </Card>

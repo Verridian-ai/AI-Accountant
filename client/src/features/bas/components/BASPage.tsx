@@ -9,7 +9,7 @@ export function BASPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">BAS Reporting</h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Calculate, pre-fill, and compare your Business Activity Statements
         </p>
       </div>

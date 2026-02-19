@@ -25,23 +25,23 @@ export function StreamingMessage({ tokens, isComplete, agentType }: StreamingMes
   return (
     <div
       ref={containerRef}
-      className="neu-raised rounded-2xl rounded-bl-none px-4 py-3 border border-white/5 max-w-[85%]"
+      className="neu-raised rounded-2xl rounded-bl-none px-4 py-3 border border-border/50 max-w-[85%]"
     >
       {/* Agent type badge */}
       {agentType && (
         <div className="flex items-center gap-1.5 mb-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#FFCC00] animate-pulse" />
-          <span className="text-[8px] font-black uppercase tracking-widest text-[#FFCC00]/70">
+          <div className="w-1.5 h-1.5 rounded-full bg-cba-gold animate-pulse" />
+          <span className="text-[8px] font-black uppercase tracking-widest text-cba-gold/70">
             {agentType.replace(/_/g, ' ')}
           </span>
         </div>
       )}
 
       {/* Streaming text with cursor */}
-      <div className="text-xs font-medium text-zinc-200 leading-relaxed whitespace-pre-wrap">
+      <div className="text-xs font-medium text-primary leading-relaxed whitespace-pre-wrap">
         {displayText}
         {!isComplete && (
-          <span className="inline-block w-0.5 h-3.5 bg-[#FFCC00] ml-0.5 align-middle animate-blink" />
+          <span className="inline-block w-0.5 h-3.5 bg-cba-gold ml-0.5 align-middle animate-blink" />
         )}
       </div>
 
@@ -50,15 +50,15 @@ export function StreamingMessage({ tokens, isComplete, agentType }: StreamingMes
         <div className="flex items-center gap-1.5 mt-2">
           <div className="flex gap-0.5">
             <span
-              className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce"
+              className="w-1 h-1 rounded-full bg-cba-gold/50 animate-bounce"
               style={{ animationDelay: '0ms' }}
             />
             <span
-              className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce"
+              className="w-1 h-1 rounded-full bg-cba-gold/50 animate-bounce"
               style={{ animationDelay: '150ms' }}
             />
             <span
-              className="w-1 h-1 rounded-full bg-[#FFCC00]/50 animate-bounce"
+              className="w-1 h-1 rounded-full bg-cba-gold/50 animate-bounce"
               style={{ animationDelay: '300ms' }}
             />
           </div>

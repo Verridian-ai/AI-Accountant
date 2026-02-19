@@ -82,7 +82,7 @@ export function AssetDisposalForm({ assets, onSuccess }: AssetDisposalFormProps)
   };
 
   return (
-    <Card className="neu-raised border-white/5">
+    <Card className="neu-raised border-border/50">
       <CardHeader>
         <CardTitle className="text-lg font-bold text-zinc-100 flex items-center gap-2">
           <Trash2 className="w-5 h-5 text-red-400" />
@@ -91,7 +91,7 @@ export function AssetDisposalForm({ assets, onSuccess }: AssetDisposalFormProps)
       </CardHeader>
       <CardContent className="space-y-6">
         {activeAssets.length === 0 ? (
-          <p className="text-zinc-500 text-center py-8">No active assets available for disposal</p>
+          <p className="text-muted text-center py-8">No active assets available for disposal</p>
         ) : (
           <>
             <div className="grid gap-4 md:grid-cols-2">
@@ -172,24 +172,24 @@ export function AssetDisposalForm({ assets, onSuccess }: AssetDisposalFormProps)
 
             {selectedAsset && (
               <div className="neu-inset rounded-xl p-4 space-y-3">
-                <p className="text-sm font-bold text-zinc-300">Disposal Summary</p>
+                <p className="text-sm font-bold text-primary">Disposal Summary</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-zinc-500 text-xs">Purchase Price</p>
-                    <p className="font-mono text-zinc-200">
+                    <p className="text-muted text-xs">Purchase Price</p>
+                    <p className="font-mono text-primary">
                       {formatCurrency(selectedAsset.purchasePrice)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-zinc-500 text-xs">WDV at Disposal</p>
-                    <p className="font-mono text-[#FFCC00]">{formatCurrency(wdvAtDisposal)}</p>
+                    <p className="text-muted text-xs">WDV at Disposal</p>
+                    <p className="font-mono text-cba-gold">{formatCurrency(wdvAtDisposal)}</p>
                   </div>
                   <div>
-                    <p className="text-zinc-500 text-xs">Proceeds</p>
-                    <p className="font-mono text-zinc-200">{formatCurrency(proceedsCents)}</p>
+                    <p className="text-muted text-xs">Proceeds</p>
+                    <p className="font-mono text-primary">{formatCurrency(proceedsCents)}</p>
                   </div>
                   <div>
-                    <p className="text-zinc-500 text-xs">
+                    <p className="text-muted text-xs">
                       {gainLoss >= 0 ? 'Profit' : 'Loss'} on Disposal
                     </p>
                     <p
@@ -216,7 +216,7 @@ export function AssetDisposalForm({ assets, onSuccess }: AssetDisposalFormProps)
             <Button
               onClick={handleSubmit}
               disabled={submitting || !selectedAssetId || !disposalDate || !disposalMethod}
-              className="bg-red-500/80 hover:bg-red-500 text-white font-bold"
+              className="bg-red-500/80 hover:bg-red-500 text-primary font-bold"
             >
               {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Confirm Disposal

@@ -19,7 +19,7 @@ interface Ontology {
 }
 
 const TYPE_BADGE_COLORS: Record<string, string> = {
-  financial: 'bg-[#FFCC00]/10 text-[#FFCC00]',
+  financial: 'bg-cba-gold/10 text-cba-gold',
   generic: 'bg-blue-500/10 text-blue-400',
   custom: 'bg-purple-500/10 text-purple-400',
   domain: 'bg-emerald-500/10 text-emerald-400',
@@ -102,7 +102,7 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -111,11 +111,11 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-bold text-zinc-200">Ontologies ({ontologies.length})</h4>
+        <h4 className="text-sm font-bold text-primary">Ontologies ({ontologies.length})</h4>
         <button
           type="button"
           onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-cba-gold text-base hover:bg-cba-gold/90 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" /> Create Ontology
         </button>
@@ -125,11 +125,11 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
 
       {/* Create Modal */}
       {showCreate && (
-        <div className="neu-raised rounded-xl p-4 border border-[#FFCC00]/20 space-y-3">
-          <h4 className="text-sm font-bold text-zinc-200">New Ontology</h4>
+        <div className="neu-raised rounded-xl p-4 border border-cba-gold/20 space-y-3">
+          <h4 className="text-sm font-bold text-primary">New Ontology</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Name
               </label>
               <input
@@ -137,17 +137,17 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Financial Ontology"
-                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Type
               </label>
               <select
                 value={form.ontologyType}
                 onChange={(e) => setForm({ ...form, ontologyType: e.target.value })}
-                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 <option value="custom">Custom</option>
                 <option value="financial">Financial</option>
@@ -157,7 +157,7 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
               Description
             </label>
             <textarea
@@ -165,12 +165,12 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Describe the ontology purpose..."
               rows={2}
-              className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30 resize-none"
+              className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30 resize-none"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Node Types (comma-separated)
               </label>
               <input
@@ -178,11 +178,11 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
                 value={form.nodeTypes}
                 onChange={(e) => setForm({ ...form, nodeTypes: e.target.value })}
                 placeholder="entity, concept, document"
-                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Edge Types (comma-separated)
               </label>
               <input
@@ -190,7 +190,7 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
                 value={form.edgeTypes}
                 onChange={(e) => setForm({ ...form, edgeTypes: e.target.value })}
                 placeholder="related_to, part_of"
-                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               />
             </div>
           </div>
@@ -198,7 +198,7 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
             <button
               type="button"
               onClick={() => setShowCreate(false)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-secondary hover:text-primary transition-colors"
             >
               Cancel
             </button>
@@ -206,7 +206,7 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
               type="button"
               onClick={handleCreate}
               disabled={creating || !form.name.trim()}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-cba-gold text-base hover:bg-cba-gold/90 disabled:opacity-50 transition-colors"
             >
               {creating ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -223,14 +223,14 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
       {ontologies.length === 0 ? (
         <div className="neu-inset rounded-xl p-8 text-center">
           <GitBranch className="w-8 h-8 mx-auto mb-3 text-zinc-600" />
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             No ontologies yet. Create one to structure your knowledge graph.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {ontologies.map((ont) => {
-            const badgeClass = TYPE_BADGE_COLORS[ont.ontologyType] ?? 'bg-white/5 text-zinc-400';
+            const badgeClass = TYPE_BADGE_COLORS[ont.ontologyType] ?? 'bg-overlay text-secondary';
             return (
               <div key={ont.id} className="neu-raised rounded-xl p-4 space-y-3">
                 <div className="flex items-start justify-between">
@@ -245,9 +245,9 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
                   <span className="text-[10px] text-zinc-600">v{ont.version}</span>
                 </div>
                 {ont.description && (
-                  <p className="text-xs text-zinc-400 line-clamp-2">{ont.description}</p>
+                  <p className="text-xs text-secondary line-clamp-2">{ont.description}</p>
                 )}
-                <div className="flex items-center gap-4 text-xs text-zinc-500">
+                <div className="flex items-center gap-4 text-xs text-muted">
                   <span>{ont.nodeCount} nodes</span>
                   <span>{ont.edgeCount} edges</span>
                 </div>
@@ -256,7 +256,7 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
                     {ont.appliedDatasets.map((ds) => (
                       <span
                         key={ds}
-                        className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-zinc-400"
+                        className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-overlay text-secondary"
                       >
                         {ds}
                       </span>
@@ -274,13 +274,13 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
                       setApplying(ont.id);
                       setApplyDataset(e.target.value);
                     }}
-                    className="flex-1 neu-inset rounded-lg px-2 py-1 text-xs text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                    className="flex-1 neu-inset rounded-lg px-2 py-1 text-xs text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
                   />
                   <button
                     type="button"
                     onClick={() => handleApply(ont.id)}
                     disabled={applying !== ont.id || !applyDataset.trim()}
-                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 disabled:opacity-30 transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-cba-gold hover:bg-cba-gold/10 disabled:opacity-30 transition-colors"
                   >
                     <ArrowRight className="w-3 h-3" /> Apply
                   </button>

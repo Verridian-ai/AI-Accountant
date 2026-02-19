@@ -121,7 +121,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
           <button
             onClick={() => addScenario()}
             disabled={scenarios.length >= 5}
-            className="neu-raised-sm px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-[#FFCC00] transition-colors disabled:opacity-30 flex items-center gap-1.5"
+            className="neu-raised-sm px-3 py-1.5 rounded-xl text-xs font-bold text-secondary hover:text-cba-gold transition-colors disabled:opacity-30 flex items-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             Add
@@ -129,7 +129,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
           <button
             onClick={runComparison}
             disabled={loading || !scenarios.some((s) => s.forecastId)}
-            className="neu-raised-sm px-4 py-1.5 rounded-xl text-xs font-bold bg-[#FFCC00]/10 text-[#FFCC00] hover:bg-[#FFCC00]/20 transition-colors disabled:opacity-30 flex items-center gap-1.5"
+            className="neu-raised-sm px-4 py-1.5 rounded-xl text-xs font-bold bg-cba-gold/10 text-cba-gold hover:bg-cba-gold/20 transition-colors disabled:opacity-30 flex items-center gap-1.5"
           >
             <GitCompareArrows className="w-3.5 h-3.5" />
             Compare
@@ -141,14 +141,14 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Templates */}
         <div className="neu-inset rounded-2xl p-4">
-          <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Templates</p>
+          <p className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">Templates</p>
           <div className="space-y-2">
             {TEMPLATES.map((t) => (
               <button
                 key={t.id}
                 onClick={() => addScenario({ ...t })}
                 disabled={scenarios.length >= 5}
-                className="w-full text-left neu-raised-sm px-3 py-2 rounded-xl text-sm text-zinc-300 hover:text-[#FFCC00] hover:border-[#FFCC00]/20 border border-transparent transition-colors disabled:opacity-30"
+                className="w-full text-left neu-raised-sm px-3 py-2 rounded-xl text-sm text-primary hover:text-cba-gold hover:border-cba-gold/20 border border-transparent transition-colors disabled:opacity-30"
               >
                 {t.name}
               </button>
@@ -172,7 +172,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
               {scenarios.length > 1 && (
                 <button
                   onClick={() => removeScenario(scenario.id)}
-                  className="text-zinc-500 hover:text-red-400 text-xs ml-2 shrink-0"
+                  className="text-muted hover:text-red-400 text-xs ml-2 shrink-0"
                 >
                   Remove
                 </button>
@@ -183,7 +183,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
               <div>
                 <label
                   htmlFor={`sc-forecast-${scenario.id}`}
-                  className="text-[11px] text-zinc-500 block mb-1"
+                  className="text-[11px] text-muted block mb-1"
                 >
                   Forecast
                 </label>
@@ -193,7 +193,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
                   onChange={(e) =>
                     updateScenario(scenario.id, { forecastId: e.target.value || null })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-sm text-zinc-300 outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                  className="w-full bg-overlay border border-border rounded-xl px-3 py-1.5 text-sm text-primary outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
                 >
                   <option value="">Select forecast...</option>
                   {forecasts.map((f) => (
@@ -207,7 +207,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
               <div>
                 <label
                   htmlFor={`sc-inflow-${scenario.id}`}
-                  className="text-[11px] text-zinc-500 flex justify-between mb-1"
+                  className="text-[11px] text-muted flex justify-between mb-1"
                 >
                   <span>Inflow Adj.</span>
                   <span
@@ -235,7 +235,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
               <div>
                 <label
                   htmlFor={`sc-outflow-${scenario.id}`}
-                  className="text-[11px] text-zinc-500 flex justify-between mb-1"
+                  className="text-[11px] text-muted flex justify-between mb-1"
                 >
                   <span>Outflow Adj.</span>
                   <span
@@ -267,10 +267,10 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
       {/* Comparison Chart */}
       {comparisonData && comparisonData.length > 0 && (
         <div className="neu-raised rounded-2xl p-4 sm:p-6">
-          <h4 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-4">
+          <h4 className="text-sm font-bold text-secondary uppercase tracking-wider mb-4">
             Net Cash Flow Comparison
           </h4>
-          <Suspense fallback={<div className="h-[320px] animate-pulse bg-white/5 rounded-xl" />}>
+          <Suspense fallback={<div className="h-[320px] animate-pulse bg-overlay rounded-xl" />}>
             <ScenarioComparerChart
               data={comparisonData}
               scenarios={scenarios.map((s) => ({ id: s.id, name: s.name }))}
@@ -280,7 +280,7 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
       )}
 
       {comparisonData && comparisonData.length === 0 && (
-        <div className="neu-inset rounded-2xl p-8 text-center text-zinc-500">
+        <div className="neu-inset rounded-2xl p-8 text-center text-muted">
           <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-40" />
           <p className="text-sm">No comparison data available</p>
         </div>
@@ -302,11 +302,11 @@ export function ScenarioComparer({ userId }: ScenarioComparerProps) {
                 <p className="text-sm font-bold text-zinc-100 mb-2">{s.name}</p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-zinc-500">Total Net</span>
+                    <span className="text-muted">Total Net</span>
                     <p className="font-bold text-zinc-100">{formatDollar(total)}</p>
                   </div>
                   <div>
-                    <span className="text-zinc-500">Avg/Period</span>
+                    <span className="text-muted">Avg/Period</span>
                     <p className="font-bold text-zinc-100">{formatDollar(avg)}</p>
                   </div>
                 </div>

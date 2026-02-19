@@ -116,10 +116,11 @@ export function CategorySelect({
         aria-label={ariaLabel}
         aria-expanded={open}
         aria-haspopup="listbox"
+        aria-controls="category-listbox"
         onClick={() => setOpen(!open)}
         onKeyDown={handleKeyDown}
         className={cn(
-          'w-full neu-inset rounded-xl text-[#FFCC00] font-bold bg-transparent border-none focus-gold cursor-pointer pr-10 text-left flex items-center gap-2',
+          'w-full neu-inset rounded-xl text-cba-gold font-bold bg-transparent border-none focus-gold cursor-pointer pr-10 text-left flex items-center gap-2',
           sizeClasses[size],
           className,
         )}
@@ -130,7 +131,7 @@ export function CategorySelect({
         <span className="truncate">{value || 'Select...'}</span>
         <ChevronDown
           className={cn(
-            'absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#FFCC00]/50 transition-transform',
+            'absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cba-gold/50 transition-transform',
             open && 'rotate-180',
           )}
         />
@@ -138,27 +139,27 @@ export function CategorySelect({
 
       {open && (
         <ul
+          id="category-listbox"
           ref={listRef}
           role="listbox"
           aria-label={ariaLabel}
-          className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto neu-raised rounded-xl border border-white/10 bg-[#12121a] shadow-2xl scrollbar-thin animate-in fade-in zoom-in-95 duration-150"
+          className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto neu-raised rounded-xl border border-border bg-surface shadow-2xl scrollbar-thin animate-in fade-in zoom-in-95 duration-150"
           onKeyDown={handleKeyDown}
         >
           {includeAll && (
             <li
               role="option"
               aria-selected={value === 'All'}
+              tabIndex={-1}
               className={cn(
                 'px-4 py-2.5 text-xs font-bold cursor-pointer transition-colors',
                 value === 'All'
-                  ? 'text-[#FFCC00] bg-[#FFCC00]/5'
-                  : 'text-zinc-300 hover:bg-white/5',
-                highlightIndex === 0 && 'bg-white/10',
+                  ? 'text-cba-gold bg-cba-gold/5'
+                  : 'text-primary hover:bg-overlay',
+                highlightIndex === 0 && 'bg-overlay-hover',
               )}
-              onClick={() => {
-                onChange('All');
-                setOpen(false);
-              }}
+              onClick={() => { onChange('All'); setOpen(false); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange('All'); setOpen(false); } }}
             >
               All Categories
             </li>
@@ -180,17 +181,16 @@ export function CategorySelect({
                       key={cat}
                       role="option"
                       aria-selected={value === cat}
+                      tabIndex={-1}
                       className={cn(
                         'px-4 py-2 text-xs font-bold cursor-pointer transition-colors flex items-center gap-2',
                         value === cat
-                          ? 'text-[#FFCC00] bg-[#FFCC00]/5'
-                          : 'text-zinc-300 hover:bg-white/5',
-                        highlightIndex === flatIndex && 'bg-white/10',
+                          ? 'text-cba-gold bg-cba-gold/5'
+                          : 'text-primary hover:bg-overlay',
+                        highlightIndex === flatIndex && 'bg-overlay-hover',
                       )}
-                      onClick={() => {
-                        onChange(cat);
-                        setOpen(false);
-                      }}
+                      onClick={() => { onChange(cat); setOpen(false); }}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(cat); setOpen(false); } }}
                     >
                       <span className={cn('w-2 h-2 rounded-full shrink-0', color.dot)} />
                       {cat}

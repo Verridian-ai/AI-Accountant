@@ -57,12 +57,12 @@ export function AccountSwitcher({
         disabled={loading}
         className={cn(
           'flex items-center gap-2 px-3 py-2 rounded-xl neu-raised border transition-all w-full sm:w-auto',
-          selectedAccountId ? 'border-[#FFCC00]/20' : 'border-white/5',
-          'hover:border-[#FFCC00]/30',
+          selectedAccountId ? 'border-cba-gold/20' : 'border-border/50',
+          'hover:border-cba-gold/30',
         )}
       >
-        <Icon className="w-4 h-4 text-[#FFCC00]" />
-        <span className="text-xs font-black text-zinc-200 uppercase tracking-tight truncate max-w-[160px]">
+        <Icon className="w-4 h-4 text-cba-gold" />
+        <span className="text-xs font-black text-primary uppercase tracking-tight truncate max-w-[160px]">
           {loading ? 'Loading...' : selectedAccount?.accountName || 'All Accounts'}
         </span>
         {selectedAccount && (
@@ -71,14 +71,14 @@ export function AccountSwitcher({
           </Badge>
         )}
         <ChevronDown
-          className={cn('w-3 h-3 text-zinc-500 transition-transform', isOpen && 'rotate-180')}
+          className={cn('w-3 h-3 text-muted transition-transform', isOpen && 'rotate-180')}
         />
       </button>
 
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 mt-2 z-50 w-72 neu-raised rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+          <div className="absolute top-full left-0 mt-2 z-50 w-72 neu-raised rounded-2xl border border-border/50 overflow-hidden shadow-2xl">
             {/* All Accounts option */}
             <button
               type="button"
@@ -87,10 +87,10 @@ export function AccountSwitcher({
                 setIsOpen(false);
               }}
               className={cn(
-                'w-full flex items-center gap-3 px-4 py-3 transition-all border-b border-white/5',
+                'w-full flex items-center gap-3 px-4 py-3 transition-all border-b border-border/50',
                 !selectedAccountId
-                  ? 'bg-[#FFCC00]/5 text-[#FFCC00]'
-                  : 'text-zinc-300 hover:bg-white/5',
+                  ? 'bg-cba-gold/5 text-cba-gold'
+                  : 'text-primary hover:bg-overlay',
               )}
             >
               <Filter className="w-4 h-4" />
@@ -117,14 +117,14 @@ export function AccountSwitcher({
                       setIsOpen(false);
                     }}
                     className={cn(
-                      'w-full flex items-center gap-3 px-4 py-3 transition-all border-b border-white/5 last:border-0',
-                      isSelected ? 'bg-[#FFCC00]/5' : 'hover:bg-white/5',
+                      'w-full flex items-center gap-3 px-4 py-3 transition-all border-b border-border/50 last:border-0',
+                      isSelected ? 'bg-cba-gold/5' : 'hover:bg-overlay',
                     )}
                   >
                     <div
                       className={cn(
                         'neu-inset p-2 rounded-lg',
-                        isSelected ? 'text-[#FFCC00]' : 'text-zinc-500',
+                        isSelected ? 'text-cba-gold' : 'text-muted',
                       )}
                     >
                       <AccIcon className="w-4 h-4" />
@@ -134,7 +134,7 @@ export function AccountSwitcher({
                         <p
                           className={cn(
                             'text-xs font-black uppercase tracking-tight truncate',
-                            isSelected ? 'text-[#FFCC00]' : 'text-zinc-200',
+                            isSelected ? 'text-cba-gold' : 'text-primary',
                           )}
                         >
                           {account.accountName}

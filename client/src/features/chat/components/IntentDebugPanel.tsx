@@ -24,7 +24,7 @@ export function IntentDebugPanel({
   return (
     <div className="neu-inset rounded-lg px-3 py-2 mt-2 space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">
+        <span className="text-[8px] font-black text-muted uppercase tracking-widest">
           Intent Debug
         </span>
         <span className="text-[8px] font-bold text-zinc-600 uppercase">
@@ -32,19 +32,19 @@ export function IntentDebugPanel({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-[8px] font-bold text-zinc-500 w-16 shrink-0">Confidence</span>
+        <span className="text-[8px] font-bold text-muted w-16 shrink-0">Confidence</span>
         <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
           <div
             className={cn('h-full rounded-full transition-all', barColor)}
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="text-[8px] font-black text-zinc-400 w-8 text-right">{pct}%</span>
+        <span className="text-[8px] font-black text-secondary w-8 text-right">{pct}%</span>
       </div>
       {agentType && (
         <div className="flex items-center justify-between">
-          <span className="text-[8px] font-bold text-zinc-500">Agent</span>
-          <span className="text-[8px] font-bold text-[#FFCC00]/70">{agentType}</span>
+          <span className="text-[8px] font-bold text-muted">Agent</span>
+          <span className="text-[8px] font-bold text-cba-gold/70">{agentType}</span>
         </div>
       )}
     </div>

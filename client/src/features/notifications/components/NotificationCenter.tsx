@@ -145,26 +145,26 @@ export function NotificationCenter() {
         title="Notifications"
         aria-label="View notifications"
         onClick={() => setIsOpen(!isOpen)}
-        className="neu-raised-sm p-2 text-zinc-400 hover:text-[#FFCC00] hover:cba-gold-glow rounded-xl btn-press relative"
+        className="neu-raised-sm p-2 text-secondary hover:text-cba-gold hover:cba-gold-glow rounded-xl btn-press relative"
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold rounded-full bg-[#FFCC00] text-black px-1">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold rounded-full bg-cba-gold text-black px-1">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-h-[70vh] overflow-y-auto neu-raised rounded-2xl border border-[#FFCC00]/10 bg-[#0d0d14]/98 backdrop-blur-xl z-50 shadow-2xl">
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-h-[70vh] overflow-y-auto neu-raised rounded-2xl border border-cba-gold/10 bg-[#0d0d14]/98 backdrop-blur-xl z-50 shadow-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-[#FFCC00]/10">
-            <h3 className="text-sm font-bold text-zinc-200">Notifications</h3>
+          <div className="flex items-center justify-between p-4 border-b border-cba-gold/10">
+            <h3 className="text-sm font-bold text-primary">Notifications</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
-                  className="text-[10px] font-bold text-[#FFCC00] hover:text-[#FFCC00]/80 uppercase tracking-wider"
+                  className="text-[10px] font-bold text-cba-gold hover:text-cba-gold/80 uppercase tracking-wider"
                 >
                   Mark all read
                 </button>
@@ -172,7 +172,7 @@ export function NotificationCenter() {
               {notifications.length > 0 && (
                 <button
                   onClick={clearAll}
-                  className="text-zinc-500 hover:text-red-400 p-1"
+                  className="text-muted hover:text-red-400 p-1"
                   title="Clear all"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -180,7 +180,7 @@ export function NotificationCenter() {
               )}
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-zinc-500 hover:text-zinc-300 p-1"
+                className="text-muted hover:text-primary p-1"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -189,7 +189,7 @@ export function NotificationCenter() {
 
           {/* Notification list */}
           {notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
+            <div className="flex flex-col items-center justify-center py-12 text-muted">
               <Bell className="h-10 w-10 mb-3 opacity-30" />
               <p className="text-sm">No notifications yet</p>
             </div>
@@ -204,7 +204,7 @@ export function NotificationCenter() {
                     <button
                       key={notif.id}
                       onClick={() => handleClick(notif)}
-                      className={`w-full text-left px-4 py-3 hover:bg-[#FFCC00]/5 transition-colors flex items-start gap-3 ${!notif.read ? 'bg-[#FFCC00]/[0.02]' : ''}`}
+                      className={`w-full text-left px-4 py-3 hover:bg-cba-gold/5 transition-colors flex items-start gap-3 ${!notif.read ? 'bg-cba-gold/[0.02]' : ''}`}
                     >
                       <span className="text-lg shrink-0 mt-0.5">
                         {categoryIcons[notif.category] ?? '🔔'}
@@ -212,15 +212,15 @@ export function NotificationCenter() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`text-xs font-semibold truncate ${!notif.read ? 'text-zinc-200' : 'text-zinc-400'}`}
+                            className={`text-xs font-semibold truncate ${!notif.read ? 'text-primary' : 'text-secondary'}`}
                           >
                             {notif.title}
                           </span>
                           {!notif.read && (
-                            <span className="w-2 h-2 rounded-full bg-[#FFCC00] shrink-0" />
+                            <span className="w-2 h-2 rounded-full bg-cba-gold shrink-0" />
                           )}
                         </div>
-                        <p className="text-[11px] text-zinc-500 truncate mt-0.5">{notif.body}</p>
+                        <p className="text-[11px] text-muted truncate mt-0.5">{notif.body}</p>
                         <span className="text-[10px] text-zinc-600 mt-1 block">
                           {formatTimestamp(notif.timestamp)}
                         </span>

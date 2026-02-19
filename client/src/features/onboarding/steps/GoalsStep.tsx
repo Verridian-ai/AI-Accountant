@@ -57,27 +57,27 @@ export function GoalsStep({ data, updateData }: OnboardingStepProps) {
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
           <span className="text-gradient-gold">What are your financial goals?</span>
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Select the goals that matter most to you. We'll customize your dashboard and insights.
         </p>
       </div>
 
       {/* AI Recommendations */}
       {recommendedGoals.length > 0 && (
-        <div className="neu-inset rounded-2xl p-5 border border-[#FFCC00]/10 bg-[#FFCC00]/[0.02]">
+        <div className="neu-inset rounded-2xl p-5 border border-cba-gold/10 bg-cba-gold/[0.02]">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-4 h-4 text-[#FFCC00]" />
-            <span className="text-[10px] font-black uppercase text-[#FFCC00] tracking-widest">
+            <Sparkles className="w-4 h-4 text-cba-gold" />
+            <span className="text-[10px] font-black uppercase text-cba-gold tracking-widest">
               Recommended for you
             </span>
           </div>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-secondary">
             Based on your profile as{' '}
             {data.entityType === 'individual'
               ? 'an individual'
               : `a ${data.entityType.replace('_', ' ')}`}
             {data.isRegisteredForGst && ' registered for GST'}, we recommend focusing on:{' '}
-            <span className="text-zinc-200">
+            <span className="text-primary">
               {recommendedGoals
                 .map((id) => {
                   const goal = FINANCIAL_GOALS.find((g) => g.id === id);
@@ -104,15 +104,15 @@ export function GoalsStep({ data, updateData }: OnboardingStepProps) {
               className={cn(
                 'relative p-5 rounded-2xl border text-left transition-all btn-press group',
                 isSelected
-                  ? 'border-[#FFCC00]/30 bg-[#FFCC00]/10'
-                  : 'neu-raised-sm border-white/5 hover:border-white/10',
+                  ? 'border-cba-gold/30 bg-cba-gold/10'
+                  : 'neu-raised-sm border-border/50 hover:border-border',
               )}
             >
               {/* Selection indicator */}
               <div
                 className={cn(
                   'absolute top-4 right-4 w-6 h-6 rounded-lg flex items-center justify-center transition-all',
-                  isSelected ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'bg-white/5 border border-white/10',
+                  isSelected ? 'bg-cba-gold text-base' : 'bg-overlay border border-border',
                 )}
               >
                 {isSelected && <Check className="w-4 h-4" />}
@@ -120,9 +120,9 @@ export function GoalsStep({ data, updateData }: OnboardingStepProps) {
 
               {/* Recommended badge */}
               {isRecommended && !isSelected && (
-                <div className="absolute top-4 right-12 flex items-center gap-1 px-2 py-1 rounded-md bg-[#FFCC00]/10 border border-[#FFCC00]/20">
-                  <Sparkles className="w-3 h-3 text-[#FFCC00]" />
-                  <span className="text-[8px] font-bold uppercase text-[#FFCC00] tracking-wider">
+                <div className="absolute top-4 right-12 flex items-center gap-1 px-2 py-1 rounded-md bg-cba-gold/10 border border-cba-gold/20">
+                  <Sparkles className="w-3 h-3 text-cba-gold" />
+                  <span className="text-[8px] font-bold uppercase text-cba-gold tracking-wider">
                     Recommended
                   </span>
                 </div>
@@ -132,7 +132,7 @@ export function GoalsStep({ data, updateData }: OnboardingStepProps) {
               <div
                 className={cn(
                   'neu-inset p-3 rounded-xl w-fit mb-4 transition-colors',
-                  isSelected ? 'text-[#FFCC00]' : 'text-zinc-500 group-hover:text-zinc-400',
+                  isSelected ? 'text-cba-gold' : 'text-muted group-hover:text-secondary',
                 )}
               >
                 <Icon className="w-6 h-6" />
@@ -142,12 +142,12 @@ export function GoalsStep({ data, updateData }: OnboardingStepProps) {
               <h3
                 className={cn(
                   'font-bold text-sm mb-1 transition-colors',
-                  isSelected ? 'text-[#FFCC00]' : 'text-zinc-200',
+                  isSelected ? 'text-cba-gold' : 'text-primary',
                 )}
               >
                 {goal.label}
               </h3>
-              <p className="text-xs text-zinc-500 pr-8">{goal.description}</p>
+              <p className="text-xs text-muted pr-8">{goal.description}</p>
             </button>
           );
         })}
@@ -163,7 +163,7 @@ export function GoalsStep({ data, updateData }: OnboardingStepProps) {
         {data.selectedGoals.length > 0 && (
           <button
             onClick={() => updateData({ selectedGoals: [] })}
-            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="text-xs text-muted hover:text-primary transition-colors"
           >
             Clear all
           </button>

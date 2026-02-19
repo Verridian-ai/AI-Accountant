@@ -129,21 +129,21 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
       {/* Header + Compare */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h3 className="text-lg font-bold text-zinc-200">Forecast Scenarios</h3>
-          <p className="text-sm text-zinc-500">Create and compare financial forecasts</p>
+          <h3 className="text-lg font-bold text-primary">Forecast Scenarios</h3>
+          <p className="text-sm text-muted">Create and compare financial forecasts</p>
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.size >= 2 && (
             <button
               onClick={() => onCompare(Array.from(selectedIds))}
-              className="px-4 py-2 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 transition-colors"
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-cba-gold/90 transition-colors"
             >
               Compare ({selectedIds.size})
             </button>
           )}
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="neu-raised-sm px-4 py-2 rounded-xl text-sm font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 transition-colors flex items-center gap-2"
+            className="neu-raised-sm px-4 py-2 rounded-xl text-sm font-bold text-cba-gold hover:bg-cba-gold/10 transition-colors flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             New Scenario
@@ -153,24 +153,24 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
 
       {/* Create Form */}
       {showCreate && (
-        <div className="neu-raised rounded-2xl p-5 space-y-4 border border-[#FFCC00]/10">
-          <h4 className="text-sm font-bold text-zinc-300">New Forecast Scenario</h4>
+        <div className="neu-raised rounded-2xl p-5 space-y-4 border border-cba-gold/10">
+          <h4 className="text-sm font-bold text-primary">New Forecast Scenario</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Name</label>
+              <label className="block text-xs text-muted mb-1">Name</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Q1 2026 Forecast"
-                className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Scenario Type</label>
+              <label className="block text-xs text-muted mb-1">Scenario Type</label>
               <select
                 value={scenarioType}
                 onChange={(e) => setScenarioType(e.target.value as 'optimistic' | 'realistic' | 'pessimistic' | 'custom')}
-                className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
               >
                 <option value="optimistic">Optimistic</option>
                 <option value="realistic">Realistic</option>
@@ -179,7 +179,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Forecast Months</label>
+              <label className="block text-xs text-muted mb-1">Forecast Months</label>
               <div className="flex items-center gap-3">
                 <input
                   type="range"
@@ -189,35 +189,35 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                   onChange={(e) => setForecastMonths(parseInt(e.target.value))}
                   className="flex-1 accent-[#FFCC00]"
                 />
-                <span className="text-sm text-[#FFCC00] font-mono w-8">{forecastMonths}</span>
+                <span className="text-sm text-cba-gold font-mono w-8">{forecastMonths}</span>
               </div>
             </div>
             <div>
-              <label htmlFor="forecast-base-start" className="block text-xs text-zinc-500 mb-1">Base Period Start</label>
+              <label htmlFor="forecast-base-start" className="block text-xs text-muted mb-1">Base Period Start</label>
               <input
                 id="forecast-base-start"
                 type="date"
                 value={basePeriodStart}
                 onChange={(e) => setBasePeriodStart(e.target.value)}
-                className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
               />
             </div>
             <div>
-              <label htmlFor="forecast-base-end" className="block text-xs text-zinc-500 mb-1">Base Period End</label>
+              <label htmlFor="forecast-base-end" className="block text-xs text-muted mb-1">Base Period End</label>
               <input
                 id="forecast-base-end"
                 type="date"
                 value={basePeriodEnd}
                 onChange={(e) => setBasePeriodEnd(e.target.value)}
-                className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
               />
             </div>
           </div>
 
           {scenarioType === 'custom' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/50">
               <div>
-                <label htmlFor="forecast-growth-rate" className="block text-xs text-zinc-500 mb-1">Growth Rate (%)</label>
+                <label htmlFor="forecast-growth-rate" className="block text-xs text-muted mb-1">Growth Rate (%)</label>
                 <input
                   id="forecast-growth-rate"
                   type="number"
@@ -225,11 +225,11 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                   value={growthRate}
                   onChange={(e) => setGrowthRate(e.target.value)}
                   placeholder="e.g. 5.0"
-                  className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                  className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
                 />
               </div>
               <div>
-                <label htmlFor="forecast-seasonal-weight" className="block text-xs text-zinc-500 mb-1">Seasonal Weight</label>
+                <label htmlFor="forecast-seasonal-weight" className="block text-xs text-muted mb-1">Seasonal Weight</label>
                 <input
                   id="forecast-seasonal-weight"
                   type="number"
@@ -237,7 +237,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                   value={seasonalWeight}
                   onChange={(e) => setSeasonalWeight(e.target.value)}
                   placeholder="e.g. 1.0"
-                  className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                  className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
                 />
               </div>
             </div>
@@ -246,14 +246,14 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setShowCreate(false)}
-              className="px-4 py-2 rounded-xl text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="px-4 py-2 rounded-xl text-sm text-secondary hover:text-primary transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleCreate}
               disabled={!name || creating}
-              className="px-4 py-2 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 transition-colors disabled:opacity-40"
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-cba-gold/90 transition-colors disabled:opacity-40"
             >
               {creating ? 'Creating...' : 'Create Scenario'}
             </button>
@@ -272,7 +272,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
           ))}
         </div>
       ) : scenarios.length === 0 ? (
-        <div className="neu-inset rounded-2xl p-8 text-center text-zinc-500">
+        <div className="neu-inset rounded-2xl p-8 text-center text-muted">
           <TrendingUp className="w-10 h-10 mx-auto mb-3 text-zinc-600" />
           <p>No forecast scenarios yet.</p>
           <p className="text-xs mt-1">Click "New Scenario" to create one.</p>
@@ -287,23 +287,23 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                   onClick={() => toggleSelect(s.id)}
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                     selectedIds.has(s.id)
-                      ? 'border-[#FFCC00] bg-[#FFCC00]/20'
+                      ? 'border-cba-gold bg-cba-gold/20'
                       : 'border-zinc-600 hover:border-zinc-400'
                   }`}
                 >
-                  {selectedIds.has(s.id) && <Check className="w-3 h-3 text-[#FFCC00]" />}
+                  {selectedIds.has(s.id) && <Check className="w-3 h-3 text-cba-gold" />}
                 </button>
 
                 <button type="button" className="flex-1 min-w-0 text-left" onClick={() => handleExpand(s.id)}>
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="text-sm font-bold text-zinc-200 truncate">{s.name}</h4>
+                    <h4 className="text-sm font-bold text-primary truncate">{s.name}</h4>
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${typeColors[s.scenarioType] ?? typeColors.custom}`}
                     >
                       {s.scenarioType}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted">
                     {s.forecastMonths} months &middot; {s.basePeriodStart} to {s.basePeriodEnd}
                   </p>
                 </button>
@@ -319,7 +319,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
 
                 <button
                   onClick={() => handleExpand(s.id)}
-                  className="text-zinc-500 hover:text-zinc-300 p-1"
+                  className="text-muted hover:text-primary p-1"
                 >
                   {expandedId === s.id ? (
                     <ChevronUp className="w-4 h-4" />
@@ -331,39 +331,39 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
 
               {/* Expanded Periods */}
               {expandedId === s.id && (
-                <div className="border-t border-white/5 overflow-x-auto">
+                <div className="border-t border-border/50 overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="border-b border-white/5">
-                        <th className="text-left px-4 py-2 text-zinc-500 font-bold uppercase tracking-wider">
+                      <tr className="border-b border-border/50">
+                        <th className="text-left px-4 py-2 text-muted font-bold uppercase tracking-wider">
                           Period
                         </th>
-                        <th className="text-left px-4 py-2 text-zinc-500 font-bold uppercase tracking-wider">
+                        <th className="text-left px-4 py-2 text-muted font-bold uppercase tracking-wider">
                           Category
                         </th>
-                        <th className="text-right px-4 py-2 text-zinc-500 font-bold uppercase tracking-wider">
+                        <th className="text-right px-4 py-2 text-muted font-bold uppercase tracking-wider">
                           Amount
                         </th>
-                        <th className="text-right px-4 py-2 text-zinc-500 font-bold uppercase tracking-wider">
+                        <th className="text-right px-4 py-2 text-muted font-bold uppercase tracking-wider">
                           Confidence Range
                         </th>
-                        <th className="text-left px-4 py-2 text-zinc-500 font-bold uppercase tracking-wider">
+                        <th className="text-left px-4 py-2 text-muted font-bold uppercase tracking-wider">
                           Method
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {(periods[s.id] ?? []).map((p, i) => (
-                        <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02]">
-                          <td className="px-4 py-2 text-zinc-300">{p.period}</td>
-                          <td className="px-4 py-2 text-zinc-400">{p.category}</td>
-                          <td className="px-4 py-2 text-right text-[#FFCC00] font-mono">
+                        <tr key={i} className="border-b border-border/50 hover:bg-white/[0.02]">
+                          <td className="px-4 py-2 text-primary">{p.period}</td>
+                          <td className="px-4 py-2 text-secondary">{p.category}</td>
+                          <td className="px-4 py-2 text-right text-cba-gold font-mono">
                             {fmt(p.forecastAmount)}
                           </td>
-                          <td className="px-4 py-2 text-right text-zinc-500 font-mono">
+                          <td className="px-4 py-2 text-right text-muted font-mono">
                             {fmt(p.confidenceLower)} – {fmt(p.confidenceUpper)}
                           </td>
-                          <td className="px-4 py-2 text-zinc-500">{p.method}</td>
+                          <td className="px-4 py-2 text-muted">{p.method}</td>
                         </tr>
                       ))}
                       {(periods[s.id] ?? []).length === 0 && (

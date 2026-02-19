@@ -68,13 +68,13 @@ export function BulkActionBar({
   };
 
   return (
-    <div className="sticky top-0 z-40 p-4 neu-raised rounded-2xl border border-[#FFCC00]/20 flex flex-wrap items-center gap-4 animate-in slide-in-from-top-2 duration-300">
+    <div className="sticky top-0 z-40 p-4 neu-raised rounded-2xl border border-cba-gold/20 flex flex-wrap items-center gap-4 animate-in slide-in-from-top-2 duration-300">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-black text-[#FFCC00]">{selectedCount}</span>
-        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">selected</span>
+        <span className="text-sm font-black text-cba-gold">{selectedCount}</span>
+        <span className="text-xs font-bold text-muted uppercase tracking-widest">selected</span>
       </div>
 
-      <div className="w-px h-6 bg-white/10" />
+      <div className="w-px h-6 bg-overlay-hover" />
 
       <div className="flex items-center gap-2 flex-wrap">
         {/* Set Category */}
@@ -82,7 +82,7 @@ export function BulkActionBar({
           <button
             onClick={() => setShowCategoryPicker(!showCategoryPicker)}
             disabled={isProcessing}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest neu-raised-sm rounded-xl text-zinc-400 hover:text-[#FFCC00] border border-white/5 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest neu-raised-sm rounded-xl text-secondary hover:text-cba-gold border border-border/50 transition-colors disabled:opacity-50"
           >
             <Tag className="h-3.5 w-3.5" /> Set Category
           </button>
@@ -102,14 +102,14 @@ export function BulkActionBar({
         <button
           onClick={() => handleBatchGST(true)}
           disabled={isProcessing}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest neu-raised-sm rounded-xl text-zinc-400 hover:text-emerald-400 border border-white/5 transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest neu-raised-sm rounded-xl text-secondary hover:text-emerald-400 border border-border/50 transition-colors disabled:opacity-50"
         >
           GST On
         </button>
         <button
           onClick={() => handleBatchGST(false)}
           disabled={isProcessing}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest neu-raised-sm rounded-xl text-zinc-400 hover:text-zinc-300 border border-white/5 transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest neu-raised-sm rounded-xl text-secondary hover:text-primary border border-border/50 transition-colors disabled:opacity-50"
         >
           GST Off
         </button>
@@ -118,7 +118,7 @@ export function BulkActionBar({
         <button
           onClick={handleBatchDelete}
           disabled={isProcessing}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest neu-raised-sm rounded-xl text-zinc-400 hover:text-red-400 border border-white/5 transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-widest neu-raised-sm rounded-xl text-secondary hover:text-red-400 border border-border/50 transition-colors disabled:opacity-50"
         >
           <Trash2 className="h-3.5 w-3.5" /> Delete
         </button>
@@ -128,7 +128,7 @@ export function BulkActionBar({
         <button
           onClick={onClearSelection}
           className={cn(
-            'p-2 text-zinc-500 hover:text-zinc-300 rounded-xl transition-colors',
+            'p-2 text-muted hover:text-primary rounded-xl transition-colors',
             isProcessing && 'opacity-50 pointer-events-none',
           )}
           aria-label="Clear selection"

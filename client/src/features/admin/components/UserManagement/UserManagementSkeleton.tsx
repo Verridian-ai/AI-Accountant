@@ -5,7 +5,7 @@ export function UserManagementSkeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5',
+        'neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50',
         className,
       )}
     >

@@ -55,7 +55,7 @@ export function StatementList() {
   if (loading) return <LoadingSkeleton />;
 
   return (
-    <div className="neu-raised rounded-[2.5rem] overflow-hidden flex flex-col h-full max-h-[550px] border border-white/5 shadow-2xl relative">
+    <div className="neu-raised rounded-[2.5rem] overflow-hidden flex flex-col h-full max-h-[550px] border border-border/50 shadow-2xl relative">
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
 
       <StatementListHeader
@@ -109,9 +109,9 @@ export function StatementList() {
         )}
       </UploadZone>
 
-      <div className="p-4 border-t border-white/5 sticky bottom-0 text-center bg-black/40 backdrop-blur-md">
+      <div className="p-4 border-t border-border/50 sticky bottom-0 text-center bg-overlay-hover backdrop-blur-md">
         <p className="text-[9px] text-zinc-600 font-black uppercase tracking-[0.3em]">
-          System <span className="text-[#FFCC00]">Vault</span> • Automated Node Verification
+          System <span className="text-cba-gold">Vault</span> • Automated Node Verification
         </p>
       </div>
     </div>

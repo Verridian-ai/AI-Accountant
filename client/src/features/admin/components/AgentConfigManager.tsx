@@ -73,7 +73,7 @@ export function AgentConfigManager() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white">Agent Configuration</h2>
+        <h2 className="text-2xl font-bold text-primary">Agent Configuration</h2>
         <div className="animate-pulse h-64 rounded-2xl bg-[#16213e]" />
       </div>
     );
@@ -82,8 +82,8 @@ export function AgentConfigManager() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-white">Agent Configuration</h2>
-        <p className="text-sm text-zinc-500">Configure AI agent models, tokens, and rate limits</p>
+        <h2 className="text-2xl font-bold text-primary">Agent Configuration</h2>
+        <p className="text-sm text-muted">Configure AI agent models, tokens, and rate limits</p>
       </div>
 
       {message && (
@@ -98,7 +98,7 @@ export function AgentConfigManager() {
       <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-zinc-500 text-xs uppercase tracking-wider border-b border-white/5">
+            <tr className="text-left text-muted text-xs uppercase tracking-wider border-b border-border/50">
               <th className="pb-3 pr-4">Agent</th>
               <th className="pb-3 pr-4">Model</th>
               <th className="pb-3 pr-4">Max Tokens</th>
@@ -110,19 +110,19 @@ export function AgentConfigManager() {
           </thead>
           <tbody>
             {configs.map((c) => (
-              <tr key={c.agentType} className="border-b border-white/5 hover:bg-[#1a1a2e]/50">
+              <tr key={c.agentType} className="border-b border-border/50 hover:bg-[#1a1a2e]/50">
                 <td className="py-3 pr-4">
                   <div className="flex items-center gap-2">
-                    <Bot className="w-4 h-4 text-[#FFCC00]" />
-                    <span className="text-zinc-300 font-medium">
+                    <Bot className="w-4 h-4 text-cba-gold" />
+                    <span className="text-primary font-medium">
                       {c.agentType.replace(/_/g, ' ')}
                     </span>
                   </div>
                 </td>
-                <td className="py-3 pr-4 text-zinc-400 text-xs font-mono">{c.model}</td>
-                <td className="py-3 pr-4 text-zinc-400">{c.maxTokens?.toLocaleString()}</td>
-                <td className="py-3 pr-4 text-zinc-400">{c.temperature}</td>
-                <td className="py-3 pr-4 text-zinc-400">{c.rateLimitPerMinute}/min</td>
+                <td className="py-3 pr-4 text-secondary text-xs font-mono">{c.model}</td>
+                <td className="py-3 pr-4 text-secondary">{c.maxTokens?.toLocaleString()}</td>
+                <td className="py-3 pr-4 text-secondary">{c.temperature}</td>
+                <td className="py-3 pr-4 text-secondary">{c.rateLimitPerMinute}/min</td>
                 <td className="py-3 pr-4">
                   <button
                     type="button"
@@ -132,7 +132,7 @@ export function AgentConfigManager() {
                     {c.enabled ? (
                       <ToggleRight className="w-6 h-6 text-emerald-400" />
                     ) : (
-                      <ToggleLeft className="w-6 h-6 text-zinc-500" />
+                      <ToggleLeft className="w-6 h-6 text-muted" />
                     )}
                   </button>
                 </td>
@@ -140,7 +140,7 @@ export function AgentConfigManager() {
                   <button
                     type="button"
                     onClick={() => setEditingAgent({ ...c })}
-                    className="p-1.5 rounded-lg text-zinc-400 hover:text-[#FFCC00] hover:bg-[#FFCC00]/5 transition-colors"
+                    className="p-1.5 rounded-lg text-secondary hover:text-cba-gold hover:bg-cba-gold/5 transition-colors"
                   >
                     <Settings className="w-4 h-4" />
                   </button>
@@ -150,7 +150,7 @@ export function AgentConfigManager() {
           </tbody>
         </table>
         {configs.length === 0 && (
-          <p className="text-sm text-zinc-500 mt-4">No agent configurations found</p>
+          <p className="text-sm text-muted mt-4">No agent configurations found</p>
         )}
       </div>
 
@@ -165,13 +165,13 @@ export function AgentConfigManager() {
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-primary">
                 Edit {editingAgent.agentType.replace(/_/g, ' ')}
               </h3>
               <button
                 type="button"
                 onClick={() => setEditingAgent(null)}
-                className="text-zinc-500 hover:text-white"
+                className="text-muted hover:text-primary"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -179,7 +179,7 @@ export function AgentConfigManager() {
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="agent-model" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="agent-model" className="block text-xs text-secondary mb-1">
                   Model
                 </label>
                 <input
@@ -187,11 +187,11 @@ export function AgentConfigManager() {
                   type="text"
                   value={editingAgent.model}
                   onChange={(e) => setEditingAgent({ ...editingAgent, model: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div>
-                <label htmlFor="agent-max-tokens" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="agent-max-tokens" className="block text-xs text-secondary mb-1">
                   Max Tokens: {editingAgent.maxTokens}
                 </label>
                 <input
@@ -208,7 +208,7 @@ export function AgentConfigManager() {
                 />
               </div>
               <div>
-                <label htmlFor="agent-temperature" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="agent-temperature" className="block text-xs text-secondary mb-1">
                   Temperature: {editingAgent.temperature}
                 </label>
                 <input
@@ -225,7 +225,7 @@ export function AgentConfigManager() {
                 />
               </div>
               <div>
-                <label htmlFor="agent-rate-limit" className="block text-xs text-zinc-400 mb-1">
+                <label htmlFor="agent-rate-limit" className="block text-xs text-secondary mb-1">
                   Rate Limit (per minute)
                 </label>
                 <input
@@ -240,11 +240,11 @@ export function AgentConfigManager() {
                       rateLimitPerMinute: parseInt(e.target.value) || 10,
                     })
                   }
-                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-[#FFCC00]/50"
+                  className="w-full px-3 py-2 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm focus:outline-none focus:border-cba-gold/50"
                 />
               </div>
               <div className="flex items-center justify-between">
-                <label htmlFor="agent-enabled" className="text-xs text-zinc-400">
+                <label htmlFor="agent-enabled" className="text-xs text-secondary">
                   Enabled
                 </label>
                 <button
@@ -257,7 +257,7 @@ export function AgentConfigManager() {
                   {editingAgent.enabled ? (
                     <ToggleRight className="w-6 h-6 text-emerald-400" />
                   ) : (
-                    <ToggleLeft className="w-6 h-6 text-zinc-500" />
+                    <ToggleLeft className="w-6 h-6 text-muted" />
                   )}
                 </button>
               </div>
@@ -267,7 +267,7 @@ export function AgentConfigManager() {
               <button
                 type="button"
                 onClick={() => setEditingAgent(null)}
-                className="flex-1 py-2 rounded-lg border border-white/10 text-zinc-400 hover:text-white text-sm font-medium"
+                className="flex-1 py-2 rounded-lg border border-border text-secondary hover:text-primary text-sm font-medium"
               >
                 Cancel
               </button>
@@ -275,7 +275,7 @@ export function AgentConfigManager() {
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 py-2 rounded-lg bg-[#FFCC00] text-[#1a1a2e] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-2 rounded-lg bg-cba-gold text-[#1a1a2e] font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 {saving ? 'Saving...' : 'Save'}

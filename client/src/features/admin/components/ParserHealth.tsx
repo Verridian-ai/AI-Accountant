@@ -236,10 +236,10 @@ export function ParserHealth({
       {/* Overall Stats */}
       {overallStats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          <div className="neu-raised rounded-2xl p-4 border border-white/5">
+          <div className="neu-raised rounded-2xl p-4 border border-border/50">
             <div className="flex items-center gap-2 mb-2">
-              <FileCheck className="w-4 h-4 text-[#FFCC00]" />
-              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+              <FileCheck className="w-4 h-4 text-cba-gold" />
+              <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">
                 Total Parsed
               </span>
             </div>
@@ -247,10 +247,10 @@ export function ParserHealth({
               {overallStats.totalStatements.toLocaleString()}
             </p>
           </div>
-          <div className="neu-raised rounded-2xl p-4 border border-white/5">
+          <div className="neu-raised rounded-2xl p-4 border border-border/50">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-emerald-400" />
-              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+              <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">
                 Success Rate
               </span>
             </div>
@@ -258,28 +258,28 @@ export function ParserHealth({
               {overallStats.successRate.toFixed(1)}%
             </p>
           </div>
-          <div className="neu-raised rounded-2xl p-4 border border-white/5">
+          <div className="neu-raised rounded-2xl p-4 border border-border/50">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-blue-400" />
-              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+              <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">
                 Avg Time
               </span>
             </div>
             <p className="text-2xl font-bold text-zinc-100">{overallStats.avgProcessingTime}s</p>
           </div>
-          <div className="neu-raised rounded-2xl p-4 border border-white/5">
+          <div className="neu-raised rounded-2xl p-4 border border-border/50">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="w-4 h-4 text-amber-400" />
-              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+              <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">
                 Errors Today
               </span>
             </div>
             <p className="text-2xl font-bold text-amber-400">{overallStats.errorsToday}</p>
           </div>
-          <div className="neu-raised rounded-2xl p-4 border border-white/5">
+          <div className="neu-raised rounded-2xl p-4 border border-border/50">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="w-4 h-4 text-red-400" />
-              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+              <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">
                 Pending Review
               </span>
             </div>
@@ -289,17 +289,17 @@ export function ParserHealth({
       )}
 
       {/* Parser Health by Bank */}
-      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
         <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
 
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="neu-inset p-3 rounded-xl border border-white/5">
-              <Building2 className="w-5 h-5 text-[#FFCC00]" />
+            <div className="neu-inset p-3 rounded-xl border border-border/50">
+              <Building2 className="w-5 h-5 text-cba-gold" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-zinc-100">Parser Health by Bank</h3>
-              <p className="text-xs text-zinc-500">Success rates and error tracking</p>
+              <p className="text-xs text-muted">Success rates and error tracking</p>
             </div>
           </div>
 
@@ -330,7 +330,7 @@ export function ParserHealth({
           {bankStats.map((bank) => (
             <div
               key={bank.bankId}
-              className="rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden"
+              className="rounded-xl bg-white/[0.02] border border-border/50 overflow-hidden"
             >
               {/* Bank Header */}
               <button
@@ -339,13 +339,13 @@ export function ParserHealth({
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {expandedBank === bank.bankId ? (
-                    <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />
+                    <ChevronDown className="w-4 h-4 text-muted shrink-0" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-muted shrink-0" />
                   )}
                   <div className="text-left min-w-0">
                     <p className="font-semibold text-zinc-100 truncate">{bank.bankName}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted">
                       {bank.totalParsed.toLocaleString()} statements
                     </p>
                   </div>
@@ -375,7 +375,7 @@ export function ParserHealth({
                       ) : bank.trend === 'down' ? (
                         <TrendingDown className="w-3 h-3 text-red-400" />
                       ) : (
-                        <span className="text-zinc-500">~</span>
+                        <span className="text-muted">~</span>
                       )}
                       <span
                         className={cn(
@@ -383,7 +383,7 @@ export function ParserHealth({
                             ? 'text-emerald-400'
                             : bank.trend === 'down'
                               ? 'text-red-400'
-                              : 'text-zinc-500',
+                              : 'text-muted',
                         )}
                       >
                         {bank.trendValue > 0 ? '+' : ''}
@@ -401,8 +401,8 @@ export function ParserHealth({
 
               {/* Expanded Error Details */}
               {expandedBank === bank.bankId && bank.recentErrors.length > 0 && (
-                <div className="border-t border-white/5 p-4 bg-white/[0.01]">
-                  <h4 className="text-sm font-semibold text-zinc-400 mb-3">Recent Errors</h4>
+                <div className="border-t border-border/50 p-4 bg-white/[0.01]">
+                  <h4 className="text-sm font-semibold text-secondary mb-3">Recent Errors</h4>
                   <div className="space-y-2">
                     {bank.recentErrors.map((error) => (
                       <div
@@ -410,7 +410,7 @@ export function ParserHealth({
                         className={cn(
                           'p-3 rounded-lg border transition-colors',
                           error.resolved
-                            ? 'bg-white/[0.01] border-white/5'
+                            ? 'bg-white/[0.01] border-border/50'
                             : 'bg-red-500/5 border-red-500/20',
                         )}
                       >
@@ -419,12 +419,12 @@ export function ParserHealth({
                             {getErrorTypeBadge(error.errorType)}
                             {error.resolved && <Badge variant="success">Resolved</Badge>}
                           </div>
-                          <span className="text-xs text-zinc-500">
+                          <span className="text-xs text-muted">
                             {formatTime(error.timestamp)}
                           </span>
                         </div>
-                        <p className="text-sm text-zinc-300 mb-1">{error.filename}</p>
-                        <p className="text-xs text-zinc-500 mb-3">{error.errorMessage}</p>
+                        <p className="text-sm text-primary mb-1">{error.filename}</p>
+                        <p className="text-xs text-muted mb-3">{error.errorMessage}</p>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="sm" onClick={() => onViewError?.(error)}>
                             View Details
@@ -452,9 +452,9 @@ export function ParserHealth({
               )}
 
               {expandedBank === bank.bankId && bank.recentErrors.length === 0 && (
-                <div className="border-t border-white/5 p-6 bg-white/[0.01] text-center">
+                <div className="border-t border-border/50 p-6 bg-white/[0.01] text-center">
                   <FileCheck className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                  <p className="text-sm text-zinc-400">No recent errors for this bank</p>
+                  <p className="text-sm text-secondary">No recent errors for this bank</p>
                 </div>
               )}
             </div>
@@ -470,13 +470,13 @@ function ParserHealthSkeleton({ className }: { className?: string }) {
     <div className={cn('space-y-6', className)}>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="neu-raised rounded-2xl p-4 border border-white/5">
+          <div key={i} className="neu-raised rounded-2xl p-4 border border-border/50">
             <Skeleton className="w-20 h-3 rounded mb-2" />
             <Skeleton className="w-16 h-8 rounded" />
           </div>
         ))}
       </div>
-      <div className="neu-raised rounded-[2rem] p-6 border border-white/5">
+      <div className="neu-raised rounded-[2rem] p-6 border border-border/50">
         <div className="flex items-center gap-3 mb-6">
           <Skeleton className="w-11 h-11 rounded-xl" />
           <div className="space-y-2">

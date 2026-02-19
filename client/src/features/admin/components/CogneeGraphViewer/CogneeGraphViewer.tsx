@@ -271,9 +271,9 @@ export function CogneeGraphViewer({
 
   if (!webglSupported) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 text-center text-gray-400 bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10">
+      <div className="flex flex-col items-center justify-center h-96 text-center text-gray-400 bg-[#1a1a2e] rounded-xl border border-cba-gold/10">
         <AlertTriangle className="w-12 h-12 text-yellow-500 mb-4" />
-        <h3 className="text-lg font-semibold text-white mb-2">WebGL Not Available</h3>
+        <h3 className="text-lg font-semibold text-primary mb-2">WebGL Not Available</h3>
         <p className="text-sm max-w-md">
           Your browser does not support WebGL, which is required for the 3D graph viewer. Please try
           a modern browser or use the 2D fallback view.
@@ -285,11 +285,11 @@ export function CogneeGraphViewer({
   return (
     <div
       ref={containerRef}
-      className="relative bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10 overflow-hidden"
+      className="relative bg-[#1a1a2e] rounded-xl border border-cba-gold/10 overflow-hidden"
       style={{ height: graphHeight }}
     >
       {/* Filter Bar */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-2 p-2 bg-[#1a1a2e]/80 backdrop-blur-sm border-b border-white/5 flex-wrap">
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-2 p-2 bg-[#1a1a2e]/80 backdrop-blur-sm border-b border-border/50 flex-wrap">
         <div className="relative flex-shrink-0">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500" />
           <input
@@ -297,7 +297,7 @@ export function CogneeGraphViewer({
             placeholder="Search nodes…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 pr-2 py-1 w-44 bg-white/5 border border-white/10 rounded text-xs text-gray-200 placeholder:text-gray-500 focus:border-[#FFCC00]/40 focus:outline-none"
+            className="pl-7 pr-2 py-1 w-44 bg-overlay border border-border rounded text-xs text-gray-200 placeholder:text-gray-500 focus:border-cba-gold/40 focus:outline-none"
           />
         </div>
 
@@ -311,7 +311,7 @@ export function CogneeGraphViewer({
         <select
           value={selectedDataset}
           onChange={(e) => setFilters((f) => ({ ...f, dataset: e.target.value }))}
-          className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-gray-300 hover:border-[#FFCC00]/40 focus:outline-none"
+          className="px-2 py-1 bg-overlay border border-border rounded text-xs text-gray-300 hover:border-cba-gold/40 focus:outline-none"
         >
           <option value="">All datasets</option>
           {allDatasets.map((ds) => (
@@ -339,21 +339,21 @@ export function CogneeGraphViewer({
             onChange={(e) => setFilters((f) => ({ ...f, minConnections: Number(e.target.value) }))}
             className="w-16 accent-[#FFCC00]"
           />
-          <span className="text-[#FFCC00] w-4 text-center">{minConnections}</span>
+          <span className="text-cba-gold w-4 text-center">{minConnections}</span>
         </div>
 
         <div className="flex-1" />
 
         <button
           onClick={handleResetView}
-          className="p-1.5 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:bg-overlay-hover text-gray-400 hover:text-primary transition-colors"
           title="Reset view (R)"
         >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={handleToggleFullscreen}
-          className="p-1.5 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:bg-overlay-hover text-gray-400 hover:text-primary transition-colors"
           title="Fullscreen (F)"
         >
           <Maximize2 className="w-3.5 h-3.5" />
@@ -364,7 +364,7 @@ export function CogneeGraphViewer({
 
       {loading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#1a1a2e]/90 z-20">
-          <Loader2 className="w-10 h-10 text-[#FFCC00] animate-spin mb-3" />
+          <Loader2 className="w-10 h-10 text-cba-gold animate-spin mb-3" />
           <p className="text-sm text-gray-400">Loading knowledge graph…</p>
         </div>
       )}
@@ -375,7 +375,7 @@ export function CogneeGraphViewer({
           <p className="text-sm text-red-300 mb-3">{error}</p>
           <button
             onClick={fetchData}
-            className="px-4 py-1.5 bg-[#FFCC00]/10 border border-[#FFCC00]/30 rounded text-sm text-[#FFCC00] hover:bg-[#FFCC00]/20 transition-colors"
+            className="px-4 py-1.5 bg-cba-gold/10 border border-cba-gold/30 rounded text-sm text-cba-gold hover:bg-cba-gold/20 transition-colors"
           >
             Retry
           </button>

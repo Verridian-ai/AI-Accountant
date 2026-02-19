@@ -39,7 +39,7 @@ const matchTypeBadgeColor: Record<string, string> = {
   amount_date: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   reference_number: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   description_pattern: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  combined: 'bg-[#FFCC00]/20 text-[#FFCC00] border-[#FFCC00]/30',
+  combined: 'bg-cba-gold/20 text-cba-gold border-cba-gold/30',
 };
 
 export function ReconRulesManager() {
@@ -139,7 +139,7 @@ export function ReconRulesManager() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5 text-[#FFCC00]" />
+              <Settings2 className="h-5 w-5 text-cba-gold" />
               Matching Rules
             </CardTitle>
             <CardDescription>
@@ -148,7 +148,7 @@ export function ReconRulesManager() {
           </div>
           <Button
             size="sm"
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90"
+            className="bg-cba-gold text-base hover:bg-cba-gold/90"
             onClick={() => setShowAddForm(!showAddForm)}
           >
             <Plus className="h-4 w-4 mr-1" />
@@ -159,8 +159,8 @@ export function ReconRulesManager() {
       <CardContent className="space-y-4">
         {/* Add Rule Form */}
         {showAddForm && (
-          <div className="neu-inset rounded-xl p-4 space-y-4 border border-[#FFCC00]/20">
-            <h4 className="text-sm font-bold text-zinc-200">New Matching Rule</h4>
+          <div className="neu-inset rounded-xl p-4 space-y-4 border border-cba-gold/20">
+            <h4 className="text-sm font-bold text-primary">New Matching Rule</h4>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -262,7 +262,7 @@ export function ReconRulesManager() {
               </Button>
               <Button
                 size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-primary"
                 onClick={handleAddRule}
                 disabled={savingRule || !formName.trim()}
               >
@@ -276,10 +276,10 @@ export function ReconRulesManager() {
         {/* Rules list */}
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
+            <Loader2 className="h-5 w-5 animate-spin text-muted" />
           </div>
         ) : rules.length === 0 ? (
-          <p className="text-sm text-zinc-500 text-center py-8">
+          <p className="text-sm text-muted text-center py-8">
             No matching rules configured. Add a rule to automate reconciliation.
           </p>
         ) : (
@@ -291,7 +291,7 @@ export function ReconRulesManager() {
                   key={rule.id}
                   className={cn(
                     'neu-raised rounded-xl p-3 border transition-colors',
-                    rule.isActive ? 'border-white/5' : 'border-white/5 opacity-50',
+                    rule.isActive ? 'border-border/50' : 'border-border/50 opacity-50',
                   )}
                 >
                   <div className="flex items-center justify-between">
@@ -300,7 +300,7 @@ export function ReconRulesManager() {
                         #{rule.priority}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-zinc-200 truncate">{rule.name}</p>
+                        <p className="text-sm font-bold text-primary truncate">{rule.name}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge
                             variant="outline"
@@ -331,7 +331,7 @@ export function ReconRulesManager() {
                     <button
                       type="button"
                       onClick={() => setExpandedRule(expandedRule === rule.id ? null : rule.id)}
-                      className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="p-1 text-muted hover:text-primary transition-colors"
                     >
                       {expandedRule === rule.id ? (
                         <ChevronUp className="h-4 w-4" />
@@ -343,11 +343,11 @@ export function ReconRulesManager() {
 
                   {/* Expanded config details */}
                   {expandedRule === rule.id && (
-                    <div className="mt-3 pt-3 border-t border-white/5">
-                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                    <div className="mt-3 pt-3 border-t border-border/50">
+                      <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-2">
                         Configuration
                       </p>
-                      <pre className="text-xs text-zinc-400 bg-zinc-900/50 rounded-lg p-2 overflow-x-auto">
+                      <pre className="text-xs text-secondary bg-zinc-900/50 rounded-lg p-2 overflow-x-auto">
                         {JSON.stringify(rule.matchConfig, null, 2)}
                       </pre>
                     </div>

@@ -140,7 +140,7 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
         {metrics.map((metric, index) => (
           <div
             key={metric.label}
-            className="neu-raised rounded-[2rem] p-6 interactive-card group relative overflow-hidden border border-white/5"
+            className="neu-raised rounded-[2rem] p-6 interactive-card group relative overflow-hidden border border-border/50"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             {/* Background Effects */}
@@ -150,7 +150,7 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
                 'absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-0 group-hover:opacity-40 transition-opacity duration-700',
                 metric.trend === 'up' && 'bg-emerald-500',
                 metric.trend === 'down' && 'bg-red-500',
-                metric.trend === 'neutral' && 'bg-[#FFCC00]',
+                metric.trend === 'neutral' && 'bg-cba-gold',
               )}
             />
 
@@ -162,7 +162,7 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
                       'w-1.5 h-1.5 rounded-full animate-pulse',
                       metric.trend === 'up' && 'bg-emerald-500',
                       metric.trend === 'down' && 'bg-red-500',
-                      metric.trend === 'neutral' && 'bg-[#FFCC00]',
+                      metric.trend === 'neutral' && 'bg-cba-gold',
                     )}
                   />
                   <p className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.25em]">
@@ -202,7 +202,7 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
                             ? 'text-emerald-400'
                             : metric.trend === 'down'
                               ? 'text-red-400'
-                              : 'text-zinc-500',
+                              : 'text-muted',
                         )}
                       >
                         {Math.abs(metric.change)}% {metric.changeLabel}
@@ -214,11 +214,11 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
 
               <div
                 className={cn(
-                  'neu-inset p-4 rounded-2xl transition-all duration-500 shrink-0 border border-white/5',
-                  'group-hover:shadow-[0_0_20px_rgba(255,204,0,0.2)] group-hover:border-[#FFCC00]/30',
+                  'neu-inset p-4 rounded-2xl transition-all duration-500 shrink-0 border border-border/50',
+                  'group-hover:shadow-[0_0_20px_rgba(255,204,0,0.2)] group-hover:border-cba-gold/30',
                 )}
               >
-                <div className="text-[#FFCC00]">{metric.icon}</div>
+                <div className="text-cba-gold">{metric.icon}</div>
               </div>
             </div>
           </div>
@@ -226,17 +226,17 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
       </div>
 
       {/* API Usage Chart */}
-      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
         <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
 
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="neu-inset p-3 rounded-xl border border-white/5">
-              <Cpu className="w-5 h-5 text-[#FFCC00]" />
+            <div className="neu-inset p-3 rounded-xl border border-border/50">
+              <Cpu className="w-5 h-5 text-cba-gold" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-zinc-100">API Traffic</h3>
-              <p className="text-xs text-zinc-500">Requests over time</p>
+              <p className="text-xs text-muted">Requests over time</p>
             </div>
           </div>
 
@@ -269,7 +269,7 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
                     height: `${(point.value / maxValue) * chartHeight}px`,
                   }}
                 />
-                <span className="text-[10px] text-zinc-500">{point.timestamp}</span>
+                <span className="text-[10px] text-muted">{point.timestamp}</span>
               </div>
             ))}
           </div>
@@ -283,33 +283,33 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
       </div>
 
       {/* Endpoint Usage Table */}
-      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
         <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
 
         <div className="relative flex items-center gap-3 mb-6">
-          <div className="neu-inset p-3 rounded-xl border border-white/5">
-            <Database className="w-5 h-5 text-[#FFCC00]" />
+          <div className="neu-inset p-3 rounded-xl border border-border/50">
+            <Database className="w-5 h-5 text-cba-gold" />
           </div>
           <div>
             <h3 className="text-lg font-bold text-zinc-100">Endpoint Usage</h3>
-            <p className="text-xs text-zinc-500">Top API endpoints by call volume</p>
+            <p className="text-xs text-muted">Top API endpoints by call volume</p>
           </div>
         </div>
 
         <div className="relative overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left py-3 px-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <tr className="border-b border-border/50">
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wider">
                   Endpoint
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wider">
                   Calls
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wider">
                   Avg Latency
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-muted uppercase tracking-wider">
                   Error Rate
                 </th>
               </tr>
@@ -318,14 +318,14 @@ export function SystemMetrics({ className }: SystemMetricsProps) {
               {apiUsage.map((endpoint) => (
                 <tr
                   key={endpoint.endpoint}
-                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                  className="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
                 >
                   <td className="py-3 px-4">
-                    <code className="text-sm text-zinc-300 bg-white/5 px-2 py-1 rounded">
+                    <code className="text-sm text-primary bg-overlay px-2 py-1 rounded">
                       {endpoint.endpoint}
                     </code>
                   </td>
-                  <td className="text-right py-3 px-4 text-sm text-zinc-300">
+                  <td className="text-right py-3 px-4 text-sm text-primary">
                     {endpoint.calls.toLocaleString()}
                   </td>
                   <td className="text-right py-3 px-4">
@@ -373,7 +373,7 @@ function SystemMetricsSkeleton({ className }: { className?: string }) {
         {[...Array(4)].map((_, i) => (
           <div
             key={i}
-            className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5"
+            className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50"
           >
             <div className="flex items-start justify-between">
               <div className="space-y-3 flex-1">
@@ -386,7 +386,7 @@ function SystemMetricsSkeleton({ className }: { className?: string }) {
           </div>
         ))}
       </div>
-      <div className="neu-raised rounded-[2rem] p-6 border border-white/5">
+      <div className="neu-raised rounded-[2rem] p-6 border border-border/50">
         <div className="flex items-center gap-3 mb-6">
           <Skeleton className="w-11 h-11 rounded-xl" />
           <div className="space-y-2">

@@ -122,7 +122,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -131,11 +131,11 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-bold text-zinc-200">DataPoints ({dataPoints.length})</h4>
+        <h4 className="text-sm font-bold text-primary">DataPoints ({dataPoints.length})</h4>
         <button
           type="button"
           onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-cba-gold text-base hover:bg-cba-gold/90 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" /> Create DataPoint
         </button>
@@ -147,7 +147,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
           <button
             type="button"
             onClick={() => setError(null)}
-            className="text-zinc-500 hover:text-zinc-300"
+            className="text-muted hover:text-primary"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -156,11 +156,11 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
 
       {/* Create Form */}
       {showCreate && (
-        <div className="neu-raised rounded-xl p-4 border border-[#FFCC00]/20 space-y-3">
-          <h4 className="text-sm font-bold text-zinc-200">New DataPoint</h4>
+        <div className="neu-raised rounded-xl p-4 border border-cba-gold/20 space-y-3">
+          <h4 className="text-sm font-bold text-primary">New DataPoint</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Name
               </label>
               <input
@@ -168,17 +168,17 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g. Merchant Entity"
-                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Type
               </label>
               <select
                 value={form.datapointType}
                 onChange={(e) => setForm({ ...form, datapointType: e.target.value })}
-                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               >
                 {TYPE_OPTIONS.map((t) => (
                   <option key={t} value={t}>
@@ -189,7 +189,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
               Description
             </label>
             <input
@@ -197,12 +197,12 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="What this datapoint extracts..."
-              className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Dataset
               </label>
               <input
@@ -210,11 +210,11 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                 value={form.datasetName}
                 onChange={(e) => setForm({ ...form, datasetName: e.target.value })}
                 placeholder="Optional dataset name"
-                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Schema (JSON)
               </label>
               <input
@@ -222,12 +222,12 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                 value={form.schemaFields}
                 onChange={(e) => setForm({ ...form, schemaFields: e.target.value })}
                 placeholder='{"field": "type"}'
-                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
               />
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
               Extraction Prompt
             </label>
             <textarea
@@ -235,14 +235,14 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               onChange={(e) => setForm({ ...form, extractionPrompt: e.target.value })}
               placeholder="Instructions for the AI to extract this datapoint..."
               rows={2}
-              className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-200 bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30 resize-none"
+              className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30 resize-none"
             />
           </div>
           <div className="flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => setShowCreate(false)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-secondary hover:text-primary transition-colors"
             >
               Cancel
             </button>
@@ -250,7 +250,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               type="button"
               onClick={handleCreate}
               disabled={creating || !form.name.trim()}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-cba-gold text-base hover:bg-cba-gold/90 disabled:opacity-50 transition-colors"
             >
               {creating ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -267,7 +267,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
       {dataPoints.length === 0 ? (
         <div className="neu-inset rounded-xl p-8 text-center">
           <Database className="w-8 h-8 mx-auto mb-3 text-zinc-600" />
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             No datapoints yet. Create one to start extracting knowledge.
           </p>
         </div>
@@ -276,7 +276,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-white/5 text-zinc-500 uppercase tracking-wider text-[10px]">
+                <tr className="border-b border-border/50 text-muted uppercase tracking-wider text-[10px]">
                   <th className="text-left p-3">Name</th>
                   <th className="text-left p-3">Type</th>
                   <th className="text-left p-3">Dataset</th>
@@ -289,20 +289,20 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               <tbody className="divide-y divide-white/5">
                 {dataPoints.map((dp) => (
                   <tr key={dp.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="p-3 font-medium text-zinc-200">
+                    <td className="p-3 font-medium text-primary">
                       <div className="flex items-center gap-1.5">
                         {dp.isPredefined && (
-                          <Shield className="w-3.5 h-3.5 text-[#FFCC00] shrink-0" />
+                          <Shield className="w-3.5 h-3.5 text-cba-gold shrink-0" />
                         )}
                         <span className="truncate max-w-[160px]">{dp.name}</span>
                       </div>
                     </td>
                     <td className="p-3">
-                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-zinc-400">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-overlay text-secondary">
                         {dp.datapointType}
                       </span>
                     </td>
-                    <td className="p-3 text-zinc-400 truncate max-w-[120px]">
+                    <td className="p-3 text-secondary truncate max-w-[120px]">
                       {dp.datasetName || '-'}
                     </td>
                     <td className="p-3 text-center">
@@ -310,7 +310,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                         className={`inline-block w-2 h-2 rounded-full ${dp.isActive ? 'bg-emerald-400' : 'bg-zinc-600'}`}
                       />
                     </td>
-                    <td className="p-3 text-right text-zinc-300">{dp.extractionCount}</td>
+                    <td className="p-3 text-right text-primary">{dp.extractionCount}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2 justify-center">
                         <div className="w-16 neu-inset rounded-full h-1.5 overflow-hidden">
@@ -319,7 +319,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                             style={{ width: `${(dp.accuracy ?? 0) * 100}%` }}
                           />
                         </div>
-                        <span className="text-zinc-400 w-8 text-right">
+                        <span className="text-secondary w-8 text-right">
                           {((dp.accuracy ?? 0) * 100).toFixed(0)}%
                         </span>
                       </div>
@@ -330,7 +330,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                           type="button"
                           onClick={() => handleToggle(dp)}
                           disabled={toggling === dp.id}
-                          className={`p-1.5 rounded-lg transition-colors ${dp.isActive ? 'text-emerald-400 hover:bg-emerald-400/10' : 'text-zinc-500 hover:bg-white/5'}`}
+                          className={`p-1.5 rounded-lg transition-colors ${dp.isActive ? 'text-emerald-400 hover:bg-emerald-400/10' : 'text-muted hover:bg-overlay'}`}
                           title={dp.isActive ? 'Deactivate' : 'Activate'}
                         >
                           {toggling === dp.id ? (
@@ -344,7 +344,7 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
                         {!dp.isPredefined && (
                           <button
                             type="button"
-                            className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                            className="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />

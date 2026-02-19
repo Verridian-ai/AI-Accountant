@@ -28,7 +28,7 @@ type ViewMode = 'month' | 'list';
 const IMPORTANCE_COLORS: Record<string, string> = {
   high: 'bg-red-500/20 text-red-400 ring-red-500/30',
   medium: 'bg-amber-500/20 text-amber-400 ring-amber-500/30',
-  low: 'bg-zinc-500/20 text-zinc-400 ring-zinc-500/30',
+  low: 'bg-zinc-500/20 text-secondary ring-zinc-500/30',
 };
 
 const IMPORTANCE_DOT: Record<string, string> = {
@@ -164,16 +164,16 @@ export function EconomicCalendar() {
         <div className="flex items-center gap-3">
           <button
             onClick={prevMonth}
-            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+            className="neu-raised-sm p-1.5 rounded-lg text-secondary hover:text-primary"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <h3 className="text-lg font-bold text-white min-w-[180px] text-center">
+          <h3 className="text-lg font-bold text-primary min-w-[180px] text-center">
             {MONTHS[month]} {year}
           </h3>
           <button
             onClick={nextMonth}
-            className="neu-raised-sm p-1.5 rounded-lg text-zinc-400 hover:text-white"
+            className="neu-raised-sm p-1.5 rounded-lg text-secondary hover:text-primary"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -186,8 +186,8 @@ export function EconomicCalendar() {
               onClick={() => dispatch({ type: 'SET_FILTER', value: level })}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                 state.importanceFilter === level
-                  ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                  ? 'bg-cba-gold/20 text-cba-gold ring-1 ring-[#FFCC00]/30'
+                  : 'text-muted hover:text-primary hover:bg-overlay'
               }`}
             >
               {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -198,13 +198,13 @@ export function EconomicCalendar() {
 
           <button
             onClick={() => dispatch({ type: 'SET_VIEW', value: 'month' })}
-            className={`p-1.5 rounded-lg transition-all ${state.viewMode === 'month' ? 'text-[#FFCC00] bg-[#FFCC00]/10' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`p-1.5 rounded-lg transition-all ${state.viewMode === 'month' ? 'text-cba-gold bg-cba-gold/10' : 'text-muted hover:text-primary'}`}
           >
             <CalendarIcon className="w-4 h-4" />
           </button>
           <button
             onClick={() => dispatch({ type: 'SET_VIEW', value: 'list' })}
-            className={`p-1.5 rounded-lg transition-all ${state.viewMode === 'list' ? 'text-[#FFCC00] bg-[#FFCC00]/10' : 'text-zinc-500 hover:text-zinc-300'}`}
+            className={`p-1.5 rounded-lg transition-all ${state.viewMode === 'list' ? 'text-cba-gold bg-cba-gold/10' : 'text-muted hover:text-primary'}`}
           >
             <List className="w-4 h-4" />
           </button>
@@ -221,11 +221,11 @@ export function EconomicCalendar() {
         </div>
       ) : state.viewMode === 'month' ? (
         <div className="neu-raised rounded-2xl overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-white/5">
+          <div className="grid grid-cols-7 border-b border-border/50">
             {DAYS.map((day) => (
               <div
                 key={day}
-                className="px-2 py-2.5 text-center text-xs font-bold text-zinc-500 uppercase tracking-wider"
+                className="px-2 py-2.5 text-center text-xs font-bold text-muted uppercase tracking-wider"
               >
                 {day}
               </div>
@@ -237,15 +237,15 @@ export function EconomicCalendar() {
               return (
                 <div
                   key={`cell-${idx}`}
-                  className={`min-h-[80px] sm:min-h-[100px] p-1.5 border-b border-r border-white/5 ${
+                  className={`min-h-[80px] sm:min-h-[100px] p-1.5 border-b border-r border-border/50 ${
                     day === null ? 'bg-white/[0.01]' : 'hover:bg-white/[0.02]'
-                  } ${isToday(day ?? 0) ? 'bg-[#FFCC00]/[0.03]' : ''}`}
+                  } ${isToday(day ?? 0) ? 'bg-cba-gold/[0.03]' : ''}`}
                 >
                   {day && (
                     <>
                       <span
                         className={`text-xs font-medium ${
-                          isToday(day) ? 'text-[#FFCC00] font-bold' : 'text-zinc-400'
+                          isToday(day) ? 'text-cba-gold font-bold' : 'text-secondary'
                         }`}
                       >
                         {day}
@@ -261,7 +261,7 @@ export function EconomicCalendar() {
                           </div>
                         ))}
                         {dayEvents.length > 3 && (
-                          <span className="text-[10px] text-zinc-500 pl-1">
+                          <span className="text-[10px] text-muted pl-1">
                             +{dayEvents.length - 3} more
                           </span>
                         )}
@@ -276,28 +276,28 @@ export function EconomicCalendar() {
       ) : (
         <div className="space-y-2">
           {sortedEvents.length === 0 ? (
-            <div className="neu-raised rounded-2xl p-8 text-center text-zinc-500 text-sm">
+            <div className="neu-raised rounded-2xl p-8 text-center text-muted text-sm">
               No events scheduled
             </div>
           ) : (
             sortedEvents.map((evt) => (
               <div
                 key={evt.id}
-                className="neu-raised rounded-xl p-4 flex items-start gap-4 hover:border-[#FFCC00]/10 border border-transparent transition-all"
+                className="neu-raised rounded-xl p-4 flex items-start gap-4 hover:border-cba-gold/10 border border-transparent transition-all"
               >
                 <div
                   className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${IMPORTANCE_DOT[evt.importance]}`}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="text-sm font-bold text-white truncate">{evt.title}</h4>
+                    <h4 className="text-sm font-bold text-primary truncate">{evt.title}</h4>
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full ring-1 font-medium ${IMPORTANCE_COLORS[evt.importance]}`}
                     >
                       {evt.importance}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-zinc-500">
+                  <div className="flex items-center gap-3 text-xs text-muted">
                     <span className="flex items-center gap-1">
                       <CalendarIcon className="w-3 h-3" />
                       {new Date(evt.date).toLocaleDateString('en-AU', {
@@ -317,24 +317,24 @@ export function EconomicCalendar() {
                   {(evt.forecast || evt.previous) && (
                     <div className="flex gap-4 mt-2 text-xs">
                       {evt.forecast && (
-                        <span className="text-zinc-400">
-                          Forecast: <span className="text-white font-medium">{evt.forecast}</span>
+                        <span className="text-secondary">
+                          Forecast: <span className="text-primary font-medium">{evt.forecast}</span>
                         </span>
                       )}
                       {evt.previous && (
-                        <span className="text-zinc-400">
-                          Previous: <span className="text-zinc-300">{evt.previous}</span>
+                        <span className="text-secondary">
+                          Previous: <span className="text-primary">{evt.previous}</span>
                         </span>
                       )}
                       {evt.actual && (
-                        <span className="text-zinc-400">
+                        <span className="text-secondary">
                           Actual: <span className="text-emerald-400 font-medium">{evt.actual}</span>
                         </span>
                       )}
                     </div>
                   )}
                   {evt.description && (
-                    <p className="mt-1 text-xs text-zinc-500">{evt.description}</p>
+                    <p className="mt-1 text-xs text-muted">{evt.description}</p>
                   )}
                 </div>
                 {evt.importance === 'high' && (

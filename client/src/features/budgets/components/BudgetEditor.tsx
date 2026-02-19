@@ -107,7 +107,7 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
       <div className="space-y-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-zinc-400 hover:text-[#FFCC00] transition-colors"
+          className="flex items-center gap-2 text-secondary hover:text-cba-gold transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Budgets
         </button>
@@ -124,11 +124,11 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
       <div className="space-y-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-zinc-400 hover:text-[#FFCC00] transition-colors"
+          className="flex items-center gap-2 text-secondary hover:text-cba-gold transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Budgets
         </button>
-        <div className="neu-raised rounded-2xl p-8 text-center text-zinc-500">Budget not found</div>
+        <div className="neu-raised rounded-2xl p-8 text-center text-muted">Budget not found</div>
       </div>
     );
   }
@@ -140,13 +140,13 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-[#FFCC00] transition-colors"
+            className="neu-raised-sm p-2 rounded-xl text-secondary hover:text-cba-gold transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
             <h2 className="text-xl font-bold text-gradient-gold">{budget.name}</h2>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted">
               {budget.budgetType} &middot; {budget.periodStart} to {budget.periodEnd}
             </p>
           </div>
@@ -172,11 +172,11 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
                     budget.status === s
                       ? s === 'draft'
-                        ? 'bg-zinc-700 text-zinc-200'
+                        ? 'bg-zinc-700 text-primary'
                         : s === 'active'
                           ? 'bg-emerald-500/20 text-emerald-400'
                           : 'bg-amber-500/20 text-amber-400'
-                      : 'text-zinc-600 hover:text-zinc-400'
+                      : 'text-zinc-600 hover:text-secondary'
                   }`}
                 >
                   {s}
@@ -192,12 +192,12 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
 
       {/* Add New Line */}
       <div className="neu-raised rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-zinc-300 mb-3">Add Budget Line</h3>
+        <h3 className="text-sm font-bold text-primary mb-3">Add Budget Line</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <select
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+            className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
           >
             <option value="">Select Category</option>
             {CATEGORY_NAMES.map((c) => (
@@ -211,7 +211,7 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
             value={newPeriod}
             onChange={(e) => setNewPeriod(e.target.value)}
             placeholder="Period"
-            className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+            className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
           />
           <input
             type="number"
@@ -219,19 +219,19 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
             value={newAmount}
             onChange={(e) => setNewAmount(e.target.value)}
             placeholder="Amount ($)"
-            className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+            className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
           />
           <input
             type="text"
             value={newNotes}
             onChange={(e) => setNewNotes(e.target.value)}
             placeholder="Notes"
-            className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-zinc-200 focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+            className="neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
           />
           <button
             onClick={handleAddLine}
             disabled={!newCategory || !newAmount}
-            className="neu-raised-sm px-4 py-2 rounded-xl text-sm font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
+            className="neu-raised-sm px-4 py-2 rounded-xl text-sm font-bold text-cba-gold hover:bg-cba-gold/10 transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <Plus className="w-4 h-4" />
             Add
@@ -244,20 +244,20 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+              <tr className="border-b border-border/50">
+                <th className="text-left px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Category
                 </th>
-                <th className="text-left px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+                <th className="text-left px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Period
                 </th>
-                <th className="text-right px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+                <th className="text-right px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Budgeted
                 </th>
-                <th className="text-left px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+                <th className="text-left px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Notes
                 </th>
-                <th className="text-center px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider w-16">
+                <th className="text-center px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider w-16">
                   Actions
                 </th>
               </tr>
@@ -266,10 +266,10 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
               {lines.map((line) => (
                 <tr
                   key={line.id}
-                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                  className="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
                 >
-                  <td className="px-4 py-3 text-zinc-200 font-medium">{line.category}</td>
-                  <td className="px-4 py-3 text-zinc-400">{line.period}</td>
+                  <td className="px-4 py-3 text-primary font-medium">{line.category}</td>
+                  <td className="px-4 py-3 text-secondary">{line.period}</td>
                   <td className="px-4 py-3 text-right">
                     {editingCell === `${line.id}-amount` ? (
                       <input
@@ -282,7 +282,7 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
                         onKeyDown={(e) =>
                           e.key === 'Enter' && handleSaveCell(line.id, 'budgetedAmount')
                         }
-                        className="neu-inset rounded-lg px-2 py-1 text-sm bg-transparent text-zinc-200 w-28 text-right focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
+                        className="neu-inset rounded-lg px-2 py-1 text-sm bg-transparent text-primary w-28 text-right focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
                       />
                     ) : (
                       <button
@@ -290,7 +290,7 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
                           setEditingCell(`${line.id}-amount`);
                           setEditValue(((line.budgetedAmount ?? 0) / 100).toFixed(2));
                         }}
-                        className="text-[#FFCC00] font-mono hover:underline"
+                        className="text-cba-gold font-mono hover:underline"
                       >
                         $
                         {((line.budgetedAmount ?? 0) / 100).toLocaleString('en-AU', {
@@ -299,7 +299,7 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
                       </button>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-zinc-500 text-xs">{line.notes || '—'}</td>
+                  <td className="px-4 py-3 text-muted text-xs">{line.notes || '—'}</td>
                   <td className="px-4 py-3 text-center">
                     <button className="text-red-400/60 hover:text-red-400 transition-colors p-1">
                       <Trash2 className="w-4 h-4" />
@@ -316,11 +316,11 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
               )}
             </tbody>
             <tfoot>
-              <tr className="border-t border-[#FFCC00]/20 bg-[#FFCC00]/5">
-                <td colSpan={2} className="px-4 py-3 text-zinc-300 font-bold">
+              <tr className="border-t border-cba-gold/20 bg-cba-gold/5">
+                <td colSpan={2} className="px-4 py-3 text-primary font-bold">
                   Total
                 </td>
-                <td className="px-4 py-3 text-right text-[#FFCC00] font-bold font-mono">
+                <td className="px-4 py-3 text-right text-cba-gold font-bold font-mono">
                   ${(totalBudgeted / 100).toLocaleString('en-AU', { minimumFractionDigits: 2 })}
                 </td>
                 <td colSpan={2} />

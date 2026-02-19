@@ -134,7 +134,7 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
         {revenueMetrics.map((metric) => (
           <div
             key={metric.label}
-            className="neu-raised rounded-[2rem] p-6 interactive-card group relative overflow-hidden border border-white/5"
+            className="neu-raised rounded-[2rem] p-6 interactive-card group relative overflow-hidden border border-border/50"
           >
             <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
             <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-0 group-hover:opacity-40 transition-opacity duration-700 bg-emerald-500" />
@@ -172,17 +172,17 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
       {/* Plan Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Chart Visualization */}
-        <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+        <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
           <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
 
           <div className="relative flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="neu-inset p-3 rounded-xl border border-white/5">
-                <PieChart className="w-5 h-5 text-[#FFCC00]" />
+              <div className="neu-inset p-3 rounded-xl border border-border/50">
+                <PieChart className="w-5 h-5 text-cba-gold" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-zinc-100">Plan Distribution</h3>
-                <p className="text-xs text-zinc-500">{totalUsers.toLocaleString()} total users</p>
+                <p className="text-xs text-muted">{totalUsers.toLocaleString()} total users</p>
               </div>
             </div>
           </div>
@@ -245,7 +245,7 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
             {plans.map((plan) => (
               <div key={plan.id} className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: plan.color }} />
-                <span className="text-sm text-zinc-400">{plan.name}</span>
+                <span className="text-sm text-secondary">{plan.name}</span>
                 <span className="text-sm text-zinc-600 ml-auto">
                   {plan.userCount.toLocaleString()}
                 </span>
@@ -255,17 +255,17 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
         </div>
 
         {/* Revenue by Plan */}
-        <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+        <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
           <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
 
           <div className="relative flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="neu-inset p-3 rounded-xl border border-white/5">
-                <DollarSign className="w-5 h-5 text-[#FFCC00]" />
+              <div className="neu-inset p-3 rounded-xl border border-border/50">
+                <DollarSign className="w-5 h-5 text-cba-gold" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-zinc-100">Revenue by Plan</h3>
-                <p className="text-xs text-zinc-500">{formatCurrency(totalRevenue)} this period</p>
+                <p className="text-xs text-muted">{formatCurrency(totalRevenue)} this period</p>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => onExportData?.('csv')}>
@@ -285,18 +285,18 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
                       <div className="flex items-center gap-2">
                         <Badge
                           variant="outline"
-                          className="border-white/10"
+                          className="border-border"
                           style={{ borderColor: plan.color, color: plan.color }}
                         >
                           {plan.name}
                         </Badge>
-                        <span className="text-xs text-zinc-500">{plan.userCount} users</span>
+                        <span className="text-xs text-muted">{plan.userCount} users</span>
                       </div>
-                      <span className="text-sm font-semibold text-zinc-200">
+                      <span className="text-sm font-semibold text-primary">
                         {formatCurrency(plan.revenue)}
                       </span>
                     </div>
-                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-2 bg-overlay rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
@@ -313,17 +313,17 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
       </div>
 
       {/* Churn Analysis */}
-      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-white/5">
+      <div className="neu-raised rounded-[2rem] p-6 relative overflow-hidden border border-border/50">
         <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
 
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="neu-inset p-3 rounded-xl border border-white/5">
-              <Users className="w-5 h-5 text-[#FFCC00]" />
+            <div className="neu-inset p-3 rounded-xl border border-border/50">
+              <Users className="w-5 h-5 text-cba-gold" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-zinc-100">User Growth & Churn</h3>
-              <p className="text-xs text-zinc-500">Monthly subscriber changes</p>
+              <p className="text-xs text-muted">Monthly subscriber changes</p>
             </div>
           </div>
 
@@ -369,7 +369,7 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
                       title={`Churned: ${data.churned}`}
                     />
                   </div>
-                  <span className="text-[10px] text-zinc-500">{data.month}</span>
+                  <span className="text-[10px] text-muted">{data.month}</span>
                   <span
                     className={cn(
                       'text-[10px] font-semibold',
@@ -386,14 +386,14 @@ export function SubscriptionOverview({ onExportData, className }: SubscriptionOv
         </div>
 
         {/* Legend */}
-        <div className="relative flex items-center justify-center gap-6 mt-4 pt-4 border-t border-white/5">
+        <div className="relative flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border/50">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-emerald-500/60" />
-            <span className="text-xs text-zinc-400">New Subscribers</span>
+            <span className="text-xs text-secondary">New Subscribers</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-red-500/60" />
-            <span className="text-xs text-zinc-400">Churned</span>
+            <span className="text-xs text-secondary">Churned</span>
           </div>
         </div>
       </div>
@@ -406,7 +406,7 @@ function SubscriptionOverviewSkeleton({ className }: { className?: string }) {
     <div className={cn('space-y-6', className)}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="neu-raised rounded-[2rem] p-6 border border-white/5">
+          <div key={i} className="neu-raised rounded-[2rem] p-6 border border-border/50">
             <div className="space-y-3">
               <Skeleton className="w-32 h-3 rounded" />
               <Skeleton className="w-24 h-8 rounded" />
@@ -416,7 +416,7 @@ function SubscriptionOverviewSkeleton({ className }: { className?: string }) {
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="neu-raised rounded-[2rem] p-6 border border-white/5">
+        <div className="neu-raised rounded-[2rem] p-6 border border-border/50">
           <div className="flex items-center gap-3 mb-6">
             <Skeleton className="w-11 h-11 rounded-xl" />
             <div className="space-y-2">
@@ -426,7 +426,7 @@ function SubscriptionOverviewSkeleton({ className }: { className?: string }) {
           </div>
           <Skeleton className="w-[200px] h-[200px] rounded-full mx-auto" />
         </div>
-        <div className="neu-raised rounded-[2rem] p-6 border border-white/5">
+        <div className="neu-raised rounded-[2rem] p-6 border border-border/50">
           <div className="flex items-center gap-3 mb-6">
             <Skeleton className="w-11 h-11 rounded-xl" />
             <div className="space-y-2">

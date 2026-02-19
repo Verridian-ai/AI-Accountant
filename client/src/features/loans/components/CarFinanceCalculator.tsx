@@ -56,10 +56,10 @@ export function CarFinanceCalculator() {
 
   return (
     <div className="space-y-6">
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Car className="w-5 h-5 text-[#FFCC00]" />
+            <Car className="w-5 h-5 text-cba-gold" />
             Car Finance Comparison
           </CardTitle>
           <CardDescription>
@@ -140,7 +140,7 @@ export function CarFinanceCalculator() {
           <Button
             onClick={handleCalculate}
             disabled={loading}
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+            className="bg-cba-gold text-base hover:bg-[#e6b800]"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Compare Options
@@ -163,13 +163,13 @@ export function CarFinanceCalculator() {
             return (
               <Card
                 key={opt.type}
-                className={`neu-raised border-white/5 ${isCheapest ? 'ring-2 ring-[#FFCC00]/50' : ''}`}
+                className={`neu-raised border-border/50 ${isCheapest ? 'ring-2 ring-[#FFCC00]/50' : ''}`}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">{opt.type}</CardTitle>
                     {isCheapest && (
-                      <Badge className="bg-[#FFCC00]/10 text-[#FFCC00] border-[#FFCC00]/20">
+                      <Badge className="bg-cba-gold/10 text-cba-gold border-cba-gold/20">
                         <Trophy className="w-3 h-3 mr-1" /> Best Value
                       </Badge>
                     )}
@@ -178,23 +178,23 @@ export function CarFinanceCalculator() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-zinc-400 text-sm">Monthly Payment</span>
+                      <span className="text-secondary text-sm">Monthly Payment</span>
                       <span className="font-bold">{formatCurrency(opt.monthlyPayment)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-400 text-sm">Total Interest</span>
+                      <span className="text-secondary text-sm">Total Interest</span>
                       <span className="text-red-400">{formatCurrency(opt.totalInterest)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-400 text-sm">Tax Benefit</span>
+                      <span className="text-secondary text-sm">Tax Benefit</span>
                       <span className="text-emerald-400">{formatCurrency(opt.taxBenefit)}</span>
                     </div>
-                    <div className="border-t border-white/10 pt-3 flex justify-between">
-                      <span className="text-zinc-400 text-sm">After-Tax Cost</span>
+                    <div className="border-t border-border pt-3 flex justify-between">
+                      <span className="text-secondary text-sm">After-Tax Cost</span>
                       <span className="font-bold text-lg">{formatCurrency(opt.afterTaxCost)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-400 text-sm">Effective Rate</span>
+                      <span className="text-secondary text-sm">Effective Rate</span>
                       <span>{formatPercent(opt.effectiveRate)}</span>
                     </div>
                   </div>

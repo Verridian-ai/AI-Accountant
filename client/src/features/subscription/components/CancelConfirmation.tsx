@@ -63,7 +63,7 @@ export function CancelConfirmation({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-zinc-500 hover:text-zinc-300"
+            className="p-1 rounded-lg text-muted hover:text-primary"
           >
             <X className="w-5 h-5" />
           </button>
@@ -71,25 +71,25 @@ export function CancelConfirmation({
 
         {/* Warning */}
         <div className="neu-inset rounded-xl p-4 space-y-2">
-          <p className="text-sm text-zinc-300">
-            Your <span className="font-bold text-[#FFCC00]">{planName}</span> plan will remain
-            active until <span className="font-bold text-zinc-200">{formatDate(periodEnd)}</span>.
+          <p className="text-sm text-primary">
+            Your <span className="font-bold text-cba-gold">{planName}</span> plan will remain
+            active until <span className="font-bold text-primary">{formatDate(periodEnd)}</span>.
           </p>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-secondary">
             After that, your workspace will be downgraded to the Starter plan with limited features.
           </p>
         </div>
 
         {/* Features Lost */}
         <div>
-          <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+          <p className="text-xs font-black text-muted uppercase tracking-widest mb-2">
             Features You'll Lose
           </p>
           <div className="space-y-1.5">
             {LOST_FEATURES.map((f) => (
               <div key={f} className="flex items-center gap-2 text-sm">
                 <X className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                <span className="text-zinc-400">{f}</span>
+                <span className="text-secondary">{f}</span>
               </div>
             ))}
           </div>
@@ -102,7 +102,7 @@ export function CancelConfirmation({
               <Gift className="w-5 h-5 text-emerald-400" />
               <p className="text-sm font-bold text-emerald-400">Special Offer</p>
             </div>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-secondary">
               Stay on {planName} and get <span className="font-bold text-emerald-400">20% off</span>{' '}
               your next month.
             </p>
@@ -117,7 +117,7 @@ export function CancelConfirmation({
               <button
                 type="button"
                 onClick={() => setShowRetention(false)}
-                className="px-3 py-2 rounded-xl text-sm font-bold text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="px-3 py-2 rounded-xl text-sm font-bold text-muted hover:text-primary transition-colors"
               >
                 Continue Cancelling
               </button>
@@ -128,7 +128,7 @@ export function CancelConfirmation({
         {/* Confirmation */}
         {!showRetention && (
           <div className="space-y-3">
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-secondary">
               Type <span className="font-bold text-red-400">CANCEL</span> to confirm:
             </p>
             <input
@@ -136,7 +136,7 @@ export function CancelConfirmation({
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder="Type CANCEL"
-              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-red-500/30 placeholder:text-zinc-600"
+              className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-red-500/30 placeholder:text-zinc-600"
             />
             {error && <p className="text-sm text-red-400 font-medium">{error}</p>}
             <div className="flex gap-2">
@@ -147,7 +147,7 @@ export function CancelConfirmation({
                 className={cn(
                   'flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors',
                   confirmText === 'CANCEL'
-                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    ? 'bg-red-500 text-primary hover:bg-red-600'
                     : 'bg-zinc-800 text-zinc-600 cursor-not-allowed',
                 )}
               >
@@ -156,7 +156,7 @@ export function CancelConfirmation({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 rounded-xl text-sm font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="px-4 py-2.5 rounded-xl text-sm font-bold text-secondary hover:text-primary transition-colors"
               >
                 Go Back
               </button>

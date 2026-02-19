@@ -103,7 +103,7 @@ export function AccountSummaryCards() {
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
-            className="h-44 neu-raised rounded-2xl animate-pulse border border-white/5"
+            className="h-44 neu-raised rounded-2xl animate-pulse border border-border/50"
           />
         ))}
       </div>
@@ -115,8 +115,8 @@ export function AccountSummaryCards() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-[#FFCC00] animate-pulse" />
-        <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]">
+        <div className="w-1.5 h-1.5 rounded-full bg-cba-gold animate-pulse" />
+        <h3 className="text-[10px] font-black text-muted uppercase tracking-[0.25em]">
           Account Summary
         </h3>
       </div>
@@ -131,12 +131,12 @@ export function AccountSummaryCards() {
             return (
               <div
                 key={account.id}
-                className="neu-raised rounded-2xl p-5 border border-white/5 group hover:border-[#FFCC00]/10 transition-all"
+                className="neu-raised rounded-2xl p-5 border border-border/50 group hover:border-cba-gold/10 transition-all"
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="neu-inset p-2.5 rounded-xl text-[#FFCC00]">
+                    <div className="neu-inset p-2.5 rounded-xl text-cba-gold">
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
@@ -194,21 +194,21 @@ export function AccountSummaryCards() {
                   </div>
                   <div className="neu-inset rounded-lg p-2.5">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <Receipt className="w-3 h-3 text-[#FFCC00]" />
+                      <Receipt className="w-3 h-3 text-cba-gold" />
                       <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">
                         Transactions
                       </span>
                     </div>
-                    <p className="text-xs font-black text-zinc-200">{transactionCount}</p>
+                    <p className="text-xs font-black text-primary">{transactionCount}</p>
                   </div>
                   <div className="neu-inset rounded-lg p-2.5">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <Clock className="w-3 h-3 text-zinc-400" />
+                      <Clock className="w-3 h-3 text-secondary" />
                       <span className="text-[7px] font-black text-zinc-600 uppercase tracking-widest">
                         Last Active
                       </span>
                     </div>
-                    <p className="text-[10px] font-bold text-zinc-400">
+                    <p className="text-[10px] font-bold text-secondary">
                       {formatDate(lastActivity)}
                     </p>
                   </div>

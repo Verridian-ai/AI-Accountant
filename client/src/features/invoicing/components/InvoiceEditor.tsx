@@ -188,7 +188,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -200,18 +200,18 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
         <h3 className="text-lg font-bold text-zinc-100">
           {invoiceId ? 'Edit Invoice' : 'New Invoice'}
         </h3>
-        <span className="text-sm font-mono text-[#FFCC00]">{invoiceNumber}</span>
+        <span className="text-sm font-mono text-cba-gold">{invoiceNumber}</span>
       </div>
 
       {/* Customer Selector */}
       <div className="neu-raised rounded-2xl p-5 space-y-4">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Customer</h4>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted">Customer</h4>
 
         {selectedCustomer ? (
           <div className="flex items-center justify-between neu-inset rounded-xl p-3">
             <div>
               <p className="font-semibold text-zinc-100">{selectedCustomer.businessName}</p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted">
                 {selectedCustomer.contactName ?? ''}{' '}
                 {selectedCustomer.abn ? `| ABN: ${selectedCustomer.abn}` : ''}
               </p>
@@ -221,7 +221,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
                 setSelectedCustomer(null);
                 setCustomerSearch('');
               }}
-              className="p-1.5 rounded-lg hover:bg-zinc-700/50 text-zinc-400 hover:text-zinc-100 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-zinc-700/50 text-secondary hover:text-zinc-100 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -237,7 +237,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
               }}
               onFocus={() => setShowCustomerDropdown(true)}
               placeholder="Search customers by name, ABN, or email..."
-              className="w-full px-4 py-2.5 rounded-xl neu-inset bg-transparent text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full px-4 py-2.5 rounded-xl neu-inset bg-transparent text-sm text-primary placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
             {showCustomerDropdown && customers.length > 0 && (
               <div className="absolute z-20 top-full mt-1 w-full max-h-48 overflow-y-auto rounded-xl bg-[#15161f] border border-zinc-700 shadow-xl">
@@ -251,8 +251,8 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
                     }}
                     className="w-full text-left px-4 py-2.5 hover:bg-zinc-800/50 transition-colors border-b border-zinc-800/50 last:border-0"
                   >
-                    <p className="text-sm font-semibold text-zinc-200">{c.businessName}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-sm font-semibold text-primary">{c.businessName}</p>
+                    <p className="text-xs text-muted">
                       {c.contactName ?? ''} {c.email ? `| ${c.email}` : ''}
                     </p>
                   </button>
@@ -265,56 +265,56 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
 
       {/* Invoice Details */}
       <div className="neu-raised rounded-2xl p-5 space-y-4">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted">
           Invoice Details
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-zinc-500 mb-1">Issue Date</label>
+            <label className="block text-xs text-muted mb-1">Issue Date</label>
             <input
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl neu-inset bg-transparent text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full px-3 py-2 rounded-xl neu-inset bg-transparent text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <div>
-            <label className="block text-xs text-zinc-500 mb-1">Due Date</label>
+            <label className="block text-xs text-muted mb-1">Due Date</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl neu-inset bg-transparent text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full px-3 py-2 rounded-xl neu-inset bg-transparent text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
         </div>
         <div>
-          <label className="block text-xs text-zinc-500 mb-1">Notes</label>
+          <label className="block text-xs text-muted mb-1">Notes</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 rounded-xl neu-inset bg-transparent text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            className="w-full px-3 py-2 rounded-xl neu-inset bg-transparent text-sm text-primary placeholder-zinc-600 resize-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             placeholder="Additional notes for this invoice..."
           />
         </div>
         <div>
-          <label className="block text-xs text-zinc-500 mb-1">Terms & Conditions</label>
+          <label className="block text-xs text-muted mb-1">Terms & Conditions</label>
           <textarea
             value={terms}
             onChange={(e) => setTerms(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 rounded-xl neu-inset bg-transparent text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+            className="w-full px-3 py-2 rounded-xl neu-inset bg-transparent text-sm text-primary placeholder-zinc-600 resize-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
           />
         </div>
       </div>
 
       {/* Line Items */}
       <div className="neu-raised rounded-2xl p-5 space-y-4">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Line Items</h4>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted">Line Items</h4>
 
         {/* Header */}
-        <div className="hidden sm:grid grid-cols-12 gap-2 text-[10px] uppercase tracking-wider text-zinc-500 font-semibold px-1">
+        <div className="hidden sm:grid grid-cols-12 gap-2 text-[10px] uppercase tracking-wider text-muted font-semibold px-1">
           <div className="col-span-4">Description</div>
           <div className="col-span-2 text-right">Qty</div>
           <div className="col-span-2 text-right">Unit Price</div>
@@ -334,7 +334,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
                   value={li.description}
                   onChange={(e) => updateLine(li.id, 'description', e.target.value)}
                   placeholder="Item description"
-                  className="w-full px-3 py-2 rounded-lg neu-inset bg-transparent text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                  className="w-full px-3 py-2 rounded-lg neu-inset bg-transparent text-sm text-primary placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
                 />
               </div>
               <div className="col-span-4 sm:col-span-2">
@@ -346,7 +346,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
                   }
                   min="0"
                   step="1"
-                  className="w-full px-3 py-2 rounded-lg neu-inset bg-transparent text-sm text-zinc-200 text-right focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                  className="w-full px-3 py-2 rounded-lg neu-inset bg-transparent text-sm text-primary text-right focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
                 />
               </div>
               <div className="col-span-4 sm:col-span-2">
@@ -363,21 +363,21 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full px-3 py-2 rounded-lg neu-inset bg-transparent text-sm text-zinc-200 text-right focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                  className="w-full px-3 py-2 rounded-lg neu-inset bg-transparent text-sm text-primary text-right focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
                 />
               </div>
               <div className="col-span-3 sm:col-span-2">
                 <select
                   value={li.gstRate}
                   onChange={(e) => updateLine(li.id, 'gstRate', parseFloat(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg neu-inset bg-transparent text-sm text-zinc-200 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+                  className="w-full px-3 py-2 rounded-lg neu-inset bg-transparent text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
                 >
                   <option value={0.1}>10% GST</option>
                   <option value={0}>GST Free</option>
                 </select>
               </div>
               <div className="col-span-4 sm:col-span-1 text-right">
-                <span className="text-sm font-semibold text-zinc-200">
+                <span className="text-sm font-semibold text-primary">
                   {formatAUD(lineAmount + lineGst)}
                 </span>
               </div>
@@ -385,7 +385,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
                 <button
                   onClick={() => removeLine(li.id)}
                   disabled={lineItems.length === 1}
-                  className="p-1.5 rounded-lg hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-lg hover:bg-red-500/20 text-muted hover:text-red-400 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -396,7 +396,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
 
         <button
           onClick={addLine}
-          className="flex items-center gap-2 text-sm text-[#FFCC00] hover:text-[#FFD633] font-semibold transition-colors"
+          className="flex items-center gap-2 text-sm text-cba-gold hover:text-[#FFD633] font-semibold transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Line Item
@@ -407,12 +407,12 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
       <div className="neu-raised rounded-2xl p-5">
         <div className="flex flex-col items-end gap-2">
           <div className="flex justify-between w-full sm:w-64">
-            <span className="text-sm text-zinc-400">Subtotal</span>
-            <span className="text-sm font-semibold text-zinc-200">{formatAUD(subtotal)}</span>
+            <span className="text-sm text-secondary">Subtotal</span>
+            <span className="text-sm font-semibold text-primary">{formatAUD(subtotal)}</span>
           </div>
           <div className="flex justify-between w-full sm:w-64">
-            <span className="text-sm text-zinc-400">GST (10%)</span>
-            <span className="text-sm font-semibold text-zinc-200">{formatAUD(gstTotal)}</span>
+            <span className="text-sm text-secondary">GST (10%)</span>
+            <span className="text-sm font-semibold text-primary">{formatAUD(gstTotal)}</span>
           </div>
           <div className="flex justify-between w-full sm:w-64 pt-2 border-t border-zinc-700">
             <span className="text-base font-bold text-zinc-100">Total</span>
@@ -425,7 +425,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
       <div className="flex flex-wrap gap-3 justify-end">
         <button
           onClick={onCancel}
-          className="px-5 py-2.5 rounded-xl neu-raised text-sm font-semibold text-zinc-400 hover:text-zinc-100 transition-colors"
+          className="px-5 py-2.5 rounded-xl neu-raised text-sm font-semibold text-secondary hover:text-zinc-100 transition-colors"
         >
           Cancel
         </button>
@@ -440,7 +440,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
         <button
           onClick={() => handleSave(true)}
           disabled={saving || !selectedCustomer}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFCC00] text-[#0a0a0f] text-sm font-bold hover:bg-[#FFD633] transition-colors shadow-[0_0_15px_rgba(255,204,0,0.15)] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cba-gold text-base text-sm font-bold hover:bg-[#FFD633] transition-colors shadow-[0_0_15px_rgba(255,204,0,0.15)] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           Save & Send

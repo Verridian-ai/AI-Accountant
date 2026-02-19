@@ -51,7 +51,7 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
       <div className="space-y-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-zinc-400 hover:text-[#FFCC00] transition-colors"
+          className="flex items-center gap-2 text-secondary hover:text-cba-gold transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Budgets
         </button>
@@ -77,13 +77,13 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
-          className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-[#FFCC00] transition-colors"
+          className="neu-raised-sm p-2 rounded-xl text-secondary hover:text-cba-gold transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
           <h2 className="text-xl font-bold text-gradient-gold">Budget vs Actual</h2>
-          <p className="text-sm text-zinc-500">Variance analysis for budget</p>
+          <p className="text-sm text-muted">Variance analysis for budget</p>
         </div>
       </div>
 
@@ -91,21 +91,21 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
       {summary && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="neu-raised rounded-2xl p-5">
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">
+            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">
               Total Budgeted
             </p>
-            <p className="text-xl font-bold text-zinc-200 font-mono">
+            <p className="text-xl font-bold text-primary font-mono">
               {fmt(summary.totalBudgeted)}
             </p>
           </div>
           <div className="neu-raised rounded-2xl p-5">
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">
+            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">
               Total Actual
             </p>
-            <p className="text-xl font-bold text-zinc-200 font-mono">{fmt(summary.totalActual)}</p>
+            <p className="text-xl font-bold text-primary font-mono">{fmt(summary.totalActual)}</p>
           </div>
           <div className="neu-raised rounded-2xl p-5">
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">
+            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">
               Total Variance
             </p>
             <p
@@ -115,7 +115,7 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
             </p>
           </div>
           <div className="neu-raised rounded-2xl p-5">
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Health</p>
+            <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">Health</p>
             <span
               className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold ${health.color}`}
             >
@@ -137,8 +137,8 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
                 <AlertTriangle className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-zinc-300 truncate">{tv.category}</p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-sm font-medium text-primary truncate">{tv.category}</p>
+                <p className="text-xs text-muted">
                   Budget: {fmt(tv.budgeted)} &middot; Actual: {fmt(tv.actual)}
                 </p>
               </div>
@@ -157,26 +157,26 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+              <tr className="border-b border-border/50">
+                <th className="text-left px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Category
                 </th>
-                <th className="text-left px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+                <th className="text-left px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Period
                 </th>
-                <th className="text-right px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+                <th className="text-right px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Budgeted
                 </th>
-                <th className="text-right px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+                <th className="text-right px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Actual
                 </th>
-                <th className="text-right px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+                <th className="text-right px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Variance $
                 </th>
-                <th className="text-right px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider">
+                <th className="text-right px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider">
                   Variance %
                 </th>
-                <th className="px-4 py-3 text-zinc-500 font-bold uppercase text-xs tracking-wider w-40">
+                <th className="px-4 py-3 text-muted font-bold uppercase text-xs tracking-wider w-40">
                   Progress
                 </th>
               </tr>
@@ -190,7 +190,7 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
                 return (
                   <tr
                     key={i}
-                    className={`border-b border-white/5 transition-colors ${
+                    className={`border-b border-border/50 transition-colors ${
                       isOver
                         ? 'bg-red-500/5'
                         : isSignificantlyUnder
@@ -198,12 +198,12 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
                           : 'hover:bg-white/[0.02]'
                     }`}
                   >
-                    <td className="px-4 py-3 text-zinc-200 font-medium">{v.category}</td>
-                    <td className="px-4 py-3 text-zinc-400">{v.period}</td>
-                    <td className="px-4 py-3 text-right text-zinc-300 font-mono">
+                    <td className="px-4 py-3 text-primary font-medium">{v.category}</td>
+                    <td className="px-4 py-3 text-secondary">{v.period}</td>
+                    <td className="px-4 py-3 text-right text-primary font-mono">
                       {fmt(v.budgetedAmount)}
                     </td>
-                    <td className="px-4 py-3 text-right text-zinc-300 font-mono">
+                    <td className="px-4 py-3 text-right text-primary font-mono">
                       {fmt(v.actualAmount)}
                     </td>
                     <td

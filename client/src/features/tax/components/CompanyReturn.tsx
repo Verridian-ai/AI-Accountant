@@ -29,8 +29,8 @@ export function CompanyReturn({ year }: { year: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
-        <span className="ml-2 text-zinc-400">Calculating company return...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
+        <span className="ml-2 text-secondary">Calculating company return...</span>
       </div>
     );
   }
@@ -74,7 +74,7 @@ export function CompanyReturn({ year }: { year: string }) {
       </div>
 
       {/* Revenue & Expense Breakdown */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="text-gradient-gold">Company P&L</CardTitle>
           <CardDescription>Company Tax Return — FY {year} (Base Rate Entity 25%)</CardDescription>
@@ -84,9 +84,9 @@ export function CompanyReturn({ year }: { year: string }) {
             {Object.entries(data.breakdown).map(([key, value]) => (
               <div
                 key={key}
-                className="flex justify-between items-center py-2 border-b border-white/5 last:border-0"
+                className="flex justify-between items-center py-2 border-b border-border/50 last:border-0"
               >
-                <span className="text-zinc-400 capitalize">{key.replace(/_/g, ' ')}</span>
+                <span className="text-secondary capitalize">{key.replace(/_/g, ' ')}</span>
                 <span
                   className={`font-medium ${(value as number) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
                 >
@@ -99,7 +99,7 @@ export function CompanyReturn({ year }: { year: string }) {
       </Card>
 
       {/* Franking Credits Info */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle>Franking Credits</CardTitle>
           <CardDescription>
@@ -109,16 +109,16 @@ export function CompanyReturn({ year }: { year: string }) {
         <CardContent>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-zinc-400">Tax Paid</span>
+              <span className="text-secondary">Tax Paid</span>
               <span className="font-medium">{formatCurrency(data.netTaxPayableCents)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Franking Credits Generated</span>
+              <span className="text-secondary">Franking Credits Generated</span>
               <span className="font-medium text-emerald-400">
                 {formatCurrency(data.netTaxPayableCents)}
               </span>
             </div>
-            <p className="text-xs text-zinc-500 pt-2">
+            <p className="text-xs text-muted pt-2">
               Franking credits can be distributed to shareholders with dividends, reducing their
               personal tax liability.
             </p>
@@ -136,7 +136,7 @@ export function CompanyReturn({ year }: { year: string }) {
           <CardContent>
             <ul className="space-y-2">
               {data.warnings.map((w: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-zinc-400">
+                <li key={i} className="flex items-start gap-2 text-sm text-secondary">
                   <Badge
                     variant="outline"
                     className="shrink-0 mt-0.5 border-amber-500/30 text-amber-400"

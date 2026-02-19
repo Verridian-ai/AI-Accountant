@@ -115,10 +115,10 @@ export function TransferConfirmation() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5">
+      <div className="neu-raised rounded-3xl p-8 border border-border/50">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-[#FFCC00] animate-pulse" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <div className="w-2 h-2 rounded-full bg-cba-gold animate-pulse" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Scanning transfers...
           </span>
         </div>
@@ -133,11 +133,11 @@ export function TransferConfirmation() {
 
   if (matches.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-10 text-center border border-white/5">
+      <div className="neu-raised rounded-3xl p-10 text-center border border-border/50">
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <GitCompareArrows className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">
           No Transfer Matches
         </h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight">
@@ -150,10 +150,10 @@ export function TransferConfirmation() {
   return (
     <div className="space-y-4">
       {/* Summary Bar */}
-      <div className="neu-raised rounded-2xl p-4 border border-white/5 flex flex-wrap items-center gap-4">
+      <div className="neu-raised rounded-2xl p-4 border border-border/50 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <GitCompareArrows className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.15em]">
+          <GitCompareArrows className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-secondary uppercase tracking-[0.15em]">
             Transfer Matches
           </span>
         </div>
@@ -166,8 +166,8 @@ export function TransferConfirmation() {
 
       {/* Batch Actions */}
       {selected.size > 0 && (
-        <div className="neu-raised rounded-2xl p-3 border border-[#FFCC00]/20 flex items-center justify-between">
-          <span className="text-xs font-bold text-zinc-300">{selected.size} selected</span>
+        <div className="neu-raised rounded-2xl p-3 border border-cba-gold/20 flex items-center justify-between">
+          <span className="text-xs font-bold text-primary">{selected.size} selected</span>
           <button
             type="button"
             onClick={handleBatchConfirm}
@@ -189,7 +189,7 @@ export function TransferConfirmation() {
               key={match.id}
               className={cn(
                 'neu-raised rounded-2xl border transition-all',
-                isSelected ? 'border-[#FFCC00]/30' : 'border-white/5',
+                isSelected ? 'border-cba-gold/30' : 'border-border/50',
               )}
             >
               <div className="p-4">
@@ -202,11 +202,11 @@ export function TransferConfirmation() {
                       className={cn(
                         'w-5 h-5 rounded border-2 flex items-center justify-center transition-all',
                         isSelected
-                          ? 'border-[#FFCC00] bg-[#FFCC00]'
+                          ? 'border-cba-gold bg-cba-gold'
                           : 'border-zinc-600 hover:border-zinc-400',
                       )}
                     >
-                      {isSelected && <Check className="w-3 h-3 text-[#0a0a0f]" />}
+                      {isSelected && <Check className="w-3 h-3 text-base" />}
                     </button>
                     <span
                       className={cn(
@@ -218,7 +218,7 @@ export function TransferConfirmation() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-16 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="w-16 h-1.5 rounded-full bg-overlay overflow-hidden">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
@@ -233,15 +233,15 @@ export function TransferConfirmation() {
                 {/* Source → Target layout */}
                 <div className="flex flex-col sm:flex-row items-stretch gap-3">
                   {/* Source */}
-                  <div className="flex-1 neu-inset rounded-xl p-3 border border-white/5">
+                  <div className="flex-1 neu-inset rounded-xl p-3 border border-border/50">
                     <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-1">
                       Source
                     </p>
-                    <p className="text-xs font-bold text-zinc-200 truncate">
+                    <p className="text-xs font-bold text-primary truncate">
                       {match.sourceDescription}
                     </p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-[9px] font-bold text-zinc-500">
+                      <span className="text-[9px] font-bold text-muted">
                         {match.sourceAccountName}
                       </span>
                       <span className="text-sm font-black text-red-400">
@@ -254,20 +254,20 @@ export function TransferConfirmation() {
                   {/* Arrow */}
                   <div className="flex items-center justify-center">
                     <div className="neu-inset p-2 rounded-xl">
-                      <ArrowRight className="w-4 h-4 text-[#FFCC00] sm:rotate-0 rotate-90" />
+                      <ArrowRight className="w-4 h-4 text-cba-gold sm:rotate-0 rotate-90" />
                     </div>
                   </div>
 
                   {/* Target */}
-                  <div className="flex-1 neu-inset rounded-xl p-3 border border-white/5">
+                  <div className="flex-1 neu-inset rounded-xl p-3 border border-border/50">
                     <p className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-1">
                       Target
                     </p>
-                    <p className="text-xs font-bold text-zinc-200 truncate">
+                    <p className="text-xs font-bold text-primary truncate">
                       {match.targetDescription}
                     </p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-[9px] font-bold text-zinc-500">
+                      <span className="text-[9px] font-bold text-muted">
                         {match.targetAccountName}
                       </span>
                       <span className="text-sm font-black text-emerald-400">
@@ -290,7 +290,7 @@ export function TransferConfirmation() {
               </div>
 
               {/* Action Footer */}
-              <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-white/5 bg-black/20 rounded-b-2xl">
+              <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border/50 bg-overlay rounded-b-2xl">
                 <button
                   type="button"
                   onClick={() => handleReject(match.id)}

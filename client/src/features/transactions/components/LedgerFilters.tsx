@@ -47,7 +47,7 @@ export function LedgerFilters({
           aria-label="Filter by start date"
           value={startDate}
           onChange={(e) => onStartDateChange(e.target.value)}
-          className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent"
+          className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent"
         />
       </div>
 
@@ -61,7 +61,7 @@ export function LedgerFilters({
           aria-label="Filter by end date"
           value={endDate}
           onChange={(e) => onEndDateChange(e.target.value)}
-          className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent"
+          className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent"
         />
       </div>
 
@@ -77,7 +77,7 @@ export function LedgerFilters({
           onChange={(e) => onMinAmountChange(e.target.value)}
           placeholder="0.00"
           step="0.01"
-          className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent"
+          className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent"
         />
       </div>
 
@@ -93,7 +93,7 @@ export function LedgerFilters({
           onChange={(e) => onMaxAmountChange(e.target.value)}
           placeholder="0.00"
           step="0.01"
-          className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent"
+          className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent"
         />
       </div>
 
@@ -121,13 +121,13 @@ export function LedgerFilters({
               aria-label="Filter by account"
               value={selectedAccount}
               onChange={(e) => onAccountChange(e.target.value)}
-              className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent border-none appearance-none cursor-pointer pr-10"
+              className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent border-none appearance-none cursor-pointer pr-10"
             >
-              <option value="All" className="bg-[#12121a] text-zinc-300">
+              <option value="All" className="bg-surface text-primary">
                 All Accounts
               </option>
               {accounts.map((acc) => (
-                <option key={acc.id} value={acc.id} className="bg-[#12121a] text-zinc-300">
+                <option key={acc.id} value={acc.id} className="bg-surface text-primary">
                   {acc.accountName}
                 </option>
               ))}

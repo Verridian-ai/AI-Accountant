@@ -28,7 +28,7 @@ function CategoryTable({
       <h3 className={`text-sm font-bold uppercase tracking-wider mb-4 ${colorClass}`}>{title}</h3>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-zinc-500 border-b border-white/5">
+          <tr className="text-muted border-b border-border/50">
             <th className="text-left pb-2 font-medium">Category</th>
             <th className="text-right pb-2 font-medium">Amount</th>
             <th className="text-right pb-2 font-medium">Txns</th>
@@ -39,29 +39,29 @@ function CategoryTable({
           {items.map((item) => (
             <tr
               key={item.category}
-              className="border-b border-white/5 hover:bg-white/5 transition-colors"
+              className="border-b border-border/50 hover:bg-overlay transition-colors"
             >
-              <td className="py-2 text-zinc-200">{item.category}</td>
+              <td className="py-2 text-primary">{item.category}</td>
               <td className={`py-2 text-right font-mono ${colorClass}`}>
                 {formatCurrency(item.amount)}
               </td>
-              <td className="py-2 text-right text-zinc-400">{item.transactionCount}</td>
-              <td className="py-2 text-right text-zinc-400">
+              <td className="py-2 text-right text-secondary">{item.transactionCount}</td>
+              <td className="py-2 text-right text-secondary">
                 {total > 0 ? ((item.amount / total) * 100).toFixed(1) : '0.0'}%
               </td>
             </tr>
           ))}
         </tbody>
         <tfoot>
-          <tr className="border-t border-[#FFCC00]/20">
+          <tr className="border-t border-cba-gold/20">
             <td className="pt-3 font-bold text-zinc-100">Total</td>
             <td className={`pt-3 text-right font-bold font-mono ${colorClass}`}>
               {formatCurrency(total)}
             </td>
-            <td className="pt-3 text-right text-zinc-400">
+            <td className="pt-3 text-right text-secondary">
               {items.reduce((s, i) => s + i.transactionCount, 0)}
             </td>
-            <td className="pt-3 text-right text-zinc-400">100%</td>
+            <td className="pt-3 text-right text-secondary">100%</td>
           </tr>
         </tfoot>
       </table>
@@ -89,8 +89,8 @@ export function ProfitAndLoss({ periodStart, periodEnd, accountId }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FFCC00]" />
-        <span className="ml-3 text-zinc-400">Generating P&L report...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-cba-gold" />
+        <span className="ml-3 text-secondary">Generating P&L report...</span>
       </div>
     );
   }
@@ -105,7 +105,7 @@ export function ProfitAndLoss({ periodStart, periodEnd, accountId }: Props) {
 
   if (!data) {
     return (
-      <div className="neu-inset rounded-2xl p-6 text-center text-zinc-500">
+      <div className="neu-inset rounded-2xl p-6 text-center text-muted">
         Select a date range to generate the Profit & Loss statement.
       </div>
     );
@@ -136,14 +136,14 @@ export function ProfitAndLoss({ periodStart, periodEnd, accountId }: Props) {
             icon: DollarSign,
             color: isProfit ? 'text-emerald-400' : 'text-red-400',
           },
-          { label: 'Gross Margin', value: null, icon: DollarSign, color: 'text-[#FFCC00]' },
+          { label: 'Gross Margin', value: null, icon: DollarSign, color: 'text-cba-gold' },
         ].map((item) => (
           <div key={item.label} className="neu-raised rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="neu-inset p-1.5 rounded-lg">
                 <item.icon className={`h-4 w-4 ${item.color}`} />
               </div>
-              <span className="text-xs text-zinc-500 font-medium uppercase tracking-wide">
+              <span className="text-xs text-muted font-medium uppercase tracking-wide">
                 {item.label}
               </span>
             </div>

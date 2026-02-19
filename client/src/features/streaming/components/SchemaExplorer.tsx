@@ -75,7 +75,7 @@ export function SchemaExplorer() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-zinc-500">
+      <div className="flex items-center justify-center py-12 text-muted">
         <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading schemas...
       </div>
     );
@@ -87,7 +87,7 @@ export function SchemaExplorer() {
         <h3 className="text-lg font-bold text-zinc-100">Output Schemas</h3>
         <button
           onClick={fetchSchemas}
-          className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]"
+          className="neu-raised-sm p-2 rounded-lg text-secondary hover:text-cba-gold"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -102,30 +102,30 @@ export function SchemaExplorer() {
               className="w-full flex items-center justify-between p-4 text-left"
             >
               <div className="flex items-center gap-3">
-                <Code2 className="w-4 h-4 text-[#FFCC00]" />
-                <span className="text-sm font-medium text-zinc-200">
+                <Code2 className="w-4 h-4 text-cba-gold" />
+                <span className="text-sm font-medium text-primary">
                   {formatAgent(schema.agentType)}
                 </span>
-                <span className="text-[10px] text-zinc-500">v{schema.version}</span>
+                <span className="text-[10px] text-muted">v{schema.version}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-emerald-400">{schema.validationStats.passed}✓</span>
                   <span className="text-red-400">{schema.validationStats.failed}✗</span>
-                  <span className="text-zinc-500">{schema.validationStats.total} total</span>
+                  <span className="text-muted">{schema.validationStats.total} total</span>
                 </div>
                 {expanded === schema.agentType ? (
-                  <ChevronDown className="w-4 h-4 text-zinc-500" />
+                  <ChevronDown className="w-4 h-4 text-muted" />
                 ) : (
-                  <ChevronRight className="w-4 h-4 text-zinc-500" />
+                  <ChevronRight className="w-4 h-4 text-muted" />
                 )}
               </div>
             </button>
             {expanded === schema.agentType && !!schema.jsonSchema && (
-              <div className="px-4 pb-4 border-t border-white/5 pt-3">
-                <p className="text-xs text-zinc-500 mb-2">Schema: {schema.schemaName}</p>
+              <div className="px-4 pb-4 border-t border-border/50 pt-3">
+                <p className="text-xs text-muted mb-2">Schema: {schema.schemaName}</p>
                 {schema.jsonSchema && (
-                  <pre className="text-[11px] text-zinc-400 bg-black/30 rounded-lg p-3 overflow-x-auto max-h-48">
+                  <pre className="text-[11px] text-secondary bg-black/30 rounded-lg p-3 overflow-x-auto max-h-48">
                     {JSON.stringify(schema.jsonSchema, null, 2)}
                   </pre>
                 )}
@@ -137,14 +137,14 @@ export function SchemaExplorer() {
 
       {/* Validation test panel */}
       <div className="neu-raised rounded-xl p-4 space-y-3">
-        <h4 className="text-sm font-bold text-zinc-200">Test Validation</h4>
+        <h4 className="text-sm font-bold text-primary">Test Validation</h4>
         <select
           value={testAgent ?? ''}
           onChange={(e) => {
             setTestAgent(e.target.value || null);
             setTestResult(null);
           }}
-          className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-300 bg-transparent border border-white/10"
+          className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent border border-border"
         >
           <option value="">Select agent schema...</option>
           {schemas.map((s) => (
@@ -158,13 +158,13 @@ export function SchemaExplorer() {
           onChange={(e) => setTestInput(e.target.value)}
           placeholder="Paste JSON output to validate..."
           rows={4}
-          className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-zinc-300 bg-transparent border border-white/10 font-mono resize-none"
+          className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent border border-border font-mono resize-none"
         />
         <div className="flex items-center justify-between">
           <button
             onClick={handleValidate}
             disabled={!testAgent || !testInput.trim() || testing}
-            className="neu-raised px-4 py-2 rounded-lg text-sm font-bold text-[#FFCC00] disabled:text-zinc-600 transition-colors"
+            className="neu-raised px-4 py-2 rounded-lg text-sm font-bold text-cba-gold disabled:text-zinc-600 transition-colors"
           >
             {testing ? 'Validating...' : 'Validate'}
           </button>

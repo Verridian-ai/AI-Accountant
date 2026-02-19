@@ -105,17 +105,17 @@ export function ReconMatchSuggestions({
 
   const getConfidenceColor = (confidence: number) => {
     if (confidence >= 0.9) return 'bg-emerald-500';
-    if (confidence >= 0.7) return 'bg-[#FFCC00]';
+    if (confidence >= 0.7) return 'bg-cba-gold';
     if (confidence >= 0.5) return 'bg-amber-500';
     return 'bg-red-500';
   };
 
   return (
-    <Card className="border-[#FFCC00]/20">
+    <Card className="border-cba-gold/20">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm">Match Suggestions</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose} className="text-zinc-500 h-7 px-2">
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-muted h-7 px-2">
             Close
           </Button>
         </div>
@@ -123,13 +123,13 @@ export function ReconMatchSuggestions({
       <CardContent className="space-y-4">
         {/* Selected bank transaction */}
         <div className="neu-inset rounded-xl p-3">
-          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">
+          <p className="text-[9px] font-black text-muted uppercase tracking-widest mb-1">
             Bank Transaction
           </p>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-zinc-200">{transaction.description}</p>
-              <p className="text-xs text-zinc-500">{transaction.date}</p>
+              <p className="text-sm font-bold text-primary">{transaction.description}</p>
+              <p className="text-xs text-muted">{transaction.date}</p>
             </div>
             <p
               className={cn(
@@ -150,14 +150,14 @@ export function ReconMatchSuggestions({
               .map((suggestion) => (
                 <div
                   key={suggestion.matchId}
-                  className="neu-raised rounded-xl p-3 border border-white/5 hover:border-[#FFCC00]/20 transition-colors"
+                  className="neu-raised rounded-xl p-3 border border-border/50 hover:border-cba-gold/20 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-200 truncate">
+                      <p className="text-sm font-medium text-primary truncate">
                         {suggestion.ledgerReference}
                       </p>
-                      <p className="text-xs text-zinc-500">{suggestion.ledgerDate}</p>
+                      <p className="text-xs text-muted">{suggestion.ledgerDate}</p>
                     </div>
                     <p
                       className={cn(
@@ -172,10 +172,10 @@ export function ReconMatchSuggestions({
                   {/* Confidence bar */}
                   <div className="mb-2">
                     <div className="flex items-center justify-between text-[10px] mb-1">
-                      <span className="text-zinc-500 font-bold uppercase tracking-wider">
+                      <span className="text-muted font-bold uppercase tracking-wider">
                         Confidence
                       </span>
-                      <span className="text-zinc-300 font-bold">
+                      <span className="text-primary font-bold">
                         {Math.round(suggestion.confidence * 100)}%
                       </span>
                     </div>
@@ -205,7 +205,7 @@ export function ReconMatchSuggestions({
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white h-7 text-xs"
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-primary h-7 text-xs"
                       onClick={() => handleConfirm(suggestion.matchId)}
                       disabled={actionLoading !== null}
                     >
@@ -235,11 +235,11 @@ export function ReconMatchSuggestions({
               ))}
           </div>
         ) : (
-          <p className="text-sm text-zinc-500 text-center py-4">No automatic suggestions found</p>
+          <p className="text-sm text-muted text-center py-4">No automatic suggestions found</p>
         )}
 
         {/* Manual match / No match actions */}
-        <div className="border-t border-white/5 pt-3 space-y-2">
+        <div className="border-t border-border/50 pt-3 space-y-2">
           {!showManualMatch ? (
             <div className="flex gap-2">
               <Button
@@ -254,7 +254,7 @@ export function ReconMatchSuggestions({
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 h-8 text-xs border-zinc-700 text-zinc-400"
+                className="flex-1 h-8 text-xs border-zinc-700 text-secondary"
                 onClick={() => onMarkNoMatch(transaction.id)}
               >
                 <Ban className="h-3 w-3 mr-1" />
@@ -263,7 +263,7 @@ export function ReconMatchSuggestions({
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+              <p className="text-[10px] font-bold text-muted uppercase tracking-wider">
                 Select a ledger entry to match
               </p>
               <div className="max-h-40 overflow-y-auto space-y-1 scrollbar-gold">
@@ -275,14 +275,14 @@ export function ReconMatchSuggestions({
                     className={cn(
                       'w-full text-left p-2 rounded-lg border transition-colors text-xs',
                       selectedManualEntry === entry.id
-                        ? 'border-[#FFCC00]/50 bg-[#FFCC00]/5'
-                        : 'border-white/5 hover:border-white/10',
+                        ? 'border-cba-gold/50 bg-cba-gold/5'
+                        : 'border-border/50 hover:border-border',
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="font-medium text-zinc-300">{entry.reference}</span>
-                        <span className="text-zinc-500 ml-2">{entry.date}</span>
+                        <span className="font-medium text-primary">{entry.reference}</span>
+                        <span className="text-muted ml-2">{entry.date}</span>
                       </div>
                       <span
                         className={cn(
@@ -299,7 +299,7 @@ export function ReconMatchSuggestions({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  className="flex-1 h-7 text-xs bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90"
+                  className="flex-1 h-7 text-xs bg-cba-gold text-base hover:bg-cba-gold/90"
                   onClick={handleManualMatch}
                   disabled={!selectedManualEntry || actionLoading === 'manual'}
                 >

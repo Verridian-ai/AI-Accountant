@@ -45,9 +45,9 @@ export function DepreciationScheduleView({
 
   if (loading) {
     return (
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardContent className="py-12 flex justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+          <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
         </CardContent>
       </Card>
     );
@@ -55,7 +55,7 @@ export function DepreciationScheduleView({
 
   return (
     <div className="space-y-4">
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-bold text-zinc-100">
             Depreciation Schedule — FY {financialYear}
@@ -63,7 +63,7 @@ export function DepreciationScheduleView({
           <Button
             onClick={runBatchDepreciation}
             disabled={batchRunning}
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90 font-bold"
+            className="bg-cba-gold text-base hover:bg-cba-gold/90 font-bold"
           >
             {batchRunning ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -75,14 +75,14 @@ export function DepreciationScheduleView({
         </CardHeader>
         <CardContent>
           {!schedule || schedule.assets.length === 0 ? (
-            <p className="text-zinc-500 text-center py-8">
+            <p className="text-muted text-center py-8">
               No depreciation schedule available for FY {financialYear}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-zinc-500 text-xs uppercase tracking-wider">
+                  <tr className="border-b border-border text-muted text-xs uppercase tracking-wider">
                     <th className="text-left py-3 px-2">Asset</th>
                     <th className="text-left py-3 px-2">Category</th>
                     <th className="text-left py-3 px-2">Method</th>
@@ -97,16 +97,16 @@ export function DepreciationScheduleView({
                   {(schedule.assets as Array<Record<string, unknown>>).map((item) => (
                     <tr
                       key={item.assetId}
-                      className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                      className="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
                     >
                       <td className="py-3 px-2 font-medium text-zinc-100">{item.assetName}</td>
-                      <td className="py-3 px-2 text-zinc-400">{item.category}</td>
+                      <td className="py-3 px-2 text-secondary">{item.category}</td>
                       <td className="py-3 px-2">
                         <Badge variant="outline" className="text-xs">
                           {item.method}
                         </Badge>
                       </td>
-                      <td className="py-3 px-2 text-right font-mono text-zinc-300">
+                      <td className="py-3 px-2 text-right font-mono text-primary">
                         {formatCurrency(item.openingValue)}
                       </td>
                       <td className="py-3 px-2 text-right font-mono text-emerald-400">
@@ -118,15 +118,15 @@ export function DepreciationScheduleView({
                       <td className="py-3 px-2 text-right font-mono text-amber-400">
                         {item.disposals > 0 ? formatCurrency(item.disposals) : '—'}
                       </td>
-                      <td className="py-3 px-2 text-right font-mono text-[#FFCC00] font-bold">
+                      <td className="py-3 px-2 text-right font-mono text-cba-gold font-bold">
                         {formatCurrency(item.closingValue)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t-2 border-[#FFCC00]/30 font-bold">
-                    <td colSpan={3} className="py-3 px-2 text-zinc-300">
+                  <tr className="border-t-2 border-cba-gold/30 font-bold">
+                    <td colSpan={3} className="py-3 px-2 text-primary">
                       Totals
                     </td>
                     <td className="py-3 px-2 text-right font-mono text-zinc-100">
@@ -141,7 +141,7 @@ export function DepreciationScheduleView({
                     <td className="py-3 px-2 text-right font-mono text-amber-400">
                       {formatCurrency(schedule.totals.totalDisposals)}
                     </td>
-                    <td className="py-3 px-2 text-right font-mono text-[#FFCC00]">
+                    <td className="py-3 px-2 text-right font-mono text-cba-gold">
                       {formatCurrency(schedule.totals.closingValue)}
                     </td>
                   </tr>
@@ -161,12 +161,12 @@ export function DepreciationScheduleView({
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-zinc-500">Assets Processed</p>
+                <p className="text-muted">Assets Processed</p>
                 <p className="text-xl font-bold text-zinc-100">{batchResult.assetsProcessed}</p>
               </div>
               <div>
-                <p className="text-zinc-500">Total Depreciation</p>
-                <p className="text-xl font-bold text-[#FFCC00]">
+                <p className="text-muted">Total Depreciation</p>
+                <p className="text-xl font-bold text-cba-gold">
                   {formatCurrency(batchResult.totalDepreciation)}
                 </p>
               </div>
@@ -178,7 +178,7 @@ export function DepreciationScheduleView({
                   {batchResult.errors.length} error(s)
                 </p>
                 {(batchResult.errors as Array<Record<string, unknown>>).map((e, i: number) => (
-                  <p key={i} className="text-xs text-zinc-500">
+                  <p key={i} className="text-xs text-muted">
                     Asset {e.assetId}: {e.error}
                   </p>
                 ))}

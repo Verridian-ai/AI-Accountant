@@ -31,7 +31,7 @@ export function KPICard({ label, value, previousValue, format = 'currency' }: KP
 
   return (
     <div className="flex flex-col items-center justify-center h-full py-4 gap-2">
-      <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{label}</span>
+      <span className="text-xs font-bold text-muted uppercase tracking-wider">{label}</span>
       <span className="text-2xl font-bold text-zinc-100">{formatValue(value)}</span>
       {change != null && (
         <div
@@ -39,7 +39,7 @@ export function KPICard({ label, value, previousValue, format = 'currency' }: KP
             'flex items-center gap-1 text-xs font-bold',
             trend === 'up' && 'text-emerald-400',
             trend === 'down' && 'text-red-400',
-            trend === 'flat' && 'text-zinc-400',
+            trend === 'flat' && 'text-secondary',
           )}
         >
           {trend === 'up' && <TrendingUp className="w-3 h-3" />}

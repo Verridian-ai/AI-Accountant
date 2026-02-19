@@ -55,7 +55,7 @@ const statusColors: Record<string, string> = {
   confirmed: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
   suggested: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
-  unmatched: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
+  unmatched: 'bg-zinc-500/20 text-secondary border-zinc-500/30',
 };
 
 const statusIcons: Record<string, typeof CheckCircle2> = {
@@ -147,7 +147,7 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-[#FFCC00]" />
+        <Loader2 className="h-6 w-6 animate-spin text-cba-gold" />
       </div>
     );
   }
@@ -155,7 +155,7 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
   if (!session) {
     return (
       <div className="text-center py-16">
-        <p className="text-zinc-500">Session not found</p>
+        <p className="text-muted">Session not found</p>
         <Button variant="ghost" size="sm" onClick={onBack} className="mt-2">
           <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
@@ -180,10 +180,10 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
             <ArrowLeft className="h-4 w-4 mr-1" /> Back
           </Button>
           <div>
-            <h3 className="text-lg font-bold text-zinc-200">
+            <h3 className="text-lg font-bold text-primary">
               {session.accountName ?? 'Reconciliation'}
             </h3>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               {session.periodStart} to {session.periodEnd}
             </p>
           </div>
@@ -191,7 +191,7 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
         <div className="flex items-center gap-2">
           <Button
             size="sm"
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90"
+            className="bg-cba-gold text-base hover:bg-cba-gold/90"
             onClick={handleAutoMatch}
             disabled={autoMatching}
           >
@@ -220,25 +220,25 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
       </div>
 
       {/* Progress & Balance Banner */}
-      <div className="neu-raised rounded-xl p-4 border border-white/5">
+      <div className="neu-raised rounded-xl p-4 border border-border/50">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+          <span className="text-xs font-bold text-muted uppercase tracking-wider">
             Matched: {session.matchedCount} of {totalItems}
           </span>
-          <span className="text-sm font-bold text-[#FFCC00]">{matchPercent}%</span>
+          <span className="text-sm font-bold text-cba-gold">{matchPercent}%</span>
         </div>
         <Progress value={matchPercent} className="h-2 mb-3" />
         <div className="grid grid-cols-3 gap-4 text-center text-sm">
           <div>
-            <p className="text-zinc-500 text-xs mb-1">Statement</p>
-            <p className="font-bold text-zinc-200">{formatCurrency(statementBalance)}</p>
+            <p className="text-muted text-xs mb-1">Statement</p>
+            <p className="font-bold text-primary">{formatCurrency(statementBalance)}</p>
           </div>
           <div>
-            <p className="text-zinc-500 text-xs mb-1">Ledger</p>
-            <p className="font-bold text-zinc-200">{formatCurrency(ledgerBalance)}</p>
+            <p className="text-muted text-xs mb-1">Ledger</p>
+            <p className="font-bold text-primary">{formatCurrency(ledgerBalance)}</p>
           </div>
           <div>
-            <p className="text-zinc-500 text-xs mb-1">Difference</p>
+            <p className="text-muted text-xs mb-1">Difference</p>
             <p className={cn('font-bold', difference === 0 ? 'text-emerald-400' : 'text-red-400')}>
               {formatCurrency(difference)}
             </p>
@@ -261,7 +261,7 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
           </CardHeader>
           <CardContent>
             {bankTransactions.length === 0 ? (
-              <p className="text-xs text-zinc-500 text-center py-6">
+              <p className="text-xs text-muted text-center py-6">
                 No bank transactions for this period
               </p>
             ) : (
@@ -276,8 +276,8 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
                       className={cn(
                         'w-full text-left p-2.5 rounded-lg border transition-all text-xs',
                         selectedBankTx?.id === tx.id
-                          ? 'border-[#FFCC00]/50 bg-[#FFCC00]/5'
-                          : 'border-white/5 hover:border-white/10',
+                          ? 'border-cba-gold/50 bg-cba-gold/5'
+                          : 'border-border/50 hover:border-border',
                       )}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -288,11 +288,11 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
                               tx.matchStatus === 'confirmed' && 'text-emerald-400',
                               tx.matchStatus === 'suggested' && 'text-amber-400',
                               tx.matchStatus === 'rejected' && 'text-red-400',
-                              tx.matchStatus === 'unmatched' && 'text-zinc-500',
+                              tx.matchStatus === 'unmatched' && 'text-muted',
                             )}
                           />
                           <div className="min-w-0">
-                            <p className="text-zinc-300 truncate">{tx.description}</p>
+                            <p className="text-primary truncate">{tx.description}</p>
                             <p className="text-zinc-600">{tx.date}</p>
                           </div>
                         </div>
@@ -348,7 +348,7 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
               </CardHeader>
               <CardContent>
                 {ledgerEntries.length === 0 ? (
-                  <p className="text-xs text-zinc-500 text-center py-6">
+                  <p className="text-xs text-muted text-center py-6">
                     No ledger entries for this period
                   </p>
                 ) : (
@@ -356,7 +356,7 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
                     {ledgerEntries.map((le) => {
                       const StatusIcon = statusIcons[le.matchStatus] ?? MinusCircle;
                       return (
-                        <div key={le.id} className="p-2.5 rounded-lg border border-white/5 text-xs">
+                        <div key={le.id} className="p-2.5 rounded-lg border border-border/50 text-xs">
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <StatusIcon
@@ -365,11 +365,11 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
                                   le.matchStatus === 'confirmed' && 'text-emerald-400',
                                   le.matchStatus === 'suggested' && 'text-amber-400',
                                   le.matchStatus === 'rejected' && 'text-red-400',
-                                  le.matchStatus === 'unmatched' && 'text-zinc-500',
+                                  le.matchStatus === 'unmatched' && 'text-muted',
                                 )}
                               />
                               <div className="min-w-0">
-                                <p className="text-zinc-300 truncate">{le.reference}</p>
+                                <p className="text-primary truncate">{le.reference}</p>
                                 <p className="text-zinc-600">{le.date}</p>
                               </div>
                             </div>

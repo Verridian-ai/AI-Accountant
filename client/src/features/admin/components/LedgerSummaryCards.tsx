@@ -15,7 +15,7 @@ export function LedgerSummaryCards({ ledger, bas }: LedgerSummaryCardsProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-white">Ledger Health</h3>
+      <h3 className="text-lg font-bold text-primary">Ledger Health</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {ledger && (
           <>
@@ -53,7 +53,7 @@ export function LedgerSummaryCards({ ledger, bas }: LedgerSummaryCardsProps) {
             />
             <Card
               icon={Calendar}
-              color="text-[#FFCC00]"
+              color="text-cba-gold"
               title="BAS Users"
               value={String(bas.usersWithBas)}
               subtitle="With BAS data"
@@ -87,9 +87,9 @@ function Card({
     <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{title}</p>
+          <p className="text-xs font-medium text-muted uppercase tracking-wider">{title}</p>
           <p className={`text-2xl font-bold mt-1.5 ${color}`}>{value}</p>
-          <p className="text-xs text-zinc-500 mt-1">{subtitle}</p>
+          <p className="text-xs text-muted mt-1">{subtitle}</p>
         </div>
         <div className="p-2 rounded-xl bg-[#1a1a2e]">
           <Icon className={`w-5 h-5 ${color}`} />

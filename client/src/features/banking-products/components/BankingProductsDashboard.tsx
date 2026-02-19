@@ -57,7 +57,7 @@ export function BankingProductsDashboard() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Banking Products</h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Compare rates, explore products & find savings across Australian banks
         </p>
       </div>
@@ -72,8 +72,8 @@ export function BankingProductsDashboard() {
               className={cn(
                 'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all',
                 subTab === tab.id
-                  ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_15px_rgba(255,204,0,0.2)]'
-                  : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
+                  ? 'bg-cba-gold text-base shadow-[0_0_15px_rgba(255,204,0,0.2)]'
+                  : 'neu-raised-sm text-secondary hover:text-primary',
               )}
             >
               <tab.icon className="w-4 h-4" />

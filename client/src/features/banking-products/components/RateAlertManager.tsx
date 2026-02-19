@@ -157,7 +157,7 @@ export function RateAlertManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             {state.alerts.filter((a) => a.isActive).length} active alert
             {state.alerts.filter((a) => a.isActive).length !== 1 ? 's' : ''}
           </p>
@@ -167,8 +167,8 @@ export function RateAlertManager() {
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all',
             state.showForm
-              ? 'neu-raised-sm text-zinc-400'
-              : 'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633]',
+              ? 'neu-raised-sm text-secondary'
+              : 'bg-cba-gold text-base hover:bg-[#FFD633]',
           )}
         >
           <Plus className="h-4 w-4" />
@@ -178,13 +178,13 @@ export function RateAlertManager() {
 
       {/* Create Form */}
       {state.showForm && (
-        <div className="neu-raised rounded-2xl p-5 space-y-4 border border-[#FFCC00]/20">
-          <h3 className="text-sm font-bold text-zinc-300">Create Rate Alert</h3>
+        <div className="neu-raised rounded-2xl p-5 space-y-4 border border-cba-gold/20">
+          <h3 className="text-sm font-bold text-primary">Create Rate Alert</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label
                 htmlFor="ram-type"
-                className="text-xs text-zinc-500 font-semibold block mb-1"
+                className="text-xs text-muted font-semibold block mb-1"
               >
                 Alert Type
               </label>
@@ -204,7 +204,7 @@ export function RateAlertManager() {
             <div>
               <label
                 htmlFor="ram-cat"
-                className="text-xs text-zinc-500 font-semibold block mb-1"
+                className="text-xs text-muted font-semibold block mb-1"
               >
                 Category
               </label>
@@ -224,7 +224,7 @@ export function RateAlertManager() {
             <div>
               <label
                 htmlFor="ram-rate"
-                className="text-xs text-zinc-500 font-semibold block mb-1"
+                className="text-xs text-muted font-semibold block mb-1"
               >
                 Threshold Rate (%)
               </label>
@@ -243,7 +243,7 @@ export function RateAlertManager() {
           <button
             onClick={handleCreate}
             disabled={state.creating}
-            className="px-4 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] text-sm font-bold hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-cba-gold text-base text-sm font-bold hover:bg-[#FFD633] transition-colors disabled:opacity-50"
           >
             {state.creating ? 'Creating...' : 'Create Alert'}
           </button>
@@ -260,7 +260,7 @@ export function RateAlertManager() {
       ) : state.alerts.length === 0 ? (
         <div className="neu-raised rounded-2xl p-12 text-center">
           <BellOff className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
-          <p className="text-zinc-500">No alerts configured</p>
+          <p className="text-muted">No alerts configured</p>
           <p className="text-xs text-zinc-600 mt-1">
             Create an alert to be notified of rate changes
           </p>
@@ -278,7 +278,7 @@ export function RateAlertManager() {
               <div
                 className={cn(
                   'neu-inset p-2 rounded-xl',
-                  alert.isActive ? 'text-[#FFCC00]' : 'text-zinc-600',
+                  alert.isActive ? 'text-cba-gold' : 'text-zinc-600',
                 )}
               >
                 <Bell className="h-5 w-5" />
@@ -286,11 +286,11 @@ export function RateAlertManager() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-zinc-100">{typeLabel(alert.type)}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full neu-inset text-zinc-400 font-semibold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full neu-inset text-secondary font-semibold">
                     {alert.category.replace(/_/g, ' ')}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
+                <div className="flex items-center gap-3 mt-1 text-xs text-muted">
                   {alert.thresholdRate != null && (
                     <span>Threshold: {formatRate(alert.thresholdRate)}</span>
                   )}
@@ -307,7 +307,7 @@ export function RateAlertManager() {
               <button
                 onClick={() => handleDelete(alert.id)}
                 disabled={state.deleting === alert.id}
-                className="shrink-0 p-2 rounded-lg text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50"
+                className="shrink-0 p-2 rounded-lg text-muted hover:text-red-400 transition-colors disabled:opacity-50"
               >
                 <Trash2
                   className={cn('h-4 w-4', state.deleting === alert.id && 'animate-pulse')}

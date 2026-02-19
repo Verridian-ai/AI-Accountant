@@ -54,11 +54,11 @@ const DEFAULTS: PermissionMap = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  owner: 'text-[#FFCC00]',
+  owner: 'text-cba-gold',
   admin: 'text-blue-400',
   accountant: 'text-emerald-400',
   bookkeeper: 'text-purple-400',
-  viewer: 'text-zinc-400',
+  viewer: 'text-secondary',
 };
 
 type PMState = {
@@ -177,13 +177,13 @@ export function PermissionMatrix() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Permissions</h2>
-          <p className="text-sm text-zinc-500">Configure what each role can access</p>
+          <p className="text-sm text-muted">Configure what each role can access</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleReset}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold text-zinc-400 hover:text-zinc-200 neu-raised-sm transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold text-secondary hover:text-primary neu-raised-sm transition-colors"
           >
             <RotateCcw className="w-4 h-4" /> Reset
           </button>
@@ -191,7 +191,7 @@ export function PermissionMatrix() {
             type="button"
             onClick={handleSave}
             disabled={saving || modified.size === 0}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-[#FFD633] transition-colors disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
@@ -201,12 +201,12 @@ export function PermissionMatrix() {
 
       {error && <p className="text-sm text-red-400 font-medium">{error}</p>}
 
-      <div className="neu-raised rounded-2xl border border-white/5 overflow-hidden">
+      <div className="neu-raised rounded-2xl border border-border/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-4 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest min-w-[200px]">
+              <tr className="border-b border-border/50">
+                <th className="text-left px-4 py-3 text-[10px] font-black text-muted uppercase tracking-widest min-w-[200px]">
                   Permission
                 </th>
                 {ROLES.map((role) => (
@@ -227,12 +227,12 @@ export function PermissionMatrix() {
               {PERMISSIONS.map((perm) => (
                 <tr
                   key={perm.key}
-                  className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
+                  className="border-b border-border/50 last:border-0 hover:bg-white/[0.02] transition-colors"
                 >
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2">
-                      {perm.system && <Lock className="w-3 h-3 text-[#FFCC00]" />}
-                      <span className="text-zinc-300 font-medium">{perm.label}</span>
+                      {perm.system && <Lock className="w-3 h-3 text-cba-gold" />}
+                      <span className="text-primary font-medium">{perm.label}</span>
                     </div>
                   </td>
                   {ROLES.map((role) => {
@@ -251,11 +251,11 @@ export function PermissionMatrix() {
                             'w-7 h-7 rounded-lg flex items-center justify-center transition-all mx-auto',
                             isLocked
                               ? granted
-                                ? 'bg-[#FFCC00]/10 text-[#FFCC00] cursor-not-allowed'
+                                ? 'bg-cba-gold/10 text-cba-gold cursor-not-allowed'
                                 : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'
                               : granted
                                 ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                                : 'bg-zinc-800/30 text-zinc-600 hover:bg-zinc-700/30 hover:text-zinc-400',
+                                : 'bg-zinc-800/30 text-zinc-600 hover:bg-zinc-700/30 hover:text-secondary',
                           )}
                         >
                           {isLocked && granted ? (
@@ -276,7 +276,7 @@ export function PermissionMatrix() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-zinc-500">
+      <div className="flex items-center gap-4 text-xs text-muted">
         <span className="flex items-center gap-1">
           <Check className="w-3 h-3 text-emerald-400" /> Granted
         </span>
@@ -284,7 +284,7 @@ export function PermissionMatrix() {
           <X className="w-3 h-3 text-zinc-600" /> Denied
         </span>
         <span className="flex items-center gap-1">
-          <Lock className="w-3 h-3 text-[#FFCC00]" /> System (immutable)
+          <Lock className="w-3 h-3 text-cba-gold" /> System (immutable)
         </span>
       </div>
     </div>

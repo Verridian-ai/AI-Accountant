@@ -91,9 +91,9 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
                   type="checkbox"
                   checked={Boolean(chartConfig.stacked)}
                   onChange={(e) => updateConfig('stacked', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-[#FFCC00] focus:ring-[#FFCC00]/30"
+                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
                 />
-                <span className="text-sm text-zinc-300">Enable stacking</span>
+                <span className="text-sm text-primary">Enable stacking</span>
               </label>
             </FieldGroup>
           </>
@@ -137,9 +137,9 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
                   type="checkbox"
                   checked={Boolean(chartConfig.showArea)}
                   onChange={(e) => updateConfig('showArea', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-[#FFCC00] focus:ring-[#FFCC00]/30"
+                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
                 />
-                <span className="text-sm text-zinc-300">Fill area under line</span>
+                <span className="text-sm text-primary">Fill area under line</span>
               </label>
             </FieldGroup>
             <FieldGroup label="Curved">
@@ -148,9 +148,9 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
                   type="checkbox"
                   checked={chartConfig.curved !== false}
                   onChange={(e) => updateConfig('curved', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-[#FFCC00] focus:ring-[#FFCC00]/30"
+                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
                 />
-                <span className="text-sm text-zinc-300">Smooth curves</span>
+                <span className="text-sm text-primary">Smooth curves</span>
               </label>
             </FieldGroup>
           </>
@@ -165,9 +165,9 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
                   type="checkbox"
                   checked={chartConfig.showLabels !== false}
                   onChange={(e) => updateConfig('showLabels', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-[#FFCC00] focus:ring-[#FFCC00]/30"
+                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
                 />
-                <span className="text-sm text-zinc-300">Show labels</span>
+                <span className="text-sm text-primary">Show labels</span>
               </label>
             </FieldGroup>
             <FieldGroup label="Show Legend">
@@ -176,9 +176,9 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
                   type="checkbox"
                   checked={chartConfig.showLegend !== false}
                   onChange={(e) => updateConfig('showLegend', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-[#FFCC00] focus:ring-[#FFCC00]/30"
+                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
                 />
-                <span className="text-sm text-zinc-300">Show legend</span>
+                <span className="text-sm text-primary">Show legend</span>
               </label>
             </FieldGroup>
             {widget.chartType === 'donut' && (
@@ -245,7 +245,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
         );
       default:
         return (
-          <p className="text-xs text-zinc-500 italic">
+          <p className="text-xs text-muted italic">
             No additional configuration for this chart type.
           </p>
         );
@@ -255,16 +255,16 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-overlay-hover z-40" onClick={onClose} />
 
       {/* Slide-in Panel */}
-      <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 neu-raised border-l border-[#FFCC00]/10 flex flex-col animate-in slide-in-from-right duration-300">
+      <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 neu-raised border-l border-cba-gold/10 flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#FFCC00]/20 shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-cba-gold/20 shrink-0">
           <h3 className="text-lg font-bold text-gradient-gold">Widget Settings</h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay-hover transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -306,16 +306,16 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
           </FieldGroup>
 
           {/* Divider */}
-          <div className="border-t border-white/5 pt-4">
-            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">
+          <div className="border-t border-border/50 pt-4">
+            <h4 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">
               Chart Settings ({widget.chartType})
             </h4>
             {renderChartSpecificFields()}
           </div>
 
           {/* Widget size */}
-          <div className="border-t border-white/5 pt-4">
-            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">
+          <div className="border-t border-border/50 pt-4">
+            <h4 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">
               Size (grid units)
             </h4>
             <div className="grid grid-cols-2 gap-3">
@@ -354,10 +354,10 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-5 border-t border-white/5 shrink-0">
+        <div className="flex items-center justify-between p-5 border-t border-border/50 shrink-0">
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm text-secondary hover:text-primary transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset
@@ -365,13 +365,13 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="px-4 py-2 text-sm font-bold text-secondary hover:text-primary transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFE066] transition-colors btn-press"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-cba-gold text-base hover:bg-cba-gold-light transition-colors btn-press"
             >
               <Save className="w-3.5 h-3.5" />
               Save
@@ -407,7 +407,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
+      <label className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
         {label}
       </label>
       {children}

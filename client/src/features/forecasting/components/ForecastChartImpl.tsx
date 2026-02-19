@@ -46,8 +46,8 @@ const CustomTooltip = ({
 }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="neu-raised p-3 rounded-xl border border-white/10 text-xs space-y-1">
-      <p className="font-bold text-zinc-300">{label}</p>
+    <div className="neu-raised p-3 rounded-xl border border-border text-xs space-y-1">
+      <p className="font-bold text-primary">{label}</p>
       {payload.map((entry) => (
         <p key={entry.dataKey} style={{ color: entry.color }}>
           {entry.name}: {formatDollar(entry.value)}
@@ -64,7 +64,7 @@ export default function ForecastChartImpl({ periods, granularity }: ForecastChar
     <div className="neu-raised rounded-2xl p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-zinc-100">Cash Flow Projection</h3>
-        <span className="text-xs text-zinc-500 uppercase tracking-wider">{granularity}</span>
+        <span className="text-xs text-muted uppercase tracking-wider">{granularity}</span>
       </div>
 
       <ResponsiveContainer width="100%" height={380}>
@@ -90,7 +90,7 @@ export default function ForecastChartImpl({ periods, granularity }: ForecastChar
           <Tooltip content={<CustomTooltip />} />
           <Legend
             wrapperStyle={{ paddingTop: 12 }}
-            formatter={(value: string) => <span className="text-xs text-zinc-400">{value}</span>}
+            formatter={(value: string) => <span className="text-xs text-secondary">{value}</span>}
           />
           <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" />
           <Area type="monotone" dataKey="confidenceUpper" stroke="none" fill="transparent" name="Confidence Upper" legendType="none" />

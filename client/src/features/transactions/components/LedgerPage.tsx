@@ -237,7 +237,7 @@ export function LedgerPage({
       {/* Desktop Layout - hidden on mobile */}
       <div className="hidden md:block space-y-6 p-1">
         {/* Header card with search, filters toggle, export buttons */}
-        <div className="neu-raised-sm lg:neu-raised rounded-3xl flex flex-col border border-white/10 shadow-[0_20px_70px_-10px_rgba(0,0,0,0.5)]">
+        <div className="neu-raised-sm lg:neu-raised rounded-3xl flex flex-col border border-border shadow-[0_20px_70px_-10px_rgba(0,0,0,0.5)]">
           <LedgerHeader
             filteredCount={filteredTransactions.length}
             globalFilter={filters.globalFilter}
@@ -283,7 +283,7 @@ export function LedgerPage({
         />
 
         {/* Desktop table with virtualization */}
-        <div className="neu-raised-sm lg:neu-raised rounded-3xl overflow-hidden border border-white/10">
+        <div className="neu-raised-sm lg:neu-raised rounded-3xl overflow-hidden border border-border">
           <LedgerTable
             transactions={filteredTransactions}
             accounts={accounts}

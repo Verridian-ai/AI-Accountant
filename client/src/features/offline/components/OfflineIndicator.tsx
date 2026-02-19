@@ -33,8 +33,8 @@ export function OfflineIndicator() {
       }`}
     >
       {!isOnline && (
-        <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#FFCC00]/10 border-b border-[#FFCC00]/20">
-          <div className="flex items-center gap-2.5 text-[#FFCC00]">
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-cba-gold/10 border-b border-cba-gold/20">
+          <div className="flex items-center gap-2.5 text-cba-gold">
             <WifiOff className="h-4 w-4 shrink-0" />
             <span className="text-xs font-medium">
               You're offline. Changes will sync when connected.
@@ -42,7 +42,7 @@ export function OfflineIndicator() {
           </div>
           <button
             onClick={handleDismiss}
-            className="text-[#FFCC00]/60 hover:text-[#FFCC00] p-1 shrink-0"
+            className="text-cba-gold/60 hover:text-cba-gold p-1 shrink-0"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -50,14 +50,14 @@ export function OfflineIndicator() {
       )}
 
       {isOnline && syncStatus === 'syncing' && (
-        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-[#FFCC00]/10 border-b border-[#FFCC00]/20">
-          <RefreshCw className="h-4 w-4 text-[#FFCC00] animate-spin shrink-0" />
-          <span className="text-xs font-medium text-[#FFCC00]">
+        <div className="flex items-center gap-2.5 px-4 py-2.5 bg-cba-gold/10 border-b border-cba-gold/20">
+          <RefreshCw className="h-4 w-4 text-cba-gold animate-spin shrink-0" />
+          <span className="text-xs font-medium text-cba-gold">
             Syncing {pendingChanges} change{pendingChanges !== 1 ? 's' : ''}...
           </span>
           {/* Progress bar */}
-          <div className="flex-1 h-1 rounded-full bg-[#FFCC00]/20 overflow-hidden">
-            <div className="h-full bg-[#FFCC00] rounded-full animate-pulse w-2/3" />
+          <div className="flex-1 h-1 rounded-full bg-cba-gold/20 overflow-hidden">
+            <div className="h-full bg-cba-gold rounded-full animate-pulse w-2/3" />
           </div>
         </div>
       )}

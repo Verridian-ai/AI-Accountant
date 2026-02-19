@@ -30,16 +30,16 @@ export function HistoryTab({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-2">
-        <History className="w-4 h-4 text-[#FFCC00]" />
-        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+        <History className="w-4 h-4 text-cba-gold" />
+        <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
           BAS History
         </span>
       </div>
 
       {!hasQuarters ? (
-        <div className="neu-raised rounded-2xl border border-white/5 p-12 text-center">
+        <div className="neu-raised rounded-2xl border border-border/50 p-12 text-center">
           <FileText className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             No BAS history found. Calculate your first BAS to get started.
           </p>
         </div>
@@ -50,16 +50,16 @@ export function HistoryTab({
             return (
               <div
                 key={opt.value}
-                className="neu-raised rounded-2xl border border-white/5 p-4 flex items-center justify-between group hover:border-[#FFCC00]/10 transition-all"
+                className="neu-raised rounded-2xl border border-border/50 p-4 flex items-center justify-between group hover:border-cba-gold/10 transition-all"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center">
-                    <span className="text-[11px] font-black text-[#FFCC00]">
+                    <span className="text-[11px] font-black text-cba-gold">
                       {opt.label.split(' ')[0]}
                     </span>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-zinc-200">{opt.label}</p>
+                    <p className="text-sm font-bold text-primary">{opt.label}</p>
                     <p className="text-[10px] text-zinc-600">{opt.sublabel}</p>
                   </div>
                 </div>
@@ -73,8 +73,8 @@ export function HistoryTab({
                           saved.status === 'lodged'
                             ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/5'
                             : saved.status === 'draft'
-                              ? 'border-[#FFCC00]/30 text-[#FFCC00] bg-[#FFCC00]/5'
-                              : 'border-white/10 text-zinc-500',
+                              ? 'border-cba-gold/30 text-cba-gold bg-cba-gold/5'
+                              : 'border-border text-muted',
                         )}
                       >
                         {saved.status}
@@ -86,7 +86,7 @@ export function HistoryTab({
                           setActiveTab('calculate');
                           onCalculate();
                         }}
-                        className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-bold text-zinc-500 hover:text-[#FFCC00] transition-all"
+                        className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-bold text-muted hover:text-cba-gold transition-all"
                       >
                         <FileText className="w-3.5 h-3.5" />
                         View
@@ -97,7 +97,7 @@ export function HistoryTab({
                     <>
                       <Badge
                         variant="outline"
-                        className="text-[9px] font-black uppercase tracking-wider border border-white/10 text-zinc-600"
+                        className="text-[9px] font-black uppercase tracking-wider border border-border text-zinc-600"
                       >
                         Not saved
                       </Badge>
@@ -108,7 +108,7 @@ export function HistoryTab({
                           setActiveTab('calculate');
                           onCalculate();
                         }}
-                        className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-bold text-zinc-500 hover:text-[#FFCC00] transition-all"
+                        className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-bold text-muted hover:text-cba-gold transition-all"
                       >
                         <Calculator className="w-3.5 h-3.5" />
                         Calculate

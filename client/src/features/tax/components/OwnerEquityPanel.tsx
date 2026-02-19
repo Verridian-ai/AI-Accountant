@@ -62,8 +62,8 @@ export function OwnerEquityPanel({ year }: { year: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
-        <span className="ml-2 text-zinc-400">Loading equity data...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
+        <span className="ml-2 text-secondary">Loading equity data...</span>
       </div>
     );
   }
@@ -72,9 +72,9 @@ export function OwnerEquityPanel({ year }: { year: string }) {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="neu-raised border-white/5">
+        <Card className="neu-raised border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
               <ArrowUpRight className="w-4 h-4 text-emerald-400" />
               Contributions
             </CardTitle>
@@ -83,13 +83,13 @@ export function OwnerEquityPanel({ year }: { year: string }) {
             <div className="text-2xl font-bold text-emerald-400">
               {summary ? formatCurrency(summary.totalContributions) : '$0.00'}
             </div>
-            <p className="text-xs text-zinc-500">Personal → Business</p>
+            <p className="text-xs text-muted">Personal → Business</p>
           </CardContent>
         </Card>
 
-        <Card className="neu-raised border-white/5">
+        <Card className="neu-raised border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
               <ArrowDownLeft className="w-4 h-4 text-red-400" />
               Drawings
             </CardTitle>
@@ -98,13 +98,13 @@ export function OwnerEquityPanel({ year }: { year: string }) {
             <div className="text-2xl font-bold text-red-400">
               {summary ? formatCurrency(summary.totalDrawings) : '$0.00'}
             </div>
-            <p className="text-xs text-zinc-500">Business → Personal</p>
+            <p className="text-xs text-muted">Business → Personal</p>
           </CardContent>
         </Card>
 
-        <Card className="neu-raised border-white/5">
+        <Card className="neu-raised border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">Net Equity Change</CardTitle>
+            <CardTitle className="text-sm font-medium text-secondary">Net Equity Change</CardTitle>
           </CardHeader>
           <CardContent>
             <div
@@ -112,7 +112,7 @@ export function OwnerEquityPanel({ year }: { year: string }) {
             >
               {summary ? formatCurrency(summary.netEquityChange) : '$0.00'}
             </div>
-            <p className="text-xs text-zinc-500">{summary?.eventCount ?? 0} events</p>
+            <p className="text-xs text-muted">{summary?.eventCount ?? 0} events</p>
           </CardContent>
         </Card>
       </div>
@@ -122,7 +122,7 @@ export function OwnerEquityPanel({ year }: { year: string }) {
         <Button
           onClick={handleScan}
           disabled={scanning}
-          className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+          className="bg-cba-gold text-base hover:bg-[#e6b800]"
         >
           {scanning ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -143,7 +143,7 @@ export function OwnerEquityPanel({ year }: { year: string }) {
 
       {/* Detected Events */}
       {detected && (detected.contributions.length > 0 || detected.drawings.length > 0) && (
-        <Card className="neu-raised border-[#FFCC00]/10">
+        <Card className="neu-raised border-cba-gold/10">
           <CardHeader>
             <CardTitle className="text-gradient-gold">Detected Events</CardTitle>
             <CardDescription>
@@ -161,7 +161,7 @@ export function OwnerEquityPanel({ year }: { year: string }) {
                     <ArrowUpRight className="w-5 h-5 text-emerald-400 shrink-0" />
                     <div>
                       <p className="font-medium text-sm">{e.description}</p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-muted">
                         {e.date} • {e.sourceAccount}
                       </p>
                     </div>
@@ -201,7 +201,7 @@ export function OwnerEquityPanel({ year }: { year: string }) {
                     <ArrowDownLeft className="w-5 h-5 text-red-400 shrink-0" />
                     <div>
                       <p className="font-medium text-sm">{e.description}</p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-muted">
                         {e.date} • {e.sourceAccount}
                       </p>
                     </div>
@@ -239,13 +239,13 @@ export function OwnerEquityPanel({ year }: { year: string }) {
 
       {/* Monthly Breakdown */}
       {summary && summary.monthlyBreakdown.length > 0 && (
-        <Card className="neu-raised border-white/5">
+        <Card className="neu-raised border-border/50">
           <CardHeader>
             <CardTitle>Monthly Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <div className="grid grid-cols-4 text-xs font-bold text-zinc-500 uppercase pb-2 border-b border-white/5">
+              <div className="grid grid-cols-4 text-xs font-bold text-muted uppercase pb-2 border-b border-border/50">
                 <span>Month</span>
                 <span className="text-right">Contributions</span>
                 <span className="text-right">Drawings</span>
@@ -254,9 +254,9 @@ export function OwnerEquityPanel({ year }: { year: string }) {
               {(summary.monthlyBreakdown as Array<Record<string, unknown>>).map((m) => (
                 <div
                   key={m.month}
-                  className="grid grid-cols-4 text-sm py-1.5 border-b border-white/5 last:border-0"
+                  className="grid grid-cols-4 text-sm py-1.5 border-b border-border/50 last:border-0"
                 >
-                  <span className="text-zinc-400">{m.month}</span>
+                  <span className="text-secondary">{m.month}</span>
                   <span className="text-right text-emerald-400">
                     {formatCurrency(m.contributions)}
                   </span>

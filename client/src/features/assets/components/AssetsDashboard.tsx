@@ -67,7 +67,7 @@ export function AssetsDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">Fixed Assets</h2>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Asset register, depreciation schedules & disposal tracking
           </p>
         </div>

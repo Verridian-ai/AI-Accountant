@@ -32,11 +32,11 @@ export function PersonalTab({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-white">Personal Information</h3>
+        <h3 className="text-lg font-semibold text-primary">Personal Information</h3>
         {!editing ? (
           <button
             onClick={onEdit}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-[#FFCC00] border border-white/10 rounded-lg hover:border-[#FFCC00]/30 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary hover:text-cba-gold border border-border rounded-lg hover:border-cba-gold/30 transition-colors"
           >
             <Pencil className="h-3 w-3" />
             Edit
@@ -45,14 +45,14 @@ export function PersonalTab({
           <div className="flex gap-2">
             <button
               onClick={onCancel}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white border border-white/10 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary hover:text-primary border border-border rounded-lg transition-colors"
             >
               <X className="h-3 w-3" />
               Cancel
             </button>
             <button
               onClick={onSave}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-black bg-cba-gold rounded-lg hover:bg-cba-gold/90 transition-colors"
             >
               <Check className="h-3 w-3" />
               Save
@@ -64,7 +64,7 @@ export function PersonalTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {fields.map((f) => (
           <div key={f.key}>
-            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+            <label className="text-xs font-medium text-muted uppercase tracking-wider">
               {f.label}
             </label>
             {editing ? (
@@ -72,16 +72,16 @@ export function PersonalTab({
                 type={f.key === 'date_of_birth' ? 'date' : 'text'}
                 value={editData[f.key] ?? ''}
                 onChange={(e) => onFieldChange(f.key, e.target.value)}
-                className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-overlay border border-border text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               />
             ) : (
-              <p className="text-sm text-white mt-1">{(employee[f.key] as string) ?? '-'}</p>
+              <p className="text-sm text-primary mt-1">{(employee[f.key] as string) ?? '-'}</p>
             )}
           </div>
         ))}
         <div>
-          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">TFN</label>
-          <p className="text-sm text-white mt-1 font-mono">
+          <label className="text-xs font-medium text-muted uppercase tracking-wider">TFN</label>
+          <p className="text-sm text-primary mt-1 font-mono">
             {(employee.tfn_masked as string) ?? '***-***-***'}
           </p>
         </div>

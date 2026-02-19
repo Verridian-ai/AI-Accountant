@@ -64,7 +64,7 @@ export function ReconSummaryCard({ onNavigate }: ReconSummaryCardProps) {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-2xl p-5 animate-pulse border border-white/5">
+      <div className="neu-raised rounded-2xl p-5 animate-pulse border border-border/50">
         <div className="h-4 w-32 bg-zinc-800 rounded mb-4" />
         <div className="h-8 w-24 bg-zinc-800 rounded mb-2" />
         <div className="h-3 w-40 bg-zinc-800 rounded" />
@@ -74,23 +74,23 @@ export function ReconSummaryCard({ onNavigate }: ReconSummaryCardProps) {
 
   return (
     <div
-      className="neu-raised rounded-2xl p-5 border border-white/5 group relative overflow-hidden cursor-pointer hover:border-[#FFCC00]/20 transition-colors"
+      className="neu-raised rounded-2xl p-5 border border-border/50 group relative overflow-hidden cursor-pointer hover:border-cba-gold/20 transition-colors"
       onClick={onNavigate}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onNavigate?.()}
     >
       {/* Glow on hover */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[60px] bg-[#FFCC00] opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+      <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[60px] bg-cba-gold opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
 
       <div className="relative">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="neu-inset p-2 rounded-xl">
-              <GitCompareArrows className="h-4 w-4 text-[#FFCC00]" />
+              <GitCompareArrows className="h-4 w-4 text-cba-gold" />
             </div>
-            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+            <span className="text-[9px] font-black text-muted uppercase tracking-[0.2em]">
               Bank Reconciliation
             </span>
           </div>
@@ -106,7 +106,7 @@ export function ReconSummaryCard({ onNavigate }: ReconSummaryCardProps) {
         <div className="mb-3">
           <div className="flex items-baseline gap-2 mb-1.5">
             <span className="text-2xl font-black text-gradient-gold">{matchPercent}%</span>
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
               Matched
             </span>
           </div>
@@ -118,7 +118,7 @@ export function ReconSummaryCard({ onNavigate }: ReconSummaryCardProps) {
                 matchPercent >= 90
                   ? 'bg-emerald-500'
                   : matchPercent >= 70
-                    ? 'bg-[#FFCC00]'
+                    ? 'bg-cba-gold'
                     : 'bg-amber-500',
               )}
               style={{ width: `${matchPercent}%` }}
@@ -129,21 +129,21 @@ export function ReconSummaryCard({ onNavigate }: ReconSummaryCardProps) {
         {/* Stats grid */}
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <div className="flex items-center justify-center gap-1 text-zinc-400 mb-1">
+            <div className="flex items-center justify-center gap-1 text-secondary mb-1">
               <Clock className="h-3 w-3" />
             </div>
-            <p className="text-sm font-bold text-zinc-200">{openSessions.length}</p>
+            <p className="text-sm font-bold text-primary">{openSessions.length}</p>
             <p className="text-[9px] text-zinc-600 uppercase tracking-wider font-bold">Open</p>
           </div>
           <div>
             <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1">
               <CheckCircle2 className="h-3 w-3" />
             </div>
-            <p className="text-sm font-bold text-zinc-200">{completedSessions.length}</p>
+            <p className="text-sm font-bold text-primary">{completedSessions.length}</p>
             <p className="text-[9px] text-zinc-600 uppercase tracking-wider font-bold">Done</p>
           </div>
           <div>
-            <p className="text-sm font-bold text-zinc-200 mt-4">
+            <p className="text-sm font-bold text-primary mt-4">
               {totalDiscrepancy > 0 ? formatCurrency(totalDiscrepancy) : '$0.00'}
             </p>
             <p className="text-[9px] text-zinc-600 uppercase tracking-wider font-bold">Diff</p>

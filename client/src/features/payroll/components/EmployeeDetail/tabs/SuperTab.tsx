@@ -39,11 +39,11 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-white">Superannuation</h3>
+        <h3 className="text-lg font-semibold text-primary">Superannuation</h3>
         {!editing && superFund && (
           <button
             onClick={() => setEditing(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-[#FFCC00] border border-white/10 rounded-lg hover:border-[#FFCC00]/30 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary hover:text-cba-gold border border-border rounded-lg hover:border-cba-gold/30 transition-colors"
           >
             <Pencil className="h-3 w-3" />
             Edit
@@ -52,7 +52,7 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
       </div>
 
       {!superFund && !editing ? (
-        <p className="text-sm text-zinc-500 text-center py-8">No super fund on file</p>
+        <p className="text-sm text-muted text-center py-8">No super fund on file</p>
       ) : editing ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -63,7 +63,7 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
               { key: 'member_number', label: 'Member Number', placeholder: 'Member #' },
             ].map((f) => (
               <div key={f.key}>
-                <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                <label className="text-xs font-medium text-muted uppercase tracking-wider">
                   {f.label}
                 </label>
                 <input
@@ -71,12 +71,12 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
                   value={form[f.key as keyof typeof form]}
                   onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                   placeholder={f.placeholder}
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                  className="w-full mt-1 px-3 py-2 rounded-lg bg-overlay border border-border text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 />
               </div>
             ))}
             <div>
-              <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+              <label className="text-xs font-medium text-muted uppercase tracking-wider">
                 Contribution Rate (%)
               </label>
               <div className="flex items-center gap-2 mt-1">
@@ -85,7 +85,7 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
                   step="0.5"
                   value={form.contribution_rate}
                   onChange={(e) => setForm({ ...form, contribution_rate: e.target.value })}
-                  className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+                  className="flex-1 px-3 py-2 rounded-lg bg-overlay border border-border text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 />
                 <span
                   className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -103,14 +103,14 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
             {superFund && (
               <button
                 onClick={() => setEditing(false)}
-                className="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+                className="px-3 py-1.5 text-xs text-secondary hover:text-primary transition-colors"
               >
                 Cancel
               </button>
             )}
             <button
               onClick={handleSave}
-              className="px-4 py-1.5 text-xs font-medium text-black bg-[#FFCC00] rounded-lg hover:bg-[#FFCC00]/90 transition-colors"
+              className="px-4 py-1.5 text-xs font-medium text-black bg-cba-gold rounded-lg hover:bg-cba-gold/90 transition-colors"
             >
               Save Super Fund
             </button>
@@ -119,25 +119,25 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-zinc-500">Fund Name</p>
-            <p className="text-sm text-white mt-0.5">{superFund?.fund_name}</p>
+            <p className="text-xs text-muted">Fund Name</p>
+            <p className="text-sm text-primary mt-0.5">{superFund?.fund_name}</p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500">Fund ABN</p>
-            <p className="text-sm text-white font-mono mt-0.5">{superFund?.fund_abn}</p>
+            <p className="text-xs text-muted">Fund ABN</p>
+            <p className="text-sm text-primary font-mono mt-0.5">{superFund?.fund_abn}</p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500">USI</p>
-            <p className="text-sm text-white mt-0.5">{superFund?.usi ?? '-'}</p>
+            <p className="text-xs text-muted">USI</p>
+            <p className="text-sm text-primary mt-0.5">{superFund?.usi ?? '-'}</p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500">Member Number</p>
-            <p className="text-sm text-white mt-0.5">{superFund?.member_number}</p>
+            <p className="text-xs text-muted">Member Number</p>
+            <p className="text-sm text-primary mt-0.5">{superFund?.member_number}</p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500">Contribution Rate</p>
+            <p className="text-xs text-muted">Contribution Rate</p>
             <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-sm text-white">{superFund?.contribution_rate}%</p>
+              <p className="text-sm text-primary">{superFund?.contribution_rate}%</p>
               <span
                 className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                   (superFund?.contribution_rate ?? 0) >= SUPER_MIN_RATE

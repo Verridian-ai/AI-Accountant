@@ -255,7 +255,7 @@ function MoneyFlowSankeyInner() {
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="bg-gray-800 border border-[#FFCC00]/30 rounded-lg px-3 py-1.5 text-sm text-gray-200 focus:border-[#FFCC00] focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
+              className="bg-gray-800 border border-cba-gold/30 rounded-lg px-3 py-1.5 text-sm text-gray-200 focus:border-cba-gold focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
             >
               {PERIOD_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -286,7 +286,7 @@ function MoneyFlowSankeyInner() {
               type="checkbox"
               checked={includeTransfers}
               onChange={(e) => setIncludeTransfers(e.target.checked)}
-              className="rounded bg-gray-700 border-gray-600 text-[#FFCC00] focus:ring-[#FFCC00]/50"
+              className="rounded bg-gray-700 border-gray-600 text-cba-gold focus:ring-[#FFCC00]/50"
             />
             <span className="text-xs text-gray-400">Include Transfers</span>
           </label>

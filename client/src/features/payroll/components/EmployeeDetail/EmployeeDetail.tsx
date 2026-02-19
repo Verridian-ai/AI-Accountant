@@ -31,14 +31,14 @@ export function EmployeeDetail({ employeeId, onBack }: EmployeeDetailProps) {
     return (
       <div className="neu-raised rounded-2xl p-8 space-y-6 animate-pulse">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 rounded-full bg-white/5" />
+          <div className="h-16 w-16 rounded-full bg-overlay" />
           <div className="space-y-2">
-            <div className="h-6 w-48 bg-white/5 rounded" />
-            <div className="h-4 w-32 bg-white/5 rounded" />
+            <div className="h-6 w-48 bg-overlay rounded" />
+            <div className="h-4 w-32 bg-overlay rounded" />
           </div>
         </div>
-        <div className="h-10 w-full bg-white/5 rounded" />
-        <div className="h-64 w-full bg-white/5 rounded" />
+        <div className="h-10 w-full bg-overlay rounded" />
+        <div className="h-64 w-full bg-overlay rounded" />
       </div>
     );
   }
@@ -47,8 +47,8 @@ export function EmployeeDetail({ employeeId, onBack }: EmployeeDetailProps) {
     return (
       <div className="neu-raised rounded-2xl p-8 text-center">
         <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
-        <p className="text-zinc-400">Employee not found</p>
-        <button onClick={onBack} className="mt-4 text-sm text-[#FFCC00] hover:underline">
+        <p className="text-secondary">Employee not found</p>
+        <button onClick={onBack} className="mt-4 text-sm text-cba-gold hover:underline">
           Back to list
         </button>
       </div>
@@ -63,20 +63,20 @@ export function EmployeeDetail({ employeeId, onBack }: EmployeeDetailProps) {
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
-          className="p-2 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-colors"
+          className="p-2 rounded-xl hover:bg-overlay text-secondary hover:text-primary transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="h-14 w-14 rounded-full bg-[#FFCC00]/10 flex items-center justify-center text-xl font-bold text-[#FFCC00]">
+        <div className="h-14 w-14 rounded-full bg-cba-gold/10 flex items-center justify-center text-xl font-bold text-cba-gold">
           {employee.first_name?.[0]}
           {employee.last_name?.[0]}
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold text-primary">
             {employee.first_name} {employee.last_name}
           </h2>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-sm text-zinc-400">
+            <span className="text-sm text-secondary">
               {typeLabels[employee.employment_type ?? ''] ?? employee.employment_type}
             </span>
             <span
@@ -96,8 +96,8 @@ export function EmployeeDetail({ employeeId, onBack }: EmployeeDetailProps) {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? 'bg-[#FFCC00]/10 text-[#FFCC00]'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-cba-gold/10 text-cba-gold'
+                : 'text-secondary hover:text-primary'
             }`}
           >
             <tab.icon className="h-4 w-4" />
@@ -149,8 +149,8 @@ export function EmployeeDetail({ employeeId, onBack }: EmployeeDetailProps) {
         {activeTab === 'documents' && (
           <div className="text-center py-12">
             <FolderOpen className="h-12 w-12 text-zinc-600 mx-auto mb-3" />
-            <p className="text-zinc-400 font-medium">Documents</p>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-secondary font-medium">Documents</p>
+            <p className="text-xs text-muted mt-1">
               Document management coming in a future update
             </p>
           </div>

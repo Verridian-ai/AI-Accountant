@@ -6,7 +6,7 @@ export function StatusBadge({ status }: { status: FileUploadState['status'] }) {
   const config = {
     pending: {
       label: 'Queued',
-      classes: 'bg-zinc-800 text-zinc-500 border-zinc-700',
+      classes: 'bg-zinc-800 text-muted border-zinc-700',
       icon: <Clock className="h-2.5 w-2.5" />,
     },
     uploading: {
@@ -16,7 +16,7 @@ export function StatusBadge({ status }: { status: FileUploadState['status'] }) {
     },
     parsing: {
       label: 'Parsing...',
-      classes: 'bg-[#FFCC00]/10 text-[#FFCC00] border-[#FFCC00]/20',
+      classes: 'bg-cba-gold/10 text-cba-gold border-cba-gold/20',
       icon: <Loader2 className="h-2.5 w-2.5 animate-spin" />,
     },
     completed: {

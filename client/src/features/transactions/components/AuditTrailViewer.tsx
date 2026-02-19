@@ -29,7 +29,7 @@ const ACTION_COLORS: Record<string, string> = {
   mutation_rejected: 'text-red-400 bg-red-400/10',
   mutation_executed: 'text-emerald-400 bg-emerald-400/10',
   mutation_failed: 'text-red-400 bg-red-400/10',
-  mutation_expired: 'text-zinc-500 bg-zinc-500/10',
+  mutation_expired: 'text-muted bg-zinc-500/10',
   query_executed: 'text-blue-400 bg-blue-400/10',
   tool_called: 'text-violet-400 bg-violet-400/10',
   error_occurred: 'text-red-400 bg-red-400/10',
@@ -123,7 +123,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
     <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-black text-zinc-300 uppercase tracking-widest">
+        <h3 className="text-xs font-black text-primary uppercase tracking-widest">
           {mutationId ? 'Mutation Audit Trail' : 'Agent Audit Log'}
         </h3>
         <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
               'neu-raised-sm p-1.5 rounded-lg transition-colors',
-              showFilters ? 'text-[#FFCC00]' : 'text-zinc-500 hover:text-zinc-300',
+              showFilters ? 'text-cba-gold' : 'text-muted hover:text-primary',
             )}
             aria-label="Toggle filters"
           >
@@ -142,7 +142,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
             type="button"
             onClick={fetchEntries}
             disabled={loading}
-            className="neu-raised-sm p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-30"
+            className="neu-raised-sm p-1.5 rounded-lg text-muted hover:text-primary transition-colors disabled:opacity-30"
             aria-label="Refresh"
           >
             <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
@@ -155,22 +155,22 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
         <div className="neu-inset rounded-xl p-3 space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+              <label className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                 Agent Type
               </label>
               <input
-                className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-zinc-300 placeholder-zinc-700 font-bold bg-transparent outline-none focus-gold"
+                className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-primary placeholder-zinc-700 font-bold bg-transparent outline-none focus-gold"
                 placeholder="e.g. transaction_categorizer"
                 value={filterAgentType}
                 onChange={(e) => setFilterAgentType(e.target.value)}
               />
             </div>
             <div>
-              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+              <label className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                 Action
               </label>
               <select
-                className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-zinc-300 font-bold bg-transparent outline-none"
+                className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-primary font-bold bg-transparent outline-none"
                 value={filterAction}
                 onChange={(e) => setFilterAction(e.target.value)}
               >
@@ -183,23 +183,23 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
               </select>
             </div>
             <div>
-              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+              <label className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                 From
               </label>
               <input
                 type="date"
-                className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-zinc-300 font-bold bg-transparent outline-none"
+                className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-primary font-bold bg-transparent outline-none"
                 value={filterFrom}
                 onChange={(e) => setFilterFrom(e.target.value)}
               />
             </div>
             <div>
-              <label className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+              <label className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                 To
               </label>
               <input
                 type="date"
-                className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-zinc-300 font-bold bg-transparent outline-none"
+                className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-primary font-bold bg-transparent outline-none"
                 value={filterTo}
                 onChange={(e) => setFilterTo(e.target.value)}
               />
@@ -209,7 +209,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
             <button
               type="button"
               onClick={clearFilters}
-              className="text-[8px] font-bold text-[#FFCC00]/70 hover:text-[#FFCC00] transition-colors uppercase tracking-wider"
+              className="text-[8px] font-bold text-cba-gold/70 hover:text-cba-gold transition-colors uppercase tracking-wider"
             >
               Clear filters
             </button>
@@ -220,21 +220,21 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
       {/* Loading state */}
       {loading && entries.length === 0 && (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 text-[#FFCC00] animate-spin" />
+          <Loader2 className="h-5 w-5 text-cba-gold animate-spin" />
         </div>
       )}
 
       {/* Empty state */}
       {!loading && entries.length === 0 && (
         <div className="neu-inset rounded-xl p-6 text-center">
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+          <p className="text-[10px] font-bold text-muted uppercase tracking-wider">
             No audit entries found
           </p>
           {hasActiveFilters && (
             <button
               type="button"
               onClick={clearFilters}
-              className="mt-2 text-[9px] font-bold text-[#FFCC00]/70 hover:text-[#FFCC00] transition-colors uppercase tracking-wider"
+              className="mt-2 text-[9px] font-bold text-cba-gold/70 hover:text-cba-gold transition-colors uppercase tracking-wider"
             >
               Clear filters
             </button>
@@ -246,7 +246,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
       {entries.length > 0 && (
         <div className="space-y-1">
           {/* Table header */}
-          <div className="neu-inset rounded-lg px-3 py-2 grid grid-cols-[80px_90px_100px_80px_1fr] gap-2 text-[7px] font-black text-zinc-500 uppercase tracking-wider">
+          <div className="neu-inset rounded-lg px-3 py-2 grid grid-cols-[80px_90px_100px_80px_1fr] gap-2 text-[7px] font-black text-muted uppercase tracking-wider">
             <span>Time</span>
             <span>Agent</span>
             <span>Action</span>
@@ -257,7 +257,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
           {/* Rows */}
           {entries.map((entry) => {
             const isExpanded = expandedIds.has(entry.id);
-            const actionStyle = ACTION_COLORS[entry.action] ?? 'text-zinc-400 bg-zinc-400/10';
+            const actionStyle = ACTION_COLORS[entry.action] ?? 'text-secondary bg-zinc-400/10';
             const meta = entry.metadata ? safeParseJSON(entry.metadata) : null;
 
             return (
@@ -267,10 +267,10 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                   onClick={() => toggleExpanded(entry.id)}
                   className="w-full px-3 py-2 grid grid-cols-[80px_90px_100px_80px_1fr] gap-2 items-center text-left hover:bg-white/2 transition-colors"
                 >
-                  <span className="text-[8px] font-bold text-zinc-500 truncate">
+                  <span className="text-[8px] font-bold text-muted truncate">
                     {formatTimestamp(entry.created_at)}
                   </span>
-                  <span className="text-[8px] font-bold text-[#FFCC00]/70 truncate">
+                  <span className="text-[8px] font-bold text-cba-gold/70 truncate">
                     {entry.agent_type.replace(/_/g, ' ')}
                   </span>
                   <span
@@ -281,16 +281,16 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                   >
                     {entry.action.replace(/_/g, ' ')}
                   </span>
-                  <span className="text-[8px] font-bold text-zinc-500 truncate">
+                  <span className="text-[8px] font-bold text-muted truncate">
                     {entry.target_table ?? '—'}
                   </span>
                   <div className="flex items-center gap-1">
                     {isExpanded ? (
-                      <ChevronDown className="h-3 w-3 text-zinc-500 shrink-0" />
+                      <ChevronDown className="h-3 w-3 text-muted shrink-0" />
                     ) : (
-                      <ChevronRight className="h-3 w-3 text-zinc-500 shrink-0" />
+                      <ChevronRight className="h-3 w-3 text-muted shrink-0" />
                     )}
-                    <span className="text-[8px] font-medium text-zinc-400 truncate">
+                    <span className="text-[8px] font-medium text-secondary truncate">
                       {(meta?.description ?? entry.target_id ?? 'View details') as React.ReactNode}
                     </span>
                   </div>
@@ -298,11 +298,11 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="px-3 pb-3 space-y-2 border-t border-white/5">
+                  <div className="px-3 pb-3 space-y-2 border-t border-border/50">
                     <div className="grid grid-cols-2 gap-2 pt-2">
                       {entry.before_state && (
                         <div>
-                          <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                          <span className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                             Before
                           </span>
                           <pre className="neu-inset rounded-lg p-2 text-[8px] text-red-400/70 font-mono overflow-x-auto max-h-32 overflow-y-auto">
@@ -312,7 +312,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                       )}
                       {entry.after_state && (
                         <div>
-                          <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                          <span className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                             After
                           </span>
                           <pre className="neu-inset rounded-lg p-2 text-[8px] text-emerald-400/70 font-mono overflow-x-auto max-h-32 overflow-y-auto">
@@ -323,10 +323,10 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
                     </div>
                     {meta && (
                       <div>
-                        <span className="text-[7px] font-black text-zinc-500 uppercase tracking-wider block mb-1">
+                        <span className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                           Metadata
                         </span>
-                        <pre className="neu-inset rounded-lg p-2 text-[8px] text-zinc-400 font-mono overflow-x-auto max-h-24 overflow-y-auto">
+                        <pre className="neu-inset rounded-lg p-2 text-[8px] text-secondary font-mono overflow-x-auto max-h-24 overflow-y-auto">
                           {JSON.stringify(meta, null, 2)}
                         </pre>
                       </div>
@@ -353,7 +353,7 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
               <button
                 type="button"
                 onClick={fetchEntries}
-                className="text-[8px] font-bold text-[#FFCC00]/70 hover:text-[#FFCC00] transition-colors uppercase tracking-wider"
+                className="text-[8px] font-bold text-cba-gold/70 hover:text-cba-gold transition-colors uppercase tracking-wider"
               >
                 Load more
               </button>

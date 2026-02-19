@@ -42,8 +42,8 @@ export function AgentRoutingIndicator({ agentType, isProcessing }: AgentRoutingI
         isProcessing ? 'opacity-100' : 'opacity-0',
       )}
     >
-      <Loader2 className="h-3 w-3 text-[#FFCC00] animate-spin" />
-      <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">{label}</span>
+      <Loader2 className="h-3 w-3 text-cba-gold animate-spin" />
+      <span className="text-[8px] font-black text-muted uppercase tracking-widest">{label}</span>
     </div>
   );
 }

@@ -42,11 +42,11 @@ export function ErrorDisplay({
             <p className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em] text-left">
               {statement.errorType?.replace(/_/g, ' ') || 'PARSING ERROR'}
             </p>
-            <p className="text-xs text-zinc-400 leading-relaxed text-left font-bold italic">
+            <p className="text-xs text-secondary leading-relaxed text-left font-bold italic">
               "{statement.errorMessage}"
             </p>
             {statement.errorDetails && (
-              <div className="mt-2 p-3 rounded-lg bg-black/20 border border-white/5 font-mono text-[10px] text-zinc-500 break-all">
+              <div className="mt-2 p-3 rounded-lg bg-overlay border border-border/50 font-mono text-[10px] text-muted break-all">
                 {statement.errorDetails}
               </div>
             )}
@@ -54,7 +54,7 @@ export function ErrorDisplay({
         </div>
 
         {/* Recovery Actions */}
-        <div className="pt-4 border-t border-white/5 text-left">
+        <div className="pt-4 border-t border-border/50 text-left">
           <ErrorRecovery
             errorType={statement.errorType}
             onRetry={handleRetry}
@@ -79,11 +79,11 @@ export function ErrorDisplay({
           onClick={(e) => {
             e.stopPropagation(); /* Logic for archive access if needed */
           }}
-          className="text-[9px] font-black text-[#FFCC00] hover:brightness-125 flex items-center gap-2 uppercase tracking-[0.2em] btn-press"
+          className="text-[9px] font-black text-cba-gold hover:brightness-125 flex items-center gap-2 uppercase tracking-[0.2em] btn-press"
         >
           Access Raw Logs <ChevronRight className="h-3 w-3" />
         </button>
-        <span className="text-[8px] text-zinc-700 font-mono font-black tracking-widest bg-white/2 px-2 py-0.5 rounded border border-white/5">
+        <span className="text-[8px] text-zinc-700 font-mono font-black tracking-widest bg-white/2 px-2 py-0.5 rounded border border-border/50">
           NODE_ID: {statement.id.slice(0, 8).toUpperCase()}
         </span>
       </div>

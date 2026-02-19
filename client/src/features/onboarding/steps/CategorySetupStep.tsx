@@ -107,16 +107,16 @@ export function CategorySetupStep({ data, updateData }: OnboardingStepProps) {
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
           <span className="text-gradient-gold">Customize your categories</span>
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           We've pre-selected categories based on your profile. Add or modify as needed.
         </p>
       </div>
 
       {/* AI Suggestions */}
-      <div className="neu-inset rounded-2xl p-5 border border-[#FFCC00]/10 bg-[#FFCC00]/[0.02]">
+      <div className="neu-inset rounded-2xl p-5 border border-cba-gold/10 bg-cba-gold/[0.02]">
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black uppercase text-[#FFCC00] tracking-widest">
+          <Sparkles className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black uppercase text-cba-gold tracking-widest">
             AI Suggestions for {data.industry || 'Your Profile'}
           </span>
         </div>
@@ -124,7 +124,7 @@ export function CategorySetupStep({ data, updateData }: OnboardingStepProps) {
           {suggestedCategories.map((cat) => (
             <span
               key={cat}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFCC00]/10 border border-[#FFCC00]/20 text-xs font-medium text-[#FFCC00]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cba-gold/10 border border-cba-gold/20 text-xs font-medium text-cba-gold"
             >
               <Check className="w-3 h-3" />
               {cat}
@@ -135,13 +135,13 @@ export function CategorySetupStep({ data, updateData }: OnboardingStepProps) {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
         <Input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search categories..."
-          className="w-full pl-11 pr-4 py-3 neu-inset rounded-xl text-sm placeholder-zinc-600 border-white/10"
+          className="w-full pl-11 pr-4 py-3 neu-inset rounded-xl text-sm placeholder-zinc-600 border-border"
         />
       </div>
 
@@ -200,7 +200,7 @@ export function CategorySetupStep({ data, updateData }: OnboardingStepProps) {
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="Enter category name..."
-              className="flex-1 px-4 py-3 neu-inset rounded-xl text-sm border-white/10"
+              className="flex-1 px-4 py-3 neu-inset rounded-xl text-sm border-border"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleAddCategory();
@@ -213,7 +213,7 @@ export function CategorySetupStep({ data, updateData }: OnboardingStepProps) {
             <button
               onClick={handleAddCategory}
               disabled={!newCategory.trim()}
-              className="px-4 py-3 cba-gold-gradient text-[#0a0a0f] font-bold text-xs uppercase rounded-xl btn-press disabled:opacity-50"
+              className="px-4 py-3 cba-gold-gradient text-base font-bold text-xs uppercase rounded-xl btn-press disabled:opacity-50"
             >
               Add
             </button>
@@ -222,7 +222,7 @@ export function CategorySetupStep({ data, updateData }: OnboardingStepProps) {
                 setShowAddInput(false);
                 setNewCategory('');
               }}
-              className="p-3 neu-raised-sm rounded-xl text-zinc-400 hover:text-red-400"
+              className="p-3 neu-raised-sm rounded-xl text-secondary hover:text-red-400"
             >
               <X className="w-4 h-4" />
             </button>
@@ -230,7 +230,7 @@ export function CategorySetupStep({ data, updateData }: OnboardingStepProps) {
         ) : (
           <button
             onClick={() => setShowAddInput(true)}
-            className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-white/10 text-zinc-500 hover:text-[#FFCC00] hover:border-[#FFCC00]/30 transition-colors w-full justify-center"
+            className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-border text-muted hover:text-cba-gold hover:border-cba-gold/30 transition-colors w-full justify-center"
           >
             <Plus className="w-4 h-4" />
             <span className="text-sm font-medium">Add Custom Category</span>
@@ -261,13 +261,13 @@ function CategoryTag({ label, isSelected, isSuggested, isCustom, onRemove }: Cat
       className={cn(
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
         isSelected
-          ? 'bg-white/5 border border-white/10 text-zinc-300'
-          : 'bg-transparent border border-white/5 text-zinc-500',
-        isSuggested && 'border-[#FFCC00]/20 bg-[#FFCC00]/5',
+          ? 'bg-overlay border border-border text-primary'
+          : 'bg-transparent border border-border/50 text-muted',
+        isSuggested && 'border-cba-gold/20 bg-cba-gold/5',
       )}
     >
-      {isSuggested && <Sparkles className="w-3 h-3 text-[#FFCC00]" />}
-      {!isSuggested && <Tag className="w-3 h-3 text-zinc-500" />}
+      {isSuggested && <Sparkles className="w-3 h-3 text-cba-gold" />}
+      {!isSuggested && <Tag className="w-3 h-3 text-muted" />}
       {label}
       {isCustom && onRemove && (
         <button

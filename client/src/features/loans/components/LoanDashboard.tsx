@@ -13,6 +13,12 @@ import {
   Loader2,
 } from 'lucide-react';
 import { BASE_URL, getAuthHeaders } from '@/api';
+
+async function fetchMarketRates(baseUrl: string, headers: HeadersInit): Promise<MarketRates | null> {
+  const res = await fetch(`${baseUrl}/api/cdr/rates/market?category=RESIDENTIAL_MORTGAGES`, { headers });
+  if (!res.ok) return null;
+  return res.json() as Promise<MarketRates>;
+}
 import { HomeLoanCalculator } from './HomeLoanCalculator';
 import { CarFinanceCalculator } from './CarFinanceCalculator';
 import { PersonalLoanCalculator } from './PersonalLoanCalculator';
@@ -37,21 +43,10 @@ export function LoanDashboard() {
   const [ratesLoading, setRatesLoading] = useState(true);
 
   useEffect(() => {
-    async function loadMarketRates() {
-      try {
-        const res = await fetch(`${BASE_URL}/api/cdr/rates/market?category=RESIDENTIAL_MORTGAGES`, {
-          headers: getAuthHeaders(),
-        });
-        if (res.ok) {
-          setMarketRates(await res.json());
-        }
-      } catch {
-        // Market rates are optional — gracefully degrade
-      } finally {
-        setRatesLoading(false);
-      }
-    }
-    loadMarketRates();
+    fetchMarketRates(BASE_URL, getAuthHeaders())
+      .then((data) => { if (data) setMarketRates(data); })
+      .catch(() => { /* Market rates are optional — gracefully degrade */ })
+      .finally(() => setRatesLoading(false));
   }, []);
 
   return (
@@ -60,7 +55,7 @@ export function LoanDashboard() {
         <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gradient-gold">
           Loan Calculators
         </h2>
-        <p className="text-xs sm:text-sm text-zinc-500">
+        <p className="text-xs sm:text-sm text-muted">
           Australian loan comparison tools with CDR market rates, offset, refinance, and
           APRA-compliant capacity estimates
         </p>
@@ -68,23 +63,23 @@ export function LoanDashboard() {
 
       {/* Market Rates Banner */}
       {ratesLoading ? (
-        <Card className="neu-raised border-[#FFCC00]/10">
-          <CardContent className="py-4 flex items-center justify-center gap-2 text-sm text-zinc-400">
+        <Card className="neu-raised border-cba-gold/10">
+          <CardContent className="py-4 flex items-center justify-center gap-2 text-sm text-secondary">
             <Loader2 className="w-4 h-4 animate-spin" />
             Loading CDR market rates...
           </CardContent>
         </Card>
       ) : marketRates ? (
-        <Card className="neu-raised border-[#FFCC00]/10 bg-gradient-to-r from-[#FFCC00]/5 to-transparent">
+        <Card className="neu-raised border-cba-gold/10 bg-gradient-to-r from-[#FFCC00]/5 to-transparent">
           <CardContent className="py-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-[#FFCC00]" />
-                <span className="text-sm font-medium text-[#FFCC00]">CDR Market Rates</span>
+                <BarChart3 className="w-5 h-5 text-cba-gold" />
+                <span className="text-sm font-medium text-cba-gold">CDR Market Rates</span>
               </div>
               <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 sm:gap-6 flex-wrap">
                 <div className="text-center">
-                  <p className="text-[10px] uppercase tracking-wide text-zinc-500">
+                  <p className="text-[10px] uppercase tracking-wide text-muted">
                     Lowest Variable
                   </p>
                   <p className="text-base sm:text-lg font-bold text-emerald-400">
@@ -92,7 +87,7 @@ export function LoanDashboard() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[10px] uppercase tracking-wide text-zinc-500">
+                  <p className="text-[10px] uppercase tracking-wide text-muted">
                     Lowest 2yr Fixed
                   </p>
                   <p className="text-base sm:text-lg font-bold text-blue-400">
@@ -100,19 +95,19 @@ export function LoanDashboard() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[10px] uppercase tracking-wide text-zinc-500">Avg Variable</p>
-                  <p className="text-base sm:text-lg font-bold text-zinc-300">
+                  <p className="text-[10px] uppercase tracking-wide text-muted">Avg Variable</p>
+                  <p className="text-base sm:text-lg font-bold text-primary">
                     {(marketRates.average_variable * 100).toFixed(2)}%
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[10px] uppercase tracking-wide text-zinc-500">Products</p>
-                  <p className="text-base sm:text-lg font-bold text-zinc-300">
+                  <p className="text-[10px] uppercase tracking-wide text-muted">Products</p>
+                  <p className="text-base sm:text-lg font-bold text-primary">
                     {marketRates.total_products}
                   </p>
                 </div>
               </div>
-              <Badge className="bg-white/5 text-zinc-500 border-white/10 text-[10px]">
+              <Badge className="bg-overlay text-muted border-border text-[10px]">
                 {marketRates.source} &middot; {marketRates.total_providers} providers
               </Badge>
             </div>

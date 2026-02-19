@@ -167,7 +167,7 @@ export function InvoicingDashboard() {
       if (invoiceViewLoading) {
         return (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+            <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
           </div>
         );
       }
@@ -176,7 +176,7 @@ export function InvoicingDashboard() {
           <div className="flex items-center justify-between">
             <button
               onClick={handleBackToInvoices}
-              className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+              className="flex items-center gap-2 text-sm text-secondary hover:text-zinc-100 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Invoices
@@ -184,7 +184,7 @@ export function InvoicingDashboard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setEditingInvoiceId(selectedInvoiceId)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg neu-raised text-xs font-semibold text-zinc-200 hover:text-zinc-100 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg neu-raised text-xs font-semibold text-primary hover:text-zinc-100 transition-colors"
               >
                 Edit
               </button>
@@ -240,7 +240,7 @@ export function InvoicingDashboard() {
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
           Invoicing & Customers
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Manage customers, create invoices, and track payments
         </p>
       </div>
@@ -248,7 +248,7 @@ export function InvoicingDashboard() {
       {/* Summary Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="neu-raised rounded-2xl p-4 flex items-center gap-3">
-          <div className="neu-inset p-2.5 rounded-xl text-[#FFCC00]">
+          <div className="neu-inset p-2.5 rounded-xl text-cba-gold">
             <DollarSign className="w-5 h-5" />
           </div>
           <div>
@@ -256,7 +256,7 @@ export function InvoicingDashboard() {
               Outstanding
             </p>
             {statsLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mt-1" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted mt-1" />
             ) : (
               <p className="text-lg font-bold text-gradient-gold">
                 {formatAUD(stats?.totalOutstanding ?? 0)}
@@ -269,7 +269,7 @@ export function InvoicingDashboard() {
           <div
             className={cn(
               'neu-inset p-2.5 rounded-xl',
-              stats && stats.overdueCount > 0 ? 'text-red-400' : 'text-zinc-500',
+              stats && stats.overdueCount > 0 ? 'text-red-400' : 'text-muted',
             )}
           >
             <AlertTriangle className="w-5 h-5" />
@@ -279,12 +279,12 @@ export function InvoicingDashboard() {
               Overdue
             </p>
             {statsLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mt-1" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted mt-1" />
             ) : (
               <p
                 className={cn(
                   'text-lg font-bold',
-                  stats && stats.overdueCount > 0 ? 'text-red-400' : 'text-zinc-300',
+                  stats && stats.overdueCount > 0 ? 'text-red-400' : 'text-primary',
                 )}
               >
                 {stats?.overdueCount ?? 0}
@@ -302,7 +302,7 @@ export function InvoicingDashboard() {
               Revenue (Month)
             </p>
             {statsLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mt-1" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted mt-1" />
             ) : (
               <p className="text-lg font-bold text-emerald-400">
                 {formatAUD(stats?.revenueThisMonth ?? 0)}
@@ -312,7 +312,7 @@ export function InvoicingDashboard() {
         </div>
 
         <div className="neu-raised rounded-2xl p-4 flex items-center gap-3">
-          <div className="neu-inset p-2.5 rounded-xl text-zinc-400">
+          <div className="neu-inset p-2.5 rounded-xl text-secondary">
             <Users className="w-5 h-5" />
           </div>
           <div>
@@ -320,7 +320,7 @@ export function InvoicingDashboard() {
               Customers
             </p>
             {statsLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mt-1" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted mt-1" />
             ) : (
               <p className="text-lg font-bold text-zinc-100">{stats?.totalCustomers ?? 0}</p>
             )}
@@ -345,8 +345,8 @@ export function InvoicingDashboard() {
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300',
               activeTab === tab.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                : 'neu-raised text-zinc-400 hover:text-zinc-100',
+                ? 'bg-cba-gold text-base shadow-[0_0_20px_rgba(255,204,0,0.2)]'
+                : 'neu-raised text-secondary hover:text-zinc-100',
             )}
           >
             <tab.icon className="w-4 h-4" />

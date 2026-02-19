@@ -102,7 +102,7 @@ export function DashboardGrid() {
       <div className="space-y-4">
         <button
           onClick={() => setActiveDashboardId(null)}
-          className="flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FFCC00] transition-colors"
+          className="flex items-center gap-2 text-sm text-secondary hover:text-cba-gold transition-colors"
         >
           <LayoutGrid className="w-4 h-4" />
           <span>Back to Dashboards</span>
@@ -118,13 +118,13 @@ export function DashboardGrid() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gradient-gold">Custom Dashboards</h2>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-sm text-muted mt-1">
             Build and manage your personalised data views
           </p>
         </div>
         <button
           onClick={() => setShowCreateDialog(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#FFCC00] text-[#0a0a0f] rounded-xl font-bold text-sm hover:bg-[#FFE066] transition-colors btn-press"
+          className="flex items-center gap-2 px-4 py-2.5 bg-cba-gold text-base rounded-xl font-bold text-sm hover:bg-cba-gold-light transition-colors btn-press"
         >
           <Plus className="w-4 h-4" />
           New Dashboard
@@ -144,7 +144,7 @@ export function DashboardGrid() {
       {/* Loading state */}
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 text-[#FFCC00] animate-spin" />
+          <Loader2 className="w-8 h-8 text-cba-gold animate-spin" />
         </div>
       )}
 
@@ -154,27 +154,27 @@ export function DashboardGrid() {
           {dashboards.map((dash) => (
             <div
               key={dash.id}
-              className="neu-raised rounded-2xl p-5 border border-white/5 hover:border-[#FFCC00]/20 transition-all duration-300 group cursor-pointer"
+              className="neu-raised rounded-2xl p-5 border border-border/50 hover:border-cba-gold/20 transition-all duration-300 group cursor-pointer"
               onClick={() => setActiveDashboardId(dash.id)}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <LayoutGrid className="w-5 h-5 text-[#FFCC00]" />
+                  <LayoutGrid className="w-5 h-5 text-cba-gold" />
                   <h3 className="font-bold text-zinc-100 text-lg">{dash.name}</h3>
                 </div>
                 {dash.isDefault && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 bg-[#FFCC00]/10 rounded-full border border-[#FFCC00]/30">
-                    <Star className="w-3 h-3 text-[#FFCC00] fill-[#FFCC00]" />
-                    <span className="text-[10px] font-bold text-[#FFCC00] uppercase">Default</span>
+                  <div className="flex items-center gap-1 px-2 py-0.5 bg-cba-gold/10 rounded-full border border-cba-gold/30">
+                    <Star className="w-3 h-3 text-cba-gold fill-[#FFCC00]" />
+                    <span className="text-[10px] font-bold text-cba-gold uppercase">Default</span>
                   </div>
                 )}
               </div>
 
               {dash.description && (
-                <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{dash.description}</p>
+                <p className="text-sm text-secondary mb-3 line-clamp-2">{dash.description}</p>
               )}
 
-              <div className="flex items-center justify-between text-xs text-zinc-500">
+              <div className="flex items-center justify-between text-xs text-muted">
                 <span className="flex items-center gap-1">
                   <LayoutGrid className="w-3 h-3" />
                   {dash.layout?.widgets?.length ?? 0} widgets
@@ -186,13 +186,13 @@ export function DashboardGrid() {
               </div>
 
               {/* Action buttons (stop propagation to prevent opening) */}
-              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveDashboardId(dash.id);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-zinc-300 hover:text-[#FFCC00] neu-raised-sm rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary hover:text-cba-gold neu-raised-sm rounded-lg transition-colors"
                 >
                   <Pencil className="w-3 h-3" />
                   Edit
@@ -203,7 +203,7 @@ export function DashboardGrid() {
                       e.stopPropagation();
                       handleSetDefault(dash.id);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-zinc-300 hover:text-[#FFCC00] neu-raised-sm rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary hover:text-cba-gold neu-raised-sm rounded-lg transition-colors"
                   >
                     <Star className="w-3 h-3" />
                     Set Default
@@ -226,12 +226,12 @@ export function DashboardGrid() {
           {/* Create New Card */}
           <button
             onClick={() => setShowCreateDialog(true)}
-            className="neu-inset rounded-2xl p-5 border-2 border-dashed border-zinc-700 hover:border-[#FFCC00]/40 transition-all duration-300 flex flex-col items-center justify-center min-h-[200px] group"
+            className="neu-inset rounded-2xl p-5 border-2 border-dashed border-zinc-700 hover:border-cba-gold/40 transition-all duration-300 flex flex-col items-center justify-center min-h-[200px] group"
           >
             <div className="neu-raised p-4 rounded-2xl mb-3 group-hover:shadow-[0_0_20px_rgba(255,204,0,0.15)] transition-shadow">
-              <Plus className="w-8 h-8 text-zinc-500 group-hover:text-[#FFCC00] transition-colors" />
+              <Plus className="w-8 h-8 text-muted group-hover:text-cba-gold transition-colors" />
             </div>
-            <span className="text-sm font-bold text-zinc-500 group-hover:text-zinc-300 transition-colors">
+            <span className="text-sm font-bold text-muted group-hover:text-primary transition-colors">
               Create New Dashboard
             </span>
           </button>
@@ -246,18 +246,18 @@ export function DashboardGrid() {
             onClick={() => setShowCreateDialog(false)}
           />
           <div className="relative neu-raised rounded-2xl w-full max-w-md mx-4 overflow-hidden">
-            <div className="flex items-center justify-between p-5 border-b border-[#FFCC00]/20">
+            <div className="flex items-center justify-between p-5 border-b border-cba-gold/20">
               <h3 className="text-lg font-bold text-gradient-gold">Create Dashboard</h3>
               <button
                 onClick={() => setShowCreateDialog(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay-hover transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
                   Name
                 </label>
                 <input
@@ -270,7 +270,7 @@ export function DashboardGrid() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -282,10 +282,10 @@ export function DashboardGrid() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 p-5 border-t border-white/5">
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-border/50">
               <button
                 onClick={() => setShowCreateDialog(false)}
-                className="px-4 py-2 text-sm font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="px-4 py-2 text-sm font-bold text-secondary hover:text-primary transition-colors"
               >
                 Cancel
               </button>
@@ -295,8 +295,8 @@ export function DashboardGrid() {
                 className={cn(
                   'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-colors btn-press',
                   createName.trim()
-                    ? 'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFE066]'
-                    : 'bg-zinc-700 text-zinc-500 cursor-not-allowed',
+                    ? 'bg-cba-gold text-base hover:bg-cba-gold-light'
+                    : 'bg-zinc-700 text-muted cursor-not-allowed',
                 )}
               >
                 {creating && <Loader2 className="w-4 h-4 animate-spin" />}

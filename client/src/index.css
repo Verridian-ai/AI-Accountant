@@ -6,6 +6,22 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* CSS Custom Properties - CBA Brand + Neumorphic Tokens */
+@theme {
+    --color-base: var(--dark-base);
+    --color-surface: var(--dark-surface);
+    --color-elevated: var(--dark-elevated);
+    --color-card: var(--dark-card);
+    --color-border: var(--dark-border);
+    --color-primary: var(--text-primary);
+    --color-secondary: var(--text-secondary);
+    --color-muted: var(--text-muted);
+    --color-cba-gold: var(--cba-gold);
+    --color-cba-gold-light: var(--cba-gold-light);
+    --color-cba-gold-dark: var(--cba-gold-dark);
+    --color-overlay: var(--overlay);
+    --color-overlay-hover: var(--overlay-hover);
+}
+
 :root {
     /* CBA Brand Colors */
     --cba-gold: #FFCC00;
@@ -43,6 +59,36 @@
     --danger-glow: rgba(239, 68, 68, 0.3);
     --info: #3b82f6;
     --info-glow: rgba(59, 130, 246, 0.3);
+    /* Overlays */
+    --overlay: rgba(255, 255, 255, 0.05);
+    --overlay-hover: rgba(255, 255, 255, 0.1);
+}
+
+/* Light Theme Overrides */
+:root[data-theme="light"], .light {
+    --dark-base: #f8fafc;
+    --dark-surface: #ffffff;
+    --dark-elevated: #f1f5f9;
+    --dark-card: #ffffff;
+    --dark-border: rgba(0, 0, 0, 0.08);
+
+    --neu-shadow-dark: rgba(0, 0, 0, 0.08);
+    --neu-shadow-light: rgba(255, 255, 255, 0.9);
+    --neu-inset-dark: rgba(0, 0, 0, 0.05);
+    --neu-inset-light: rgba(255, 255, 255, 0.5);
+
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.5);
+
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+
+    --cba-gold-glow: rgba(230, 184, 0, 0.3);
+    
+    --overlay: rgba(0, 0, 0, 0.03);
+    --overlay-hover: rgba(0, 0, 0, 0.06);
 }
 
 @layer base {
@@ -58,8 +104,8 @@
         @apply antialiased overflow-x-hidden;
         background: var(--dark-base);
         background-image:
-            radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 204, 0, 0.08), transparent),
-            radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 204, 0, 0.04), transparent);
+            radial-gradient(ellipse 80% 50% at 50% -20%, var(--cba-gold-glow), transparent),
+            radial-gradient(ellipse 60% 40% at 100% 100%, var(--cba-gold-glow), transparent);
         color: var(--text-primary);
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     }

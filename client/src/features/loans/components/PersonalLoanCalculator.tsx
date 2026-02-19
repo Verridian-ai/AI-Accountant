@@ -46,10 +46,10 @@ export function PersonalLoanCalculator() {
 
   return (
     <div className="space-y-6">
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Banknote className="w-5 h-5 text-[#FFCC00]" />
+            <Banknote className="w-5 h-5 text-cba-gold" />
             Personal Loan Calculator
           </CardTitle>
           <CardDescription>Calculate repayments and comparison rate including fees</CardDescription>
@@ -99,7 +99,7 @@ export function PersonalLoanCalculator() {
           <Button
             onClick={handleCalculate}
             disabled={loading}
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+            className="bg-cba-gold text-base hover:bg-[#e6b800]"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Calculate
@@ -117,10 +117,10 @@ export function PersonalLoanCalculator() {
 
       {result && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-[#FFCC00]" />
+              <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-cba-gold" />
                 Monthly Payment
               </CardTitle>
             </CardHeader>
@@ -128,9 +128,9 @@ export function PersonalLoanCalculator() {
               <div className="text-2xl font-bold">{formatCurrency(result.monthlyPayment)}</div>
             </CardContent>
           </Card>
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
                 <Clock className="w-4 h-4 text-blue-400" />
                 Total Interest
               </CardTitle>
@@ -141,17 +141,17 @@ export function PersonalLoanCalculator() {
               </div>
             </CardContent>
           </Card>
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400">Total Cost</CardTitle>
+              <CardTitle className="text-sm font-medium text-secondary">Total Cost</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(result.totalCost)}</div>
             </CardContent>
           </Card>
-          <Card className="neu-raised border-white/5">
+          <Card className="neu-raised border-border/50">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
                 <Percent className="w-4 h-4 text-amber-400" />
                 Comparison Rate
               </CardTitle>
@@ -160,7 +160,7 @@ export function PersonalLoanCalculator() {
               <div className="text-2xl font-bold text-amber-400">
                 {formatPercent(result.comparisonRate)}
               </div>
-              <p className="text-xs text-zinc-500">True cost including all fees</p>
+              <p className="text-xs text-muted">True cost including all fees</p>
             </CardContent>
           </Card>
         </div>

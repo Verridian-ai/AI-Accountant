@@ -208,10 +208,10 @@ export function CogneeGraph2DFallback({
   if (loading) {
     return (
       <div
-        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10"
+        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-cba-gold/10"
         style={{ height: graphHeight }}
       >
-        <Loader2 className="w-10 h-10 text-[#FFCC00] animate-spin mb-3" />
+        <Loader2 className="w-10 h-10 text-cba-gold animate-spin mb-3" />
         <p className="text-sm text-gray-400">Loading 2D graph…</p>
       </div>
     );
@@ -220,14 +220,14 @@ export function CogneeGraph2DFallback({
   if (error) {
     return (
       <div
-        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10"
+        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-cba-gold/10"
         style={{ height: graphHeight }}
       >
         <AlertTriangle className="w-10 h-10 text-red-400 mb-3" />
         <p className="text-sm text-red-300 mb-3">{error}</p>
         <button
           onClick={fetchData}
-          className="px-4 py-1.5 bg-[#FFCC00]/10 border border-[#FFCC00]/30 rounded text-sm text-[#FFCC00] hover:bg-[#FFCC00]/20 transition-colors"
+          className="px-4 py-1.5 bg-cba-gold/10 border border-cba-gold/30 rounded text-sm text-cba-gold hover:bg-cba-gold/20 transition-colors"
         >
           Retry
         </button>
@@ -238,7 +238,7 @@ export function CogneeGraph2DFallback({
   if (counts.nodes === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10"
+        className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-cba-gold/10"
         style={{ height: graphHeight }}
       >
         <Database className="w-12 h-12 text-gray-600 mb-3" />
@@ -253,11 +253,11 @@ export function CogneeGraph2DFallback({
   return (
     <div
       ref={containerRef}
-      className="relative bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10 overflow-hidden"
+      className="relative bg-[#1a1a2e] rounded-xl border border-cba-gold/10 overflow-hidden"
       style={{ height: graphHeight }}
     >
       {/* Controls */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-2 p-2 bg-[#1a1a2e]/80 backdrop-blur-sm border-b border-white/5">
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-2 p-2 bg-[#1a1a2e]/80 backdrop-blur-sm border-b border-border/50">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500" />
           <input
@@ -265,7 +265,7 @@ export function CogneeGraph2DFallback({
             placeholder="Search nodes…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 pr-2 py-1 w-44 bg-white/5 border border-white/10 rounded text-xs text-gray-200 placeholder:text-gray-500 focus:border-[#FFCC00]/40 focus:outline-none"
+            className="pl-7 pr-2 py-1 w-44 bg-overlay border border-border rounded text-xs text-gray-200 placeholder:text-gray-500 focus:border-cba-gold/40 focus:outline-none"
           />
         </div>
         <div className="flex-1" />
@@ -274,7 +274,7 @@ export function CogneeGraph2DFallback({
         </span>
         <button
           onClick={handleReset}
-          className="p-1.5 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:bg-overlay-hover text-gray-400 hover:text-primary transition-colors"
           title="Reset view"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -295,10 +295,10 @@ export function CogneeGraph2DFallback({
 
       {/* Selected node panel */}
       {selectedNode && (
-        <div className="absolute top-10 right-2 w-64 bg-[#1a1a2e]/95 border border-[#FFCC00]/20 rounded-lg p-3 z-20 space-y-2 max-h-[70%] overflow-y-auto">
+        <div className="absolute top-10 right-2 w-64 bg-[#1a1a2e]/95 border border-cba-gold/20 rounded-lg p-3 z-20 space-y-2 max-h-[70%] overflow-y-auto">
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="text-sm font-semibold text-white truncate">{selectedNode.name}</h4>
+              <h4 className="text-sm font-semibold text-primary truncate">{selectedNode.name}</h4>
               <span
                 className="px-1.5 py-0.5 rounded text-[10px] font-medium"
                 style={{ backgroundColor: selectedNode.color + '30', color: selectedNode.color }}
@@ -308,7 +308,7 @@ export function CogneeGraph2DFallback({
             </div>
             <button
               onClick={() => setSelectedNode(null)}
-              className="p-0.5 rounded hover:bg-white/10 text-gray-400"
+              className="p-0.5 rounded hover:bg-overlay-hover text-gray-400"
             >
               <X className="w-3 h-3" />
             </button>
@@ -328,7 +328,7 @@ export function CogneeGraph2DFallback({
                 .map(([k, v]) => (
                   <div
                     key={k}
-                    className="text-[10px] flex justify-between bg-white/5 rounded px-1.5 py-0.5"
+                    className="text-[10px] flex justify-between bg-overlay rounded px-1.5 py-0.5"
                   >
                     <span className="text-gray-500 truncate mr-1">{k}</span>
                     <span className="text-gray-300 truncate">{String(v)}</span>

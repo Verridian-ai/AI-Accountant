@@ -147,8 +147,8 @@ export function SpendingTrends() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
@@ -158,8 +158,8 @@ export function SpendingTrends() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <LineChart className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <LineChart className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Spending Trends
           </span>
         </div>
@@ -171,7 +171,7 @@ export function SpendingTrends() {
               onClick={() => setMonths(m)}
               className={cn(
                 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-                months === m ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'text-zinc-500 hover:text-zinc-300',
+                months === m ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
               )}
             >
               {m}m
@@ -181,7 +181,7 @@ export function SpendingTrends() {
       </div>
 
       {/* Chart */}
-      <div className="neu-raised rounded-2xl border border-white/5 p-4">
+      <div className="neu-raised rounded-2xl border border-border/50 p-4">
         <svg
           viewBox={`0 0 ${CHART_W} ${CHART_H}`}
           className="w-full h-auto"
@@ -275,8 +275,8 @@ export function SpendingTrends() {
 
         {/* Hover detail */}
         {hoveredMonth !== null && trends[hoveredMonth] && (
-          <div className="mt-3 p-3 neu-inset rounded-xl border border-white/5">
-            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">
+          <div className="mt-3 p-3 neu-inset rounded-xl border border-border/50">
+            <p className="text-[9px] font-black text-secondary uppercase tracking-widest mb-2">
               {trends[hoveredMonth]?.month}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -286,8 +286,8 @@ export function SpendingTrends() {
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: getHexColor(cat) }}
                   />
-                  <span className="text-[9px] text-zinc-400 truncate">{cat}</span>
-                  <span className="text-[9px] font-bold text-zinc-200 ml-auto tabular-nums">
+                  <span className="text-[9px] text-secondary truncate">{cat}</span>
+                  <span className="text-[9px] font-bold text-primary ml-auto tabular-nums">
                     {formatCurrency(trends[hoveredMonth]?.categories[cat] || 0)}
                   </span>
                 </div>
@@ -309,8 +309,8 @@ export function SpendingTrends() {
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border',
                 active
-                  ? 'border-white/20 bg-white/5 text-zinc-200'
-                  : 'border-transparent text-zinc-600 hover:text-zinc-400',
+                  ? 'border-border bg-overlay text-primary'
+                  : 'border-transparent text-zinc-600 hover:text-secondary',
               )}
             >
               <div
@@ -330,10 +330,10 @@ export function SpendingTrends() {
       {momChanges.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {momChanges.map((mc) => (
-            <div key={mc.category} className="neu-inset rounded-xl p-3 border border-white/5">
+            <div key={mc.category} className="neu-inset rounded-xl p-3 border border-border/50">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: mc.color }} />
-                <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-tight truncate">
+                <span className="text-[8px] font-bold text-muted uppercase tracking-tight truncate">
                   {mc.category}
                 </span>
               </div>
@@ -343,7 +343,7 @@ export function SpendingTrends() {
                 ) : mc.change < -5 ? (
                   <TrendingDown className="w-3 h-3 text-emerald-400" />
                 ) : (
-                  <Minus className="w-3 h-3 text-zinc-500" />
+                  <Minus className="w-3 h-3 text-muted" />
                 )}
                 <span
                   className={cn(
@@ -352,7 +352,7 @@ export function SpendingTrends() {
                       ? 'text-red-400'
                       : mc.change < -5
                         ? 'text-emerald-400'
-                        : 'text-zinc-500',
+                        : 'text-muted',
                   )}
                 >
                   {mc.change > 0 ? '+' : ''}

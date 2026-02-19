@@ -19,12 +19,12 @@ export function DetailPanel({ node, links, allNodes, onClose, onNavigate }: Deta
   });
 
   return (
-    <div className="absolute top-0 right-0 w-80 h-full bg-[#1a1a2e]/95 border-l border-[#FFCC00]/20 overflow-y-auto z-20 animate-slide-in-right">
+    <div className="absolute top-0 right-0 w-80 h-full bg-[#1a1a2e]/95 border-l border-cba-gold/20 overflow-y-auto z-20 animate-slide-in-right">
       <div className="p-4 space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-white truncate">{node.name}</h3>
+            <h3 className="text-lg font-semibold text-primary truncate">{node.name}</h3>
             <div className="flex gap-2 mt-1">
               <span
                 className="px-2 py-0.5 rounded text-xs font-medium"
@@ -39,7 +39,7 @@ export function DetailPanel({ node, links, allNodes, onClose, onNavigate }: Deta
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-overlay-hover text-gray-400 hover:text-primary transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -47,13 +47,13 @@ export function DetailPanel({ node, links, allNodes, onClose, onNavigate }: Deta
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="bg-white/5 rounded px-2 py-1.5">
+          <div className="bg-overlay rounded px-2 py-1.5">
             <span className="text-gray-400">Connections</span>
-            <span className="block text-white font-medium">{node.connections}</span>
+            <span className="block text-primary font-medium">{node.connections}</span>
           </div>
-          <div className="bg-white/5 rounded px-2 py-1.5">
+          <div className="bg-overlay rounded px-2 py-1.5">
             <span className="text-gray-400">ID</span>
-            <span className="block text-white font-medium truncate text-[10px]">{node.id}</span>
+            <span className="block text-primary font-medium truncate text-[10px]">{node.id}</span>
           </div>
         </div>
 
@@ -69,7 +69,7 @@ export function DetailPanel({ node, links, allNodes, onClose, onNavigate }: Deta
                 .map(([key, value]) => (
                   <div
                     key={key}
-                    className="flex justify-between text-xs bg-white/5 rounded px-2 py-1"
+                    className="flex justify-between text-xs bg-overlay rounded px-2 py-1"
                   >
                     <span className="text-gray-400 truncate mr-2">{key}</span>
                     <span className="text-gray-200 truncate">{String(value)}</span>
@@ -90,7 +90,7 @@ export function DetailPanel({ node, links, allNodes, onClose, onNavigate }: Deta
                 <button
                   key={`${cn.id}-${i}`}
                   onClick={() => onNavigate(cn.id)}
-                  className="w-full flex items-center gap-2 text-xs bg-white/5 rounded px-2 py-1.5 hover:bg-white/10 transition-colors text-left"
+                  className="w-full flex items-center gap-2 text-xs bg-overlay rounded px-2 py-1.5 hover:bg-overlay-hover transition-colors text-left"
                 >
                   <ExternalLink className="w-3 h-3 text-gray-500 flex-shrink-0" />
                   <span className="text-gray-200 truncate flex-1">{cn.name}</span>

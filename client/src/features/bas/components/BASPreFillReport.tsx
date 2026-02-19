@@ -22,6 +22,32 @@ const getCurrentFinancialYear = () => {
   return now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
 };
 
+function LabelRow({
+  label,
+  description,
+  amount,
+  count,
+}: {
+  label: string;
+  description: string;
+  amount: number;
+  count?: number;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.02] cursor-pointer group transition-colors">
+      <div className="flex items-center gap-3">
+        <span className="text-xs font-mono text-cba-gold w-8">{label}</span>
+        <span className="text-sm text-primary">{description}</span>
+        {count !== undefined && <span className="text-[10px] text-zinc-600">({count} txns)</span>}
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">{formatCurrency(amount)}</span>
+        <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-secondary transition-colors" />
+      </div>
+    </div>
+  );
+}
+
 const getCurrentQuarter = (): number => {
   const month = new Date().getMonth();
   if (month >= 6 && month <= 8) return 1;
@@ -33,8 +59,8 @@ const getCurrentQuarter = (): number => {
 export function BASPreFillReport() {
   const [loading, setLoading] = useState(false);
   const [basData, setBASData] = useState<BASCalculationEnhanced | null>(null);
-  const [selectedYear, setSelectedYear] = useState(getCurrentFinancialYear());
-  const [selectedQuarter, setSelectedQuarter] = useState(getCurrentQuarter());
+  const [selectedYear, setSelectedYear] = useState(() => getCurrentFinancialYear());
+  const [selectedQuarter, setSelectedQuarter] = useState(() => getCurrentQuarter());
   const [periodType, setPeriodType] = useState<'monthly' | 'quarterly' | 'annual'>('quarterly');
   const [basMethod, setBASMethod] = useState<'simpler' | 'full'>('simpler');
   const [status, setStatus] = useState<BASStatus>('draft');
@@ -101,30 +127,6 @@ export function BASPreFillReport() {
     }
   };
 
-  const LabelRow = ({
-    label,
-    description,
-    amount,
-    count,
-  }: {
-    label: string;
-    description: string;
-    amount: number;
-    count?: number;
-  }) => (
-    <div className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-white/[0.02] cursor-pointer group transition-colors">
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-mono text-[#FFCC00] w-8">{label}</span>
-        <span className="text-sm text-zinc-300">{description}</span>
-        {count !== undefined && <span className="text-[10px] text-zinc-600">({count} txns)</span>}
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">{formatCurrency(amount)}</span>
-        <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-4">
       {/* Period Selector */}
@@ -148,7 +150,7 @@ export function BASPreFillReport() {
         </Tabs>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-500">Status:</span>
+          <span className="text-xs text-muted">Status:</span>
           <Select value={status} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[130px] h-8">
               <SelectValue />
@@ -173,8 +175,8 @@ export function BASPreFillReport() {
       {loading ? (
         <Card className="neu-raised rounded-xl">
           <CardContent className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
-            <span className="ml-2 text-zinc-400">Calculating BAS...</span>
+            <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
+            <span className="ml-2 text-secondary">Calculating BAS...</span>
           </CardContent>
         </Card>
       ) : (
@@ -185,7 +187,7 @@ export function BASPreFillReport() {
               <div className="space-y-1">
                 {basData.warnings.map((warning, i) => (
                   <div
-                    key={i}
+                    key={`warning-${i}-${warning.slice(0, 20)}`}
                     className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/5 px-3 py-2 rounded-lg border border-amber-500/10"
                   >
                     <AlertTriangle className="w-3 h-3 shrink-0" />
@@ -228,7 +230,7 @@ export function BASPreFillReport() {
                     )}
                   </>
                 )}
-                <div className="border-t border-white/5 mt-2 pt-1">
+                <div className="border-t border-border/50 mt-2 pt-1">
                   <LabelRow label="1A" description="GST on Sales" amount={basData.labels['1A']} />
                 </div>
               </CardContent>
@@ -258,7 +260,7 @@ export function BASPreFillReport() {
                     )}
                   </>
                 )}
-                <div className={basMethod === 'full' ? 'border-t border-white/5 mt-2 pt-1' : ''}>
+                <div className={basMethod === 'full' ? 'border-t border-border/50 mt-2 pt-1' : ''}>
                   <LabelRow
                     label="1B"
                     description="GST on Purchases"
@@ -297,23 +299,23 @@ export function BASPreFillReport() {
             )}
 
             {/* Summary */}
-            <Card className="neu-raised rounded-xl border-[#FFCC00]/20">
+            <Card className="neu-raised rounded-xl border-cba-gold/20">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-zinc-400">Net GST (1A - 1B)</span>
+                    <span className="text-secondary">Net GST (1A - 1B)</span>
                     <span className="font-medium">{formatCurrency(basData.netGST)}</span>
                   </div>
                   {basData.labels.W2 !== undefined && basData.labels.W2 > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-zinc-400">PAYG Withheld</span>
+                      <span className="text-secondary">PAYG Withheld</span>
                       <span className="font-medium">{formatCurrency(basData.labels.W2)}</span>
                     </div>
                   )}
-                  <div className="border-t border-white/10 pt-2 flex justify-between text-base font-bold">
+                  <div className="border-t border-border pt-2 flex justify-between text-base font-bold">
                     <span>{basData.totalPayable > 0 ? 'Total Payable' : 'Total Refundable'}</span>
                     <span
                       className={basData.totalPayable > 0 ? 'text-red-400' : 'text-emerald-400'}
@@ -321,7 +323,7 @@ export function BASPreFillReport() {
                       {formatCurrency(Math.abs(basData.totalPayable))}
                     </span>
                   </div>
-                  <div className="flex justify-between text-xs text-zinc-500">
+                  <div className="flex justify-between text-xs text-muted">
                     <span>Due Date</span>
                     <span>{basData.dueDate}</span>
                   </div>

@@ -52,21 +52,21 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
           <span className="text-gradient-gold">Configure tax settings</span>
         </h2>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Set up your GST and BAS preferences for accurate reporting.
         </p>
       </div>
 
       {/* GST Registration Toggle */}
       {showGstOptions && (
-        <div className="neu-raised rounded-2xl p-6 border border-white/5 space-y-4">
+        <div className="neu-raised rounded-2xl p-6 border border-border/50 space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-zinc-200 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-primary flex items-center gap-2">
                 GST Registration
                 <HelpCircle className="w-4 h-4 text-zinc-600" />
               </h3>
-              <p className="text-xs text-zinc-500 max-w-md">
+              <p className="text-xs text-muted max-w-md">
                 Are you registered for Goods and Services Tax (GST)? Registration is required if
                 your annual turnover exceeds $75,000.
               </p>
@@ -93,7 +93,7 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
       {showGstOptions && data.isRegisteredForGst && (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-center gap-2">
-            <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">
+            <label className="text-[10px] font-black uppercase text-muted tracking-widest">
               BAS Lodgement Frequency
             </label>
             <HelpCircle className="w-3 h-3 text-zinc-600" />
@@ -108,25 +108,25 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
                   className={cn(
                     'p-4 rounded-2xl border text-left transition-all btn-press',
                     isSelected
-                      ? 'cba-gold-gradient text-[#0a0a0f] border-transparent shadow-lg cba-gold-glow'
-                      : 'neu-raised-sm border-white/5 hover:border-white/10',
+                      ? 'cba-gold-gradient text-base border-transparent shadow-lg cba-gold-glow'
+                      : 'neu-raised-sm border-border/50 hover:border-border',
                   )}
                 >
                   <h4
                     className={cn(
                       'font-bold text-sm mb-1',
-                      isSelected ? 'text-[#0a0a0f]' : 'text-zinc-200',
+                      isSelected ? 'text-base' : 'text-primary',
                     )}
                   >
                     {freq.label}
                   </h4>
-                  <p className={cn('text-xs', isSelected ? 'text-[#0a0a0f]/70' : 'text-zinc-500')}>
+                  <p className={cn('text-xs', isSelected ? 'text-base/70' : 'text-muted')}>
                     {freq.description}
                   </p>
                   <p
                     className={cn(
                       'text-[10px] mt-2',
-                      isSelected ? 'text-[#0a0a0f]/60' : 'text-zinc-600',
+                      isSelected ? 'text-base/60' : 'text-zinc-600',
                     )}
                   >
                     {freq.threshold}
@@ -145,7 +145,7 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
           style={{ animationDelay: '100ms' }}
         >
           <div className="flex items-center gap-2">
-            <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">
+            <label className="text-[10px] font-black uppercase text-muted tracking-widest">
               Accounting Method
             </label>
             <HelpCircle className="w-3 h-3 text-zinc-600" />
@@ -163,17 +163,17 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
                   className={cn(
                     'p-5 rounded-2xl border text-left transition-all btn-press relative overflow-hidden',
                     isSelected
-                      ? 'border-[#FFCC00]/30 bg-[#FFCC00]/5'
-                      : 'neu-raised-sm border-white/5 hover:border-white/10',
+                      ? 'border-cba-gold/30 bg-cba-gold/5'
+                      : 'neu-raised-sm border-border/50 hover:border-border',
                   )}
                 >
                   {isSelected && (
-                    <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#FFCC00]" />
+                    <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-cba-gold" />
                   )}
                   <div
                     className={cn(
                       'neu-inset p-2 rounded-xl w-fit mb-3',
-                      isSelected ? 'text-[#FFCC00]' : 'text-zinc-500',
+                      isSelected ? 'text-cba-gold' : 'text-muted',
                     )}
                   >
                     <Icon className="w-5 h-5" />
@@ -181,12 +181,12 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
                   <h4
                     className={cn(
                       'font-bold text-sm mb-1',
-                      isSelected ? 'text-[#FFCC00]' : 'text-zinc-200',
+                      isSelected ? 'text-cba-gold' : 'text-primary',
                     )}
                   >
                     {method.label}
                   </h4>
-                  <p className="text-xs text-zinc-500 mb-2">{method.description}</p>
+                  <p className="text-xs text-muted mb-2">{method.description}</p>
                   <p className="text-[10px] text-zinc-600 leading-relaxed">{method.details}</p>
                 </button>
               );
@@ -198,7 +198,7 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
       {/* Financial Year End */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">
+          <label className="text-[10px] font-black uppercase text-muted tracking-widest">
             Financial Year End
           </label>
         </div>
@@ -208,21 +208,21 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
             className={cn(
               'p-4 rounded-2xl border text-left transition-all btn-press flex items-center gap-4',
               data.financialYearEnd === 'june'
-                ? 'cba-gold-gradient text-[#0a0a0f] border-transparent shadow-lg cba-gold-glow'
-                : 'neu-raised-sm border-white/5 hover:border-white/10',
+                ? 'cba-gold-gradient text-base border-transparent shadow-lg cba-gold-glow'
+                : 'neu-raised-sm border-border/50 hover:border-border',
             )}
           >
             <Calendar
               className={cn(
                 'w-6 h-6',
-                data.financialYearEnd === 'june' ? 'text-[#0a0a0f]' : 'text-zinc-500',
+                data.financialYearEnd === 'june' ? 'text-base' : 'text-muted',
               )}
             />
             <div>
               <h4
                 className={cn(
                   'font-bold text-sm',
-                  data.financialYearEnd === 'june' ? 'text-[#0a0a0f]' : 'text-zinc-200',
+                  data.financialYearEnd === 'june' ? 'text-base' : 'text-primary',
                 )}
               >
                 30 June
@@ -230,7 +230,7 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
               <p
                 className={cn(
                   'text-xs',
-                  data.financialYearEnd === 'june' ? 'text-[#0a0a0f]/70' : 'text-zinc-500',
+                  data.financialYearEnd === 'june' ? 'text-base/70' : 'text-muted',
                 )}
               >
                 Standard AU financial year
@@ -242,21 +242,21 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
             className={cn(
               'p-4 rounded-2xl border text-left transition-all btn-press flex items-center gap-4',
               data.financialYearEnd === 'december'
-                ? 'cba-gold-gradient text-[#0a0a0f] border-transparent shadow-lg cba-gold-glow'
-                : 'neu-raised-sm border-white/5 hover:border-white/10',
+                ? 'cba-gold-gradient text-base border-transparent shadow-lg cba-gold-glow'
+                : 'neu-raised-sm border-border/50 hover:border-border',
             )}
           >
             <Calendar
               className={cn(
                 'w-6 h-6',
-                data.financialYearEnd === 'december' ? 'text-[#0a0a0f]' : 'text-zinc-500',
+                data.financialYearEnd === 'december' ? 'text-base' : 'text-muted',
               )}
             />
             <div>
               <h4
                 className={cn(
                   'font-bold text-sm',
-                  data.financialYearEnd === 'december' ? 'text-[#0a0a0f]' : 'text-zinc-200',
+                  data.financialYearEnd === 'december' ? 'text-base' : 'text-primary',
                 )}
               >
                 31 December
@@ -264,7 +264,7 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
               <p
                 className={cn(
                   'text-xs',
-                  data.financialYearEnd === 'december' ? 'text-[#0a0a0f]/70' : 'text-zinc-500',
+                  data.financialYearEnd === 'december' ? 'text-base/70' : 'text-muted',
                 )}
               >
                 Calendar year
@@ -276,9 +276,9 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
 
       {/* Individual-specific info */}
       {!showGstOptions && (
-        <div className="neu-inset rounded-2xl p-5 border border-[#FFCC00]/10 bg-[#FFCC00]/[0.02]">
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            <span className="text-[#FFCC00] font-bold">For individuals:</span> GST and BAS settings
+        <div className="neu-inset rounded-2xl p-5 border border-cba-gold/10 bg-cba-gold/[0.02]">
+          <p className="text-xs text-secondary leading-relaxed">
+            <span className="text-cba-gold font-bold">For individuals:</span> GST and BAS settings
             don't apply to personal finances. We'll focus on tracking your income and deductible
             expenses for tax time.
           </p>

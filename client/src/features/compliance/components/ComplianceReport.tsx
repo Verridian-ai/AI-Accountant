@@ -38,7 +38,7 @@ const ragColors: Record<string, string> = {
   compliant: 'text-emerald-400',
   lodged: 'text-blue-400',
   pending: 'text-yellow-400',
-  in_progress: 'text-[#FFCC00]',
+  in_progress: 'text-cba-gold',
   overdue: 'text-red-400',
 };
 
@@ -77,14 +77,14 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
     <div className="space-y-6">
       {/* Controls */}
       <div className="neu-raised rounded-2xl p-4">
-        <h4 className="text-zinc-200 font-bold text-sm mb-4">Generate Report</h4>
+        <h4 className="text-primary font-bold text-sm mb-4">Generate Report</h4>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label className="block text-zinc-400 text-xs font-bold mb-1.5">Period</label>
+            <label className="block text-secondary text-xs font-bold mb-1.5">Period</label>
             <select
               value={periodType}
               onChange={(e) => setPeriodType(e.target.value as 'quarter' | 'year')}
-              className="neu-inset px-3 py-2 rounded-xl bg-transparent text-sm text-zinc-300 outline-none"
+              className="neu-inset px-3 py-2 rounded-xl bg-transparent text-sm text-primary outline-none"
             >
               <option value="quarter">Current Quarter</option>
               <option value="year">Full Financial Year</option>
@@ -98,13 +98,13 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
               onChange={(e) => setIncludeRecommendations(e.target.checked)}
               className="rounded accent-[#FFCC00]"
             />
-            <span className="text-zinc-400 text-sm">Include Recommendations</span>
+            <span className="text-secondary text-sm">Include Recommendations</span>
           </label>
 
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cba-gold text-base font-bold text-sm hover:bg-[#FFD633] transition-colors disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -125,14 +125,14 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
               <h3 className="text-lg font-bold text-gradient-gold">
                 {report.title || 'Compliance Report'}
               </h3>
-              <p className="text-zinc-500 text-sm">
+              <p className="text-muted text-sm">
                 Period: {report.period} &bull; Generated:{' '}
                 {new Date(report.generatedAt).toLocaleString('en-AU')}
               </p>
             </div>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg neu-raised-sm text-sm text-zinc-400 hover:text-[#FFCC00] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg neu-raised-sm text-sm text-secondary hover:text-cba-gold transition-colors"
             >
               {copied ? (
                 <Check className="h-4 w-4 text-emerald-400" />
@@ -146,56 +146,56 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
           {/* Summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="neu-inset rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-zinc-200">{report.summary.totalObligations}</p>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold">Total</p>
+              <p className="text-2xl font-bold text-primary">{report.summary.totalObligations}</p>
+              <p className="text-[10px] text-muted uppercase font-bold">Total</p>
             </div>
             <div className="neu-inset rounded-xl p-3 text-center">
               <p className="text-2xl font-bold text-emerald-400">{report.summary.compliant}</p>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold">Compliant</p>
+              <p className="text-[10px] text-muted uppercase font-bold">Compliant</p>
             </div>
             <div className="neu-inset rounded-xl p-3 text-center">
               <p className="text-2xl font-bold text-red-400">{report.summary.overdue}</p>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold">Overdue</p>
+              <p className="text-[10px] text-muted uppercase font-bold">Overdue</p>
             </div>
             <div className="neu-inset rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-[#FFCC00]">
+              <p className="text-2xl font-bold text-cba-gold">
                 {Math.round(report.summary.complianceRate)}%
               </p>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold">Rate</p>
+              <p className="text-[10px] text-muted uppercase font-bold">Rate</p>
             </div>
           </div>
 
           {/* Obligation Table */}
           <div>
-            <h4 className="text-zinc-200 font-bold text-sm mb-3">Obligations</h4>
+            <h4 className="text-primary font-bold text-sm mb-3">Obligations</h4>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left px-3 py-2 text-zinc-400 font-semibold">Type</th>
-                    <th className="text-left px-3 py-2 text-zinc-400 font-semibold">Period</th>
-                    <th className="text-left px-3 py-2 text-zinc-400 font-semibold">Due</th>
-                    <th className="text-left px-3 py-2 text-zinc-400 font-semibold">Status</th>
-                    <th className="text-left px-3 py-2 text-zinc-400 font-semibold">Risk</th>
+                  <tr className="border-b border-border/50">
+                    <th className="text-left px-3 py-2 text-secondary font-semibold">Type</th>
+                    <th className="text-left px-3 py-2 text-secondary font-semibold">Period</th>
+                    <th className="text-left px-3 py-2 text-secondary font-semibold">Due</th>
+                    <th className="text-left px-3 py-2 text-secondary font-semibold">Status</th>
+                    <th className="text-left px-3 py-2 text-secondary font-semibold">Risk</th>
                   </tr>
                 </thead>
                 <tbody>
                   {report.obligations.map((ob, i) => (
-                    <tr key={i} className="border-b border-white/5">
-                      <td className="px-3 py-2 text-zinc-200">{ob.type}</td>
-                      <td className="px-3 py-2 text-zinc-400">{ob.period}</td>
-                      <td className="px-3 py-2 text-zinc-400">
+                    <tr key={i} className="border-b border-border/50">
+                      <td className="px-3 py-2 text-primary">{ob.type}</td>
+                      <td className="px-3 py-2 text-secondary">{ob.period}</td>
+                      <td className="px-3 py-2 text-secondary">
                         {new Date(ob.dueDate).toLocaleDateString('en-AU')}
                       </td>
                       <td
                         className={cn(
                           'px-3 py-2 font-bold text-xs uppercase',
-                          ragColors[ob.status] ?? 'text-zinc-400',
+                          ragColors[ob.status] ?? 'text-secondary',
                         )}
                       >
                         {ob.status.replace('_', ' ')}
                       </td>
-                      <td className="px-3 py-2 text-zinc-400 capitalize">{ob.riskLevel}</td>
+                      <td className="px-3 py-2 text-secondary capitalize">{ob.riskLevel}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -205,27 +205,27 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
 
           {/* Anomaly Summary */}
           <div>
-            <h4 className="text-zinc-200 font-bold text-sm mb-3">Anomaly Summary</h4>
+            <h4 className="text-primary font-bold text-sm mb-3">Anomaly Summary</h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="neu-inset rounded-xl p-3 text-center">
-                <p className="text-lg font-bold text-zinc-200">
+                <p className="text-lg font-bold text-primary">
                   {report.anomalySummary.totalAlerts}
                 </p>
-                <p className="text-[10px] text-zinc-500 uppercase font-bold">Alerts</p>
+                <p className="text-[10px] text-muted uppercase font-bold">Alerts</p>
               </div>
               <div className="neu-inset rounded-xl p-3 text-center">
                 <p className="text-lg font-bold text-red-400">{report.anomalySummary.critical}</p>
-                <p className="text-[10px] text-zinc-500 uppercase font-bold">Critical</p>
+                <p className="text-[10px] text-muted uppercase font-bold">Critical</p>
               </div>
               <div className="neu-inset rounded-xl p-3 text-center">
                 <p className="text-lg font-bold text-orange-400">{report.anomalySummary.high}</p>
-                <p className="text-[10px] text-zinc-500 uppercase font-bold">High</p>
+                <p className="text-[10px] text-muted uppercase font-bold">High</p>
               </div>
               <div className="neu-inset rounded-xl p-3 text-center">
                 <p className="text-lg font-bold text-emerald-400">
                   {report.anomalySummary.resolved}
                 </p>
-                <p className="text-[10px] text-zinc-500 uppercase font-bold">Resolved</p>
+                <p className="text-[10px] text-muted uppercase font-bold">Resolved</p>
               </div>
             </div>
           </div>
@@ -233,11 +233,11 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
           {/* Recommendations */}
           {report.recommendations && report.recommendations.length > 0 && (
             <div>
-              <h4 className="text-zinc-200 font-bold text-sm mb-3">Recommendations</h4>
+              <h4 className="text-primary font-bold text-sm mb-3">Recommendations</h4>
               <ul className="space-y-2">
                 {report.recommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-zinc-400">
-                    <span className="text-[#FFCC00] font-bold mt-0.5">{i + 1}.</span>
+                  <li key={i} className="flex items-start gap-2 text-sm text-secondary">
+                    <span className="text-cba-gold font-bold mt-0.5">{i + 1}.</span>
                     <span>{rec}</span>
                   </li>
                 ))}

@@ -33,11 +33,11 @@ export function MatchingDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="neu-inset p-2.5 rounded-xl">
-            <Link2 className="h-5 w-5 text-[#FFCC00]" />
+            <Link2 className="h-5 w-5 text-cba-gold" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-zinc-100">Payment Matching</h2>
-            <p className="text-xs text-zinc-500">Match documents to transactions</p>
+            <p className="text-xs text-muted">Match documents to transactions</p>
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export function MatchingDashboard() {
                 {stats.pending} unmatched
               </span>
             )}
-            <span className="px-3 py-1.5 neu-raised-sm rounded-full text-xs font-mono text-zinc-400">
+            <span className="px-3 py-1.5 neu-raised-sm rounded-full text-xs font-mono text-secondary">
               {stats.matchRate.toFixed(0)}% match rate
             </span>
           </div>
@@ -60,13 +60,13 @@ export function MatchingDashboard() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="neu-raised rounded-lg px-4 py-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">
               Total Docs
             </p>
             <p className="text-xl font-bold text-zinc-100 mt-1">{stats.totalDocuments}</p>
           </div>
           <div className="neu-raised rounded-lg px-4 py-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">
               Match Rate
             </p>
             <p
@@ -76,7 +76,7 @@ export function MatchingDashboard() {
             </p>
           </div>
           <div className="neu-raised rounded-lg px-4 py-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">
               Avg Confidence
             </p>
             <p className="text-xl font-bold text-zinc-100 mt-1">
@@ -84,7 +84,7 @@ export function MatchingDashboard() {
             </p>
           </div>
           <div className="neu-raised rounded-lg px-4 py-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">
               Pending
             </p>
             <p className="text-xl font-bold text-amber-400 mt-1">{stats.pending}</p>
@@ -100,8 +100,8 @@ export function MatchingDashboard() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeTab === tab.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_12px_rgba(255,204,0,0.15)]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5'
+                ? 'bg-cba-gold text-base shadow-[0_0_12px_rgba(255,204,0,0.15)]'
+                : 'text-secondary hover:text-primary hover:bg-overlay'
             }`}
           >
             <tab.icon className="h-4 w-4" />

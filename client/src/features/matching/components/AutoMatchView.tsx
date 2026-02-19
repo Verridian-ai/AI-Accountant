@@ -82,7 +82,7 @@ export function AutoMatchView() {
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-600/30 text-zinc-400 text-[10px] font-bold">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zinc-600/30 text-secondary text-[10px] font-bold">
             <XCircle className="h-3 w-3" />
             Unmatched
           </span>
@@ -99,10 +99,10 @@ export function AutoMatchView() {
           <div className="flex-1 space-y-4">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="amv-auto-confirm-threshold" className="text-xs text-zinc-400">
+                <label htmlFor="amv-auto-confirm-threshold" className="text-xs text-secondary">
                   Auto-Confirm Threshold
                 </label>
-                <span className="text-xs font-mono text-[#FFCC00]">
+                <span className="text-xs font-mono text-cba-gold">
                   {(autoConfirmThreshold * 100).toFixed(0)}%
                 </span>
               </div>
@@ -123,7 +123,7 @@ export function AutoMatchView() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="amv-suggest-threshold" className="text-xs text-zinc-400">
+                <label htmlFor="amv-suggest-threshold" className="text-xs text-secondary">
                   Suggest Threshold
                 </label>
                 <span className="text-xs font-mono text-amber-400">
@@ -152,7 +152,7 @@ export function AutoMatchView() {
             <button
               onClick={runAutoMatch}
               disabled={running}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFD633] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-[0_0_20px_rgba(255,204,0,0.2)]"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-cba-gold text-base font-bold text-sm hover:bg-[#FFD633] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-[0_0_20px_rgba(255,204,0,0.2)]"
             >
               {running ? (
                 <>
@@ -167,7 +167,7 @@ export function AutoMatchView() {
               )}
             </button>
             {lastRunTime && (
-              <p className="text-[10px] text-zinc-500 mt-2 text-right">
+              <p className="text-[10px] text-muted mt-2 text-right">
                 Last run: {lastRunTime.toLocaleTimeString()}
               </p>
             )}
@@ -178,9 +178,9 @@ export function AutoMatchView() {
       {/* Running Indicator */}
       {running && (
         <div className="neu-raised rounded-xl p-6 text-center">
-          <Loader2 className="h-8 w-8 text-[#FFCC00] animate-spin mx-auto mb-3" />
-          <p className="text-sm text-zinc-300">Matching documents against transactions...</p>
-          <p className="text-xs text-zinc-500 mt-1">This may take a moment</p>
+          <Loader2 className="h-8 w-8 text-cba-gold animate-spin mx-auto mb-3" />
+          <p className="text-sm text-primary">Matching documents against transactions...</p>
+          <p className="text-xs text-muted mt-1">This may take a moment</p>
         </div>
       )}
 
@@ -192,17 +192,17 @@ export function AutoMatchView() {
             <div className="neu-raised rounded-xl p-5 text-center">
               <CheckCircle2 className="h-6 w-6 text-emerald-400 mx-auto mb-2" />
               <p className="text-2xl font-bold text-emerald-400">{result.matched}</p>
-              <p className="text-xs text-zinc-400">Matched</p>
+              <p className="text-xs text-secondary">Matched</p>
             </div>
             <div className="neu-raised rounded-xl p-5 text-center">
               <AlertCircle className="h-6 w-6 text-amber-400 mx-auto mb-2" />
               <p className="text-2xl font-bold text-amber-400">{result.suggested}</p>
-              <p className="text-xs text-zinc-400">Suggested</p>
+              <p className="text-xs text-secondary">Suggested</p>
             </div>
             <div className="neu-raised rounded-xl p-5 text-center">
-              <XCircle className="h-6 w-6 text-zinc-500 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-zinc-400">{result.unmatched}</p>
-              <p className="text-xs text-zinc-400">Unmatched</p>
+              <XCircle className="h-6 w-6 text-muted mx-auto mb-2" />
+              <p className="text-2xl font-bold text-secondary">{result.unmatched}</p>
+              <p className="text-xs text-secondary">Unmatched</p>
             </div>
           </div>
 
@@ -212,17 +212,17 @@ export function AutoMatchView() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/5">
-                      <th className="text-left px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                    <tr className="border-b border-border/50">
+                      <th className="text-left px-5 py-3 text-xs text-secondary uppercase tracking-wider font-semibold">
                         Document
                       </th>
-                      <th className="text-center px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                      <th className="text-center px-5 py-3 text-xs text-secondary uppercase tracking-wider font-semibold">
                         Status
                       </th>
-                      <th className="text-right px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                      <th className="text-right px-5 py-3 text-xs text-secondary uppercase tracking-wider font-semibold">
                         Score
                       </th>
-                      <th className="text-right px-5 py-3 text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                      <th className="text-right px-5 py-3 text-xs text-secondary uppercase tracking-wider font-semibold">
                         Actions
                       </th>
                     </tr>
@@ -235,9 +235,9 @@ export function AutoMatchView() {
                         status: string;
                         topScore?: number;
                       }) => (
-                        <tr key={detail.documentId} className="hover:bg-white/5">
+                        <tr key={detail.documentId} className="hover:bg-overlay">
                           <td className="px-5 py-3">
-                            <span className="text-zinc-200 font-mono text-xs">
+                            <span className="text-primary font-mono text-xs">
                               {detail.documentId.slice(0, 12)}...
                             </span>
                           </td>
@@ -245,7 +245,7 @@ export function AutoMatchView() {
                           <td className="px-5 py-3 text-right">
                             {detail.topScore != null ? (
                               <span
-                                className={`font-mono text-xs ${detail.topScore > 0.85 ? 'text-emerald-400' : detail.topScore > 0.6 ? 'text-amber-400' : 'text-zinc-400'}`}
+                                className={`font-mono text-xs ${detail.topScore > 0.85 ? 'text-emerald-400' : detail.topScore > 0.6 ? 'text-amber-400' : 'text-secondary'}`}
                               >
                                 {(detail.topScore * 100).toFixed(0)}%
                               </span>
@@ -288,8 +288,8 @@ export function AutoMatchView() {
       {!result && !running && (
         <div className="neu-raised rounded-xl p-8 text-center">
           <Zap className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
-          <p className="text-zinc-400">Run auto-match to pair documents with transactions</p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-secondary">Run auto-match to pair documents with transactions</p>
+          <p className="text-xs text-muted mt-1">
             Adjust thresholds above to control match sensitivity
           </p>
         </div>

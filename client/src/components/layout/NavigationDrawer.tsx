@@ -86,7 +86,7 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
             <button
               type="button"
               onClick={onClose}
-              className="neu-raised-sm p-2 rounded-xl text-zinc-400 hover:text-white"
+              className="neu-raised-sm p-2 rounded-xl text-secondary hover:text-primary"
               aria-label="Close navigation"
             >
               <X className="h-4 w-4" />
@@ -98,7 +98,7 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
         <div className="px-4 pb-8 space-y-4">
           {sections.map((section) => (
             <div key={section.title}>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2 px-2">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2 px-2">
                 {section.title}
               </h3>
               <div className="space-y-1">
@@ -112,8 +112,8 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
                       cn(
                         'w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200',
                         isActive
-                          ? 'bg-[#FFCC00]/10 border border-[#FFCC00]/20 text-[#FFCC00]'
-                          : 'text-zinc-300 hover:bg-white/5 border border-transparent',
+                          ? 'bg-cba-gold/10 border border-cba-gold/20 text-cba-gold'
+                          : 'text-primary hover:bg-overlay border border-transparent',
                       )
                     }
                   >
@@ -122,7 +122,7 @@ export function NavigationDrawer({ isOpen, onClose }: NavigationDrawerProps) {
                         <div
                           className={cn(
                             'p-2 rounded-lg',
-                            isActive ? 'bg-[#FFCC00]/15' : 'neu-inset',
+                            isActive ? 'bg-cba-gold/15' : 'neu-inset',
                           )}
                         >
                           <item.icon className="h-5 w-5" />

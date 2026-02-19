@@ -54,10 +54,10 @@ export function HomeLoanCalculator() {
   return (
     <div className="space-y-6">
       {/* Input Form */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Home className="w-5 h-5 text-[#FFCC00]" />
+            <Home className="w-5 h-5 text-cba-gold" />
             Home Loan Calculator
           </CardTitle>
           <CardDescription>Australian home loan with offset and extra repayments</CardDescription>
@@ -132,7 +132,7 @@ export function HomeLoanCalculator() {
           <Button
             onClick={handleCalculate}
             disabled={loading}
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+            className="bg-cba-gold text-base hover:bg-[#e6b800]"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Calculate
@@ -152,10 +152,10 @@ export function HomeLoanCalculator() {
       {result && (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-[#FFCC00]" />
+                <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-cba-gold" />
                   {result.frequency.charAt(0).toUpperCase() + result.frequency.slice(1)} Payment
                 </CardTitle>
               </CardHeader>
@@ -163,9 +163,9 @@ export function HomeLoanCalculator() {
                 <div className="text-2xl font-bold">{formatCurrency(result.regularPayment)}</div>
               </CardContent>
             </Card>
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
                   <TrendingDown className="w-4 h-4 text-red-400" />
                   Total Interest
                 </CardTitle>
@@ -176,9 +176,9 @@ export function HomeLoanCalculator() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-secondary flex items-center gap-2">
                   <Clock className="w-4 h-4 text-blue-400" />
                   Time to Pay Off
                 </CardTitle>
@@ -187,9 +187,9 @@ export function HomeLoanCalculator() {
                 <div className="text-2xl font-bold">{result.periodsToPayOff} periods</div>
               </CardContent>
             </Card>
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-zinc-400">Total Cost</CardTitle>
+                <CardTitle className="text-sm font-medium text-secondary">Total Cost</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{formatCurrency(result.totalCost)}</div>
@@ -218,7 +218,7 @@ export function HomeLoanCalculator() {
 
           {/* Amortization Preview */}
           {result.schedule.length > 0 && (
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardHeader>
                 <CardTitle>Amortization Schedule (First 12 Periods)</CardTitle>
               </CardHeader>
@@ -226,7 +226,7 @@ export function HomeLoanCalculator() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-xs text-zinc-500 uppercase border-b border-white/5">
+                      <tr className="text-xs text-muted uppercase border-b border-border/50">
                         <th className="text-left py-2 pr-4">#</th>
                         <th className="text-right py-2 px-2">Payment</th>
                         <th className="text-right py-2 px-2">Interest</th>
@@ -236,8 +236,8 @@ export function HomeLoanCalculator() {
                     </thead>
                     <tbody>
                       {(result.schedule as Array<Record<string, unknown>>).slice(0, 12).map((row) => (
-                        <tr key={row.period} className="border-b border-white/5 last:border-0">
-                          <td className="py-2 pr-4 text-zinc-400">{row.period}</td>
+                        <tr key={row.period} className="border-b border-border/50 last:border-0">
+                          <td className="py-2 pr-4 text-secondary">{row.period}</td>
                           <td className="text-right py-2 px-2">{formatCurrency(row.payment)}</td>
                           <td className="text-right py-2 px-2 text-red-400">
                             {formatCurrency(row.interest)}
@@ -251,7 +251,7 @@ export function HomeLoanCalculator() {
                     </tbody>
                   </table>
                   {result.scheduleLength && result.scheduleLength > 12 && (
-                    <p className="text-xs text-zinc-500 mt-2 text-center">
+                    <p className="text-xs text-muted mt-2 text-center">
                       Showing 12 of {result.scheduleLength} periods
                     </p>
                   )}

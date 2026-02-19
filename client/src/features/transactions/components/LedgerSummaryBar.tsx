@@ -31,11 +31,11 @@ export function LedgerSummaryBar({ transactions }: LedgerSummaryBarProps) {
   if (transactions.length === 0) {
     return (
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-        <div className="flex flex-col bg-[#12121a]/80 border border-white/5 rounded-xl px-4 py-2 min-w-[140px] shrink-0">
+        <div className="flex flex-col bg-surface/80 border border-border/50 rounded-xl px-4 py-2 min-w-[140px] shrink-0">
           <span className="text-xs font-black text-zinc-600 uppercase tracking-widest">
             Transactions
           </span>
-          <span className="text-sm font-bold text-zinc-500 tracking-tight">No data</span>
+          <span className="text-sm font-bold text-muted tracking-tight">No data</span>
         </div>
       </div>
     );
@@ -56,7 +56,7 @@ export function LedgerSummaryBar({ transactions }: LedgerSummaryBarProps) {
       <StatPill
         label="Net Flow"
         value={<CurrencyDisplay amount={stats.netFlow} />}
-        colorClass={stats.netFlow >= 0 ? 'text-[#FFCC00]' : 'text-red-400'}
+        colorClass={stats.netFlow >= 0 ? 'text-cba-gold' : 'text-red-400'}
       />
       <StatPill
         label="GST"
@@ -65,7 +65,7 @@ export function LedgerSummaryBar({ transactions }: LedgerSummaryBarProps) {
       />
       <StatPill label="Count" value={stats.count} />
       {stats.transferCount > 0 && (
-        <StatPill label="Transfers" value={stats.transferCount} colorClass="text-zinc-400" />
+        <StatPill label="Transfers" value={stats.transferCount} colorClass="text-secondary" />
       )}
     </div>
   );
@@ -81,9 +81,9 @@ function StatPill({
   colorClass?: string;
 }) {
   return (
-    <div className="flex flex-col bg-[#12121a]/80 border border-white/5 rounded-xl px-4 py-2 min-w-[100px] shrink-0">
+    <div className="flex flex-col bg-surface/80 border border-border/50 rounded-xl px-4 py-2 min-w-[100px] shrink-0">
       <span className="text-xs font-black text-zinc-600 uppercase tracking-widest">{label}</span>
-      <span className={cn('text-sm font-bold tracking-tight', colorClass || 'text-white')}>
+      <span className={cn('text-sm font-bold tracking-tight', colorClass || 'text-primary')}>
         {value}
       </span>
     </div>

@@ -54,9 +54,9 @@ export function SessionHistory() {
   const statusBadge = (status: string) => {
     const colors: Record<string, string> = {
       completed: 'bg-emerald-500/10 text-emerald-400',
-      streaming: 'bg-[#FFCC00]/10 text-[#FFCC00]',
+      streaming: 'bg-cba-gold/10 text-cba-gold',
       errored: 'bg-red-500/10 text-red-400',
-      pending: 'bg-zinc-500/10 text-zinc-400',
+      pending: 'bg-zinc-500/10 text-secondary',
       cancelled: 'bg-orange-500/10 text-orange-400',
     };
     return (
@@ -73,7 +73,7 @@ export function SessionHistory() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-zinc-500">
+      <div className="flex items-center justify-center py-12 text-muted">
         <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading sessions...
       </div>
     );
@@ -88,7 +88,7 @@ export function SessionHistory() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="neu-inset rounded-lg px-3 py-1.5 text-xs text-zinc-300 bg-transparent border border-white/10"
+            className="neu-inset rounded-lg px-3 py-1.5 text-xs text-primary bg-transparent border border-border"
           >
             <option value="all">All agents</option>
             {agentTypes.map((t) => (
@@ -99,7 +99,7 @@ export function SessionHistory() {
           </select>
           <button
             onClick={fetchSessions}
-            className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00]"
+            className="neu-raised-sm p-2 rounded-lg text-secondary hover:text-cba-gold"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -114,24 +114,24 @@ export function SessionHistory() {
 
       {/* Session list */}
       {filtered.length === 0 ? (
-        <div className="text-center py-8 text-zinc-500 text-sm">No streaming sessions found</div>
+        <div className="text-center py-8 text-muted text-sm">No streaming sessions found</div>
       ) : (
         <div className="space-y-2">
           {filtered.map((session) => (
             <div
               key={session.id}
-              className="neu-inset rounded-xl p-4 hover:border-[#FFCC00]/10 border border-transparent transition-colors"
+              className="neu-inset rounded-xl p-4 hover:border-cba-gold/10 border border-transparent transition-colors"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-[#FFCC00]" />
-                  <span className="text-sm font-medium text-zinc-200">
+                  <Zap className="w-4 h-4 text-cba-gold" />
+                  <span className="text-sm font-medium text-primary">
                     {formatAgent(session.agent_type)}
                   </span>
                 </div>
                 {statusBadge(session.session_status)}
               </div>
-              <div className="flex items-center gap-4 text-xs text-zinc-500">
+              <div className="flex items-center gap-4 text-xs text-muted">
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {new Date(session.created_at).toLocaleString()}

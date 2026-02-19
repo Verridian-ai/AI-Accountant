@@ -76,8 +76,8 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
     return (
       <div className="space-y-6">
         {/* Accounts List Skeleton */}
-        <div className="neu-raised rounded-3xl overflow-hidden flex flex-col border border-white/5">
-          <div className="px-6 py-5 border-b border-white/5 bg-white/[0.01] flex items-center justify-between">
+        <div className="neu-raised rounded-3xl overflow-hidden flex flex-col border border-border/50">
+          <div className="px-6 py-5 border-b border-border/50 bg-white/[0.01] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Skeleton className="h-8 w-8 rounded-xl" />
               <Skeleton className="h-4 w-32" />
@@ -88,7 +88,7 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="flex items-center gap-4 p-4 neu-raised-sm rounded-2xl border border-white/5"
+                className="flex items-center gap-4 p-4 neu-raised-sm rounded-2xl border border-border/50"
               >
                 <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
                 <div className="flex-1 min-w-0 space-y-2">
@@ -112,11 +112,11 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
 
   if (accounts.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-10 text-center border border-white/5">
+      <div className="neu-raised rounded-3xl p-10 text-center border border-border/50">
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <Wallet className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">
           No Active Vaults
         </h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight max-w-[200px] mx-auto leading-relaxed">
@@ -149,10 +149,10 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
             {alerts.slice(0, 3).map((alert) => (
               <div
                 key={alert.id}
-                className="flex items-center justify-between neu-inset rounded-2xl p-4 border border-white/5 hover:border-amber-500/20 transition-all"
+                className="flex items-center justify-between neu-inset rounded-2xl p-4 border border-border/50 hover:border-amber-500/20 transition-all"
               >
                 <div className="flex-1 min-w-0 pr-4">
-                  <p className="text-xs font-black text-zinc-300 uppercase tracking-tight truncate">
+                  <p className="text-xs font-black text-primary uppercase tracking-tight truncate">
                     {alert.description}
                   </p>
                   {alert.difference !== null && (
@@ -165,7 +165,7 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
                   type="button"
                   onClick={() => handleResolveAlert(alert.id)}
                   disabled={resolvingAlert === alert.id}
-                  className="p-2.5 neu-raised-sm rounded-xl text-amber-400 hover:text-emerald-400 btn-press disabled:opacity-50 border border-white/5 shadow-lg"
+                  className="p-2.5 neu-raised-sm rounded-xl text-amber-400 hover:text-emerald-400 btn-press disabled:opacity-50 border border-border/50 shadow-lg"
                   title="Resolve conflict"
                 >
                   {resolvingAlert === alert.id ? (
@@ -181,17 +181,17 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
       )}
 
       {/* Accounts List */}
-      <div className="neu-raised rounded-3xl overflow-hidden flex flex-col border border-white/5">
-        <div className="px-6 py-5 border-b border-white/5 bg-white/[0.01] flex items-center justify-between">
+      <div className="neu-raised rounded-3xl overflow-hidden flex flex-col border border-border/50">
+        <div className="px-6 py-5 border-b border-border/50 bg-white/[0.01] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 neu-inset rounded-xl flex items-center justify-center text-[#FFCC00]">
+            <div className="w-8 h-8 neu-inset rounded-xl flex items-center justify-center text-cba-gold">
               <Zap className="w-4 h-4" />
             </div>
             <h3 className="text-xs font-black text-zinc-100 uppercase tracking-[0.2em]">
               Vault Inventory
             </h3>
           </div>
-          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest bg-black/20 px-2.5 py-1 rounded-full border border-white/5">
+          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest bg-overlay px-2.5 py-1 rounded-full border border-border/50">
             {accounts.length} Active
           </span>
         </div>
@@ -203,20 +203,20 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
               <div
                 key={account.id}
                 onClick={() => onAccountSelect?.(account.id)}
-                className="group flex items-center gap-4 p-4 neu-raised-sm rounded-2xl border border-white/5 hover:neu-float transition-all cursor-pointer"
+                className="group flex items-center gap-4 p-4 neu-raised-sm rounded-2xl border border-border/50 hover:neu-float transition-all cursor-pointer"
               >
                 <div
                   className={cn(
                     'neu-inset p-3 rounded-xl transition-all group-hover:glow-success',
                     account.accountType === 'credit_card'
                       ? 'text-purple-400 group-hover:text-purple-300'
-                      : 'text-[#FFCC00] group-hover:text-[#FFE066]',
+                      : 'text-cba-gold group-hover:text-cba-gold-light',
                   )}
                 >
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black text-zinc-100 truncate group-hover:text-[#FFCC00] transition-colors uppercase tracking-tight">
+                  <p className="text-sm font-black text-zinc-100 truncate group-hover:text-cba-gold transition-colors uppercase tracking-tight">
                     {account.accountName}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -224,7 +224,7 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
                       {account.accountNumber}
                     </span>
                     <span className="w-1 h-1 rounded-full bg-zinc-800" />
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tight italic">
+                    <span className="text-[9px] font-bold text-muted uppercase tracking-tight italic">
                       {account.bankName || 'Verified Source'}
                     </span>
                   </div>
@@ -242,13 +242,13 @@ export function AccountsOverview({ onAccountSelect }: AccountsOverviewProps) {
                     {account.accountType.replace('_', ' ')}
                   </p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-zinc-700 group-hover:text-[#FFCC00] transition-colors transform group-hover:translate-x-1" />
+                <ChevronRight className="w-4 h-4 text-zinc-700 group-hover:text-cba-gold transition-colors transform group-hover:translate-x-1" />
               </div>
             );
           })}
         </div>
         {/* Footer status */}
-        <div className="px-6 py-3 border-t border-white/5 bg-black/20">
+        <div className="px-6 py-3 border-t border-border/50 bg-overlay">
           <p className="text-[8px] font-black text-zinc-700 uppercase tracking-[0.3em] text-center">
             Biometric Encryption Active
           </p>

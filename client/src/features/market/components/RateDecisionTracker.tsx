@@ -169,7 +169,7 @@ export function RateDecisionTracker() {
       case 'decrease':
         return <ArrowDown className="w-5 h-5 text-emerald-400" />;
       default:
-        return <Minus className="w-5 h-5 text-zinc-400" />;
+        return <Minus className="w-5 h-5 text-secondary" />;
     }
   };
 
@@ -180,7 +180,7 @@ export function RateDecisionTracker() {
       case 'decrease':
         return 'text-emerald-400';
       default:
-        return 'text-zinc-400';
+        return 'text-secondary';
     }
   };
 
@@ -207,11 +207,11 @@ export function RateDecisionTracker() {
       {state.rateData && (
         <div className="neu-raised rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-1">
+            <p className="text-xs text-muted font-medium uppercase tracking-wider mb-1">
               RBA Cash Rate Target
             </p>
             <div className="flex items-center gap-3">
-              <span className="text-4xl font-bold text-[#FFCC00]">
+              <span className="text-4xl font-bold text-cba-gold">
                 {state.rateData.currentRate.toFixed(2)}%
               </span>
               <div className={`flex items-center gap-1 ${getDirectionColor(state.rateData.direction)}`}>
@@ -222,8 +222,8 @@ export function RateDecisionTracker() {
           </div>
           <div className="flex gap-6">
             <div>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Last Decision</p>
-              <p className="text-sm text-white font-medium">
+              <p className="text-[10px] text-muted uppercase tracking-wider">Last Decision</p>
+              <p className="text-sm text-primary font-medium">
                 {new Date(state.rateData.lastDecision).toLocaleDateString('en-AU', {
                   day: 'numeric',
                   month: 'short',
@@ -232,8 +232,8 @@ export function RateDecisionTracker() {
               </p>
             </div>
             <div>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Next Meeting</p>
-              <p className="text-sm text-[#FFCC00] font-medium">
+              <p className="text-[10px] text-muted uppercase tracking-wider">Next Meeting</p>
+              <p className="text-sm text-cba-gold font-medium">
                 {new Date(state.rateData.nextMeeting).toLocaleDateString('en-AU', {
                   day: 'numeric',
                   month: 'short',
@@ -247,8 +247,8 @@ export function RateDecisionTracker() {
 
       {/* Rate History Chart */}
       <div className="neu-raised rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-white mb-4">Rate Decision History</h3>
-        <Suspense fallback={<div className="h-64 animate-pulse bg-white/5 rounded-xl" />}>
+        <h3 className="text-sm font-bold text-primary mb-4">Rate Decision History</h3>
+        <Suspense fallback={<div className="h-64 animate-pulse bg-overlay rounded-xl" />}>
           <LazyRateDecisionChart
             history={state.history}
             currentRate={state.rateData?.currentRate}
@@ -258,7 +258,7 @@ export function RateDecisionTracker() {
 
       {/* Decision Timeline */}
       <div className="neu-raised rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-white mb-4">Recent Decisions</h3>
+        <h3 className="text-sm font-bold text-primary mb-4">Recent Decisions</h3>
         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
           {[...state.history]
             .reverse()
@@ -278,8 +278,8 @@ export function RateDecisionTracker() {
                 </div>
                 <div className="flex-1 flex items-center justify-between py-1">
                   <div>
-                    <p className="text-sm font-medium text-white">{decision.rate.toFixed(2)}%</p>
-                    <p className="text-xs text-zinc-500">{decision.date}</p>
+                    <p className="text-sm font-medium text-primary">{decision.rate.toFixed(2)}%</p>
+                    <p className="text-xs text-muted">{decision.date}</p>
                   </div>
                   <span className={`text-xs font-bold ${getDirectionColor(decision.direction)}`}>
                     {decision.direction === 'increase'
@@ -296,14 +296,14 @@ export function RateDecisionTracker() {
 
       {/* Rate Impact Calculator */}
       <div className="neu-raised rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-          <Calculator className="w-4 h-4 text-[#FFCC00]" />
+        <h3 className="text-sm font-bold text-primary mb-4 flex items-center gap-2">
+          <Calculator className="w-4 h-4 text-cba-gold" />
           Rate Impact Calculator
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div>
-            <label htmlFor="rdt-loan" className="text-xs text-zinc-500 font-medium block mb-1">
+            <label htmlFor="rdt-loan" className="text-xs text-muted font-medium block mb-1">
               Loan Amount ($)
             </label>
             <input
@@ -311,11 +311,11 @@ export function RateDecisionTracker() {
               type="number"
               value={state.loanAmount}
               onChange={(e) => dispatch({ type: 'SET_LOAN_AMOUNT', value: Number(e.target.value) })}
-              className="w-full neu-inset px-3 py-2 rounded-lg text-sm text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full neu-inset px-3 py-2 rounded-lg text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <div>
-            <label htmlFor="rdt-rate" className="text-xs text-zinc-500 font-medium block mb-1">
+            <label htmlFor="rdt-rate" className="text-xs text-muted font-medium block mb-1">
               Current Rate (%)
             </label>
             <input
@@ -324,11 +324,11 @@ export function RateDecisionTracker() {
               step="0.01"
               value={state.currentLoanRate}
               onChange={(e) => dispatch({ type: 'SET_LOAN_RATE', value: Number(e.target.value) })}
-              className="w-full neu-inset px-3 py-2 rounded-lg text-sm text-white bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
+              className="w-full neu-inset px-3 py-2 rounded-lg text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
             />
           </div>
           <div>
-            <p className="text-xs text-zinc-500 font-medium block mb-1">Rate Change (bps)</p>
+            <p className="text-xs text-muted font-medium block mb-1">Rate Change (bps)</p>
             <div className="flex gap-1">
               {[-50, -25, 25, 50].map((bp) => (
                 <button
@@ -339,7 +339,7 @@ export function RateDecisionTracker() {
                       ? bp > 0
                         ? 'bg-red-500/20 text-red-400 ring-1 ring-red-500/30'
                         : 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30'
-                      : 'text-zinc-500 hover:text-zinc-300 neu-raised-sm'
+                      : 'text-muted hover:text-primary neu-raised-sm'
                   }`}
                 >
                   {bp > 0 ? '+' : ''}
@@ -353,26 +353,26 @@ export function RateDecisionTracker() {
         {/* Results */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="neu-inset rounded-xl p-3 text-center">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Current Monthly</p>
-            <p className="text-sm font-bold text-white">
+            <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Current Monthly</p>
+            <p className="text-sm font-bold text-primary">
               ${currentRepayment.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
           <div className="neu-inset rounded-xl p-3 text-center">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">New Monthly</p>
-            <p className="text-sm font-bold text-white">
+            <p className="text-[10px] text-muted uppercase tracking-wider mb-1">New Monthly</p>
+            <p className="text-sm font-bold text-primary">
               ${newRepayment.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
           <div className="neu-inset rounded-xl p-3 text-center">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Monthly Diff</p>
-            <p className={`text-sm font-bold ${monthlyDiff > 0 ? 'text-red-400' : monthlyDiff < 0 ? 'text-emerald-400' : 'text-zinc-400'}`}>
+            <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Monthly Diff</p>
+            <p className={`text-sm font-bold ${monthlyDiff > 0 ? 'text-red-400' : monthlyDiff < 0 ? 'text-emerald-400' : 'text-secondary'}`}>
               {monthlyDiff > 0 ? '+' : ''}${monthlyDiff.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
           <div className="neu-inset rounded-xl p-3 text-center">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Annual Impact</p>
-            <p className={`text-sm font-bold ${annualDiff > 0 ? 'text-red-400' : annualDiff < 0 ? 'text-emerald-400' : 'text-zinc-400'}`}>
+            <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Annual Impact</p>
+            <p className={`text-sm font-bold ${annualDiff > 0 ? 'text-red-400' : annualDiff < 0 ? 'text-emerald-400' : 'text-secondary'}`}>
               {annualDiff > 0 ? '+' : ''}${annualDiff.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>

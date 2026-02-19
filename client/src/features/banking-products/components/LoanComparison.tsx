@@ -96,7 +96,7 @@ export function LoanComparison() {
       label: 'Monthly Repayment',
       value: formatCurrency(result.monthlyRepayment),
       icon: DollarSign,
-      color: 'text-[#FFCC00]',
+      color: 'text-cba-gold',
     },
     {
       label: 'Total Interest',
@@ -117,14 +117,14 @@ export function LoanComparison() {
     <div className="space-y-6">
       {/* Input Form */}
       <div className="neu-raised rounded-2xl p-5 space-y-4">
-        <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-          <Calculator className="h-4 w-4 text-[#FFCC00]" />
+        <h3 className="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+          <Calculator className="h-4 w-4 text-cba-gold" />
           Loan Scenario Calculator
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">Loan Amount</label>
+            <label className="text-xs text-muted font-semibold block mb-1">Loan Amount</label>
             <input
               type="number"
               value={amount}
@@ -133,7 +133,7 @@ export function LoanComparison() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">
+            <label className="text-xs text-muted font-semibold block mb-1">
               Interest Rate (%)
             </label>
             <input
@@ -145,7 +145,7 @@ export function LoanComparison() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">Term (years)</label>
+            <label className="text-xs text-muted font-semibold block mb-1">Term (years)</label>
             <input
               type="number"
               value={term}
@@ -154,7 +154,7 @@ export function LoanComparison() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">Repayment Type</label>
+            <label className="text-xs text-muted font-semibold block mb-1">Repayment Type</label>
             <div className="flex gap-2">
               {(['pi', 'io'] as const).map((t) => (
                 <button
@@ -163,8 +163,8 @@ export function LoanComparison() {
                   className={cn(
                     'flex-1 py-2 rounded-xl text-sm font-bold transition-all',
                     repaymentType === t
-                      ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                      : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
+                      ? 'bg-cba-gold text-base'
+                      : 'neu-raised-sm text-secondary hover:text-primary',
                   )}
                 >
                   {t === 'pi' ? 'P&I' : 'Interest Only'}
@@ -173,7 +173,7 @@ export function LoanComparison() {
             </div>
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">
+            <label className="text-xs text-muted font-semibold block mb-1">
               Extra Repayment/mo
             </label>
             <input
@@ -184,7 +184,7 @@ export function LoanComparison() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">Offset Balance</label>
+            <label className="text-xs text-muted font-semibold block mb-1">Offset Balance</label>
             <input
               type="number"
               value={offsetBalance}
@@ -203,7 +203,7 @@ export function LoanComparison() {
               <div className="neu-inset p-1.5 rounded-lg">
                 <card.icon className={cn('h-4 w-4', card.color)} />
               </div>
-              <span className="text-xs text-zinc-500 font-semibold uppercase">{card.label}</span>
+              <span className="text-xs text-muted font-semibold uppercase">{card.label}</span>
             </div>
             <p className={cn('text-xl font-black', card.color)}>{card.value}</p>
           </div>
@@ -212,34 +212,34 @@ export function LoanComparison() {
 
       {/* Total Cost Breakdown */}
       <div className="neu-raised rounded-2xl p-5 space-y-3">
-        <h4 className="text-sm font-bold text-zinc-300">Cost Breakdown</h4>
+        <h4 className="text-sm font-bold text-primary">Cost Breakdown</h4>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Principal</span>
-            <span className="text-zinc-200 font-semibold">
+            <span className="text-secondary">Principal</span>
+            <span className="text-primary font-semibold">
               {formatCurrency(Math.max(0, amount - offsetBalance))}
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Total Interest</span>
+            <span className="text-secondary">Total Interest</span>
             <span className="text-red-400 font-semibold">
               {formatCurrency(result.totalInterest)}
             </span>
           </div>
-          <div className="border-t border-white/5 pt-2 flex justify-between text-sm">
-            <span className="text-zinc-300 font-bold">Total Cost</span>
-            <span className="text-[#FFCC00] font-black">{formatCurrency(result.totalCost)}</span>
+          <div className="border-t border-border/50 pt-2 flex justify-between text-sm">
+            <span className="text-primary font-bold">Total Cost</span>
+            <span className="text-cba-gold font-black">{formatCurrency(result.totalCost)}</span>
           </div>
         </div>
         {/* Simple bar */}
         <div className="h-3 rounded-full overflow-hidden flex bg-[#1a1d23]">
           <div
-            className="bg-[#FFCC00] rounded-l-full"
+            className="bg-cba-gold rounded-l-full"
             style={{ width: `${(Math.max(0, amount - offsetBalance) / result.totalCost) * 100}%` }}
           />
           <div className="bg-red-500/70 rounded-r-full flex-1" />
         </div>
-        <div className="flex justify-between text-[10px] text-zinc-500">
+        <div className="flex justify-between text-[10px] text-muted">
           <span>Principal</span>
           <span>Interest</span>
         </div>

@@ -159,7 +159,7 @@ export function ReconDashboard() {
           <Button variant="ghost" size="sm" onClick={() => setActiveView('dashboard')}>
             Back
           </Button>
-          <h2 className="text-lg font-bold text-zinc-200">Matching Rules</h2>
+          <h2 className="text-lg font-bold text-primary">Matching Rules</h2>
         </div>
         <ReconRulesManager />
       </div>
@@ -175,7 +175,7 @@ export function ReconDashboard() {
             <GitCompareArrows className="h-6 w-6" />
             Bank Reconciliation
           </h2>
-          <p className="text-sm text-zinc-500">Match bank transactions against your ledger</p>
+          <p className="text-sm text-muted">Match bank transactions against your ledger</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setActiveView('rules')}>
@@ -184,7 +184,7 @@ export function ReconDashboard() {
           </Button>
           <Button
             size="sm"
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFCC00]/90"
+            className="bg-cba-gold text-base hover:bg-cba-gold/90"
             onClick={() => setShowCreateForm(!showCreateForm)}
           >
             <Plus className="h-4 w-4 mr-1" />
@@ -196,12 +196,12 @@ export function ReconDashboard() {
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Sessions', value: sessions.length.toString(), color: 'text-[#FFCC00]' },
+          { label: 'Total Sessions', value: sessions.length.toString(), color: 'text-cba-gold' },
           { label: 'Active', value: activeSessions.length.toString(), color: 'text-amber-400' },
           { label: 'Matched Txns', value: totalMatched.toString(), color: 'text-emerald-400' },
           { label: 'Avg Match Rate', value: `${avgMatchRate}%`, color: 'text-blue-400' },
         ].map((stat) => (
-          <div key={stat.label} className="neu-raised rounded-xl p-4 border border-white/5">
+          <div key={stat.label} className="neu-raised rounded-xl p-4 border border-border/50">
             <p className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-1">
               {stat.label}
             </p>
@@ -212,7 +212,7 @@ export function ReconDashboard() {
 
       {/* Create Session Form */}
       {showCreateForm && (
-        <Card className="border-[#FFCC00]/20">
+        <Card className="border-cba-gold/20">
           <CardHeader>
             <CardTitle className="text-sm">New Reconciliation Session</CardTitle>
             <CardDescription>Select an account and period to begin reconciling</CardDescription>
@@ -267,7 +267,7 @@ export function ReconDashboard() {
               </Button>
               <Button
                 size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-primary"
                 onClick={handleCreate}
                 disabled={creating || !formAccountId || !formPeriodStart || !formPeriodEnd}
               >
@@ -281,17 +281,17 @@ export function ReconDashboard() {
 
       {/* Active Sessions */}
       <section>
-        <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
           <Activity className="h-4 w-4 text-amber-400" />
           Active Sessions ({activeSessions.length})
         </h3>
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
+            <Loader2 className="h-5 w-5 animate-spin text-muted" />
           </div>
         ) : activeSessions.length === 0 ? (
           <div className="neu-inset rounded-xl p-6 text-center">
-            <p className="text-sm text-zinc-500">No active reconciliation sessions</p>
+            <p className="text-sm text-muted">No active reconciliation sessions</p>
             <p className="text-xs text-zinc-600 mt-1">Create a new session to start reconciling</p>
           </div>
         ) : (
@@ -307,14 +307,14 @@ export function ReconDashboard() {
                   key={session.id}
                   type="button"
                   onClick={() => openSession(session.id)}
-                  className="neu-raised rounded-xl p-4 border border-white/5 hover:border-[#FFCC00]/20 transition-all text-left group"
+                  className="neu-raised rounded-xl p-4 border border-border/50 hover:border-cba-gold/20 transition-all text-left group"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="text-sm font-bold text-zinc-200 group-hover:text-[#FFCC00] transition-colors">
+                      <p className="text-sm font-bold text-primary group-hover:text-cba-gold transition-colors">
                         {session.accountName ?? `Account ${session.accountId.slice(0, 8)}`}
                       </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-muted">
                         {session.periodStart} to {session.periodEnd}
                       </p>
                     </div>
@@ -324,15 +324,15 @@ export function ReconDashboard() {
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-zinc-500">
+                    <span className="text-muted">
                       {session.matchedCount} matched / {session.unmatchedCount} unmatched
                     </span>
-                    <span className="font-bold text-[#FFCC00]">{matchPct}%</span>
+                    <span className="font-bold text-cba-gold">{matchPct}%</span>
                   </div>
                   {/* Progress bar */}
                   <div className="h-1 bg-zinc-800 rounded-full overflow-hidden mt-2">
                     <div
-                      className="h-full rounded-full bg-[#FFCC00] transition-all"
+                      className="h-full rounded-full bg-cba-gold transition-all"
                       style={{ width: `${matchPct}%` }}
                     />
                   </div>
@@ -354,7 +354,7 @@ export function ReconDashboard() {
       {/* Completed Sessions */}
       {completedSessions.length > 0 && (
         <section>
-          <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
             Completed ({completedSessions.length})
           </h3>
@@ -368,14 +368,14 @@ export function ReconDashboard() {
                   key={session.id}
                   type="button"
                   onClick={() => openSession(session.id)}
-                  className="neu-raised rounded-xl p-4 border border-white/5 hover:border-emerald-500/20 transition-all text-left opacity-80 hover:opacity-100"
+                  className="neu-raised rounded-xl p-4 border border-border/50 hover:border-emerald-500/20 transition-all text-left opacity-80 hover:opacity-100"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <p className="text-sm font-bold text-zinc-300">
+                      <p className="text-sm font-bold text-primary">
                         {session.accountName ?? `Account ${session.accountId.slice(0, 8)}`}
                       </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-muted">
                         {session.periodStart} to {session.periodEnd}
                       </p>
                     </div>
@@ -387,7 +387,7 @@ export function ReconDashboard() {
                       Done
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                  <div className="flex items-center justify-between text-xs text-muted">
                     <span>{session.matchedCount} matched</span>
                     <span className="text-emerald-400 font-bold">{matchPct}%</span>
                   </div>

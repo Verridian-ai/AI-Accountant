@@ -91,13 +91,13 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
       <div className="space-y-6 animate-in fade-in duration-300">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+          className="flex items-center gap-2 text-secondary hover:text-primary text-sm transition-colors"
         >
           <ArrowLeft className="h-4 w-4" /> Back to bills
         </button>
         <div className="neu-raised rounded-2xl p-6 animate-pulse">
-          <div className="h-6 w-48 bg-white/5 rounded mb-4" />
-          <div className="h-4 w-32 bg-white/5 rounded" />
+          <div className="h-6 w-48 bg-overlay rounded mb-4" />
+          <div className="h-4 w-32 bg-overlay rounded" />
         </div>
       </div>
     );
@@ -108,12 +108,12 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
       <div className="space-y-6">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+          className="flex items-center gap-2 text-secondary hover:text-primary text-sm transition-colors"
         >
           <ArrowLeft className="h-4 w-4" /> Back to bills
         </button>
         <div className="neu-raised rounded-2xl p-8 text-center">
-          <p className="text-zinc-400">Bill not found</p>
+          <p className="text-secondary">Bill not found</p>
         </div>
       </div>
     );
@@ -123,16 +123,16 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        className="flex items-center gap-2 text-secondary hover:text-primary text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" /> Back to bills
       </button>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Bill Approval</h1>
-          <p className="text-sm text-zinc-400 mt-1">
-            Review and approve bill <span className="text-white font-mono">{bill.billNumber}</span>
+          <h1 className="text-2xl font-bold text-primary">Bill Approval</h1>
+          <p className="text-sm text-secondary mt-1">
+            Review and approve bill <span className="text-primary font-mono">{bill.billNumber}</span>
           </p>
         </div>
         <StatusBadge status={bill.status} />
@@ -140,8 +140,8 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
 
       {/* Bill Details (read-only) */}
       <div className="neu-raised rounded-2xl p-6">
-        <h3 className="text-sm font-semibold text-zinc-300 mb-4 flex items-center gap-2">
-          <FileText className="h-4 w-4 text-[#FFCC00]" />
+        <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
+          <FileText className="h-4 w-4 text-cba-gold" />
           Bill Details
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -161,33 +161,33 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
 
       {/* Line Items */}
       <div className="neu-raised rounded-2xl p-6">
-        <h3 className="text-sm font-semibold text-zinc-300 mb-4">Line Items</h3>
+        <h3 className="text-sm font-semibold text-primary mb-4">Line Items</h3>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/5">
-              <th className="text-left px-3 py-2 text-xs font-semibold text-zinc-400">
+            <tr className="border-b border-border/50">
+              <th className="text-left px-3 py-2 text-xs font-semibold text-secondary">
                 Description
               </th>
-              <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">Qty</th>
-              <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">
+              <th className="text-right px-3 py-2 text-xs font-semibold text-secondary">Qty</th>
+              <th className="text-right px-3 py-2 text-xs font-semibold text-secondary">
                 Unit Price
               </th>
-              <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">GST</th>
-              <th className="text-right px-3 py-2 text-xs font-semibold text-zinc-400">Amount</th>
+              <th className="text-right px-3 py-2 text-xs font-semibold text-secondary">GST</th>
+              <th className="text-right px-3 py-2 text-xs font-semibold text-secondary">Amount</th>
             </tr>
           </thead>
           <tbody>
             {bill.lineItems?.map((item, i) => (
-              <tr key={i} className="border-b border-white/5">
-                <td className="px-3 py-2 text-sm text-white">{item.description}</td>
-                <td className="px-3 py-2 text-right text-sm text-zinc-400">{item.quantity}</td>
-                <td className="px-3 py-2 text-right text-sm text-zinc-400">
+              <tr key={i} className="border-b border-border/50">
+                <td className="px-3 py-2 text-sm text-primary">{item.description}</td>
+                <td className="px-3 py-2 text-right text-sm text-secondary">{item.quantity}</td>
+                <td className="px-3 py-2 text-right text-sm text-secondary">
                   {formatCurrency(item.unitPrice)}
                 </td>
-                <td className="px-3 py-2 text-right text-sm text-zinc-400">
+                <td className="px-3 py-2 text-right text-sm text-secondary">
                   {formatCurrency(item.gstAmount)}
                 </td>
-                <td className="px-3 py-2 text-right text-sm text-white font-medium">
+                <td className="px-3 py-2 text-right text-sm text-primary font-medium">
                   {formatCurrency(item.amount)}
                 </td>
               </tr>
@@ -196,19 +196,19 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
         </table>
 
         {/* Totals */}
-        <div className="flex justify-end mt-4 border-t border-white/5 pt-4">
+        <div className="flex justify-end mt-4 border-t border-border/50 pt-4">
           <div className="w-64 space-y-1">
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">Subtotal</span>
-              <span className="text-white font-mono">{formatCurrency(bill.subtotal)}</span>
+              <span className="text-secondary">Subtotal</span>
+              <span className="text-primary font-mono">{formatCurrency(bill.subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">GST</span>
-              <span className="text-white font-mono">{formatCurrency(bill.gstTotal)}</span>
+              <span className="text-secondary">GST</span>
+              <span className="text-primary font-mono">{formatCurrency(bill.gstTotal)}</span>
             </div>
-            <div className="border-t border-white/10 pt-2 flex justify-between text-sm font-semibold">
-              <span className="text-[#FFCC00]">Total</span>
-              <span className="text-[#FFCC00] font-mono">{formatCurrency(bill.total)}</span>
+            <div className="border-t border-border pt-2 flex justify-between text-sm font-semibold">
+              <span className="text-cba-gold">Total</span>
+              <span className="text-cba-gold font-mono">{formatCurrency(bill.total)}</span>
             </div>
           </div>
         </div>
@@ -217,8 +217,8 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
       {/* Three-Way Match Panel */}
       {threeWayMatch && (
         <div className="neu-raised rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-zinc-300 mb-4 flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-[#FFCC00]" />
+          <h3 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-cba-gold" />
             Three-Way Match
           </h3>
 
@@ -270,8 +270,8 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
       {/* Notes */}
       {bill.notes && (
         <div className="neu-raised rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-zinc-300 mb-2">Notes</h3>
-          <p className="text-sm text-zinc-400">{bill.notes}</p>
+          <h3 className="text-sm font-semibold text-primary mb-2">Notes</h3>
+          <p className="text-sm text-secondary">{bill.notes}</p>
         </div>
       )}
 
@@ -284,7 +284,7 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="Reason for rejection..."
-                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-red-500/30 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/20 transition-all resize-none"
+                className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-red-500/30 text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/20 transition-all resize-none"
                 rows={2}
               />
               <div className="flex gap-2 justify-end">
@@ -293,14 +293,14 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
                     setShowRejectForm(false);
                     setRejectReason('');
                   }}
-                  className="px-4 py-2 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium hover:bg-white/10 transition-all"
+                  className="px-4 py-2 rounded-xl bg-overlay text-primary text-sm font-medium hover:bg-overlay-hover transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleReject}
                   disabled={rejecting || !rejectReason.trim()}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 text-primary text-sm font-semibold hover:bg-red-600 transition-all disabled:opacity-50"
                 >
                   <XCircle className="h-4 w-4" />
                   {rejecting ? 'Rejecting...' : 'Confirm Reject'}
@@ -318,7 +318,7 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
               </button>
               <button
                 onClick={() => setShowConfirmApprove(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cba-gold text-black font-semibold text-sm hover:bg-cba-gold/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)]"
               >
                 <CheckCircle className="h-4 w-4" />
                 Approve
@@ -332,23 +332,23 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
       {showConfirmApprove && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="neu-raised rounded-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold text-white mb-2">Approve Bill?</h3>
-            <p className="text-sm text-zinc-400 mb-4">
+            <h3 className="text-lg font-bold text-primary mb-2">Approve Bill?</h3>
+            <p className="text-sm text-secondary mb-4">
               This will approve bill{' '}
-              <strong className="text-white font-mono">{bill.billNumber}</strong> for{' '}
-              <strong className="text-[#FFCC00]">{formatCurrency(bill.total)}</strong>.
+              <strong className="text-primary font-mono">{bill.billNumber}</strong> for{' '}
+              <strong className="text-cba-gold">{formatCurrency(bill.total)}</strong>.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowConfirmApprove(false)}
-                className="px-4 py-2 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium hover:bg-white/10 transition-all"
+                className="px-4 py-2 rounded-xl bg-overlay text-primary text-sm font-medium hover:bg-overlay-hover transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleApprove}
                 disabled={approving}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FFCC00] text-black text-sm font-semibold hover:bg-[#FFCC00]/90 transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cba-gold text-black text-sm font-semibold hover:bg-cba-gold/90 transition-all disabled:opacity-50"
               >
                 <CheckCircle className="h-4 w-4" />
                 {approving ? 'Approving...' : 'Confirm Approval'}
@@ -364,8 +364,8 @@ export function BillApproval({ billId, onBack, onAction }: BillApprovalProps) {
 function DetailField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-zinc-500 mb-0.5">{label}</p>
-      <p className="text-sm text-white">{value}</p>
+      <p className="text-xs text-muted mb-0.5">{label}</p>
+      <p className="text-sm text-primary">{value}</p>
     </div>
   );
 }
@@ -380,9 +380,9 @@ function MatchColumn({
   matched: boolean;
 }) {
   return (
-    <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
-      <p className="text-xs text-zinc-500 mb-1">{label}</p>
-      <p className="text-lg font-bold text-white">{formatCurrency(amount)}</p>
+    <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-border/50">
+      <p className="text-xs text-muted mb-1">{label}</p>
+      <p className="text-lg font-bold text-primary">{formatCurrency(amount)}</p>
       <div className="mt-1">
         {matched ? (
           <span className="text-xs text-emerald-400 font-medium">Matched</span>
@@ -396,12 +396,12 @@ function MatchColumn({
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    draft: 'bg-zinc-400/10 text-zinc-400',
+    draft: 'bg-zinc-400/10 text-secondary',
     awaiting_approval: 'bg-amber-400/10 text-amber-400',
     approved: 'bg-emerald-400/10 text-emerald-400',
     overdue: 'bg-red-400/10 text-red-400',
     paid: 'bg-blue-400/10 text-blue-400',
-    void: 'bg-zinc-500/10 text-zinc-500',
+    void: 'bg-zinc-500/10 text-muted',
   };
   const labels: Record<string, string> = {
     draft: 'Draft',

@@ -416,13 +416,13 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
-            <div className="w-10 h-1 mx-auto rounded-full bg-white/20" />
+            <div className="w-10 h-1 mx-auto rounded-full bg-overlay-hover" />
           </div>
 
           {/* Title (optional) */}
           {title && (
-            <div className="px-6 pb-3 border-b border-white/10">
-              <h2 className="text-lg font-semibold text-white">{title}</h2>
+            <div className="px-6 pb-3 border-b border-border">
+              <h2 className="text-lg font-semibold text-primary">{title}</h2>
             </div>
           )}
 

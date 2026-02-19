@@ -117,7 +117,7 @@ export function MarketBriefing() {
       {/* Controls */}
       <div className="neu-raised rounded-2xl p-4 space-y-4">
         <div>
-          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-2 block">
+          <label className="text-xs text-muted font-medium uppercase tracking-wider mb-2 block">
             Focus Area
           </label>
           <div className="flex flex-wrap gap-2">
@@ -127,8 +127,8 @@ export function MarketBriefing() {
                 onClick={() => setFocus(opt)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   focus === opt
-                    ? 'bg-[#FFCC00]/20 text-[#FFCC00] ring-1 ring-[#FFCC00]/30'
-                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5 neu-raised-sm'
+                    ? 'bg-cba-gold/20 text-cba-gold ring-1 ring-[#FFCC00]/30'
+                    : 'text-muted hover:text-primary hover:bg-overlay neu-raised-sm'
                 }`}
               >
                 {opt}
@@ -138,7 +138,7 @@ export function MarketBriefing() {
         </div>
 
         <div>
-          <label className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-2 block">
+          <label className="text-xs text-muted font-medium uppercase tracking-wider mb-2 block">
             Timeframe
           </label>
           <div className="flex gap-2">
@@ -149,7 +149,7 @@ export function MarketBriefing() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   timeframe === tf.id
                     ? 'bg-blue-500/20 text-blue-400 ring-1 ring-blue-500/30'
-                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5 neu-raised-sm'
+                    : 'text-muted hover:text-primary hover:bg-overlay neu-raised-sm'
                 }`}
               >
                 {tf.label}
@@ -161,7 +161,7 @@ export function MarketBriefing() {
         <button
           onClick={generateBriefing}
           disabled={loading}
-          className="w-full sm:w-auto neu-raised px-6 py-3 rounded-xl text-sm font-bold text-[#FFCC00] hover:bg-[#FFCC00]/10 disabled:opacity-50 transition-all flex items-center gap-2 justify-center"
+          className="w-full sm:w-auto neu-raised px-6 py-3 rounded-xl text-sm font-bold text-cba-gold hover:bg-cba-gold/10 disabled:opacity-50 transition-all flex items-center gap-2 justify-center"
         >
           {loading ? (
             <>
@@ -184,14 +184,14 @@ export function MarketBriefing() {
       {/* Briefing Display */}
       {briefing && (
         <div className="neu-raised rounded-2xl overflow-hidden">
-          <div className="p-4 border-b border-white/5 flex items-center justify-between">
+          <div className="p-4 border-b border-border/50 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="neu-inset p-2 rounded-xl text-[#FFCC00]">
+              <div className="neu-inset p-2 rounded-xl text-cba-gold">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">{briefing.title}</h3>
-                <p className="text-[10px] text-zinc-500">
+                <h3 className="text-sm font-bold text-primary">{briefing.title}</h3>
+                <p className="text-[10px] text-muted">
                   Generated {new Date(briefing.generatedAt).toLocaleString('en-AU')}
                 </p>
               </div>
@@ -199,7 +199,7 @@ export function MarketBriefing() {
             <button
               onClick={generateBriefing}
               disabled={loading}
-              className="neu-raised-sm p-2 rounded-lg text-zinc-400 hover:text-[#FFCC00] transition-colors"
+              className="neu-raised-sm p-2 rounded-lg text-secondary hover:text-cba-gold transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -208,12 +208,12 @@ export function MarketBriefing() {
           <div className="p-4 space-y-4">
             {briefing.sections.map((section, idx) => (
               <div key={idx} className="space-y-2">
-                <h4 className="text-sm font-bold text-[#FFCC00]">{section.title}</h4>
-                <div className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                <h4 className="text-sm font-bold text-cba-gold">{section.title}</h4>
+                <div className="text-sm text-primary leading-relaxed whitespace-pre-wrap">
                   {section.content}
                 </div>
                 {idx < briefing.sections.length - 1 && (
-                  <div className="border-b border-white/5 pt-2" />
+                  <div className="border-b border-border/50 pt-2" />
                 )}
               </div>
             ))}
@@ -225,7 +225,7 @@ export function MarketBriefing() {
       {!briefing && !loading && (
         <div className="neu-raised rounded-2xl p-12 text-center">
           <Globe className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-          <h3 className="text-sm font-bold text-zinc-400 mb-1">No Briefing Generated</h3>
+          <h3 className="text-sm font-bold text-secondary mb-1">No Briefing Generated</h3>
           <p className="text-xs text-zinc-600">
             Select your focus area and timeframe, then click Generate Briefing
           </p>

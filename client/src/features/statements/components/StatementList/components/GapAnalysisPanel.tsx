@@ -17,7 +17,7 @@ interface GapAnalysisPanelProps {
 
 export function GapAnalysisPanel({ gapAnalysis, showGapDetails, onToggle }: GapAnalysisPanelProps) {
   return (
-    <div className="border-b border-white/5 p-4 bg-amber-500/5">
+    <div className="border-b border-border/50 p-4 bg-amber-500/5">
       <button
         type="button"
         onClick={onToggle}
@@ -33,21 +33,21 @@ export function GapAnalysisPanel({ gapAnalysis, showGapDetails, onToggle }: GapA
             </span>
             <div className="flex items-center gap-3 mt-1">
               {gapAnalysis.coverage.totalGaps > 0 && (
-                <span className="text-[9px] font-bold text-zinc-500">
+                <span className="text-[9px] font-bold text-muted">
                   <Calendar className="h-3 w-3 inline mr-1" />
                   {gapAnalysis.coverage.totalGaps} gap
                   {gapAnalysis.coverage.totalGaps !== 1 ? 's' : ''}
                 </span>
               )}
               {gapAnalysis.coverage.totalOverlaps > 0 && (
-                <span className="text-[9px] font-bold text-zinc-500">
+                <span className="text-[9px] font-bold text-muted">
                   <Layers className="h-3 w-3 inline mr-1" />
                   {gapAnalysis.coverage.totalOverlaps} overlap
                   {gapAnalysis.coverage.totalOverlaps !== 1 ? 's' : ''}
                 </span>
               )}
               {gapAnalysis.coverage.totalBalanceMismatches > 0 && (
-                <span className="text-[9px] font-bold text-zinc-500">
+                <span className="text-[9px] font-bold text-muted">
                   <DollarSign className="h-3 w-3 inline mr-1" />
                   {gapAnalysis.coverage.totalBalanceMismatches} balance mismatch
                   {gapAnalysis.coverage.totalBalanceMismatches !== 1 ? 'es' : ''}
@@ -77,7 +77,7 @@ export function GapAnalysisPanel({ gapAnalysis, showGapDetails, onToggle }: GapA
                   Missing Period: {gap.gapDays} day{gap.gapDays !== 1 ? 's' : ''}
                 </span>
               </div>
-              <p className="text-[9px] text-zinc-500 font-bold">
+              <p className="text-[9px] text-muted font-bold">
                 {gap.gapStart} → {gap.gapEnd}
               </p>
               <p className="text-[8px] text-zinc-600 mt-1">
@@ -97,7 +97,7 @@ export function GapAnalysisPanel({ gapAnalysis, showGapDetails, onToggle }: GapA
                   Overlapping: {overlap.overlapDays} day{overlap.overlapDays !== 1 ? 's' : ''}
                 </span>
               </div>
-              <p className="text-[9px] text-zinc-500 font-bold">
+              <p className="text-[9px] text-muted font-bold">
                 {overlap.overlapStart} → {overlap.overlapEnd}
               </p>
               <p className="text-[8px] text-zinc-600 mt-1">
@@ -117,7 +117,7 @@ export function GapAnalysisPanel({ gapAnalysis, showGapDetails, onToggle }: GapA
                   Balance Mismatch: ${Math.abs(mismatch.difference / 100).toFixed(2)}
                 </span>
               </div>
-              <p className="text-[9px] text-zinc-500 font-bold">
+              <p className="text-[9px] text-muted font-bold">
                 Expected: ${(mismatch.expectedBalance / 100).toFixed(2)} → Actual: $
                 {(mismatch.actualBalance / 100).toFixed(2)}
               </p>

@@ -69,7 +69,7 @@ export function InvoicePDF({ invoiceId, invoiceNumber, status, onSent, onPrint }
           'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all',
           downloadSuccess
             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-            : 'neu-raised text-zinc-200 hover:text-zinc-100',
+            : 'neu-raised text-primary hover:text-zinc-100',
         )}
       >
         {downloading ? (
@@ -91,7 +91,7 @@ export function InvoicePDF({ invoiceId, invoiceNumber, status, onSent, onPrint }
             'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all',
             sendSuccess
               ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-              : 'bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#FFD633] shadow-[0_0_15px_rgba(255,204,0,0.15)]',
+              : 'bg-cba-gold text-base hover:bg-[#FFD633] shadow-[0_0_15px_rgba(255,204,0,0.15)]',
           )}
         >
           {sending ? (
@@ -108,7 +108,7 @@ export function InvoicePDF({ invoiceId, invoiceNumber, status, onSent, onPrint }
       {/* Print */}
       <button
         onClick={handlePrint}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl neu-raised text-sm font-bold text-zinc-200 hover:text-zinc-100 transition-colors"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl neu-raised text-sm font-bold text-primary hover:text-zinc-100 transition-colors"
       >
         <Printer className="w-4 h-4" />
         Print

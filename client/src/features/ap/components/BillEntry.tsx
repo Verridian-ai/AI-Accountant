@@ -182,13 +182,13 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
       <div className="space-y-6 animate-in fade-in duration-300">
         <button
           onClick={onCancel}
-          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+          className="flex items-center gap-2 text-secondary hover:text-primary text-sm transition-colors"
         >
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
         <div className="neu-raised rounded-2xl p-6 animate-pulse">
-          <div className="h-6 w-48 bg-white/5 rounded mb-4" />
-          <div className="h-4 w-32 bg-white/5 rounded" />
+          <div className="h-6 w-48 bg-overlay rounded mb-4" />
+          <div className="h-4 w-32 bg-overlay rounded" />
         </div>
       </div>
     );
@@ -198,25 +198,25 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <button
         onClick={onCancel}
-        className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors"
+        className="flex items-center gap-2 text-secondary hover:text-primary text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" /> Back
       </button>
 
       <div>
-        <h1 className="text-2xl font-bold text-white">{isEdit ? 'Edit Bill' : 'New Bill'}</h1>
-        <p className="text-sm text-zinc-400 mt-1">Enter bill details and line items</p>
+        <h1 className="text-2xl font-bold text-primary">{isEdit ? 'Edit Bill' : 'New Bill'}</h1>
+        <p className="text-sm text-secondary mt-1">Enter bill details and line items</p>
       </div>
 
       {/* Bill Header */}
       <div className="neu-raised rounded-2xl p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-zinc-300">Bill Details</h3>
+        <h3 className="text-sm font-semibold text-primary">Bill Details</h3>
 
         {/* Supplier Autocomplete */}
         <div className="relative">
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Supplier *</label>
+          <label className="block text-xs font-medium text-secondary mb-1.5">Supplier *</label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
             <input
               type="text"
               value={supplierSearch}
@@ -230,21 +230,21 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
               }}
               onFocus={() => setShowSupplierDropdown(true)}
               placeholder="Search supplier..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
             />
           </div>
           {showSupplierDropdown && suppliers.length > 0 && (
-            <div className="absolute z-20 w-full mt-1 rounded-xl bg-[#1a1a2e] border border-white/10 shadow-xl max-h-48 overflow-y-auto">
+            <div className="absolute z-20 w-full mt-1 rounded-xl bg-[#1a1a2e] border border-border shadow-xl max-h-48 overflow-y-auto">
               {suppliers.map((s) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => selectSupplier(s)}
-                  className="w-full px-4 py-2.5 text-left text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors"
+                  className="w-full px-4 py-2.5 text-left text-sm text-primary hover:bg-overlay hover:text-primary transition-colors"
                 >
                   <span className="font-medium">{s.businessName}</span>
                   {s.abn && (
-                    <span className="ml-2 text-xs text-zinc-500 font-mono">ABN: {s.abn}</span>
+                    <span className="ml-2 text-xs text-muted font-mono">ABN: {s.abn}</span>
                   )}
                 </button>
               ))}
@@ -254,44 +254,44 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Bill Number *</label>
+            <label className="block text-xs font-medium text-secondary mb-1.5">Bill Number *</label>
             <input
               type="text"
               value={billNumber}
               onChange={(e) => setBillNumber(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
+              className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
               placeholder="INV-001"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Issue Date</label>
+            <label className="block text-xs font-medium text-secondary mb-1.5">Issue Date</label>
             <input
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
+              className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Due Date</label>
+            <label className="block text-xs font-medium text-secondary mb-1.5">Due Date</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
+              className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+          <label className="block text-xs font-medium text-secondary mb-1.5">
             Link to Purchase Order (optional)
           </label>
           <input
             type="text"
             value={purchaseOrderId}
             onChange={(e) => setPurchaseOrderId(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
+            className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all"
             placeholder="PO number or leave blank"
           />
         </div>
@@ -300,11 +300,11 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
       {/* Line Items */}
       <div className="neu-raised rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-zinc-300">Line Items</h3>
+          <h3 className="text-sm font-semibold text-primary">Line Items</h3>
           <button
             type="button"
             onClick={addLineItem}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-zinc-300 hover:bg-[#FFCC00]/10 hover:text-[#FFCC00] transition-all"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-overlay text-primary hover:bg-cba-gold/10 hover:text-cba-gold transition-all"
           >
             <Plus className="h-3 w-3" />
             Add Row
@@ -314,23 +314,23 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px]">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left px-2 py-2 text-xs font-semibold text-zinc-400 w-[35%]">
+              <tr className="border-b border-border/50">
+                <th className="text-left px-2 py-2 text-xs font-semibold text-secondary w-[35%]">
                   Description
                 </th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[10%]">
+                <th className="text-right px-2 py-2 text-xs font-semibold text-secondary w-[10%]">
                   Qty
                 </th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[15%]">
+                <th className="text-right px-2 py-2 text-xs font-semibold text-secondary w-[15%]">
                   Unit Price
                 </th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[10%]">
+                <th className="text-right px-2 py-2 text-xs font-semibold text-secondary w-[10%]">
                   GST %
                 </th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[12%]">
+                <th className="text-right px-2 py-2 text-xs font-semibold text-secondary w-[12%]">
                   Amount
                 </th>
-                <th className="text-right px-2 py-2 text-xs font-semibold text-zinc-400 w-[12%]">
+                <th className="text-right px-2 py-2 text-xs font-semibold text-secondary w-[12%]">
                   GST
                 </th>
                 <th className="w-[6%]"></th>
@@ -338,13 +338,13 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
             </thead>
             <tbody>
               {lineItems.map((item, index) => (
-                <tr key={index} className="border-b border-white/5">
+                <tr key={index} className="border-b border-border/50">
                   <td className="px-1 py-2">
                     <input
                       type="text"
                       value={item.description}
                       onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 transition-all"
+                      className="w-full px-2 py-1.5 rounded-lg bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 transition-all"
                       placeholder="Item description"
                     />
                   </td>
@@ -353,7 +353,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                       type="number"
                       value={item.quantity}
                       onChange={(e) => updateLineItem(index, 'quantity', Number(e.target.value))}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white text-right focus:outline-none focus:border-[#FFCC00]/30 transition-all"
+                      className="w-full px-2 py-1.5 rounded-lg bg-overlay border border-border text-sm text-primary text-right focus:outline-none focus:border-cba-gold/30 transition-all"
                       min="1"
                       step="1"
                     />
@@ -363,7 +363,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                       type="number"
                       value={item.unitPrice}
                       onChange={(e) => updateLineItem(index, 'unitPrice', Number(e.target.value))}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white text-right focus:outline-none focus:border-[#FFCC00]/30 transition-all"
+                      className="w-full px-2 py-1.5 rounded-lg bg-overlay border border-border text-sm text-primary text-right focus:outline-none focus:border-cba-gold/30 transition-all"
                       min="0"
                       step="0.01"
                     />
@@ -373,16 +373,16 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                       type="number"
                       value={item.gstRate}
                       onChange={(e) => updateLineItem(index, 'gstRate', Number(e.target.value))}
-                      className="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white text-right focus:outline-none focus:border-[#FFCC00]/30 transition-all"
+                      className="w-full px-2 py-1.5 rounded-lg bg-overlay border border-border text-sm text-primary text-right focus:outline-none focus:border-cba-gold/30 transition-all"
                       min="0"
                       max="100"
                       step="1"
                     />
                   </td>
-                  <td className="px-2 py-2 text-right text-sm text-white font-mono">
+                  <td className="px-2 py-2 text-right text-sm text-primary font-mono">
                     ${calcLineAmount(item).toFixed(2)}
                   </td>
-                  <td className="px-2 py-2 text-right text-sm text-zinc-400 font-mono">
+                  <td className="px-2 py-2 text-right text-sm text-secondary font-mono">
                     ${calcLineGST(item).toFixed(2)}
                   </td>
                   <td className="px-1 py-2 text-center">
@@ -390,7 +390,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                       type="button"
                       onClick={() => removeLineItem(index)}
                       disabled={lineItems.length <= 1}
-                      className="p-1 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-20"
+                      className="p-1 rounded-lg text-muted hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-20"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -405,16 +405,16 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
         <div className="flex justify-end mt-4">
           <div className="w-64 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">Subtotal</span>
-              <span className="text-white font-mono">${subtotal.toFixed(2)}</span>
+              <span className="text-secondary">Subtotal</span>
+              <span className="text-primary font-mono">${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-zinc-400">GST</span>
-              <span className="text-white font-mono">${gstTotal.toFixed(2)}</span>
+              <span className="text-secondary">GST</span>
+              <span className="text-primary font-mono">${gstTotal.toFixed(2)}</span>
             </div>
-            <div className="border-t border-white/10 pt-2 flex justify-between text-sm font-semibold">
-              <span className="text-[#FFCC00]">Total</span>
-              <span className="text-[#FFCC00] font-mono">${total.toFixed(2)}</span>
+            <div className="border-t border-border pt-2 flex justify-between text-sm font-semibold">
+              <span className="text-cba-gold">Total</span>
+              <span className="text-cba-gold font-mono">${total.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -422,11 +422,11 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
       {/* Notes */}
       <div className="neu-raised rounded-2xl p-6">
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Notes</label>
+        <label className="block text-xs font-medium text-secondary mb-1.5">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFCC00]/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all resize-none"
+          className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all resize-none"
           rows={3}
           placeholder="Additional notes..."
         />
@@ -437,7 +437,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="px-5 py-2.5 rounded-xl bg-white/5 text-zinc-300 text-sm font-medium hover:bg-white/10 transition-all"
+          className="px-5 py-2.5 rounded-xl bg-overlay text-primary text-sm font-medium hover:bg-overlay-hover transition-all"
         >
           Cancel
         </button>
@@ -445,7 +445,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
           type="button"
           onClick={() => handleSave(true)}
           disabled={saving || !supplierId || !billNumber.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 text-zinc-200 font-medium text-sm hover:bg-white/15 transition-all disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-overlay-hover text-primary font-medium text-sm hover:bg-white/15 transition-all disabled:opacity-50"
         >
           <Save className="h-4 w-4" />
           Save Draft
@@ -454,7 +454,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
           type="button"
           onClick={() => handleSave(false)}
           disabled={saving || !supplierId || !billNumber.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FFCC00] text-black font-semibold text-sm hover:bg-[#FFCC00]/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)] disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cba-gold text-black font-semibold text-sm hover:bg-cba-gold/90 transition-all shadow-[0_0_20px_rgba(255,204,0,0.2)] disabled:opacity-50"
         >
           <Send className="h-4 w-4" />
           {saving ? 'Saving...' : 'Submit for Approval'}

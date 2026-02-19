@@ -41,7 +41,7 @@ const MODULES = [
 
 function coefficientColor(coeff: number): string {
   if (coeff >= 0.7) return 'text-emerald-400';
-  if (coeff >= 0.4) return 'text-[#FFCC00]';
+  if (coeff >= 0.4) return 'text-cba-gold';
   if (coeff >= 0) return 'text-blue-400';
   if (coeff >= -0.4) return 'text-orange-400';
   return 'text-red-400';
@@ -49,7 +49,7 @@ function coefficientColor(coeff: number): string {
 
 function coefficientBg(coeff: number): string {
   if (coeff >= 0.7) return 'bg-emerald-500/10';
-  if (coeff >= 0.4) return 'bg-[#FFCC00]/10';
+  if (coeff >= 0.4) return 'bg-cba-gold/10';
   if (coeff >= 0) return 'bg-blue-500/10';
   if (coeff >= -0.4) return 'bg-orange-500/10';
   return 'bg-red-500/10';
@@ -89,11 +89,11 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
       <div className="neu-raised p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
           <div className="flex-1">
-            <label className="text-xs text-zinc-500 font-medium block mb-1">Module A</label>
+            <label className="text-xs text-muted font-medium block mb-1">Module A</label>
             <select
               value={moduleA}
               onChange={(e) => setModuleA(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
             >
               {MODULES.map((m) => (
                 <option key={m} value={m}>
@@ -104,11 +104,11 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
           </div>
           <span className="text-zinc-600 font-bold hidden sm:block pb-2">↔</span>
           <div className="flex-1">
-            <label className="text-xs text-zinc-500 font-medium block mb-1">Module B</label>
+            <label className="text-xs text-muted font-medium block mb-1">Module B</label>
             <select
               value={moduleB}
               onChange={(e) => setModuleB(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
             >
               {MODULES.map((m) => (
                 <option key={m} value={m}>
@@ -120,7 +120,7 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
           <button
             onClick={findCorrelations}
             disabled={loading || moduleA === moduleB}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFCC00]/90 transition-colors disabled:opacity-50 shrink-0"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cba-gold text-base font-bold text-sm hover:bg-cba-gold/90 transition-colors disabled:opacity-50 shrink-0"
           >
             <Search className="w-4 h-4" />
             {loading ? 'Searching...' : 'Find Correlations'}
@@ -141,12 +141,12 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
                 className={cn(
                   'w-full text-left neu-raised p-3 rounded-lg transition-all border',
                   selectedCorrelation?.id === corr.id
-                    ? 'border-[#FFCC00]/40'
-                    : 'border-transparent hover:border-white/10',
+                    ? 'border-cba-gold/40'
+                    : 'border-transparent hover:border-border',
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-zinc-200 truncate flex-1">
+                  <span className="text-sm font-medium text-primary truncate flex-1">
                     {corr.description}
                   </span>
                   <div
@@ -161,7 +161,7 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[10px] text-zinc-500">
+                  <span className="text-[10px] text-muted">
                     {corr.moduleA} ↔ {corr.moduleB}
                   </span>
                   <span className="text-[10px] text-zinc-600">• {corr.confidence}% confidence</span>
@@ -173,7 +173,7 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
           {/* Scatter plot */}
           {selectedCorrelation && (
             <div className="flex-1 neu-raised p-4 rounded-lg">
-              <h4 className="text-sm font-bold text-zinc-200 mb-3">
+              <h4 className="text-sm font-bold text-primary mb-3">
                 {selectedCorrelation.description}
               </h4>
               {selectedCorrelation.dataPoints && selectedCorrelation.dataPoints.length > 0 ? (
@@ -220,7 +220,7 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
       )}
 
       {correlations.length === 0 && !loading && !error && (
-        <div className="neu-raised p-8 rounded-lg text-center text-zinc-500">
+        <div className="neu-raised p-8 rounded-lg text-center text-muted">
           <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>Select two modules and search for correlations.</p>
         </div>

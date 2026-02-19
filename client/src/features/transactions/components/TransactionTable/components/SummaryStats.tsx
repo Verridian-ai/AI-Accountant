@@ -10,9 +10,9 @@ interface SimpleStatProps {
 
 function SimpleStat({ label, value }: SimpleStatProps) {
   return (
-    <div className="flex flex-col bg-[#12121a]/80 border border-white/5 rounded-xl px-4 py-2 min-w-[100px] shrink-0">
+    <div className="flex flex-col bg-surface/80 border border-border/50 rounded-xl px-4 py-2 min-w-[100px] shrink-0">
       <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">{label}</span>
-      <span className="text-sm font-bold text-white tracking-tight">{value}</span>
+      <span className="text-sm font-bold text-primary tracking-tight">{value}</span>
     </div>
   );
 }

@@ -67,12 +67,12 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
       <div className="neu-raised rounded-2xl p-6 space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 animate-pulse">
-            <div className="h-10 w-10 rounded-full bg-white/5" />
+            <div className="h-10 w-10 rounded-full bg-overlay" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-40 bg-white/5 rounded" />
-              <div className="h-3 w-24 bg-white/5 rounded" />
+              <div className="h-4 w-40 bg-overlay rounded" />
+              <div className="h-3 w-24 bg-overlay rounded" />
             </div>
-            <div className="h-6 w-16 bg-white/5 rounded-full" />
+            <div className="h-6 w-16 bg-overlay rounded-full" />
           </div>
         ))}
       </div>
@@ -82,9 +82,9 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
   return (
     <div className="neu-raised rounded-2xl overflow-hidden">
       {/* Toolbar */}
-      <div className="p-4 border-b border-white/5 flex flex-col sm:flex-row gap-3">
+      <div className="p-4 border-b border-border/50 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
           <input
             type="text"
             value={search}
@@ -93,18 +93,18 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
               setPage(0);
             }}
             placeholder="Search by name or email..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
           />
         </div>
         <div className="relative">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
           <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(0);
             }}
-            className="pl-9 pr-8 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
+            className="pl-9 pr-8 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -118,20 +118,20 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/5">
-              <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3">
+            <tr className="border-b border-border/50">
+              <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-3">
                 Employee
               </th>
-              <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">
+              <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-3 hidden sm:table-cell">
                 Type
               </th>
-              <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden md:table-cell">
+              <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-3 hidden md:table-cell">
                 Position
               </th>
-              <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
+              <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
                 Start Date
               </th>
-              <th className="text-left text-xs font-medium text-zinc-500 uppercase tracking-wider px-4 py-3">
+              <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-3">
                 Status
               </th>
             </tr>
@@ -139,7 +139,7 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
           <tbody>
             {pageEmployees.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-zinc-500 text-sm">
+                <td colSpan={5} className="text-center py-12 text-muted text-sm">
                   {search || statusFilter !== 'all'
                     ? 'No employees match your filters'
                     : 'No employees yet. Add your first employee to get started.'}
@@ -152,32 +152,32 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
                   <tr
                     key={emp.id}
                     onClick={() => onSelect(emp.id)}
-                    className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] cursor-pointer transition-colors"
+                    className="border-b border-border/50 last:border-0 hover:bg-white/[0.02] cursor-pointer transition-colors"
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-[#FFCC00]/10 flex items-center justify-center text-sm font-bold text-[#FFCC00]">
+                        <div className="h-9 w-9 rounded-full bg-cba-gold/10 flex items-center justify-center text-sm font-bold text-cba-gold">
                           {emp.first_name[0]}
                           {emp.last_name[0]}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-medium text-primary">
                             {emp.first_name} {emp.last_name}
                           </p>
-                          <p className="text-xs text-zinc-500">{emp.email}</p>
+                          <p className="text-xs text-muted">{emp.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className="text-xs font-medium text-zinc-300 bg-white/5 px-2 py-1 rounded-md">
+                      <span className="text-xs font-medium text-primary bg-overlay px-2 py-1 rounded-md">
                         {typeLabels[emp.employment_type] ?? emp.employment_type}
                       </span>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="text-sm text-zinc-400">{emp.position ?? '-'}</span>
+                      <span className="text-sm text-secondary">{emp.position ?? '-'}</span>
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
-                      <span className="text-sm text-zinc-400">
+                      <span className="text-sm text-secondary">
                         {new Date(emp.start_date).toLocaleDateString('en-AU')}
                       </span>
                     </td>
@@ -198,8 +198,8 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-white/5">
-          <p className="text-xs text-zinc-500">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
+          <p className="text-xs text-muted">
             Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of{' '}
             {filtered.length}
           </p>
@@ -207,17 +207,17 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <span className="px-3 py-1.5 text-xs font-medium text-zinc-400">
+            <span className="px-3 py-1.5 text-xs font-medium text-secondary">
               {page + 1} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay disabled:opacity-30 disabled:pointer-events-none transition-colors"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

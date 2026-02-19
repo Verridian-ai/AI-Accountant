@@ -29,8 +29,8 @@ export function PersonalReturn({ year }: { year: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
-        <span className="ml-2 text-zinc-400">Calculating personal return...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
+        <span className="ml-2 text-secondary">Calculating personal return...</span>
       </div>
     );
   }
@@ -79,7 +79,7 @@ export function PersonalReturn({ year }: { year: string }) {
       </div>
 
       {/* Income & Deductions Breakdown */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="text-gradient-gold">Income & Deductions</CardTitle>
           <CardDescription>Personal Tax Return — FY {year}</CardDescription>
@@ -89,9 +89,9 @@ export function PersonalReturn({ year }: { year: string }) {
             {Object.entries(data.breakdown).map(([key, value]) => (
               <div
                 key={key}
-                className="flex justify-between items-center py-2 border-b border-white/5 last:border-0"
+                className="flex justify-between items-center py-2 border-b border-border/50 last:border-0"
               >
-                <span className="text-zinc-400 capitalize">{key.replace(/_/g, ' ')}</span>
+                <span className="text-secondary capitalize">{key.replace(/_/g, ' ')}</span>
                 <span
                   className={`font-medium ${(value as number) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
                 >
@@ -104,18 +104,18 @@ export function PersonalReturn({ year }: { year: string }) {
       </Card>
 
       {/* Tax Calculation */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle>Tax Payable / Refund</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-zinc-400">Income Tax on Taxable Income</span>
+              <span className="text-secondary">Income Tax on Taxable Income</span>
               <span className="font-medium">{formatCurrency(data.incomeTaxCents)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Medicare Levy</span>
+              <span className="text-secondary">Medicare Levy</span>
               <span className="font-medium">{formatCurrency(data.medicareLevyCents)}</span>
             </div>
             {data.taxOffsetsCents > 0 && (
@@ -124,7 +124,7 @@ export function PersonalReturn({ year }: { year: string }) {
                 <span className="font-medium">-{formatCurrency(data.taxOffsetsCents)}</span>
               </div>
             )}
-            <div className="border-t border-white/10 pt-3 flex justify-between font-bold text-lg">
+            <div className="border-t border-border pt-3 flex justify-between font-bold text-lg">
               <span>{isRefund ? 'Estimated Refund' : 'Amount Owing'}</span>
               <span className={isRefund ? 'text-emerald-400' : 'text-red-400'}>
                 {formatCurrency(Math.abs(refundOrOwing))}
@@ -145,7 +145,7 @@ export function PersonalReturn({ year }: { year: string }) {
           <CardContent>
             <ul className="space-y-2">
               {data.warnings.map((w: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-zinc-400">
+                <li key={i} className="flex items-start gap-2 text-sm text-secondary">
                   <Badge
                     variant="outline"
                     className="shrink-0 mt-0.5 border-amber-500/30 text-amber-400"

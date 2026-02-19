@@ -23,7 +23,7 @@ function TrendIcon({ trend }: { trend: 'up' | 'down' | 'stable' }) {
     case 'down':
       return <TrendingDown className="h-5 w-5 text-red-400" />;
     default:
-      return <ArrowUpDown className="h-5 w-5 text-zinc-400" />;
+      return <ArrowUpDown className="h-5 w-5 text-secondary" />;
   }
 }
 
@@ -34,7 +34,7 @@ function trendColor(trend: 'up' | 'down' | 'stable'): string {
     case 'down':
       return 'text-red-400';
     default:
-      return 'text-zinc-400';
+      return 'text-secondary';
   }
 }
 
@@ -45,7 +45,7 @@ function trendBorder(trend: 'up' | 'down' | 'stable'): string {
     case 'down':
       return 'border-red-500/20';
     default:
-      return 'border-white/5';
+      return 'border-border/50';
   }
 }
 
@@ -74,8 +74,8 @@ export function KPIDashboard({ period }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#FFCC00]" />
-        <span className="ml-3 text-zinc-400">Loading KPIs...</span>
+        <Loader2 className="h-8 w-8 animate-spin text-cba-gold" />
+        <span className="ml-3 text-secondary">Loading KPIs...</span>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export function KPIDashboard({ period }: Props) {
 
   if (kpis.length === 0) {
     return (
-      <div className="neu-inset rounded-2xl p-6 text-center text-zinc-500">
+      <div className="neu-inset rounded-2xl p-6 text-center text-muted">
         No KPI data available for this period. Process more transactions to generate metrics.
       </div>
     );
@@ -100,7 +100,7 @@ export function KPIDashboard({ period }: Props) {
           className={`neu-raised rounded-2xl p-5 border ${trendBorder(kpi.trend)} transition-colors hover:bg-white/[0.02]`}
         >
           <div className="flex items-start justify-between mb-3">
-            <span className="text-xs text-zinc-500 font-medium uppercase tracking-wide">
+            <span className="text-xs text-muted font-medium uppercase tracking-wide">
               {kpi.metricName}
             </span>
             <div className="neu-inset p-1.5 rounded-lg">
@@ -114,13 +114,13 @@ export function KPIDashboard({ period }: Props) {
 
           <div className="flex items-center justify-between text-xs">
             {kpi.previousValue !== null && (
-              <span className="text-zinc-500">
+              <span className="text-muted">
                 Prev: <span className="font-mono">{formatValue(kpi.previousValue)}</span>
               </span>
             )}
             {kpi.target !== null && (
-              <span className="text-zinc-500">
-                Target: <span className="font-mono text-[#FFCC00]">{formatValue(kpi.target)}</span>
+              <span className="text-muted">
+                Target: <span className="font-mono text-cba-gold">{formatValue(kpi.target)}</span>
               </span>
             )}
           </div>
@@ -129,7 +129,7 @@ export function KPIDashboard({ period }: Props) {
           {kpi.target !== null && kpi.target > 0 && (
             <div className="mt-3 h-1.5 neu-inset rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${kpi.value >= kpi.target ? 'bg-emerald-500' : 'bg-[#FFCC00]'}`}
+                className={`h-full rounded-full transition-all duration-500 ${kpi.value >= kpi.target ? 'bg-emerald-500' : 'bg-cba-gold'}`}
                 style={{ width: `${Math.min((kpi.value / kpi.target) * 100, 100)}%` }}
               />
             </div>

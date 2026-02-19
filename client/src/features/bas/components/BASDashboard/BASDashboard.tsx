@@ -34,7 +34,7 @@ export function BASDashboard() {
         <h2 className="text-lg sm:text-xl font-black text-gradient-gold tracking-tight">
           Business Activity Statement
         </h2>
-        <p className="text-[10px] sm:text-[11px] text-zinc-500">
+        <p className="text-[10px] sm:text-[11px] text-muted">
           Calculate and manage your quarterly BAS returns for the ATO
         </p>
       </div>
@@ -55,8 +55,8 @@ export function BASDashboard() {
             className={cn(
               'flex items-center gap-1.5 px-3 sm:px-4 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap',
               activeTab === id
-                ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                : 'text-zinc-500 hover:text-zinc-300',
+                ? 'bg-cba-gold text-base'
+                : 'text-muted hover:text-primary',
             )}
           >
             <Icon className="w-3.5 h-3.5" />

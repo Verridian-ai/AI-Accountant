@@ -109,7 +109,7 @@ export function InventoryItemList() {
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
             placeholder="Search by name or SKU..."
@@ -121,7 +121,7 @@ export function InventoryItemList() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl neu-inset bg-transparent text-zinc-300 text-sm focus:outline-none"
+          className="px-4 py-2.5 rounded-xl neu-inset bg-transparent text-primary text-sm focus:outline-none"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
@@ -144,7 +144,7 @@ export function InventoryItemList() {
             });
             setShowForm(true);
           }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFD633] transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cba-gold text-base font-bold text-sm hover:bg-[#FFD633] transition-colors"
         >
           <Plus className="w-4 h-4" /> Add Item
         </button>
@@ -152,11 +152,11 @@ export function InventoryItemList() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="neu-raised rounded-2xl p-6 space-y-4 border border-[#FFCC00]/10">
+        <div className="neu-raised rounded-2xl p-6 space-y-4 border border-cba-gold/10">
           <h3 className="text-lg font-bold text-zinc-100">{editItem ? 'Edit Item' : 'New Item'}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">SKU</label>
+              <label className="text-xs text-muted font-semibold uppercase">SKU</label>
               <input
                 value={formData.sku}
                 onChange={(e) => setFormData((p) => ({ ...p, sku: e.target.value }))}
@@ -164,7 +164,7 @@ export function InventoryItemList() {
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">Name</label>
+              <label className="text-xs text-muted font-semibold uppercase">Name</label>
               <input
                 value={formData.name}
                 onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
@@ -172,7 +172,7 @@ export function InventoryItemList() {
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">Category</label>
+              <label className="text-xs text-muted font-semibold uppercase">Category</label>
               <input
                 value={formData.category}
                 onChange={(e) => setFormData((p) => ({ ...p, category: e.target.value }))}
@@ -180,7 +180,7 @@ export function InventoryItemList() {
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">Unit</label>
+              <label className="text-xs text-muted font-semibold uppercase">Unit</label>
               <input
                 value={formData.unit}
                 onChange={(e) => setFormData((p) => ({ ...p, unit: e.target.value }))}
@@ -188,7 +188,7 @@ export function InventoryItemList() {
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">
+              <label className="text-xs text-muted font-semibold uppercase">
                 Cost Price (cents)
               </label>
               <input
@@ -201,7 +201,7 @@ export function InventoryItemList() {
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">
+              <label className="text-xs text-muted font-semibold uppercase">
                 Sale Price (cents)
               </label>
               <input
@@ -214,7 +214,7 @@ export function InventoryItemList() {
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-semibold uppercase">Reorder Point</label>
+              <label className="text-xs text-muted font-semibold uppercase">Reorder Point</label>
               <input
                 type="number"
                 value={formData.reorderPoint}
@@ -228,7 +228,7 @@ export function InventoryItemList() {
           <div className="flex gap-3">
             <button
               onClick={handleSubmit}
-              className="px-5 py-2 rounded-xl bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm"
+              className="px-5 py-2 rounded-xl bg-cba-gold text-base font-bold text-sm"
             >
               {editItem ? 'Update' : 'Create'}
             </button>
@@ -237,7 +237,7 @@ export function InventoryItemList() {
                 setShowForm(false);
                 setEditItem(null);
               }}
-              className="px-5 py-2 rounded-xl neu-raised text-zinc-400 font-bold text-sm"
+              className="px-5 py-2 rounded-xl neu-raised text-secondary font-bold text-sm"
             >
               Cancel
             </button>
@@ -248,47 +248,47 @@ export function InventoryItemList() {
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-[#FFCC00]" />
+          <Loader2 className="w-6 h-6 animate-spin text-cba-gold" />
         </div>
       ) : items.length === 0 ? (
         <div className="neu-raised rounded-2xl p-12 text-center">
           <Package className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-          <p className="text-zinc-500">No inventory items found</p>
+          <p className="text-muted">No inventory items found</p>
         </div>
       ) : (
         <div className="neu-raised rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/5">
-                  <th className="text-left px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                <tr className="border-b border-border/50">
+                  <th className="text-left px-4 py-3 text-xs font-bold text-muted uppercase">
                     SKU
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-left px-4 py-3 text-xs font-bold text-muted uppercase">
                     Name
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-left px-4 py-3 text-xs font-bold text-muted uppercase">
                     Category
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-left px-4 py-3 text-xs font-bold text-muted uppercase">
                     Unit
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-right px-4 py-3 text-xs font-bold text-muted uppercase">
                     Cost
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-right px-4 py-3 text-xs font-bold text-muted uppercase">
                     Sale Price
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-right px-4 py-3 text-xs font-bold text-muted uppercase">
                     Stock
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-right px-4 py-3 text-xs font-bold text-muted uppercase">
                     Reorder
                   </th>
-                  <th className="text-center px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-center px-4 py-3 text-xs font-bold text-muted uppercase">
                     Status
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-bold text-zinc-500 uppercase">
+                  <th className="text-right px-4 py-3 text-xs font-bold text-muted uppercase">
                     Actions
                   </th>
                 </tr>
@@ -298,18 +298,18 @@ export function InventoryItemList() {
                   <tr
                     key={item.id}
                     className={cn(
-                      'border-b border-white/5 hover:bg-white/[0.02] transition-colors',
+                      'border-b border-border/50 hover:bg-white/[0.02] transition-colors',
                       item.currentStockQty < item.reorderPoint && 'bg-amber-500/5',
                     )}
                   >
-                    <td className="px-4 py-3 font-mono text-zinc-400">{item.sku}</td>
+                    <td className="px-4 py-3 font-mono text-secondary">{item.sku}</td>
                     <td className="px-4 py-3 text-zinc-100 font-medium">{item.name}</td>
-                    <td className="px-4 py-3 text-zinc-400">{item.category}</td>
-                    <td className="px-4 py-3 text-zinc-500">{item.unit}</td>
-                    <td className="px-4 py-3 text-right text-zinc-300">
+                    <td className="px-4 py-3 text-secondary">{item.category}</td>
+                    <td className="px-4 py-3 text-muted">{item.unit}</td>
+                    <td className="px-4 py-3 text-right text-primary">
                       {formatAUD(item.costPriceCents)}
                     </td>
-                    <td className="px-4 py-3 text-right text-zinc-300">
+                    <td className="px-4 py-3 text-right text-primary">
                       {formatAUD(item.salePriceCents)}
                     </td>
                     <td
@@ -322,14 +322,14 @@ export function InventoryItemList() {
                     >
                       {item.currentStockQty}
                     </td>
-                    <td className="px-4 py-3 text-right text-zinc-500">{item.reorderPoint}</td>
+                    <td className="px-4 py-3 text-right text-muted">{item.reorderPoint}</td>
                     <td className="px-4 py-3 text-center">
                       <span
                         className={cn(
                           'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase',
                           item.isActive
                             ? 'bg-emerald-500/10 text-emerald-400'
-                            : 'bg-zinc-500/10 text-zinc-500',
+                            : 'bg-zinc-500/10 text-muted',
                         )}
                       >
                         {item.isActive ? 'Active' : 'Inactive'}
@@ -339,13 +339,13 @@ export function InventoryItemList() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => openEdit(item)}
-                          className="p-1.5 rounded-lg hover:bg-white/5 text-zinc-500 hover:text-[#FFCC00]"
+                          className="p-1.5 rounded-lg hover:bg-overlay text-muted hover:text-cba-gold"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeactivate(item.id)}
-                          className="p-1.5 rounded-lg hover:bg-white/5 text-zinc-500 hover:text-red-400"
+                          className="p-1.5 rounded-lg hover:bg-overlay text-muted hover:text-red-400"
                         >
                           <XCircle className="w-3.5 h-3.5" />
                         </button>

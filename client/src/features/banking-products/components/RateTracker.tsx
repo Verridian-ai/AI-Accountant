@@ -60,7 +60,7 @@ export function RateTracker() {
       label: 'Products Tracked',
       value: String(data?.productCount ?? 0),
       icon: Hash,
-      color: 'text-[#FFCC00]',
+      color: 'text-cba-gold',
     },
   ];
 
@@ -75,8 +75,8 @@ export function RateTracker() {
             className={cn(
               'px-4 py-2 rounded-xl text-sm font-bold transition-all',
               category === c
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_15px_rgba(255,204,0,0.2)]'
-                : 'neu-raised-sm text-zinc-400 hover:text-zinc-200',
+                ? 'bg-cba-gold text-base shadow-[0_0_15px_rgba(255,204,0,0.2)]'
+                : 'neu-raised-sm text-secondary hover:text-primary',
             )}
           >
             {c.replace(/_/g, ' ')}
@@ -95,7 +95,7 @@ export function RateTracker() {
               <div className="neu-inset p-1.5 rounded-lg">
                 <card.icon className={cn('h-4 w-4', card.color)} />
               </div>
-              <span className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">
+              <span className="text-xs text-muted font-semibold uppercase tracking-wider">
                 {card.label}
               </span>
             </div>
@@ -106,8 +106,8 @@ export function RateTracker() {
 
       {/* Rate Distribution */}
       <div className="neu-raised rounded-2xl p-5 space-y-4">
-        <h3 className="text-sm font-bold text-zinc-300 flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-[#FFCC00]" />
+        <h3 className="text-sm font-bold text-primary flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-cba-gold" />
           Rate Distribution
         </h3>
         {loading ? (
@@ -119,7 +119,7 @@ export function RateTracker() {
               const height = (bucket.count / maxCount) * 100;
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-zinc-500">{bucket.count}</span>
+                  <span className="text-[10px] text-muted">{bucket.count}</span>
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-[#FFCC00]/60 to-[#FFCC00] transition-all duration-300"
                     style={{ height: `${height}%`, minHeight: bucket.count > 0 ? '4px' : '0px' }}
@@ -141,7 +141,7 @@ export function RateTracker() {
 
       {/* Provider Comparison */}
       <div className="neu-raised rounded-2xl p-5 space-y-4">
-        <h3 className="text-sm font-bold text-zinc-300">Provider Comparison</h3>
+        <h3 className="text-sm font-bold text-primary">Provider Comparison</h3>
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -158,7 +158,7 @@ export function RateTracker() {
               const width = (prov.avgRate / maxRate) * 100;
               return (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="text-xs text-zinc-400 w-32 truncate shrink-0">
+                  <span className="text-xs text-secondary w-32 truncate shrink-0">
                     {prov.provider}
                   </span>
                   <div className="flex-1 h-6 bg-[#1a1d23] rounded-lg overflow-hidden">
@@ -166,7 +166,7 @@ export function RateTracker() {
                       className="h-full bg-gradient-to-r from-[#FFCC00]/40 to-[#FFCC00] rounded-lg flex items-center justify-end pr-2 transition-all duration-300"
                       style={{ width: `${width}%` }}
                     >
-                      <span className="text-[10px] font-bold text-[#0a0a0f]">
+                      <span className="text-[10px] font-bold text-base">
                         {(prov.avgRate * 100).toFixed(2)}%
                       </span>
                     </div>

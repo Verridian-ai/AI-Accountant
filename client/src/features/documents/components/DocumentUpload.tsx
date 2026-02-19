@@ -158,7 +158,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
       {/* Drop Zone */}
       <div
         className={`neu-inset rounded-xl p-8 border-2 border-dashed transition-all cursor-pointer ${
-          isDragging ? 'border-[#FFCC00] bg-[#FFCC00]/5' : 'border-white/10 hover:border-white/20'
+          isDragging ? 'border-cba-gold bg-cba-gold/5' : 'border-border hover:border-border'
         }`}
         onDragOver={(e) => {
           e.preventDefault();
@@ -170,11 +170,11 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
       >
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="neu-raised p-4 rounded-2xl">
-            <FileUp className={`h-8 w-8 ${isDragging ? 'text-[#FFCC00]' : 'text-zinc-400'}`} />
+            <FileUp className={`h-8 w-8 ${isDragging ? 'text-cba-gold' : 'text-secondary'}`} />
           </div>
           <div>
-            <p className="text-zinc-200 font-semibold">Drop files here or click to browse</p>
-            <p className="text-zinc-500 text-sm mt-1">PDF, PNG, JPG, WEBP - Max 10MB per file</p>
+            <p className="text-primary font-semibold">Drop files here or click to browse</p>
+            <p className="text-muted text-sm mt-1">PDF, PNG, JPG, WEBP - Max 10MB per file</p>
           </div>
         </div>
         <input
@@ -197,24 +197,24 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             type="checkbox"
             checked={autoProcess}
             onChange={(e) => setAutoProcess(e.target.checked)}
-            className="rounded border-white/20 bg-white/5 text-[#FFCC00] focus:ring-[#FFCC00]/20"
+            className="rounded border-border bg-overlay text-cba-gold focus:ring-[#FFCC00]/20"
           />
-          <span className="text-sm text-zinc-300">Auto-process after upload</span>
+          <span className="text-sm text-primary">Auto-process after upload</span>
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-zinc-500">Account:</span>
+          <span className="text-sm text-muted">Account:</span>
           <input
             type="text"
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
             placeholder="Optional account ID"
-            className="px-3 py-1.5 rounded-lg text-sm bg-white/5 border border-white/10 text-zinc-300 placeholder:text-zinc-600 focus:ring-1 focus:ring-[#FFCC00]/20 focus:outline-none"
+            className="px-3 py-1.5 rounded-lg text-sm bg-overlay border border-border text-primary placeholder:text-zinc-600 focus:ring-1 focus:ring-[#FFCC00]/20 focus:outline-none"
           />
         </div>
         {pendingCount > 0 && (
           <button
             onClick={uploadAll}
-            className="ml-auto px-4 py-2 rounded-lg bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFCC00]/90 transition-colors"
+            className="ml-auto px-4 py-2 rounded-lg bg-cba-gold text-base font-bold text-sm hover:bg-cba-gold/90 transition-colors"
           >
             Upload {pendingCount} file{pendingCount !== 1 ? 's' : ''}
           </button>
@@ -225,13 +225,13 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
       {files.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wide">
+            <h3 className="text-sm font-bold text-secondary uppercase tracking-wide">
               Upload Queue ({doneCount}/{files.length} complete)
             </h3>
             {doneCount === files.length && files.length > 0 && (
               <button
                 onClick={() => setFiles([])}
-                className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="text-xs text-muted hover:text-primary transition-colors"
               >
                 Clear all
               </button>
@@ -246,14 +246,14 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
                   <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />
                 )}
                 {f.status === 'processing' && (
-                  <Loader2 className="h-5 w-5 text-[#FFCC00] animate-spin" />
+                  <Loader2 className="h-5 w-5 text-cba-gold animate-spin" />
                 )}
-                {f.status === 'pending' && <FileUp className="h-5 w-5 text-zinc-500" />}
+                {f.status === 'pending' && <FileUp className="h-5 w-5 text-muted" />}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm text-zinc-200 font-medium truncate">{f.file.name}</span>
-                  <span className="text-xs text-zinc-500 shrink-0">
+                  <span className="text-sm text-primary font-medium truncate">{f.file.name}</span>
+                  <span className="text-xs text-muted shrink-0">
                     {f.file.size > 5 * 1024 * 1024 && f.status === 'pending' && (
                       <span className="text-amber-400 mr-2 inline-flex items-center gap-1">
                         <AlertTriangle className="h-3 w-3" /> Large file
@@ -268,7 +268,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
                 {f.error && <p className="text-xs text-red-400 mt-1">{f.error}</p>}
                 {f.confidenceScore != null && f.status === 'done' && (
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-zinc-500">Confidence:</span>
+                    <span className="text-xs text-muted">Confidence:</span>
                     <Badge
                       variant={
                         f.confidenceScore > 80
@@ -287,14 +287,14 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
                 {f.status === 'error' && (
                   <button
                     onClick={() => retryFile(f.id)}
-                    className="px-2 py-1 text-xs rounded-md bg-white/5 text-zinc-300 hover:bg-white/10 transition-colors"
+                    className="px-2 py-1 text-xs rounded-md bg-overlay text-primary hover:bg-overlay-hover transition-colors"
                   >
                     Retry
                   </button>
                 )}
                 <button
                   onClick={() => removeFile(f.id)}
-                  className="p-1 rounded-md hover:bg-white/10 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="p-1 rounded-md hover:bg-overlay-hover text-muted hover:text-primary transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>

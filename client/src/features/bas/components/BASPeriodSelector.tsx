@@ -93,15 +93,15 @@ export function BASPeriodSelector({
         </Select>
 
         {/* Quarter Buttons */}
-        <div className="flex gap-1 rounded-xl bg-white/5 p-1 border border-white/10">
+        <div className="flex gap-1 rounded-xl bg-overlay p-1 border border-border">
           {[1, 2, 3, 4].map((q) => (
             <button
               key={q}
               className={cn(
                 'px-3 py-1.5 text-sm font-medium rounded-lg transition-all',
                 selectedQuarter === q
-                  ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5',
+                  ? 'bg-cba-gold text-base shadow-sm'
+                  : 'text-secondary hover:text-zinc-100 hover:bg-overlay',
               )}
               onClick={() => onQuarterChange(q)}
             >
@@ -111,15 +111,15 @@ export function BASPeriodSelector({
         </div>
 
         {/* Period Type Toggle */}
-        <div className="flex gap-1 rounded-xl bg-white/5 p-1 border border-white/10">
+        <div className="flex gap-1 rounded-xl bg-overlay p-1 border border-border">
           {(['monthly', 'quarterly', 'annual'] as PeriodType[]).map((type) => (
             <button
               key={type}
               className={cn(
                 'px-2.5 py-1 text-xs font-medium rounded-lg transition-all capitalize',
                 periodType === type
-                  ? 'bg-white/10 text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-300',
+                  ? 'bg-overlay-hover text-zinc-100'
+                  : 'text-muted hover:text-primary',
               )}
               onClick={() => onPeriodTypeChange(type)}
             >
@@ -130,7 +130,7 @@ export function BASPeriodSelector({
       </div>
 
       {/* Period Info */}
-      <div className="flex items-center gap-3 text-xs text-zinc-500">
+      <div className="flex items-center gap-3 text-xs text-muted">
         <span>{getQuarterLabel(selectedQuarter, selectedYear)}</span>
         <span className="text-zinc-700">|</span>
         <span className="flex items-center gap-1">

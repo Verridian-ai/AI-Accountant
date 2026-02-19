@@ -122,12 +122,12 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
     if (queryType === 'point_in_time') {
       return (
         <div className="flex items-center gap-2">
-          <label className="text-xs text-zinc-500 font-medium">Date:</label>
+          <label className="text-xs text-muted font-medium">Date:</label>
           <input
             type="date"
             value={pointDate}
             onChange={(e) => setPointDate(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 flex-1"
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary flex-1"
           />
         </div>
       );
@@ -135,21 +135,21 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
     return (
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <div className="flex items-center gap-2 flex-1">
-          <label className="text-xs text-zinc-500 font-medium">From:</label>
+          <label className="text-xs text-muted font-medium">From:</label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 flex-1"
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary flex-1"
           />
         </div>
         <div className="flex items-center gap-2 flex-1">
-          <label className="text-xs text-zinc-500 font-medium">To:</label>
+          <label className="text-xs text-muted font-medium">To:</label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 flex-1"
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary flex-1"
           />
         </div>
       </div>
@@ -164,9 +164,9 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
       return (
         <div className="neu-raised p-4 rounded-lg">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-bold text-zinc-200">Trend Results</h4>
+            <h4 className="text-sm font-bold text-primary">Trend Results</h4>
             {cached && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#FFCC00]/20 text-[#FFCC00] font-bold">
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-cba-gold/20 text-cba-gold font-bold">
                 <Database className="w-3 h-3 inline mr-1" />
                 CACHED
               </span>
@@ -198,10 +198,10 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
       const keys = Object.keys(rows[0]).slice(0, 6);
       return (
         <div className="neu-raised rounded-lg overflow-hidden">
-          <div className="flex items-center justify-between p-3 border-b border-white/5">
-            <h4 className="text-sm font-bold text-zinc-200">Results ({rows.length})</h4>
+          <div className="flex items-center justify-between p-3 border-b border-border/50">
+            <h4 className="text-sm font-bold text-primary">Results ({rows.length})</h4>
             {cached && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#FFCC00]/20 text-[#FFCC00] font-bold">
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-cba-gold/20 text-cba-gold font-bold">
                 <Database className="w-3 h-3 inline mr-1" />
                 CACHED
               </span>
@@ -210,11 +210,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/5">
+                <tr className="border-b border-border/50">
                   {keys.map((k) => (
                     <th
                       key={k}
-                      className="text-left px-3 py-2 text-xs text-zinc-500 font-bold uppercase"
+                      className="text-left px-3 py-2 text-xs text-muted font-bold uppercase"
                     >
                       {k}
                     </th>
@@ -223,9 +223,9 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               </thead>
               <tbody>
                 {rows.slice(0, 50).map((row: Record<string, unknown>, i: number) => (
-                  <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+                  <tr key={i} className="border-b border-border/50 hover:bg-overlay">
                     {keys.map((k) => (
-                      <td key={k} className="px-3 py-2 text-zinc-300 truncate max-w-[200px]">
+                      <td key={k} className="px-3 py-2 text-primary truncate max-w-[200px]">
                         {String(row[k] ?? '')}
                       </td>
                     ))}
@@ -239,7 +239,7 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
     }
 
     return (
-      <div className="neu-raised p-4 rounded-lg text-center text-zinc-500">
+      <div className="neu-raised p-4 rounded-lg text-center text-muted">
         <p>No results returned.</p>
         {results.message && <p className="text-xs mt-1">{results.message}</p>}
       </div>
@@ -251,7 +251,7 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
       {/* Saved queries sidebar */}
       {showSaved && (
         <div className="w-64 shrink-0 neu-raised rounded-lg p-3 space-y-2 hidden lg:block">
-          <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+          <h4 className="text-xs font-bold text-muted uppercase tracking-wider mb-2">
             Saved Queries
           </h4>
           {savedQueries.length === 0 ? (
@@ -260,11 +260,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
             savedQueries.map((sq) => (
               <button
                 key={sq.id}
-                className="w-full text-left p-2 rounded-lg hover:bg-white/5 transition-colors group"
+                className="w-full text-left p-2 rounded-lg hover:bg-overlay transition-colors group"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-300 truncate">{sq.name}</span>
-                  <ChevronRight className="w-3 h-3 text-zinc-600 group-hover:text-[#FFCC00]" />
+                  <span className="text-sm text-primary truncate">{sq.name}</span>
+                  <ChevronRight className="w-3 h-3 text-zinc-600 group-hover:text-cba-gold" />
                 </div>
                 <span className="text-[10px] text-zinc-600">
                   {sq.queryType} • {sq.entity}
@@ -280,13 +280,13 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
         {/* Query Builder Form */}
         <div className="neu-raised p-4 rounded-lg space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#FFCC00] flex items-center gap-2">
+            <h3 className="text-sm font-bold text-cba-gold flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Temporal Query Builder
             </h3>
             <button
               onClick={() => setShowSaved(!showSaved)}
-              className="text-xs text-zinc-500 hover:text-[#FFCC00] transition-colors hidden lg:block"
+              className="text-xs text-muted hover:text-cba-gold transition-colors hidden lg:block"
             >
               {showSaved ? 'Hide' : 'Show'} Saved
             </button>
@@ -294,11 +294,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Query Type</label>
+              <label className="text-xs text-muted font-medium block mb-1">Query Type</label>
               <select
                 value={queryType}
                 onChange={(e) => setQueryType(e.target.value as QueryType)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
               >
                 {queryTypes.map((qt) => (
                   <option key={qt.value} value={qt.value}>
@@ -308,11 +308,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Target Entity</label>
+              <label className="text-xs text-muted font-medium block mb-1">Target Entity</label>
               <select
                 value={entity}
                 onChange={(e) => setEntity(e.target.value as EntityType)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
               >
                 {entityTypes.map((et) => (
                   <option key={et.value} value={et.value}>
@@ -328,33 +328,33 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
           {/* Parameters */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Category</label>
+              <label className="text-xs text-muted font-medium block mb-1">Category</label>
               <input
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="e.g. Office Expenses"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 placeholder:text-zinc-600"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary placeholder:text-zinc-600"
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Min Amount</label>
+              <label className="text-xs text-muted font-medium block mb-1">Min Amount</label>
               <input
                 type="number"
                 value={minAmount}
                 onChange={(e) => setMinAmount(e.target.value)}
                 placeholder="0"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 placeholder:text-zinc-600"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary placeholder:text-zinc-600"
               />
             </div>
             <div>
-              <label className="text-xs text-zinc-500 font-medium block mb-1">Max Amount</label>
+              <label className="text-xs text-muted font-medium block mb-1">Max Amount</label>
               <input
                 type="number"
                 value={maxAmount}
                 onChange={(e) => setMaxAmount(e.target.value)}
                 placeholder="10000"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 placeholder:text-zinc-600"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary placeholder:text-zinc-600"
               />
             </div>
           </div>
@@ -364,7 +364,7 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
             <button
               onClick={executeQuery}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FFCC00] text-[#0a0a0f] font-bold text-sm hover:bg-[#FFCC00]/90 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cba-gold text-base font-bold text-sm hover:bg-cba-gold/90 transition-colors disabled:opacity-50"
             >
               <Search className="w-4 h-4" />
               {loading ? 'Executing...' : 'Execute Query'}
@@ -375,12 +375,12 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
                 value={queryName}
                 onChange={(e) => setQueryName(e.target.value)}
                 placeholder="Query name..."
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 placeholder:text-zinc-600"
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary placeholder:text-zinc-600"
               />
               <button
                 onClick={saveQuery}
                 disabled={!queryName.trim()}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-primary transition-colors disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> Save
               </button>

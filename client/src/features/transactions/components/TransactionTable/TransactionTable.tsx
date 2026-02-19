@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, type ReactNode } from 'react';
 import { API_URL } from '@/api/client.js';
 import {
   getCoreRowModel,
@@ -31,12 +31,24 @@ import { LoadingSkeleton } from './components/LoadingSkeleton.js';
 import { SplitModal } from './components/SplitModal.js';
 import { VirtualizedTable } from './components/VirtualizedTable.js';
 
+function SimpleStat({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="flex flex-col bg-surface/80 border border-border/50 rounded-xl px-4 py-2 min-w-[100px] shrink-0">
+      <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">{label}</span>
+      <span className="text-sm font-bold text-primary tracking-tight">{value}</span>
+    </div>
+  );
+}
+
+const EMPTY_ACCOUNTS: NonNullable<TransactionTableProps['accounts']> = [];
+
 export function TransactionTable({
   transactions,
-  accounts = [],
+  accounts,
   loading = false,
   onDataChange,
 }: TransactionTableProps) {
+  const resolvedAccounts = accounts ?? EMPTY_ACCOUNTS;
   const filters = useTransactionFilters({ transactions });
   const edit = useTransactionEdit({ transactions, onDataChange });
   const split = useTransactionSplit({ onDataChange });
@@ -49,7 +61,7 @@ export function TransactionTable({
         setEditForm: edit.setEditForm,
         setEditingId: edit.setEditingId,
         categories: filters.categories,
-        accounts,
+        accounts: resolvedAccounts,
         handleEditStart: edit.handleEditStart,
         handleSave: edit.handleSave,
         handleDelete: edit.handleDelete,
@@ -61,7 +73,7 @@ export function TransactionTable({
       edit.setEditForm,
       edit.setEditingId,
       filters.categories,
-      accounts,
+      resolvedAccounts,
       edit.handleEditStart,
       edit.handleSave,
       edit.handleDelete,
@@ -107,14 +119,6 @@ export function TransactionTable({
       filters.filteredTransactions.length > 0
         ? totalAmount / filters.filteredTransactions.length
         : 0;
-    const SimpleStat = ({ label, value }: { label: string; value: React.ReactNode }) => (
-      <div className="flex flex-col bg-[#12121a]/80 border border-white/5 rounded-xl px-4 py-2 min-w-[100px] shrink-0">
-        <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">
-          {label}
-        </span>
-        <span className="text-sm font-bold text-white tracking-tight">{value}</span>
-      </div>
-    );
     return (
       <>
         <SimpleStat label="Total Vol." value={<CurrencyDisplay amount={totalAmount} />} />
@@ -143,62 +147,66 @@ export function TransactionTable({
         {(filters.showFilters || filters.hasActiveFilters) && (
           <div className="grid grid-cols-1 gap-4 p-4 neu-inset rounded-2xl mb-4 animate-in slide-in-from-top-2">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
+              <label htmlFor="mobile-tx-search" className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
                 Search
               </label>
               <input
+                id="mobile-tx-search"
                 type="text"
                 placeholder="Search..."
                 aria-label="Search transactions"
                 value={filters.globalFilter}
                 onChange={(e) => filters.setGlobalFilter(e.target.value)}
-                className="w-full px-4 py-3 text-sm neu-inset rounded-xl focus-gold outline-none text-[#FFCC00]"
+                className="w-full px-4 py-3 text-sm neu-inset rounded-xl focus-gold outline-none text-cba-gold"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
+                <label htmlFor="mobile-tx-start" className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
                   Start
                 </label>
                 <input
+                  id="mobile-tx-start"
                   type="date"
                   aria-label="Start date"
                   value={filters.startDate}
                   onChange={(e) => filters.setStartDate(e.target.value)}
-                  className="w-full px-3 py-3 text-xs neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent"
+                  className="w-full px-3 py-3 text-xs neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
+                <label htmlFor="mobile-tx-end" className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
                   End
                 </label>
                 <input
+                  id="mobile-tx-end"
                   type="date"
                   aria-label="End date"
                   value={filters.endDate}
                   onChange={(e) => filters.setEndDate(e.target.value)}
-                  className="w-full px-3 py-3 text-xs neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent"
+                  className="w-full px-3 py-3 text-xs neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
+              <label htmlFor="mobile-tx-category" className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">
                 Class
               </label>
               <div className="relative">
                 <select
+                  id="mobile-tx-category"
                   aria-label="Filter by category"
                   value={filters.selectedCategory}
                   onChange={(e) => filters.setSelectedCategory(e.target.value)}
-                  className="w-full px-4 py-3 text-xs neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent appearance-none"
+                  className="w-full px-4 py-3 text-xs neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent appearance-none"
                 >
                   {filters.categories.map((cat) => (
-                    <option key={cat} value={cat} className="bg-[#12121a] text-zinc-300">
+                    <option key={cat} value={cat} className="bg-surface text-primary">
                       {cat}
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#FFCC00]/50 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cba-gold/50 pointer-events-none" />
               </div>
             </div>
             <button
@@ -220,7 +228,7 @@ export function TransactionTable({
           <TransactionCard
             key={tx.id}
             transaction={tx}
-            accounts={accounts}
+            accounts={resolvedAccounts}
             onEdit={edit.handleEditStart}
             onDelete={edit.handleDelete}
             onSplit={split.handleSplitStart}
@@ -233,7 +241,7 @@ export function TransactionTable({
         ))}
 
         {filters.filteredTransactions.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
+          <div className="flex flex-col items-center justify-center py-12 text-muted">
             <Search className="h-8 w-8 mb-2 opacity-50" />
             <span className="text-xs font-bold uppercase tracking-widest">No nodes found</span>
           </div>
@@ -242,15 +250,15 @@ export function TransactionTable({
 
       {/* Desktop Table View */}
       <div className="space-y-6 p-1 hidden md:block">
-        <div className="neu-raised-sm lg:neu-raised rounded-3xl flex flex-col border border-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_10px_30px_-5px_rgba(0,0,0,0.5)]">
+        <div className="neu-raised-sm lg:neu-raised rounded-3xl flex flex-col border border-border shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_10px_30px_-5px_rgba(0,0,0,0.5)]">
           {/* Header */}
-          <div className="p-4 lg:p-6 border-b border-white/5 bg-white/1 space-y-4 lg:space-y-6">
+          <div className="p-4 lg:p-6 border-b border-border/50 bg-white/1 space-y-4 lg:space-y-6">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
               <div className="flex items-center gap-4">
                 <div className="relative group">
                   <div className="absolute -inset-1 cba-gold-gradient rounded-xl blur opacity-20 group-hover:opacity-30 transition-opacity" />
                   <div className="relative cba-gold-gradient p-3 rounded-xl">
-                    <Activity className="h-6 w-6 text-[#0a0a0f]" />
+                    <Activity className="h-6 w-6 text-base" />
                   </div>
                 </div>
                 <div>
@@ -259,7 +267,7 @@ export function TransactionTable({
                   </h2>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest text-nowrap">
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest text-nowrap">
                       {filters.filteredTransactions.length} nodes active
                     </p>
                   </div>
@@ -275,17 +283,17 @@ export function TransactionTable({
                     placeholder="Search nodes..."
                     value={filters.globalFilter}
                     onChange={(e) => filters.setGlobalFilter(e.target.value)}
-                    className="pl-11 pr-4 py-3 text-sm neu-inset rounded-2xl w-full focus-gold outline-none text-[#FFCC00] placeholder-zinc-700 font-medium"
+                    className="pl-11 pr-4 py-3 text-sm neu-inset rounded-2xl w-full focus-gold outline-none text-cba-gold placeholder-zinc-700 font-medium"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => filters.setShowFilters(!filters.showFilters)}
                   className={cn(
-                    'px-5 py-3 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest transition-all btn-press border border-white/5',
+                    'px-5 py-3 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-widest transition-all btn-press border border-border/50',
                     filters.showFilters || filters.hasActiveFilters
-                      ? 'cba-gold-gradient text-[#0a0a0f] cba-gold-glow'
-                      : 'neu-raised-sm text-zinc-500 hover:text-[#FFCC00]',
+                      ? 'cba-gold-gradient text-base cba-gold-glow'
+                      : 'neu-raised-sm text-muted hover:text-cba-gold',
                   )}
                 >
                   <Filter className="h-4 w-4" />
@@ -298,7 +306,7 @@ export function TransactionTable({
                   <button
                     type="button"
                     onClick={() => handleExport('csv')}
-                    className="p-3 neu-raised-sm rounded-2xl text-zinc-500 hover:text-blue-400 btn-press border border-white/5"
+                    className="p-3 neu-raised-sm rounded-2xl text-muted hover:text-blue-400 btn-press border border-border/50"
                     title="Export CSV"
                   >
                     <FileText className="h-5 w-5" />
@@ -306,7 +314,7 @@ export function TransactionTable({
                   <button
                     type="button"
                     onClick={() => handleExport('xlsx')}
-                    className="p-3 neu-raised-sm rounded-2xl text-zinc-500 hover:text-emerald-400 btn-press border border-white/5"
+                    className="p-3 neu-raised-sm rounded-2xl text-muted hover:text-emerald-400 btn-press border border-border/50"
                     title="Export Excel"
                   >
                     <FileSpreadsheet className="h-5 w-5" />
@@ -320,47 +328,50 @@ export function TransactionTable({
           {(filters.showFilters || filters.hasActiveFilters) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6 neu-inset rounded-3xl animate-in zoom-in-95 duration-300">
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] flex items-center gap-2">
+                <label htmlFor="desktop-tx-start" className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] flex items-center gap-2">
                   <Calendar className="h-3 w-3" /> Origin Date
                 </label>
                 <input
+                  id="desktop-tx-start"
                   type="date"
                   aria-label="Filter by Start Date"
                   value={filters.startDate}
                   onChange={(e) => filters.setStartDate(e.target.value)}
-                  className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent"
+                  className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent"
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] flex items-center gap-2">
+                <label htmlFor="desktop-tx-end" className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] flex items-center gap-2">
                   <Calendar className="h-3 w-3" /> Termination Date
                 </label>
                 <input
+                  id="desktop-tx-end"
                   type="date"
                   aria-label="Filter by End Date"
                   value={filters.endDate}
                   onChange={(e) => filters.setEndDate(e.target.value)}
-                  className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent"
+                  className="w-full py-3 px-4 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent"
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] flex items-center gap-2">
+                <label htmlFor="desktop-tx-category" className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] flex items-center gap-2">
                   <Tag className="h-3 w-3" /> Class Matrix
                 </label>
                 <div className="relative">
                   <select
+                    id="desktop-tx-category"
                     aria-label="Filter by Category"
                     value={filters.selectedCategory}
                     onChange={(e) => filters.setSelectedCategory(e.target.value)}
-                    className="w-full py-3 pl-4 pr-10 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-[#FFCC00] bg-transparent appearance-none"
+                    className="w-full py-3 pl-4 pr-10 text-xs font-bold neu-inset rounded-xl focus-gold outline-none text-cba-gold bg-transparent appearance-none"
                   >
                     {filters.categories.map((cat) => (
-                      <option key={cat} value={cat} className="bg-[#12121a] text-zinc-300">
+                      <option key={cat} value={cat} className="bg-surface text-primary">
                         {cat}
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#FFCC00]/50 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cba-gold/50 pointer-events-none" />
                 </div>
               </div>
               <div className="flex items-end">
@@ -381,9 +392,9 @@ export function TransactionTable({
         </div>
 
         {/* Table */}
-        <div className="flex-1 bg-black/20 border-t border-white/5 relative group/table">
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-black/20 to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-black/20 to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
+        <div className="flex-1 bg-overlay border-t border-border/50 relative group/table">
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-overlay to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-overlay to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
           <VirtualizedTable
             table={table}
             columns={columns}
@@ -395,22 +406,22 @@ export function TransactionTable({
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-4 border-t border-white/5 bg-black/20 flex items-center justify-between">
+        <div className="px-8 py-4 border-t border-border/50 bg-overlay flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex flex-col">
               <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
                 Total Nodes
               </span>
-              <span className="text-xs font-bold text-zinc-400 tracking-tight">
+              <span className="text-xs font-bold text-secondary tracking-tight">
                 {transactions.length}
               </span>
             </div>
-            <div className="w-px h-6 bg-white/5" />
+            <div className="w-px h-6 bg-overlay" />
             <div className="flex flex-col">
               <span className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em]">
                 Current View
               </span>
-              <span className="text-xs font-bold text-[#FFCC00] tracking-tight">
+              <span className="text-xs font-bold text-cba-gold tracking-tight">
                 {filters.filteredTransactions.length}
               </span>
             </div>
@@ -422,8 +433,8 @@ export function TransactionTable({
             <div className="flex gap-1">
               {[...Array(3)].map((_, i) => (
                 <div
-                  key={i}
-                  className={`w-1 h-1 rounded-full bg-[#FFCC00]/30 animate-pulse pulse-delay-${i}`}
+                  key={`dot-${i}`}
+                  className={`w-1 h-1 rounded-full bg-cba-gold/30 animate-pulse pulse-delay-${i}`}
                 />
               ))}
             </div>

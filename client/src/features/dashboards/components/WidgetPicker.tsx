@@ -144,11 +144,11 @@ export function WidgetPicker({ open, onClose, onSelect }: WidgetPickerProps) {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative neu-raised rounded-2xl w-full max-w-2xl mx-4 max-h-[80vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#FFCC00]/20 shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-cba-gold/20 shrink-0">
           <h3 className="text-lg font-bold text-gradient-gold">Add Widget</h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay-hover transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -163,17 +163,17 @@ export function WidgetPicker({ open, onClose, onSelect }: WidgetPickerProps) {
                 onClick={() => handleSelect(wt)}
                 className={cn(
                   'neu-raised-sm rounded-xl p-4 text-left border border-transparent',
-                  'hover:border-[#FFCC00]/30 hover:shadow-[0_0_15px_rgba(255,204,0,0.08)]',
+                  'hover:border-cba-gold/30 hover:shadow-[0_0_15px_rgba(255,204,0,0.08)]',
                   'transition-all duration-200 group',
                 )}
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="neu-inset p-2 rounded-lg text-[#FFCC00] group-hover:shadow-[0_0_10px_rgba(255,204,0,0.15)] transition-shadow">
+                  <div className="neu-inset p-2 rounded-lg text-cba-gold group-hover:shadow-[0_0_10px_rgba(255,204,0,0.15)] transition-shadow">
                     <wt.icon className="w-5 h-5" />
                   </div>
                   <h4 className="font-bold text-zinc-100 text-sm">{wt.name}</h4>
                 </div>
-                <p className="text-xs text-zinc-500 leading-relaxed">{wt.description}</p>
+                <p className="text-xs text-muted leading-relaxed">{wt.description}</p>
               </button>
             ))}
           </div>

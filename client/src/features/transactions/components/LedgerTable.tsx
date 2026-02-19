@@ -174,10 +174,10 @@ export function LedgerTable({
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
-    <div className="flex-1 bg-black/20 border-t border-white/5 relative group/table">
+    <div className="flex-1 bg-overlay border-t border-border/50 relative group/table">
       {/* Horizontal Scroll Indicators */}
-      <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-black/20 to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
-      <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-black/20 to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
+      <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-overlay to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
+      <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-overlay to-transparent pointer-events-none z-10 opacity-0 group-hover/table:opacity-100 transition-opacity md:hidden" />
 
       <div ref={parentRef} className="overflow-scroll max-h-[70vh]">
         <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 min-w-max">
@@ -189,7 +189,7 @@ export function LedgerTable({
               List of financial transactions with details including date, description, amount, and
               category.
             </caption>
-            <thead className="sticky top-0 z-20 bg-[#12121a]">
+            <thead className="sticky top-0 z-20 bg-surface">
               {table.getHeaderGroups().map((hg) => (
                 <tr key={hg.id} className="text-zinc-600">
                   {hg.headers.map((h) => {
@@ -213,7 +213,7 @@ export function LedgerTable({
                           'px-3 lg:px-6 pb-2 text-left whitespace-nowrap dynamic-column-width',
                           h.id === 'gstApplicable' && 'hidden md:table-cell',
                           isSticky &&
-                            'lg:sticky lg:right-0 lg:bg-[#12121a] lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)]',
+                            'lg:sticky lg:right-0 lg:bg-surface lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)]',
                         )}
                         width={h.column.getSize() !== 150 ? h.column.getSize() : undefined}
                       >
@@ -258,12 +258,12 @@ export function LedgerTable({
                         <td
                           key={cell.id}
                           className={cn(
-                            'px-3 lg:px-6 py-3 lg:py-5 bg-[#12121a] first:rounded-l-xl last:rounded-r-xl border-y border-white/5 first:border-l last:border-r transition-shadow duration-300 group-hover:bg-[#16161f] group-hover:border-white/10 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]',
-                            editingId === row.original.id && 'bg-[#16161f] border-[#FFCC00]/20',
+                            'px-3 lg:px-6 py-3 lg:py-5 bg-surface first:rounded-l-xl last:rounded-r-xl border-y border-border/50 first:border-l last:border-r transition-shadow duration-300 group-hover:bg-card group-hover:border-border group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]',
+                            editingId === row.original.id && 'bg-card border-cba-gold/20',
                             cell.column.id === 'gstApplicable' && 'hidden md:table-cell',
                             cellIndex === 0 && `border-l-2 ${borderColor}`,
                             isSticky &&
-                              'lg:sticky lg:right-0 lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)] lg:border-l lg:border-white/5',
+                              'lg:sticky lg:right-0 lg:z-30 lg:shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.5)] lg:border-l lg:border-border/50',
                           )}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}

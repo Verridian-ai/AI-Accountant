@@ -209,12 +209,12 @@ export function FloatingChat() {
         <div className="relative">
           <img src="/CEBA LOGO.png" alt="CEBA AI" className="h-36 w-36" />
           {unreadCount > 0 && (
-            <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-black text-white animate-pulse">
+            <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-black text-primary animate-pulse">
               {unreadCount}
             </span>
           )}
         </div>
-        <span className="absolute -top-12 right-0 neu-raised px-3 py-1.5 rounded-xl text-[10px] font-black text-zinc-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+        <span className="absolute -top-12 right-0 neu-raised px-3 py-1.5 rounded-xl text-[10px] font-black text-secondary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
           CEBA AI
         </span>
       </button>
@@ -230,9 +230,9 @@ export function FloatingChat() {
             : 'opacity-0 translate-y-8 scale-95 pointer-events-none',
         )}
       >
-        <div className="flex flex-col h-full md:h-[550px] md:max-h-[550px] neu-raised md:rounded-4xl overflow-hidden border border-white/10 shadow-2xl">
+        <div className="flex flex-col h-full md:h-[550px] md:max-h-[550px] neu-raised md:rounded-4xl overflow-hidden border border-border shadow-2xl">
           {/* Header */}
-          <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/2">
+          <div className="p-4 border-b border-border/50 flex items-center justify-between bg-white/2">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <img
@@ -245,22 +245,22 @@ export function FloatingChat() {
                 <h3 className="font-black text-zinc-100 uppercase tracking-widest text-xs">
                   CEBA AI
                 </h3>
-                <p className="text-[8px] text-zinc-500 uppercase tracking-[0.15em] flex items-center gap-1 font-bold">
-                  <Sparkles className="h-2.5 w-2.5 text-[#FFCC00]" /> Intelligence Engine v4
+                <p className="text-[8px] text-muted uppercase tracking-[0.15em] flex items-center gap-1 font-bold">
+                  <Sparkles className="h-2.5 w-2.5 text-cba-gold" /> Intelligence Engine v4
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <div className="neu-inset px-2 py-1 rounded-full flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[8px] font-black text-zinc-400 uppercase tracking-wider">
+                <span className="text-[8px] font-black text-secondary uppercase tracking-wider">
                   Live
                 </span>
               </div>
               <button
                 type="button"
                 onClick={minimizeChat}
-                className="neu-raised-sm p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-500 hover:text-[#FFCC00] transition-colors"
+                className="neu-raised-sm p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-muted hover:text-cba-gold transition-colors"
                 aria-label="Minimize chat"
               >
                 <Minimize2 className="h-4 w-4" />
@@ -268,7 +268,7 @@ export function FloatingChat() {
               <button
                 type="button"
                 onClick={closeChat}
-                className="neu-raised-sm p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-500 hover:text-red-400 transition-colors"
+                className="neu-raised-sm p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-muted hover:text-red-400 transition-colors"
                 aria-label="Close chat"
               >
                 <X className="h-4 w-4" />
@@ -290,7 +290,7 @@ export function FloatingChat() {
                   className={cn(
                     'rounded-lg flex items-center justify-center shrink-0',
                     m.role === 'user'
-                      ? 'w-7 h-7 neu-raised bg-zinc-800 text-[#FFCC00] border border-white/5'
+                      ? 'w-7 h-7 neu-raised bg-zinc-800 text-cba-gold border border-border/50'
                       : 'w-14 h-14',
                   )}
                 >
@@ -308,8 +308,8 @@ export function FloatingChat() {
                   className={cn(
                     'max-w-[90%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm relative',
                     m.role === 'user'
-                      ? 'cba-gold-gradient text-[#0a0a0f] rounded-br-none font-bold shadow-lg'
-                      : 'neu-raised rounded-bl-none text-zinc-200 border border-white/5',
+                      ? 'cba-gold-gradient text-base rounded-br-none font-bold shadow-lg'
+                      : 'neu-raised rounded-bl-none text-primary border border-border/50',
                   )}
                 >
                   <p className="leading-relaxed font-medium text-xs">{m.content}</p>
@@ -325,17 +325,17 @@ export function FloatingChat() {
                     className="h-14 w-14 animate-pulse drop-shadow-[0_0_4px_rgba(255,204,0,0.2)]"
                   />
                 </div>
-                <div className="neu-raised rounded-2xl rounded-bl-none px-4 py-3 border border-white/5">
+                <div className="neu-raised rounded-2xl rounded-bl-none px-4 py-3 border border-border/50">
                   {streamTokens ? (
-                    <p className="text-xs text-zinc-300 font-medium">{streamTokens}</p>
+                    <p className="text-xs text-primary font-medium">{streamTokens}</p>
                   ) : (
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FFCC00] animate-bounce animate-delay-0" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FFCC00] animate-bounce animate-delay-150" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FFCC00] animate-bounce animate-delay-300" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cba-gold animate-bounce animate-delay-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cba-gold animate-bounce animate-delay-150" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cba-gold animate-bounce animate-delay-300" />
                       </div>
-                      <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">
+                      <span className="text-[8px] font-black text-muted uppercase tracking-widest">
                         Synthesizing
                       </span>
                     </div>
@@ -348,16 +348,16 @@ export function FloatingChat() {
               pendingMutations.map((m) => (
                 <div
                   key={m.id}
-                  className="neu-raised rounded-2xl px-4 py-3 border border-[#FFCC00]/20 space-y-2"
+                  className="neu-raised rounded-2xl px-4 py-3 border border-cba-gold/20 space-y-2"
                 >
                   <div className="flex items-center gap-2">
-                    <Activity className="h-3 w-3 text-[#FFCC00]" />
-                    <span className="text-[9px] font-black text-[#FFCC00] uppercase tracking-widest">
+                    <Activity className="h-3 w-3 text-cba-gold" />
+                    <span className="text-[9px] font-black text-cba-gold uppercase tracking-widest">
                       Pending Action
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-300">{m.description}</p>
-                  <p className="text-[8px] text-zinc-500">
+                  <p className="text-xs text-primary">{m.description}</p>
+                  <p className="text-[8px] text-muted">
                     {m.agentType} &rarr; {m.targetTable} ({m.mutationType})
                   </p>
                   <div className="flex gap-2">
@@ -382,10 +382,10 @@ export function FloatingChat() {
           </div>
 
           {/* Input - with safe area padding on mobile */}
-          <div className="p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-4 border-t border-white/5 bg-white/2">
+          <div className="p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-4 border-t border-border/50 bg-white/2">
             <div className="flex gap-2">
               <input
-                className="flex-1 neu-inset rounded-xl px-4 py-3 text-xs focus-gold transition-all outline-none text-[#FFCC00] placeholder-zinc-700 font-bold bg-transparent"
+                className="flex-1 neu-inset rounded-xl px-4 py-3 text-xs focus-gold transition-all outline-none text-cba-gold placeholder-zinc-700 font-bold bg-transparent"
                 placeholder="Input command query..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -396,7 +396,7 @@ export function FloatingChat() {
                 onClick={handleSend}
                 disabled={loading || !input.trim()}
                 aria-label="Send message"
-                className="cba-gold-gradient text-[#0a0a0f] w-11 h-11 flex items-center justify-center rounded-xl btn-press disabled:opacity-30 shadow-lg"
+                className="cba-gold-gradient text-base w-11 h-11 flex items-center justify-center rounded-xl btn-press disabled:opacity-30 shadow-lg"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -425,7 +425,7 @@ export function FloatingChat() {
         <button
           type="button"
           onClick={() => setIsMinimized(false)}
-          className="fixed bottom-6 right-6 z-50 neu-raised rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl border border-white/10 hover:border-[#FFCC00]/30 transition-all btn-press group"
+          className="fixed bottom-6 right-6 z-50 neu-raised rounded-2xl px-4 py-3 flex items-center gap-3 shadow-2xl border border-border hover:border-cba-gold/30 transition-all btn-press group"
           aria-label="Expand chat"
         >
           <div>
@@ -436,7 +436,7 @@ export function FloatingChat() {
             />
           </div>
           <div>
-            <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">
+            <span className="text-[10px] font-black text-primary uppercase tracking-widest">
               CEBA AI
             </span>
             <span className="text-[8px] text-zinc-600 block uppercase tracking-wider">
@@ -444,7 +444,7 @@ export function FloatingChat() {
             </span>
           </div>
           {unreadCount > 0 && (
-            <span className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-black text-white animate-pulse">
+            <span className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-black text-primary animate-pulse">
               {unreadCount}
             </span>
           )}

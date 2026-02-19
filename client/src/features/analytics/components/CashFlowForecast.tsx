@@ -97,19 +97,19 @@ export function CashFlowForecast() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5 flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-6 h-6 text-[#FFCC00] animate-spin" />
+      <div className="neu-raised rounded-3xl p-8 border border-border/50 flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-6 h-6 text-cba-gold animate-spin" />
       </div>
     );
   }
 
   if (forecast.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-10 text-center border border-white/5">
+      <div className="neu-raised rounded-3xl p-10 text-center border border-border/50">
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <TrendingUp className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">
           No Forecast Data
         </h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight">
@@ -124,8 +124,8 @@ export function CashFlowForecast() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-[#FFCC00]" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <TrendingUp className="w-4 h-4 text-cba-gold" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Cash Flow Forecast
           </span>
         </div>
@@ -145,8 +145,8 @@ export function CashFlowForecast() {
                 className={cn(
                   'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
                   months === m
-                    ? 'bg-[#FFCC00] text-[#0a0a0f]'
-                    : 'text-zinc-500 hover:text-zinc-300',
+                    ? 'bg-cba-gold text-base'
+                    : 'text-muted hover:text-primary',
                 )}
               >
                 {m}m
@@ -157,7 +157,7 @@ export function CashFlowForecast() {
       </div>
 
       {/* Chart */}
-      <div className="neu-raised rounded-2xl border border-white/5 p-4">
+      <div className="neu-raised rounded-2xl border border-border/50 p-4">
         <svg
           viewBox={`0 0 ${CHART_W} ${CHART_H}`}
           className="w-full h-auto"
@@ -269,19 +269,19 @@ export function CashFlowForecast() {
         {/* Legend */}
         <div className="flex items-center justify-center gap-6 mt-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-0.5 bg-[#FFCC00]" />
-            <span className="text-[9px] text-zinc-500">Historical</span>
+            <div className="w-6 h-0.5 bg-cba-gold" />
+            <span className="text-[9px] text-muted">Historical</span>
           </div>
           <div className="flex items-center gap-2">
             <div
-              className="w-6 h-0.5 bg-[#FFCC00] opacity-70"
+              className="w-6 h-0.5 bg-cba-gold opacity-70"
               style={{ borderTop: '2px dashed #FFCC00', height: 0 }}
             />
-            <span className="text-[9px] text-zinc-500">Projected</span>
+            <span className="text-[9px] text-muted">Projected</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-3 bg-[#FFCC00]/10 rounded" />
-            <span className="text-[9px] text-zinc-500">Confidence Band</span>
+            <div className="w-4 h-3 bg-cba-gold/10 rounded" />
+            <span className="text-[9px] text-muted">Confidence Band</span>
           </div>
         </div>
       </div>
@@ -293,7 +293,7 @@ export function CashFlowForecast() {
             key={i}
             className={cn(
               'neu-inset rounded-xl p-3 border text-center',
-              f.projectedBalance < 0 ? 'border-red-500/20' : 'border-white/5',
+              f.projectedBalance < 0 ? 'border-red-500/20' : 'border-border/50',
             )}
           >
             <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">

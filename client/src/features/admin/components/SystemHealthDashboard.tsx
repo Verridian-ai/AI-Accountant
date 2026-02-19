@@ -73,7 +73,7 @@ export function SystemHealthDashboard() {
       case 'unhealthy':
         return <XCircle className="w-5 h-5 text-red-400" />;
       default:
-        return <Clock className="w-5 h-5 text-zinc-500" />;
+        return <Clock className="w-5 h-5 text-muted" />;
     }
   };
 
@@ -106,7 +106,7 @@ export function SystemHealthDashboard() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white">System Health</h2>
+        <h2 className="text-2xl font-bold text-primary">System Health</h2>
         <div className="animate-pulse h-64 rounded-2xl bg-[#16213e]" />
       </div>
     );
@@ -116,13 +116,13 @@ export function SystemHealthDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">System Health</h2>
-          <p className="text-sm text-zinc-500">Service status, uptime, and resource usage</p>
+          <h2 className="text-2xl font-bold text-primary">System Health</h2>
+          <p className="text-sm text-muted">Service status, uptime, and resource usage</p>
         </div>
         <button
           type="button"
           onClick={loadAll}
-          className="p-2 rounded-xl bg-[#16213e] text-zinc-400 hover:text-[#FFCC00]"
+          className="p-2 rounded-xl bg-[#16213e] text-secondary hover:text-cba-gold"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -133,10 +133,10 @@ export function SystemHealthDashboard() {
         <div className="flex items-center gap-3">
           {statusIcon(health?.status || 'unknown')}
           <div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-lg font-bold text-primary">
               System: {(health?.status || 'unknown').toUpperCase()}
             </p>
-            <p className="text-xs text-zinc-500">Uptime: {formatUptime(health?.uptime || 0)}</p>
+            <p className="text-xs text-muted">Uptime: {formatUptime(health?.uptime || 0)}</p>
           </div>
         </div>
       </div>
@@ -147,12 +147,12 @@ export function SystemHealthDashboard() {
           <div key={svc.name} className={`rounded-2xl border p-5 ${statusColor(svc.status)}`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Server className="w-4 h-4 text-zinc-400" />
-                <span className="text-sm font-bold text-white capitalize">{svc.name}</span>
+                <Server className="w-4 h-4 text-secondary" />
+                <span className="text-sm font-bold text-primary capitalize">{svc.name}</span>
               </div>
               {statusIcon(svc.status)}
             </div>
-            <div className="space-y-1 text-xs text-zinc-400">
+            <div className="space-y-1 text-xs text-secondary">
               {svc.responseTimeMs !== undefined && <p>Response: {svc.responseTimeMs}ms</p>}
               {svc.lastCheck && <p>Checked: {new Date(svc.lastCheck).toLocaleTimeString()}</p>}
               {svc.details &&
@@ -169,14 +169,14 @@ export function SystemHealthDashboard() {
       {/* Disk Usage */}
       {disk.length > 0 && (
         <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <HardDrive className="w-4 h-4 text-[#FFCC00]" /> Disk Usage
+          <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+            <HardDrive className="w-4 h-4 text-cba-gold" /> Disk Usage
           </h3>
           <div className="space-y-4">
             {disk.map((d, i) => (
               <div key={d.path ?? `sk-${i}`}>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-zinc-300 font-mono">{d.path}</span>
+                  <span className="text-primary font-mono">{d.path}</span>
                   <span
                     className={`font-bold ${d.pct > 90 ? 'text-red-400' : d.pct > 70 ? 'text-yellow-400' : 'text-emerald-400'}`}
                   >
@@ -189,7 +189,7 @@ export function SystemHealthDashboard() {
                     style={{ width: `${d.pct}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] text-zinc-500 mt-1">
+                <div className="flex justify-between text-[10px] text-muted mt-1">
                   <span>Used: {formatBytes(d.used)}</span>
                   <span>Available: {formatBytes(d.available)}</span>
                   <span>Total: {formatBytes(d.total)}</span>
@@ -203,18 +203,18 @@ export function SystemHealthDashboard() {
       {/* Health History */}
       {history.length > 0 && (
         <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Health History (24h)</h3>
+          <h3 className="text-lg font-bold text-primary mb-4">Health History (24h)</h3>
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {history.slice(0, 50).map((h, i) => (
               <div
                 key={h.id ?? `${h.service ?? ''}-${i}`}
-                className="flex items-center justify-between py-2 border-b border-white/5 last:border-0 text-xs"
+                className="flex items-center justify-between py-2 border-b border-border/50 last:border-0 text-xs"
               >
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-2 h-2 rounded-full ${h.status === 'healthy' ? 'bg-emerald-400' : h.status === 'degraded' ? 'bg-yellow-400' : 'bg-red-400'}`}
                   />
-                  <span className="text-zinc-300">{h.service}</span>
+                  <span className="text-primary">{h.service}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span

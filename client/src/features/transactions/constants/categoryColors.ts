@@ -290,13 +290,13 @@ const SYSTEM_COLORS: SystemColors = {
   transfer: {
     name: 'zinc',
     bg: 'bg-zinc-500',
-    text: 'text-zinc-400',
+    text: 'text-secondary',
     border: 'border-zinc-500',
     gradient: 'from-zinc-500 to-zinc-400',
     dot: 'bg-zinc-500',
     badge: {
       bg: 'bg-zinc-500/15',
-      text: 'text-zinc-400',
+      text: 'text-secondary',
       border: 'border-zinc-500/25',
       shadow: 'shadow-[0_0_15px_rgba(113,113,122,0.2)]',
     },

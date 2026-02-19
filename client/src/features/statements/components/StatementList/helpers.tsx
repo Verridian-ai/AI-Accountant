@@ -37,13 +37,13 @@ export function getUploadStatusIcon(status: UploadStatus) {
     case 'uploading':
       return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
     case 'processing':
-      return <Loader2 className="h-4 w-4 text-[#FFCC00] animate-spin" />;
+      return <Loader2 className="h-4 w-4 text-cba-gold animate-spin" />;
     case 'failed':
       return <AlertCircle className="h-4 w-4 text-red-500" />;
     case 'duplicate':
       return <Files className="h-4 w-4 text-amber-500" />;
     case 'cancelled':
-      return <Ban className="h-4 w-4 text-zinc-500" />;
+      return <Ban className="h-4 w-4 text-muted" />;
     default:
       return <Clock className="h-4 w-4 text-zinc-600" />;
   }
@@ -56,15 +56,15 @@ export function getUploadStatusColor(status: UploadStatus): string {
     case 'uploading':
       return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
     case 'processing':
-      return 'bg-[#FFCC00]/10 text-[#FFCC00] border border-[#FFCC00]/20';
+      return 'bg-cba-gold/10 text-cba-gold border border-cba-gold/20';
     case 'failed':
       return 'bg-red-500/10 text-red-400 border border-red-500/20';
     case 'duplicate':
       return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
     case 'cancelled':
-      return 'bg-zinc-800 text-zinc-500 border border-zinc-700';
+      return 'bg-zinc-800 text-muted border border-zinc-700';
     default:
-      return 'bg-zinc-900 text-zinc-500 border border-zinc-800';
+      return 'bg-zinc-900 text-muted border border-zinc-800';
   }
 }
 

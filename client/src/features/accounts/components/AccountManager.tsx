@@ -154,10 +154,10 @@ export function AccountManager() {
 
   if (loading) {
     return (
-      <div className="neu-raised rounded-3xl p-8 border border-white/5">
+      <div className="neu-raised rounded-3xl p-8 border border-border/50">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-2 h-2 rounded-full bg-[#FFCC00] animate-pulse" />
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
+          <div className="w-2 h-2 rounded-full bg-cba-gold animate-pulse" />
+          <span className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
             Loading accounts...
           </span>
         </div>
@@ -172,11 +172,11 @@ export function AccountManager() {
 
   if (accounts.length === 0) {
     return (
-      <div className="neu-raised rounded-3xl p-10 text-center border border-white/5">
+      <div className="neu-raised rounded-3xl p-10 text-center border border-border/50">
         <div className="neu-inset w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center">
           <Wallet className="w-10 h-10 text-zinc-800" />
         </div>
-        <h3 className="font-black text-zinc-200 uppercase tracking-widest text-sm">No Accounts</h3>
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">No Accounts</h3>
         <p className="text-xs text-zinc-600 mt-2 font-bold uppercase tracking-tight">
           Upload statements to auto-detect accounts.
         </p>
@@ -188,8 +188,8 @@ export function AccountManager() {
     <div className="space-y-3 sm:space-y-4">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#FFCC00] animate-pulse" />
-          <h2 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]">
+          <div className="w-1.5 h-1.5 rounded-full bg-cba-gold animate-pulse" />
+          <h2 className="text-[10px] font-black text-muted uppercase tracking-[0.25em]">
             Account Manager
           </h2>
         </div>
@@ -207,14 +207,14 @@ export function AccountManager() {
             onClick={() => setFilter(f)}
             className={cn(
               'px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-              filter === f ? 'bg-[#FFCC00] text-[#0a0a0f]' : 'text-zinc-500 hover:text-zinc-300',
+              filter === f ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
             )}
           >
             {f}
             <span
               className={cn(
                 'ml-1.5 text-[8px]',
-                filter === f ? 'text-[#0a0a0f]/60' : 'text-zinc-600',
+                filter === f ? 'text-base/60' : 'text-zinc-600',
               )}
             >
               {filterCounts[f]}
@@ -236,15 +236,15 @@ export function AccountManager() {
               className={cn(
                 'neu-raised rounded-2xl p-4 sm:p-5 border transition-all group',
                 isEditing
-                  ? 'border-[#FFCC00]/20 shadow-[0_0_20px_rgba(255,204,0,0.05)]'
+                  ? 'border-cba-gold/20 shadow-[0_0_20px_rgba(255,204,0,0.05)]'
                   : isBusiness
-                    ? 'border-[#FFCC00]/20'
-                    : 'border-white/5',
+                    ? 'border-cba-gold/20'
+                    : 'border-border/50',
               )}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="neu-inset p-2.5 rounded-xl text-[#FFCC00]">
+                  <div className="neu-inset p-2.5 rounded-xl text-cba-gold">
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
@@ -255,7 +255,7 @@ export function AccountManager() {
                         onChange={(e) =>
                           setEditValues((prev) => ({ ...prev, accountName: e.target.value }))
                         }
-                        className="bg-transparent border-b border-[#FFCC00]/30 text-sm font-black text-zinc-100 uppercase tracking-tight outline-none w-full"
+                        className="bg-transparent border-b border-cba-gold/30 text-sm font-black text-zinc-100 uppercase tracking-tight outline-none w-full"
                       />
                     ) : (
                       <p className="text-sm font-black text-zinc-100 uppercase tracking-tight truncate max-w-[160px]">
@@ -268,12 +268,12 @@ export function AccountManager() {
                       </p>
                       {/* Ownership Badge */}
                       {isBusiness ? (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-[#FFCC00]/15 text-[7px] font-black text-[#FFCC00] uppercase tracking-widest">
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-cba-gold/15 text-[7px] font-black text-cba-gold uppercase tracking-widest">
                           <Briefcase className="w-2.5 h-2.5" />
                           BIZ
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/5 text-[7px] font-black text-zinc-600 uppercase tracking-widest">
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-overlay text-[7px] font-black text-zinc-600 uppercase tracking-widest">
                           <User className="w-2.5 h-2.5" />
                           Personal
                         </span>
@@ -308,7 +308,7 @@ export function AccountManager() {
                   <button
                     type="button"
                     onClick={() => startEdit(account)}
-                    className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-zinc-600 hover:text-[#FFCC00] hover:bg-white/5 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                    className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-zinc-600 hover:text-cba-gold hover:bg-overlay transition-all sm:opacity-0 sm:group-hover:opacity-100"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
@@ -326,10 +326,10 @@ export function AccountManager() {
                       onChange={(e) =>
                         setEditValues((prev) => ({ ...prev, accountType: e.target.value }))
                       }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-200 outline-none focus:border-[#FFCC00]/30"
+                      className="w-full bg-overlay border border-border rounded-xl px-3 py-2 text-xs text-primary outline-none focus:border-cba-gold/30"
                     >
                       {ACCOUNT_TYPES.map((t) => (
-                        <option key={t} value={t} className="bg-[#0a0a0f]">
+                        <option key={t} value={t} className="bg-base">
                           {t.replace('_', ' ')}
                         </option>
                       ))}
@@ -373,8 +373,8 @@ export function AccountManager() {
                       className={cn(
                         'flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-xl border transition-all text-xs font-bold uppercase tracking-wider',
                         editValues.isBusinessAccount
-                          ? 'bg-[#FFCC00]/10 border-[#FFCC00]/30 text-[#FFCC00]'
-                          : 'bg-white/5 border-white/10 text-zinc-500 hover:text-zinc-300 hover:border-white/20',
+                          ? 'bg-cba-gold/10 border-cba-gold/30 text-cba-gold'
+                          : 'bg-overlay border-border text-muted hover:text-primary hover:border-border',
                       )}
                     >
                       {editValues.isBusinessAccount ? (
@@ -403,7 +403,7 @@ export function AccountManager() {
                     txns
                   </span>
                 </div>
-                <div className="w-px h-3 bg-white/5" />
+                <div className="w-px h-3 bg-overlay" />
                 <div className="flex items-center gap-1 text-[8px] font-bold text-zinc-600 uppercase tracking-wider">
                   <CalendarDays className="w-2.5 h-2.5" />
                   <span>{formatRelativeDate(account.updatedAt)}</span>
@@ -424,7 +424,7 @@ export function AccountManager() {
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-white/5">
+              <div className="flex items-center justify-between pt-3 border-t border-border/50">
                 <div className="flex items-center gap-3">
                   <Badge variant="secondary" className="text-[8px]">
                     {account.accountType.replace('_', ' ')}
@@ -458,7 +458,7 @@ export function AccountManager() {
           <button
             type="button"
             onClick={() => setFilter('all')}
-            className="mt-3 px-4 py-2 min-h-[44px] text-[9px] font-black text-[#FFCC00] uppercase tracking-wider hover:underline"
+            className="mt-3 px-4 py-2 min-h-[44px] text-[9px] font-black text-cba-gold uppercase tracking-wider hover:underline"
           >
             Show all accounts
           </button>

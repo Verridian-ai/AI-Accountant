@@ -80,7 +80,7 @@ const recommendationConfig = {
   },
   stay: {
     label: 'Stay',
-    color: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
+    color: 'bg-zinc-500/10 text-secondary border-zinc-500/20',
     icon: MinusCircle,
   },
 };
@@ -148,10 +148,10 @@ export function RefinanceAnalysis() {
   return (
     <div className="space-y-6">
       {/* Input Form */}
-      <Card className="neu-raised border-white/5">
+      <Card className="neu-raised border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ArrowRightLeft className="w-5 h-5 text-[#FFCC00]" />
+            <ArrowRightLeft className="w-5 h-5 text-cba-gold" />
             Refinance Analysis
           </CardTitle>
           <CardDescription>
@@ -237,8 +237,8 @@ export function RefinanceAnalysis() {
                   key={feature}
                   className={`cursor-pointer transition-colors ${
                     input.features.includes(feature)
-                      ? 'bg-[#FFCC00]/20 text-[#FFCC00] border-[#FFCC00]/30'
-                      : 'bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10'
+                      ? 'bg-cba-gold/20 text-cba-gold border-cba-gold/30'
+                      : 'bg-overlay text-secondary border-border hover:bg-overlay-hover'
                   }`}
                   onClick={() => toggleFeature(feature)}
                 >
@@ -250,7 +250,7 @@ export function RefinanceAnalysis() {
           <Button
             onClick={handleAnalyze}
             disabled={loading}
-            className="bg-[#FFCC00] text-[#0a0a0f] hover:bg-[#e6b800]"
+            className="bg-cba-gold text-base hover:bg-[#e6b800]"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Analyze Refinance Options
@@ -282,17 +282,17 @@ export function RefinanceAnalysis() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <p className="text-sm text-zinc-400">Potential Annual Saving</p>
-                  <p className="text-3xl font-bold text-[#FFCC00]">
+                  <p className="text-sm text-secondary">Potential Annual Saving</p>
+                  <p className="text-3xl font-bold text-cba-gold">
                     {formatCurrency(result.summary.potential_annual_saving / 100)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-zinc-400 mb-1">Best Available Rate</p>
+                  <p className="text-sm text-secondary mb-1">Best Available Rate</p>
                   <p className="text-2xl font-bold text-emerald-400">
                     {(result.summary.best_rate * 100).toFixed(2)}%
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted">
                     vs your {(result.summary.current_rate * 100).toFixed(2)}%
                   </p>
                 </div>
@@ -312,7 +312,7 @@ export function RefinanceAnalysis() {
 
           {/* Alternatives Table */}
           {result.alternatives.length > 0 && (
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardHeader>
                 <CardTitle>Market Alternatives</CardTitle>
               </CardHeader>
@@ -320,7 +320,7 @@ export function RefinanceAnalysis() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-xs text-zinc-500 uppercase border-b border-white/5">
+                      <tr className="text-xs text-muted uppercase border-b border-border/50">
                         <th className="text-left py-2 pr-3">Lender</th>
                         <th className="text-left py-2 px-2">Product</th>
                         <th className="text-right py-2 px-2">Rate</th>
@@ -334,19 +334,19 @@ export function RefinanceAnalysis() {
                       {result.alternatives.map((alt, i) => {
                         const cfg = recommendationConfig[alt.recommendation];
                         return (
-                          <tr key={i} className="border-b border-white/5 last:border-0">
+                          <tr key={i} className="border-b border-border/50 last:border-0">
                             <td className="py-3 pr-3 font-medium">{alt.lender}</td>
-                            <td className="py-3 px-2 text-zinc-400">{alt.product}</td>
+                            <td className="py-3 px-2 text-secondary">{alt.product}</td>
                             <td className="text-right py-3 px-2 text-emerald-400">
                               {(alt.rate * 100).toFixed(2)}%
                             </td>
                             <td className="text-right py-3 px-2">
                               {formatCurrency(alt.monthly_saving / 100)}
                             </td>
-                            <td className="text-right py-3 px-2 font-medium text-[#FFCC00]">
+                            <td className="text-right py-3 px-2 font-medium text-cba-gold">
                               {formatCurrency(alt.lifetime_saving / 100)}
                             </td>
-                            <td className="text-right py-3 px-2 text-zinc-400">
+                            <td className="text-right py-3 px-2 text-secondary">
                               {alt.break_even_months} mo
                             </td>
                             <td className="text-center py-3 pl-2">
@@ -364,7 +364,7 @@ export function RefinanceAnalysis() {
 
           {/* Feature Match */}
           {result.alternatives.some((a) => a.feature_match.length > 0) && (
-            <Card className="neu-raised border-white/5">
+            <Card className="neu-raised border-border/50">
               <CardHeader>
                 <CardTitle className="text-base">Feature Matching</CardTitle>
               </CardHeader>

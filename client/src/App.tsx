@@ -65,7 +65,7 @@ import { TrendingUp, TrendingDown, Wallet, Receipt } from 'lucide-react';
 function PageSpinner() {
   return (
     <div className="flex items-center justify-center py-20">
-      <div className="w-8 h-8 border-2 border-[#FFCC00]/30 border-t-[#FFCC00] rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-cba-gold/30 border-t-[#FFCC00] rounded-full animate-spin" />
     </div>
   );
 }
@@ -277,7 +277,7 @@ function AppContent() {
       <TenantSettings />
       <MemberManager />
       <PermissionMatrix />
-      <div className="border-t border-white/5 pt-8">
+      <div className="border-t border-border/50 pt-8">
         <TenantCreate />
       </div>
     </div>

@@ -50,7 +50,7 @@ export function AdminTransactionsView() {
     return (
       <div className="space-y-3 animate-pulse p-4">
         {[...Array(8)].map((_, i) => (
-          <div key={i} className="h-10 bg-white/5 rounded-xl" />
+          <div key={i} className="h-10 bg-overlay rounded-xl" />
         ))}
       </div>
     );
@@ -60,10 +60,10 @@ export function AdminTransactionsView() {
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center">
         <span className="text-red-400 font-bold">Error loading transactions</span>
-        <span className="text-zinc-500 text-sm">{error}</span>
+        <span className="text-muted text-sm">{error}</span>
         <button
           onClick={() => fetchPage(0, false)}
-          className="px-4 py-2 text-xs font-black uppercase tracking-widest text-[#FFCC00] neu-raised-sm rounded-xl border border-[#FFCC00]/10 hover:border-[#FFCC00]/30 transition-colors"
+          className="px-4 py-2 text-xs font-black uppercase tracking-widest text-cba-gold neu-raised-sm rounded-xl border border-cba-gold/10 hover:border-cba-gold/30 transition-colors"
         >
           Retry
         </button>
@@ -74,7 +74,7 @@ export function AdminTransactionsView() {
   if (transactions.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-12 text-center">
-        <span className="text-zinc-500 font-bold">No transactions found</span>
+        <span className="text-muted font-bold">No transactions found</span>
         <span className="text-zinc-600 text-sm">The admin endpoint returned an empty dataset.</span>
       </div>
     );
@@ -87,24 +87,24 @@ export function AdminTransactionsView() {
       {/* Header */}
       <div className="flex items-center justify-between px-1">
         <div>
-          <h2 className="text-base font-black text-white tracking-tight">All Transactions</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <h2 className="text-base font-black text-primary tracking-tight">All Transactions</h2>
+          <p className="text-xs text-muted mt-0.5">
             Showing {transactions.length} of {total} across all tenants
           </p>
         </div>
         <button
           onClick={() => fetchPage(0, false)}
-          className="px-3 py-1.5 text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
+          className="px-3 py-1.5 text-xs font-black uppercase tracking-widest text-secondary hover:text-primary border border-border hover:border-border rounded-lg transition-colors"
         >
           Refresh
         </button>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-2xl border border-white/5">
+      <div className="overflow-x-auto rounded-2xl border border-border/50">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/5 bg-black/30">
+            <tr className="border-b border-border/50 bg-black/30">
               <th className="px-4 py-3 text-left text-xs font-black text-zinc-600 uppercase tracking-widest">
                 Date
               </th>
@@ -131,10 +131,10 @@ export function AdminTransactionsView() {
                 key={tx.id}
                 className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors"
               >
-                <td className="px-4 py-2.5 text-zinc-400 font-mono text-xs whitespace-nowrap">
+                <td className="px-4 py-2.5 text-secondary font-mono text-xs whitespace-nowrap">
                   {tx.date}
                 </td>
-                <td className="px-4 py-2.5 text-zinc-200 max-w-[260px] truncate">
+                <td className="px-4 py-2.5 text-primary max-w-[260px] truncate">
                   {tx.description}
                 </td>
                 <td
@@ -144,10 +144,10 @@ export function AdminTransactionsView() {
                 >
                   <CurrencyDisplay amount={tx.amount} />
                 </td>
-                <td className="px-4 py-2.5 text-zinc-400 text-xs">
+                <td className="px-4 py-2.5 text-secondary text-xs">
                   {tx.category ?? <span className="text-zinc-600">—</span>}
                 </td>
-                <td className="px-4 py-2.5 text-zinc-500 text-xs font-mono truncate max-w-[120px]">
+                <td className="px-4 py-2.5 text-muted text-xs font-mono truncate max-w-[120px]">
                   {tx.accountId ?? <span className="text-zinc-700">—</span>}
                 </td>
                 <td className="px-4 py-2.5 text-zinc-600 text-xs font-mono">
@@ -165,7 +165,7 @@ export function AdminTransactionsView() {
           <button
             onClick={handleLoadMore}
             disabled={loading}
-            className="px-6 py-2.5 text-xs font-black uppercase tracking-widest text-[#FFCC00] neu-raised-sm rounded-xl border border-[#FFCC00]/10 hover:border-[#FFCC00]/30 transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 text-xs font-black uppercase tracking-widest text-cba-gold neu-raised-sm rounded-xl border border-cba-gold/10 hover:border-cba-gold/30 transition-colors disabled:opacity-50"
           >
             {loading ? 'Loading…' : `Load More (${total - transactions.length} remaining)`}
           </button>

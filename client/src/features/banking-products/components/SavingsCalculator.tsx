@@ -54,14 +54,14 @@ export function SavingsCalculator() {
     <div className="space-y-6">
       {/* Input Form */}
       <div className="neu-raised rounded-2xl p-5 space-y-4">
-        <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-          <Calculator className="h-4 w-4 text-[#FFCC00]" />
+        <h3 className="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+          <Calculator className="h-4 w-4 text-cba-gold" />
           How much could you save?
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">
+            <label className="text-xs text-muted font-semibold block mb-1">
               Current Rate (%)
             </label>
             <input
@@ -73,7 +73,7 @@ export function SavingsCalculator() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">Loan Balance</label>
+            <label className="text-xs text-muted font-semibold block mb-1">Loan Balance</label>
             <input
               type="number"
               value={balance}
@@ -82,7 +82,7 @@ export function SavingsCalculator() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">
+            <label className="text-xs text-muted font-semibold block mb-1">
               Monthly Repayment
             </label>
             <input
@@ -93,7 +93,7 @@ export function SavingsCalculator() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 font-semibold block mb-1">
+            <label className="text-xs text-muted font-semibold block mb-1">
               Remaining Term (yrs)
             </label>
             <input
@@ -108,7 +108,7 @@ export function SavingsCalculator() {
         <button
           onClick={handleCalculate}
           disabled={loading}
-          className="px-6 py-2.5 rounded-xl bg-[#FFCC00] text-[#0a0a0f] text-sm font-bold hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+          className="px-6 py-2.5 rounded-xl bg-cba-gold text-base text-sm font-bold hover:bg-[#FFD633] transition-colors disabled:opacity-50"
         >
           {loading ? 'Calculating...' : 'Find Savings'}
         </button>
@@ -119,11 +119,11 @@ export function SavingsCalculator() {
         <>
           {results.length === 0 ? (
             <div className="neu-raised rounded-2xl p-8 text-center">
-              <p className="text-zinc-500">No better alternatives found at this time</p>
+              <p className="text-muted">No better alternatives found at this time</p>
             </div>
           ) : (
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-zinc-300">
+              <h3 className="text-sm font-bold text-primary">
                 {results.length} alternative{results.length !== 1 ? 's' : ''} found
               </h3>
               {results.map((r, idx) => (
@@ -132,21 +132,21 @@ export function SavingsCalculator() {
                   className={cn(
                     'neu-raised rounded-2xl p-5 space-y-3',
                     idx === 0 &&
-                      'border border-[#FFCC00]/30 shadow-[0_0_20px_rgba(255,204,0,0.05)]',
+                      'border border-cba-gold/30 shadow-[0_0_20px_rgba(255,204,0,0.05)]',
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-sm font-bold text-zinc-100">{r.name}</p>
-                      <p className="text-xs text-zinc-500">{r.provider}</p>
+                      <p className="text-xs text-muted">{r.provider}</p>
                     </div>
                     <div className="text-right">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-zinc-500 line-through">
+                        <span className="text-muted line-through">
                           {currentRate.toFixed(2)}%
                         </span>
                         <ArrowRight className="h-3 w-3 text-zinc-600" />
-                        <span className="text-[#FFCC00] font-bold">{formatRate(r.newRate)}</span>
+                        <span className="text-cba-gold font-bold">{formatRate(r.newRate)}</span>
                       </div>
                     </div>
                   </div>
@@ -155,7 +155,7 @@ export function SavingsCalculator() {
                     <div>
                       <div className="flex items-center gap-1 mb-1">
                         <DollarSign className="h-3 w-3 text-emerald-400" />
-                        <span className="text-[10px] text-zinc-500 uppercase">Monthly Saving</span>
+                        <span className="text-[10px] text-muted uppercase">Monthly Saving</span>
                       </div>
                       <p className="text-lg font-black text-emerald-400">
                         {formatCurrency(r.monthlySaving)}
@@ -164,7 +164,7 @@ export function SavingsCalculator() {
                     <div>
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingDown className="h-3 w-3 text-cyan-400" />
-                        <span className="text-[10px] text-zinc-500 uppercase">Annual Saving</span>
+                        <span className="text-[10px] text-muted uppercase">Annual Saving</span>
                       </div>
                       <p className="text-lg font-black text-cyan-400">
                         {formatCurrency(r.annualSaving)}
@@ -172,18 +172,18 @@ export function SavingsCalculator() {
                     </div>
                     <div>
                       <div className="flex items-center gap-1 mb-1">
-                        <Calculator className="h-3 w-3 text-[#FFCC00]" />
-                        <span className="text-[10px] text-zinc-500 uppercase">Lifetime Saving</span>
+                        <Calculator className="h-3 w-3 text-cba-gold" />
+                        <span className="text-[10px] text-muted uppercase">Lifetime Saving</span>
                       </div>
-                      <p className="text-lg font-black text-[#FFCC00]">
+                      <p className="text-lg font-black text-cba-gold">
                         {formatCurrency(r.lifetimeSaving)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-xs text-zinc-500">
+                  <div className="text-xs text-muted">
                     New monthly repayment:{' '}
-                    <span className="text-zinc-300 font-semibold">
+                    <span className="text-primary font-semibold">
                       {formatCurrency(r.newMonthlyRepayment)}
                     </span>
                   </div>

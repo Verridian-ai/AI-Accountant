@@ -89,7 +89,7 @@ export function SystemMetricsCharts() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white">System Metrics</h2>
+        <h2 className="text-2xl font-bold text-primary">System Metrics</h2>
         <div className="animate-pulse h-64 rounded-2xl bg-[#16213e]" />
       </div>
     );
@@ -99,8 +99,8 @@ export function SystemMetricsCharts() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">System Metrics</h2>
-          <p className="text-sm text-zinc-500">
+          <h2 className="text-2xl font-bold text-primary">System Metrics</h2>
+          <p className="text-sm text-muted">
             Memory, CPU, API latency, and database performance
           </p>
         </div>
@@ -111,7 +111,7 @@ export function SystemMetricsCharts() {
               type="button"
               onClick={() => setTimeRange(r)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                timeRange === r ? 'bg-[#FFCC00] text-[#1a1a2e]' : 'text-zinc-400 hover:text-white'
+                timeRange === r ? 'bg-cba-gold text-[#1a1a2e]' : 'text-secondary hover:text-primary'
               }`}
             >
               {r}
@@ -127,11 +127,11 @@ export function SystemMetricsCharts() {
           <HardDrive className="w-5 h-5 text-blue-400 mb-2" />
           <div className="relative">
             {gaugeArc(metrics?.memory?.pct ?? 0, '#3b82f6')}
-            <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white rotate-90">
+            <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-primary rotate-90">
               {(metrics?.memory?.pct ?? 0).toFixed(0)}%
             </span>
           </div>
-          <p className="text-xs text-zinc-400 mt-2">Memory Usage</p>
+          <p className="text-xs text-secondary mt-2">Memory Usage</p>
           <p className="text-[10px] text-zinc-600">
             {((metrics?.memory?.used ?? 0) / 1073741824).toFixed(1)}GB /{' '}
             {((metrics?.memory?.total ?? 0) / 1073741824).toFixed(1)}GB
@@ -143,21 +143,21 @@ export function SystemMetricsCharts() {
           <Cpu className="w-5 h-5 text-emerald-400 mb-2" />
           <div className="relative">
             {gaugeArc(metrics?.cpu?.usage ?? 0, '#10b981')}
-            <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white rotate-90">
+            <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-primary rotate-90">
               {(metrics?.cpu?.usage ?? 0).toFixed(0)}%
             </span>
           </div>
-          <p className="text-xs text-zinc-400 mt-2">CPU Usage</p>
+          <p className="text-xs text-secondary mt-2">CPU Usage</p>
         </div>
 
         {/* API Latency */}
         <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-5 flex flex-col items-center">
-          <Wifi className="w-5 h-5 text-[#FFCC00] mb-2" />
-          <p className="text-3xl font-bold text-white">
+          <Wifi className="w-5 h-5 text-cba-gold mb-2" />
+          <p className="text-3xl font-bold text-primary">
             {(metrics?.apiLatency?.avg ?? 0).toFixed(0)}
           </p>
-          <p className="text-xs text-zinc-400 mt-1">Avg Latency (ms)</p>
-          <div className="flex gap-4 mt-2 text-[10px] text-zinc-500">
+          <p className="text-xs text-secondary mt-1">Avg Latency (ms)</p>
+          <div className="flex gap-4 mt-2 text-[10px] text-muted">
             <span>P95: {(metrics?.apiLatency?.p95 ?? 0).toFixed(0)}ms</span>
             <span>P99: {(metrics?.apiLatency?.p99 ?? 0).toFixed(0)}ms</span>
           </div>
@@ -166,11 +166,11 @@ export function SystemMetricsCharts() {
         {/* Database */}
         <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-5 flex flex-col items-center">
           <Clock className="w-5 h-5 text-violet-400 mb-2" />
-          <p className="text-3xl font-bold text-white">
+          <p className="text-3xl font-bold text-primary">
             {(metrics?.database?.queryAvgMs ?? 0).toFixed(1)}
           </p>
-          <p className="text-xs text-zinc-400 mt-1">DB Avg Query (ms)</p>
-          <p className="text-[10px] text-zinc-500 mt-2">
+          <p className="text-xs text-secondary mt-1">DB Avg Query (ms)</p>
+          <p className="text-[10px] text-muted mt-2">
             Pool: {metrics?.database?.connectionPool ?? 0}/{metrics?.database?.maxConnections ?? 0}
           </p>
         </div>
@@ -180,45 +180,45 @@ export function SystemMetricsCharts() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Memory History */}
         <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
-          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
             <HardDrive className="w-4 h-4 text-blue-400" /> Memory History
           </h3>
           {renderSparkline(metrics?.memory?.history || [], '#3b82f6', metrics?.memory?.total)}
           {(!metrics?.memory?.history || metrics.memory.history.length < 2) && (
-            <p className="text-xs text-zinc-500 text-center py-4">Insufficient data</p>
+            <p className="text-xs text-muted text-center py-4">Insufficient data</p>
           )}
         </div>
 
         {/* CPU History */}
         <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
-          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
             <Cpu className="w-4 h-4 text-emerald-400" /> CPU History
           </h3>
           {renderSparkline(metrics?.cpu?.history || [], '#10b981', 100)}
           {(!metrics?.cpu?.history || metrics.cpu.history.length < 2) && (
-            <p className="text-xs text-zinc-500 text-center py-4">Insufficient data</p>
+            <p className="text-xs text-muted text-center py-4">Insufficient data</p>
           )}
         </div>
 
         {/* API Latency History */}
         <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
-          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-            <Wifi className="w-4 h-4 text-[#FFCC00]" /> API Latency History
+          <h3 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+            <Wifi className="w-4 h-4 text-cba-gold" /> API Latency History
           </h3>
           {renderSparkline(metrics?.apiLatency?.history || [], '#FFCC00')}
           {(!metrics?.apiLatency?.history || metrics.apiLatency.history.length < 2) && (
-            <p className="text-xs text-zinc-500 text-center py-4">Insufficient data</p>
+            <p className="text-xs text-muted text-center py-4">Insufficient data</p>
           )}
         </div>
 
         {/* Database History */}
         <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
-          <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-violet-400" /> Database Query Time
           </h3>
           {renderSparkline(metrics?.database?.history || [], '#8b5cf6')}
           {(!metrics?.database?.history || metrics.database.history.length < 2) && (
-            <p className="text-xs text-zinc-500 text-center py-4">Insufficient data</p>
+            <p className="text-xs text-muted text-center py-4">Insufficient data</p>
           )}
         </div>
       </div>

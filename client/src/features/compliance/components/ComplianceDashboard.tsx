@@ -88,25 +88,25 @@ export function ComplianceDashboard() {
       <div className="neu-raised rounded-2xl p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="neu-inset p-3 rounded-xl text-[#FFCC00]">
+            <div className="neu-inset p-3 rounded-xl text-cba-gold">
               <ShieldCheck className="h-8 w-8" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gradient-gold">Compliance Monitor</h2>
-              <p className="text-sm text-zinc-500">Australian tax compliance & anomaly detection</p>
+              <p className="text-sm text-muted">Australian tax compliance & anomaly detection</p>
             </div>
           </div>
 
           <div className="sm:ml-auto flex items-center gap-3">
             {loading ? (
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-secondary" />
             ) : (
               <div className="flex items-center gap-2 neu-inset px-4 py-2 rounded-xl">
-                <span className="text-xs text-zinc-500 font-bold">Health:</span>
+                <span className="text-xs text-muted font-bold">Health:</span>
                 <span className={cn('text-2xl font-bold tabular-nums', healthColor)}>
                   {stats.healthScore}
                 </span>
-                <span className="text-xs text-zinc-500">/100</span>
+                <span className="text-xs text-muted">/100</span>
               </div>
             )}
           </div>
@@ -118,28 +118,28 @@ export function ComplianceDashboard() {
             <AlertTriangle className="h-5 w-5 text-red-400 shrink-0" />
             <div>
               <p className="text-lg font-bold text-red-400 tabular-nums">{stats.overdue}</p>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold">Overdue</p>
+              <p className="text-[10px] text-muted uppercase font-bold">Overdue</p>
             </div>
           </div>
           <div className="neu-inset rounded-xl p-3 flex items-center gap-3">
             <Clock className="h-5 w-5 text-yellow-400 shrink-0" />
             <div>
               <p className="text-lg font-bold text-yellow-400 tabular-nums">{stats.dueSoon}</p>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold">Due Soon</p>
+              <p className="text-[10px] text-muted uppercase font-bold">Due Soon</p>
             </div>
           </div>
           <div className="neu-inset rounded-xl p-3 flex items-center gap-3">
             <CheckCircle className="h-5 w-5 text-emerald-400 shrink-0" />
             <div>
               <p className="text-lg font-bold text-emerald-400 tabular-nums">{stats.compliant}</p>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold">Compliant</p>
+              <p className="text-[10px] text-muted uppercase font-bold">Compliant</p>
             </div>
           </div>
           <div className="neu-inset rounded-xl p-3 flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-orange-400 shrink-0" />
             <div>
               <p className="text-lg font-bold text-orange-400 tabular-nums">{stats.totalAlerts}</p>
-              <p className="text-[10px] text-zinc-500 uppercase font-bold">Alerts</p>
+              <p className="text-[10px] text-muted uppercase font-bold">Alerts</p>
             </div>
           </div>
         </div>
@@ -154,8 +154,8 @@ export function ComplianceDashboard() {
             className={cn(
               'px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300',
               activeTab === tab.id
-                ? 'bg-[#FFCC00] text-[#0a0a0f] shadow-[0_0_20px_rgba(255,204,0,0.2)]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 neu-raised-sm',
+                ? 'bg-cba-gold text-base shadow-[0_0_20px_rgba(255,204,0,0.2)]'
+                : 'text-secondary hover:text-primary hover:bg-overlay neu-raised-sm',
             )}
           >
             {tab.label}

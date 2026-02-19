@@ -151,7 +151,7 @@ export function renderWidget(
       );
     default:
       return (
-        <div className="flex items-center justify-center h-full text-zinc-500 text-sm">
+        <div className="flex items-center justify-center h-full text-muted text-sm">
           Unknown widget type: {widget.chartType}
         </div>
       );

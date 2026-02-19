@@ -64,26 +64,26 @@ export function CogneeSearchTester() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-white">Cognee Search Tester</h2>
-        <p className="text-sm text-zinc-500">Test search queries across knowledge base datasets</p>
+        <h2 className="text-2xl font-bold text-primary">Cognee Search Tester</h2>
+        <p className="text-sm text-muted">Test search queries across knowledge base datasets</p>
       </div>
 
       {/* Search Form */}
       <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 space-y-4">
         <div>
-          <label htmlFor="search-query" className="block text-xs text-zinc-400 mb-2">
+          <label htmlFor="search-query" className="block text-xs text-secondary mb-2">
             Search Query
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
                 id="search-query"
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="w-full pl-10 pr-4 py-3 bg-[#1a1a2e] border border-white/10 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-[#FFCC00]/50"
+                className="w-full pl-10 pr-4 py-3 bg-[#1a1a2e] border border-border rounded-xl text-primary placeholder-zinc-600 focus:outline-none focus:border-cba-gold/50"
                 placeholder="Enter search query..."
               />
             </div>
@@ -91,7 +91,7 @@ export function CogneeSearchTester() {
               type="button"
               onClick={handleSearch}
               disabled={loading || !query.trim()}
-              className="px-6 py-3 bg-[#FFCC00] text-[#1a1a2e] font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-3 bg-cba-gold text-[#1a1a2e] font-bold rounded-xl flex items-center gap-2 disabled:opacity-50"
             >
               <Play className="w-4 h-4" />
               {loading ? 'Searching...' : 'Search'}
@@ -101,7 +101,7 @@ export function CogneeSearchTester() {
 
         {/* Dataset Selection */}
         <div>
-          <label className="block text-xs text-zinc-400 mb-2">
+          <label className="block text-xs text-secondary mb-2">
             <Database className="w-3 h-3 inline mr-1" /> Datasets{' '}
             {selectedDatasets.length > 0 && `(${selectedDatasets.length})`}
           </label>
@@ -113,22 +113,22 @@ export function CogneeSearchTester() {
                 onClick={() => toggleItem(selectedDatasets, ds, setSelectedDatasets)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   selectedDatasets.includes(ds)
-                    ? 'bg-[#FFCC00]/10 text-[#FFCC00] border border-[#FFCC00]/20'
-                    : 'bg-[#1a1a2e] text-zinc-400 border border-white/5 hover:border-white/10'
+                    ? 'bg-cba-gold/10 text-cba-gold border border-cba-gold/20'
+                    : 'bg-[#1a1a2e] text-secondary border border-border/50 hover:border-border'
                 }`}
               >
                 {ds}
               </button>
             ))}
             {datasets.length === 0 && (
-              <p className="text-xs text-zinc-500">No datasets available</p>
+              <p className="text-xs text-muted">No datasets available</p>
             )}
           </div>
         </div>
 
         {/* Search Types */}
         <div>
-          <label className="block text-xs text-zinc-400 mb-2">Search Types</label>
+          <label className="block text-xs text-secondary mb-2">Search Types</label>
           <div className="flex flex-wrap gap-2">
             {SEARCH_TYPES.map((st) => (
               <button
@@ -138,7 +138,7 @@ export function CogneeSearchTester() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   selectedTypes.includes(st)
                     ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
-                    : 'bg-[#1a1a2e] text-zinc-400 border border-white/5 hover:border-white/10'
+                    : 'bg-[#1a1a2e] text-secondary border border-border/50 hover:border-border'
                 }`}
               >
                 {st}
@@ -149,7 +149,7 @@ export function CogneeSearchTester() {
 
         {/* Top K */}
         <div className="flex items-center gap-3">
-          <label htmlFor="search-top-k" className="text-xs text-zinc-400">
+          <label htmlFor="search-top-k" className="text-xs text-secondary">
             Top K:
           </label>
           <input
@@ -159,7 +159,7 @@ export function CogneeSearchTester() {
             max={20}
             value={topK}
             onChange={(e) => setTopK(parseInt(e.target.value) || 5)}
-            className="w-20 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-white text-sm text-center focus:outline-none focus:border-[#FFCC00]/50"
+            className="w-20 px-3 py-1.5 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm text-center focus:outline-none focus:border-cba-gold/50"
           />
         </div>
       </div>
@@ -181,11 +181,11 @@ export function CogneeSearchTester() {
               className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <h3 className="text-sm font-bold text-primary flex items-center gap-2">
                   <Search className="w-4 h-4 text-violet-400" />
                   {r.searchType}
                 </h3>
-                <div className="flex items-center gap-1 text-xs text-zinc-500">
+                <div className="flex items-center gap-1 text-xs text-muted">
                   <Clock className="w-3 h-3" />
                   {r.latencyMs}ms
                 </div>
@@ -194,25 +194,25 @@ export function CogneeSearchTester() {
                 {r.results.map((item, ii) => (
                   <div
                     key={ii}
-                    className="py-3 px-4 rounded-xl bg-[#1a1a2e] border-l-2 border-[#FFCC00]/20"
+                    className="py-3 px-4 rounded-xl bg-[#1a1a2e] border-l-2 border-cba-gold/20"
                   >
-                    <p className="text-sm text-zinc-300 whitespace-pre-wrap">{item.text}</p>
+                    <p className="text-sm text-primary whitespace-pre-wrap">{item.text}</p>
                     {item.score !== undefined && (
                       <div className="mt-2 flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full bg-[#0a0a1a] overflow-hidden">
                           <div
-                            className="h-full bg-[#FFCC00] rounded-full"
+                            className="h-full bg-cba-gold rounded-full"
                             style={{ width: `${item.score * 100}%` }}
                           />
                         </div>
-                        <span className="text-[10px] text-zinc-500">
+                        <span className="text-[10px] text-muted">
                           {(item.score * 100).toFixed(1)}%
                         </span>
                       </div>
                     )}
                   </div>
                 ))}
-                {r.results.length === 0 && <p className="text-xs text-zinc-500">No results</p>}
+                {r.results.length === 0 && <p className="text-xs text-muted">No results</p>}
               </div>
             </div>
           ))}

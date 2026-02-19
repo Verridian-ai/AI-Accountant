@@ -142,10 +142,10 @@ export function SplitTransactionModal({
         aria-modal="true"
         aria-labelledby="split-modal-title"
         aria-describedby="split-modal-description"
-        className="neu-raised rounded-[2.5rem] w-full max-w-2xl overflow-hidden relative border border-white/5 shadow-2xl"
+        className="neu-raised rounded-[2.5rem] w-full max-w-2xl overflow-hidden relative border border-border/50 shadow-2xl"
       >
         {/* Header */}
-        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/1">
+        <div className="p-8 border-b border-border/50 flex justify-between items-center bg-white/1">
           <div className="flex items-center gap-4">
             <div className="p-3 neu-inset rounded-2xl text-purple-400">
               <Scissors className="h-6 w-6" />
@@ -159,7 +159,7 @@ export function SplitTransactionModal({
               </h3>
               <p
                 id="split-modal-description"
-                className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1"
+                className="text-xs text-muted font-bold uppercase tracking-widest mt-1"
               >
                 Splitting: {transaction.description}
               </p>
@@ -168,7 +168,7 @@ export function SplitTransactionModal({
           <button
             ref={firstFocusableRef}
             onClick={onCancel}
-            className="neu-raised-sm p-3 rounded-2xl text-zinc-500 hover:text-red-400 btn-press"
+            className="neu-raised-sm p-3 rounded-2xl text-muted hover:text-red-400 btn-press"
             aria-label="Close modal"
             title="Close modal"
           >
@@ -181,14 +181,14 @@ export function SplitTransactionModal({
           {splits.map((split, idx) => (
             <div
               key={idx}
-              className="neu-raised-sm p-6 rounded-3xl space-y-5 relative group border border-white/5 hover:border-purple-500/20 transition-all"
+              className="neu-raised-sm p-6 rounded-3xl space-y-5 relative group border border-border/50 hover:border-purple-500/20 transition-all"
             >
-              <div className="flex justify-between items-center border-b border-white/5 pb-4">
+              <div className="flex justify-between items-center border-b border-border/50 pb-4">
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 neu-inset rounded-full flex items-center justify-center text-xs font-black text-[#FFCC00]">
+                  <span className="w-6 h-6 neu-inset rounded-full flex items-center justify-center text-xs font-black text-cba-gold">
                     {idx + 1}
                   </span>
-                  <span className="text-xs font-black uppercase text-zinc-500 tracking-[0.2em]">
+                  <span className="text-xs font-black uppercase text-muted tracking-[0.2em]">
                     Split Part
                   </span>
                 </div>
@@ -246,7 +246,7 @@ export function SplitTransactionModal({
                           const value = parseFloat(e.target.value) || 0;
                           updateSplit(idx, { amount: Math.round(value * 100) });
                         }}
-                        className="w-full pl-8 pr-4 py-4 text-sm neu-inset rounded-2xl text-[#FFCC00] font-bold focus-gold outline-none"
+                        className="w-full pl-8 pr-4 py-4 text-sm neu-inset rounded-2xl text-cba-gold font-bold focus-gold outline-none"
                       />
                     </div>
                   </div>
@@ -284,7 +284,7 @@ export function SplitTransactionModal({
                     aria-label={`Description for split part ${idx + 1}`}
                     value={split.description}
                     onChange={(e) => updateSplit(idx, { description: e.target.value })}
-                    className="w-full p-4 text-sm neu-inset rounded-2xl text-[#FFCC00] font-bold focus-gold outline-none"
+                    className="w-full p-4 text-sm neu-inset rounded-2xl text-cba-gold font-bold focus-gold outline-none"
                     placeholder="Enter description..."
                   />
                 </div>
@@ -295,7 +295,7 @@ export function SplitTransactionModal({
           {/* Add Split Button */}
           <button
             onClick={addSplit}
-            className="w-full py-6 border-2 border-dashed border-zinc-800 rounded-4xl text-zinc-600 hover:text-[#FFCC00] hover:border-[#FFCC00]/30 hover:bg-[#FFCC00]/5 transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.2em] text-xs"
+            className="w-full py-6 border-2 border-dashed border-zinc-800 rounded-4xl text-zinc-600 hover:text-cba-gold hover:border-cba-gold/30 hover:bg-cba-gold/5 transition-all flex items-center justify-center gap-3 font-black uppercase tracking-[0.2em] text-xs"
             aria-label="Add another split part"
           >
             <Plus className="h-5 w-5" /> Add Split
@@ -303,17 +303,17 @@ export function SplitTransactionModal({
         </div>
 
         {/* Footer with totals and actions */}
-        <div className="p-8 border-t border-white/5 bg-white/1 flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div className="p-8 border-t border-border/50 bg-white/1 flex flex-col sm:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
               <span className="text-xs font-black text-zinc-600 uppercase tracking-widest">
                 Original Amount
               </span>
-              <span className="text-sm font-bold text-zinc-400">
+              <span className="text-sm font-bold text-secondary">
                 ${formatCurrency(transaction.amount)}
               </span>
             </div>
-            <div className="w-px h-8 bg-white/5" />
+            <div className="w-px h-8 bg-overlay" />
             <div className="flex flex-col">
               <span className="text-xs font-black text-zinc-600 uppercase tracking-widest">
                 Remaining
@@ -339,7 +339,7 @@ export function SplitTransactionModal({
             <button
               onClick={onCancel}
               disabled={isSaving}
-              className="flex-1 sm:flex-none px-8 py-4 rounded-2xl text-zinc-500 font-bold text-xs uppercase tracking-widest neu-raised-sm btn-press disabled:opacity-50"
+              className="flex-1 sm:flex-none px-8 py-4 rounded-2xl text-muted font-bold text-xs uppercase tracking-widest neu-raised-sm btn-press disabled:opacity-50"
             >
               Cancel
             </button>
@@ -347,7 +347,7 @@ export function SplitTransactionModal({
               ref={lastFocusableRef}
               onClick={onSave}
               disabled={!isBalanced || isSaving}
-              className="flex-1 sm:flex-none px-10 py-4 rounded-2xl cba-gold-gradient text-[#0a0a0f] font-black text-xs uppercase tracking-[0.2em] cba-gold-glow btn-press disabled:opacity-30 disabled:grayscale"
+              className="flex-1 sm:flex-none px-10 py-4 rounded-2xl cba-gold-gradient text-base font-black text-xs uppercase tracking-[0.2em] cba-gold-glow btn-press disabled:opacity-30 disabled:grayscale"
               aria-describedby={!isBalanced ? 'split-error-message' : undefined}
             >
               {isSaving ? 'Saving...' : 'Confirm Split'}

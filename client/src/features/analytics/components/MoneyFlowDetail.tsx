@@ -61,13 +61,13 @@ function MoneyFlowDetailInner({
   const totalAmount = sorted.reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
-    <div className="absolute right-0 top-0 h-full w-80 neu-raised rounded-l-xl border-l border-[#FFCC00]/20 z-50 flex flex-col overflow-hidden">
+    <div className="absolute right-0 top-0 h-full w-80 neu-raised rounded-l-xl border-l border-cba-gold/20 z-50 flex flex-col overflow-hidden">
       {/* Gold header bar */}
-      <div className="bg-gradient-to-r from-[#FFCC00]/20 to-[#CC9900]/10 border-b border-[#FFCC00]/30 px-4 py-3 flex items-center justify-between shrink-0">
-        <h3 className="text-[#FFCC00] font-semibold text-sm truncate pr-2">{title}</h3>
+      <div className="bg-gradient-to-r from-[#FFCC00]/20 to-[#CC9900]/10 border-b border-cba-gold/30 px-4 py-3 flex items-center justify-between shrink-0">
+        <h3 className="text-cba-gold font-semibold text-sm truncate pr-2">{title}</h3>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-[#FFCC00] transition-colors p-1 rounded hover:bg-gray-700/50"
+          className="text-gray-400 hover:text-cba-gold transition-colors p-1 rounded hover:bg-gray-700/50"
           aria-label="Close detail panel"
         >
           <X className="w-4 h-4" />
@@ -92,7 +92,7 @@ function MoneyFlowDetailInner({
           {selectedLink && (
             <div className="col-span-2">
               <p className="text-xs text-gray-400">Flow Value</p>
-              <p className="text-sm font-bold text-[#FFCC00]">{formatAUD(selectedLink.value)}</p>
+              <p className="text-sm font-bold text-cba-gold">{formatAUD(selectedLink.value)}</p>
             </div>
           )}
         </div>

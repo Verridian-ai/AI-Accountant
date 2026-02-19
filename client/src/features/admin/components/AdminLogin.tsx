@@ -36,10 +36,10 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] mb-4">
-            <Lock className="w-8 h-8 text-[#FFCC00]" />
+            <Lock className="w-8 h-8 text-cba-gold" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Admin Console</h1>
-          <p className="text-sm text-zinc-500 mt-1">GoldLedger Administration</p>
+          <h1 className="text-2xl font-bold text-primary">Admin Console</h1>
+          <p className="text-sm text-muted mt-1">GoldLedger Administration</p>
         </div>
 
         <form
@@ -56,17 +56,17 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
           <div>
             <label
               htmlFor="login-username"
-              className="block text-sm font-medium text-zinc-400 mb-2"
+              className="block text-sm font-medium text-secondary mb-2"
             >
               Username
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-[#1a1a2e] border border-white/10 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-[#FFCC00]/50 focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full pl-10 pr-4 py-3 bg-[#1a1a2e] border border-border rounded-xl text-primary placeholder-zinc-600 focus:outline-none focus:border-cba-gold/50 focus:ring-1 focus:ring-[#FFCC00]/30"
                 placeholder="admin"
                 required
               />
@@ -76,18 +76,18 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
           <div>
             <label
               htmlFor="login-password"
-              className="block text-sm font-medium text-zinc-400 mb-2"
+              className="block text-sm font-medium text-secondary mb-2"
             >
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
                 id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-[#1a1a2e] border border-white/10 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-[#FFCC00]/50 focus:ring-1 focus:ring-[#FFCC00]/30"
+                className="w-full pl-10 pr-4 py-3 bg-[#1a1a2e] border border-border rounded-xl text-primary placeholder-zinc-600 focus:outline-none focus:border-cba-gold/50 focus:ring-1 focus:ring-[#FFCC00]/30"
                 placeholder="Enter password"
                 required
               />
@@ -97,7 +97,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#FFCC00] text-[#1a1a2e] font-bold rounded-xl hover:bg-[#FFD633] transition-colors disabled:opacity-50"
+            className="w-full py-3 bg-cba-gold text-[#1a1a2e] font-bold rounded-xl hover:bg-[#FFD633] transition-colors disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

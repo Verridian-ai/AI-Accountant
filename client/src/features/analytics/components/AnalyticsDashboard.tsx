@@ -21,16 +21,16 @@ export function AnalyticsDashboard() {
         <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gradient-gold">
           Analytics & Insights
         </h2>
-        <p className="text-xs sm:text-sm text-zinc-500">
+        <p className="text-xs sm:text-sm text-muted">
           Deep-dive into spending patterns, budgets, and forecasts
         </p>
       </div>
 
       {/* KPI Summary Cards with Sparklines */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <div className="neu-raised rounded-2xl border border-white/5 p-3 sm:p-4 flex items-center justify-between">
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4 flex items-center justify-between">
           <div>
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Income</p>
+            <p className="text-[9px] font-black text-muted uppercase tracking-widest">Income</p>
             <p className="text-base sm:text-lg font-black text-emerald-400 tabular-nums">$5,400</p>
           </div>
           <Sparkline
@@ -42,9 +42,9 @@ export function AnalyticsDashboard() {
             trend="up"
           />
         </div>
-        <div className="neu-raised rounded-2xl border border-white/5 p-3 sm:p-4 flex items-center justify-between">
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4 flex items-center justify-between">
           <div>
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
               Expenses
             </p>
             <p className="text-base sm:text-lg font-black text-red-400 tabular-nums">$3,500</p>
@@ -58,10 +58,10 @@ export function AnalyticsDashboard() {
             trend="up"
           />
         </div>
-        <div className="neu-raised rounded-2xl border border-white/5 p-3 sm:p-4 flex items-center justify-between">
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4 flex items-center justify-between">
           <div>
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Net</p>
-            <p className="text-base sm:text-lg font-black text-[#FFCC00] tabular-nums">$1,900</p>
+            <p className="text-[9px] font-black text-muted uppercase tracking-widest">Net</p>
+            <p className="text-base sm:text-lg font-black text-cba-gold tabular-nums">$1,900</p>
           </div>
           <Sparkline
             data={NET_TREND}
@@ -72,12 +72,12 @@ export function AnalyticsDashboard() {
             trend="up"
           />
         </div>
-        <div className="neu-raised rounded-2xl border border-white/5 p-3 sm:p-4 flex items-center justify-between">
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4 flex items-center justify-between">
           <div>
-            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
+            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
               Transactions
             </p>
-            <p className="text-base sm:text-lg font-black text-zinc-200 tabular-nums">47</p>
+            <p className="text-base sm:text-lg font-black text-primary tabular-nums">47</p>
           </div>
           <Sparkline
             data={COUNT_TREND}
