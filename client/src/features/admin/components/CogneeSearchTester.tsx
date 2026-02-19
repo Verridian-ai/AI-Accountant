@@ -198,15 +198,14 @@ export function CogneeSearchTester() {
                     {item.score !== undefined && (
                       <div className="mt-2 flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full bg-[#0a0a1a] overflow-hidden">
-                          {(() => {
-                            const barStyle = { width: `${item.score! * 100}%` };
-                            return (
-                              <div
-                                className="h-full bg-cba-gold rounded-full"
-                                style={barStyle}
-                              />
-                            );
-                          })()}
+                          <div
+                            className="h-full bg-cba-gold rounded-full transition-all duration-300"
+                            ref={(el) => {
+                              if (el && item.score !== undefined) {
+                                el.style.width = `${item.score * 100}%`;
+                              }
+                            }}
+                          />
                         </div>
                         <span className="text-[10px] text-muted">
                           {(item.score * 100).toFixed(1)}%

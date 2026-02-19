@@ -36,8 +36,8 @@ export function AgentCostDashboard() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadCosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   const maxAgentCost = data?.byAgent?.reduce((max, a) => Math.max(max, a.costCents), 0) || 1;

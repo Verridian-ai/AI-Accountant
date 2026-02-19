@@ -50,210 +50,6 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
     setChartConfig((prev) => ({ ...prev, [key]: value }));
   };
 
-  const renderChartSpecificFields = () => {
-    switch (widget.chartType) {
-      case 'bar':
-        return (
-          <>
-            <FieldGroup label="Data Keys (comma-separated)">
-              <input
-                type="text"
-                value={
-                  Array.isArray(chartConfig.dataKeys)
-                    ? (chartConfig.dataKeys as string[]).join(', ')
-                    : ''
-                }
-                onChange={(e) =>
-                  updateConfig(
-                    'dataKeys',
-                    e.target.value
-                      .split(',')
-                      .map((s) => s.trim())
-                      .filter(Boolean),
-                  )
-                }
-                className="config-input"
-                placeholder="value, count"
-              />
-            </FieldGroup>
-            <FieldGroup label="X-Axis Key">
-              <input
-                type="text"
-                value={(chartConfig.xAxisKey as string) ?? ''}
-                onChange={(e) => updateConfig('xAxisKey', e.target.value)}
-                className="config-input"
-                placeholder="name"
-              />
-            </FieldGroup>
-            <FieldGroup label="Stacked">
-              <label htmlFor="dashb-f1" className="flex items-center gap-2 cursor-pointer">
-                <input id="dashb-f1"
-                  type="checkbox"
-                  checked={Boolean(chartConfig.stacked)}
-                  onChange={(e) => updateConfig('stacked', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
-                />
-                <span className="text-sm text-primary">Enable stacking</span>
-              </label>
-            </FieldGroup>
-          </>
-        );
-      case 'line':
-        return (
-          <>
-            <FieldGroup label="Data Keys (comma-separated)">
-              <input
-                type="text"
-                value={
-                  Array.isArray(chartConfig.dataKeys)
-                    ? (chartConfig.dataKeys as string[]).join(', ')
-                    : ''
-                }
-                onChange={(e) =>
-                  updateConfig(
-                    'dataKeys',
-                    e.target.value
-                      .split(',')
-                      .map((s) => s.trim())
-                      .filter(Boolean),
-                  )
-                }
-                className="config-input"
-                placeholder="value"
-              />
-            </FieldGroup>
-            <FieldGroup label="X-Axis Key">
-              <input
-                type="text"
-                value={(chartConfig.xAxisKey as string) ?? ''}
-                onChange={(e) => updateConfig('xAxisKey', e.target.value)}
-                className="config-input"
-                placeholder="date"
-              />
-            </FieldGroup>
-            <FieldGroup label="Show Area">
-              <label htmlFor="dashb-f2" className="flex items-center gap-2 cursor-pointer">
-                <input id="dashb-f2"
-                  type="checkbox"
-                  checked={Boolean(chartConfig.showArea)}
-                  onChange={(e) => updateConfig('showArea', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
-                />
-                <span className="text-sm text-primary">Fill area under line</span>
-              </label>
-            </FieldGroup>
-            <FieldGroup label="Curved">
-              <label htmlFor="dashb-f3" className="flex items-center gap-2 cursor-pointer">
-                <input id="dashb-f3"
-                  type="checkbox"
-                  checked={chartConfig.curved !== false}
-                  onChange={(e) => updateConfig('curved', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
-                />
-                <span className="text-sm text-primary">Smooth curves</span>
-              </label>
-            </FieldGroup>
-          </>
-        );
-      case 'pie':
-      case 'donut':
-        return (
-          <>
-            <FieldGroup label="Show Labels">
-              <label htmlFor="dashb-f4" className="flex items-center gap-2 cursor-pointer">
-                <input id="dashb-f4"
-                  type="checkbox"
-                  checked={chartConfig.showLabels !== false}
-                  onChange={(e) => updateConfig('showLabels', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
-                />
-                <span className="text-sm text-primary">Show labels</span>
-              </label>
-            </FieldGroup>
-            <FieldGroup label="Show Legend">
-              <label htmlFor="dashb-f5" className="flex items-center gap-2 cursor-pointer">
-                <input id="dashb-f5"
-                  type="checkbox"
-                  checked={chartConfig.showLegend !== false}
-                  onChange={(e) => updateConfig('showLegend', e.target.checked)}
-                  className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
-                />
-                <span className="text-sm text-primary">Show legend</span>
-              </label>
-            </FieldGroup>
-            {widget.chartType === 'donut' && (
-              <FieldGroup label="Inner Radius">
-                <input
-                  type="number"
-                  aria-label="Inner Radius"
-                  value={(chartConfig.innerRadius as number) ?? 60}
-                  onChange={(e) => updateConfig('innerRadius', Number(e.target.value))}
-                  className="config-input"
-                  min={0}
-                  max={120}
-                />
-              </FieldGroup>
-            )}
-          </>
-        );
-      case 'scatter':
-        return (
-          <>
-            <FieldGroup label="X-Axis Key">
-              <input
-                type="text"
-                value={(chartConfig.xKey as string) ?? ''}
-                onChange={(e) => updateConfig('xKey', e.target.value)}
-                className="config-input"
-                placeholder="x"
-              />
-            </FieldGroup>
-            <FieldGroup label="Y-Axis Key">
-              <input
-                type="text"
-                value={(chartConfig.yKey as string) ?? ''}
-                onChange={(e) => updateConfig('yKey', e.target.value)}
-                className="config-input"
-                placeholder="y"
-              />
-            </FieldGroup>
-          </>
-        );
-      case 'kpi':
-        return (
-          <>
-            <FieldGroup label="Metric Label">
-              <input
-                type="text"
-                value={(chartConfig.metricLabel as string) ?? ''}
-                onChange={(e) => updateConfig('metricLabel', e.target.value)}
-                className="config-input"
-                placeholder="Total Revenue"
-              />
-            </FieldGroup>
-            <FieldGroup label="Format">
-              <select
-                aria-label="Format"
-                value={(chartConfig.format as string) ?? 'currency'}
-                onChange={(e) => updateConfig('format', e.target.value)}
-                className="config-input"
-              >
-                <option value="currency">Currency (AUD)</option>
-                <option value="number">Number</option>
-                <option value="percent">Percentage</option>
-              </select>
-            </FieldGroup>
-          </>
-        );
-      default:
-        return (
-          <p className="text-xs text-muted italic">
-            No additional configuration for this chart type.
-          </p>
-        );
-    }
-  };
-
   return (
     <>
       {/* Overlay */}
@@ -318,7 +114,11 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
             <h4 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">
               Chart Settings ({widget.chartType})
             </h4>
-            {renderChartSpecificFields()}
+            <ChartSpecificFields
+              chartType={widget.chartType}
+              chartConfig={chartConfig}
+              updateConfig={updateConfig}
+            />
           </div>
 
           {/* Widget size */}
@@ -423,4 +223,197 @@ function FieldGroup({ label, children }: { label: string; children: React.ReactN
       {children}
     </div>
   );
+}
+
+export function ChartSpecificFields({
+  chartType,
+  chartConfig,
+  updateConfig,
+}: {
+  chartType: string;
+  chartConfig: Record<string, unknown>;
+  updateConfig: (key: string, value: unknown) => void;
+}) {
+  switch (chartType) {
+    case 'bar':
+      return (
+        <>
+          <FieldGroup label="Data Keys (comma-separated)">
+            <input
+              type="text"
+              value={Array.isArray(chartConfig.dataKeys) ? (chartConfig.dataKeys as string[]).join(', ') : ''}
+              onChange={(e) => updateConfig('dataKeys', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
+              className="config-input"
+              placeholder="value, count"
+            />
+          </FieldGroup>
+          <FieldGroup label="X-Axis Key">
+            <input
+              type="text"
+              value={(chartConfig.xAxisKey as string) ?? ''}
+              onChange={(e) => updateConfig('xAxisKey', e.target.value)}
+              className="config-input"
+              placeholder="name"
+            />
+          </FieldGroup>
+          <FieldGroup label="Stacked">
+            <label htmlFor="dashb-f1" className="flex items-center gap-2 cursor-pointer">
+              <input
+                id="dashb-f1"
+                type="checkbox"
+                checked={Boolean(chartConfig.stacked)}
+                onChange={(e) => updateConfig('stacked', e.target.checked)}
+                className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
+              />
+              <span className="text-sm text-primary">Enable stacking</span>
+            </label>
+          </FieldGroup>
+        </>
+      );
+    case 'line':
+      return (
+        <>
+          <FieldGroup label="Data Keys (comma-separated)">
+            <input
+              type="text"
+              value={Array.isArray(chartConfig.dataKeys) ? (chartConfig.dataKeys as string[]).join(', ') : ''}
+              onChange={(e) => updateConfig('dataKeys', e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
+              className="config-input"
+              placeholder="value"
+            />
+          </FieldGroup>
+          <FieldGroup label="X-Axis Key">
+            <input
+              type="text"
+              value={(chartConfig.xAxisKey as string) ?? ''}
+              onChange={(e) => updateConfig('xAxisKey', e.target.value)}
+              className="config-input"
+              placeholder="date"
+            />
+          </FieldGroup>
+          <FieldGroup label="Show Area">
+            <label htmlFor="dashb-f2" className="flex items-center gap-2 cursor-pointer">
+              <input
+                id="dashb-f2"
+                type="checkbox"
+                checked={Boolean(chartConfig.showArea)}
+                onChange={(e) => updateConfig('showArea', e.target.checked)}
+                className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
+              />
+              <span className="text-sm text-primary">Fill area under line</span>
+            </label>
+          </FieldGroup>
+          <FieldGroup label="Curved">
+            <label htmlFor="dashb-f3" className="flex items-center gap-2 cursor-pointer">
+              <input
+                id="dashb-f3"
+                type="checkbox"
+                checked={chartConfig.curved !== false}
+                onChange={(e) => updateConfig('curved', e.target.checked)}
+                className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
+              />
+              <span className="text-sm text-primary">Smooth curves</span>
+            </label>
+          </FieldGroup>
+        </>
+      );
+    case 'pie':
+    case 'donut':
+      return (
+        <>
+          <FieldGroup label="Show Labels">
+            <label htmlFor="dashb-f4" className="flex items-center gap-2 cursor-pointer">
+              <input
+                id="dashb-f4"
+                type="checkbox"
+                checked={chartConfig.showLabels !== false}
+                onChange={(e) => updateConfig('showLabels', e.target.checked)}
+                className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
+              />
+              <span className="text-sm text-primary">Show labels</span>
+            </label>
+          </FieldGroup>
+          <FieldGroup label="Show Legend">
+            <label htmlFor="dashb-f5" className="flex items-center gap-2 cursor-pointer">
+              <input
+                id="dashb-f5"
+                type="checkbox"
+                checked={chartConfig.showLegend !== false}
+                onChange={(e) => updateConfig('showLegend', e.target.checked)}
+                className="rounded border-zinc-600 bg-zinc-800 text-cba-gold focus:ring-[#FFCC00]/30"
+              />
+              <span className="text-sm text-primary">Show legend</span>
+            </label>
+          </FieldGroup>
+          {chartType === 'donut' && (
+            <FieldGroup label="Inner Radius">
+              <input
+                type="number"
+                aria-label="Inner Radius"
+                value={(chartConfig.innerRadius as number) ?? 60}
+                onChange={(e) => updateConfig('innerRadius', Number(e.target.value))}
+                className="config-input"
+                min={0}
+                max={120}
+              />
+            </FieldGroup>
+          )}
+        </>
+      );
+    case 'scatter':
+      return (
+        <>
+          <FieldGroup label="X-Axis Key">
+            <input
+              type="text"
+              value={(chartConfig.xKey as string) ?? ''}
+              onChange={(e) => updateConfig('xKey', e.target.value)}
+              className="config-input"
+              placeholder="x"
+            />
+          </FieldGroup>
+          <FieldGroup label="Y-Axis Key">
+            <input
+              type="text"
+              value={(chartConfig.yKey as string) ?? ''}
+              onChange={(e) => updateConfig('yKey', e.target.value)}
+              className="config-input"
+              placeholder="y"
+            />
+          </FieldGroup>
+        </>
+      );
+    case 'kpi':
+      return (
+        <>
+          <FieldGroup label="Metric Label">
+            <input
+              type="text"
+              value={(chartConfig.metricLabel as string) ?? ''}
+              onChange={(e) => updateConfig('metricLabel', e.target.value)}
+              className="config-input"
+              placeholder="Total Revenue"
+            />
+          </FieldGroup>
+          <FieldGroup label="Format">
+            <select
+              aria-label="Format"
+              value={(chartConfig.format as string) ?? 'currency'}
+              onChange={(e) => updateConfig('format', e.target.value)}
+              className="config-input"
+            >
+              <option value="currency">Currency (AUD)</option>
+              <option value="number">Number</option>
+              <option value="percent">Percentage</option>
+            </select>
+          </FieldGroup>
+        </>
+      );
+    default:
+      return (
+        <p className="text-xs text-muted italic">
+          No additional configuration for this chart type.
+        </p>
+      );
+  }
 }
