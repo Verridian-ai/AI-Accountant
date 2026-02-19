@@ -11,8 +11,12 @@ import { sseStreamMiddleware, streamingRateLimiter } from '../services/streaming
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const streamSchemaRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+streamSchemaRoutes.use('/*', tenantAuthMiddleware());
 const streamingService = new StreamingService();
 const streamingRegistry = new StreamingRegistry();
 const schemaRegistry = new SchemaRegistry();

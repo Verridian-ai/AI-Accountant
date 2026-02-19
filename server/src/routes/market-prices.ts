@@ -40,7 +40,7 @@ priceRoutes.get('/:symbol', async (c) => {
 priceRoutes.get('/:symbol/history', async (c) => {
   const history = await marketPriceService.getPriceHistory(
     c.req.param('symbol'),
-    parseInt(c.req.query('days') ?? '30'),
+    parseInt(c.req.query('days') ?? '30', 10),
   );
   return c.json({ symbol: c.req.param('symbol'), history, count: history.length });
 });

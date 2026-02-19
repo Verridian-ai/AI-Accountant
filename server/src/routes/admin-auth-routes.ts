@@ -5,8 +5,15 @@ import { adminAuthService } from '../services/admin-auth.js';
 import { transactionRepository } from '../repositories/transaction-repository.js';
 import { pool } from '../schema/connection.js';
 import type { Context } from 'hono';
+import { adminAuthMiddleware } from '../services/admin-auth/index.js';
 
 const adminAuthRoutes = new Hono();
+
+// Apply admin auth to protected routes — /login and /refresh stay public
+adminAuthRoutes.use('/me', adminAuthMiddleware());
+adminAuthRoutes.use('/transactions', adminAuthMiddleware());
+adminAuthRoutes.use('/ledger-summary', adminAuthMiddleware());
+adminAuthRoutes.use('/bas-summary', adminAuthMiddleware());
 
 const adminLoginSchema = z.object({
   username: z.string().min(1),

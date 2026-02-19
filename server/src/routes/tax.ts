@@ -60,8 +60,8 @@ function resolvePeriod(period: string): { financialYear: string; quarter: number
     return { financialYear: fy, quarter: q };
   }
   const [year, q] = period.split('-Q');
-  const quarterNum = parseInt(q);
-  const fyStartYear = parseInt(year);
+  const quarterNum = parseInt(q, 10);
+  const fyStartYear = parseInt(year, 10);
   const financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`;
   return { financialYear, quarter: quarterNum };
 }
@@ -194,8 +194,8 @@ taxRoutes.get('/tax/calculate/:year', async (c) => {
   const taxYear = c.req.param('year');
   const query = c.req.query();
   const result = taxService.calculateFullTax(
-    parseInt(query.grossIncome || '0') / 100,
-    parseInt(query.totalDeductions || '0') / 100,
+    parseInt(query.grossIncome || '0', 10) / 100,
+    parseInt(query.totalDeductions || '0', 10) / 100,
     query.hasPrivateHealth === 'true',
     query.applyLITO !== 'false',
   );

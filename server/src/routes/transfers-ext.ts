@@ -50,17 +50,17 @@ transfersExtRoutes.post(
       type DetLinkRow = typeof transferLinks.$inferSelect;
 
       const candidates = (userTransactions as DetTxRow[]).map((t: DetTxRow) => ({
-        id: parseInt(t.id) || 0,
-        accountId: parseInt(t.accountId || '0') || 0,
+        id: parseInt(t.id, 10) || 0,
+        accountId: parseInt(t.accountId || '0', 10) || 0,
         date: t.date,
         description: t.description,
         amount: t.amount,
         isLinked: t.isTransfer ?? undefined,
-        linkedTransactionId: t.transferLinkId ? parseInt(t.transferLinkId) : undefined,
+        linkedTransactionId: t.transferLinkId ? parseInt(t.transferLinkId, 10) : undefined,
       }));
 
       const accountContexts = (userAccounts as DetAcctRow[]).map((a: DetAcctRow) => ({
-        id: parseInt(a.id) || 0,
+        id: parseInt(a.id, 10) || 0,
         accountNumber: a.accountNumber,
         bankId: a.bankName || 'unknown',
         accountName: a.accountName,
@@ -69,8 +69,8 @@ transfersExtRoutes.post(
       }));
 
       const existingLinkPairs = (existingLinks as DetLinkRow[]).map((l: DetLinkRow) => ({
-        sourceId: parseInt(l.sourceTransactionId) || 0,
-        targetId: parseInt(l.destinationTransactionId) || 0,
+        sourceId: parseInt(l.sourceTransactionId, 10) || 0,
+        targetId: parseInt(l.destinationTransactionId, 10) || 0,
       }));
 
       const matches = detectTransfers(candidates, accountContexts, existingLinkPairs);
@@ -82,10 +82,10 @@ transfersExtRoutes.post(
         const ownerContribIds: string[] = [];
         for (const match of matches) {
           const srcAcct = (userAccounts as DetAcctRow[]).find(
-            (a: DetAcctRow) => (parseInt(a.id) || 0) === match.sourceTransaction.accountId,
+            (a: DetAcctRow) => (parseInt(a.id, 10) || 0) === match.sourceTransaction.accountId,
           );
           const dstAcct = (userAccounts as DetAcctRow[]).find(
-            (a: DetAcctRow) => (parseInt(a.id) || 0) === match.targetTransaction.accountId,
+            (a: DetAcctRow) => (parseInt(a.id, 10) || 0) === match.targetTransaction.accountId,
           );
           if (srcAcct?.ownershipTag === 'personal' && dstAcct?.ownershipTag === 'business') {
             ownerContribIds.push(String(match.targetTransaction.id));

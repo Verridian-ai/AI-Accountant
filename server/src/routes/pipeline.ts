@@ -241,8 +241,8 @@ pipelineRoutes.get('/bas/prefill', async (c) => {
       return c.json({ error: 'Invalid period format. Use YYYY-Q1, YYYY-Q2, etc.' }, 400);
     }
 
-    const year = parseInt(match[1]);
-    const quarter = parseInt(match[2]);
+    const year = parseInt(match[1], 10);
+    const quarter = parseInt(match[2], 10);
     const financialYear = `${year}-${(year + 1).toString().slice(2)}`;
 
     const result = await basService.calculateBAS(userId, financialYear, quarter, 'cash');

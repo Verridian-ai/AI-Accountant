@@ -37,8 +37,8 @@ function resolvePeriod(period: string): { financialYear: string; quarter: number
     return { financialYear: fy, quarter: q };
   }
   const [year, q] = period.split('-Q');
-  const quarterNum = parseInt(q);
-  const fyStartYear = parseInt(year);
+  const quarterNum = parseInt(q, 10);
+  const fyStartYear = parseInt(year, 10);
   const financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`;
   return { financialYear, quarter: quarterNum };
 }
@@ -185,7 +185,7 @@ basRoutes.get('/calculate', async (c) => {
     const saved = await basService.getSavedBASCalculation(userId, financialYear, quarterNum);
     const status = saved?.period?.status || 'draft';
     return c.json({
-      quarter: { year: parseInt(financialYear.split('-')[0]), quarter: quarterNum },
+      quarter: { year: parseInt(financialYear.split('-')[0], 10), quarter: quarterNum },
       method: method === 'simpler' ? 'simpler' : 'full',
       labels: result.labels,
       netGST: result.netGst,

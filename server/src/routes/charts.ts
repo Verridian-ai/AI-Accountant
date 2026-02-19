@@ -1,8 +1,12 @@
 import { Hono } from 'hono';
 import { DashboardService } from '../services/dashboard.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const chartsRoutes = new Hono();
 const dashboardService = new DashboardService();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+chartsRoutes.use('/*', tenantAuthMiddleware());
 
 // GET /api/charts
 chartsRoutes.get('/', async (c) => {

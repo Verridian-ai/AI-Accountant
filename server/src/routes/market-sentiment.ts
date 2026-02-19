@@ -19,7 +19,9 @@ const sentimentRoutes = new Hono();
 sentimentRoutes.use('/*', tenantAuthMiddleware());
 
 sentimentRoutes.get('/:topic', async (c) => {
-  return c.json(await sentimentAnalysisService.getSentimentSnapshot(decodeURIComponent(c.req.param('topic'))));
+  return c.json(
+    await sentimentAnalysisService.getSentimentSnapshot(decodeURIComponent(c.req.param('topic'))),
+  );
 });
 
 sentimentRoutes.post('/batch', zValidator('json', batchSentimentSchema), async (c) => {
@@ -29,7 +31,10 @@ sentimentRoutes.post('/batch', zValidator('json', batchSentimentSchema), async (
 });
 
 sentimentRoutes.get('/:topic/history', async (c) => {
-  const history = await sentimentAnalysisService.getSentimentHistory(decodeURIComponent(c.req.param('topic')), parseInt(c.req.query('days') ?? '30'));
+  const history = await sentimentAnalysisService.getSentimentHistory(
+    decodeURIComponent(c.req.param('topic')),
+    parseInt(c.req.query('days') ?? '30', 10),
+  );
   return c.json({ topic: c.req.param('topic'), history, count: history.length });
 });
 

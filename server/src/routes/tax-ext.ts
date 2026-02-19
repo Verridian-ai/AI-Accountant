@@ -34,8 +34,8 @@ function resolvePeriod(period: string): { financialYear: string; quarter: number
     return { financialYear: fy, quarter: q };
   }
   const [year, q] = period.split('-Q');
-  const quarterNum = parseInt(q);
-  const fyStartYear = parseInt(year);
+  const quarterNum = parseInt(q, 10);
+  const fyStartYear = parseInt(year, 10);
   const financialYear = `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`;
   return { financialYear, quarter: quarterNum };
 }

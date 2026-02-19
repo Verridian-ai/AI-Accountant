@@ -4,8 +4,12 @@ import { sql } from 'drizzle-orm';
 import { schemaRegistry } from '../services/singletons.js';
 import type { AgentType } from '../services/claude/types.js';
 import { ALL_AGENT_TYPES } from './agent-routes-extended/routes-status.js';
+import { adminAuthMiddleware } from '../services/admin-auth/index.js';
 
 const migrationExtRoutes = new Hono();
+
+// Apply admin auth to all routes — schema validation and migration management are admin-only
+migrationExtRoutes.use('/*', adminAuthMiddleware());
 
 // POST /api/schemas/:agentType/validate — Validate output against schema
 migrationExtRoutes.post('/schemas/:agentType/validate', async (c) => {
