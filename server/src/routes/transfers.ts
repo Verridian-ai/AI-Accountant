@@ -26,17 +26,16 @@ transferRoutes.use('/*', tenantAuthMiddleware());
 transferRoutes.post('/detect', zValidator('json', z.object({}).optional()), async (c) => {
   const payload = c.get('jwtPayload');
   const userId = payload.userId;
-  const allTxs = await db.select().from(transactions).where(eq(transactions.userId, userId)).all();
-  const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId)).all();
+  const allTxs = await db.select().from(transactions).where(eq(transactions.userId, userId));
+  const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
   if (userAccounts.length < 2) return c.json({ message: 'Need 2+ accounts', matches: 0 });
   const existingLinks = await db
     .select()
     .from(transferLinks)
-    .where(eq(transferLinks.userId, userId))
-    .all();
+    .where(eq(transferLinks.userId, userId));
   const existingPairs = existingLinks.map((l: Record<string, unknown>) => ({
-    sourceId: l.sourceTransactionId,
-    targetId: l.destinationTransactionId,
+    sourceId: parseInt(l.sourceTransactionId as string, 10) || 0,
+    targetId: parseInt(l.destinationTransactionId as string, 10) || 0,
   }));
   const detector = new TransferDetector();
   const matches = detector.detectTransfers(

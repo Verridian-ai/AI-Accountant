@@ -24,17 +24,9 @@ export function registerTransferHandlers(app: Hono): void {
       const payload = c.get('jwtPayload');
       const userId = payload.userId;
 
-      const allTxs = await db
-        .select()
-        .from(transactions)
-        .where(eq(transactions.userId, userId))
-        .all();
+      const allTxs = await db.select().from(transactions).where(eq(transactions.userId, userId));
 
-      const userAccounts = await db
-        .select()
-        .from(accounts)
-        .where(eq(accounts.userId, userId))
-        .all();
+      const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
 
       if (userAccounts.length < 2) {
         return c.json({
@@ -46,30 +38,31 @@ export function registerTransferHandlers(app: Hono): void {
       const existingLinks = await db
         .select()
         .from(transferLinks)
-        .where(eq(transferLinks.userId, userId))
-        .all();
+        .where(eq(transferLinks.userId, userId));
       const existingPairs = existingLinks.map((l: Record<string, unknown>) => ({
-        sourceId: l.sourceTransactionId as string,
-        targetId: l.destinationTransactionId as string,
+        sourceId: parseInt(l.sourceTransactionId as string, 10) || 0,
+        targetId: parseInt(l.destinationTransactionId as string, 10) || 0,
       }));
 
       const candidates: TransferCandidate[] = allTxs.map((t: Record<string, unknown>) => ({
-        id: t.id,
-        accountId: t.accountId || '',
-        date: t.date,
-        description: t.description,
-        amount: t.amount,
-        isLinked: t.isTransfer || false,
-        linkedTransactionId: t.transferLinkId || undefined,
+        id: parseInt(t.id as string, 10) || 0,
+        accountId: parseInt((t.accountId as string) || '0', 10) || 0,
+        date: t.date as string,
+        description: t.description as string,
+        amount: t.amount as number,
+        isLinked: (t.isTransfer as boolean) || false,
+        linkedTransactionId: t.transferLinkId
+          ? parseInt(t.transferLinkId as string, 10)
+          : undefined,
       }));
 
       const accountContexts: AccountContext[] = userAccounts.map((a: Record<string, unknown>) => ({
-        id: a.id,
-        accountNumber: a.accountNumber,
-        bankId: a.bankName || '',
-        accountName: a.accountName,
-        accountType: a.accountType,
-        ownershipTag: a.ownershipTag || 'business',
+        id: parseInt(a.id as string, 10) || 0,
+        accountNumber: a.accountNumber as string,
+        bankId: (a.bankName as string) || '',
+        accountName: a.accountName as string,
+        accountType: a.accountType as string,
+        ownershipTag: ((a.ownershipTag as string) || 'business') as 'personal' | 'business',
       }));
 
       const detector = new TransferDetector();

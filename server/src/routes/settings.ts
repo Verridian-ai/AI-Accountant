@@ -50,7 +50,7 @@ settingsRoutes.use('/*', tenantAuthMiddleware());
 settingsRoutes.get('/settings', async (c) => {
   const payload = c.get('jwtPayload');
   const userId = payload.userId;
-  let settings = await db.select().from(userSettings).where(eq(userSettings.userId, userId)).get();
+  let settings = (await db.select().from(userSettings).where(eq(userSettings.userId, userId)))[0];
 
   if (!settings) {
     // Create default settings if not exists
@@ -77,7 +77,7 @@ settingsRoutes.patch('/settings', zValidator('json', updateSettingsSchema), asyn
 
   await db.update(userSettings).set(body).where(eq(userSettings.userId, userId));
 
-  const updated = await db.select().from(userSettings).where(eq(userSettings.userId, userId)).get();
+  const updated = (await db.select().from(userSettings).where(eq(userSettings.userId, userId)))[0];
   return c.json(updated);
 });
 
@@ -90,11 +90,9 @@ settingsRoutes.get('/business-profile', async (c) => {
   const payload = c.get('jwtPayload');
   const userId = payload.userId;
 
-  const profile = await db
-    .select()
-    .from(businessProfiles)
-    .where(eq(businessProfiles.userId, userId))
-    .get();
+  const profile = (
+    await db.select().from(businessProfiles).where(eq(businessProfiles.userId, userId))
+  )[0];
 
   if (!profile) {
     // Return empty profile structure (not created yet)
@@ -176,11 +174,9 @@ settingsRoutes.post('/business-profile', zValidator('json', businessProfileSchem
   const now = new Date().toISOString();
 
   // Check if profile exists
-  const existing = await db
-    .select()
-    .from(businessProfiles)
-    .where(eq(businessProfiles.userId, userId))
-    .get();
+  const existing = (
+    await db.select().from(businessProfiles).where(eq(businessProfiles.userId, userId))
+  )[0];
 
   const profileData = {
     abn: normalizedABN,
@@ -202,25 +198,28 @@ settingsRoutes.post('/business-profile', zValidator('json', businessProfileSchem
     updatedAt: now,
   };
 
+  type ProfileUpdateData = Partial<typeof businessProfiles.$inferInsert>;
+  const safeProfileData = profileData as unknown as ProfileUpdateData;
   if (existing) {
     // Update existing profile
-    await db.update(businessProfiles).set(profileData).where(eq(businessProfiles.userId, userId));
+    await db
+      .update(businessProfiles)
+      .set(safeProfileData)
+      .where(eq(businessProfiles.userId, userId));
   } else {
     // Create new profile
     await db.insert(businessProfiles).values({
+      ...(safeProfileData as typeof businessProfiles.$inferInsert),
       id: crypto.randomUUID(),
       userId,
-      ...profileData,
       createdAt: now,
     });
   }
 
   // Fetch and return updated profile
-  const updatedProfile = await db
-    .select()
-    .from(businessProfiles)
-    .where(eq(businessProfiles.userId, userId))
-    .get();
+  const updatedProfile = (
+    await db.select().from(businessProfiles).where(eq(businessProfiles.userId, userId))
+  )[0];
 
   return c.json({
     success: true,

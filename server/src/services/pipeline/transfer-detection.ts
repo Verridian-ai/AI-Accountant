@@ -59,35 +59,33 @@ export async function detectTransfers(
     logger.info(`[Pipeline] Running transfer detection...`);
 
     // Get all user transactions (including newly inserted ones)
-    const allUserTxs = await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.userId, userId))
-      .all();
+    const allUserTxs = await db.select().from(transactions).where(eq(transactions.userId, userId));
 
     // Get all user accounts
-    const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId)).all();
+    const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
 
     if (userAccounts.length > 1 && allUserTxs.length > 1) {
       // Convert to TransferCandidate format
       const candidates: TransferCandidate[] = allUserTxs.map((t: Record<string, unknown>) => ({
-        id: t.id as string,
-        accountId: (t.accountId as string) || '',
+        id: parseInt(t.id as string, 10) || 0,
+        accountId: parseInt((t.accountId as string) || '0', 10) || 0,
         date: t.date as string,
         description: t.description as string,
         amount: t.amount as number,
         isLinked: (t.isTransfer as boolean) || false,
-        linkedTransactionId: (t.transferLinkId as string) || undefined,
+        linkedTransactionId: t.transferLinkId
+          ? parseInt(t.transferLinkId as string, 10)
+          : undefined,
       }));
 
       // Convert accounts to AccountContext format
       const accountContexts: AccountContext[] = userAccounts.map((a: Record<string, unknown>) => ({
-        id: a.id as string,
+        id: parseInt(a.id as string, 10) || 0,
         accountNumber: a.accountNumber as string,
         bankId: (a.bankName as string) || '',
         accountName: a.accountName as string,
         accountType: a.accountType as string,
-        ownershipTag: (a.ownershipTag as string) || 'business',
+        ownershipTag: ((a.ownershipTag as string) || 'business') as 'personal' | 'business',
       }));
 
       const detector = new TransferDetector();

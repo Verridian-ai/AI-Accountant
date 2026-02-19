@@ -27,8 +27,7 @@ export async function scanForecastDeviations(
     const scenarios: ForecastScenarioRow[] = await db
       .select()
       .from(forecastScenarios)
-      .where(and(eq(forecastScenarios.userId, userId), eq(forecastScenarios.status, 'active')))
-      .all();
+      .where(and(eq(forecastScenarios.userId, userId), eq(forecastScenarios.status, 'active')));
 
     if (scenarios.length === 0) return insights;
 
@@ -36,15 +35,14 @@ export async function scanForecastDeviations(
       const periods: ForecastPeriodRow[] = await db
         .select()
         .from(forecastPeriods)
-        .where(eq(forecastPeriods.scenarioId, scenario.id))
-        .all();
+        .where(eq(forecastPeriods.scenarioId, scenario.id));
 
       if (periods.length === 0) continue;
 
-      const actuals: Array<{ month: string; total: number }> = await db
+      const actuals: Array<{ month: string; total: number }> = (await db
         .select({
-          month: sql`substr(${transactions.date}, 1, 7)`,
-          total: sql`sum(${transactions.amount})`,
+          month: sql<string>`substr(${transactions.date}, 1, 7)`,
+          total: sql<number>`sum(${transactions.amount})`,
         })
         .from(transactions)
         .where(
@@ -54,8 +52,10 @@ export async function scanForecastDeviations(
             lte(transactions.date, timeRange.end),
           ),
         )
-        .groupBy(sql`substr(${transactions.date}, 1, 7)`)
-        .all();
+        .groupBy(sql`substr(${transactions.date}, 1, 7)`)) as Array<{
+        month: string;
+        total: number;
+      }>;
 
       const actualMap = new Map(actuals.map((a) => [a.month, Number(a.total ?? 0)]));
       let deviations = 0;
@@ -117,8 +117,7 @@ export async function scanTaxOpportunities(
       .select()
       .from(taxYearSummary)
       .where(eq(taxYearSummary.userId, userId))
-      .orderBy(desc(taxYearSummary.taxYear))
-      .all();
+      .orderBy(desc(taxYearSummary.taxYear));
 
     if (taxSummaries.length === 0) return insights;
 
@@ -128,18 +127,19 @@ export async function scanTaxOpportunities(
     const deductionRatio = grossIncome > 0 ? totalDeductions / grossIncome : 0;
 
     if (deductionRatio < 0.15 && grossIncome > 5000000) {
-      const expenseResult = await db
-        .select({ total: sql`sum(abs(${transactions.amount}))` })
-        .from(transactions)
-        .where(
-          and(
-            eq(transactions.userId, userId),
-            sql`${transactions.amount} < 0`,
-            gte(transactions.date, timeRange.start),
-            lte(transactions.date, timeRange.end),
-          ),
-        )
-        .get();
+      const expenseResult = (
+        await db
+          .select({ total: sql`sum(abs(${transactions.amount}))` })
+          .from(transactions)
+          .where(
+            and(
+              eq(transactions.userId, userId),
+              sql`${transactions.amount} < 0`,
+              gte(transactions.date, timeRange.start),
+              lte(transactions.date, timeRange.end),
+            ),
+          )
+      )[0];
 
       const expenseTotal = Number(expenseResult?.total ?? 0);
 

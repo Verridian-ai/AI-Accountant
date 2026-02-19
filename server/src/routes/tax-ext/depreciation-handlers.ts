@@ -30,8 +30,7 @@ export function registerDepreciationHandlers(app: Hono): void {
       const assets = await db
         .select()
         .from(depreciableAssets)
-        .where(eq(depreciableAssets.userId, userId))
-        .all();
+        .where(eq(depreciableAssets.userId, userId));
       return c.json(assets);
     } catch (err) {
       console.error('Failed to get depreciable assets:', err);
@@ -55,9 +54,12 @@ export function registerDepreciationHandlers(app: Hono): void {
         assetCategory: body.assetCategory,
         purchaseDate: body.purchaseDate,
         purchaseCost: body.purchaseCost,
+        effectiveLife: body.effectiveLifeYears,
         effectiveLifeYears: body.effectiveLifeYears,
         depreciationMethod: body.depreciationMethod || 'diminishing',
         businessUsePercentage: body.businessUsePercentage || 100,
+        openingValue: body.purchaseCost,
+        currentValue: body.purchaseCost,
         openingWrittenDownValue: body.purchaseCost,
         currentWrittenDownValue: body.purchaseCost,
         isInstantWriteOff: body.isInstantWriteOff || false,
@@ -82,17 +84,18 @@ export function registerDepreciationHandlers(app: Hono): void {
       const userId = payload.userId;
       const assetId = c.req.param('assetId');
 
-      const asset = await db
-        .select()
-        .from(depreciableAssets)
-        .where(and(eq(depreciableAssets.id, assetId), eq(depreciableAssets.userId, userId)))
-        .get();
+      const asset = (
+        await db
+          .select()
+          .from(depreciableAssets)
+          .where(and(eq(depreciableAssets.id, assetId), eq(depreciableAssets.userId, userId)))
+      )[0];
 
       if (!asset) return c.json({ error: 'Asset not found' }, 404);
 
       const result = taxService.calculateDepreciation(
         asset.purchaseCost,
-        asset.effectiveLifeYears,
+        asset.effectiveLifeYears ?? asset.effectiveLife,
         asset.openingWrittenDownValue || asset.purchaseCost,
         asset.depreciationMethod as 'diminishing' | 'prime_cost',
         asset.businessUsePercentage || 100,

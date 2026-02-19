@@ -47,14 +47,14 @@ export async function getModuleMetrics(
           tx_count?: number;
           avg_amount?: number;
         }
-        const monthly: TxMonthlyMetric[] = await db
+        const monthly: TxMonthlyMetric[] = (await db
           .select({
-            month: sql`substr(${transactions.date}, 1, 7)`,
-            totalIncome: sql`sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end)`,
-            totalExpense: sql`sum(case when ${transactions.amount} < 0 then abs(${transactions.amount}) else 0 end)`,
-            netFlow: sql`sum(${transactions.amount})`,
-            txCount: sql`count(*)`,
-            avgAmount: sql`avg(abs(${transactions.amount}))`,
+            month: sql<string>`substr(${transactions.date}, 1, 7)`,
+            totalIncome: sql<number>`sum(case when ${transactions.amount} > 0 then ${transactions.amount} else 0 end)`,
+            totalExpense: sql<number>`sum(case when ${transactions.amount} < 0 then abs(${transactions.amount}) else 0 end)`,
+            netFlow: sql<number>`sum(${transactions.amount})`,
+            txCount: sql<number>`count(*)`,
+            avgAmount: sql<number>`avg(abs(${transactions.amount}))`,
           })
           .from(transactions)
           .where(
@@ -65,8 +65,7 @@ export async function getModuleMetrics(
             ),
           )
           .groupBy(sql`substr(${transactions.date}, 1, 7)`)
-          .orderBy(sql`substr(${transactions.date}, 1, 7)`)
-          .all();
+          .orderBy(sql`substr(${transactions.date}, 1, 7)`)) as unknown as TxMonthlyMetric[];
 
         metrics['income'] = monthly.map((m) => Number(m.totalIncome ?? m.total_income ?? 0));
         metrics['expense'] = monthly.map((m) => Number(m.totalExpense ?? m.total_expense ?? 0));
@@ -81,8 +80,7 @@ export async function getModuleMetrics(
           .select()
           .from(taxYearSummary)
           .where(eq(taxYearSummary.userId, userId))
-          .orderBy(taxYearSummary.taxYear)
-          .all();
+          .orderBy(taxYearSummary.taxYear);
 
         metrics['gross_income'] = summaries.map((s) => Number(s.grossIncome ?? 0));
         metrics['total_deductions'] = summaries.map((s) => Number(s.totalDeductions ?? 0));
@@ -92,7 +90,7 @@ export async function getModuleMetrics(
       }
 
       case 'bas': {
-        const basRows: BasCalculationRow[] = await db.select().from(basCalculations).all();
+        const basRows: BasCalculationRow[] = await db.select().from(basCalculations);
 
         metrics['gst_collected'] = basRows.map((b) => Number(b.labelG1 ?? 0));
         metrics['gst_paid'] = basRows.map((b) => Number(b.labelG11 ?? 0));
@@ -111,8 +109,7 @@ export async function getModuleMetrics(
               lte(kpiMetrics.period, timeRange.end.slice(0, 7)),
             ),
           )
-          .orderBy(kpiMetrics.period)
-          .all();
+          .orderBy(kpiMetrics.period);
 
         const metricGroups = new Map<string, number[]>();
         for (const kpi of kpis) {
@@ -130,15 +127,13 @@ export async function getModuleMetrics(
         const scenarios: ForecastScenarioRow[] = await db
           .select()
           .from(forecastScenarios)
-          .where(eq(forecastScenarios.userId, userId))
-          .all();
+          .where(eq(forecastScenarios.userId, userId));
 
         for (const sc of scenarios) {
           const periods: ForecastPeriodRow[] = await db
             .select()
             .from(forecastPeriods)
-            .where(eq(forecastPeriods.scenarioId, sc.id))
-            .all();
+            .where(eq(forecastPeriods.scenarioId, sc.id));
 
           metrics[`forecast_${sc.name ?? 'unnamed'}`] = periods.map((p) =>
             Number(p.forecastAmount ?? 0),

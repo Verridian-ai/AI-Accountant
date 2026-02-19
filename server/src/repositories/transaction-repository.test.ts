@@ -31,6 +31,9 @@ vi.mock('../schema.js', () => ({
   transactionHistory: {},
 }));
 
+type MockedDb = Record<string, ReturnType<typeof vi.fn>>;
+const mockDb = db as unknown as MockedDb;
+
 describe('TransactionRepository', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,8 +49,7 @@ describe('TransactionRepository', () => {
         offset: 5,
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (db.select as any).mockReturnValueOnce({
+      mockDb.select.mockReturnValueOnce({
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         orderBy: vi.fn().mockReturnThis(),
@@ -56,8 +58,7 @@ describe('TransactionRepository', () => {
         all: vi.fn().mockResolvedValue([{ id: 'tx1' }]),
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (db.select as any).mockReturnValueOnce({
+      mockDb.select.mockReturnValueOnce({
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
         get: vi.fn().mockResolvedValue({ count: 1 }),
@@ -67,16 +68,16 @@ describe('TransactionRepository', () => {
 
       expect(result.data).toEqual([{ id: 'tx1' }]);
       expect(result.total).toBe(1);
-      expect(db.select).toHaveBeenCalledTimes(2);
+      expect(mockDb.select).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('findById', () => {
     it('should query by id and userId', async () => {
       await transactionRepository.findById('user1', 'tx1');
-      expect(db.select).toHaveBeenCalled();
-      expect(db.from).toHaveBeenCalled();
-      expect(db.where).toHaveBeenCalled();
+      expect(mockDb.select).toHaveBeenCalled();
+      expect(mockDb.from).toHaveBeenCalled();
+      expect(mockDb.where).toHaveBeenCalled();
     });
   });
 
@@ -86,8 +87,8 @@ describe('TransactionRepository', () => {
       await transactionRepository.createMany(
         txs as Parameters<typeof transactionRepository.createMany>[0],
       );
-      expect(db.insert).toHaveBeenCalled();
-      expect(db.values).toHaveBeenCalledWith(txs);
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(mockDb.values).toHaveBeenCalledWith(txs);
     });
   });
 });
