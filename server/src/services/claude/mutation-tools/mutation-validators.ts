@@ -11,6 +11,7 @@ import { SAFE_IDENTIFIER_RE, MUTABLE_TABLES } from '../mutation-tools-constants.
 export interface MutationDb {
   all(sql: string, params?: unknown[]): Promise<Array<Record<string, unknown>>>;
   run(sql: string, params?: unknown[]): Promise<{ changes?: number } | undefined>;
+  execute(sql: string, params?: unknown[]): Promise<{ changes?: number } | undefined>;
 }
 
 export function validateTableName(table: string): void {

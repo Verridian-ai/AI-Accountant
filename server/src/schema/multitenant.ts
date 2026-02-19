@@ -1,10 +1,22 @@
-import { pgTable, text, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, text, integer, boolean, jsonb } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 
 // IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
 // The wrapPgDb() proxy stores the literal string 'CURRENT_TIMESTAMP' in PostgreSQL
 // instead of evaluating it. All inserts MUST set timestamp fields explicitly:
 //   createdAt: new Date().toISOString()   (see repositories/*.ts)
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+export const tenantRoleEnum = pgEnum('tenant_role', [
+  'viewer',
+  'bookkeeper',
+  'accountant',
+  'admin',
+  'owner',
+]);
 
 // ============================================================================
 // MULTI-TENANT (Wave 23)
@@ -21,7 +33,7 @@ export const tenants = pgTable('tenants', {
   industry: text('industry'),
   financialYearEnd: text('financial_year_end').default('06-30'),
   timezone: text('timezone').default('Australia/Sydney'),
-  settingsJson: text('settings_json').default('{}'),
+  settingsJson: jsonb('settings_json').$type<Record<string, unknown>>().default({}),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
@@ -35,7 +47,7 @@ export const tenantMembers = pgTable('tenant_members', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  role: text('role').notNull().default('viewer'),
+  role: tenantRoleEnum('role').notNull().default('viewer'),
   displayName: text('display_name'),
   isPrimaryContact: boolean('is_primary_contact').notNull().default(false),
   invitedBy: text('invited_by').references(() => users.id),
@@ -51,7 +63,7 @@ export const tenantInvitations = pgTable('tenant_invitations', {
     .notNull()
     .references(() => tenants.id, { onDelete: 'cascade' }),
   email: text('email').notNull(),
-  role: text('role').notNull().default('viewer'),
+  role: tenantRoleEnum('role').notNull().default('viewer'),
   invitedBy: text('invited_by')
     .notNull()
     .references(() => users.id),
@@ -77,7 +89,7 @@ export const rolePermissions = pgTable('role_permissions', {
   tenantId: text('tenant_id')
     .notNull()
     .references(() => tenants.id, { onDelete: 'cascade' }),
-  role: text('role').notNull(),
+  role: tenantRoleEnum('role').notNull(),
   permissionId: text('permission_id')
     .notNull()
     .references(() => permissions.id, { onDelete: 'cascade' }),
@@ -97,7 +109,7 @@ export const subscriptionPlans = pgTable('subscription_plans', {
   maxTransactionsPerMonth: integer('max_transactions_per_month').notNull().default(500),
   maxAiQueriesPerMonth: integer('max_ai_queries_per_month').notNull().default(50),
   maxStorageMb: integer('max_storage_mb').notNull().default(100),
-  featuresJson: text('features_json').default('[]'),
+  featuresJson: jsonb('features_json').$type<string[]>().default([]),
   isActive: boolean('is_active').notNull().default(true),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),

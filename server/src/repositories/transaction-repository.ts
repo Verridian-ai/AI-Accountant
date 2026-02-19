@@ -54,16 +54,14 @@ export class TransactionRepository {
         .where(and(...conditions))
         .orderBy(desc(transactions.date))
         .limit(limit)
-        .offset(offset)
-        .all() as Promise<Array<typeof transactions.$inferSelect>>,
+        .offset(offset) as Promise<Array<typeof transactions.$inferSelect>>,
       db
         .select({ count: sql<number>`count(*)` })
         .from(transactions)
-        .where(and(...conditions))
-        .get() as Promise<{ count: number } | undefined>,
+        .where(and(...conditions)) as Promise<Array<{ count: number }>>,
     ]);
 
-    return { data: result, total: countResult?.count ?? 0 };
+    return { data: result, total: (countResult as Array<{ count: number }>)?.[0]?.count ?? 0 };
   }
 
   /**
@@ -92,8 +90,8 @@ export class TransactionRepository {
     // Only apply a limit if explicitly requested (e.g. preview calls)
     const results: Array<typeof transactions.$inferSelect> =
       limit !== undefined
-        ? await (query.limit(limit).all() as Promise<Array<typeof transactions.$inferSelect>>)
-        : await (query.all() as Promise<Array<typeof transactions.$inferSelect>>);
+        ? await (query.limit(limit) as Promise<Array<typeof transactions.$inferSelect>>)
+        : await (query as Promise<Array<typeof transactions.$inferSelect>>);
     return results;
   }
 
@@ -164,16 +162,14 @@ export class TransactionRepository {
         .where(whereClause)
         .orderBy(desc(transactions.date))
         .limit(limit)
-        .offset(offset)
-        .all() as Promise<Array<typeof transactions.$inferSelect>>,
+        .offset(offset) as Promise<Array<typeof transactions.$inferSelect>>,
       db
         .select({ count: sql<number>`count(*)` })
         .from(transactions)
-        .where(whereClause)
-        .get() as Promise<{ count: number } | undefined>,
+        .where(whereClause) as Promise<Array<{ count: number }>>,
     ]);
 
-    return { data: result, total: countResult?.count ?? 0 };
+    return { data: result, total: (countResult as Array<{ count: number }>)?.[0]?.count ?? 0 };
   }
 
   async findByStatementId(statementId: string): Promise<Array<typeof transactions.$inferSelect>> {

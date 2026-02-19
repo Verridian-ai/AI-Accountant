@@ -1,7 +1,7 @@
 /**
  * PgDb — PostgreSQL-native adapter for raw SQL queries.
  *
- * Replaces the broken SQLite-compat `db.run()` / `db.all()` pattern
+ * Replaces the broken SQLite-compat `db.execute()` / `db` pattern
  * used by MutationTools, ConfirmationFlowService, and AuditService.
  *
  * Converts `?` placeholders to PostgreSQL `$1, $2, ...` syntax
@@ -13,6 +13,7 @@ import type pg from 'pg';
 export interface PgDbAdapter {
   all(sql: string, params?: unknown[]): Promise<Array<Record<string, unknown>>>;
   run(sql: string, params?: unknown[]): Promise<{ changes?: number } | undefined>;
+  execute(sql: string, params?: unknown[]): Promise<{ changes?: number } | undefined>;
 }
 
 /**
@@ -43,6 +44,12 @@ export function createPgDb(pool: pg.Pool): PgDbAdapter {
     },
 
     async run(sql: string, params?: unknown[]): Promise<{ changes?: number } | undefined> {
+      const pgSql = convertPlaceholders(sql);
+      const result = await pool.query(pgSql, params ?? []);
+      return { changes: result.rowCount ?? 0 };
+    },
+
+    async execute(sql: string, params?: unknown[]): Promise<{ changes?: number } | undefined> {
       const pgSql = convertPlaceholders(sql);
       const result = await pool.query(pgSql, params ?? []);
       return { changes: result.rowCount ?? 0 };

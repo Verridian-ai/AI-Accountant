@@ -57,8 +57,7 @@ export async function getDeductions(userId: string, taxYear: string) {
   return db
     .select()
     .from(deductions)
-    .where(and(eq(deductions.userId, userId), eq(deductions.taxYear, taxYear)))
-    .all();
+    .where(and(eq(deductions.userId, userId), eq(deductions.taxYear, taxYear)));
 }
 
 /**
@@ -108,7 +107,7 @@ export async function recordCGTDisposal(
   const now = new Date().toISOString();
 
   // Get asset
-  const asset = await db.select().from(cgtAssets).where(eq(cgtAssets.id, assetId)).get();
+  const asset = (await db.select().from(cgtAssets).where(eq(cgtAssets.id, assetId)))[0];
 
   if (!asset) {
     throw new Error('Asset not found');
@@ -171,11 +170,12 @@ export async function recordCGTDisposal(
  * Get tax year summary
  */
 export async function getTaxYearSummary(userId: string, taxYear: string) {
-  return db
-    .select()
-    .from(taxYearSummary)
-    .where(and(eq(taxYearSummary.userId, userId), eq(taxYearSummary.taxYear, taxYear)))
-    .get();
+  return (
+    await db
+      .select()
+      .from(taxYearSummary)
+      .where(and(eq(taxYearSummary.userId, userId), eq(taxYearSummary.taxYear, taxYear)))
+  )[0];
 }
 
 /**
@@ -237,9 +237,7 @@ export async function calculateFromTransactions(
         // Exclude transactions from personal accounts
         sql`(${transactions.accountId} IS NULL OR ${accounts.ownershipTag} IS NULL OR ${accounts.ownershipTag} != 'personal')`,
       ),
-    )
-    .all();
-
+    );
   // Calculate income and expenses
   let totalIncome = 0;
   let totalExpenses = 0;

@@ -169,6 +169,13 @@ function parseFeatures(raw: string | null | undefined): string[] {
   }
 }
 
+function parseFeaturesValue(value: unknown): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value as string[];
+  if (typeof value === 'string') return parseFeatures(value);
+  return [];
+}
+
 export function dbPlanToSubscriptionPlan(row: Record<string, unknown>): SubscriptionPlan {
   return {
     id: String(row.id),
@@ -184,7 +191,7 @@ export function dbPlanToSubscriptionPlan(row: Record<string, unknown>): Subscrip
     ),
     maxAiQueriesPerMonth: Number(row.maxAiQueriesPerMonth ?? row.max_ai_queries_per_month ?? 50),
     maxStorageMb: Number(row.maxStorageMb ?? row.max_storage_mb ?? 100),
-    features: parseFeatures(String(row.featuresJson ?? row.features_json ?? '')),
+    features: parseFeaturesValue(row.featuresJson ?? row.features_json),
     isActive: Boolean(row.isActive ?? row.is_active ?? true),
   };
 }

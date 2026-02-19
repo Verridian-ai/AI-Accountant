@@ -33,7 +33,7 @@ export async function createTenant(
 ): Promise<Tenant> {
   const now = new Date().toISOString();
   const tenantId = crypto.randomUUID();
-  const existing = await db.select().from(tenants).where(eq(tenants.slug, slug)).get();
+  const existing = (await db.select().from(tenants).where(eq(tenants.slug, slug)))[0];
   if (existing) throw new Error(`Tenant with slug "${slug}" already exists`);
   await db
     .insert(tenants)
@@ -47,7 +47,7 @@ export async function createTenant(
       financialYearEnd: options.financialYearEnd ?? '06-30',
       timezone: options.timezone ?? 'Australia/Sydney',
       primaryContactEmail: options.primaryContactEmail ?? null,
-      settingsJson: JSON.stringify(options.settingsJson ?? {}),
+      settingsJson: options.settingsJson ?? {},
       isActive: true,
       createdAt: now,
       updatedAt: now,
@@ -100,8 +100,7 @@ export async function updateTenant(
   if (updates.industry !== undefined) setValues.industry = updates.industry;
   if (updates.financialYearEnd !== undefined) setValues.financialYearEnd = updates.financialYearEnd;
   if (updates.timezone !== undefined) setValues.timezone = updates.timezone;
-  if (updates.settingsJson !== undefined)
-    setValues.settingsJson = JSON.stringify(updates.settingsJson);
+  if (updates.settingsJson !== undefined) setValues.settingsJson = updates.settingsJson;
   await db.update(tenants).set(setValues).where(eq(tenants.id, tenantId)).run();
   const updated = await getTenant(tenantId);
   if (!updated) throw new Error(`Tenant ${tenantId} not found after update`);
@@ -109,13 +108,13 @@ export async function updateTenant(
 }
 
 export async function getTenant(tenantId: string): Promise<Tenant | null> {
-  const row = await db.select().from(tenants).where(eq(tenants.id, tenantId)).get();
+  const row = (await db.select().from(tenants).where(eq(tenants.id, tenantId)))[0];
   if (!row) return null;
   return rowToTenant(row);
 }
 
 export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
-  const row = await db.select().from(tenants).where(eq(tenants.slug, slug)).get();
+  const row = (await db.select().from(tenants).where(eq(tenants.slug, slug)))[0];
   if (!row) return null;
   return rowToTenant(row);
 }
@@ -136,11 +135,12 @@ export async function addMember(
 ): Promise<TenantMember> {
   if (!TENANT_ROLES.includes(role))
     throw new Error(`Invalid role: ${role}. Must be one of: ${TENANT_ROLES.join(', ')}`);
-  const existingMember = await db
-    .select()
-    .from(tenantMembers)
-    .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
-    .get();
+  const existingMember = (
+    await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+  )[0];
   if (existingMember) throw new Error('User is already a member of this tenant');
   const sub = await getSubscriptionInfo(tenantId);
   const memberCount = await getMemberCount(tenantId);
@@ -165,16 +165,17 @@ export async function addMember(
       updatedAt: now,
     })
     .run();
-  const member = await db.select().from(tenantMembers).where(eq(tenantMembers.id, memberId)).get();
+  const member = (await db.select().from(tenantMembers).where(eq(tenantMembers.id, memberId)))[0];
   return rowToMember(member);
 }
 
 export async function removeMember(tenantId: string, userId: string): Promise<void> {
-  const member = await db
-    .select()
-    .from(tenantMembers)
-    .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
-    .get();
+  const member = (
+    await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+  )[0];
   if (!member) throw new Error('Member not found in this tenant');
   if ((member as Record<string, unknown>).role === 'owner') {
     const ownerCount = await countMembersWithRole(tenantId, 'owner');
@@ -194,11 +195,12 @@ export async function updateMemberRole(
 ): Promise<TenantMember> {
   if (!TENANT_ROLES.includes(newRole))
     throw new Error(`Invalid role: ${newRole}. Must be one of: ${TENANT_ROLES.join(', ')}`);
-  const member = await db
-    .select()
-    .from(tenantMembers)
-    .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
-    .get();
+  const member = (
+    await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+  )[0];
   if (!member) throw new Error('Member not found in this tenant');
   if ((member as Record<string, unknown>).role === 'owner' && newRole !== 'owner') {
     const ownerCount = await countMembersWithRole(tenantId, 'owner');
@@ -212,31 +214,24 @@ export async function updateMemberRole(
     .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
     .run();
   rbacService.invalidateUserCache(tenantId, userId);
-  const updated = await db
-    .select()
-    .from(tenantMembers)
-    .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
-    .get();
+  const updated = (
+    await db
+      .select()
+      .from(tenantMembers)
+      .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.userId, userId)))
+  )[0];
   return rowToMember(updated);
 }
 
 export async function getMembers(tenantId: string): Promise<TenantMember[]> {
-  const rows = await db
-    .select()
-    .from(tenantMembers)
-    .where(eq(tenantMembers.tenantId, tenantId))
-    .all();
+  const rows = await db.select().from(tenantMembers).where(eq(tenantMembers.tenantId, tenantId));
   return (rows as Record<string, unknown>[]).map(rowToMember);
 }
 
 export async function getMemberTenants(
   userId: string,
 ): Promise<Array<{ tenant: Tenant; role: TenantRole }>> {
-  const memberships = await db
-    .select()
-    .from(tenantMembers)
-    .where(eq(tenantMembers.userId, userId))
-    .all();
+  const memberships = await db.select().from(tenantMembers).where(eq(tenantMembers.userId, userId));
   const results: Array<{ tenant: Tenant; role: TenantRole }> = [];
   for (const m of memberships as Record<string, unknown>[]) {
     const tenant = await getTenant((m.tenantId ?? m.tenant_id) as string);
@@ -247,11 +242,7 @@ export async function getMemberTenants(
 }
 
 export async function getMemberCount(tenantId: string): Promise<number> {
-  const rows = await db
-    .select()
-    .from(tenantMembers)
-    .where(eq(tenantMembers.tenantId, tenantId))
-    .all();
+  const rows = await db.select().from(tenantMembers).where(eq(tenantMembers.tenantId, tenantId));
   return rows.length;
 }
 
@@ -259,8 +250,7 @@ export async function countMembersWithRole(tenantId: string, role: TenantRole): 
   const rows = await db
     .select()
     .from(tenantMembers)
-    .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.role, role)))
-    .all();
+    .where(and(eq(tenantMembers.tenantId, tenantId), eq(tenantMembers.role, role)));
   return rows.length;
 }
 
@@ -268,13 +258,12 @@ export async function getPermissionsForRole(tenantId: string, role: TenantRole):
   const rps = await db
     .select()
     .from(rolePermissions)
-    .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)))
-    .all();
+    .where(and(eq(rolePermissions.tenantId, tenantId), eq(rolePermissions.role, role)));
   const permIds = (rps as Record<string, unknown>[]).map(
     (rp) => (rp.permissionId ?? rp.permission_id) as string,
   );
   if (permIds.length === 0) return [];
-  const allPerms = await db.select().from(permissions).all();
+  const allPerms = await db.select().from(permissions);
   const permMap = new Map<string, string>();
   for (const p of allPerms as Record<string, unknown>[])
     permMap.set(p.id as string, p.name as string);
@@ -282,21 +271,20 @@ export async function getPermissionsForRole(tenantId: string, role: TenantRole):
 }
 
 export async function getSubscriptionInfo(tenantId: string): Promise<SubscriptionInfo> {
-  const sub = await db
-    .select()
-    .from(subscriptionHistory)
-    .where(
-      and(eq(subscriptionHistory.tenantId, tenantId), eq(subscriptionHistory.status, 'active')),
-    )
-    .get();
+  const sub = (
+    await db
+      .select()
+      .from(subscriptionHistory)
+      .where(
+        and(eq(subscriptionHistory.tenantId, tenantId), eq(subscriptionHistory.status, 'active')),
+      )
+  )[0];
   if (!sub) return { ...DEFAULT_SUBSCRIPTION };
   const subRow = sub as Record<string, unknown>;
   const planId = (subRow.planId ?? subRow.plan_id) as string;
-  const plan = await db
-    .select()
-    .from(subscriptionPlans)
-    .where(eq(subscriptionPlans.id, planId))
-    .get();
+  const plan = (
+    await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, planId))
+  )[0];
   if (!plan) return { ...DEFAULT_SUBSCRIPTION };
   const planRow = plan as Record<string, unknown>;
   return {
