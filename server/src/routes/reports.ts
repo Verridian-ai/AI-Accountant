@@ -4,6 +4,7 @@ import { db, transactions } from '../schema.js';
 import { eq, and, gte, lte, desc } from 'drizzle-orm';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 import { getUserId } from '../utils/auth-helpers.js';
+import { FinancialReportService } from '../services/financial-reports/report-service.js';
 
 // Zod used for type inference in report response types
 const _periodQuerySchema = z.object({
@@ -88,6 +89,102 @@ reportRoutes.get('/consolidated/:period', async (c) => {
     categoryBreakdown,
     transactions: userTransactions,
   });
+});
+
+// GET /reports/pnl — Profit & Loss
+reportRoutes.get('/pnl', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const start = c.req.query('start') ?? '';
+    const end = c.req.query('end') ?? '';
+    const accountId = c.req.query('accountId');
+    if (!start || !end) return c.json({ error: 'start and end query params required' }, 400);
+    const svc = new FinancialReportService();
+    return c.json(await svc.generateProfitAndLoss(userId, start, end, accountId));
+  } catch (err) {
+    return c.json({ error: err instanceof Error ? err.message : 'Failed to generate P&L' }, 500);
+  }
+});
+
+// GET /reports/balance-sheet — Balance Sheet
+reportRoutes.get('/balance-sheet', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const asAt = c.req.query('asAt') ?? '';
+    if (!asAt) return c.json({ error: 'asAt query param required' }, 400);
+    const svc = new FinancialReportService();
+    return c.json(await svc.generateBalanceSheet(userId, asAt));
+  } catch (err) {
+    return c.json(
+      { error: err instanceof Error ? err.message : 'Failed to generate balance sheet' },
+      500,
+    );
+  }
+});
+
+// GET /reports/cash-flow — Cash Flow Statement
+reportRoutes.get('/cash-flow', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const start = c.req.query('start') ?? '';
+    const end = c.req.query('end') ?? '';
+    if (!start || !end) return c.json({ error: 'start and end query params required' }, 400);
+    const svc = new FinancialReportService();
+    return c.json(await svc.generateCashFlow(userId, start, end));
+  } catch (err) {
+    return c.json(
+      { error: err instanceof Error ? err.message : 'Failed to generate cash flow' },
+      500,
+    );
+  }
+});
+
+// GET /reports/trial-balance — Trial Balance
+reportRoutes.get('/trial-balance', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const asAt = c.req.query('asAt') ?? '';
+    if (!asAt) return c.json({ error: 'asAt query param required' }, 400);
+    const svc = new FinancialReportService();
+    return c.json(await svc.generateTrialBalance(userId, asAt));
+  } catch (err) {
+    return c.json(
+      { error: err instanceof Error ? err.message : 'Failed to generate trial balance' },
+      500,
+    );
+  }
+});
+
+// GET /reports/kpis — KPI Metrics
+reportRoutes.get('/kpis', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const period = c.req.query('period') ?? 'FY2026';
+    const svc = new FinancialReportService();
+    return c.json(await svc.getKPIs(userId, period));
+  } catch (err) {
+    return c.json({ error: err instanceof Error ? err.message : 'Failed to calculate KPIs' }, 500);
+  }
+});
+
+// GET /reports/compare — Period Comparison
+reportRoutes.get('/compare', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const currentStart = c.req.query('currentStart') ?? '';
+    const currentEnd = c.req.query('currentEnd') ?? '';
+    const priorStart = c.req.query('priorStart') ?? '';
+    const priorEnd = c.req.query('priorEnd') ?? '';
+    const type = c.req.query('type') ?? 'profit_and_loss';
+    if (!currentStart || !currentEnd || !priorStart || !priorEnd)
+      return c.json({ error: 'currentStart, currentEnd, priorStart, priorEnd required' }, 400);
+    const svc = new FinancialReportService();
+    return c.json(
+      await svc.comparePeriods(userId, currentStart, currentEnd, priorStart, priorEnd, type),
+    );
+  } catch (err) {
+    return c.json({ error: err instanceof Error ? err.message : 'Failed to compare periods' }, 500);
+  }
 });
 
 export default reportRoutes;

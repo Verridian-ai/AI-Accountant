@@ -35,6 +35,7 @@ export function useBASDashboard() {
       setBASData(data);
     } catch (err) {
       console.error('Auto-calculate BAS failed:', err);
+      setError(err instanceof Error ? err.message : 'Failed to calculate BAS');
     } finally {
       setCalculating(false);
     }

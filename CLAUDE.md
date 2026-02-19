@@ -29,6 +29,17 @@ This file provides context for Claude Code agent teams executing the **Final Del
 | Neon | API key available, project NOT yet created |
 | Git | Branch `refactor/REFACTOR-018-account-service`, 100+ modified files |
 
+## Known Bugs Fixed (Feb 2026)
+
+| Bug | Root Cause | Fix Applied |
+|-----|-----------|-------------|
+| BAS quarters blank (Q1–Q4) | `autoCalculate()` swallowed errors silently, never called `setError()` | Added `setError()` in catch block of `useBASDashboard.ts` |
+| W1 (Gross Wages) always zero | `bas-service.ts` never queried wage/payroll transactions for W1/W2 | Added wage category filter post-loop; W2 approximated at 32% of W1 |
+| Financial reports dashboard blank | `reportsApi.fetchPnL/fetchBalanceSheet/etc` were all stubs returning `{}` | Replaced stubs with real `fetch()` calls in `client/src/api/reports.ts` |
+| Report routes missing | `reports.ts` only had `consolidated/:period`, no P&L/BS/CF/TB/KPI routes | Added 6 new route handlers in `server/src/routes/reports.ts` using `FinancialReportService` |
+
+**Key files changed**: `useBASDashboard.ts`, `bas-service.ts`, `server/routes/reports.ts`, `client/api/reports.ts`
+
 ---
 
 ## Phase A: Fix Build and Ship to Docker (4 Opus 4.6 Agents)

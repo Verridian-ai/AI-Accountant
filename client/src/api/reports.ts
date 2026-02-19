@@ -9,11 +9,60 @@ export async function fetchConsolidatedReport(period: string): Promise<Consolida
   return res.json();
 }
 
-export const reportsApi: any = {
-  fetchBalanceSheet: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchCashFlow: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchKPIs: async (..._args: any[]) => Promise.resolve({} as any),
-  comparePeriods: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchPnL: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchTrialBalance: async (..._args: any[]) => Promise.resolve({} as any),
+export const reportsApi = {
+  fetchPnL: async (start: string, end: string, accountId?: string) => {
+    const params = new URLSearchParams({ start, end });
+    if (accountId) params.set('accountId', accountId);
+    const res = await fetch(`${API_URL}/reports/pnl?${params}`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Failed to fetch P&L report');
+    return res.json();
+  },
+
+  fetchBalanceSheet: async (asAt: string) => {
+    const params = new URLSearchParams({ asAt });
+    const res = await fetch(`${API_URL}/reports/balance-sheet?${params}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch balance sheet');
+    return res.json();
+  },
+
+  fetchCashFlow: async (start: string, end: string) => {
+    const params = new URLSearchParams({ start, end });
+    const res = await fetch(`${API_URL}/reports/cash-flow?${params}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch cash flow');
+    return res.json();
+  },
+
+  fetchTrialBalance: async (asAt: string) => {
+    const params = new URLSearchParams({ asAt });
+    const res = await fetch(`${API_URL}/reports/trial-balance?${params}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch trial balance');
+    return res.json();
+  },
+
+  fetchKPIs: async (period: string) => {
+    const res = await fetch(`${API_URL}/reports/kpis?period=${encodeURIComponent(period)}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch KPIs');
+    return res.json();
+  },
+
+  comparePeriods: async (
+    currentStart: string,
+    currentEnd: string,
+    priorStart: string,
+    priorEnd: string,
+    type: string = 'profit_and_loss',
+  ) => {
+    const params = new URLSearchParams({ currentStart, currentEnd, priorStart, priorEnd, type });
+    const res = await fetch(`${API_URL}/reports/compare?${params}`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Failed to compare periods');
+    return res.json();
+  },
 };

@@ -38,8 +38,8 @@ export class BASService {
       and(
         eq(basPeriods.userId, userId),
         eq(basPeriods.financialYear, financialYear),
-        eq(basPeriods.quarter, quarter)
-      )
+        eq(basPeriods.quarter, quarter),
+      ),
     );
 
     if (existing) return existing;
@@ -92,6 +92,7 @@ export class BASService {
         gstCategory: transactions.gstCategory,
         gstAmount: transactions.gstAmount,
         date: transactions.date,
+        category: transactions.category,
       })
       .from(transactions)
       .leftJoin(accounts, eq(transactions.accountId, accounts.id))
@@ -107,8 +108,18 @@ export class BASService {
       .all();
 
     const labels: BASLabels = {
-      G1: 0, G2: 0, G3: 0, G10: 0, G11: 0,
-      '1A': 0, '1B': 0, W1: 0, W2: 0, '5A': 0, '7C': 0, '7D': 0,
+      G1: 0,
+      G2: 0,
+      G3: 0,
+      G10: 0,
+      G11: 0,
+      '1A': 0,
+      '1B': 0,
+      W1: 0,
+      W2: 0,
+      '5A': 0,
+      '7C': 0,
+      '7D': 0,
     };
 
     for (const tx of quarterTransactions) {
@@ -118,21 +129,51 @@ export class BASService {
 
       if (amount > 0) {
         switch (gstCategory) {
-          case GSTCategory.EXPORT: labels.G2 += amount; break;
-          case GSTCategory.GST_FREE: labels.G3 += amount; break;
-          case GSTCategory.INPUT_TAXED: case GSTCategory.PRIVATE: break;
-          default: labels.G1 += amount; labels['1A'] += gstAmount;
+          case GSTCategory.EXPORT:
+            labels.G2 += amount;
+            break;
+          case GSTCategory.GST_FREE:
+            labels.G3 += amount;
+            break;
+          case GSTCategory.INPUT_TAXED:
+          case GSTCategory.PRIVATE:
+            break;
+          default:
+            labels.G1 += amount;
+            labels['1A'] += gstAmount;
         }
       } else {
         const absAmount = Math.abs(amount);
         switch (gstCategory) {
-          case GSTCategory.CAPITAL: labels.G10 += absAmount; labels['1B'] += gstAmount; break;
-          case GSTCategory.INPUT_TAXED: case GSTCategory.PRIVATE: break;
-          case GSTCategory.GST_FREE: break;
-          default: labels.G11 += absAmount; labels['1B'] += gstAmount;
+          case GSTCategory.CAPITAL:
+            labels.G10 += absAmount;
+            labels['1B'] += gstAmount;
+            break;
+          case GSTCategory.INPUT_TAXED:
+          case GSTCategory.PRIVATE:
+            break;
+          case GSTCategory.GST_FREE:
+            break;
+          default:
+            labels.G11 += absAmount;
+            labels['1B'] += gstAmount;
         }
       }
     }
+
+    // W1: gross wages paid (outgoing transactions in wage/salary/payroll categories)
+    const wageCats = ['wage', 'salary', 'payroll', 'labour', 'labor'];
+    let grossWages = 0;
+    for (const wageTx of quarterTransactions) {
+      const cat = (wageTx.category ?? '').toLowerCase();
+      if (wageTx.amount < 0 && wageCats.some((k) => cat.includes(k))) {
+        grossWages += Math.abs(wageTx.amount);
+      }
+    }
+    labels.W1 = grossWages;
+    // W2: PAYG withheld — approximated at 32% of gross wages
+    // (exact W2 requires payroll-run records; this is best-effort until payroll runs are implemented)
+    labels.W2 = Math.round(labels.W1 * 0.32);
 
     const netGst = labels['1A'] - labels['1B'];
     const fuelTaxCredits = labels['7C'] + labels['7D'];
@@ -140,17 +181,28 @@ export class BASService {
 
     return {
       period: {
-        financialYear, quarter,
-        startDate: dates.startDate, endDate: dates.endDate, lodgementDue: dates.lodgementDue,
+        financialYear,
+        quarter,
+        startDate: dates.startDate,
+        endDate: dates.endDate,
+        lodgementDue: dates.lodgementDue,
       },
-      labels, netGst, fuelTaxCredits, totalPayable,
+      labels,
+      netGst,
+      fuelTaxCredits,
+      totalPayable,
       isRefund: totalPayable < 0,
       transactionCount: quarterTransactions.length,
     };
   }
 
   /** Save BAS calculation */
-  async saveBASCalculation(userId: string, financialYear: string, quarter: number, result: BASResult) {
+  async saveBASCalculation(
+    userId: string,
+    financialYear: string,
+    quarter: number,
+    result: BASResult,
+  ) {
     const period = await this.getOrCreatePeriod(userId, financialYear, quarter);
     return _saveBASCalculation(period.id, result);
   }
@@ -161,20 +213,30 @@ export class BASService {
   }
 
   /** Update BAS period status */
-  async updatePeriodStatus(periodId: string, status: 'draft' | 'ready' | 'lodged' | 'amended', lodgementDate?: string) {
+  async updatePeriodStatus(
+    periodId: string,
+    status: 'draft' | 'ready' | 'lodged' | 'amended',
+    lodgementDate?: string,
+  ) {
     return updatePeriodStatus(periodId, status, lodgementDate);
   }
 
   /** Get tax codes */
-  async getTaxCodes() { return getTaxCodes(); }
+  async getTaxCodes() {
+    return getTaxCodes();
+  }
 
   /** Batch update GST categories for transactions */
-  async batchUpdateGSTCategories(updates: Array<{ transactionId: string; gstCategory: GSTCategory; gstAmount: number }>) {
+  async batchUpdateGSTCategories(
+    updates: Array<{ transactionId: string; gstCategory: GSTCategory; gstAmount: number }>,
+  ) {
     return batchUpdateGSTCategories(updates);
   }
 
   /** Get available quarters for a user (based on transaction dates) */
-  async getAvailableQuarters(userId: string): Promise<Array<{ financialYear: string; quarter: number }>> {
+  async getAvailableQuarters(
+    userId: string,
+  ): Promise<Array<{ financialYear: string; quarter: number }>> {
     return getAvailableQuarters(userId);
   }
 }
