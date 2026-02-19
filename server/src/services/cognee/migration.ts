@@ -15,6 +15,7 @@
  */
 
 import { cogneeClient } from '../cognee_client.js';
+import { logger } from '../../lib/logger.js';
 
 export interface MigrationResult {
   migrated: number;
@@ -64,21 +65,21 @@ export async function migrateLegacyDatasets(defaultTenantId: string): Promise<Mi
         const prefixedName = cogneeClient.getTenantDatasetName(defaultTenantId, name);
         await cogneeClient.createDataset(prefixedName);
 
-        console.log(`[CogneeMigration] Created tenant dataset: ${prefixedName} (from: ${name})`);
+        logger.info(`[CogneeMigration] Created tenant dataset: ${prefixedName} (from: ${name})`);
         result.migrated++;
       } catch (err) {
         const msg = `Failed to migrate dataset "${name}": ${err instanceof Error ? err.message : String(err)}`;
-        console.error(`[CogneeMigration] ${msg}`);
+        logger.error(`[CogneeMigration] ${msg}`);
         result.errors.push(msg);
       }
     }
   } catch (err) {
     const msg = `Failed to list datasets: ${err instanceof Error ? err.message : String(err)}`;
-    console.error(`[CogneeMigration] ${msg}`);
+    logger.error(`[CogneeMigration] ${msg}`);
     result.errors.push(msg);
   }
 
-  console.log(
+  logger.info(
     `[CogneeMigration] Migration complete: ${result.migrated} migrated, ${result.skipped} skipped, ${result.errors.length} errors`,
   );
 

@@ -42,7 +42,7 @@ export interface CacheStats {
 // Wave 3: Cognee user-scoped session types
 export interface CogneeSessionContext {
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string; timestamp: string }>;
-  activeFilters: Record<string, any>;
+  activeFilters: Record<string, unknown>;
   lastQuery: string;
   lastDatasets: string[];
   datasetPrefix: string;

@@ -43,7 +43,7 @@ export async function getHealthStatus(redis: Redis): Promise<RedisHealthStatus> 
   } catch (err: unknown) {
     logger.warn(
       '[CogneeSession] Health check failed:',
-      err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err),
+      err instanceof Error ? err.message : String(err),
     );
     return {
       connected: false,
@@ -85,10 +85,7 @@ export async function flushKeys(redis: Redis, pattern?: string): Promise<number>
     if (keys.length === 0) return 0;
     return await redis.del(...keys);
   } catch (err: unknown) {
-    logger.warn(
-      '[CogneeSession] Flush failed:',
-      err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err),
-    );
+    logger.warn('[CogneeSession] Flush failed:', err instanceof Error ? err.message : String(err));
     return 0;
   }
 }

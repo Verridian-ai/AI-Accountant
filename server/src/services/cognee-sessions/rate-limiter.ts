@@ -57,7 +57,7 @@ export async function checkRateLimit(
   } catch (err: unknown) {
     logger.warn(
       '[CogneeSession] Rate limit check failed:',
-      err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err),
+      err instanceof Error ? err.message : String(err),
     );
     return defaultAllowed;
   }
@@ -77,7 +77,7 @@ export async function getRateLimitStatus(
   } catch (err: unknown) {
     logger.warn(
       '[CogneeSession] Rate limit status failed:',
-      err instanceof Error ? (err instanceof Error ? err.message : String(err)) : String(err),
+      err instanceof Error ? err.message : String(err),
     );
     return null;
   }

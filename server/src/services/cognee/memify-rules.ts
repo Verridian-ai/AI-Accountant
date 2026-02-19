@@ -71,7 +71,7 @@ export async function cognifyAndEnrich(
   logger.info(`[Cognify+Memify] Starting full pipeline for: ${datasets.join(', ')}`);
 
   // Step 1: Cognify (build graph from raw data)
-  await cogneeClient.cognify(datasets, true, userId, tenantId);
+  await cogneeClient.cognify(datasets, true, undefined, userId, tenantId);
   logger.info('[Cognify+Memify] Cognify complete, starting memify...');
 
   // Step 2: Memify (derive intelligence)
