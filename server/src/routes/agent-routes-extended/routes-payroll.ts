@@ -1,26 +1,25 @@
 import type { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { orchestrator } from '../../services/claude/orchestrator.js';
 import { logger } from '../../lib/logger.js';
-import { ensureEnabled, parseBody } from './helpers.js';
+import { ensureEnabled } from './helpers.js';
 import { payrollSchema } from './schemas.js';
 
 export function registerPayrollRoute(app: Hono): void {
-  app.post('/agents/payroll/calculate', async (c) => {
+  app.post('/agents/payroll/calculate', zValidator('json', payrollSchema), async (c) => {
     const check = ensureEnabled('payroll_agent');
     if (!check.ok) return c.json(check.body, check.status as 503);
 
-    const body = parseBody(payrollSchema, await c.req.json());
-    if (!body.ok) return c.json(body.body, body.status as 400);
-
+    const data = c.req.valid('json');
     const startTime = Date.now();
     logger.info('[Agent Route] payroll_agent invoked');
 
     try {
       const result = await orchestrator.invoke('payroll_agent', {
-        transactions: body.data.transactions ?? [],
-        userId: body.data.userId ?? 'anonymous',
-        financialYear: body.data.financialYear,
-        quarter: body.data.quarter,
+        transactions: data.transactions ?? [],
+        userId: data.userId ?? 'anonymous',
+        financialYear: data.financialYear,
+        quarter: data.quarter,
       });
       return c.json({
         success: true,

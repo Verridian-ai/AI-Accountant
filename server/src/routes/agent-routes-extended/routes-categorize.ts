@@ -1,22 +1,21 @@
 import type { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { orchestrator } from '../../services/claude/orchestrator.js';
 import { logger } from '../../lib/logger.js';
-import { ensureEnabled, parseBody } from './helpers.js';
+import { ensureEnabled } from './helpers.js';
 import { categorizeSchema } from './schemas.js';
 
 export function registerCategorizeRoute(app: Hono): void {
-  app.post('/agents/categorize', async (c) => {
+  app.post('/agents/categorize', zValidator('json', categorizeSchema), async (c) => {
     const check = ensureEnabled('transaction_categorizer');
     if (!check.ok) return c.json(check.body, check.status as 503);
 
-    const body = parseBody(categorizeSchema, await c.req.json());
-    if (!body.ok) return c.json(body.body, body.status as 400);
-
+    const data = c.req.valid('json');
     const startTime = Date.now();
     logger.info('[Agent Route] transaction_categorizer invoked');
 
     try {
-      const txs = (body.data.transactions ?? []).map((tx) => ({
+      const txs = (data.transactions ?? []).map((tx) => ({
         ...tx,
         accountId: tx.accountId ?? 0,
         bankId: (tx.bankId ?? 'cba') as import('../../services/parsers/types.js').BankId,

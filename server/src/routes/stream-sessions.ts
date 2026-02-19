@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { db } from '../schema.js';
 import { sql } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -9,15 +11,18 @@ import type { AgentType } from '../services/claude/types.js';
 
 const streamSessionsRoutes = new Hono();
 
+const streamInputSchema = z.object({}).passthrough();
+
 // POST /api/stream/agent/:agentType — Start streaming agent execution
 streamSessionsRoutes.post(
   '/agent/:agentType',
   sseStreamMiddleware(),
   streamingRateLimiter(),
+  zValidator('json', streamInputSchema),
   async (c) => {
     try {
       const agentType = c.req.param('agentType');
-      const input = await c.req.json();
+      const input = c.req.valid('json');
       const userId = c.req.query('userId') || 'default';
 
       const agent = streamingRegistry.getAgent(agentType as AgentType);

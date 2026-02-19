@@ -1,26 +1,25 @@
 import type { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { orchestrator } from '../../services/claude/orchestrator.js';
 import { logger } from '../../lib/logger.js';
-import { ensureEnabled, parseBody } from './helpers.js';
+import { ensureEnabled } from './helpers.js';
 import { taxStrategySchema, taxClaimsSchema } from './schemas.js';
 
 export function registerTaxRoutes(app: Hono): void {
-  app.post('/agents/tax/strategy', async (c) => {
+  app.post('/agents/tax/strategy', zValidator('json', taxStrategySchema), async (c) => {
     const check = ensureEnabled('tax_strategy');
     if (!check.ok) return c.json(check.body, check.status as 503);
 
-    const body = parseBody(taxStrategySchema, await c.req.json());
-    if (!body.ok) return c.json(body.body, body.status as 400);
-
+    const data = c.req.valid('json');
     const startTime = Date.now();
     logger.info('[Agent Route] tax_strategy invoked');
 
     try {
       const result = await orchestrator.invoke('tax_strategy', {
-        userId: body.data.userId ?? 'anonymous',
-        financialYear: body.data.financialYear ?? body.data.taxYear ?? '2024-25',
-        entityType: body.data.entityType ?? 'sole_trader',
-        transactions: body.data.transactions ?? [],
+        userId: data.userId ?? 'anonymous',
+        financialYear: data.financialYear ?? data.taxYear ?? '2024-25',
+        entityType: data.entityType ?? 'sole_trader',
+        transactions: data.transactions ?? [],
       });
       return c.json({
         success: true,
@@ -43,24 +42,22 @@ export function registerTaxRoutes(app: Hono): void {
     }
   });
 
-  app.post('/agents/tax/claims', async (c) => {
+  app.post('/agents/tax/claims', zValidator('json', taxClaimsSchema), async (c) => {
     const check = ensureEnabled('personal_tax_claims');
     if (!check.ok) return c.json(check.body, check.status as 503);
 
-    const body = parseBody(taxClaimsSchema, await c.req.json());
-    if (!body.ok) return c.json(body.body, body.status as 400);
-
+    const data = c.req.valid('json');
     const startTime = Date.now();
     logger.info('[Agent Route] personal_tax_claims invoked');
 
     try {
       const result = await orchestrator.invoke('personal_tax_claims', {
-        userId: body.data.userId ?? 'anonymous',
-        financialYear: body.data.financialYear ?? body.data.taxYear ?? '2024-25',
-        transactions: body.data.transactions ?? [],
-        occupation: body.data.occupation,
-        hasHomeOffice: body.data.hasHomeOffice,
-        motorVehicleKm: body.data.motorVehicleKm,
+        userId: data.userId ?? 'anonymous',
+        financialYear: data.financialYear ?? data.taxYear ?? '2024-25',
+        transactions: data.transactions ?? [],
+        occupation: data.occupation,
+        hasHomeOffice: data.hasHomeOffice,
+        motorVehicleKm: data.motorVehicleKm,
       });
       return c.json({
         success: true,
