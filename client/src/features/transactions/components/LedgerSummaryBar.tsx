@@ -28,6 +28,19 @@ export function LedgerSummaryBar({ transactions }: LedgerSummaryBarProps) {
     };
   }, [transactions]);
 
+  if (transactions.length === 0) {
+    return (
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+        <div className="flex flex-col bg-[#12121a]/80 border border-white/5 rounded-xl px-4 py-2 min-w-[140px] shrink-0">
+          <span className="text-xs font-black text-zinc-600 uppercase tracking-widest">
+            Transactions
+          </span>
+          <span className="text-sm font-bold text-zinc-500 tracking-tight">No data</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
       <StatPill
