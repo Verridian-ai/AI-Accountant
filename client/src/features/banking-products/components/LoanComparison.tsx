@@ -124,8 +124,8 @@ export function LoanComparison() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">Loan Amount</label>
-            <input
+            <label htmlFor="banki-f1" className="text-xs text-muted font-semibold block mb-1">Loan Amount</label>
+            <input id="banki-f1"
               type="number"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
@@ -133,10 +133,10 @@ export function LoanComparison() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">
+            <label htmlFor="banki-f2" className="text-xs text-muted font-semibold block mb-1">
               Interest Rate (%)
             </label>
-            <input
+            <input id="banki-f2"
               type="number"
               step="0.01"
               value={rate}
@@ -145,8 +145,8 @@ export function LoanComparison() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">Term (years)</label>
-            <input
+            <label htmlFor="banki-f3" className="text-xs text-muted font-semibold block mb-1">Term (years)</label>
+            <input id="banki-f3"
               type="number"
               value={term}
               onChange={(e) => setTerm(Number(e.target.value))}
@@ -154,7 +154,7 @@ export function LoanComparison() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">Repayment Type</label>
+            <label htmlFor="banki-f4" className="text-xs text-muted font-semibold block mb-1">Repayment Type</label>
             <div className="flex gap-2">
               {(['pi', 'io'] as const).map((t) => (
                 <button
@@ -173,10 +173,10 @@ export function LoanComparison() {
             </div>
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">
+            <label htmlFor="banki-f5" className="text-xs text-muted font-semibold block mb-1">
               Extra Repayment/mo
             </label>
-            <input
+            <input id="banki-f4"
               type="number"
               value={extraRepayment}
               onChange={(e) => setExtraRepayment(Number(e.target.value))}
@@ -184,8 +184,8 @@ export function LoanComparison() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">Offset Balance</label>
-            <input
+            <label htmlFor="banki-f6" className="text-xs text-muted font-semibold block mb-1">Offset Balance</label>
+            <input id="banki-f5"
               type="number"
               value={offsetBalance}
               onChange={(e) => setOffsetBalance(Number(e.target.value))}

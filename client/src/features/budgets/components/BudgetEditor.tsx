@@ -273,7 +273,6 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
                   <td className="px-4 py-3 text-right">
                     {editingCell === `${line.id}-amount` ? (
                       <input
-                        autoFocus
                         type="number"
                         step="0.01"
                         value={editValue}

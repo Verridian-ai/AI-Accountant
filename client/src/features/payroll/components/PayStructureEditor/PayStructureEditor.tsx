@@ -138,8 +138,8 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Category Dropdown */}
             <div>
-              <label className="block text-xs font-medium text-secondary mb-1">Pay Category</label>
-              <select
+              <label htmlFor="payro-f1" className="block text-xs font-medium text-secondary mb-1">Pay Category</label>
+              <select id="payro-f1"
                 value={formCategoryId}
                 onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
@@ -155,7 +155,7 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
 
             {/* Rate */}
             <div>
-              <label className="block text-xs font-medium text-secondary mb-1">
+              <label htmlFor="payro-f2" className="block text-xs font-medium text-secondary mb-1">
                 Rate ($)
                 {selectedCategory && (
                   <span className="text-zinc-600 ml-1">
@@ -169,7 +169,7 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted" />
-                <input
+                <input id="payro-f2"
                   type="number"
                   step="0.01"
                   min="0"
@@ -184,8 +184,8 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
             {/* Hours Per Week (hourly only) */}
             {selectedCategory?.rateType === 'hourly' && (
               <div>
-                <label className="block text-xs font-medium text-secondary mb-1">Hours / Week</label>
-                <input
+                <label htmlFor="payro-f3" className="block text-xs font-medium text-secondary mb-1">Hours / Week</label>
+                <input id="payro-f3"
                   type="number"
                   step="0.5"
                   min="0"
@@ -201,12 +201,12 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
             {/* Annual Salary (annual only) */}
             {selectedCategory?.rateType === 'annual' && (
               <div>
-                <label className="block text-xs font-medium text-secondary mb-1">
+                <label htmlFor="payro-f4" className="block text-xs font-medium text-secondary mb-1">
                   Annual Salary ($)
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted" />
-                  <input
+                  <input id="payro-f4"
                     type="number"
                     step="1000"
                     min="0"
@@ -221,8 +221,8 @@ export function PayStructureEditor({ employeeId, onBack }: PayStructureEditorPro
 
             {/* Effective Date */}
             <div>
-              <label className="block text-xs font-medium text-secondary mb-1">Effective Date</label>
-              <input
+              <label htmlFor="payro-f5" className="block text-xs font-medium text-secondary mb-1">Effective Date</label>
+              <input id="payro-f5"
                 type="date"
                 value={formEffectiveDate}
                 onChange={(e) => setFormEffectiveDate(e.target.value)}

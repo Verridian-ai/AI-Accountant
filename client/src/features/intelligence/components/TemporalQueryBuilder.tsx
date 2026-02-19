@@ -122,8 +122,8 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
     if (queryType === 'point_in_time') {
       return (
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted font-medium">Date:</label>
-          <input
+          <label htmlFor="intel-f1" className="text-xs text-muted font-medium">Date:</label>
+          <input id="intel-f1"
             type="date"
             value={pointDate}
             onChange={(e) => setPointDate(e.target.value)}
@@ -135,8 +135,8 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
     return (
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <div className="flex items-center gap-2 flex-1">
-          <label className="text-xs text-muted font-medium">From:</label>
-          <input
+          <label htmlFor="intel-f2" className="text-xs text-muted font-medium">From:</label>
+          <input id="intel-f2"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -144,8 +144,8 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
           />
         </div>
         <div className="flex items-center gap-2 flex-1">
-          <label className="text-xs text-muted font-medium">To:</label>
-          <input
+          <label htmlFor="intel-f3" className="text-xs text-muted font-medium">To:</label>
+          <input id="intel-f3"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
@@ -223,7 +223,7 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               </thead>
               <tbody>
                 {rows.slice(0, 50).map((row: Record<string, unknown>, i: number) => (
-                  <tr key={i} className="border-b border-border/50 hover:bg-overlay">
+                  <tr key={`item-${i}`} className="border-b border-border/50 hover:bg-overlay">
                     {keys.map((k) => (
                       <td key={k} className="px-3 py-2 text-primary truncate max-w-[200px]">
                         {String(row[k] ?? '')}
@@ -294,8 +294,8 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Query Type</label>
-              <select
+              <label htmlFor="intel-f4" className="text-xs text-muted font-medium block mb-1">Query Type</label>
+              <select id="intel-f4"
                 value={queryType}
                 onChange={(e) => setQueryType(e.target.value as QueryType)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
@@ -308,8 +308,8 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Target Entity</label>
-              <select
+              <label htmlFor="intel-f5" className="text-xs text-muted font-medium block mb-1">Target Entity</label>
+              <select id="intel-f5"
                 value={entity}
                 onChange={(e) => setEntity(e.target.value as EntityType)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
@@ -328,8 +328,8 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
           {/* Parameters */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Category</label>
-              <input
+              <label htmlFor="intel-f6" className="text-xs text-muted font-medium block mb-1">Category</label>
+              <input id="intel-f6"
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -338,8 +338,8 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               />
             </div>
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Min Amount</label>
-              <input
+              <label htmlFor="intel-f7" className="text-xs text-muted font-medium block mb-1">Min Amount</label>
+              <input id="intel-f7"
                 type="number"
                 value={minAmount}
                 onChange={(e) => setMinAmount(e.target.value)}
@@ -348,8 +348,8 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               />
             </div>
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Max Amount</label>
-              <input
+              <label htmlFor="intel-f8" className="text-xs text-muted font-medium block mb-1">Max Amount</label>
+              <input id="intel-f8"
                 type="number"
                 value={maxAmount}
                 onChange={(e) => setMaxAmount(e.target.value)}

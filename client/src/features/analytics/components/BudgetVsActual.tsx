@@ -171,7 +171,6 @@ export function BudgetVsActual() {
                       value={editAmount}
                       onChange={(e) => setEditAmount(e.target.value)}
                       className="bg-overlay border border-cba-gold/30 rounded-lg px-2 py-1 text-xs text-primary text-right outline-none w-full"
-                      autoFocus
                     />
                   ) : (
                     <span className="text-xs font-black text-secondary text-right tabular-nums">

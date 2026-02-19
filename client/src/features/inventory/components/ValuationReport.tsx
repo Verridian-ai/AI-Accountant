@@ -71,8 +71,8 @@ export function ValuationReport() {
     <div className="space-y-6">
       {/* Date Selector */}
       <div className="flex items-center gap-3">
-        <label className="text-sm text-muted">As of date:</label>
-        <input
+        <label htmlFor="valuat-f1" className="text-sm text-muted">As of date:</label>
+        <input id="valuat-f1"
           type="date"
           value={asOfDate}
           onChange={(e) => setAsOfDate(e.target.value)}

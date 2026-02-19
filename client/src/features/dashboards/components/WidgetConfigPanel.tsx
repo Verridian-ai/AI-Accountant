@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Save, RotateCcw } from 'lucide-react';
-import { cn } from '../../../lib/utils';
+
 import type { WidgetConfig } from '../hooks/useDashboard';
 
 interface WidgetConfigPanelProps {
@@ -15,15 +15,15 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
   const [dataSourceUrl, setDataSourceUrl] = useState('');
   const [refreshInterval, setRefreshInterval] = useState(0);
   const [chartConfig, setChartConfig] = useState<Record<string, unknown>>({});
+  const [prevWidgetId, setPrevWidgetId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (widget) {
-      setTitle(widget.title);
-      setDataSourceUrl(widget.dataSourceUrl ?? '');
-      setRefreshInterval(widget.refreshInterval ?? 0);
-      setChartConfig(widget.config ?? {});
-    }
-  }, [widget]);
+  if (widget && widget.id !== prevWidgetId) {
+    setPrevWidgetId(widget.id);
+    setTitle(widget.title);
+    setDataSourceUrl(widget.dataSourceUrl ?? '');
+    setRefreshInterval(widget.refreshInterval ?? 0);
+    setChartConfig(widget.config ?? {});
+  }
 
   if (!open || !widget) return null;
 
@@ -86,8 +86,8 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
               />
             </FieldGroup>
             <FieldGroup label="Stacked">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
+              <label htmlFor="dashb-f1" className="flex items-center gap-2 cursor-pointer">
+                <input id="dashb-f1"
                   type="checkbox"
                   checked={Boolean(chartConfig.stacked)}
                   onChange={(e) => updateConfig('stacked', e.target.checked)}
@@ -132,8 +132,8 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
               />
             </FieldGroup>
             <FieldGroup label="Show Area">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
+              <label htmlFor="dashb-f2" className="flex items-center gap-2 cursor-pointer">
+                <input id="dashb-f2"
                   type="checkbox"
                   checked={Boolean(chartConfig.showArea)}
                   onChange={(e) => updateConfig('showArea', e.target.checked)}
@@ -143,8 +143,8 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
               </label>
             </FieldGroup>
             <FieldGroup label="Curved">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
+              <label htmlFor="dashb-f3" className="flex items-center gap-2 cursor-pointer">
+                <input id="dashb-f3"
                   type="checkbox"
                   checked={chartConfig.curved !== false}
                   onChange={(e) => updateConfig('curved', e.target.checked)}
@@ -160,8 +160,8 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
         return (
           <>
             <FieldGroup label="Show Labels">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
+              <label htmlFor="dashb-f4" className="flex items-center gap-2 cursor-pointer">
+                <input id="dashb-f4"
                   type="checkbox"
                   checked={chartConfig.showLabels !== false}
                   onChange={(e) => updateConfig('showLabels', e.target.checked)}
@@ -171,8 +171,8 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
               </label>
             </FieldGroup>
             <FieldGroup label="Show Legend">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
+              <label htmlFor="dashb-f5" className="flex items-center gap-2 cursor-pointer">
+                <input id="dashb-f5"
                   type="checkbox"
                   checked={chartConfig.showLegend !== false}
                   onChange={(e) => updateConfig('showLegend', e.target.checked)}
@@ -185,6 +185,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
               <FieldGroup label="Inner Radius">
                 <input
                   type="number"
+                  aria-label="Inner Radius"
                   value={(chartConfig.innerRadius as number) ?? 60}
                   onChange={(e) => updateConfig('innerRadius', Number(e.target.value))}
                   className="config-input"
@@ -232,6 +233,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
             </FieldGroup>
             <FieldGroup label="Format">
               <select
+                aria-label="Format"
                 value={(chartConfig.format as string) ?? 'currency'}
                 onChange={(e) => updateConfig('format', e.target.value)}
                 className="config-input"
@@ -255,7 +257,12 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-overlay-hover z-40" onClick={onClose} />
+      <div
+        role="presentation"
+        className="fixed inset-0 bg-overlay-hover z-40"
+        onClick={onClose}
+        onKeyDown={() => { }}
+      />
 
       {/* Slide-in Panel */}
       <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 neu-raised border-l border-cba-gold/10 flex flex-col animate-in slide-in-from-right duration-300">
@@ -264,6 +271,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
           <h3 className="text-lg font-bold text-gradient-gold">Widget Settings</h3>
           <button
             onClick={onClose}
+            aria-label="Close widget settings"
             className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay-hover transition-colors"
           >
             <X className="w-4 h-4" />
@@ -322,6 +330,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
               <FieldGroup label="Width">
                 <input
                   type="number"
+                  aria-label="Width"
                   value={widget.position.width}
                   onChange={(e) => {
                     const newWidth = Math.max(3, Math.min(12, Number(e.target.value)));
@@ -337,6 +346,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
               <FieldGroup label="Height">
                 <input
                   type="number"
+                  aria-label="Height"
                   value={widget.position.height}
                   onChange={(e) => {
                     const newHeight = Math.max(2, Math.min(8, Number(e.target.value)));
@@ -407,7 +417,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
+      <label htmlFor="dashb-f6" className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
         {label}
       </label>
       {children}

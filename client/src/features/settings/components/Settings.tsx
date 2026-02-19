@@ -302,7 +302,7 @@ function SettingSection({
           {icon}
         </div>
         <div className="flex flex-col">
-          <label className="text-xs font-black text-primary uppercase tracking-widest">
+          <label htmlFor="settin-f1" className="text-xs font-black text-primary uppercase tracking-widest">
             {label}
           </label>
           <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tight">
@@ -311,7 +311,7 @@ function SettingSection({
         </div>
       </div>
       <div className="relative">
-        <select
+        <select id="settin-f1"
           value={value}
           aria-label={label}
           onChange={(e) => onChange(e.target.value)}

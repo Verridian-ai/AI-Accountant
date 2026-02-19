@@ -173,8 +173,8 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Name</label>
-              <input
+              <label htmlFor="intel-f1" className="text-xs text-muted font-medium block mb-1">Name</label>
+              <input id="intel-f1"
                 type="text"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
@@ -183,8 +183,8 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
               />
             </div>
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Type</label>
-              <select
+              <label htmlFor="intel-f2" className="text-xs text-muted font-medium block mb-1">Type</label>
+              <select id="intel-f2"
                 value={formType}
                 onChange={(e) => setFormType(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
@@ -196,8 +196,8 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Channel</label>
-              <select
+              <label htmlFor="intel-f3" className="text-xs text-muted font-medium block mb-1">Channel</label>
+              <select id="intel-f3"
                 value={formChannel}
                 onChange={(e) => setFormChannel(e.target.value as Subscription['channel'])}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
@@ -210,8 +210,8 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Cooldown (min)</label>
-              <input
+              <label htmlFor="intel-f4" className="text-xs text-muted font-medium block mb-1">Cooldown (min)</label>
+              <input id="intel-f4"
                 type="number"
                 value={formCooldown}
                 onChange={(e) => setFormCooldown(Number(e.target.value))}
@@ -220,10 +220,10 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
               />
             </div>
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">
+              <label htmlFor="intel-f5" className="text-xs text-muted font-medium block mb-1">
                 Severity Filter
               </label>
-              <select
+              <select id="intel-f5"
                 value={formSeverity}
                 onChange={(e) => setFormSeverity(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
@@ -235,8 +235,8 @@ export function SubscriptionManager({ userId }: SubscriptionManagerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs text-muted font-medium block mb-1">Module Filter</label>
-              <select
+              <label htmlFor="intel-f6" className="text-xs text-muted font-medium block mb-1">Module Filter</label>
+              <select id="intel-f6"
                 value={formModule}
                 onChange={(e) => setFormModule(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"

@@ -266,10 +266,10 @@ export function FeatureFlagManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-secondary mb-1">
+                <label htmlFor="featur-f1" className="block text-xs text-secondary mb-1">
                   Rollout: {formData.rolloutPercentage}%
                 </label>
-                <input
+                <input id="featur-f1"
                   type="range"
                   min={0}
                   max={100}

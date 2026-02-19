@@ -86,10 +86,10 @@ export function ReportsDashboard() {
         <div className="flex flex-wrap items-center gap-4">
           {/* Financial Year Selector */}
           <div>
-            <label className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
+            <label htmlFor="repor-f1" className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
               Financial Year
             </label>
-            <select
+            <select id="repor-f1"
               value={selectedFY}
               onChange={(e) => setSelectedFY(Number(e.target.value))}
               className="neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -104,10 +104,10 @@ export function ReportsDashboard() {
 
           {/* Custom Date Range */}
           <div>
-            <label className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
+            <label htmlFor="repor-f2" className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
               Period Start
             </label>
-            <input
+            <input id="repor-f2"
               type="date"
               value={customStart}
               onChange={(e) => setCustomStart(e.target.value)}
@@ -115,10 +115,10 @@ export function ReportsDashboard() {
             />
           </div>
           <div>
-            <label className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
+            <label htmlFor="repor-f3" className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
               Period End
             </label>
-            <input
+            <input id="repor-f3"
               type="date"
               value={customEnd}
               onChange={(e) => setCustomEnd(e.target.value)}
@@ -128,10 +128,10 @@ export function ReportsDashboard() {
 
           {/* Account Filter */}
           <div>
-            <label className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
+            <label htmlFor="repor-f4" className="block text-[10px] text-muted font-bold uppercase tracking-wider mb-1">
               Account
             </label>
-            <select
+            <select id="repor-f4"
               value={selectedAccountId}
               onChange={(e) => setSelectedAccountId(e.target.value)}
               className="neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"

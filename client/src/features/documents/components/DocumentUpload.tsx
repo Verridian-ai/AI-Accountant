@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { FileUp, X, Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { documentsApi } from '@/api';
+import { Progress } from '../../../components/ui/progress';
+import { Badge } from '../../../components/ui/badge';
+import { documentsApi } from '../../../api';
 
 interface UploadFile {
   file: File;
@@ -71,11 +71,11 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         prev.map((f) =>
           f.id === uploadFile.id
             ? {
-                ...f,
-                status: autoProcess ? 'processing' : 'done',
-                progress: autoProcess ? 60 : 100,
-                documentId: result.id,
-              }
+              ...f,
+              status: autoProcess ? 'processing' : 'done',
+              progress: autoProcess ? 60 : 100,
+              documentId: result.id,
+            }
             : f,
         ),
       );
@@ -87,11 +87,11 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    status: 'done',
-                    progress: 100,
-                    confidenceScore: processResult.confidenceScore,
-                  }
+                  ...f,
+                  status: 'done',
+                  progress: 100,
+                  confidenceScore: processResult.confidenceScore,
+                }
                 : f,
             ),
           );
@@ -106,11 +106,11 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         prev.map((f) =>
           f.id === uploadFile.id
             ? {
-                ...f,
-                status: 'error',
-                progress: 0,
-                error: err instanceof Error ? err.message : 'Upload failed',
-              }
+              ...f,
+              status: 'error',
+              progress: 0,
+              error: err instanceof Error ? err.message : 'Upload failed',
+            }
             : f,
         ),
       );
@@ -157,9 +157,10 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
     <div className="space-y-4">
       {/* Drop Zone */}
       <div
-        className={`neu-inset rounded-xl p-8 border-2 border-dashed transition-all cursor-pointer ${
-          isDragging ? 'border-cba-gold bg-cba-gold/5' : 'border-border hover:border-border'
-        }`}
+        role="button"
+        tabIndex={0}
+        className={`neu-inset rounded-xl p-8 border-2 border-dashed transition-all cursor-pointer ${isDragging ? 'border-cba-gold bg-cba-gold/5' : 'border-border hover:border-border'
+          }`}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -167,6 +168,12 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
       >
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="neu-raised p-4 rounded-2xl">
@@ -177,23 +184,24 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             <p className="text-muted text-sm mt-1">PDF, PNG, JPG, WEBP - Max 10MB per file</p>
           </div>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept=".pdf,.png,.jpg,.jpeg,.webp"
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files) addFiles(e.target.files);
-            e.target.value = '';
-          }}
-        />
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".pdf,.png,.jpg,.jpeg,.webp"
+        aria-label="Upload documents"
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) addFiles(e.target.files);
+          e.target.value = '';
+        }}
+      />
 
       {/* Options */}
       <div className="neu-raised rounded-xl p-4 flex flex-wrap items-center gap-4">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
+        <label htmlFor="docume-f1" className="flex items-center gap-2 cursor-pointer">
+          <input id="docume-f1"
             type="checkbox"
             checked={autoProcess}
             onChange={(e) => setAutoProcess(e.target.checked)}
@@ -202,8 +210,9 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
           <span className="text-sm text-primary">Auto-process after upload</span>
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted">Account:</span>
+          <label htmlFor="account-id-input" className="text-sm text-muted">Account:</label>
           <input
+            id="account-id-input"
             type="text"
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
@@ -294,6 +303,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
                 )}
                 <button
                   onClick={() => removeFile(f.id)}
+                  aria-label="Remove file"
                   className="p-1 rounded-md hover:bg-overlay-hover text-muted hover:text-primary transition-colors"
                 >
                   <X className="h-4 w-4" />

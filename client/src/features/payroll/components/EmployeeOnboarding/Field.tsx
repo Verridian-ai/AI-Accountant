@@ -17,8 +17,8 @@ export function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-secondary mb-1.5">{label}</label>
-      <input
+      <label htmlFor="field-f1" className="block text-xs font-medium text-secondary mb-1.5">{label}</label>
+      <input id="field-f1"
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}

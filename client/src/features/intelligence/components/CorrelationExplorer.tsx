@@ -89,8 +89,8 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
       <div className="neu-raised p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
           <div className="flex-1">
-            <label className="text-xs text-muted font-medium block mb-1">Module A</label>
-            <select
+            <label htmlFor="correl-f1" className="text-xs text-muted font-medium block mb-1">Module A</label>
+            <select id="correl-f1"
               value={moduleA}
               onChange={(e) => setModuleA(e.target.value)}
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
@@ -104,8 +104,8 @@ export function CorrelationExplorer({ userId }: CorrelationExplorerProps) {
           </div>
           <span className="text-zinc-600 font-bold hidden sm:block pb-2">↔</span>
           <div className="flex-1">
-            <label className="text-xs text-muted font-medium block mb-1">Module B</label>
-            <select
+            <label htmlFor="correl-f2" className="text-xs text-muted font-medium block mb-1">Module B</label>
+            <select id="correl-f2"
               value={moduleB}
               onChange={(e) => setModuleB(e.target.value)}
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"

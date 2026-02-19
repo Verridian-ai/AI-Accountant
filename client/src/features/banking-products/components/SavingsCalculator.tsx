@@ -61,10 +61,10 @@ export function SavingsCalculator() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">
+            <label htmlFor="banki-f1" className="text-xs text-muted font-semibold block mb-1">
               Current Rate (%)
             </label>
-            <input
+            <input id="banki-f1"
               type="number"
               step="0.01"
               value={currentRate}
@@ -73,8 +73,8 @@ export function SavingsCalculator() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">Loan Balance</label>
-            <input
+            <label htmlFor="banki-f2" className="text-xs text-muted font-semibold block mb-1">Loan Balance</label>
+            <input id="banki-f2"
               type="number"
               value={balance}
               onChange={(e) => setBalance(Number(e.target.value))}
@@ -82,10 +82,10 @@ export function SavingsCalculator() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">
+            <label htmlFor="banki-f3" className="text-xs text-muted font-semibold block mb-1">
               Monthly Repayment
             </label>
-            <input
+            <input id="banki-f3"
               type="number"
               value={monthlyRepayment}
               onChange={(e) => setMonthlyRepayment(Number(e.target.value))}
@@ -93,10 +93,10 @@ export function SavingsCalculator() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold block mb-1">
+            <label htmlFor="banki-f4" className="text-xs text-muted font-semibold block mb-1">
               Remaining Term (yrs)
             </label>
-            <input
+            <input id="banki-f4"
               type="number"
               value={remainingTerm}
               onChange={(e) => setRemainingTerm(Number(e.target.value))}

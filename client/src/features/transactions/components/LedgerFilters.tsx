@@ -2,6 +2,8 @@ import { Calendar, Tag, Wallet, DollarSign } from 'lucide-react';
 import { CategorySelect } from './CategorySelect';
 import type { Account } from '../types/ledger';
 
+const EMPTY_ACCOUNTS: Account[] = [];
+
 interface LedgerFiltersProps {
   startDate: string;
   endDate: string;
@@ -26,7 +28,7 @@ export function LedgerFilters({
   minAmount,
   maxAmount,
   selectedAccount = 'All',
-  accounts = [],
+  accounts = EMPTY_ACCOUNTS,
   onStartDateChange,
   onEndDateChange,
   onCategoryChange,
@@ -39,10 +41,10 @@ export function LedgerFilters({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6 p-3 sm:p-6 neu-inset rounded-3xl animate-in zoom-in-95 duration-300">
       {/* Start Date */}
       <div className="space-y-3">
-        <label className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
+        <label htmlFor="trans-f1" className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
           <Calendar className="h-3 w-3" /> Start Date
         </label>
-        <input
+        <input id="trans-f1"
           type="date"
           aria-label="Filter by start date"
           value={startDate}
@@ -53,10 +55,10 @@ export function LedgerFilters({
 
       {/* End Date */}
       <div className="space-y-3">
-        <label className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
+        <label htmlFor="trans-f2" className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
           <Calendar className="h-3 w-3" /> End Date
         </label>
-        <input
+        <input id="trans-f2"
           type="date"
           aria-label="Filter by end date"
           value={endDate}
@@ -67,10 +69,10 @@ export function LedgerFilters({
 
       {/* Min Amount */}
       <div className="space-y-3">
-        <label className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
+        <label htmlFor="trans-f3" className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
           <DollarSign className="h-3 w-3" /> Min Amount
         </label>
-        <input
+        <input id="trans-f3"
           type="number"
           aria-label="Filter by minimum amount"
           value={minAmount}
@@ -83,10 +85,10 @@ export function LedgerFilters({
 
       {/* Max Amount */}
       <div className="space-y-3">
-        <label className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
+        <label htmlFor="trans-f4" className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
           <DollarSign className="h-3 w-3" /> Max Amount
         </label>
-        <input
+        <input id="trans-f4"
           type="number"
           aria-label="Filter by maximum amount"
           value={maxAmount}
@@ -99,7 +101,7 @@ export function LedgerFilters({
 
       {/* Category */}
       <div className="space-y-3">
-        <label className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
+        <label htmlFor="trans-f5" className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
           <Tag className="h-3 w-3" /> Category
         </label>
         <CategorySelect
@@ -113,11 +115,11 @@ export function LedgerFilters({
       {/* Account */}
       {accounts.length > 0 && onAccountChange && (
         <div className="space-y-3">
-          <label className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
+          <label htmlFor="trans-f6" className="text-xs font-black uppercase text-zinc-600 tracking-widest flex items-center gap-2">
             <Wallet className="h-3 w-3" /> Account
           </label>
           <div className="relative">
-            <select
+            <select id="trans-f5"
               aria-label="Filter by account"
               value={selectedAccount}
               onChange={(e) => onAccountChange(e.target.value)}

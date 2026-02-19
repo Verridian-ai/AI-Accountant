@@ -8,7 +8,7 @@ export function Toggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between cursor-pointer group">
+    <label htmlFor="toggle-f1" className="flex items-center justify-between cursor-pointer group">
       <span className="text-sm text-primary group-hover:text-primary transition">{label}</span>
       <button
         type="button"

@@ -38,6 +38,10 @@ export interface AreaConfig {
   name?: string;
 }
 
+const EMPTY_BARS: BarConfig[] = [];
+const EMPTY_LINES: LineConfig[] = [];
+const EMPTY_AREAS: AreaConfig[] = [];
+
 interface ComposedChartProps {
   data: Record<string, unknown>[];
   bars?: BarConfig[];
@@ -54,9 +58,9 @@ interface ComposedChartProps {
 
 function ComposedChartInner({
   data,
-  bars = [],
-  lines = [],
-  areas = [],
+  bars = EMPTY_BARS,
+  lines = EMPTY_LINES,
+  areas = EMPTY_AREAS,
   xAxisKey,
   dualAxis = false,
   title,

@@ -345,8 +345,8 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       {isReceivable && (
         <div className="neu-raised rounded-2xl p-5 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-secondary mb-1.5">Receipt Notes</label>
-            <textarea
+            <label htmlFor="porece-f1" className="block text-xs font-medium text-secondary mb-1.5">Receipt Notes</label>
+            <textarea id="porece-f1"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
@@ -452,7 +452,7 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
               <tbody>
                 {threeWay.lines.map((l, idx) => (
                   <tr
-                    key={idx}
+                    key={`item-${idx}`}
                     className={`border-b border-border/50 ${!l.matched ? 'bg-red-500/[0.03]' : ''}`}
                   >
                     <td className="px-3 py-2 text-primary">{l.description}</td>

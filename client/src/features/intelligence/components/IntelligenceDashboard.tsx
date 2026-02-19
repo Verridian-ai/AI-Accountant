@@ -133,8 +133,8 @@ export function IntelligenceDashboard() {
         <div className="flex-1" />
 
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted font-medium">From:</label>
-          <input
+          <label htmlFor="intell-f1" className="text-xs text-muted font-medium">From:</label>
+          <input id="intell-f1"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -142,8 +142,8 @@ export function IntelligenceDashboard() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted font-medium">To:</label>
-          <input
+          <label htmlFor="intell-f2" className="text-xs text-muted font-medium">To:</label>
+          <input id="intell-f2"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}

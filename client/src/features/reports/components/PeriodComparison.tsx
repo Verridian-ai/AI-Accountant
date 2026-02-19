@@ -58,11 +58,11 @@ export function PeriodComparison() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Current Period */}
           <div>
-            <label className="block text-xs text-muted font-medium uppercase tracking-wide mb-2">
+            <label htmlFor="period-f1" className="block text-xs text-muted font-medium uppercase tracking-wide mb-2">
               Current Period
             </label>
             <div className="flex gap-2">
-              <input
+              <input id="period-f1"
                 type="date"
                 value={currentStart}
                 onChange={(e) => setCurrentStart(e.target.value)}
@@ -79,11 +79,11 @@ export function PeriodComparison() {
 
           {/* Prior Period */}
           <div>
-            <label className="block text-xs text-muted font-medium uppercase tracking-wide mb-2">
+            <label htmlFor="period-f2" className="block text-xs text-muted font-medium uppercase tracking-wide mb-2">
               Prior Period
             </label>
             <div className="flex gap-2">
-              <input
+              <input id="period-f2"
                 type="date"
                 value={priorStart}
                 onChange={(e) => setPriorStart(e.target.value)}
@@ -100,11 +100,11 @@ export function PeriodComparison() {
 
           {/* Report Type & Action */}
           <div>
-            <label className="block text-xs text-muted font-medium uppercase tracking-wide mb-2">
+            <label htmlFor="period-f3" className="block text-xs text-muted font-medium uppercase tracking-wide mb-2">
               Report Type
             </label>
             <div className="flex gap-2">
-              <select
+              <select id="period-f3"
                 value={reportType}
                 onChange={(e) => setReportType(e.target.value)}
                 className="flex-1 neu-inset rounded-xl px-3 py-2 text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"

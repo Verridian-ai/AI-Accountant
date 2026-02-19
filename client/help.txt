@@ -1,0 +1,30 @@
+﻿Usage: react-doctor [options] [command] [directory]
+
+Diagnose React codebase health
+
+Arguments:
+  directory                project directory to scan (default: ".")
+
+Options:
+  -v, --version            display the version number
+  --no-lint                skip linting
+  --no-dead-code           skip dead code detection
+  --verbose                show file details per rule
+  --score                  output only the score
+  -y, --yes                skip prompts, scan all workspace projects
+  --project <name>         select workspace project (comma-separated for
+                           multiple)
+  --diff [base]            scan only files changed vs base branch
+  --offline                skip telemetry (anonymous, not stored, only used to
+                           calculate score)
+  --no-ami                 skip Ami-related prompts
+  --fix                    open Ami to auto-fix all issues
+  -h, --help               display help for command
+
+Commands:
+  fix [directory]          Open Ami to auto-fix react-doctor issues
+  install-ami [directory]  Install Ami and open it to auto-fix issues
+
+Learn more:
+  https://github.com/millionco/react-doctor
+

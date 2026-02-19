@@ -157,7 +157,6 @@ export function TenantCreate() {
                 }
                 placeholder="My Business Pty Ltd"
                 className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-primary bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30 placeholder:text-zinc-600"
-                autoFocus
               />
             </div>
             <div>

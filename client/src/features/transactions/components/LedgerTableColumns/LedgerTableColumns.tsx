@@ -168,7 +168,6 @@ export function createLedgerColumns({
                 value={editForm.description || ''}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 className="w-full px-4 py-2 text-sm neu-inset rounded-xl focus-gold outline-none text-cba-gold font-bold"
-                autoFocus
               />
               <Edit2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-cba-gold/50" />
             </div>
@@ -177,8 +176,11 @@ export function createLedgerColumns({
 
         return (
           <div
+            role="button"
+            tabIndex={0}
             className="flex items-center gap-3 group cursor-pointer min-w-[200px]"
             onClick={() => handleEditStart(tx)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEditStart(tx); } }}
           >
             <div className="w-8 h-8 neu-inset rounded-lg flex items-center justify-center shrink-0 group-hover:neu-raised transition-all">
               <Activity className="h-3.5 w-3.5 text-zinc-600 group-hover:text-cba-gold transition-colors" />

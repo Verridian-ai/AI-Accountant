@@ -35,6 +35,8 @@ import { DeleteConfirmDialog, useDeleteConfirm } from './DeleteConfirmDialog';
 import { BulkActionBar } from './BulkActionBar';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 
+const EMPTY_ACCOUNTS: Account[] = [];
+
 interface LedgerPageProps {
   transactions: Transaction[];
   accounts?: Account[];
@@ -46,7 +48,7 @@ interface LedgerPageProps {
 
 export function LedgerPage({
   transactions,
-  accounts = [],
+  accounts = EMPTY_ACCOUNTS,
   loading = false,
   onDataChange,
   totalTransactions,

@@ -20,6 +20,9 @@
     --color-cba-gold-dark: var(--cba-gold-dark);
     --color-overlay: var(--overlay);
     --color-overlay-hover: var(--overlay-hover);
+    --color-success: var(--success);
+    --color-danger: var(--danger);
+    --color-info: var(--info);
 }
 
 :root {

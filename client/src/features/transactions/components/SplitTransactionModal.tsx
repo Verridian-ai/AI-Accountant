@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import type { Transaction, SplitEntry } from '../types/ledger';
 import { CategorySelect } from './CategorySelect';
-import { cn } from '@/lib/utils';
+import { cn } from '../../../lib/utils';
 import { Scissors, X, Plus, Trash2 } from 'lucide-react';
 
 interface SplitTransactionModalProps {
@@ -123,6 +123,7 @@ export function SplitTransactionModal({
 
   return (
     <div
+      role="presentation"
       className="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
       onClick={(e) => {
         // Close on backdrop click
@@ -130,6 +131,7 @@ export function SplitTransactionModal({
           onCancel();
         }
       }}
+      onKeyDown={() => { }}
     >
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -180,7 +182,7 @@ export function SplitTransactionModal({
         <div className="p-8 space-y-6 max-h-[55vh] overflow-y-auto scrollbar-thin">
           {splits.map((split, idx) => (
             <div
-              key={idx}
+              key={`split-${idx}-${split.amount}-${split.category}`}
               className="neu-raised-sm p-6 rounded-3xl space-y-5 relative group border border-border/50 hover:border-purple-500/20 transition-all"
             >
               <div className="flex justify-between items-center border-b border-border/50 pb-4">
@@ -251,7 +253,7 @@ export function SplitTransactionModal({
                     </div>
                   </div>
                   <div className="w-20 space-y-2">
-                    <label className="text-xs font-black uppercase text-zinc-600 tracking-widest ml-1">
+                    <label htmlFor="splitt-f1" className="text-xs font-black uppercase text-zinc-600 tracking-widest ml-1">
                       GST
                     </label>
                     <button

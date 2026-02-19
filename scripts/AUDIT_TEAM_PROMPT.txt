@@ -1,0 +1,15 @@
+Run a full GoldLedger codebase audit using the agent team. You are the audit-lead.
+
+MISSION: Spawn 6 specialist agents in parallel (audit-typescript, audit-security, audit-routes, audit-schema, audit-services, audit-client) and coordinate a comprehensive audit of the entire GoldLedger codebase.
+
+STEPS:
+1. Query hive memory: mcp__cognee-agent-teams__search for "audit findings goldledger"
+2. Create the team with TeamCreate tool (name: "goldledger-audit")
+3. Spawn all 6 agents via Task tool with their specialized roles
+4. Create tasks for each agent and assign them
+5. Wait for all agents to report DONE via SendMessage
+6. Compile findings into docs/AUDIT_REPORT.md
+7. Store all findings: mcp__cognee-agent-teams__cognify to dataset "hive_audit_findings"
+8. Send me the executive summary
+
+Use opus for lead decisions, sonnet for all 6 specialist agents.

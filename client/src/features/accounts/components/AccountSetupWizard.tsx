@@ -163,10 +163,10 @@ export function AccountSetupWizard({
 
           {/* Account Name */}
           <div className="space-y-3">
-            <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
+            <label htmlFor="accoun-f1" className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
               Vault Alias
             </label>
-            <input
+            <input id="accoun-f1"
               type="text"
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
@@ -177,7 +177,7 @@ export function AccountSetupWizard({
 
           {/* Account Type */}
           <div className="space-y-3">
-            <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
+            <label htmlFor="accoun-f2" className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
               Node Classification
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -211,10 +211,10 @@ export function AccountSetupWizard({
           {isCreditOrLoan && (
             <div className="grid grid-cols-2 gap-6 p-6 neu-inset rounded-3xl border border-border/50 bg-overlay animate-in slide-in-from-top-4 duration-500">
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
+                <label htmlFor="accoun-f3" className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
                   Interest Rate (%)
                 </label>
-                <input
+                <input id="accoun-f3"
                   type="number"
                   step="0.01"
                   value={interestRate}
@@ -226,10 +226,10 @@ export function AccountSetupWizard({
               {accountType === 'credit_card' && (
                 <>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
+                    <label htmlFor="accoun-f4" className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
                       Credit Limit ($)
                     </label>
-                    <input
+                    <input id="accoun-f4"
                       type="number"
                       value={creditLimit}
                       onChange={(e) => setCreditLimit(e.target.value)}

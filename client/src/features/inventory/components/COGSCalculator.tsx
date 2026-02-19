@@ -83,8 +83,8 @@ export function COGSCalculator() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:col-span-2">
-            <label className="text-xs text-muted font-semibold uppercase">Item</label>
-            <select
+            <label htmlFor="cogsca-f1" className="text-xs text-muted font-semibold uppercase">Item</label>
+            <select id="cogsca-f1"
               value={selectedItemId}
               onChange={(e) => setSelectedItemId(e.target.value)}
               className="w-full mt-1 px-3 py-2.5 rounded-lg neu-inset bg-transparent text-zinc-100 text-sm"
@@ -98,8 +98,8 @@ export function COGSCalculator() {
             </select>
           </div>
           <div>
-            <label className="text-xs text-muted font-semibold uppercase">Quantity Sold</label>
-            <input
+            <label htmlFor="cogsca-f2" className="text-xs text-muted font-semibold uppercase">Quantity Sold</label>
+            <input id="cogsca-f2"
               type="number"
               min={1}
               value={quantity}
@@ -184,7 +184,7 @@ export function COGSCalculator() {
           </div>
           <div className="divide-y divide-white/5">
             {history.map((h, i) => (
-              <div key={i} className="px-5 py-3 flex items-center justify-between">
+              <div key={`item-${i}`} className="px-5 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-primary">{h.itemName}</p>
                   <p className="text-xs text-muted">

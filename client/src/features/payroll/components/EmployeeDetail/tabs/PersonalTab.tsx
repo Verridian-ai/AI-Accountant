@@ -64,11 +64,11 @@ export function PersonalTab({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {fields.map((f) => (
           <div key={f.key}>
-            <label className="text-xs font-medium text-muted uppercase tracking-wider">
+            <label htmlFor="person-f1" className="text-xs font-medium text-muted uppercase tracking-wider">
               {f.label}
             </label>
             {editing ? (
-              <input
+              <input id="person-f1"
                 type={f.key === 'date_of_birth' ? 'date' : 'text'}
                 value={editData[f.key] ?? ''}
                 onChange={(e) => onFieldChange(f.key, e.target.value)}
@@ -80,7 +80,7 @@ export function PersonalTab({
           </div>
         ))}
         <div>
-          <label className="text-xs font-medium text-muted uppercase tracking-wider">TFN</label>
+          <label htmlFor="person-f2" className="text-xs font-medium text-muted uppercase tracking-wider">TFN</label>
           <p className="text-sm text-primary mt-1 font-mono">
             {(employee.tfn_masked as string) ?? '***-***-***'}
           </p>

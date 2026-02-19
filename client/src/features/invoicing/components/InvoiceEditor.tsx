@@ -270,8 +270,8 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-muted mb-1">Issue Date</label>
-            <input
+            <label htmlFor="invoi-f1" className="block text-xs text-muted mb-1">Issue Date</label>
+            <input id="invoi-f1"
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
@@ -279,8 +279,8 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
             />
           </div>
           <div>
-            <label className="block text-xs text-muted mb-1">Due Date</label>
-            <input
+            <label htmlFor="invoi-f2" className="block text-xs text-muted mb-1">Due Date</label>
+            <input id="invoi-f2"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
@@ -289,8 +289,8 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
           </div>
         </div>
         <div>
-          <label className="block text-xs text-muted mb-1">Notes</label>
-          <textarea
+          <label htmlFor="invoi-f3" className="block text-xs text-muted mb-1">Notes</label>
+          <textarea id="invoi-f3"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
@@ -299,8 +299,8 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
           />
         </div>
         <div>
-          <label className="block text-xs text-muted mb-1">Terms & Conditions</label>
-          <textarea
+          <label htmlFor="invoi-f4" className="block text-xs text-muted mb-1">Terms & Conditions</label>
+          <textarea id="invoi-f4"
             value={terms}
             onChange={(e) => setTerms(e.target.value)}
             rows={2}

@@ -129,10 +129,10 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
           <h4 className="text-sm font-bold text-primary">New Ontology</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+              <label htmlFor="knowl-f1" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Name
               </label>
-              <input
+              <input id="knowl-f1"
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -141,10 +141,10 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+              <label htmlFor="knowl-f2" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Type
               </label>
-              <select
+              <select id="knowl-f2"
                 value={form.ontologyType}
                 onChange={(e) => setForm({ ...form, ontologyType: e.target.value })}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -157,10 +157,10 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+            <label htmlFor="knowl-f3" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
               Description
             </label>
-            <textarea
+            <textarea id="knowl-f3"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Describe the ontology purpose..."
@@ -170,10 +170,10 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+              <label htmlFor="knowl-f4" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Node Types (comma-separated)
               </label>
-              <input
+              <input id="knowl-f4"
                 type="text"
                 value={form.nodeTypes}
                 onChange={(e) => setForm({ ...form, nodeTypes: e.target.value })}
@@ -182,10 +182,10 @@ export function OntologyManager({ userId }: OntologyManagerProps) {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+              <label htmlFor="knowl-f5" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Edge Types (comma-separated)
               </label>
-              <input
+              <input id="knowl-f5"
                 type="text"
                 value={form.edgeTypes}
                 onChange={(e) => setForm({ ...form, edgeTypes: e.target.value })}

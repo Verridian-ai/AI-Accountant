@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import type { Transaction } from '@/api';
-import { CurrencyDisplay } from '@/components/common/CurrencyDisplay';
+import type { Transaction } from '../../../api';
+import { CurrencyDisplay } from '../../../components/common/CurrencyDisplay';
 import { CategorySelect } from './CategorySelect';
 import { getCategoryColor } from '../constants/categoryColors';
 import { getTaxCodeForCategory } from '../constants/categories';
-import { cn } from '@/lib/utils';
+import { cn } from '../../../lib/utils';
 import {
   Activity,
   Edit2,
@@ -19,8 +19,10 @@ import {
   X,
   ArrowLeftRight,
 } from 'lucide-react';
-import type { Account } from '@/api';
-import { Skeleton } from '@/components/ui/skeleton';
+import type { Account } from '../../../api';
+import { Skeleton } from '../../../components/ui/skeleton';
+
+const EMPTY_ACCOUNTS: Account[] = [];
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -37,7 +39,7 @@ interface TransactionCardProps {
 
 export function TransactionCard({
   transaction,
-  accounts = [],
+  accounts = EMPTY_ACCOUNTS,
   onEdit,
   onDelete,
   onSplit,
@@ -56,24 +58,23 @@ export function TransactionCard({
       <div className="neu-raised-sm rounded-2xl p-4 mb-4 border border-cba-gold/20 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="space-y-4">
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-muted">
+            <label htmlFor="trans-f1" className="text-[10px] font-black uppercase tracking-widest text-muted">
               Description
             </label>
-            <input
+            <input id="trans-f1"
               type="text"
               value={editForm.description || ''}
               onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
               className="w-full px-4 py-3 text-sm neu-inset rounded-xl focus-gold outline-none text-cba-gold font-bold"
-              autoFocus
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted">
+              <label htmlFor="trans-f2" className="text-[10px] font-black uppercase tracking-widest text-muted">
                 Amount
               </label>
-              <input
+              <input id="trans-f2"
                 type="number"
                 step="0.01"
                 value={(editForm.amount || 0) / 100}
@@ -84,7 +85,7 @@ export function TransactionCard({
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted">
+              <label htmlFor="trans-f3" className="text-[10px] font-black uppercase tracking-widest text-muted">
                 Tax
               </label>
               <button
@@ -103,7 +104,7 @@ export function TransactionCard({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-black uppercase tracking-widest text-muted">
+            <label htmlFor="trans-f4" className="text-xs font-black uppercase tracking-widest text-muted">
               Category
             </label>
             <CategorySelect
@@ -139,11 +140,12 @@ export function TransactionCard({
   return (
     <div className="neu-raised-sm rounded-2xl p-4 mb-4 border border-border/50 relative overflow-hidden group active:scale-[0.99] transition-transform duration-200">
       {/* Main Row */}
-      <div
-        className="flex items-center justify-between gap-4"
+      <button
+        type="button"
+        className="w-full flex items-center justify-between gap-4 cursor-pointer focus:outline-none"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-center gap-3 overflow-hidden">
+        <div className="flex items-center gap-3 overflow-hidden text-left">
           <div className="w-10 h-10 neu-inset rounded-xl flex items-center justify-center shrink-0 text-cba-gold">
             <Activity className="h-5 w-5" />
           </div>
@@ -192,11 +194,11 @@ export function TransactionCard({
         </div>
         <div className="flex flex-col items-end shrink-0">
           <CurrencyDisplay amount={transaction.amount} className="text-base" />
-          <button className="p-1 text-zinc-600">
+          <div className="p-1 text-zinc-600">
             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </button>
+          </div>
         </div>
-      </div>
+      </button>
 
       {/* Expanded Details */}
       {expanded && (

@@ -27,7 +27,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [address, setAddress] = useState('');
   const [taxFileNumber, setTaxFileNumber] = useState('');
-  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
+  const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [employmentType, setEmploymentType] = useState<string>('full_time');
 
   // Step 2: Bank
@@ -59,7 +59,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
       .then((result) => {
         setPayCategories(result.data ?? []);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const canProceed = (): boolean => {
@@ -199,10 +199,10 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
                 }
               />
               <div>
-                <label className="block text-xs font-medium text-secondary mb-1.5">
+                <label htmlFor="payro-f1" className="block text-xs font-medium text-secondary mb-1.5">
                   Employment Type *
                 </label>
-                <select
+                <select id="payro-f1"
                   value={employmentType}
                   onChange={(e) => setEmploymentType(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
@@ -271,11 +271,11 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
               placeholder="MEM123456"
             />
             <div>
-              <label className="block text-xs font-medium text-secondary mb-1.5">
+              <label htmlFor="payro-f2" className="block text-xs font-medium text-secondary mb-1.5">
                 Contribution Rate (%)
               </label>
               <div className="relative">
-                <input
+                <input id="payro-f2"
                   type="number"
                   step="0.5"
                   min="0"
@@ -312,8 +312,8 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
             <Toggle label="HELP / HECS debt" checked={helpDebt} onChange={setHelpDebt} />
             <Toggle label="SFSS debt" checked={sfssDebt} onChange={setSfssDebt} />
             <div>
-              <label className="block text-xs font-medium text-secondary mb-1.5">Dependents</label>
-              <input
+              <label htmlFor="payro-f3" className="block text-xs font-medium text-secondary mb-1.5">Dependents</label>
+              <input id="payro-f3"
                 type="number"
                 min="0"
                 value={claimDependents}
@@ -328,10 +328,10 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
         return (
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-secondary mb-1.5">
+              <label htmlFor="payro-f4" className="block text-xs font-medium text-secondary mb-1.5">
                 Pay Category *
               </label>
-              <select
+              <select id="payro-f4"
                 value={selectedCategoryId}
                 onChange={(e) => {
                   setSelectedCategoryId(e.target.value);
@@ -358,8 +358,8 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-secondary mb-1.5">Rate Type</label>
-                <select
+                <label htmlFor="payro-f5" className="block text-xs font-medium text-secondary mb-1.5">Rate Type</label>
+                <select id="payro-f5"
                   value={rateType}
                   onChange={(e) => setRateType(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
@@ -399,16 +399,15 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
       {/* Progress Indicator */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
         {STEPS.map((s, i) => (
-          <div key={s.id} className="flex items-center gap-2 flex-shrink-0">
+          <div key={s.id} className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => i <= step && setStep(i)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                i === step
-                  ? 'bg-cba-gold/10 text-cba-gold ring-1 ring-[#FFCC00]/20'
-                  : i < step
-                    ? 'bg-emerald-500/10 text-emerald-400'
-                    : 'text-muted bg-overlay'
-              }`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${i === step
+                ? 'bg-cba-gold/10 text-cba-gold ring-1 ring-[#FFCC00]/20'
+                : i < step
+                  ? 'bg-emerald-500/10 text-emerald-400'
+                  : 'text-muted bg-overlay'
+                }`}
             >
               <s.icon className="h-4 w-4" />
               <span className="hidden sm:inline">{s.label}</span>
@@ -416,7 +415,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
             </button>
             {i < STEPS.length - 1 && (
               <ChevronRight
-                className={`h-4 w-4 flex-shrink-0 ${i < step ? 'text-emerald-400' : 'text-zinc-600'}`}
+                className={`h-4 w-4 shrink-0 ${i < step ? 'text-emerald-400' : 'text-zinc-600'}`}
               />
             )}
           </div>
@@ -425,7 +424,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
 
       {/* Step Content */}
       <div className="neu-raised rounded-2xl p-6">
-        <h2 className="text-lg font-semibold text-primary mb-1">{STEPS[step].label}</h2>
+        <h2 className="text-lg font-semibold text-primary mb-1">{STEPS[step]?.label}</h2>
         <p className="text-sm text-muted mb-6">
           Step {step + 1} of {STEPS.length}
         </p>
@@ -435,7 +434,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
       {/* Error */}
       {error && (
         <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-400 text-sm">
-          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
@@ -443,7 +442,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
       {/* Navigation */}
       <div className="flex items-center justify-between">
         <button
-          onClick={step === 0 ? onCancel : () => setStep(step - 1)}
+          onClick={step === 0 ? onCancel : () => setStep((prev) => prev - 1)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-overlay text-primary text-sm font-medium hover:bg-overlay-hover transition"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -452,7 +451,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
 
         {step < STEPS.length - 1 ? (
           <button
-            onClick={() => setStep(step + 1)}
+            onClick={() => setStep((prev) => prev + 1)}
             disabled={!canProceed()}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cba-gold text-black text-sm font-semibold hover:bg-cba-gold/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(255,204,0,0.15)]"
           >

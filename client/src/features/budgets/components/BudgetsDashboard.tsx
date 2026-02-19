@@ -168,7 +168,7 @@ export function BudgetsDashboard() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="neu-raised rounded-2xl p-5 animate-pulse">
+                <div key={`item-${i}`} className="neu-raised rounded-2xl p-5 animate-pulse">
                   <div className="h-5 bg-zinc-800 rounded w-2/3 mb-3" />
                   <div className="h-4 bg-zinc-800 rounded w-1/2 mb-2" />
                   <div className="h-4 bg-zinc-800 rounded w-1/3" />
@@ -251,8 +251,8 @@ export function BudgetsDashboard() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs text-muted mb-1">Budget Name</label>
-              <input
+              <label htmlFor="budget-f1" className="block text-xs text-muted mb-1">Budget Name</label>
+              <input id="budget-f1"
                 value={createName}
                 onChange={(e) => setCreateName(e.target.value)}
                 placeholder="e.g. Q1 2026 Operating Budget"
@@ -262,8 +262,8 @@ export function BudgetsDashboard() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs text-muted mb-1">Budget Type</label>
-                <select
+                <label htmlFor="budget-f2" className="block text-xs text-muted mb-1">Budget Type</label>
+                <select id="budget-f2"
                   value={createType}
                   onChange={(e) => setCreateType(e.target.value as 'annual' | 'quarterly' | 'monthly' | 'project')}
                   className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
@@ -275,8 +275,8 @@ export function BudgetsDashboard() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-muted mb-1">Period Start</label>
-                <input
+                <label htmlFor="budget-f3" className="block text-xs text-muted mb-1">Period Start</label>
+                <input id="budget-f3"
                   type="date"
                   value={createStart}
                   onChange={(e) => setCreateStart(e.target.value)}

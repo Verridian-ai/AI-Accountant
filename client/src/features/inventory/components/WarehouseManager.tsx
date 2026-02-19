@@ -80,8 +80,8 @@ export function WarehouseManager() {
           <h3 className="text-lg font-bold text-zinc-100">New Warehouse</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-muted font-semibold uppercase">Name</label>
-              <input
+              <label htmlFor="wareho-f1" className="text-xs text-muted font-semibold uppercase">Name</label>
+              <input id="wareho-f1"
                 value={formData.name}
                 onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                 className="w-full mt-1 px-3 py-2 rounded-lg neu-inset bg-transparent text-zinc-100 text-sm"
@@ -89,8 +89,8 @@ export function WarehouseManager() {
               />
             </div>
             <div>
-              <label className="text-xs text-muted font-semibold uppercase">Location</label>
-              <input
+              <label htmlFor="wareho-f2" className="text-xs text-muted font-semibold uppercase">Location</label>
+              <input id="wareho-f2"
                 value={formData.location}
                 onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
                 className="w-full mt-1 px-3 py-2 rounded-lg neu-inset bg-transparent text-zinc-100 text-sm"
@@ -98,8 +98,8 @@ export function WarehouseManager() {
               />
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-primary cursor-pointer">
-            <input
+          <label htmlFor="wareho-f3" className="flex items-center gap-2 text-sm text-primary cursor-pointer">
+            <input id="wareho-f3"
               type="checkbox"
               checked={formData.isDefault}
               onChange={(e) => setFormData((p) => ({ ...p, isDefault: e.target.checked }))}

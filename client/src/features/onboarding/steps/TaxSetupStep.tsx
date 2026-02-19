@@ -93,7 +93,7 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
       {showGstOptions && data.isRegisteredForGst && (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-center gap-2">
-            <label className="text-[10px] font-black uppercase text-muted tracking-widest">
+            <label htmlFor="taxset-f1" className="text-[10px] font-black uppercase text-muted tracking-widest">
               BAS Lodgement Frequency
             </label>
             <HelpCircle className="w-3 h-3 text-zinc-600" />
@@ -145,7 +145,7 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
           style={{ animationDelay: '100ms' }}
         >
           <div className="flex items-center gap-2">
-            <label className="text-[10px] font-black uppercase text-muted tracking-widest">
+            <label htmlFor="taxset-f2" className="text-[10px] font-black uppercase text-muted tracking-widest">
               Accounting Method
             </label>
             <HelpCircle className="w-3 h-3 text-zinc-600" />
@@ -198,7 +198,7 @@ export function TaxSetupStep({ data, updateData }: OnboardingStepProps) {
       {/* Financial Year End */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <label className="text-[10px] font-black uppercase text-muted tracking-widest">
+          <label htmlFor="taxset-f3" className="text-[10px] font-black uppercase text-muted tracking-widest">
             Financial Year End
           </label>
         </div>

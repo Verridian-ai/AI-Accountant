@@ -80,8 +80,8 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
         <h4 className="text-primary font-bold text-sm mb-4">Generate Report</h4>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label className="block text-secondary text-xs font-bold mb-1.5">Period</label>
-            <select
+            <label htmlFor="compli-f1" className="block text-secondary text-xs font-bold mb-1.5">Period</label>
+            <select id="compli-f1"
               value={periodType}
               onChange={(e) => setPeriodType(e.target.value as 'quarter' | 'year')}
               className="neu-inset px-3 py-2 rounded-xl bg-transparent text-sm text-primary outline-none"
@@ -91,8 +91,8 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
             </select>
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
+          <label htmlFor="compli-f2" className="flex items-center gap-2 cursor-pointer">
+            <input id="compli-f2"
               type="checkbox"
               checked={includeRecommendations}
               onChange={(e) => setIncludeRecommendations(e.target.checked)}
@@ -181,7 +181,7 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
                 </thead>
                 <tbody>
                   {report.obligations.map((ob, i) => (
-                    <tr key={i} className="border-b border-border/50">
+                    <tr key={`item-${i}`} className="border-b border-border/50">
                       <td className="px-3 py-2 text-primary">{ob.type}</td>
                       <td className="px-3 py-2 text-secondary">{ob.period}</td>
                       <td className="px-3 py-2 text-secondary">
@@ -236,7 +236,7 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
               <h4 className="text-primary font-bold text-sm mb-3">Recommendations</h4>
               <ul className="space-y-2">
                 {report.recommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-secondary">
+                  <li key={`item-${i}`} className="flex items-start gap-2 text-sm text-secondary">
                     <span className="text-cba-gold font-bold mt-0.5">{i + 1}.</span>
                     <span>{rec}</span>
                   </li>

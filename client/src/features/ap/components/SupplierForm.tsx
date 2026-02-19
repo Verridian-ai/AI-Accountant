@@ -349,7 +349,7 @@ function FormField({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-secondary mb-1.5">{label}</label>
+      <label htmlFor="suppli-f1" className="block text-xs font-medium text-secondary mb-1.5">{label}</label>
       {children}
       {error && (
         <p className="flex items-center gap-1 mt-1 text-xs text-red-400">

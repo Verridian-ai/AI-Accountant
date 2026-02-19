@@ -156,7 +156,6 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
               >
                 {editingCell?.row === i && editingCell.col === 'description' ? (
                   <input
-                    autoFocus
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onBlur={commitEdit}
@@ -173,7 +172,6 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
               >
                 {editingCell?.row === i && editingCell.col === 'quantity' ? (
                   <input
-                    autoFocus
                     type="number"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
@@ -191,7 +189,6 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
               >
                 {editingCell?.row === i && editingCell.col === 'unitPrice' ? (
                   <input
-                    autoFocus
                     type="number"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
@@ -211,7 +208,6 @@ export function LineItemEditor({ documentId, readOnly = false }: LineItemEditorP
               >
                 {editingCell?.row === i && editingCell.col === 'amount' ? (
                   <input
-                    autoFocus
                     type="number"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}

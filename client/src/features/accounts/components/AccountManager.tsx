@@ -163,7 +163,7 @@ export function AccountManager() {
         </div>
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-24 neu-inset rounded-2xl animate-pulse" />
+            <div key={`item-${i}`} className="h-24 neu-inset rounded-2xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -318,10 +318,10 @@ export function AccountManager() {
               {isEditing && (
                 <div className="space-y-3 mb-4">
                   <div>
-                    <label className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
+                    <label htmlFor="accoun-f1" className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
                       Type
                     </label>
-                    <select
+                    <select id="accoun-f1"
                       value={editValues.accountType || account.accountType}
                       onChange={(e) =>
                         setEditValues((prev) => ({ ...prev, accountType: e.target.value }))
@@ -336,7 +336,7 @@ export function AccountManager() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
+                    <label htmlFor="accoun-f2" className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
                       Color
                     </label>
                     <div className="flex gap-2 flex-wrap">
@@ -359,7 +359,7 @@ export function AccountManager() {
                   </div>
                   {/* Business Account Toggle */}
                   <div>
-                    <label className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
+                    <label htmlFor="accoun-f3" className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
                       Business Account
                     </label>
                     <button

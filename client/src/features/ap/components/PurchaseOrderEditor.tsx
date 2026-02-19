@@ -228,10 +228,10 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         {/* Supplier + Expected Date Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative" ref={dropdownRef}>
-            <label className="block text-xs font-medium text-secondary mb-1.5">Supplier *</label>
+            <label htmlFor="purcha-f1" className="block text-xs font-medium text-secondary mb-1.5">Supplier *</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-              <input
+              <input id="purcha-f1"
                 type="text"
                 value={supplierSearch}
                 onChange={(e) => {
@@ -260,10 +260,10 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-secondary mb-1.5">
+            <label htmlFor="purcha-f2" className="block text-xs font-medium text-secondary mb-1.5">
               Expected Delivery Date
             </label>
-            <input
+            <input id="purcha-f2"
               type="date"
               value={expectedDate}
               onChange={(e) => setExpectedDate(e.target.value)}
@@ -276,7 +276,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         {/* Line Items */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-xs font-medium text-secondary uppercase tracking-wider">
+            <label htmlFor="purcha-f3" className="text-xs font-medium text-secondary uppercase tracking-wider">
               Line Items
             </label>
             {isEditable && (
@@ -384,8 +384,8 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
 
         {/* Notes */}
         <div>
-          <label className="block text-xs font-medium text-secondary mb-1.5">Notes</label>
-          <textarea
+          <label htmlFor="purcha-f4" className="block text-xs font-medium text-secondary mb-1.5">Notes</label>
+          <textarea id="purcha-f4"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             disabled={!isEditable}

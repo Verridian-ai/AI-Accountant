@@ -157,8 +157,8 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
           <h4 className="text-sm font-bold text-primary">New Forecast Scenario</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs text-muted mb-1">Name</label>
-              <input
+              <label htmlFor="foreca-f1" className="block text-xs text-muted mb-1">Name</label>
+              <input id="foreca-f1"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Q1 2026 Forecast"
@@ -166,8 +166,8 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
               />
             </div>
             <div>
-              <label className="block text-xs text-muted mb-1">Scenario Type</label>
-              <select
+              <label htmlFor="foreca-f2" className="block text-xs text-muted mb-1">Scenario Type</label>
+              <select id="foreca-f2"
                 value={scenarioType}
                 onChange={(e) => setScenarioType(e.target.value as 'optimistic' | 'realistic' | 'pessimistic' | 'custom')}
                 className="w-full neu-inset rounded-xl px-3 py-2 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
@@ -179,9 +179,9 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-muted mb-1">Forecast Months</label>
+              <label htmlFor="foreca-f3" className="block text-xs text-muted mb-1">Forecast Months</label>
               <div className="flex items-center gap-3">
-                <input
+                <input id="foreca-f3"
                   type="range"
                   min={1}
                   max={60}
@@ -265,7 +265,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="neu-raised rounded-2xl p-5 animate-pulse">
+            <div key={`item-${i}`} className="neu-raised rounded-2xl p-5 animate-pulse">
               <div className="h-5 bg-zinc-800 rounded w-1/2 mb-3" />
               <div className="h-4 bg-zinc-800 rounded w-2/3" />
             </div>
@@ -354,7 +354,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                     </thead>
                     <tbody>
                       {(periods[s.id] ?? []).map((p, i) => (
-                        <tr key={i} className="border-b border-border/50 hover:bg-white/[0.02]">
+                        <tr key={`item-${i}`} className="border-b border-border/50 hover:bg-white/[0.02]">
                           <td className="px-4 py-2 text-primary">{p.period}</td>
                           <td className="px-4 py-2 text-secondary">{p.category}</td>
                           <td className="px-4 py-2 text-right text-cba-gold font-mono">

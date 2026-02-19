@@ -318,7 +318,7 @@ export function PayCategoryManager() {
           </div>
 
           <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label htmlFor="paycat-f1" className="flex items-center gap-2 cursor-pointer">
               <button
                 type="button"
                 onClick={() => setForm((prev) => ({ ...prev, isTaxable: !prev.isTaxable }))}
@@ -332,7 +332,7 @@ export function PayCategoryManager() {
               </button>
               <span className="text-xs text-primary">Taxable</span>
             </label>
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label htmlFor="paycat-f2" className="flex items-center gap-2 cursor-pointer">
               <button
                 type="button"
                 onClick={() =>

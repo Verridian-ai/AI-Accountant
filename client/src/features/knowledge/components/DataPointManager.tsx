@@ -160,10 +160,10 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
           <h4 className="text-sm font-bold text-primary">New DataPoint</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+              <label htmlFor="knowl-f1" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Name
               </label>
-              <input
+              <input id="knowl-f1"
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -172,10 +172,10 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+              <label htmlFor="knowl-f2" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Type
               </label>
-              <select
+              <select id="knowl-f2"
                 value={form.datapointType}
                 onChange={(e) => setForm({ ...form, datapointType: e.target.value })}
                 className="w-full neu-inset rounded-lg px-3 py-2 text-sm text-primary bg-transparent focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -189,10 +189,10 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+            <label htmlFor="knowl-f3" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
               Description
             </label>
-            <input
+            <input id="knowl-f3"
               type="text"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -202,10 +202,10 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+              <label htmlFor="knowl-f4" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Dataset
               </label>
-              <input
+              <input id="knowl-f4"
                 type="text"
                 value={form.datasetName}
                 onChange={(e) => setForm({ ...form, datasetName: e.target.value })}
@@ -214,10 +214,10 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+              <label htmlFor="knowl-f5" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
                 Schema (JSON)
               </label>
-              <input
+              <input id="knowl-f5"
                 type="text"
                 value={form.schemaFields}
                 onChange={(e) => setForm({ ...form, schemaFields: e.target.value })}
@@ -227,10 +227,10 @@ export function DataPointManager({ userId }: DataPointManagerProps) {
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
+            <label htmlFor="knowl-f6" className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
               Extraction Prompt
             </label>
-            <textarea
+            <textarea id="knowl-f6"
               value={form.extractionPrompt}
               onChange={(e) => setForm({ ...form, extractionPrompt: e.target.value })}
               placeholder="Instructions for the AI to extract this datapoint..."

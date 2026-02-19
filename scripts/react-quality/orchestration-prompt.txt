@@ -1,0 +1,48 @@
+You are the react-quality-lead agent. Your mission: coordinate 6 parallel workers to fix all 712 react-doctor warnings across 231 files in the GoldLedger React client. Current score: 81/100. Target: 95+/100.
+
+STEP 1 — Create team. Use TeamCreate tool with team_name="react-quality".
+
+STEP 2 — Create 7 tasks using TaskCreate:
+T01: subject="Fix react-quality warnings: transactions/ap/matching", description="Worker-1 fixes all react-doctor warnings in client/src/features/transactions/, client/src/features/ap/, client/src/features/matching/. Rules in scripts/react-quality/rules-reference.md. Worker prompt: scripts/react-quality/worker-prompts/worker-1-transactions.md"
+T02: subject="Fix react-quality warnings: admin/auth/tenant", description="Worker-2 fixes all react-doctor warnings in client/src/features/admin/, auth/, settings/, tenant/, subscription/, context/. Rules in scripts/react-quality/rules-reference.md. Worker prompt: scripts/react-quality/worker-prompts/worker-2-admin.md"
+T03: subject="Fix react-quality warnings: analytics/accounts/budgets", description="Worker-3 fixes all react-doctor warnings in client/src/features/analytics/, accounts/, budgets/, reconciliation/. Rules in scripts/react-quality/rules-reference.md. Worker prompt: scripts/react-quality/worker-prompts/worker-3-analytics.md"
+T04: subject="Fix react-quality warnings: loans/banking/market/forecasting", description="Worker-4 fixes all react-doctor warnings in client/src/features/loans/, banking-products/, transfers/, market/, forecasting/. Rules in scripts/react-quality/rules-reference.md. Worker prompt: scripts/react-quality/worker-prompts/worker-4-loans.md"
+T05: subject="Fix react-quality warnings: reports/tax/bas/payroll", description="Worker-5 fixes all react-doctor warnings in client/src/features/reports/, tax/, gst/, bas/, compliance/, payroll/. Rules in scripts/react-quality/rules-reference.md. Worker prompt: scripts/react-quality/worker-prompts/worker-5-reports.md"
+T06: subject="Fix react-quality warnings: intelligence/knowledge/components", description="Worker-6 fixes all react-doctor warnings in client/src/features/intelligence/, entities/, knowledge/, documents/, invoicing/, inventory/, dashboards/, streaming/, assets/, onboarding/, chat/, statements/, components/, App.tsx. Rules in scripts/react-quality/rules-reference.md. Worker prompt: scripts/react-quality/worker-prompts/worker-6-intelligence.md"
+T07: subject="Final verification and commit", description="Lead runs TSC + react-doctor after all workers done. Must be 0 TSC errors. Target 95+/100. Commit all changes."
+
+STEP 3 — Spawn 6 Sonnet worker agents in parallel using Task tool. For each worker, set team_name="react-quality" and include their full prompt from their worker prompt file. Spawn ALL 6 simultaneously:
+
+Worker 1 spawn prompt: "You are worker-1-transactions. Read and follow scripts/react-quality/worker-prompts/worker-1-transactions.md exactly. The project root is C:/Users/Danie/Desktop/CBA Statements Parse. Start by reading rules-reference.md, then fix all issues in your assigned directories, run TSC after every 5 files, commit when done, and send DONE message to lead."
+
+Worker 2 spawn prompt: "You are worker-2-admin. Read and follow scripts/react-quality/worker-prompts/worker-2-admin.md exactly. The project root is C:/Users/Danie/Desktop/CBA Statements Parse. Start by reading rules-reference.md, then fix all issues in your assigned directories, run TSC after every 5 files, commit when done, and send DONE message to lead."
+
+Worker 3 spawn prompt: "You are worker-3-analytics. Read and follow scripts/react-quality/worker-prompts/worker-3-analytics.md exactly. The project root is C:/Users/Danie/Desktop/CBA Statements Parse. Start by reading rules-reference.md, then fix all issues in your assigned directories, run TSC after every 5 files, commit when done, and send DONE message to lead."
+
+Worker 4 spawn prompt: "You are worker-4-loans. Read and follow scripts/react-quality/worker-prompts/worker-4-loans.md exactly. The project root is C:/Users/Danie/Desktop/CBA Statements Parse. Start by reading rules-reference.md, then fix all issues in your assigned directories, run TSC after every 5 files, commit when done, and send DONE message to lead."
+
+Worker 5 spawn prompt: "You are worker-5-reports. Read and follow scripts/react-quality/worker-prompts/worker-5-reports.md exactly. The project root is C:/Users/Danie/Desktop/CBA Statements Parse. Start by reading rules-reference.md, then fix all issues in your assigned directories, run TSC after every 5 files, commit when done, and send DONE message to lead."
+
+Worker 6 spawn prompt: "You are worker-6-intelligence. Read and follow scripts/react-quality/worker-prompts/worker-6-intelligence.md exactly. The project root is C:/Users/Danie/Desktop/CBA Statements Parse. Start by reading rules-reference.md, then fix all issues in your assigned directories, run TSC after every 5 files, commit when done, and send DONE message to lead."
+
+STEP 4 — Assign tasks T01→worker-1, T02→worker-2, T03→worker-3, T04→worker-4, T05→worker-5, T06→worker-6 using TaskUpdate.
+
+STEP 5 — Monitor. Wait for all 6 DONE messages. If a worker reports a TSC error, help them resolve it. If a worker gets stuck, send clarification via SendMessage.
+
+STEP 6 — After all 6 report DONE, run T07:
+cd "C:/Users/Danie/Desktop/CBA Statements Parse/client" && npx tsc --noEmit
+If errors: identify which worker's files caused them and send targeted fix instructions.
+Then: cd "C:/Users/Danie/Desktop/CBA Statements Parse/client" && npx -y react-doctor@latest . --verbose
+Report the new score.
+
+STEP 7 — Commit everything:
+cd "C:/Users/Danie/Desktop/CBA Statements Parse" && git add -A && git commit -m "fix(react-quality): resolve 700+ warnings across 231 files, score 81→XX/100"
+
+STEP 8 — Clean up team with TeamDelete. Report final score and summary to user.
+
+CRITICAL RULES enforced for all workers:
+- Never use @ts-ignore or @ts-expect-error — fix types properly
+- Never use as any
+- 0 TSC errors after every batch
+- Read files before editing
+- Commit after each domain complete

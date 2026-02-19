@@ -117,7 +117,7 @@ export function MarketBriefing() {
       {/* Controls */}
       <div className="neu-raised rounded-2xl p-4 space-y-4">
         <div>
-          <label className="text-xs text-muted font-medium uppercase tracking-wider mb-2 block">
+          <label htmlFor="market-f1" className="text-xs text-muted font-medium uppercase tracking-wider mb-2 block">
             Focus Area
           </label>
           <div className="flex flex-wrap gap-2">
@@ -138,7 +138,7 @@ export function MarketBriefing() {
         </div>
 
         <div>
-          <label className="text-xs text-muted font-medium uppercase tracking-wider mb-2 block">
+          <label htmlFor="market-f2" className="text-xs text-muted font-medium uppercase tracking-wider mb-2 block">
             Timeframe
           </label>
           <div className="flex gap-2">
@@ -207,7 +207,7 @@ export function MarketBriefing() {
 
           <div className="p-4 space-y-4">
             {briefing.sections.map((section, idx) => (
-              <div key={idx} className="space-y-2">
+              <div key={`item-${idx}`} className="space-y-2">
                 <h4 className="text-sm font-bold text-cba-gold">{section.title}</h4>
                 <div className="text-sm text-primary leading-relaxed whitespace-pre-wrap">
                   {section.content}

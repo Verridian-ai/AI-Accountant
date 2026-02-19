@@ -181,7 +181,7 @@ export function DebtReductionPlanner() {
 
       <div className="space-y-6">
         <div className="space-y-3">
-          <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.25em] ml-1">
+          <label htmlFor="debtre-f1" className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.25em] ml-1">
             Quantum Allocation Budget ($)
           </label>
           <div className="flex gap-3">
@@ -189,7 +189,7 @@ export function DebtReductionPlanner() {
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 font-black text-xs">
                 $
               </span>
-              <input
+              <input id="debtre-f1"
                 type="number"
                 value={monthlyBudget}
                 onChange={(e) => setMonthlyBudget(e.target.value)}
@@ -219,7 +219,7 @@ export function DebtReductionPlanner() {
           <div className="space-y-4 animate-in fade-in duration-500">
             {[...Array(3)].map((_, i) => (
               <div
-                key={i}
+                key={`item-${i}`}
                 className="p-5 rounded-3xl neu-raised-sm border border-border/50 space-y-4"
               >
                 <div className="flex items-center justify-between">
@@ -286,7 +286,7 @@ export function DebtReductionPlanner() {
         </span>
         <div className="flex -space-x-1.5">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="w-1.5 h-1.5 rounded-full border border-zinc-900 bg-zinc-800" />
+            <div key={`item-${i}`} className="w-1.5 h-1.5 rounded-full border border-zinc-900 bg-zinc-800" />
           ))}
         </div>
       </div>

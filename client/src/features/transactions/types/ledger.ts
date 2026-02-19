@@ -35,6 +35,8 @@ export interface FilterState {
  * Used when a transaction needs to be divided across multiple categories.
  */
 export interface SplitEntry {
+  /** Unique stable ID for the split entry */
+  id?: string;
   /** The category assigned to this portion of the transaction */
   category: string;
   /** The amount for this split entry in cents */

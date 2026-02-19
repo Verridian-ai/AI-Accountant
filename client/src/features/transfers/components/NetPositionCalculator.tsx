@@ -71,10 +71,10 @@ export function NetPositionCalculator() {
       <div className="p-6 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
+            <label htmlFor="trans-f1" className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
               Account A
             </label>
-            <select
+            <select id="trans-f1"
               value={accountAId}
               onChange={(e) => setAccountAId(e.target.value)}
               disabled={loadingAccounts}
@@ -91,10 +91,10 @@ export function NetPositionCalculator() {
             </select>
           </div>
           <div>
-            <label className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
+            <label htmlFor="trans-f2" className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
               Account B
             </label>
-            <select
+            <select id="trans-f2"
               value={accountBId}
               onChange={(e) => setAccountBId(e.target.value)}
               disabled={loadingAccounts}
@@ -116,10 +116,10 @@ export function NetPositionCalculator() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
+            <label htmlFor="trans-f3" className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
               From
             </label>
-            <input
+            <input id="trans-f3"
               type="month"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
@@ -127,10 +127,10 @@ export function NetPositionCalculator() {
             />
           </div>
           <div>
-            <label className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
+            <label htmlFor="trans-f4" className="text-[8px] font-black text-zinc-600 uppercase tracking-[0.2em] block mb-1.5">
               To
             </label>
-            <input
+            <input id="trans-f4"
               type="month"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}

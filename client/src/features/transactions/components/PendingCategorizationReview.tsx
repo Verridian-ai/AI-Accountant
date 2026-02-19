@@ -85,7 +85,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
             <div
-              key={i}
+              key={`item-${i}`}
               className="p-5 rounded-[1.5rem] neu-raised-sm border border-border/50 flex items-center justify-between"
             >
               <div className="space-y-2 flex-1">
@@ -152,11 +152,14 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
             )}
           >
             <div
+              role="button"
+              tabIndex={0}
               className={cn(
                 'flex items-center justify-between p-5 cursor-pointer transition-colors',
                 expandedId === item.id ? 'bg-amber-500/[0.03]' : 'hover:bg-white/[0.01]',
               )}
               onClick={() => toggleExpand(item)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpand(item); } }}
             >
               <div className="flex-1 min-w-0 pr-4">
                 <p className="font-black text-zinc-100 truncate text-sm uppercase tracking-tight">
@@ -218,7 +221,7 @@ export function PendingCategorizationReview({ onUpdate }: PendingCategorizationR
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest ml-1">
+                      <label htmlFor="pendin-f1" className="text-[9px] font-black text-zinc-600 uppercase tracking-widest ml-1">
                         Manual Override
                       </label>
                       <CategorySelect

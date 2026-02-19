@@ -214,10 +214,10 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
         {/* Supplier Autocomplete */}
         <div className="relative">
-          <label className="block text-xs font-medium text-secondary mb-1.5">Supplier *</label>
+          <label htmlFor="ap-f1" className="block text-xs font-medium text-secondary mb-1.5">Supplier *</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-            <input
+            <input id="ap-f1"
               type="text"
               value={supplierSearch}
               onChange={(e) => {
@@ -254,8 +254,8 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-secondary mb-1.5">Bill Number *</label>
-            <input
+            <label htmlFor="ap-f2" className="block text-xs font-medium text-secondary mb-1.5">Bill Number *</label>
+            <input id="ap-f2"
               type="text"
               value={billNumber}
               onChange={(e) => setBillNumber(e.target.value)}
@@ -264,8 +264,8 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-secondary mb-1.5">Issue Date</label>
-            <input
+            <label htmlFor="ap-f3" className="block text-xs font-medium text-secondary mb-1.5">Issue Date</label>
+            <input id="ap-f3"
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
@@ -273,8 +273,8 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-secondary mb-1.5">Due Date</label>
-            <input
+            <label htmlFor="ap-f4" className="block text-xs font-medium text-secondary mb-1.5">Due Date</label>
+            <input id="ap-f4"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
@@ -284,10 +284,10 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-secondary mb-1.5">
+          <label htmlFor="ap-f5" className="block text-xs font-medium text-secondary mb-1.5">
             Link to Purchase Order (optional)
           </label>
-          <input
+          <input id="ap-f5"
             type="text"
             value={purchaseOrderId}
             onChange={(e) => setPurchaseOrderId(e.target.value)}
@@ -338,7 +338,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
             </thead>
             <tbody>
               {lineItems.map((item, index) => (
-                <tr key={index} className="border-b border-border/50">
+                <tr key={`item-${index}`} className="border-b border-border/50">
                   <td className="px-1 py-2">
                     <input
                       type="text"
@@ -422,8 +422,8 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
       {/* Notes */}
       <div className="neu-raised rounded-2xl p-6">
-        <label className="block text-xs font-medium text-secondary mb-1.5">Notes</label>
-        <textarea
+        <label htmlFor="ap-f6" className="block text-xs font-medium text-secondary mb-1.5">Notes</label>
+        <textarea id="ap-f6"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all resize-none"

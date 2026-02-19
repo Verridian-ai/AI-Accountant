@@ -1,0 +1,582 @@
+react-doctor v0.0.28
+
+[2mScanning C:\Users\Danie\Desktop\CBA Statements Parse\client...[22m
+
+
+[31mTypeError [ERR_INVALID_ARG_VALUE]: The argument 'path' must be a string, Uint8Array, or URL without null bytes. Received 'C:\\Users\\Danie\\Desktop\\CBA Statements Parse\\client\\!**\\.\x00a\x00g\x00e\x00n\x00t\x00-\x00d\x00o\x00n\x00e\x00-\x00*\x00...[39m
+  [31m✗[39m State reset in useEffect — use a key prop to reset component state when props change[31m (2)[39m
+[2m    For derived state, compute inline: `const x = fn(dep)`. For state resets on prop change, use a key prop: `<Component key={prop} />`[22m
+[2m    src/features/invoicing/components/InvoiceList.tsx: 91[22m
+[2m    src/features/invoicing/components/CustomerList.tsx: 54[22m
+
+  [31m✗[39m fetch() inside useEffect — use a data fetching library (react-query, SWR) or server component[31m (4)[39m
+[2m    Use `useQuery()` from @tanstack/react-query, `useSWR()`, or fetch in a Server Component instead[22m
+[2m    src/features/knowledge/components/KnowledgeDashboard.tsx: 35[22m
+[2m    src/features/dashboards/components/CustomDashboard/CustomDashboard.tsx: 30[22m
+[2m    src/features/loans/components/LoanDashboard.tsx: 39[22m
+[2m    src/features/streaming/components/StreamingIndicator.tsx: 31[22m
+
+  [31m✗[39m Component "SortIcon" defined inside "AssetRegisterTable" — creates new instance every render, destroying state[31m (3)[39m
+[2m    Move to a separate file or to module scope above the parent component[22m
+[2m    src/features/assets/components/AssetRegisterTable.tsx: 112[22m
+[2m    src/features/bas/components/BASPreFillReport.tsx: 104[22m
+[2m    src/features/transactions/components/TransactionTable/TransactionTable.tsx: 110[22m
+
+  [31m✗[39m `combobox` role is missing required aria props `aria-controls`.
+[2m    Add missing aria props `aria-controls` to the element with `combobox` role.[22m
+[2m    src/features/transactions/components/CategorySelect.tsx: 115[22m
+
+  [33m⚠[39m useEffect simulating an event handler — move logic to an actual event handler instead[33m (6)[39m
+[2m    Move the conditional logic into onClick, onChange, or onSubmit handlers directly[22m
+[2m    src/features/forecasting/components/AccuracyPanel.tsx: 70[22m
+[2m    src/features/ap/components/PurchaseOrderEditor.tsx: 43[22m
+[2m    src/features/settings/components/Settings.tsx: 32[22m
+[2m    src/features/dashboards/components/WidgetConfigPanel.tsx: 19[22m
+[2m    src/features/transactions/components/MerchantMemoryManager.tsx: 72[22m
+[2m    src/components/ui/BottomSheet.tsx: 365[22m
+
+  [33m⚠[39m Array index "i" used as key — causes bugs when list is reordered or filtered[33m (123)[39m
+[2m    Use a stable unique identifier: `key={item.id}` or `key={item.slug}` — index keys break on reorder/filter[22m
+[2m    src/features/forecasting/components/AccuracyPanel.tsx: 160[22m
+[2m    src/features/matching/components/RuleManager.tsx: 299[22m
+[2m    src/features/invoicing/components/InvoicePreview.tsx: 183[22m
+[2m    src/features/admin/components/SystemMetrics.tsx: 375[22m
+[2m    src/features/payroll/components/EmployeeDetail/tabs/PayTab.tsx: 39[22m
+[2m    src/features/admin/components/SystemHealthDashboard.tsx: 176, 209[22m
+[2m    src/features/payroll/components/EmployeeDetail/tabs/BankTab.tsx: 51[22m
+[2m    src/features/admin/components/SubscriptionOverview.tsx: 409, 439[22m
+[2m    src/features/admin/components/ParserHealth.tsx: 471, 487[22m
+[2m    src/features/tax/components/CompanyReturn.tsx: 139[22m
+[2m    src/features/tax/components/PersonalReturn.tsx: 148[22m
+[2m    src/features/tax/components/SoleTraderReturn.tsx: 155[22m
+[2m    src/features/tax/components/TaxDashboard/tabs/TaxCalculatorTab.tsx: 211[22m
+[2m    src/features/admin/components/FeedbackQueue/FeedbackQueueSkeleton.tsx: 10, 31[22m
+[2m    src/features/matching/components/AutoMatchView.tsx: 224[22m
+[2m    src/features/market/components/SentimentDashboard.tsx: 302[22m
+[2m    src/features/market/components/RateDecisionTracker.tsx: 267[22m
+[2m    src/features/settings/components/Settings.tsx: 111[22m
+[2m    src/components/admin/AdminTransactionsView.tsx: 53[22m
+[2m    src/features/tax/components/TrustReturn.tsx: 154[22m
+[2m    src/features/analytics/components/CashFlowForecast.tsx: 170, 244, 257, 293[22m
+[2m    src/features/matching/components/MatchStatistics.tsx: 31, 152[22m
+[2m    src/features/onboarding/steps/CompletionStep.tsx: 85, 230[22m
+[2m    src/features/transactions/components/PendingCategorizationReview.tsx: 88[22m
+[2m    src/features/analytics/components/SpendingTrends.tsx: 194, 220, 246[22m
+[2m    src/features/transactions/components/MerchantMemoryManager.tsx: 181, 343[22m
+[2m    src/features/statements/components/StatementList/components/GapAnalysisPanel.tsx: 71, 91, 111[22m
+[2m    src/features/inventory/components/COGSCalculator.tsx: 187[22m
+[2m    src/features/analytics/components/MonthlyTrendChart.tsx: 89[22m
+[2m    src/features/market/components/MarketDashboard.tsx: 155[22m
+[2m    src/features/market/components/MarketBriefing.tsx: 210[22m
+[2m    src/features/entities/components/ConsolidationView.tsx: 290[22m
+[2m    src/features/assets/components/DepreciationScheduleView.tsx: 181[22m
+[2m    src/features/admin/components/CogneeGraphViewer/components/DetailPanel.tsx: 91[22m
+[2m    src/features/transactions/components/SplitTransactionModal.tsx: 183[22m
+[2m    src/features/transactions/components/LedgerSkeleton.tsx: 25, 70[22m
+[2m    src/features/ap/components/BillEntry.tsx: 341[22m
+[2m    src/features/loans/components/BorrowingCapacity.tsx: 369[22m
+[2m    src/features/ap/components/BillApproval.tsx: 181, 261[22m
+[2m    src/features/loans/components/RefinanceAnalysis.tsx: 337, 376[22m
+[2m    src/features/loans/components/RateScenarios.tsx: 272, 348[22m
+[2m    src/features/subscription/components/UsageDashboard.tsx: 98[22m
+[2m    src/features/transfers/components/MoneyFlowDiagram.tsx: 159, 265[22m
+[2m    src/features/banking-products/components/RateTracker.tsx: 121, 160[22m
+[2m    src/features/reports/components/TrialBalance.tsx: 148[22m
+[2m    src/features/analytics/components/CategoryBreakdown.tsx: 208, 248[22m
+[2m    src/features/market/components/EconomicCalendar.tsx: 283[22m
+[2m    src/features/banking-products/components/ProductExplorer.tsx: 298[22m
+[2m    src/features/analytics/components/CategoryChart.tsx: 54[22m
+[2m    src/features/subscription/components/BillingHistory.tsx: 51[22m
+[2m    src/features/analytics/components/DebtReductionPlanner.tsx: 222, 289[22m
+[2m    src/features/auth/components/Auth.tsx: 202[22m
+[2m    src/features/admin/components/UserManagement/UserManagementSkeleton.tsx: 32[22m
+[2m    src/features/intelligence/components/TemporalQueryBuilder.tsx: 225[22m
+[2m    src/features/chat/components/FloatingChat.tsx: 283[22m
+[2m    src/features/gst/components/InputTaxCredits.tsx: 103[22m
+[2m    src/features/budgets/components/ScenarioComparison.tsx: 59, 135, 173[22m
+[2m    src/features/transactions/components/LedgerFooter.tsx: 51[22m
+[2m    src/features/entities/components/InterEntityTransactionsView.tsx: 148[22m
+[2m    src/features/gst/components/GSTPage.tsx: 415[22m
+[2m    src/features/entities/components/EntityHierarchyView.tsx: 60[22m
+[2m    src/features/bas/components/BASPreFillReport.tsx: 188[22m
+[2m    src/features/forecasting/components/ScenarioComparer.tsx: 151, 274, 304[22m
+[2m    src/features/entities/components/EntitiesDashboard.tsx: 96[22m
+[2m    src/features/transactions/components/TransactionTable/components/SplitModal.tsx: 58[22m
+[2m    src/features/transfers/components/TransferConfirmation.tsx: 127, 284[22m
+[2m    src/features/reconciliation/components/ReconMatchSuggestions.tsx: 197[22m
+[2m    src/features/compliance/components/ComplianceReport.tsx: 184, 239[22m
+[2m    src/features/admin/components/AgentExecutionDetail.tsx: 172[22m
+[2m    src/features/analytics/components/WealthProjection.tsx: 173[22m
+[2m    src/features/admin/components/AgentCostDashboard.tsx: 153, 189[22m
+[2m    src/features/compliance/components/RiskAssessmentPanel.tsx: 178[22m
+[2m    src/features/streaming/components/SchemaExplorer.tsx: 189[22m
+[2m    src/features/budgets/components/BudgetsDashboard.tsx: 171[22m
+[2m    src/features/transactions/components/TransactionTable/TransactionTable.tsx: 425[22m
+[2m    src/features/admin/components/AdminDashboard.tsx: 195[22m
+[2m    src/features/admin/components/ActivityLog.tsx: 180[22m
+[2m    src/features/accounts/components/AccountManager.tsx: 166[22m
+[2m    src/features/accounts/components/AccountSummaryCards.tsx: 105[22m
+[2m    src/features/chat/components/ChatInterface.tsx: 83[22m
+[2m    src/features/accounts/components/AccountHoverCard.tsx: 199[22m
+[2m    src/features/accounts/components/AccountBalanceTimeline/AccountBalanceTimeline.tsx: 282, 306[22m
+[2m    src/features/accounts/components/AccountsOverview.tsx: 90[22m
+[2m    src/features/ap/components/POReceiving.tsx: 455[22m
+[2m    src/features/transactions/components/TransactionTable/components/LoadingSkeleton.tsx: 25, 65[22m
+[2m    src/features/budgets/components/ForecastScenarios.tsx: 264, 353[22m
+[2m    src/components/common/ErrorRecovery.tsx: 84[22m
+[2m    src/features/statements/components/StatementList/components/LoadingSkeleton.tsx: 24[22m
+[2m    src/features/budgets/components/VarianceView.tsx: 60, 133, 192[22m
+
+  [33m⚠[39m Component "RegisterAssetForm" has 12 useState calls — consider useReducer for related state[33m (122)[39m
+[2m    Group related state: `const [state, dispatch] = useReducer(reducer, { field1, field2, ... })`[22m
+[2m    src/features/assets/components/RegisterAssetForm.tsx: 44[22m
+[2m    src/features/matching/components/RuleManager.tsx: 48[22m
+[2m    src/features/forecasting/components/ForecastDashboard.tsx: 81[22m
+[2m    src/features/admin/components/SystemMetrics.tsx: 104[22m
+[2m    src/features/invoicing/components/InvoiceList.tsx: 56[22m
+[2m    src/features/admin/components/SubscriptionOverview.tsx: 90[22m
+[2m    src/features/ap/components/SupplierDetail.tsx: 23[22m
+[2m    src/features/tax/components/OwnerEquityPanel.tsx: 12[22m
+[2m    src/features/invoicing/components/InvoiceEditor.tsx: 28[22m
+[2m    src/features/admin/components/ParserHealth.tsx: 171[22m
+[2m    src/features/ap/components/PurchaseOrderEditor.tsx: 25[22m
+[2m    src/features/invoicing/components/CustomerList.tsx: 23[22m
+[2m    src/App.tsx: 73[22m
+[2m    src/features/invoicing/components/CustomerDetail.tsx: 63[22m
+[2m    src/features/knowledge/components/KnowledgeDashboard.tsx: 26[22m
+[2m    src/features/admin/components/FeatureFlagManager.tsx: 15[22m
+[2m    src/features/dashboards/components/CustomDashboard/CustomDashboard.tsx: 12[22m
+[2m    src/features/matching/components/AutoMatchView.tsx: 6[22m
+[2m    src/features/market/components/SentimentDashboard.tsx: 56[22m
+[2m    src/features/analytics/components/AnomalyDetection.tsx: 33[22m
+[2m    src/features/market/components/RateDecisionTracker.tsx: 30[22m
+[2m    src/features/settings/components/Settings.tsx: 25[22m
+[2m    src/features/tenant/components/MemberManager.tsx: 34[22m
+[2m    src/features/analytics/components/BudgetVsActual.tsx: 24[22m
+[2m    src/components/admin/AdminTransactionsView.tsx: 11[22m
+[2m    src/features/tenant/components/TenantCreate.tsx: 30[22m
+[2m    src/features/loans/components/LoanComparisonPanel.tsx: 39, 211[22m
+[2m    src/features/tenant/components/PermissionMatrix.tsx: 64[22m
+[2m    src/features/inventory/components/MovementHistory.tsx: 33[22m
+[2m    src/features/loans/components/HomeLoanCalculator.tsx: 21[22m
+[2m    src/features/transactions/components/PendingCategorizationReview.tsx: 23[22m
+[2m    src/features/inventory/components/InventoryItemList.tsx: 22[22m
+[2m    src/features/knowledge/components/DataPointManager.tsx: 36[22m
+[2m    src/features/analytics/components/SpendingTrends.tsx: 46[22m
+[2m    src/features/transactions/components/MerchantMemoryManager.tsx: 51[22m
+[2m    src/features/dashboards/components/DashboardGrid.tsx: 10[22m
+[2m    src/features/inventory/components/COGSCalculator.tsx: 26[22m
+[2m    src/features/tenant/components/TenantSettings.tsx: 41[22m
+[2m    src/features/market/components/PriceTracker.tsx: 44[22m
+[2m    src/features/analytics/components/MoneyFlowSankey.tsx: 189[22m
+[2m    src/features/assets/components/AssetsDashboard.tsx: 21[22m
+[2m    src/features/market/components/MarketDashboard.tsx: 43[22m
+[2m    src/features/entities/components/CreateEntityForm.tsx: 63[22m
+[2m    src/features/assets/components/AssetRegisterTable.tsx: 54[22m
+[2m    src/features/market/components/MarketBriefing.tsx: 34[22m
+[2m    src/features/entities/components/ConsolidationView.tsx: 37[22m
+[2m    src/features/assets/components/AssetDisposalForm.tsx: 34[22m
+[2m    src/features/market/components/MarketAlerts.tsx: 34[22m
+[2m    src/features/ap/components/POList.tsx: 40[22m
+[2m    src/features/admin/components/CogneeGraphViewer/CogneeGraphViewer.tsx: 32[22m
+[2m    src/features/ap/components/BillList.tsx: 23[22m
+[2m    src/features/loans/components/CarFinanceCalculator.tsx: 17[22m
+[2m    src/features/ap/components/BillEntry.tsx: 21[22m
+[2m    src/features/loans/components/BorrowingCapacity.tsx: 68[22m
+[2m    src/features/ap/components/BillApproval.tsx: 29[22m
+[2m    src/features/reports/components/ReportsDashboard.tsx: 45[22m
+[2m    src/features/banking-products/components/SavingsCalculator.tsx: 17[22m
+[2m    src/features/loans/components/RateScenarios.tsx: 49[22m
+[2m    src/features/analytics/components/ForecastDashboard.tsx: 22[22m
+[2m    src/features/reports/components/TrialBalance.tsx: 42[22m
+[2m    src/features/analytics/components/CategoryBreakdown.tsx: 73[22m
+[2m    src/features/banking-products/components/RateAlertManager.tsx: 21[22m
+[2m    src/features/market/components/EconomicCalendar.tsx: 56[22m
+[2m    src/features/banking-products/components/ProductExplorer.tsx: 52[22m
+[2m    src/features/reconciliation/components/ReconDashboard.tsx: 62[22m
+[2m    src/features/banking-products/components/LoanComparison.tsx: 77[22m
+[2m    src/features/banking-products/components/BestRates.tsx: 21[22m
+[2m    src/features/analytics/components/DebtReductionPlanner.tsx: 18[22m
+[2m    src/features/auth/components/Auth.tsx: 14[22m
+[2m    src/features/admin/components/UserManager.tsx: 15[22m
+[2m    src/features/intelligence/components/TemporalQueryBuilder.tsx: 47[22m
+[2m    src/features/admin/components/UserManagement/UserManagement.tsx: 37[22m
+[2m    src/features/intelligence/components/SubscriptionManager.tsx: 48[22m
+[2m    src/features/intelligence/components/ModuleConnectionMap.tsx: 51[22m
+[2m    src/features/documents/components/DocumentsDashboard.tsx: 87[22m
+[2m    src/features/reports/components/PeriodComparison.tsx: 23[22m
+[2m    src/features/intelligence/components/IntelligenceTimeline.tsx: 39[22m
+[2m    src/features/intelligence/components/IntelligenceDashboard.tsx: 23[22m
+[2m    src/features/intelligence/components/InsightFeed.tsx: 58[22m
+[2m    src/features/matching/components/MatchReviewPanel.tsx: 44[22m
+[2m    src/features/intelligence/components/CorrelationExplorer.tsx: 58[22m
+[2m    src/features/chat/components/FloatingChat.tsx: 16[22m
+[2m    src/features/transfers/components/NetPositionCalculator.tsx: 14[22m
+[2m    src/features/market/components/EconomicIndicators.tsx: 35[22m
+[2m    src/features/entities/components/InterEntityTransactionsView.tsx: 61, 267[22m
+[2m    src/features/entities/components/EntitySettingsPanel.tsx: 23[22m
+[2m    src/features/gst/components/GSTPage.tsx: 65[22m
+[2m    src/features/bas/components/BASPreFillReport.tsx: 33[22m
+[2m    src/features/entities/components/EntitiesDashboard.tsx: 22[22m
+[2m    src/features/admin/components/CogneeGraph2DFallback/CogneeGraph2DFallback.tsx: 10[22m
+[2m    src/features/invoicing/components/InvoicingDashboard.tsx: 41[22m
+[2m    src/features/compliance/components/ComplianceReport.tsx: 45[22m
+[2m    src/features/reconciliation/components/ReconMatchingWorkspace.tsx: 68[22m
+[2m    src/features/admin/components/AgentMonitor.tsx: 27[22m
+[2m    src/features/analytics/components/WealthProjection.tsx: 23[22m
+[2m    src/features/admin/components/AgentConfigManager.tsx: 15[22m
+[2m    src/features/ap/components/SupplierList.tsx: 11[22m
+[2m    src/features/reconciliation/components/ReconRulesManager.tsx: 45[22m
+[2m    src/features/knowledge/components/KnowledgeGraphExplorer.tsx: 38[22m
+[2m    src/features/streaming/components/SchemaExplorer.tsx: 22[22m
+[2m    src/features/budgets/components/BudgetsDashboard.tsx: 27[22m
+[2m    src/features/streaming/components/MigrationDashboard.tsx: 52[22m
+[2m    src/features/knowledge/components/FeedbackPanel.tsx: 39[22m
+[2m    src/features/admin/components/CogneeSearchTester.tsx: 20[22m
+[2m    src/features/admin/components/CogneeManager.tsx: 25[22m
+[2m    src/features/admin/components/AdminDashboard.tsx: 66[22m
+[2m    src/features/admin/components/ActivityLog.tsx: 25[22m
+[2m    src/features/accounts/components/AccountManager.tsx: 81[22m
+[2m    src/features/accounts/components/AccountBalanceTimeline/AccountBalanceTimeline.tsx: 19[22m
+[2m    src/features/payroll/components/PayrollDashboard.tsx: 22[22m
+[2m    src/features/accounts/components/AccountSetupWizard.tsx: 63[22m
+[2m    src/features/payroll/components/PayCategoryManager/PayCategoryManager.tsx: 24[22m
+[2m    src/features/payroll/components/EmployeeOnboarding/EmployeeOnboarding.tsx: 16[22m
+[2m    src/features/ap/components/POReceiving.tsx: 54[22m
+[2m    src/features/knowledge/components/OntologyManager.tsx: 28[22m
+[2m    src/features/ap/components/SupplierPaymentRun.tsx: 34[22m
+[2m    src/features/loans/components/PersonalLoanCalculator.tsx: 15[22m
+[2m    src/features/budgets/components/BudgetEditor.tsx: 12[22m
+[2m    src/features/budgets/components/ForecastScenarios.tsx: 17[22m
+[2m    src/features/transactions/components/AuditTrailViewer.tsx: 54[22m
+
+  [33m⚠[39m A form label must be associated with a control.[33m (235)[39m
+[2m    Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.[22m
+[2m    src/features/matching/components/RuleManager.tsx: 143, 153, 172, 188, 199, 215, 226, 241, 252, 262[22m
+[2m    src/features/forecasting/components/ForecastDashboard.tsx: 170, 187, 204[22m
+[2m    src/features/invoicing/components/InvoiceEditor.tsx: 273, 282, 292, 302[22m
+[2m    src/features/payroll/components/EmployeeDetail/tabs/TaxTab.tsx: 67[22m
+[2m    src/features/ap/components/PurchaseOrderEditor.tsx: 231, 263, 279, 387[22m
+[2m    src/features/payroll/components/EmployeeDetail/tabs/SuperTab.tsx: 79[22m
+[2m    src/features/invoicing/components/CustomerForm.tsx: 153, 171, 183, 200, 212, 229, 244, 256, 275, 289, 304, 319[22m
+[2m    src/features/payroll/components/EmployeeDetail/tabs/PersonalTab.tsx: 83[22m
+[2m    src/features/admin/components/AdminLogin.tsx: 57, 72[22m
+[2m    src/features/knowledge/components/KnowledgeDashboard.tsx: 101[22m
+[2m    src/features/inventory/components/WarehouseManager.tsx: 83, 92[22m
+[2m    src/features/admin/components/FeatureFlagManager.tsx: 224, 234, 243[22m
+[2m    src/features/inventory/components/ValuationReport.tsx: 74[22m
+[2m    src/features/matching/components/AutoMatchView.tsx: 100, 121[22m
+[2m    src/features/market/components/RateDecisionTracker.tsx: 309, 318, 328[22m
+[2m    src/features/tenant/components/MemberManager.tsx: 142, 157[22m
+[2m    src/features/onboarding/steps/BusinessProfileStep.tsx: 81, 113, 132[22m
+[2m    src/features/tenant/components/TenantCreate.tsx: 148, 163, 177[22m
+[2m    src/features/transactions/components/PendingCategorizationReview.tsx: 221[22m
+[2m    src/features/inventory/components/InventoryItemList.tsx: 159, 167, 175, 183, 191, 204, 217[22m
+[2m    src/features/knowledge/components/DataPointManager.tsx: 163, 175, 192, 205, 217, 230[22m
+[2m    src/features/dashboards/components/DashboardGrid.tsx: 260, 273[22m
+[2m    src/features/inventory/components/COGSCalculator.tsx: 86, 101[22m
+[2m    src/features/tenant/components/TenantSettings.tsx: 139, 150, 161, 173, 189, 201, 217[22m
+[2m    src/features/analytics/components/MoneyFlowSankey.tsx: 254, 270[22m
+[2m    src/features/market/components/MarketBriefing.tsx: 120, 141[22m
+[2m    src/features/market/components/MarketAlerts.tsx: 200, 219, 236, 256[22m
+[2m    src/features/transactions/components/TransactionCard.tsx: 59, 73, 87, 106[22m
+[2m    src/features/transactions/components/SplitTransactionModal.tsx: 254[22m
+[2m    src/features/notifications/components/NotificationPreferences.tsx: 214, 223[22m
+[2m    src/features/ap/components/BillEntry.tsx: 217, 257, 267, 276, 287, 425[22m
+[2m    src/features/reports/components/ReportsDashboard.tsx: 89, 107, 118, 131[22m
+[2m    src/features/banking-products/components/SavingsCalculator.tsx: 64, 76, 85, 96[22m
+[2m    src/features/banking-products/components/RateAlertManager.tsx: 126, 140, 154[22m
+[2m    src/features/banking-products/components/ProductExplorer.tsx: 140, 159, 178[22m
+[2m    src/features/banking-products/components/LoanComparison.tsx: 127, 136, 148, 157, 176, 187[22m
+[2m    src/features/analytics/components/DebtReductionPlanner.tsx: 184[22m
+[2m    src/features/auth/components/Auth.tsx: 108, 126[22m
+[2m    src/features/admin/components/UserManager.tsx: 216, 225, 234, 243, 297, 306, 315, 328[22m
+[2m    src/features/intelligence/components/TemporalQueryBuilder.tsx: 124, 137, 146, 296, 310, 330, 340, 350[22m
+[2m    src/features/intelligence/components/SubscriptionManager.tsx: 179, 189, 202, 216, 226, 241[22m
+[2m    src/features/reports/components/PeriodComparison.tsx: 61, 82, 103[22m
+[2m    src/features/intelligence/components/IntelligenceTimeline.tsx: 97, 106[22m
+[2m    src/features/intelligence/components/IntelligenceDashboard.tsx: 136, 145[22m
+[2m    src/features/intelligence/components/CorrelationExplorer.tsx: 92, 107[22m
+[2m    src/features/payroll/components/PayStructureEditor/PayStructureEditor.tsx: 141, 187, 204, 224[22m
+[2m    src/features/transfers/components/NetPositionCalculator.tsx: 74, 94, 119, 130[22m
+[2m    src/features/transactions/components/LedgerFilters.tsx: 42, 56, 70, 86, 102, 116[22m
+[2m    src/features/forecasting/components/ScenarioComparer.tsx: 173[22m
+[2m    src/features/transactions/components/TransactionTable/components/SplitModal.tsx: 83, 111, 135[22m
+[2m    src/features/compliance/components/ComplianceReport.tsx: 83[22m
+[2m    src/features/onboarding/steps/TaxSetupStep.tsx: 96, 148, 201[22m
+[2m    src/features/admin/components/AgentConfigManager.tsx: 179, 220, 236[22m
+[2m    src/features/budgets/components/BudgetsDashboard.tsx: 254, 265, 278, 287[22m
+[2m    src/features/transactions/components/TransactionTable/TransactionTable.tsx: 146, 160, 172, 185, 323, 335, 347[22m
+[2m    src/features/admin/components/CogneeSearchTester.tsx: 74, 128, 149[22m
+[2m    src/features/accounts/components/AccountManager.tsx: 321, 339, 362[22m
+[2m    src/features/accounts/components/AccountSetupWizard.tsx: 166, 180, 214, 229, 241[22m
+[2m    src/features/payroll/components/PayCategoryManager/PayCategoryManager.tsx: 214, 224, 238, 250, 268[22m
+[2m    src/features/payroll/components/EmployeeOnboarding/EmployeeOnboarding.tsx: 202, 274, 315, 331, 361[22m
+[2m    src/features/ap/components/POReceiving.tsx: 348[22m
+[2m    src/features/knowledge/components/OntologyManager.tsx: 132, 144, 160, 173, 185[22m
+[2m    src/features/ap/components/SupplierPaymentRun.tsx: 327, 336, 348[22m
+[2m    src/features/budgets/components/ForecastScenarios.tsx: 160, 169, 182, 196, 205, 218, 229[22m
+[2m    src/features/transactions/components/AuditTrailViewer.tsx: 158, 169, 186, 197[22m
+
+  [33m⚠[39m Component "RuleManager" is 398 lines — consider breaking it into smaller focused components[33m (60)[39m
+[2m    Extract logical sections into focused components: `<UserHeader />`, `<UserActions />`, etc.[22m
+[2m    src/features/matching/components/RuleManager.tsx: 48[22m
+[2m    src/features/ap/components/SupplierForm.tsx: 35[22m
+[2m    src/features/admin/components/SubscriptionOverview.tsx: 90[22m
+[2m    src/features/invoicing/components/InvoiceEditor.tsx: 28[22m
+[2m    src/features/ap/components/PurchaseOrderEditor.tsx: 25[22m
+[2m    src/App.tsx: 73[22m
+[2m    src/features/invoicing/components/CustomerForm.tsx: 52[22m
+[2m    src/features/invoicing/components/CustomerDetail.tsx: 63[22m
+[2m    src/features/ap/components/APDashboard.tsx: 37[22m
+[2m    src/features/admin/components/FeedbackQueue/FeedbackQueue.tsx: 32[22m
+[2m    src/features/market/components/RateDecisionTracker.tsx: 30[22m
+[2m    src/features/analytics/components/BudgetVsActual.tsx: 24[22m
+[2m    src/features/analytics/components/InventoryValuation/InventoryValuation.tsx: 28[22m
+[2m    src/features/analytics/components/CashFlowForecast.tsx: 16[22m
+[2m    src/features/inventory/components/InventoryItemList.tsx: 22[22m
+[2m    src/features/knowledge/components/DataPointManager.tsx: 36[22m
+[2m    src/features/dashboards/components/WidgetConfigPanel.tsx: 13[22m
+[2m    src/features/analytics/components/SpendingTrends.tsx: 46[22m
+[2m    src/features/transactions/components/MerchantMemoryManager.tsx: 51[22m
+[2m    src/features/dashboards/components/DashboardGrid.tsx: 10[22m
+[2m    src/features/market/components/PriceTracker.tsx: 44[22m
+[2m    src/features/entities/components/ConsolidationView.tsx: 37[22m
+[2m    src/features/market/components/MarketAlerts.tsx: 34[22m
+[2m    src/features/transactions/components/SplitTransactionModal.tsx: 16[22m
+[2m    src/features/admin/components/CogneeGraphViewer/CogneeGraphViewer.tsx: 27[22m
+[2m    src/features/ap/components/BillEntry.tsx: 21[22m
+[2m    src/features/loans/components/BorrowingCapacity.tsx: 68[22m
+[2m    src/features/ap/components/BillApproval.tsx: 29[22m
+[2m    src/features/loans/components/RefinanceAnalysis.tsx: 98[22m
+[2m    src/features/loans/components/RateScenarios.tsx: 49[22m
+[2m    src/features/market/components/EconomicCalendar.tsx: 56[22m
+[2m    src/features/banking-products/components/ProductExplorer.tsx: 52[22m
+[2m    src/features/reconciliation/components/ReconDashboard.tsx: 62[22m
+[2m    src/features/admin/components/UserManager.tsx: 15[22m
+[2m    src/features/intelligence/components/TemporalQueryBuilder.tsx: 47[22m
+[2m    src/features/admin/components/UserManagement/UserManagement.tsx: 31[22m
+[2m    src/features/matching/components/MatchReviewPanel.tsx: 44[22m
+[2m    src/features/payroll/components/PayStructureEditor/PayStructureEditor.tsx: 7[22m
+[2m    src/features/chat/components/FloatingChat.tsx: 16[22m
+[2m    src/features/market/components/EconomicIndicators.tsx: 35[22m
+[2m    src/features/bas/components/BASDashboard/tabs/CalculateTab.tsx: 42[22m
+[2m    src/features/gst/components/GSTPage.tsx: 65[22m
+[2m    src/features/bas/components/BASPreFillReport.tsx: 33[22m
+[2m    src/features/admin/components/CogneeGraph2DFallback/CogneeGraph2DFallback.tsx: 7[22m
+[2m    src/features/invoicing/components/InvoicingDashboard.tsx: 41[22m
+[2m    src/features/reconciliation/components/ReconMatchingWorkspace.tsx: 68[22m
+[2m    src/features/reconciliation/components/ReconRulesManager.tsx: 45[22m
+[2m    src/features/knowledge/components/KnowledgeGraphExplorer.tsx: 38[22m
+[2m    src/features/budgets/components/BudgetsDashboard.tsx: 27[22m
+[2m    src/features/transactions/components/TransactionTable/TransactionTable.tsx: 34[22m
+[2m    src/features/accounts/components/AccountManager.tsx: 81[22m
+[2m    src/features/accounts/components/AccountBalanceTimeline/AccountBalanceTimeline.tsx: 19[22m
+[2m    src/features/payroll/components/PayCategoryManager/PayCategoryManager.tsx: 24[22m
+[2m    src/features/payroll/components/EmployeeOnboarding/EmployeeOnboarding.tsx: 16[22m
+[2m    src/features/ap/components/POReceiving.tsx: 54[22m
+[2m    src/features/ap/components/SupplierPaymentRun.tsx: 34[22m
+[2m    src/features/budgets/components/BudgetEditor.tsx: 12[22m
+[2m    src/features/budgets/components/ForecastScenarios.tsx: 17[22m
+[2m    src/features/onboarding/steps/StatementUploadStep.tsx: 24[22m
+[2m    src/features/transactions/components/AuditTrailViewer.tsx: 54[22m
+
+  [33m⚠[39m Enforce a clickable non-interactive element has at least one keyboard event listener.[33m (33)[39m
+[2m    Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.[22m
+[2m    src/features/transactions/components/TransactionTable/columns/transactionColumns.tsx: 111[22m
+[2m    src/features/admin/components/FeedbackQueue/FeedbackQueue.tsx: 70, 87, 104[22m
+[2m    src/features/admin/components/FeatureFlagManager.tsx: 207[22m
+[2m    src/components/layout/NavigationDrawer.tsx: 66[22m
+[2m    src/features/dashboards/components/WidgetPicker.tsx: 144[22m
+[2m    src/features/transactions/components/PendingCategorizationReview.tsx: 154[22m
+[2m    src/features/dashboards/components/WidgetConfigPanel.tsx: 258[22m
+[2m    src/features/dashboards/components/DashboardGrid.tsx: 155, 244[22m
+[2m    src/features/assets/components/AssetRegisterTable.tsx: 246[22m
+[2m    src/features/statements/components/StatementList/components/StatementCard.tsx: 32[22m
+[2m    src/features/transactions/components/TransactionCard.tsx: 142[22m
+[2m    src/features/transactions/components/SplitTransactionModal.tsx: 125[22m
+[2m    src/features/transactions/components/CategorySelect.tsx: 148, 179[22m
+[2m    src/features/admin/components/UserManager.tsx: 199, 280[22m
+[2m    src/features/admin/components/UserManagement/UserManagement.tsx: 316[22m
+[2m    src/features/documents/components/DocumentUpload.tsx: 159[22m
+[2m    src/features/documents/components/DocumentsDashboard.tsx: 256[22m
+[2m    src/features/intelligence/components/InsightFeed.tsx: 188[22m
+[2m    src/features/entities/components/InterEntityTransactionsView.tsx: 309[22m
+[2m    src/features/entities/components/EntityHierarchyView.tsx: 132[22m
+[2m    src/features/transactions/components/LedgerTableColumns/LedgerTableColumns.tsx: 179[22m
+[2m    src/features/admin/components/AgentExecutionDetail.tsx: 46[22m
+[2m    src/features/admin/components/AgentConfigManager.tsx: 159[22m
+[2m    src/features/accounts/components/AccountSwitcher.tsx: 80[22m
+[2m    src/features/accounts/components/AccountsOverview.tsx: 203[22m
+[2m    src/features/statements/components/FileUpload.tsx: 37[22m
+[2m    src/features/budgets/components/ForecastScenarios.tsx: 293[22m
+[2m    src/features/onboarding/steps/StatementUploadStep.tsx: 154[22m
+
+  [33m⚠[39m The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users.[33m (12)[39m
+[2m    Remove the `autoFocus` attribute.[22m
+[2m    src/features/transactions/components/TransactionTable/columns/transactionColumns.tsx: 103[22m
+[2m    src/features/analytics/components/BudgetVsActual.tsx: 174[22m
+[2m    src/features/onboarding/steps/CategorySetupStep.tsx: 204[22m
+[2m    src/features/tenant/components/TenantCreate.tsx: 159[22m
+[2m    src/features/dashboards/components/DashboardGrid.tsx: 269[22m
+[2m    src/features/transactions/components/TransactionCard.tsx: 67[22m
+[2m    src/features/documents/components/LineItemEditor.tsx: 159, 176, 194, 214[22m
+[2m    src/features/transactions/components/LedgerTableColumns/LedgerTableColumns.tsx: 171[22m
+[2m    src/features/budgets/components/BudgetEditor.tsx: 276[22m
+
+  [33m⚠[39m Static HTML elements with event handlers require a role.[33m (34)[39m
+[2m    Add a role attribute to this element, or use a semantic HTML element instead.[22m
+[2m    src/features/transactions/components/TransactionTable/columns/transactionColumns.tsx: 111[22m
+[2m    src/features/admin/components/FeedbackQueue/FeedbackQueue.tsx: 70, 87, 104[22m
+[2m    src/features/admin/components/FeatureFlagManager.tsx: 207[22m
+[2m    src/components/layout/NavigationDrawer.tsx: 66[22m
+[2m    src/features/dashboards/components/WidgetPicker.tsx: 144[22m
+[2m    src/features/transactions/components/PendingCategorizationReview.tsx: 154[22m
+[2m    src/features/dashboards/components/WidgetConfigPanel.tsx: 258[22m
+[2m    src/features/dashboards/components/DashboardGrid.tsx: 155, 244[22m
+[2m    src/components/ui/PullToRefresh/PullToRefresh.tsx: 281[22m
+[2m    src/features/assets/components/AssetRegisterTable.tsx: 246[22m
+[2m    src/features/statements/components/StatementList/components/StatementCard.tsx: 32[22m
+[2m    src/features/transactions/components/TransactionCard.tsx: 142[22m
+[2m    src/features/transactions/components/SplitTransactionModal.tsx: 125[22m
+[2m    src/components/ui/SwipeableCard/SwipeableCard.tsx: 334[22m
+[2m    src/features/admin/components/UserManager.tsx: 199, 280[22m
+[2m    src/features/admin/components/UserManagement/UserManagement.tsx: 316[22m
+[2m    src/features/documents/components/DocumentUpload.tsx: 159[22m
+[2m    src/features/documents/components/DocumentsDashboard.tsx: 256[22m
+[2m    src/components/ui/BottomSheet.tsx: 411[22m
+[2m    src/features/intelligence/components/InsightFeed.tsx: 188[22m
+[2m    src/features/entities/components/InterEntityTransactionsView.tsx: 309[22m
+[2m    src/features/entities/components/EntityHierarchyView.tsx: 132[22m
+[2m    src/features/transactions/components/LedgerTableColumns/LedgerTableColumns.tsx: 179[22m
+[2m    src/features/admin/components/AgentExecutionDetail.tsx: 46[22m
+[2m    src/features/admin/components/AgentConfigManager.tsx: 159[22m
+[2m    src/features/accounts/components/AccountSwitcher.tsx: 80[22m
+[2m    src/features/accounts/components/AccountsOverview.tsx: 203[22m
+[2m    src/features/statements/components/FileUpload.tsx: 37[22m
+[2m    src/features/budgets/components/ForecastScenarios.tsx: 293[22m
+[2m    src/features/onboarding/steps/StatementUploadStep.tsx: 154[22m
+
+  [33m⚠[39m "recharts" is a heavy library — use React.lazy() or next/dynamic for code splitting[33m (19)[39m
+[2m    Use `const Component = dynamic(() => import('library'), { ssr: false })` from next/dynamic or React.lazy()[22m
+[2m    src/features/forecasting/components/ForecastChart.tsx: 1[22m
+[2m    src/features/market/components/RateDecisionTracker.tsx: 3[22m
+[2m    src/features/analytics/components/InventoryValuation/InventoryValuation.tsx: 2[22m
+[2m    src/features/market/components/PriceTracker.tsx: 3[22m
+[2m    src/features/analytics/components/MoneyFlowSankey.tsx: 2[22m
+[2m    src/features/analytics/components/MarketDashboard.tsx: 2[22m
+[2m    src/components/charts/TreeMap.tsx: 2[22m
+[2m    src/components/charts/Sparkline.tsx: 2[22m
+[2m    src/components/charts/ScatterPlot.tsx: 2[22m
+[2m    src/components/charts/Sankey.tsx: 2[22m
+[2m    src/components/charts/PieChart.tsx: 2[22m
+[2m    src/components/charts/LineChart.tsx: 2[22m
+[2m    src/components/charts/ChartContainer.tsx: 2[22m
+[2m    src/components/charts/ComposedChart.tsx: 2[22m
+[2m    src/components/charts/BarChart.tsx: 2[22m
+[2m    src/features/intelligence/components/TemporalQueryBuilder.tsx: 3[22m
+[2m    src/features/intelligence/components/CorrelationExplorer.tsx: 3[22m
+[2m    src/features/market/components/EconomicIndicators.tsx: 3[22m
+[2m    src/features/forecasting/components/ScenarioComparer.tsx: 3[22m
+
+  [33m⚠[39m 3 setState calls in a single useEffect — consider using useReducer or deriving state[33m (32)[39m
+[2m    Combine into useReducer: `const [state, dispatch] = useReducer(reducer, initialState)`[22m
+[2m    src/features/ap/components/SupplierForm.tsx: 54[22m
+[2m    src/features/ap/components/SupplierDetail.tsx: 30[22m
+[2m    src/features/tax/components/OwnerEquityPanel.tsx: 22[22m
+[2m    src/features/invoicing/components/InvoiceEditor.tsx: 56[22m
+[2m    src/features/tax/components/CompanyReturn.tsx: 19[22m
+[2m    src/App.tsx: 146[22m
+[2m    src/features/tax/components/PersonalReturn.tsx: 19[22m
+[2m    src/features/tax/components/SoleTraderReturn.tsx: 26[22m
+[2m    src/features/invoicing/components/CustomerDetail.tsx: 73[22m
+[2m    src/features/knowledge/components/KnowledgeDashboard.tsx: 35[22m
+[2m    src/features/knowledge/components/GraphStatsPanel.tsx: 25[22m
+[2m    src/features/offline/components/OfflineIndicator.tsx: 10[22m
+[2m    src/features/analytics/components/BillAlerts.tsx: 16[22m
+[2m    src/features/tax/components/TrustReturn.tsx: 19[22m
+[2m    src/features/analytics/components/BudgetProjections.tsx: 19[22m
+[2m    src/features/dashboards/components/WidgetConfigPanel.tsx: 19[22m
+[2m    src/features/inventory/components/InventoryDashboard.tsx: 46[22m
+[2m    src/features/tenant/components/TenantSettings.tsx: 60[22m
+[2m    src/features/admin/components/CogneeGraphViewer/CogneeGraphViewer.tsx: 137[22m
+[2m    src/features/ap/components/BillEntry.tsx: 43[22m
+[2m    src/features/ap/components/BillApproval.tsx: 38[22m
+[2m    src/features/reports/components/ProfitAndLoss.tsx: 77[22m
+[2m    src/features/banking-products/components/RateTracker.tsx: 22[22m
+[2m    src/features/reports/components/TrialBalance.tsx: 49[22m
+[2m    src/features/banking-products/components/ProductComparison.tsx: 30[22m
+[2m    src/features/banking-products/components/BestRates.tsx: 28[22m
+[2m    src/features/documents/components/LineItemEditor.tsx: 33[22m
+[2m    src/features/matching/components/MatchReviewPanel.tsx: 52[22m
+[2m    src/features/reports/components/BalanceSheet.tsx: 61[22m
+[2m    src/features/reports/components/CashFlow.tsx: 82[22m
+[2m    src/features/reports/components/KPIDashboard.tsx: 57[22m
+[2m    src/context/SSEContext.tsx: 55[22m
+
+  [33m⚠[39m Inline render function "renderWidget()" — extract to a separate component for proper reconciliation[33m (15)[39m
+[2m    Extract to a named component: `const ListItem = ({ item }) => <div>{item.name}</div>`[22m
+[2m    src/features/dashboards/components/CustomDashboard/CustomDashboard.tsx: 189[22m
+[2m    src/features/dashboards/components/WidgetConfigPanel.tsx: 313[22m
+[2m    src/features/banking-products/components/BestRates.tsx: 158, 159[22m
+[2m    src/features/analytics/components/DebtReductionPlanner.tsx: 260, 266, 272[22m
+[2m    src/features/intelligence/components/TemporalQueryBuilder.tsx: 325, 394[22m
+[2m    src/features/admin/components/SystemMetricsCharts.tsx: 186, 197, 208, 219[22m
+[2m    src/features/admin/components/AdminLayout.tsx: 215[22m
+[2m    src/features/payroll/components/EmployeeOnboarding/EmployeeOnboarding.tsx: 432[22m
+
+  [33m⚠[39m setOffset(pageOffset + ...) — use functional update to avoid stale closures[33m (4)[39m
+[2m    Use the callback form: `setState(prev => prev + 1)` to always read the latest value[22m
+[2m    src/components/admin/AdminTransactionsView.tsx: 33[22m
+[2m    src/features/inventory/components/MovementHistory.tsx: 202[22m
+[2m    src/features/payroll/components/EmployeeOnboarding/EmployeeOnboarding.tsx: 446, 455[22m
+
+  [33m⚠[39m Import from barrel/index file — import directly from the source module for better tree-shaking
+[2m    Import from the direct path: `import { Button } from './components/Button'` instead of `./components`[22m
+[2m    src/features/statements/components/StatementList/StatementList.tsx: 3[22m
+
+  [33m⚠[39m useState(getItem()) calls initializer on every render — use useState(() => getItem()) for lazy initialization[33m (5)[39m
+[2m    Wrap in an arrow function so it only runs once: `useState(() => expensiveComputation())`[22m
+[2m    src/features/tenant/components/TenantSwitcher.tsx: 35[22m
+[2m    src/features/entities/components/InterEntityTransactionsView.tsx: 274[22m
+[2m    src/features/bas/components/BASPreFillReport.tsx: 36, 37[22m
+[2m    src/features/payroll/components/EmployeeOnboarding/EmployeeOnboarding.tsx: 30[22m
+
+  [33m⚠[39m Permanent will-change wastes GPU memory — apply only during active animation and remove after[33m (2)[39m
+[2m    Add will-change on animation start (`onMouseEnter`) and remove on end (`onAnimationEnd`). Permanent promotion wastes GPU memory and can degrade performance[22m
+[2m    src/components/ui/PullToRefresh/PullToRefresh.tsx: 290[22m
+[2m    src/components/ui/SwipeableCard/SwipeableCard.tsx: 338[22m
+
+  [33m⚠[39m Default prop value [] creates a new array reference every render — extract to a module-level constant[33m (8)[39m
+[2m    Move to module scope: `const EMPTY_ITEMS: Item[] = []` then use as the default value[22m
+[2m    src/features/transactions/components/TransactionCard.tsx: 40[22m
+[2m    src/features/analytics/components/MoneyFlowDetail.tsx: 35[22m
+[2m    src/components/charts/ComposedChart.tsx: 57, 58, 59[22m
+[2m    src/features/transactions/components/LedgerFilters.tsx: 29[22m
+[2m    src/features/transactions/components/TransactionTable/TransactionTable.tsx: 36[22m
+[2m    src/features/transactions/components/LedgerPage.tsx: 49[22m
+
+  [33m⚠[39m "touchend" listener without { passive: true } — blocks scrolling performance
+[2m    Add `{ passive: true }` as the third argument: `addEventListener('scroll', handler, { passive: true })`[22m
+[2m    src/components/ui/BottomSheet.tsx: 319[22m
+
+  [2m┌────────────────────────────────────────────────────────────┐[22m
+  [2m│[22m [32m┌─────┐[39m                                                    [2m│[22m
+  [2m│[22m [32m│ ◠ ◠ │[39m                                                    [2m│[22m
+  [2m│[22m [32m│  ▽  │[39m                                                    [2m│[22m
+  [2m│[22m [32m└─────┘[39m                                                    [2m│[22m
+  [2m│[22m React Doctor [2m(www.react.doctor)[22m                            [2m│[22m
+  [2m│[22m                                                            [2m│[22m
+  [2m│[22m [32m81[39m / 100  [32mGreat[39m                                            [2m│[22m
+  [2m│[22m                                                            [2m│[22m
+  [2m│[22m [32m█████████████████████████████████████████[39m[2m░░░░░░░░░[22m         [2m│[22m
+  [2m│[22m                                                            [2m│[22m
+  [2m│[22m [31m✗ 10 errors[39m  [33m⚠ 712 warnings[39m  [2macross 231/530 files[22m  [2min 2.5s[22m [2m│[22m
+  [2m└────────────────────────────────────────────────────────────┘[22m
+
+[2m  Full diagnostics written to C:\Users\Danie\AppData\Local\Temp\react-doctor-0fea56a3-2333-4402-a636-9c4ca777688b[22m
+
+[2m  Share your results: [36mhttps://www.react.doctor/share?p=client&s=81&e=10&w=712&f=231[39m[22m
+
+[33m  Note: dead code checks failed — score may be incomplete.[39m
+

@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import type { Transaction } from '../../../api';
 import type { SankeyNode, SankeyLink } from '../hooks/useMoneyFlow';
 
+const EMPTY_TRANSACTIONS: Transaction[] = [];
+
 interface MoneyFlowDetailProps {
   selectedNode?: SankeyNode | null;
   selectedLink?: SankeyLink | null;
@@ -32,7 +34,7 @@ function MoneyFlowDetailInner({
   selectedLink,
   nodes,
   onClose,
-  transactions = [],
+  transactions = EMPTY_TRANSACTIONS,
 }: MoneyFlowDetailProps) {
   const isOpen = selectedNode != null || selectedLink != null;
 

@@ -63,10 +63,10 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
               { key: 'member_number', label: 'Member Number', placeholder: 'Member #' },
             ].map((f) => (
               <div key={f.key}>
-                <label className="text-xs font-medium text-muted uppercase tracking-wider">
+                <label htmlFor="supert-f1" className="text-xs font-medium text-muted uppercase tracking-wider">
                   {f.label}
                 </label>
-                <input
+                <input id="supert-f1"
                   type="text"
                   value={form[f.key as keyof typeof form]}
                   onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
@@ -76,11 +76,11 @@ export function SuperTab({ superFund, employeeId, onRefresh }: SuperTabProps) {
               </div>
             ))}
             <div>
-              <label className="text-xs font-medium text-muted uppercase tracking-wider">
+              <label htmlFor="supert-f2" className="text-xs font-medium text-muted uppercase tracking-wider">
                 Contribution Rate (%)
               </label>
               <div className="flex items-center gap-2 mt-1">
-                <input
+                <input id="supert-f2"
                   type="number"
                   step="0.5"
                   value={form.contribution_rate}

@@ -8,13 +8,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
-        destructive: 'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+        default: 'bg-cba-gold text-base font-semibold shadow-[0_0_15px_rgba(255,204,0,0.2)] hover:bg-cba-gold/90 btn-press',
+        destructive: 'bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 btn-press',
         outline:
-          'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'glass text-primary hover:bg-overlay btn-press',
+        secondary: 'neu-raised text-primary btn-press',
+        ghost: 'hover:bg-overlay text-primary btn-press',
+        link: 'text-cba-gold underline-offset-4 hover:underline btn-press',
       },
       size: {
         default: 'h-9 px-4 py-2',
@@ -45,4 +45,5 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = 'Button';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants };

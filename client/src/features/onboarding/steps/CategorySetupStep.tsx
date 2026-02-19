@@ -201,7 +201,6 @@ export function CategorySetupStep({ data, updateData }: OnboardingStepProps) {
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="Enter category name..."
               className="flex-1 px-4 py-3 neu-inset rounded-xl text-sm border-border"
-              autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleAddCategory();
                 if (e.key === 'Escape') {

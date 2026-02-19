@@ -251,8 +251,8 @@ function MoneyFlowSankeyInner() {
         <div className="flex flex-wrap items-center gap-4">
           {/* Period selector */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-400 uppercase tracking-wider">Period</label>
-            <select
+            <label htmlFor="moneyf-f1" className="text-xs text-gray-400 uppercase tracking-wider">Period</label>
+            <select id="moneyf-f1"
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               className="bg-gray-800 border border-cba-gold/30 rounded-lg px-3 py-1.5 text-sm text-gray-200 focus:border-cba-gold focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
@@ -267,8 +267,8 @@ function MoneyFlowSankeyInner() {
 
           {/* Min threshold slider */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-400 uppercase tracking-wider">Min Flow</label>
-            <input
+            <label htmlFor="moneyf-f2" className="text-xs text-gray-400 uppercase tracking-wider">Min Flow</label>
+            <input id="moneyf-f2"
               type="range"
               min={0}
               max={500}
@@ -281,8 +281,8 @@ function MoneyFlowSankeyInner() {
           </div>
 
           {/* Transfers toggle */}
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
+          <label htmlFor="moneyf-f3" className="flex items-center gap-2 cursor-pointer">
+            <input id="moneyf-f3"
               type="checkbox"
               checked={includeTransfers}
               onChange={(e) => setIncludeTransfers(e.target.checked)}

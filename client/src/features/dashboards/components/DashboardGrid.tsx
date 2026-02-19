@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Star, Pencil, Trash2, LayoutGrid, Clock, X, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { BASE_URL, getAuthHeaders } from '../../../api';
@@ -154,36 +154,41 @@ export function DashboardGrid() {
           {dashboards.map((dash) => (
             <div
               key={dash.id}
-              className="neu-raised rounded-2xl p-5 border border-border/50 hover:border-cba-gold/20 transition-all duration-300 group cursor-pointer"
-              onClick={() => setActiveDashboardId(dash.id)}
+              className="neu-raised rounded-2xl p-5 border border-border/50 hover:border-cba-gold/20 transition-all duration-300 group flex flex-col h-full"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <LayoutGrid className="w-5 h-5 text-cba-gold" />
-                  <h3 className="font-bold text-zinc-100 text-lg">{dash.name}</h3>
-                </div>
-                {dash.isDefault && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 bg-cba-gold/10 rounded-full border border-cba-gold/30">
-                    <Star className="w-3 h-3 text-cba-gold fill-[#FFCC00]" />
-                    <span className="text-[10px] font-bold text-cba-gold uppercase">Default</span>
+              <button
+                type="button"
+                onClick={() => setActiveDashboardId(dash.id)}
+                className="w-full text-left focus:outline-none flex-1"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <LayoutGrid className="w-5 h-5 text-cba-gold" />
+                    <h3 className="font-bold text-zinc-100 text-lg">{dash.name}</h3>
                   </div>
+                  {dash.isDefault && (
+                    <div className="flex items-center gap-1 px-2 py-0.5 bg-cba-gold/10 rounded-full border border-cba-gold/30">
+                      <Star className="w-3 h-3 text-cba-gold fill-[#FFCC00]" />
+                      <span className="text-[10px] font-bold text-cba-gold uppercase">Default</span>
+                    </div>
+                  )}
+                </div>
+
+                {dash.description && (
+                  <p className="text-sm text-secondary mb-3 line-clamp-2">{dash.description}</p>
                 )}
-              </div>
 
-              {dash.description && (
-                <p className="text-sm text-secondary mb-3 line-clamp-2">{dash.description}</p>
-              )}
-
-              <div className="flex items-center justify-between text-xs text-muted">
-                <span className="flex items-center gap-1">
-                  <LayoutGrid className="w-3 h-3" />
-                  {dash.layout?.widgets?.length ?? 0} widgets
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {new Date(dash.updatedAt).toLocaleDateString('en-AU')}
-                </span>
-              </div>
+                <div className="flex items-center justify-between text-xs text-muted">
+                  <span className="flex items-center gap-1">
+                    <LayoutGrid className="w-3 h-3" />
+                    {dash.layout?.widgets?.length ?? 0} widgets
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {new Date(dash.updatedAt).toLocaleDateString('en-AU')}
+                  </span>
+                </div>
+              </button>
 
               {/* Action buttons (stop propagation to prevent opening) */}
               <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/50 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -242,14 +247,17 @@ export function DashboardGrid() {
       {showCreateDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
+            role="presentation"
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowCreateDialog(false)}
+            onKeyDown={() => { }}
           />
           <div className="relative neu-raised rounded-2xl w-full max-w-md mx-4 overflow-hidden">
             <div className="flex items-center justify-between p-5 border-b border-cba-gold/20">
               <h3 className="text-lg font-bold text-gradient-gold">Create Dashboard</h3>
               <button
                 onClick={() => setShowCreateDialog(false)}
+                aria-label="Close dialog"
                 className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-overlay-hover transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -257,23 +265,22 @@ export function DashboardGrid() {
             </div>
             <div className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
+                <label htmlFor="dashbo-f1" className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
                   Name
                 </label>
-                <input
+                <input id="dashbo-f1"
                   type="text"
                   value={createName}
                   onChange={(e) => setCreateName(e.target.value)}
                   placeholder="My Dashboard"
                   className="w-full px-3 py-2.5 rounded-xl neu-inset bg-transparent text-zinc-100 text-sm placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/50"
-                  autoFocus
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
+                <label htmlFor="dashbo-f2" className="block text-xs font-bold text-secondary uppercase tracking-wider mb-1.5">
                   Description
                 </label>
-                <textarea
+                <textarea id="dashbo-f2"
                   value={createDescription}
                   onChange={(e) => setCreateDescription(e.target.value)}
                   placeholder="Optional description..."

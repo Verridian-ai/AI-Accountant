@@ -30,8 +30,8 @@ export function TaxTab({ taxDeclaration, employeeId, onRefresh }: TaxTabProps) {
   };
 
   const checkboxField = (key: string, label: string) => (
-    <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-border/50 cursor-pointer">
-      <input
+    <label htmlFor="taxtab-f1" className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-border/50 cursor-pointer">
+      <input id="taxtab-f1"
         type="checkbox"
         checked={form[key as keyof typeof form] as boolean}
         onChange={(e) => setForm({ ...form, [key]: e.target.checked })}
@@ -64,10 +64,10 @@ export function TaxTab({ taxDeclaration, employeeId, onRefresh }: TaxTabProps) {
         {checkboxField('tax_offset_claimed', 'Claiming tax offset')}
 
         <div className="p-3 rounded-xl bg-white/[0.02] border border-border/50">
-          <label className="text-xs font-medium text-muted uppercase tracking-wider">
+          <label htmlFor="taxtab-f2" className="text-xs font-medium text-muted uppercase tracking-wider">
             Number of Dependants
           </label>
-          <input
+          <input id="taxtab-f2"
             type="number"
             min="0"
             value={form.dependants}

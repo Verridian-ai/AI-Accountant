@@ -155,10 +155,10 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
         <div className="neu-inset rounded-xl p-3 space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
+              <label htmlFor="trans-f1" className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                 Agent Type
               </label>
-              <input
+              <input id="trans-f1"
                 className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-primary placeholder-zinc-700 font-bold bg-transparent outline-none focus-gold"
                 placeholder="e.g. transaction_categorizer"
                 value={filterAgentType}
@@ -166,10 +166,10 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
               />
             </div>
             <div>
-              <label className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
+              <label htmlFor="trans-f2" className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                 Action
               </label>
-              <select
+              <select id="trans-f2"
                 className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-primary font-bold bg-transparent outline-none"
                 value={filterAction}
                 onChange={(e) => setFilterAction(e.target.value)}
@@ -183,10 +183,10 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
               </select>
             </div>
             <div>
-              <label className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
+              <label htmlFor="trans-f3" className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                 From
               </label>
-              <input
+              <input id="trans-f3"
                 type="date"
                 className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-primary font-bold bg-transparent outline-none"
                 value={filterFrom}
@@ -194,10 +194,10 @@ export function AuditTrailViewer({ mutationId, agentType: propAgentType }: Audit
               />
             </div>
             <div>
-              <label className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
+              <label htmlFor="trans-f4" className="text-[7px] font-black text-muted uppercase tracking-wider block mb-1">
                 To
               </label>
-              <input
+              <input id="trans-f4"
                 type="date"
                 className="w-full neu-inset rounded-lg px-2 py-1.5 text-[9px] text-primary font-bold bg-transparent outline-none"
                 value={filterTo}

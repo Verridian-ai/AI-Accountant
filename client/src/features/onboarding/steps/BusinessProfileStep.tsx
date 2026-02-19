@@ -78,7 +78,7 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
 
       {/* Entity Type Selection */}
       <div className="space-y-3">
-        <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1 flex items-center gap-2">
+        <label htmlFor="onboa-f1" className="text-[10px] font-black uppercase text-muted tracking-widest ml-1 flex items-center gap-2">
           Entity Type
           <HelpCircle className="w-3 h-3 text-zinc-600" />
         </label>
@@ -110,7 +110,7 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
       {/* Business Name */}
       {showBusinessFields && (
         <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
-          <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
+          <label htmlFor="onboa-f2" className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
             Business Name
           </label>
           <Input
@@ -129,7 +129,7 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
           className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-300"
           style={{ animationDelay: '50ms' }}
         >
-          <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1 flex items-center gap-2">
+          <label htmlFor="onboa-f3" className="text-[10px] font-black uppercase text-muted tracking-widest ml-1 flex items-center gap-2">
             ABN
             <span className="text-zinc-600 font-normal normal-case tracking-normal">
               (optional)
@@ -151,7 +151,7 @@ export function BusinessProfileStep({ data, updateData }: OnboardingStepProps) {
 
       {/* Industry */}
       <div className="space-y-3" style={{ animationDelay: '100ms' }}>
-        <label className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
+        <label htmlFor="onboa-f4" className="text-[10px] font-black uppercase text-muted tracking-widest ml-1">
           {showBusinessFields ? 'Industry' : 'Primary Income Source'}
         </label>
         <Select value={data.industry} onValueChange={(value) => updateData({ industry: value })}>

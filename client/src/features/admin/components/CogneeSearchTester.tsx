@@ -101,7 +101,7 @@ export function CogneeSearchTester() {
 
         {/* Dataset Selection */}
         <div>
-          <label className="block text-xs text-secondary mb-2">
+          <label htmlFor="cognee-f1" className="block text-xs text-secondary mb-2">
             <Database className="w-3 h-3 inline mr-1" /> Datasets{' '}
             {selectedDatasets.length > 0 && `(${selectedDatasets.length})`}
           </label>
@@ -111,11 +111,10 @@ export function CogneeSearchTester() {
                 key={ds}
                 type="button"
                 onClick={() => toggleItem(selectedDatasets, ds, setSelectedDatasets)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  selectedDatasets.includes(ds)
-                    ? 'bg-cba-gold/10 text-cba-gold border border-cba-gold/20'
-                    : 'bg-[#1a1a2e] text-secondary border border-border/50 hover:border-border'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedDatasets.includes(ds)
+                  ? 'bg-cba-gold/10 text-cba-gold border border-cba-gold/20'
+                  : 'bg-[#1a1a2e] text-secondary border border-border/50 hover:border-border'
+                  }`}
               >
                 {ds}
               </button>
@@ -128,18 +127,17 @@ export function CogneeSearchTester() {
 
         {/* Search Types */}
         <div>
-          <label className="block text-xs text-secondary mb-2">Search Types</label>
+          <label htmlFor="cognee-f2" className="block text-xs text-secondary mb-2">Search Types</label>
           <div className="flex flex-wrap gap-2">
             {SEARCH_TYPES.map((st) => (
               <button
                 key={st}
                 type="button"
                 onClick={() => toggleItem(selectedTypes, st, setSelectedTypes)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  selectedTypes.includes(st)
-                    ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
-                    : 'bg-[#1a1a2e] text-secondary border border-border/50 hover:border-border'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedTypes.includes(st)
+                  ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
+                  : 'bg-[#1a1a2e] text-secondary border border-border/50 hover:border-border'
+                  }`}
               >
                 {st}
               </button>
@@ -200,10 +198,15 @@ export function CogneeSearchTester() {
                     {item.score !== undefined && (
                       <div className="mt-2 flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full bg-[#0a0a1a] overflow-hidden">
-                          <div
-                            className="h-full bg-cba-gold rounded-full"
-                            style={{ width: `${item.score * 100}%` }}
-                          />
+                          {(() => {
+                            const barStyle = { width: `${item.score! * 100}%` };
+                            return (
+                              <div
+                                className="h-full bg-cba-gold rounded-full"
+                                style={barStyle}
+                              />
+                            );
+                          })()}
                         </div>
                         <span className="text-[10px] text-muted">
                           {(item.score * 100).toFixed(1)}%

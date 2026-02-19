@@ -163,11 +163,11 @@ export function NotificationPreferences() {
       <section className="neu-raised rounded-2xl p-5 space-y-4">
         <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Thresholds</h3>
         <div>
-          <label className="text-sm text-primary block mb-2">
+          <label htmlFor="notif-f1" className="text-sm text-primary block mb-2">
             Large transaction:{' '}
             <span className="text-cba-gold font-bold">${thresholdDollars.toLocaleString()}</span>
           </label>
-          <input
+          <input id="notif-f1"
             type="range"
             min={10000}
             max={1000000}
@@ -184,11 +184,11 @@ export function NotificationPreferences() {
           </div>
         </div>
         <div>
-          <label className="text-sm text-primary block mb-2">
+          <label htmlFor="notif-f2" className="text-sm text-primary block mb-2">
             Budget alert at:{' '}
             <span className="text-cba-gold font-bold">{prefs.budgetAlertThresholdPercent}%</span>
           </label>
-          <input
+          <input id="notif-f2"
             type="range"
             min={50}
             max={100}
@@ -211,8 +211,8 @@ export function NotificationPreferences() {
         <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Quiet Hours</h3>
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <label className="text-xs text-muted block mb-1">Start</label>
-            <input
+            <label htmlFor="notif-f3" className="text-xs text-muted block mb-1">Start</label>
+            <input id="notif-f3"
               type="time"
               value={prefs.quietHoursStart ?? '22:00'}
               onChange={(e) => setPrefs((p) => ({ ...p, quietHoursStart: e.target.value }))}
@@ -220,8 +220,8 @@ export function NotificationPreferences() {
             />
           </div>
           <div className="flex-1">
-            <label className="text-xs text-muted block mb-1">End</label>
-            <input
+            <label htmlFor="notif-f4" className="text-xs text-muted block mb-1">End</label>
+            <input id="notif-f4"
               type="time"
               value={prefs.quietHoursEnd ?? '07:00'}
               onChange={(e) => setPrefs((p) => ({ ...p, quietHoursEnd: e.target.value }))}

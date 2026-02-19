@@ -55,7 +55,7 @@ export function SplitModal({
         <div className="p-8 space-y-6 max-h-[55vh] overflow-y-auto scrollbar-thin">
           {splits.map((split, idx) => (
             <div
-              key={idx}
+              key={`item-${idx}`}
               className="neu-raised-sm p-6 rounded-3xl space-y-5 relative group border border-border/50 hover:border-purple-500/20 transition-all"
             >
               <div className="flex justify-between items-center border-b border-border/50 pb-4">
@@ -80,11 +80,11 @@ export function SplitModal({
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
+                  <label htmlFor="splitm-f1" className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
                     Classification
                   </label>
                   <div className="relative">
-                    <select
+                    <select id="splitm-f1"
                       aria-label="Split category"
                       value={split.category}
                       onChange={(e) => {
@@ -108,14 +108,14 @@ export function SplitModal({
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
+                  <label htmlFor="splitm-f2" className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
                     Quantum Value ($)
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600 font-black text-xs">
                       $
                     </span>
-                    <input
+                    <input id="splitm-f2"
                       type="number"
                       step="0.01"
                       aria-label="Split amount"
@@ -132,10 +132,10 @@ export function SplitModal({
                   </div>
                 </div>
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
+                  <label htmlFor="splitm-f3" className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
                     Data Label
                   </label>
-                  <input
+                  <input id="splitm-f3"
                     type="text"
                     aria-label="Split description"
                     value={split.description}

@@ -150,10 +150,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Business Name */}
         <div>
-          <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+          <label htmlFor="invoic-f1" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
             Business Name <span className="text-red-400">*</span>
           </label>
-          <input
+          <input id="invoic-f1"
             type="text"
             value={form.businessName}
             onChange={(e) => setField('businessName', e.target.value)}
@@ -168,10 +168,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
         {/* Contact + Email row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+            <label htmlFor="invoic-f2" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
               Contact Name
             </label>
-            <input
+            <input id="invoic-f2"
               type="text"
               value={form.contactName}
               onChange={(e) => setField('contactName', e.target.value)}
@@ -180,10 +180,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
             />
           </div>
           <div>
-            <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+            <label htmlFor="invoic-f3" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
               Email
             </label>
-            <input
+            <input id="invoic-f3"
               type="email"
               value={form.email}
               onChange={(e) => setField('email', e.target.value)}
@@ -197,10 +197,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
         {/* Phone + ABN row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+            <label htmlFor="invoic-f4" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
               Phone
             </label>
-            <input
+            <input id="invoic-f4"
               type="text"
               value={form.phone}
               onChange={(e) => setField('phone', e.target.value)}
@@ -209,10 +209,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
             />
           </div>
           <div>
-            <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+            <label htmlFor="invoic-f5" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
               ABN
             </label>
-            <input
+            <input id="invoic-f5"
               type="text"
               value={form.abn}
               onChange={(e) => setField('abn', e.target.value)}
@@ -226,10 +226,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
 
         {/* Address */}
         <div>
-          <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+          <label htmlFor="invoic-f6" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
             Address
           </label>
-          <input
+          <input id="invoic-f6"
             type="text"
             value={form.address}
             onChange={(e) => setField('address', e.target.value)}
@@ -241,10 +241,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
         {/* City, State, Postcode, Country */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
-            <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+            <label htmlFor="invoic-f7" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
               City
             </label>
-            <input
+            <input id="invoic-f7"
               type="text"
               value={form.city}
               onChange={(e) => setField('city', e.target.value)}
@@ -253,10 +253,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
             />
           </div>
           <div>
-            <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+            <label htmlFor="invoic-f8" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
               State
             </label>
-            <select
+            <select id="invoic-f8"
               value={form.state}
               onChange={(e) => setField('state', e.target.value)}
               className={cn(inputClass(), 'cursor-pointer')}
@@ -272,10 +272,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
             </select>
           </div>
           <div>
-            <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+            <label htmlFor="invoic-f9" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
               Postcode
             </label>
-            <input
+            <input id="invoic-f9"
               type="text"
               value={form.postcode}
               onChange={(e) => setField('postcode', e.target.value)}
@@ -286,10 +286,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
             {errors.postcode && <p className="text-red-400 text-xs mt-1">{errors.postcode}</p>}
           </div>
           <div>
-            <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+            <label htmlFor="invoic-f10" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
               Country
             </label>
-            <input
+            <input id="invoic-f10"
               type="text"
               value={form.country}
               onChange={(e) => setField('country', e.target.value)}
@@ -301,10 +301,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
 
         {/* Payment Terms */}
         <div className="sm:w-1/4">
-          <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+          <label htmlFor="invoic-f11" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
             Payment Terms (days)
           </label>
-          <input
+          <input id="invoic-f11"
             type="number"
             value={form.paymentTermsDays}
             onChange={(e) => setField('paymentTermsDays', e.target.value)}
@@ -316,10 +316,10 @@ export function CustomerForm({ customer, onSave, onCancel }: CustomerFormProps) 
 
         {/* Notes */}
         <div>
-          <label className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
+          <label htmlFor="invoic-f12" className="block text-[10px] text-muted uppercase tracking-wider font-semibold mb-1">
             Notes
           </label>
-          <textarea
+          <textarea id="invoic-f12"
             value={form.notes}
             onChange={(e) => setField('notes', e.target.value)}
             rows={3}
