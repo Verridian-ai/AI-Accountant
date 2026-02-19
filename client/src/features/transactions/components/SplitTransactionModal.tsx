@@ -100,6 +100,7 @@ export function SplitTransactionModal({
     onSplitsChange([
       ...splits,
       {
+        id: crypto.randomUUID(),
         category: 'Uncategorized',
         amount: 0,
         description: transaction.description,
@@ -182,7 +183,7 @@ export function SplitTransactionModal({
         <div className="p-8 space-y-6 max-h-[55vh] overflow-y-auto scrollbar-thin">
           {splits.map((split, idx) => (
             <div
-              key={`split-${idx}-${split.amount}-${split.category}`}
+              key={split.id || `split-${idx}-${split.amount}-${split.category}`}
               className="neu-raised-sm p-6 rounded-3xl space-y-5 relative group border border-border/50 hover:border-purple-500/20 transition-all"
             >
               <div className="flex justify-between items-center border-b border-border/50 pb-4">

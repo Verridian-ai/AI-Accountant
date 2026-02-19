@@ -89,12 +89,14 @@ export function useTransactionSplit({
     const halfAmount = Math.floor(tx.amount / 2);
     setSplits([
       {
+        id: crypto.randomUUID(),
         category: tx.category || 'Uncategorized',
         amount: halfAmount,
         description: tx.description,
         gst: tx.gstApplicable,
       },
       {
+        id: crypto.randomUUID(),
         category: 'Uncategorized',
         amount: tx.amount - halfAmount,
         description: tx.description,
