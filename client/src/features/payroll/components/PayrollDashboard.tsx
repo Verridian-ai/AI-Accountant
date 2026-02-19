@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect, useState } from 'react';
 import { Users, UserPlus, Briefcase, UserX, Clock } from 'lucide-react';
 import { fetchEmployees } from '../../../api';
 import { EmployeeList } from './EmployeeList';
@@ -19,24 +19,42 @@ interface EmployeeSummary {
   position?: string;
 }
 
+// Ar2: useReducer for multiple setState in async fetch
+type EmployeeState = { loading: boolean; employees: EmployeeSummary[]; total: number };
+type EmployeeAction =
+  | { type: 'FETCH_START' }
+  | { type: 'FETCH_SUCCESS'; data: EmployeeSummary[]; total: number }
+  | { type: 'FETCH_ERROR' };
+
+function employeeReducer(state: EmployeeState, action: EmployeeAction): EmployeeState {
+  switch (action.type) {
+    case 'FETCH_START':
+      return { ...state, loading: true };
+    case 'FETCH_SUCCESS':
+      return { loading: false, employees: action.data, total: action.total };
+    case 'FETCH_ERROR':
+      return { ...state, loading: false };
+  }
+}
+
 export function PayrollDashboard() {
   const [activeTab, setActiveTab] = useState<PayrollTab>('employees');
   const [view, setView] = useState<View>('list');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
-  const [employees, setEmployees] = useState<EmployeeSummary[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [{ loading, employees, total }, dispatch] = useReducer(employeeReducer, {
+    loading: true,
+    employees: [],
+    total: 0,
+  });
 
   const loadEmployees = async () => {
-    setLoading(true);
+    dispatch({ type: 'FETCH_START' });
     try {
       const result = await fetchEmployees('default');
-      setEmployees(result.data);
-      setTotal(result.total);
+      dispatch({ type: 'FETCH_SUCCESS', data: result.data, total: result.total });
     } catch (e) {
       console.error('Failed to fetch employees', e);
-    } finally {
-      setLoading(false);
+      dispatch({ type: 'FETCH_ERROR' });
     }
   };
 

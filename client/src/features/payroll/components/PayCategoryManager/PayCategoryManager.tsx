@@ -30,13 +30,16 @@ export function PayCategoryManager() {
   const [seeding, setSeeding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [formName, setFormName] = useState('');
-  const [formType, setFormType] = useState<CategoryType>('ordinary');
-  const [formRateType, setFormRateType] = useState<RateType>('hourly');
-  const [formDefaultRate, setFormDefaultRate] = useState('');
-  const [formMultiplier, setFormMultiplier] = useState('1.0');
-  const [formIsTaxable, setFormIsTaxable] = useState(true);
-  const [formIsSuperBearing, setFormIsSuperBearing] = useState(true);
+  // Ar3: consolidated form state
+  const [form, setForm] = useState({
+    name: '',
+    type: 'ordinary' as CategoryType,
+    rateType: 'hourly' as RateType,
+    defaultRate: '',
+    multiplier: '1.0',
+    isTaxable: true,
+    isSuperBearing: true,
+  });
 
   const loadCategories = async () => {
     setLoading(true);
@@ -74,50 +77,54 @@ export function PayCategoryManager() {
   };
 
   const resetForm = () => {
-    setFormName('');
-    setFormType('ordinary');
-    setFormRateType('hourly');
-    setFormDefaultRate('');
-    setFormMultiplier('1.0');
-    setFormIsTaxable(true);
-    setFormIsSuperBearing(true);
+    setForm({
+      name: '',
+      type: 'ordinary',
+      rateType: 'hourly',
+      defaultRate: '',
+      multiplier: '1.0',
+      isTaxable: true,
+      isSuperBearing: true,
+    });
     setEditingId(null);
     setShowForm(false);
     setError(null);
   };
 
   const handleEdit = (cat: PayCategory) => {
-    setFormName(cat.name);
-    setFormType(cat.type);
-    setFormRateType(cat.rateType);
-    setFormDefaultRate(cat.defaultRateCents != null ? (cat.defaultRateCents / 100).toFixed(2) : '');
-    setFormMultiplier(cat.multiplier != null ? String(cat.multiplier) : '1.0');
-    setFormIsTaxable(cat.isTaxable);
-    setFormIsSuperBearing(cat.isSuperBearing);
+    setForm({
+      name: cat.name,
+      type: cat.type,
+      rateType: cat.rateType,
+      defaultRate: cat.defaultRateCents != null ? (cat.defaultRateCents / 100).toFixed(2) : '',
+      multiplier: cat.multiplier != null ? String(cat.multiplier) : '1.0',
+      isTaxable: cat.isTaxable,
+      isSuperBearing: cat.isSuperBearing,
+    });
     setEditingId(cat.id);
     setShowForm(true);
     setError(null);
   };
 
   const handleSubmit = async () => {
-    if (!formName.trim()) {
+    if (!form.name.trim()) {
       setError('Name is required');
       return;
     }
     setError(null);
-    const rateCents = formDefaultRate ? Math.round(parseFloat(formDefaultRate) * 100) : null;
-    const multiplier = parseFloat(formMultiplier) || 1.0;
+    const rateCents = form.defaultRate ? Math.round(parseFloat(form.defaultRate) * 100) : null;
+    const multiplier = parseFloat(form.multiplier) || 1.0;
     try {
       await createPayCategory({
         id: editingId ?? undefined,
         userId: 'default',
-        name: formName.trim(),
-        type: formType,
-        rateType: formRateType,
+        name: form.name.trim(),
+        type: form.type,
+        rateType: form.rateType,
         defaultRateCents: rateCents,
         multiplier,
-        isTaxable: formIsTaxable,
-        isSuperBearing: formIsSuperBearing,
+        isTaxable: form.isTaxable,
+        isSuperBearing: form.isSuperBearing,
         isActive: true,
       });
       resetForm();
@@ -210,21 +217,31 @@ export function PayCategoryManager() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* A1: Name */}
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Name</label>
+              <label htmlFor="cat-name" className="block text-xs font-medium text-zinc-400 mb-1">
+                Name
+              </label>
               <input
+                id="cat-name"
                 type="text"
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g. Base Hourly"
                 className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               />
             </div>
+            {/* A1: Type */}
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Type</label>
+              <label htmlFor="cat-type" className="block text-xs font-medium text-zinc-400 mb-1">
+                Type
+              </label>
               <select
-                value={formType}
-                onChange={(e) => setFormType(e.target.value as CategoryType)}
+                id="cat-type"
+                value={form.type}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, type: e.target.value as CategoryType }))
+                }
                 className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               >
                 {TYPE_ORDER.map((t) => (
@@ -234,11 +251,20 @@ export function PayCategoryManager() {
                 ))}
               </select>
             </div>
+            {/* A1: Rate Type */}
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Rate Type</label>
+              <label
+                htmlFor="cat-rate-type"
+                className="block text-xs font-medium text-zinc-400 mb-1"
+              >
+                Rate Type
+              </label>
               <select
-                value={formRateType}
-                onChange={(e) => setFormRateType(e.target.value as RateType)}
+                id="cat-rate-type"
+                value={form.rateType}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, rateType: e.target.value as RateType }))
+                }
                 className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white appearance-none focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               >
                 <option value="hourly">Hourly</option>
@@ -246,32 +272,44 @@ export function PayCategoryManager() {
                 <option value="fixed">Fixed</option>
               </select>
             </div>
+            {/* A1: Default Rate */}
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">
+              <label
+                htmlFor="cat-default-rate"
+                className="block text-xs font-medium text-zinc-400 mb-1"
+              >
                 Default Rate ($)
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
                 <input
+                  id="cat-default-rate"
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formDefaultRate}
-                  onChange={(e) => setFormDefaultRate(e.target.value)}
+                  value={form.defaultRate}
+                  onChange={(e) => setForm((prev) => ({ ...prev, defaultRate: e.target.value }))}
                   placeholder="0.00"
                   className="w-full pl-8 pr-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 />
               </div>
             </div>
-            {formType === 'overtime' && (
+            {/* A1: Multiplier (conditional) */}
+            {form.type === 'overtime' && (
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Multiplier</label>
+                <label
+                  htmlFor="cat-multiplier"
+                  className="block text-xs font-medium text-zinc-400 mb-1"
+                >
+                  Multiplier
+                </label>
                 <input
+                  id="cat-multiplier"
                   type="number"
                   step="0.1"
                   min="1"
-                  value={formMultiplier}
-                  onChange={(e) => setFormMultiplier(e.target.value)}
+                  value={form.multiplier}
+                  onChange={(e) => setForm((prev) => ({ ...prev, multiplier: e.target.value }))}
                   placeholder="1.5"
                   className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
                 />
@@ -283,10 +321,10 @@ export function PayCategoryManager() {
             <label className="flex items-center gap-2 cursor-pointer">
               <button
                 type="button"
-                onClick={() => setFormIsTaxable(!formIsTaxable)}
+                onClick={() => setForm((prev) => ({ ...prev, isTaxable: !prev.isTaxable }))}
                 className="text-zinc-400 hover:text-white"
               >
-                {formIsTaxable ? (
+                {form.isTaxable ? (
                   <ToggleRight className="h-5 w-5 text-[#FFCC00]" />
                 ) : (
                   <ToggleLeft className="h-5 w-5" />
@@ -297,10 +335,12 @@ export function PayCategoryManager() {
             <label className="flex items-center gap-2 cursor-pointer">
               <button
                 type="button"
-                onClick={() => setFormIsSuperBearing(!formIsSuperBearing)}
+                onClick={() =>
+                  setForm((prev) => ({ ...prev, isSuperBearing: !prev.isSuperBearing }))
+                }
                 className="text-zinc-400 hover:text-white"
               >
-                {formIsSuperBearing ? (
+                {form.isSuperBearing ? (
                   <ToggleRight className="h-5 w-5 text-[#FFCC00]" />
                 ) : (
                   <ToggleLeft className="h-5 w-5" />
