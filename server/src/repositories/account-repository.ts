@@ -10,7 +10,14 @@ import {
   statementAccounts,
 } from '../schema.js';
 import { eq, and, desc, like, type SQL } from 'drizzle-orm';
-import { selectOne, selectMany, insert, update as typedUpdate, deleteRows } from '../db/typed-queries.js';
+import {
+  selectOne,
+  selectMany,
+  insert,
+  update as typedUpdate,
+  deleteRows,
+} from '../db/typed-queries.js';
+import { accounts_findById, accounts_findByHash } from '../db/prepared-statements.js';
 
 export interface AccountFilters {
   ownershipTag?: string;
@@ -21,11 +28,18 @@ export interface AccountFilters {
 export class AccountRepository {
   // --- Accounts ---
 
-  async findByHash(userId: string, hash: string): Promise<typeof accounts.$inferSelect | undefined> {
-    return selectOne(db, accounts, and(eq(accounts.userId, userId), eq(accounts.accountNumberHash, hash)));
+  async findByHash(
+    userId: string,
+    hash: string,
+  ): Promise<typeof accounts.$inferSelect | undefined> {
+    const rows = await accounts_findByHash.execute({ userId, hash });
+    return rows[0];
   }
 
-  async findAll(userId: string, filters?: AccountFilters): Promise<Array<typeof accounts.$inferSelect>> {
+  async findAll(
+    userId: string,
+    filters?: AccountFilters,
+  ): Promise<Array<typeof accounts.$inferSelect>> {
     const conditions: SQL[] = [eq(accounts.userId, userId)];
 
     if (filters?.ownershipTag) {
@@ -41,20 +55,28 @@ export class AccountRepository {
     return selectMany(db, accounts, and(...conditions));
   }
 
-  async findById(userId: string, accountId: string): Promise<typeof accounts.$inferSelect | undefined> {
-    return selectOne(db, accounts, and(eq(accounts.id, accountId), eq(accounts.userId, userId)));
+  async findById(
+    userId: string,
+    accountId: string,
+  ): Promise<typeof accounts.$inferSelect | undefined> {
+    const rows = await accounts_findById.execute({ id: accountId, userId });
+    return rows[0];
   }
 
   async create(data: typeof accounts.$inferInsert): Promise<void> {
     await insert(db, accounts, data);
   }
 
-  async update(userId: string, accountId: string, data: Partial<typeof accounts.$inferInsert>): Promise<void> {
+  async update(
+    userId: string,
+    accountId: string,
+    data: Partial<typeof accounts.$inferInsert>,
+  ): Promise<void> {
     await typedUpdate(
       db,
       accounts,
       data,
-      and(eq(accounts.id, accountId), eq(accounts.userId, userId))
+      and(eq(accounts.id, accountId), eq(accounts.userId, userId)),
     );
   }
 
@@ -96,19 +118,25 @@ export class AccountRepository {
     return results;
   }
 
-  async findMerchantMemoryByPattern(userId: string, pattern: string): Promise<typeof merchantMemory.$inferSelect | undefined> {
+  async findMerchantMemoryByPattern(
+    userId: string,
+    pattern: string,
+  ): Promise<typeof merchantMemory.$inferSelect | undefined> {
     return selectOne(
       db,
       merchantMemory,
-      and(eq(merchantMemory.userId, userId), eq(merchantMemory.merchantPattern, pattern))
+      and(eq(merchantMemory.userId, userId), eq(merchantMemory.merchantPattern, pattern)),
     );
   }
 
-  async findMerchantMemoryById(userId: string, id: string): Promise<typeof merchantMemory.$inferSelect | undefined> {
+  async findMerchantMemoryById(
+    userId: string,
+    id: string,
+  ): Promise<typeof merchantMemory.$inferSelect | undefined> {
     return selectOne(
       db,
       merchantMemory,
-      and(eq(merchantMemory.id, id), eq(merchantMemory.userId, userId))
+      and(eq(merchantMemory.id, id), eq(merchantMemory.userId, userId)),
     );
   }
 
@@ -116,7 +144,10 @@ export class AccountRepository {
     await insert(db, merchantMemory, data);
   }
 
-  async updateMerchantMemory(id: string, data: Partial<typeof merchantMemory.$inferInsert>): Promise<void> {
+  async updateMerchantMemory(
+    id: string,
+    data: Partial<typeof merchantMemory.$inferInsert>,
+  ): Promise<void> {
     await typedUpdate(db, merchantMemory, data, eq(merchantMemory.id, id));
   }
 
@@ -126,33 +157,35 @@ export class AccountRepository {
 
   // --- Pending Categorization ---
 
-  async findPendingCategorizations(userId: string): Promise<Array<typeof pendingCategorization.$inferSelect>> {
+  async findPendingCategorizations(
+    userId: string,
+  ): Promise<Array<typeof pendingCategorization.$inferSelect>> {
     // Cap at 500 — callers should process in batches for large backlogs
     const results: Array<typeof pendingCategorization.$inferSelect> = await db
       .select()
       .from(pendingCategorization)
       .where(
-        and(
-          eq(pendingCategorization.userId, userId),
-          eq(pendingCategorization.status, 'pending'),
-        ),
+        and(eq(pendingCategorization.userId, userId), eq(pendingCategorization.status, 'pending')),
       )
       .limit(500)
       .all();
     return results;
   }
 
-  async findPendingCategorizationById(userId: string, id: string): Promise<typeof pendingCategorization.$inferSelect | undefined> {
+  async findPendingCategorizationById(
+    userId: string,
+    id: string,
+  ): Promise<typeof pendingCategorization.$inferSelect | undefined> {
     return selectOne(
       db,
       pendingCategorization,
-      and(eq(pendingCategorization.id, id), eq(pendingCategorization.userId, userId))
+      and(eq(pendingCategorization.id, id), eq(pendingCategorization.userId, userId)),
     );
   }
 
   async updatePendingCategorization(
     id: string,
-    data: Partial<typeof pendingCategorization.$inferInsert>
+    data: Partial<typeof pendingCategorization.$inferInsert>,
   ): Promise<void> {
     await typedUpdate(db, pendingCategorization, data, eq(pendingCategorization.id, id));
   }
@@ -170,11 +203,14 @@ export class AccountRepository {
     return results;
   }
 
-  async findTransferLinkById(userId: string, id: string): Promise<typeof transferLinks.$inferSelect | undefined> {
+  async findTransferLinkById(
+    userId: string,
+    id: string,
+  ): Promise<typeof transferLinks.$inferSelect | undefined> {
     return selectOne(
       db,
       transferLinks,
-      and(eq(transferLinks.id, id), eq(transferLinks.userId, userId))
+      and(eq(transferLinks.id, id), eq(transferLinks.userId, userId)),
     );
   }
 
@@ -188,7 +224,9 @@ export class AccountRepository {
 
   // --- Balance History & Alerts ---
 
-  async findBalanceHistory(accountId: string): Promise<Array<typeof accountBalanceHistory.$inferSelect>> {
+  async findBalanceHistory(
+    accountId: string,
+  ): Promise<Array<typeof accountBalanceHistory.$inferSelect>> {
     // Cap at 500 — return most recent 500 balance snapshots (ordered DESC)
     const results: Array<typeof accountBalanceHistory.$inferSelect> = await db
       .select()
@@ -220,17 +258,20 @@ export class AccountRepository {
     return results;
   }
 
-  async findReconciliationAlertById(userId: string, id: string): Promise<typeof reconciliationAlerts.$inferSelect | undefined> {
+  async findReconciliationAlertById(
+    userId: string,
+    id: string,
+  ): Promise<typeof reconciliationAlerts.$inferSelect | undefined> {
     return selectOne(
       db,
       reconciliationAlerts,
-      and(eq(reconciliationAlerts.id, id), eq(reconciliationAlerts.userId, userId))
+      and(eq(reconciliationAlerts.id, id), eq(reconciliationAlerts.userId, userId)),
     );
   }
 
   async updateReconciliationAlert(
     id: string,
-    data: Partial<typeof reconciliationAlerts.$inferInsert>
+    data: Partial<typeof reconciliationAlerts.$inferInsert>,
   ): Promise<void> {
     await typedUpdate(db, reconciliationAlerts, data, eq(reconciliationAlerts.id, id));
   }

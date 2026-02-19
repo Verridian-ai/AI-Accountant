@@ -1,12 +1,10 @@
 import { db, transactions, transactionHistory } from '../schema.js';
 import { eq, and, desc, gte, lte, like, sql, type SQL } from 'drizzle-orm';
+import { insert, update as typedUpdate, deleteRows } from '../db/typed-queries.js';
 import {
-  selectOne,
-  selectMany,
-  insert,
-  update as typedUpdate,
-  deleteRows,
-} from '../db/typed-queries.js';
+  transactions_findById,
+  transactions_findByStatementId,
+} from '../db/prepared-statements.js';
 
 export interface TransactionFilters {
   limit?: number;
@@ -99,11 +97,8 @@ export class TransactionRepository {
     userId: string,
     transactionId: string,
   ): Promise<typeof transactions.$inferSelect | undefined> {
-    return selectOne(
-      db,
-      transactions,
-      and(eq(transactions.id, transactionId), eq(transactions.userId, userId)),
-    );
+    const rows = await transactions_findById.execute({ id: transactionId, userId });
+    return rows[0];
   }
 
   async update(
@@ -173,7 +168,7 @@ export class TransactionRepository {
   }
 
   async findByStatementId(statementId: string): Promise<Array<typeof transactions.$inferSelect>> {
-    return selectMany(db, transactions, eq(transactions.statementId, statementId));
+    return transactions_findByStatementId.execute({ statementId });
   }
 
   /**

@@ -2,7 +2,12 @@ import { db } from '../schema.js';
 import { users, userSettings } from '../schema.js';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
-import { selectOne, insert, update as typedUpdate } from '../db/typed-queries.js';
+import { insert, update as typedUpdate } from '../db/typed-queries.js';
+import {
+  users_getById,
+  users_findByUsername,
+  userSettings_getByUserId,
+} from '../db/prepared-statements.js';
 
 /**
  * Repository for Users
@@ -13,16 +18,16 @@ export class UserRepository {
    * Find a user by username.
    */
   async findByUsername(username: string): Promise<typeof users.$inferSelect | null> {
-    const result = await selectOne(db, users, eq(users.username, username));
-    return result || null;
+    const rows = await users_findByUsername.execute({ username });
+    return rows[0] || null;
   }
 
   /**
    * Find a user by ID.
    */
   async getById(id: string): Promise<typeof users.$inferSelect | null> {
-    const result = await selectOne(db, users, eq(users.id, id));
-    return result || null;
+    const rows = await users_getById.execute({ id });
+    return rows[0] || null;
   }
 
   /**
@@ -49,8 +54,8 @@ export class UserRepository {
    * Get user settings.
    */
   async getSettings(userId: string): Promise<typeof userSettings.$inferSelect | null> {
-    const result = await selectOne(db, userSettings, eq(userSettings.userId, userId));
-    return result || null;
+    const rows = await userSettings_getByUserId.execute({ userId });
+    return rows[0] || null;
   }
 
   /**

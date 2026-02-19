@@ -134,8 +134,8 @@ export async function computeAndSaveRollup(
   const successfulParses = metrics.filter(
     (m: { parseErrorCount: number | null }) => m.parseErrorCount === 0,
   ).length;
-  const failedParses = totalParseAttempts - successfulParses;
-  const totalTransactionsParsed = metrics.reduce(
+  const _failedParses = totalParseAttempts - successfulParses;
+  const _totalTransactionsParsed = metrics.reduce(
     (s: number, m: { transactionsParsed: number | null }) => s + (m.transactionsParsed || 0),
     0,
   );
@@ -144,10 +144,10 @@ export async function computeAndSaveRollup(
     .map((m: { totalDurationMs: number }) => m.totalDurationMs)
     .sort((a: number, b: number) => a - b);
   const avgDurationMs = durations.reduce((a: number, b: number) => a + b, 0) / durations.length;
-  const minDurationMs = durations[0];
-  const maxDurationMs = durations[durations.length - 1];
-  const p50DurationMs = percentile(durations, 50);
-  const p95DurationMs = percentile(durations, 95);
+  const _minDurationMs = durations[0];
+  const _maxDurationMs = durations[durations.length - 1];
+  const _p50DurationMs = percentile(durations, 50);
+  const _p95DurationMs = percentile(durations, 95);
 
   const confidenceScores = metrics
     .filter((m: { detectionConfidence: number | null }) => m.detectionConfidence !== null)
@@ -165,15 +165,15 @@ export async function computeAndSaveRollup(
     (s: number, m: { lowConfidenceCount: number | null }) => s + (m.lowConfidenceCount || 0),
     0,
   );
-  const totalConfidenceItems = totalHighConfidence + totalLowConfidence;
+  const _totalConfidenceItems = totalHighConfidence + totalLowConfidence;
 
-  const textExtractionCount = metrics.filter(
+  const _textExtractionCount = metrics.filter(
     (m: { extractionMethod: string | null }) => m.extractionMethod === 'text',
   ).length;
   const visionExtractionCount = metrics.filter(
     (m: { extractionMethod: string | null }) => m.extractionMethod === 'vision',
   ).length;
-  const hybridExtractionCount = metrics.filter(
+  const _hybridExtractionCount = metrics.filter(
     (m: { extractionMethod: string | null }) => m.extractionMethod === 'hybrid',
   ).length;
 
