@@ -3,6 +3,8 @@ import { FileText, Target, ShieldCheck, Clock, RefreshCw } from 'lucide-react';
 import { matchesApi } from '@/api';
 import type { MatchStats } from '@/api';
 
+const LOADING_STAT_CARDS = [0, 1, 2, 3] as const;
+
 export function MatchStatistics() {
   const [stats, setStats] = useState<MatchStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export function MatchStatistics() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
+          {LOADING_STAT_CARDS.map((i) => (
             <div key={i} className="neu-raised rounded-xl p-5 animate-pulse">
               <div className="h-4 w-24 bg-zinc-700 rounded mb-3" />
               <div className="h-8 w-16 bg-zinc-700 rounded" />
@@ -59,7 +61,9 @@ export function MatchStatistics() {
         ? 'text-red-400'
         : 'text-amber-400';
   const maxVendorCount =
-    stats.topVendors.length > 0 ? Math.max(...stats.topVendors.map((v: { name: string; count: number }) => v.count)) : 1;
+    stats.topVendors.length > 0
+      ? Math.max(...stats.topVendors.map((v: { name: string; count: number }) => v.count))
+      : 1;
 
   return (
     <div className="space-y-6">
@@ -148,23 +152,25 @@ export function MatchStatistics() {
             <p className="text-zinc-500 text-sm">No vendor data yet</p>
           ) : (
             <div className="space-y-3">
-              {stats.topVendors.slice(0, 10).map((vendor: { name: string; count: number }, i: number) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-xs text-zinc-500 w-5 text-right">{i + 1}.</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-zinc-200 truncate">{vendor.name}</span>
-                      <span className="text-xs text-zinc-400 font-mono ml-2">{vendor.count}</span>
-                    </div>
-                    <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-[#FFCC00]/60 to-[#FFCC00] transition-all duration-500"
-                        style={{ width: `${(vendor.count / maxVendorCount) * 100}%` }}
-                      />
+              {stats.topVendors
+                .slice(0, 10)
+                .map((vendor: { name: string; count: number }, i: number) => (
+                  <div key={`${vendor.name}-${i}`} className="flex items-center gap-3">
+                    <span className="text-xs text-zinc-500 w-5 text-right">{i + 1}.</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-zinc-200 truncate">{vendor.name}</span>
+                        <span className="text-xs text-zinc-400 font-mono ml-2">{vendor.count}</span>
+                      </div>
+                      <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-[#FFCC00]/60 to-[#FFCC00] transition-all duration-500"
+                          style={{ width: `${(vendor.count / maxVendorCount) * 100}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>
@@ -189,30 +195,41 @@ export function MatchStatistics() {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {stats.ruleEffectiveness
-                    .sort((a: { matchCount: number }, b: { matchCount: number }) => b.matchCount - a.matchCount)
-                    .map((rule: { ruleId: string; name: string; matchCount: number; lastMatched?: string }) => {
-                      const isRecent =
-                        rule.lastMatched &&
-                        Date.now() - new Date(rule.lastMatched).getTime() < 7 * 24 * 60 * 60 * 1000;
-                      return (
-                        <tr key={rule.ruleId} className="hover:bg-white/5">
-                          <td className="py-2.5 text-zinc-200">{rule.name}</td>
-                          <td className="py-2.5 text-right font-mono text-zinc-300">
-                            {rule.matchCount}
-                          </td>
-                          <td className="py-2.5 text-right text-zinc-400 text-xs">
-                            {rule.lastMatched
-                              ? new Date(rule.lastMatched).toLocaleDateString()
-                              : 'Never'}
-                          </td>
-                          <td className="py-2.5 text-center">
-                            <span
-                              className={`inline-block w-2 h-2 rounded-full ${isRecent ? 'bg-emerald-400' : 'bg-zinc-600'}`}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    .sort(
+                      (a: { matchCount: number }, b: { matchCount: number }) =>
+                        b.matchCount - a.matchCount,
+                    )
+                    .map(
+                      (rule: {
+                        ruleId: string;
+                        name: string;
+                        matchCount: number;
+                        lastMatched?: string;
+                      }) => {
+                        const isRecent =
+                          rule.lastMatched &&
+                          Date.now() - new Date(rule.lastMatched).getTime() <
+                            7 * 24 * 60 * 60 * 1000;
+                        return (
+                          <tr key={rule.ruleId} className="hover:bg-white/5">
+                            <td className="py-2.5 text-zinc-200">{rule.name}</td>
+                            <td className="py-2.5 text-right font-mono text-zinc-300">
+                              {rule.matchCount}
+                            </td>
+                            <td className="py-2.5 text-right text-zinc-400 text-xs">
+                              {rule.lastMatched
+                                ? new Date(rule.lastMatched).toLocaleDateString()
+                                : 'Never'}
+                            </td>
+                            <td className="py-2.5 text-center">
+                              <span
+                                className={`inline-block w-2 h-2 rounded-full ${isRecent ? 'bg-emerald-400' : 'bg-zinc-600'}`}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      },
+                    )}
                 </tbody>
               </table>
             </div>

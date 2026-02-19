@@ -32,8 +32,9 @@ export function AutoMatchView() {
       if (result) {
         setResult({
           ...result,
-          details: result.details.map((d: { matchId?: string; documentId: string; status: string; topScore?: number }) =>
-            d.matchId === matchId ? { ...d, status: 'matched' } : d,
+          details: result.details.map(
+            (d: { matchId?: string; documentId: string; status: string; topScore?: number }) =>
+              d.matchId === matchId ? { ...d, status: 'matched' } : d,
           ),
           matched: result.matched + 1,
           suggested: result.suggested - 1,
@@ -50,8 +51,9 @@ export function AutoMatchView() {
       if (result) {
         setResult({
           ...result,
-          details: result.details.map((d: { matchId?: string; documentId: string; status: string; topScore?: number }) =>
-            d.matchId === matchId ? { ...d, status: 'unmatched' } : d,
+          details: result.details.map(
+            (d: { matchId?: string; documentId: string; status: string; topScore?: number }) =>
+              d.matchId === matchId ? { ...d, status: 'unmatched' } : d,
           ),
           suggested: result.suggested - 1,
           unmatched: result.unmatched + 1,
@@ -97,12 +99,15 @@ export function AutoMatchView() {
           <div className="flex-1 space-y-4">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs text-zinc-400">Auto-Confirm Threshold</label>
+                <label htmlFor="amv-auto-confirm-threshold" className="text-xs text-zinc-400">
+                  Auto-Confirm Threshold
+                </label>
                 <span className="text-xs font-mono text-[#FFCC00]">
                   {(autoConfirmThreshold * 100).toFixed(0)}%
                 </span>
               </div>
               <input
+                id="amv-auto-confirm-threshold"
                 type="range"
                 min="0.50"
                 max="1.00"
@@ -118,12 +123,15 @@ export function AutoMatchView() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs text-zinc-400">Suggest Threshold</label>
+                <label htmlFor="amv-suggest-threshold" className="text-xs text-zinc-400">
+                  Suggest Threshold
+                </label>
                 <span className="text-xs font-mono text-amber-400">
                   {(suggestThreshold * 100).toFixed(0)}%
                 </span>
               </div>
               <input
+                id="amv-suggest-threshold"
                 type="range"
                 min="0.30"
                 max="0.95"
@@ -220,47 +228,54 @@ export function AutoMatchView() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {result.details.map((detail: { matchId?: string; documentId: string; status: string; topScore?: number }, i: number) => (
-                      <tr key={i} className="hover:bg-white/5">
-                        <td className="px-5 py-3">
-                          <span className="text-zinc-200 font-mono text-xs">
-                            {detail.documentId.slice(0, 12)}...
-                          </span>
-                        </td>
-                        <td className="px-5 py-3 text-center">{getStatusBadge(detail.status)}</td>
-                        <td className="px-5 py-3 text-right">
-                          {detail.topScore != null ? (
-                            <span
-                              className={`font-mono text-xs ${detail.topScore > 0.85 ? 'text-emerald-400' : detail.topScore > 0.6 ? 'text-amber-400' : 'text-zinc-400'}`}
-                            >
-                              {(detail.topScore * 100).toFixed(0)}%
+                    {result.details.map(
+                      (detail: {
+                        matchId?: string;
+                        documentId: string;
+                        status: string;
+                        topScore?: number;
+                      }) => (
+                        <tr key={detail.documentId} className="hover:bg-white/5">
+                          <td className="px-5 py-3">
+                            <span className="text-zinc-200 font-mono text-xs">
+                              {detail.documentId.slice(0, 12)}...
                             </span>
-                          ) : (
-                            <span className="text-zinc-600 text-xs">-</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-3 text-right">
-                          {detail.status === 'suggested' && detail.matchId && (
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => handleConfirm(detail.matchId!)}
-                                className="p-1.5 rounded-lg text-emerald-400/70 hover:text-emerald-400 hover:bg-emerald-400/10 transition-colors"
-                                title="Confirm match"
+                          </td>
+                          <td className="px-5 py-3 text-center">{getStatusBadge(detail.status)}</td>
+                          <td className="px-5 py-3 text-right">
+                            {detail.topScore != null ? (
+                              <span
+                                className={`font-mono text-xs ${detail.topScore > 0.85 ? 'text-emerald-400' : detail.topScore > 0.6 ? 'text-amber-400' : 'text-zinc-400'}`}
                               >
-                                <CheckCircle2 className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleReject(detail.matchId!)}
-                                className="p-1.5 rounded-lg text-red-400/70 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                                title="Reject match"
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                                {(detail.topScore * 100).toFixed(0)}%
+                              </span>
+                            ) : (
+                              <span className="text-zinc-600 text-xs">-</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            {detail.status === 'suggested' && detail.matchId && (
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => handleConfirm(detail.matchId!)}
+                                  className="p-1.5 rounded-lg text-emerald-400/70 hover:text-emerald-400 hover:bg-emerald-400/10 transition-colors"
+                                  title="Confirm match"
+                                >
+                                  <CheckCircle2 className="h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleReject(detail.matchId!)}
+                                  className="p-1.5 rounded-lg text-red-400/70 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                  title="Reject match"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ),
+                    )}
                   </tbody>
                 </table>
               </div>

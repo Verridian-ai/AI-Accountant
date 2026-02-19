@@ -3,6 +3,8 @@ import { Settings, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { matchesApi } from '@/api';
 import type { PaymentMatchRule } from '@/api';
 
+const LOADING_RULE_ROWS = [0, 1, 2] as const;
+
 const RULE_TYPES = [
   { value: 'exact_amount', label: 'Exact Amount' },
   { value: 'amount_range', label: 'Amount Range' },
@@ -140,8 +142,11 @@ export function RuleManager() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Rule Name</label>
+              <label htmlFor="rm-rule-name" className="block text-xs text-zinc-400 mb-1">
+                Rule Name
+              </label>
               <input
+                id="rm-rule-name"
                 type="text"
                 value={form.name}
                 onChange={(e) => updateField('name', e.target.value)}
@@ -150,8 +155,11 @@ export function RuleManager() {
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Rule Type</label>
+              <label htmlFor="rm-rule-type" className="block text-xs text-zinc-400 mb-1">
+                Rule Type
+              </label>
               <select
+                id="rm-rule-type"
                 value={form.ruleType}
                 onChange={(e) =>
                   updateField('ruleType', e.target.value as PaymentMatchRule['ruleType'])
@@ -169,10 +177,11 @@ export function RuleManager() {
 
           {showVendor && (
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">
+              <label htmlFor="rm-vendor-pattern" className="block text-xs text-zinc-400 mb-1">
                 Vendor Pattern (supports wildcards *)
               </label>
               <input
+                id="rm-vendor-pattern"
                 type="text"
                 value={form.vendorPattern}
                 onChange={(e) => updateField('vendorPattern', e.target.value)}
@@ -185,8 +194,11 @@ export function RuleManager() {
           {showExact && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Exact Amount ($)</label>
+                <label htmlFor="rm-amount-exact" className="block text-xs text-zinc-400 mb-1">
+                  Exact Amount ($)
+                </label>
                 <input
+                  id="rm-amount-exact"
                   type="number"
                   step="0.01"
                   value={form.amountExact}
@@ -196,8 +208,11 @@ export function RuleManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Amount Tolerance ($)</label>
+                <label htmlFor="rm-amount-tolerance" className="block text-xs text-zinc-400 mb-1">
+                  Amount Tolerance ($)
+                </label>
                 <input
+                  id="rm-amount-tolerance"
                   type="number"
                   step="0.01"
                   value={form.amountTolerance}
@@ -212,8 +227,11 @@ export function RuleManager() {
           {showRange && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Min Amount ($)</label>
+                <label htmlFor="rm-amount-min" className="block text-xs text-zinc-400 mb-1">
+                  Min Amount ($)
+                </label>
                 <input
+                  id="rm-amount-min"
                   type="number"
                   step="0.01"
                   value={form.amountMin}
@@ -223,8 +241,11 @@ export function RuleManager() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">Max Amount ($)</label>
+                <label htmlFor="rm-amount-max" className="block text-xs text-zinc-400 mb-1">
+                  Max Amount ($)
+                </label>
                 <input
+                  id="rm-amount-max"
                   type="number"
                   step="0.01"
                   value={form.amountMax}
@@ -238,8 +259,11 @@ export function RuleManager() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Date Tolerance (days)</label>
+              <label htmlFor="rm-date-tolerance" className="block text-xs text-zinc-400 mb-1">
+                Date Tolerance (days)
+              </label>
               <input
+                id="rm-date-tolerance"
                 type="number"
                 min="0"
                 max="90"
@@ -249,8 +273,11 @@ export function RuleManager() {
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Category Filter</label>
+              <label htmlFor="rm-category-filter" className="block text-xs text-zinc-400 mb-1">
+                Category Filter
+              </label>
               <input
+                id="rm-category-filter"
                 type="text"
                 value={form.categoryFilter}
                 onChange={(e) => updateField('categoryFilter', e.target.value)}
@@ -259,8 +286,11 @@ export function RuleManager() {
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-400 mb-1">Priority (lower = higher)</label>
+              <label htmlFor="rm-priority" className="block text-xs text-zinc-400 mb-1">
+                Priority (lower = higher)
+              </label>
               <input
+                id="rm-priority"
                 type="number"
                 min="1"
                 max="100"
@@ -295,7 +325,7 @@ export function RuleManager() {
       {/* Rules List */}
       {loading ? (
         <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
+          {LOADING_RULE_ROWS.map((i) => (
             <div key={i} className="neu-raised rounded-xl p-5 animate-pulse">
               <div className="h-5 w-48 bg-zinc-700 rounded mb-2" />
               <div className="h-3 w-32 bg-zinc-700 rounded" />

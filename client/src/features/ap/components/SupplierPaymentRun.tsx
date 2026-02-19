@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Banknote,
-  Calendar,
   CheckSquare,
   Square,
   Play,
   CheckCircle2,
-  Clock,
   Loader2,
   DollarSign,
 } from 'lucide-react';
@@ -15,6 +13,8 @@ import { apApi } from '../../../api';
 import type { Bill } from '../../../api';
 
 type PaymentRunStatus = 'selecting' | 'draft' | 'processing' | 'completed';
+
+const LOADING_SKELETON_ROWS = [0, 1, 2, 3, 4] as const;
 
 interface PaymentRunDetail {
   id: string;
@@ -149,7 +149,7 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
       <div className="neu-raised rounded-2xl p-8 animate-pulse">
         <div className="h-6 w-48 bg-white/5 rounded mb-6" />
         <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {LOADING_SKELETON_ROWS.map((i) => (
             <div key={i} className="h-12 w-full bg-white/5 rounded" />
           ))}
         </div>
@@ -324,8 +324,14 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
       <div className="neu-raised rounded-2xl p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Payment Date</label>
+            <label
+              htmlFor="spr-payment-date"
+              className="block text-xs font-medium text-zinc-400 mb-1.5"
+            >
+              Payment Date
+            </label>
             <input
+              id="spr-payment-date"
               type="date"
               value={paymentDate}
               onChange={(e) => setPaymentDate(e.target.value)}
@@ -333,10 +339,14 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+            <label
+              htmlFor="spr-supplier-filter"
+              className="block text-xs font-medium text-zinc-400 mb-1.5"
+            >
               Supplier Filter
             </label>
             <input
+              id="spr-supplier-filter"
               type="text"
               value={supplierFilter}
               onChange={(e) => setSupplierFilter(e.target.value)}
@@ -345,8 +355,14 @@ export function SupplierPaymentRun({ onBack, onComplete }: SupplierPaymentRunPro
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Bank Reference</label>
+            <label
+              htmlFor="spr-bank-reference"
+              className="block text-xs font-medium text-zinc-400 mb-1.5"
+            >
+              Bank Reference
+            </label>
             <input
+              id="spr-bank-reference"
               type="text"
               value={bankReference}
               onChange={(e) => setBankReference(e.target.value)}
