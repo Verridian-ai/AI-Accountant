@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, doublePrecision } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 import { transactions } from './transactions.js';
 
@@ -11,7 +11,7 @@ import { transactions } from './transactions.js';
 // BUSINESS PROFILES
 // ============================================================================
 
-export const businessProfiles = sqliteTable('business_profiles', {
+export const businessProfiles = pgTable('business_profiles', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -21,7 +21,7 @@ export const businessProfiles = sqliteTable('business_profiles', {
   entityType: text('entity_type').notNull().default('sole_trader'),
   industry: text('industry'),
   basFrequency: text('bas_frequency').default('quarterly'),
-  gstRegistered: integer('gst_registered', { mode: 'boolean' }).default(false),
+  gstRegistered: boolean('gst_registered').default(false),
   financialYearEnd: text('financial_year_end').default('06-30'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
@@ -31,7 +31,7 @@ export const businessProfiles = sqliteTable('business_profiles', {
 // TAX & BAS
 // ============================================================================
 
-export const basPeriods = sqliteTable('bas_periods', {
+export const basPeriods = pgTable('bas_periods', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -51,7 +51,7 @@ export const basPeriods = sqliteTable('bas_periods', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const basCalculations = sqliteTable('bas_calculations', {
+export const basCalculations = pgTable('bas_calculations', {
   id: text('id').primaryKey(),
   basPeriodId: text('bas_period_id')
     .notNull()
@@ -78,25 +78,25 @@ export const basCalculations = sqliteTable('bas_calculations', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const taxCodes = sqliteTable('tax_codes', {
+export const taxCodes = pgTable('tax_codes', {
   id: text('id').primaryKey(),
   code: text('code').notNull().unique(),
   description: text('description').notNull(),
-  rate: real('rate').notNull(),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  rate: doublePrecision('rate').notNull(),
+  isActive: boolean('is_active').default(true),
 });
 
-export const taxBrackets = sqliteTable('tax_brackets', {
+export const taxBrackets = pgTable('tax_brackets', {
   id: text('id').primaryKey(),
   taxYear: text('tax_year').notNull(),
   financialYear: text('financial_year'),
   minIncome: integer('min_income').notNull(),
   maxIncome: integer('max_income'),
   baseTax: integer('base_tax').notNull().default(0),
-  rate: real('rate').notNull(),
+  rate: doublePrecision('rate').notNull(),
 });
 
-export const deductions = sqliteTable('deductions', {
+export const deductions = pgTable('deductions', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -109,18 +109,18 @@ export const deductions = sqliteTable('deductions', {
   description: text('description').notNull(),
   amount: integer('amount').notNull(),
   transactionId: text('transaction_id').references(() => transactions.id),
-  isVerified: integer('is_verified', { mode: 'boolean' }).default(false),
+  isVerified: boolean('is_verified').default(false),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const cgtAssets = sqliteTable('cgt_assets', {
+export const cgtAssets = pgTable('cgt_assets', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   assetName: text('asset_name').notNull(),
   assetType: text('asset_type').notNull(),
-  quantity: real('quantity').default(1),
+  quantity: doublePrecision('quantity').default(1),
   unitCost: integer('unit_cost'),
   acquisitionDate: text('acquisition_date').notNull(),
   acquisitionCost: integer('acquisition_cost').notNull(),
@@ -130,7 +130,7 @@ export const cgtAssets = sqliteTable('cgt_assets', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const cgtEvents = sqliteTable('cgt_events', {
+export const cgtEvents = pgTable('cgt_events', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -149,11 +149,11 @@ export const cgtEvents = sqliteTable('cgt_events', {
   capitalGainGross: integer('capital_gain_gross'),
   capitalGainNet: integer('capital_gain_net'),
   capitalLoss: integer('capital_loss'),
-  discountApplied: integer('discount_applied', { mode: 'boolean' }).default(false),
+  discountApplied: boolean('discount_applied').default(false),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const depreciableAssets = sqliteTable('depreciable_assets', {
+export const depreciableAssets = pgTable('depreciable_assets', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -169,13 +169,13 @@ export const depreciableAssets = sqliteTable('depreciable_assets', {
   openingWrittenDownValue: integer('opening_written_down_value'),
   currentValue: integer('current_value').notNull(),
   currentWrittenDownValue: integer('current_written_down_value'),
-  businessUsePercentage: real('business_use_percentage').default(100),
-  isInstantWriteOff: integer('is_instant_write_off', { mode: 'boolean' }).default(false),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  businessUsePercentage: doublePrecision('business_use_percentage').default(100),
+  isInstantWriteOff: boolean('is_instant_write_off').default(false),
+  isActive: boolean('is_active').default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const depreciationSchedule = sqliteTable('depreciation_schedule', {
+export const depreciationSchedule = pgTable('depreciation_schedule', {
   id: text('id').primaryKey(),
   assetId: text('asset_id')
     .notNull()
@@ -187,7 +187,7 @@ export const depreciationSchedule = sqliteTable('depreciation_schedule', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const taxYearSummary = sqliteTable('tax_year_summary', {
+export const taxYearSummary = pgTable('tax_year_summary', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -208,7 +208,7 @@ export const taxYearSummary = sqliteTable('tax_year_summary', {
 // TAX OFFSETS & CAPITAL LOSSES
 // ============================================================================
 
-export const taxOffsets = sqliteTable('tax_offsets', {
+export const taxOffsets = pgTable('tax_offsets', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -220,7 +220,7 @@ export const taxOffsets = sqliteTable('tax_offsets', {
   createdAt: text('created_at').notNull(),
 });
 
-export const capitalLosses = sqliteTable('capital_losses', {
+export const capitalLosses = pgTable('capital_losses', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -231,7 +231,7 @@ export const capitalLosses = sqliteTable('capital_losses', {
   disposalDate: text('disposal_date'),
   lossAmount: integer('loss_amount').notNull(),
   appliedAmount: integer('applied_amount'),
-  carriedForward: integer('carried_forward', { mode: 'boolean' }),
+  carriedForward: boolean('carried_forward'),
   createdAt: text('created_at').notNull(),
 });
 

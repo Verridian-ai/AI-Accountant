@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer } from 'drizzle-orm/pg-core';
 
 // IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
 // The wrapPgDb() proxy stores the literal string 'CURRENT_TIMESTAMP' in PostgreSQL
@@ -9,7 +9,7 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 // USERS & AUTHENTICATION
 // ============================================================================
 
-export const users = sqliteTable('users', {
+export const users = pgTable('users', {
   id: text('id').primaryKey(),
   username: text('username').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
@@ -17,7 +17,7 @@ export const users = sqliteTable('users', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const userSettings = sqliteTable('user_settings', {
+export const userSettings = pgTable('user_settings', {
   userId: text('user_id')
     .primaryKey()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -36,7 +36,7 @@ export const userSettings = sqliteTable('user_settings', {
 // AUDIT & SECURITY
 // ============================================================================
 
-export const auditLog = sqliteTable('audit_log', {
+export const auditLog = pgTable('audit_log', {
   id: text('id').primaryKey(),
   userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
   action: text('action').notNull(),
@@ -54,7 +54,7 @@ export const auditLog = sqliteTable('audit_log', {
   timestamp: text('timestamp').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const sessions = sqliteTable('sessions', {
+export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()

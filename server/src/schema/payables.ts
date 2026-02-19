@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, doublePrecision, index } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 
 // IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
@@ -10,7 +10,7 @@ import { users } from './core.js';
 // ACCOUNTS PAYABLE & PURCHASE ORDERS (Wave 10)
 // ============================================================================
 
-export const suppliers = sqliteTable('suppliers', {
+export const suppliers = pgTable('suppliers', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -23,12 +23,12 @@ export const suppliers = sqliteTable('suppliers', {
   phone: text('phone'),
   address: text('address'),
   paymentTerms: text('payment_terms'),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  isActive: boolean('is_active').default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   tenantId: text('tenant_id'),
 });
 
-export const bills = sqliteTable('bills', {
+export const bills = pgTable('bills', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -50,7 +50,7 @@ export const bills = sqliteTable('bills', {
   tenantId: text('tenant_id'),
 });
 
-export const billLines = sqliteTable(
+export const billLines = pgTable(
   'bill_lines',
   {
     id: text('id').primaryKey(),
@@ -58,7 +58,7 @@ export const billLines = sqliteTable(
       .notNull()
       .references(() => bills.id, { onDelete: 'cascade' }),
     description: text('description').notNull(),
-    quantity: real('quantity').notNull().default(1),
+    quantity: doublePrecision('quantity').notNull().default(1),
     unitPrice: integer('unit_price').notNull().default(0),
     amount: integer('amount').notNull().default(0),
     taxCode: text('tax_code'),
@@ -69,7 +69,7 @@ export const billLines = sqliteTable(
   }),
 );
 
-export const billPayments = sqliteTable('bill_payments', {
+export const billPayments = pgTable('bill_payments', {
   id: text('id').primaryKey(),
   billId: text('bill_id')
     .notNull()
@@ -83,7 +83,7 @@ export const billPayments = sqliteTable('bill_payments', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const purchaseOrders = sqliteTable('purchase_orders', {
+export const purchaseOrders = pgTable('purchase_orders', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -103,20 +103,20 @@ export const purchaseOrders = sqliteTable('purchase_orders', {
   updatedAt: text('updated_at'),
 });
 
-export const poLines = sqliteTable('po_lines', {
+export const poLines = pgTable('po_lines', {
   id: text('id').primaryKey(),
   purchaseOrderId: text('po_id')
     .notNull()
     .references(() => purchaseOrders.id, { onDelete: 'cascade' }),
   description: text('description').notNull(),
-  quantity: real('quantity').notNull().default(1),
+  quantity: doublePrecision('quantity').notNull().default(1),
   unitPrice: integer('unit_price').notNull().default(0),
   amount: integer('amount').notNull().default(0),
-  quantityReceived: real('quantity_received').default(0),
+  quantityReceived: doublePrecision('quantity_received').default(0),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const poReceipts = sqliteTable('po_receipts', {
+export const poReceipts = pgTable('po_receipts', {
   id: text('id').primaryKey(),
   purchaseOrderId: text('po_id')
     .notNull()
@@ -127,7 +127,7 @@ export const poReceipts = sqliteTable('po_receipts', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const poReceiptLines = sqliteTable('po_receipt_lines', {
+export const poReceiptLines = pgTable('po_receipt_lines', {
   id: text('id').primaryKey(),
   receiptId: text('receipt_id')
     .notNull()
@@ -135,11 +135,11 @@ export const poReceiptLines = sqliteTable('po_receipt_lines', {
   poLineId: text('po_line_id')
     .notNull()
     .references(() => poLines.id),
-  quantityReceived: real('quantity_received').notNull(),
+  quantityReceived: doublePrecision('quantity_received').notNull(),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const supplierPaymentRuns = sqliteTable('supplier_payment_runs', {
+export const supplierPaymentRuns = pgTable('supplier_payment_runs', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -150,7 +150,7 @@ export const supplierPaymentRuns = sqliteTable('supplier_payment_runs', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const supplierPaymentRunItems = sqliteTable('supplier_payment_run_items', {
+export const supplierPaymentRunItems = pgTable('supplier_payment_run_items', {
   id: text('id').primaryKey(),
   paymentRunId: text('run_id')
     .notNull()

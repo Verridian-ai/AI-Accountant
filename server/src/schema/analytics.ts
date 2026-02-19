@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, doublePrecision } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 import { accounts } from './banking.js';
 import { transactions } from './transactions.js';
@@ -12,7 +12,7 @@ import { transactions } from './transactions.js';
 // PREDICTIVE ANALYTICS & COMPLIANCE MONITORING (Wave 15)
 // ============================================================================
 
-export const cashFlowForecasts = sqliteTable('cash_flow_forecasts', {
+export const cashFlowForecasts = pgTable('cash_flow_forecasts', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -23,15 +23,15 @@ export const cashFlowForecasts = sqliteTable('cash_flow_forecasts', {
   startDate: text('start_date').notNull(),
   endDate: text('end_date').notNull(),
   granularity: text('granularity').notNull().default('monthly'),
-  accuracyScore: real('accuracy_score'),
-  confidenceLevel: real('confidence_level').default(0.85),
+  accuracyScore: doublePrecision('accuracy_score'),
+  confidenceLevel: doublePrecision('confidence_level').default(0.85),
   parameters: text('parameters'),
   status: text('status').notNull().default('draft'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const cashFlowForecastPeriods = sqliteTable('cash_flow_forecast_periods', {
+export const cashFlowForecastPeriods = pgTable('cash_flow_forecast_periods', {
   id: text('id').primaryKey(),
   forecastId: text('forecast_id')
     .notNull()
@@ -45,14 +45,14 @@ export const cashFlowForecastPeriods = sqliteTable('cash_flow_forecast_periods',
   actualOutflow: integer('actual_outflow'),
   actualNet: integer('actual_net'),
   variance: integer('variance'),
-  variancePct: real('variance_pct'),
+  variancePct: doublePrecision('variance_pct'),
   confidenceLower: integer('confidence_lower'),
   confidenceUpper: integer('confidence_upper'),
   breakdown: text('breakdown'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const anomalyAlerts = sqliteTable('anomaly_alerts', {
+export const anomalyAlerts = pgTable('anomaly_alerts', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -70,7 +70,7 @@ export const anomalyAlerts = sqliteTable('anomaly_alerts', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const complianceChecks = sqliteTable('compliance_checks', {
+export const complianceChecks = pgTable('compliance_checks', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -89,7 +89,7 @@ export const complianceChecks = sqliteTable('compliance_checks', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const complianceSchedules = sqliteTable('compliance_schedules', {
+export const complianceSchedules = pgTable('compliance_schedules', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -108,7 +108,7 @@ export const complianceSchedules = sqliteTable('compliance_schedules', {
 // TEMPORAL INTELLIGENCE (Wave 17)
 // ============================================================================
 
-export const temporalQueries = sqliteTable('temporal_queries', {
+export const temporalQueries = pgTable('temporal_queries', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
   name: text('name').notNull(),
@@ -126,12 +126,12 @@ export const temporalQueries = sqliteTable('temporal_queries', {
   executionCount: integer('execution_count').notNull().default(0),
   lastExecutedAt: text('last_executed_at'),
   averageExecutionMs: integer('average_execution_ms'),
-  isSaved: integer('is_saved', { mode: 'boolean' }).notNull().default(false),
+  isSaved: boolean('is_saved').notNull().default(false),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const crossModuleInsights = sqliteTable('cross_module_insights', {
+export const crossModuleInsights = pgTable('cross_module_insights', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
   insightType: text('insight_type').notNull(),
@@ -142,7 +142,7 @@ export const crossModuleInsights = sqliteTable('cross_module_insights', {
   relatedEntities: text('related_entities').notNull(),
   timeRangeStart: text('time_range_start'),
   timeRangeEnd: text('time_range_end'),
-  confidence: real('confidence').notNull().default(0.5),
+  confidence: doublePrecision('confidence').notNull().default(0.5),
   evidence: text('evidence').notNull(),
   recommendedAction: text('recommended_action'),
   status: text('status').notNull().default('new'),
@@ -151,7 +151,7 @@ export const crossModuleInsights = sqliteTable('cross_module_insights', {
   expiresAt: text('expires_at'),
 });
 
-export const intelligenceSubscriptions = sqliteTable('intelligence_subscriptions', {
+export const intelligenceSubscriptions = pgTable('intelligence_subscriptions', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
   name: text('name').notNull(),
@@ -159,7 +159,7 @@ export const intelligenceSubscriptions = sqliteTable('intelligence_subscriptions
   filterCriteria: text('filter_criteria').notNull(),
   notificationChannel: text('notification_channel').notNull().default('in_app'),
   notificationConfig: text('notification_config'),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  isActive: boolean('is_active').notNull().default(true),
   triggerCount: integer('trigger_count').notNull().default(0),
   lastTriggeredAt: text('last_triggered_at'),
   cooldownMinutes: integer('cooldown_minutes').default(60),
@@ -167,14 +167,14 @@ export const intelligenceSubscriptions = sqliteTable('intelligence_subscriptions
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const moduleConnections = sqliteTable('module_connections', {
+export const moduleConnections = pgTable('module_connections', {
   id: text('id').primaryKey(),
   sourceModule: text('source_module').notNull(),
   targetModule: text('target_module').notNull(),
   connectionType: text('connection_type').notNull(),
   description: text('description').notNull(),
-  strength: real('strength').notNull().default(0.5),
-  isBidirectional: integer('is_bidirectional', { mode: 'boolean' }).notNull().default(false),
+  strength: doublePrecision('strength').notNull().default(0.5),
+  isBidirectional: boolean('is_bidirectional').notNull().default(false),
   metadata: text('metadata'),
   lastActivityAt: text('last_activity_at'),
   activityCount: integer('activity_count').notNull().default(0),

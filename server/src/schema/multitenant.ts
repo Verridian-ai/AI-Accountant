@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 
 // IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
@@ -10,7 +10,7 @@ import { users } from './core.js';
 // MULTI-TENANT (Wave 23)
 // ============================================================================
 
-export const tenants = sqliteTable('tenants', {
+export const tenants = pgTable('tenants', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
@@ -22,12 +22,12 @@ export const tenants = sqliteTable('tenants', {
   financialYearEnd: text('financial_year_end').default('06-30'),
   timezone: text('timezone').default('Australia/Sydney'),
   settingsJson: text('settings_json').default('{}'),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  isActive: boolean('is_active').notNull().default(true),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const tenantMembers = sqliteTable('tenant_members', {
+export const tenantMembers = pgTable('tenant_members', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id')
     .notNull()
@@ -37,7 +37,7 @@ export const tenantMembers = sqliteTable('tenant_members', {
     .references(() => users.id, { onDelete: 'cascade' }),
   role: text('role').notNull().default('viewer'),
   displayName: text('display_name'),
-  isPrimaryContact: integer('is_primary_contact', { mode: 'boolean' }).notNull().default(false),
+  isPrimaryContact: boolean('is_primary_contact').notNull().default(false),
   invitedBy: text('invited_by').references(() => users.id),
   joinedAt: text('joined_at').default('CURRENT_TIMESTAMP'),
   lastActiveAt: text('last_active_at'),
@@ -45,7 +45,7 @@ export const tenantMembers = sqliteTable('tenant_members', {
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const tenantInvitations = sqliteTable('tenant_invitations', {
+export const tenantInvitations = pgTable('tenant_invitations', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id')
     .notNull()
@@ -62,17 +62,17 @@ export const tenantInvitations = sqliteTable('tenant_invitations', {
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const permissions = sqliteTable('permissions', {
+export const permissions = pgTable('permissions', {
   id: text('id').primaryKey(),
   name: text('name').notNull().unique(),
   description: text('description'),
   resource: text('resource').notNull(),
   action: text('action').notNull(),
-  isSystem: integer('is_system', { mode: 'boolean' }).notNull().default(false),
+  isSystem: boolean('is_system').notNull().default(false),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const rolePermissions = sqliteTable('role_permissions', {
+export const rolePermissions = pgTable('role_permissions', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id')
     .notNull()
@@ -85,7 +85,7 @@ export const rolePermissions = sqliteTable('role_permissions', {
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const subscriptionPlans = sqliteTable('subscription_plans', {
+export const subscriptionPlans = pgTable('subscription_plans', {
   id: text('id').primaryKey(),
   name: text('name').notNull().unique(),
   displayName: text('display_name').notNull(),
@@ -98,13 +98,13 @@ export const subscriptionPlans = sqliteTable('subscription_plans', {
   maxAiQueriesPerMonth: integer('max_ai_queries_per_month').notNull().default(50),
   maxStorageMb: integer('max_storage_mb').notNull().default(100),
   featuresJson: text('features_json').default('[]'),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  isActive: boolean('is_active').notNull().default(true),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const subscriptionHistory = sqliteTable('subscription_history', {
+export const subscriptionHistory = pgTable('subscription_history', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id')
     .notNull()
@@ -116,7 +116,7 @@ export const subscriptionHistory = sqliteTable('subscription_history', {
   billingCycle: text('billing_cycle').notNull().default('monthly'),
   currentPeriodStart: text('current_period_start').notNull(),
   currentPeriodEnd: text('current_period_end').notNull(),
-  cancelAtPeriodEnd: integer('cancel_at_period_end', { mode: 'boolean' }).notNull().default(false),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
   cancelledAt: text('cancelled_at'),
   trialEnd: text('trial_end'),
   paymentMethodJson: text('payment_method_json'),
@@ -127,7 +127,7 @@ export const subscriptionHistory = sqliteTable('subscription_history', {
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const apiRateLimits = sqliteTable('api_rate_limits', {
+export const apiRateLimits = pgTable('api_rate_limits', {
   id: text('id').primaryKey(),
   tenantId: text('tenant_id')
     .notNull()
@@ -137,7 +137,7 @@ export const apiRateLimits = sqliteTable('api_rate_limits', {
   requestsPerHour: integer('requests_per_hour').notNull().default(1000),
   requestsPerDay: integer('requests_per_day').notNull().default(10000),
   burstLimit: integer('burst_limit').notNull().default(10),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  isActive: boolean('is_active').notNull().default(true),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
 });

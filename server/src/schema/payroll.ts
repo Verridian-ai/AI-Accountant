@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, doublePrecision } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 
 // IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
@@ -10,7 +10,7 @@ import { users } from './core.js';
 // EMPLOYEE MANAGEMENT (Wave 4)
 // ============================================================================
 
-export const employees = sqliteTable('employees', {
+export const employees = pgTable('employees', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -30,7 +30,7 @@ export const employees = sqliteTable('employees', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const employeeBankDetails = sqliteTable('employee_bank_details', {
+export const employeeBankDetails = pgTable('employee_bank_details', {
   id: text('id').primaryKey(),
   employeeId: text('employee_id')
     .notNull()
@@ -39,11 +39,11 @@ export const employeeBankDetails = sqliteTable('employee_bank_details', {
   accountNumber: text('account_number').notNull(), // AES-256-GCM encrypted
   accountName: text('account_name').notNull(),
   splitPercentage: integer('split_percentage').notNull().default(10000),
-  isPrimary: integer('is_primary', { mode: 'boolean' }).default(true),
+  isPrimary: boolean('is_primary').default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const employeeSuperFunds = sqliteTable('employee_super_funds', {
+export const employeeSuperFunds = pgTable('employee_super_funds', {
   id: text('id').primaryKey(),
   employeeId: text('employee_id')
     .notNull()
@@ -56,21 +56,21 @@ export const employeeSuperFunds = sqliteTable('employee_super_funds', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const employeeTaxDeclarations = sqliteTable('employee_tax_declarations', {
+export const employeeTaxDeclarations = pgTable('employee_tax_declarations', {
   id: text('id').primaryKey(),
   employeeId: text('employee_id')
     .notNull()
     .references(() => employees.id, { onDelete: 'cascade' }),
-  taxFreeThreshold: integer('tax_free_threshold', { mode: 'boolean' }).default(true),
-  helpDebt: integer('help_debt', { mode: 'boolean' }).default(false),
-  sfssDebt: integer('sfss_debt', { mode: 'boolean' }).default(false),
+  taxFreeThreshold: boolean('tax_free_threshold').default(true),
+  helpDebt: boolean('help_debt').default(false),
+  sfssDebt: boolean('sfss_debt').default(false),
   claimDependents: integer('claim_dependents').default(0),
   taxOffsetEstimated: integer('tax_offset_estimated').default(0),
   effectiveDate: text('effective_date').notNull(),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const payCategories = sqliteTable('pay_categories', {
+export const payCategories = pgTable('pay_categories', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -79,14 +79,14 @@ export const payCategories = sqliteTable('pay_categories', {
   type: text('type').notNull(),
   rateType: text('rate_type').notNull().default('hourly'),
   defaultRate: integer('default_rate').default(0),
-  multiplier: real('multiplier').default(1.0),
-  isTaxable: integer('is_taxable', { mode: 'boolean' }).default(true),
-  isSuperBearing: integer('is_super_bearing', { mode: 'boolean' }).default(true),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  multiplier: doublePrecision('multiplier').default(1.0),
+  isTaxable: boolean('is_taxable').default(true),
+  isSuperBearing: boolean('is_super_bearing').default(true),
+  isActive: boolean('is_active').default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const payStructures = sqliteTable('pay_structures', {
+export const payStructures = pgTable('pay_structures', {
   id: text('id').primaryKey(),
   employeeId: text('employee_id')
     .notNull()
@@ -95,13 +95,13 @@ export const payStructures = sqliteTable('pay_structures', {
     .notNull()
     .references(() => payCategories.id),
   rate: integer('rate').notNull(),
-  hoursPerWeek: real('hours_per_week'),
+  hoursPerWeek: doublePrecision('hours_per_week'),
   annualSalary: integer('annual_salary'),
   effectiveDate: text('effective_date').notNull(),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const employeeDocuments = sqliteTable('employee_documents', {
+export const employeeDocuments = pgTable('employee_documents', {
   id: text('id').primaryKey(),
   employeeId: text('employee_id')
     .notNull()

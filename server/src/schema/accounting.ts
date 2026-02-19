@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, index } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 import { accounts, statements } from './banking.js';
 import { transactions } from './transactions.js';
@@ -12,7 +12,7 @@ import { transactions } from './transactions.js';
 // EXPORTS & REPORTS
 // ============================================================================
 
-export const exportHistory = sqliteTable('export_history', {
+export const exportHistory = pgTable('export_history', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -37,7 +37,7 @@ export const exportHistory = sqliteTable('export_history', {
 // LEDGER & ACCOUNTING
 // ============================================================================
 
-export const chartOfAccounts = sqliteTable('chart_of_accounts', {
+export const chartOfAccounts = pgTable('chart_of_accounts', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -46,8 +46,8 @@ export const chartOfAccounts = sqliteTable('chart_of_accounts', {
   name: text('name').notNull(),
   type: text('type').notNull(),
   parentId: text('parent_id'),
-  isSystem: integer('is_system', { mode: 'boolean' }).default(false),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  isSystem: boolean('is_system').default(false),
+  isActive: boolean('is_active').default(true),
   accountCode: text('account_code'),
   accountName: text('account_name'),
   accountType: text('account_type'),
@@ -57,7 +57,7 @@ export const chartOfAccounts = sqliteTable('chart_of_accounts', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const journalEntries = sqliteTable('journal_entries', {
+export const journalEntries = pgTable('journal_entries', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -66,13 +66,13 @@ export const journalEntries = sqliteTable('journal_entries', {
   reference: text('reference'),
   description: text('description').notNull(),
   transactionId: text('transaction_id').references(() => transactions.id, { onDelete: 'set null' }),
-  isAuto: integer('is_auto', { mode: 'boolean' }).default(false),
+  isAuto: boolean('is_auto').default(false),
   status: text('status').notNull().default('draft'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   postedAt: text('posted_at'),
 });
 
-export const journalEntryLines = sqliteTable(
+export const journalEntryLines = pgTable(
   'journal_entry_lines',
   {
     id: text('id').primaryKey(),
@@ -95,7 +95,7 @@ export const journalEntryLines = sqliteTable(
   }),
 );
 
-export const accountingPeriods = sqliteTable('accounting_periods', {
+export const accountingPeriods = pgTable('accounting_periods', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -108,7 +108,7 @@ export const accountingPeriods = sqliteTable('accounting_periods', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const accountBalances = sqliteTable('account_balances', {
+export const accountBalances = pgTable('account_balances', {
   id: text('id').primaryKey(),
   chartAccountId: text('chart_account_id')
     .notNull()
@@ -127,7 +127,7 @@ export const accountBalances = sqliteTable('account_balances', {
 // UPLOAD QUEUE
 // ============================================================================
 
-export const uploadQueue = sqliteTable('upload_queue', {
+export const uploadQueue = pgTable('upload_queue', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -150,7 +150,7 @@ export const uploadQueue = sqliteTable('upload_queue', {
 // OWNER EQUITY EVENTS (Wave 12)
 // ============================================================================
 
-export const ownerEquityEvents = sqliteTable('owner_equity_events', {
+export const ownerEquityEvents = pgTable('owner_equity_events', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -160,14 +160,14 @@ export const ownerEquityEvents = sqliteTable('owner_equity_events', {
   eventType: text('event_type').notNull(),
   amount: integer('amount').notNull(),
   detectedBy: text('detected_by'),
-  confirmed: integer('confirmed', { mode: 'boolean' }).default(false),
+  confirmed: boolean('confirmed').default(false),
   financialYear: text('financial_year').notNull(),
   notes: text('notes'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const economicDataCache = sqliteTable('economic_data_cache', {
+export const economicDataCache = pgTable('economic_data_cache', {
   id: text('id').primaryKey(),
   dataSource: text('data_source').notNull(),
   dataKey: text('data_key').notNull(),

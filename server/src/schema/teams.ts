@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, boolean } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 
 // IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
@@ -10,7 +10,7 @@ import { users } from './core.js';
 // TEAMS & SUBSCRIPTIONS
 // ============================================================================
 
-export const teams = sqliteTable('teams', {
+export const teams = pgTable('teams', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   ownerId: text('owner_id')
@@ -22,7 +22,7 @@ export const teams = sqliteTable('teams', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const teamMembers = sqliteTable('team_members', {
+export const teamMembers = pgTable('team_members', {
   id: text('id').primaryKey(),
   teamId: text('team_id')
     .notNull()
@@ -34,7 +34,7 @@ export const teamMembers = sqliteTable('team_members', {
   joinedAt: text('joined_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const teamInvitations = sqliteTable('team_invitations', {
+export const teamInvitations = pgTable('team_invitations', {
   id: text('id').primaryKey(),
   teamId: text('team_id')
     .notNull()
@@ -51,7 +51,7 @@ export const teamInvitations = sqliteTable('team_invitations', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const subscriptions = sqliteTable('subscriptions', {
+export const subscriptions = pgTable('subscriptions', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -62,7 +62,7 @@ export const subscriptions = sqliteTable('subscriptions', {
   status: text('status').notNull().default('active'),
   currentPeriodStart: text('current_period_start'),
   currentPeriodEnd: text('current_period_end'),
-  cancelAtPeriodEnd: integer('cancel_at_period_end', { mode: 'boolean' }).default(false),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });

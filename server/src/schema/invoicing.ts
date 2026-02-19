@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, doublePrecision, index } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 import { transactions } from './transactions.js';
 
@@ -11,7 +11,7 @@ import { transactions } from './transactions.js';
 // CUSTOMER MANAGEMENT & INVOICING (Wave 7)
 // ============================================================================
 
-export const customers = sqliteTable('customers', {
+export const customers = pgTable('customers', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -27,12 +27,12 @@ export const customers = sqliteTable('customers', {
   city: text('city'),
   state: text('state'),
   postcode: text('postcode'),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  isActive: boolean('is_active').default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   tenantId: text('tenant_id'),
 });
 
-export const customerContacts = sqliteTable('customer_contacts', {
+export const customerContacts = pgTable('customer_contacts', {
   id: text('id').primaryKey(),
   customerId: text('customer_id')
     .notNull()
@@ -40,11 +40,11 @@ export const customerContacts = sqliteTable('customer_contacts', {
   name: text('name').notNull(),
   email: text('email'),
   phone: text('phone'),
-  isPrimary: integer('is_primary', { mode: 'boolean' }).default(false),
+  isPrimary: boolean('is_primary').default(false),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const invoices = sqliteTable('invoices', {
+export const invoices = pgTable('invoices', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -67,7 +67,7 @@ export const invoices = sqliteTable('invoices', {
   tenantId: text('tenant_id'),
 });
 
-export const invoiceLines = sqliteTable(
+export const invoiceLines = pgTable(
   'invoice_lines',
   {
     id: text('id').primaryKey(),
@@ -75,7 +75,7 @@ export const invoiceLines = sqliteTable(
       .notNull()
       .references(() => invoices.id, { onDelete: 'cascade' }),
     description: text('description').notNull(),
-    quantity: real('quantity').notNull().default(1),
+    quantity: doublePrecision('quantity').notNull().default(1),
     unitPrice: integer('unit_price').notNull().default(0),
     amount: integer('amount').notNull().default(0),
     gstAmount: integer('gst_amount').default(0),
@@ -87,7 +87,7 @@ export const invoiceLines = sqliteTable(
   }),
 );
 
-export const invoiceNumberSequences = sqliteTable('invoice_number_sequences', {
+export const invoiceNumberSequences = pgTable('invoice_number_sequences', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -97,7 +97,7 @@ export const invoiceNumberSequences = sqliteTable('invoice_number_sequences', {
   format: text('format').notNull().default('{prefix}{number:06d}'),
 });
 
-export const invoicePayments = sqliteTable('invoice_payments', {
+export const invoicePayments = pgTable('invoice_payments', {
   id: text('id').primaryKey(),
   invoiceId: text('invoice_id')
     .notNull()

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, doublePrecision, index } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 
 // IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
@@ -10,7 +10,7 @@ import { users } from './core.js';
 // ACCOUNTS
 // ============================================================================
 
-export const accounts = sqliteTable(
+export const accounts = pgTable(
   'accounts',
   {
     id: text('id').primaryKey(),
@@ -24,12 +24,12 @@ export const accounts = sqliteTable(
     bankName: text('bank_name'),
     currentBalance: integer('current_balance').default(0),
     lastStatementDate: text('last_statement_date'),
-    interestRate: real('interest_rate'),
+    interestRate: doublePrecision('interest_rate'),
     creditLimit: integer('credit_limit'),
     minimumPayment: integer('minimum_payment'),
     paymentDueDay: integer('payment_due_day'),
     linkedPaymentAccountId: text('linked_payment_account_id'),
-    isActive: integer('is_active', { mode: 'boolean' }).default(true),
+    isActive: boolean('is_active').default(true),
     ownershipTag: text('ownership_tag').default('business'),
     createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
     updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
@@ -43,7 +43,7 @@ export const accounts = sqliteTable(
 // STATEMENTS
 // ============================================================================
 
-export const statements = sqliteTable(
+export const statements = pgTable(
   'statements',
   {
     id: text('id').primaryKey(),
@@ -61,7 +61,7 @@ export const statements = sqliteTable(
     openingBalance: integer('opening_balance'),
     closingBalance: integer('closing_balance'),
     transactionCount: integer('transaction_count').default(0),
-    isComplete: integer('is_complete', { mode: 'boolean' }).default(true),
+    isComplete: boolean('is_complete').default(true),
     validationErrors: text('validation_errors'),
   },
   (t) => ({
@@ -69,7 +69,7 @@ export const statements = sqliteTable(
   }),
 );
 
-export const statementAccounts = sqliteTable('statement_accounts', {
+export const statementAccounts = pgTable('statement_accounts', {
   statementId: text('statement_id')
     .primaryKey()
     .references(() => statements.id, { onDelete: 'cascade' }),
@@ -78,7 +78,7 @@ export const statementAccounts = sqliteTable('statement_accounts', {
     .references(() => accounts.id, { onDelete: 'cascade' }),
 });
 
-export const accountBalanceHistory = sqliteTable('account_balance_history', {
+export const accountBalanceHistory = pgTable('account_balance_history', {
   id: text('id').primaryKey(),
   accountId: text('account_id')
     .notNull()

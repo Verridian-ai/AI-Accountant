@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
+import { pgTable, text, integer, boolean, doublePrecision, index } from 'drizzle-orm/pg-core';
 import { users } from './core.js';
 import { accounts, statements } from './banking.js';
 
@@ -11,7 +11,7 @@ import { accounts, statements } from './banking.js';
 // TRANSACTIONS
 // ============================================================================
 
-export const transactions = sqliteTable(
+export const transactions = pgTable(
   'transactions',
   {
     id: text('id').primaryKey(),
@@ -20,15 +20,15 @@ export const transactions = sqliteTable(
     amount: integer('amount').notNull(),
     balance: integer('balance'),
     category: text('category'),
-    gstApplicable: integer('gst_applicable', { mode: 'boolean' }).default(false),
+    gstApplicable: boolean('gst_applicable').default(false),
     gstAmount: integer('gst_amount').default(0),
     gstCategory: text('gst_category'),
     aiReasoningNotes: text('ai_reasoning_notes'),
-    confidenceScore: real('confidence_score').default(1.0),
-    isEdited: integer('is_edited', { mode: 'boolean' }).default(false),
-    isTransfer: integer('is_transfer', { mode: 'boolean' }).default(false),
+    confidenceScore: doublePrecision('confidence_score').default(1.0),
+    isEdited: boolean('is_edited').default(false),
+    isTransfer: boolean('is_transfer').default(false),
     transferLinkId: text('transfer_link_id'),
-    isOwnerContribution: integer('is_owner_contribution', { mode: 'boolean' }).default(false),
+    isOwnerContribution: boolean('is_owner_contribution').default(false),
     transactionHash: text('transaction_hash'),
     merchantNormalized: text('merchant_normalized'),
     parserVersion: text('parser_version'),
@@ -50,9 +50,11 @@ export const transactions = sqliteTable(
   }),
 );
 
-export const transactionHistory = sqliteTable('transaction_history', {
+export const transactionHistory = pgTable('transaction_history', {
   id: text('id').primaryKey(),
-  transactionId: text('transaction_id').references(() => transactions.id, { onDelete: 'set null' }),
+  transactionId: text('transaction_id').references(() => transactions.id, {
+    onDelete: 'set null',
+  }),
   changeType: text('change_type').notNull(),
   oldData: text('old_data'),
   newData: text('new_data'),
@@ -63,7 +65,7 @@ export const transactionHistory = sqliteTable('transaction_history', {
 // TRANSFERS
 // ============================================================================
 
-export const transferLinks = sqliteTable('transfer_links', {
+export const transferLinks = pgTable('transfer_links', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -78,8 +80,8 @@ export const transferLinks = sqliteTable('transfer_links', {
   destinationAccountId: text('destination_account_id').references(() => accounts.id),
   amount: integer('amount').notNull(),
   transferDate: text('transfer_date').notNull(),
-  confidence: real('confidence').default(1.0),
-  isUserConfirmed: integer('is_user_confirmed', { mode: 'boolean' }).default(false),
+  confidence: doublePrecision('confidence').default(1.0),
+  isUserConfirmed: boolean('is_user_confirmed').default(false),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -87,7 +89,7 @@ export const transferLinks = sqliteTable('transfer_links', {
 // CATEGORIZATION
 // ============================================================================
 
-export const merchantMemory = sqliteTable('merchant_memory', {
+export const merchantMemory = pgTable('merchant_memory', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -95,14 +97,14 @@ export const merchantMemory = sqliteTable('merchant_memory', {
   merchantPattern: text('merchant_pattern').notNull(),
   merchantDisplayName: text('merchant_display_name'),
   category: text('category').notNull(),
-  gstApplicable: integer('gst_applicable', { mode: 'boolean' }).default(false),
+  gstApplicable: boolean('gst_applicable').default(false),
   timesUsed: integer('times_used').default(1),
   lastUsed: text('last_used').notNull().default('CURRENT_TIMESTAMP'),
-  isUserConfirmed: integer('is_user_confirmed', { mode: 'boolean' }).default(false),
+  isUserConfirmed: boolean('is_user_confirmed').default(false),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const pendingCategorization = sqliteTable('pending_categorization', {
+export const pendingCategorization = pgTable('pending_categorization', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -111,7 +113,7 @@ export const pendingCategorization = sqliteTable('pending_categorization', {
     .notNull()
     .references(() => transactions.id, { onDelete: 'cascade' }),
   suggestedCategory: text('suggested_category'),
-  suggestedConfidence: real('suggested_confidence'),
+  suggestedConfidence: doublePrecision('suggested_confidence'),
   aiReasoning: text('ai_reasoning'),
   alternativeCategories: text('alternative_categories'),
   status: text('status').notNull().default('pending'),
@@ -124,7 +126,7 @@ export const pendingCategorization = sqliteTable('pending_categorization', {
 // RECONCILIATION
 // ============================================================================
 
-export const reconciliationAlerts = sqliteTable('reconciliation_alerts', {
+export const reconciliationAlerts = pgTable('reconciliation_alerts', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -138,7 +140,7 @@ export const reconciliationAlerts = sqliteTable('reconciliation_alerts', {
   difference: integer('difference'),
   description: text('description').notNull(),
   statementId: text('statement_id').references(() => statements.id),
-  isResolved: integer('is_resolved', { mode: 'boolean' }).default(false),
+  isResolved: boolean('is_resolved').default(false),
   resolvedAt: text('resolved_at'),
   resolutionNotes: text('resolution_notes'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
