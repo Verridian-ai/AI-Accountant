@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { statementService } from '../services/statements/statement-service.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 import { getUserId } from '../utils/auth-helpers.js';
@@ -38,7 +39,7 @@ statementRoutes.post('/upload', async (c) => {
 });
 
 // Reprocess
-statementRoutes.post('/:id/reprocess', async (c) => {
+statementRoutes.post('/:id/reprocess', zValidator('json', z.object({}).optional()), async (c) => {
   try {
     const result = await statementService.reprocess(getUserId(c), c.req.param('id'));
     return c.json(result);

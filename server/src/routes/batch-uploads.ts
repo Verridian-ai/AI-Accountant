@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { bulkUploadQueue } from '../services/queue.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 import { getUserId } from '../utils/auth-helpers.js';
@@ -44,11 +45,11 @@ batchRoutes.get('/:jobId', async (c) => {
 });
 
 // Cancel/Retry
-batchRoutes.post('/:jobId/cancel', async (c) => {
+batchRoutes.post('/:jobId/cancel', zValidator('json', z.object({}).optional()), async (c) => {
   return c.json({ cancelled: await bulkUploadQueue.cancelJob(c.req.param('jobId')) });
 });
 
-batchRoutes.post('/:jobId/retry', async (c) => {
+batchRoutes.post('/:jobId/retry', zValidator('json', z.object({}).optional()), async (c) => {
   return c.json({ retried: await bulkUploadQueue.retryJob(c.req.param('jobId')) });
 });
 

@@ -1,4 +1,5 @@
 import type { Hono } from 'hono';
+import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import {
   InvoicingService,
@@ -101,7 +102,7 @@ export function registerInvoiceHandlers(app: Hono): void {
   });
 
   // POST /invoices/:id/send — mark as sent
-  app.post('/invoices/:id/send', async (c) => {
+  app.post('/invoices/:id/send', zValidator('json', z.object({}).optional()), async (c) => {
     try {
       const userId = getUserId(c);
       const invoiceId = c.req.param('id');
@@ -116,7 +117,7 @@ export function registerInvoiceHandlers(app: Hono): void {
   });
 
   // POST /invoices/:id/void — void invoice
-  app.post('/invoices/:id/void', async (c) => {
+  app.post('/invoices/:id/void', zValidator('json', z.object({}).optional()), async (c) => {
     try {
       const userId = getUserId(c);
       const invoiceId = c.req.param('id');

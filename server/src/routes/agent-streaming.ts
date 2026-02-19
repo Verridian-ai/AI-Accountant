@@ -57,21 +57,23 @@ streamingRoutes.get('/session/:sessionId', async (c) => {
   if (!/^[0-9a-f-]{36}$/i.test(sessionId)) {
     return c.json({ error: 'Invalid session ID' }, 400);
   }
-  const session = await db.get(
-    sql`SELECT * FROM agent_stream_sessions WHERE id = ${sessionId}`,
-  );
+  const session = await db.get(sql`SELECT * FROM agent_stream_sessions WHERE id = ${sessionId}`);
   return session ? c.json(session) : c.json({ error: 'Not found' }, 404);
 });
 
 // Mutations
-streamingRoutes.post('/confirm/:actionId', async (c) => {
-  try {
-    const mutation = await confirmationFlow.confirm(c.req.param('actionId'), 'default');
-    return c.json({ success: true, mutation });
-  } catch {
-    return c.json({ error: 'Failed' }, 400);
-  }
-});
+streamingRoutes.post(
+  '/confirm/:actionId',
+  zValidator('json', z.object({}).optional()),
+  async (c) => {
+    try {
+      const mutation = await confirmationFlow.confirm(c.req.param('actionId'), 'default');
+      return c.json({ success: true, mutation });
+    } catch {
+      return c.json({ error: 'Failed' }, 400);
+    }
+  },
+);
 
 streamingRoutes.get('/pending', async (c) => {
   const sessionId = c.req.query('sessionId');

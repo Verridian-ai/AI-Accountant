@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { db, marketDataFeeds } from '../schema.js';
 import { eq } from 'drizzle-orm';
 import { rbaDataFeed } from '../services/rba-data-feed.js';
@@ -20,7 +21,7 @@ feedRoutes.get('/', async (c) => {
   return c.json(await db.select().from(marketDataFeeds).all());
 });
 
-feedRoutes.post('/refresh', async (c) => {
+feedRoutes.post('/refresh', zValidator('json', z.object({}).optional()), async (c) => {
   const results: Record<string, unknown> = {};
   try {
     results.rba = await rbaDataFeed.fetchAllTables();
@@ -40,7 +41,7 @@ feedRoutes.post('/refresh', async (c) => {
   return c.json(results);
 });
 
-feedRoutes.post('/:feedId/refresh', async (c) => {
+feedRoutes.post('/:feedId/refresh', zValidator('json', z.object({}).optional()), async (c) => {
   const feedId = c.req.param('feedId');
   if (feedId.startsWith('rba-')) {
     const csv = await rbaDataFeed.fetchTable(feedId.replace('rba-', '').toUpperCase());

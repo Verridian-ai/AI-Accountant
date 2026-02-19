@@ -17,7 +17,7 @@ const createPaymentRunSchema = z.object({
 });
 
 // POST /api/bills/:id/void
-apExtrasRoutes.post('/bills/:id/void', async (c) => {
+apExtrasRoutes.post('/bills/:id/void', zValidator('json', z.object({}).optional()), async (c) => {
   try {
     const id = c.req.param('id');
     const bill = await billService.voidBill(id);
@@ -28,15 +28,19 @@ apExtrasRoutes.post('/bills/:id/void', async (c) => {
 });
 
 // POST /api/purchase-orders/:id/cancel
-apExtrasRoutes.post('/purchase-orders/:id/cancel', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const po = await purchaseOrderService.cancelPurchaseOrder(id);
-    return c.json({ data: po });
-  } catch (err: unknown) {
-    return c.json({ error: getErrorMessage(err) ?? 'Failed to cancel purchase order' }, 400);
-  }
-});
+apExtrasRoutes.post(
+  '/purchase-orders/:id/cancel',
+  zValidator('json', z.object({}).optional()),
+  async (c) => {
+    try {
+      const id = c.req.param('id');
+      const po = await purchaseOrderService.cancelPurchaseOrder(id);
+      return c.json({ data: po });
+    } catch (err: unknown) {
+      return c.json({ error: getErrorMessage(err) ?? 'Failed to cancel purchase order' }, 400);
+    }
+  },
+);
 
 // POST /api/supplier-payments
 apExtrasRoutes.post('/supplier-payments', zValidator('json', createPaymentRunSchema), async (c) => {

@@ -99,7 +99,7 @@ billRoutes.patch('/:id', zValidator('json', updateBillSchema), async (c) => {
   }
 });
 
-billRoutes.post('/:id/approve', async (c) => {
+billRoutes.post('/:id/approve', zValidator('json', z.object({}).optional()), async (c) => {
   try {
     return c.json({ data: await billService.approveBill(c.req.param('id'), getUserId(c)) });
   } catch {

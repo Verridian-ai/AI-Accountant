@@ -98,7 +98,7 @@ poRoutes.patch('/:id', zValidator('json', updatePOSchema), async (c) => {
   }
 });
 
-poRoutes.post('/:id/send', async (c) => {
+poRoutes.post('/:id/send', zValidator('json', z.object({}).optional()), async (c) => {
   try {
     return c.json({ data: await purchaseOrderService.sendPurchaseOrder(c.req.param('id')) });
   } catch {

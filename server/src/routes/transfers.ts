@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { db, transactions, accounts, transferLinks } from '../schema.js';
 import { eq } from 'drizzle-orm';
 import {
@@ -22,7 +23,7 @@ const transferRoutes = new Hono();
 // Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
 transferRoutes.use('/*', tenantAuthMiddleware());
 
-transferRoutes.post('/detect', async (c) => {
+transferRoutes.post('/detect', zValidator('json', z.object({}).optional()), async (c) => {
   const payload = c.get('jwtPayload');
   const userId = payload.userId;
   const allTxs = await db.select().from(transactions).where(eq(transactions.userId, userId)).all();
