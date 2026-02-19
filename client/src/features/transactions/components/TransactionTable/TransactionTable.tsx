@@ -1,4 +1,5 @@
 import { useMemo, useRef } from 'react';
+import { API_URL } from '@/api/client.js';
 import {
   getCoreRowModel,
   useReactTable,
@@ -90,13 +91,6 @@ export function TransactionTable({
     overscan: 10,
   });
 
-  console.log('[Ledger] Render Check:', {
-    total: transactions.length,
-    filtered: filters.filteredTransactions.length,
-    loading,
-    tableRows: table.getRowModel().rows.length,
-  });
-
   const handleExport = (format: 'csv' | 'xlsx') => {
     const params = new URLSearchParams();
     params.append('format', format);
@@ -104,7 +98,7 @@ export function TransactionTable({
     if (filters.endDate) params.append('endDate', filters.endDate);
     if (filters.selectedCategory !== 'All') params.append('category', filters.selectedCategory);
     if (filters.globalFilter) params.append('search', filters.globalFilter);
-    window.open(`http://localhost:3000/api/transactions/export?${params.toString()}`, '_blank');
+    window.open(`${API_URL}/transactions/export?${params.toString()}`, '_blank');
   };
 
   const summaryStats = useMemo(() => {
