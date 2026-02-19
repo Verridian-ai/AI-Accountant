@@ -1,4 +1,5 @@
 export * from './connection.js';
+export { getProductionDb, getMaskedDb, getReadDb } from '../db/neon-connection.js';
 export * from './core.js';
 export * from './banking.js';
 export * from './transactions.js';
