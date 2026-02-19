@@ -20,10 +20,8 @@ export function CogneeGraph2DFallback({
   const [searchQuery, setSearchQuery] = useState('');
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [nodeCount, setNodeCount] = useState(0);
-  const [linkCount, setLinkCount] = useState(0);
+  const [drag, setDrag] = useState({ active: false, startX: 0, startY: 0 });
+  const [counts, setCounts] = useState({ nodes: 0, links: 0 });
 
   const graphHeight = propHeight ?? Math.max(400, window.innerHeight - 200);
 
@@ -42,8 +40,7 @@ export function CogneeGraph2DFallback({
       const { nodes, links } = transformData(raw);
       nodesRef.current = nodes;
       linksRef.current = links;
-      setNodeCount(nodes.length);
-      setLinkCount(links.length);
+      setCounts({ nodes: nodes.length, links: links.length });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load graph');
     } finally {
@@ -184,8 +181,7 @@ export function CogneeGraph2DFallback({
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.button === 0) {
-        setDragging(true);
-        setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+        setDrag({ active: true, startX: e.clientX - pan.x, startY: e.clientY - pan.y });
       }
     },
     [pan],
@@ -193,14 +189,14 @@ export function CogneeGraph2DFallback({
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (dragging) {
-        setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+      if (drag.active) {
+        setPan({ x: e.clientX - drag.startX, y: e.clientY - drag.startY });
       }
     },
-    [dragging, dragStart],
+    [drag],
   );
 
-  const handleMouseUp = useCallback(() => setDragging(false), []);
+  const handleMouseUp = useCallback(() => setDrag((d) => ({ ...d, active: false })), []);
 
   const handleReset = useCallback(() => {
     setZoom(1);
@@ -239,7 +235,7 @@ export function CogneeGraph2DFallback({
     );
   }
 
-  if (nodeCount === 0) {
+  if (counts.nodes === 0) {
     return (
       <div
         className="flex flex-col items-center justify-center bg-[#1a1a2e] rounded-xl border border-[#FFCC00]/10"
@@ -274,7 +270,7 @@ export function CogneeGraph2DFallback({
         </div>
         <div className="flex-1" />
         <span className="text-[10px] text-gray-500">
-          {nodeCount} nodes &middot; {linkCount} edges
+          {counts.nodes} nodes &middot; {counts.links} edges
         </span>
         <button
           onClick={handleReset}

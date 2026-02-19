@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useReducer, useCallback } from 'react';
 import { SSEContext } from './SSEContextDef';
 import type { SSEEventMap } from './SSEContextDef';
 import { getToken, BASE_URL } from '../api';
@@ -22,9 +22,16 @@ const TYPED_EVENT_NAMES: Array<keyof SSEEventMap> = [
   'statement_added',
 ];
 
+type SSEState = { connected: boolean; error: boolean };
+type SSEAction = { type: 'open' } | { type: 'err' };
+
+function sseReducer(_: SSEState, action: SSEAction): SSEState {
+  if (action.type === 'open') return { connected: true, error: false };
+  return { connected: false, error: true };
+}
+
 export function SSEProvider({ children }: { children: React.ReactNode }) {
-  const [connected, setConnected] = useState(false);
-  const [error, setError] = useState(false);
+  const [{ connected, error }, dispatch] = useReducer(sseReducer, { connected: false, error: false });
   const listenersRef = useRef<Set<() => void>>(new Set());
   const typedListenersRef = useRef<Map<string, Set<(data: unknown) => void>>>(new Map());
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -67,8 +74,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
       const es = new EventSource(`${BASE_URL}/api/events?token=${token}`);
 
       es.onopen = () => {
-        setConnected(true);
-        setError(false);
+        dispatch({ type: 'open' });
       };
 
       // Legacy 'update' listener — backward compatibility
@@ -93,8 +99,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
 
       es.onerror = (err) => {
         console.error('SSE error:', err);
-        setConnected(false);
-        setError(true);
+        dispatch({ type: 'err' });
         es.close();
         setTimeout(connect, 5000); // Reconnect after 5s
       };

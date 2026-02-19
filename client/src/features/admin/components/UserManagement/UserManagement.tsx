@@ -35,11 +35,10 @@ export function UserManagement({
   onExportUsers,
   className,
 }: UserManagementProps) {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [fetchState, setFetchState] = useState<{ users: User[]; loading: boolean }>({ users: [], loading: true });
+  const { users, loading } = fetchState;
+  const [filters, setFilters] = useState({ searchQuery: '', roleFilter: 'all', statusFilter: 'all' });
+  const { searchQuery, roleFilter, statusFilter } = filters;
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,19 +70,17 @@ export function UserManagement({
   }, [actionMenuOpen]);
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true);
+    setFetchState((s) => ({ ...s, loading: true }));
     try {
       const res = await fetch('/api/admin/users');
       if (res.ok) {
         const json = (await res.json()) as { users?: User[] };
-        setUsers(json.users ?? []);
+        setFetchState({ users: json.users ?? [], loading: false });
       } else {
-        setUsers([]);
+        setFetchState({ users: [], loading: false });
       }
     } catch {
-      setUsers([]);
-    } finally {
-      setLoading(false);
+      setFetchState({ users: [], loading: false });
     }
   }, []);
 
@@ -128,11 +125,12 @@ export function UserManagement({
     setProcessingAction(userId);
     try {
       await onSuspendUser?.(userId);
-      setUsers((prev) =>
-        prev.map((u) =>
+      setFetchState((prev) => ({
+        ...prev,
+        users: prev.users.map((u) =>
           u.id === userId ? { ...u, status: u.status === 'suspended' ? 'active' : 'suspended' } : u,
         ),
-      );
+      }));
     } finally {
       setProcessingAction(null);
       setActionMenuOpen(null);
@@ -143,7 +141,7 @@ export function UserManagement({
     setProcessingAction(userId);
     try {
       await onDeleteUser?.(userId);
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      setFetchState((prev) => ({ ...prev, users: prev.users.filter((u) => u.id !== userId) }));
     } finally {
       setProcessingAction(null);
       setActionMenuOpen(null);
@@ -239,11 +237,11 @@ export function UserManagement({
           <Input
             placeholder="Search users..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setFilters((f) => ({ ...f, searchQuery: e.target.value }))}
             className="pl-9 bg-white/5 border-white/10 rounded-xl"
           />
         </div>
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
+        <Select value={roleFilter} onValueChange={(v) => setFilters((f) => ({ ...f, roleFilter: v }))}>
           <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue placeholder="Role" />
           </SelectTrigger>
@@ -254,7 +252,7 @@ export function UserManagement({
             <SelectItem value="super_admin">Super Admin</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(v) => setFilters((f) => ({ ...f, statusFilter: v }))}>
           <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -313,8 +311,9 @@ export function UserManagement({
                 aria-label={`Select user ${user.username}`}
               />
             </div>
-            <div
-              className="flex items-center gap-3 cursor-pointer"
+            <button
+              type="button"
+              className="flex items-center gap-3 cursor-pointer w-full text-left"
               onClick={() => onViewUser?.(user.id)}
             >
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFCC00]/20 to-[#FFCC00]/5 flex items-center justify-center text-[#FFCC00] font-bold text-sm">
@@ -327,7 +326,7 @@ export function UserManagement({
                   <span className="truncate">{user.email || 'No email'}</span>
                 </div>
               </div>
-            </div>
+            </button>
             <div className="flex flex-wrap items-center gap-2 sm:justify-start">
               {getStatusBadge(user.status)}
               {getRoleBadge(user.role)}

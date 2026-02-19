@@ -13,15 +13,17 @@ interface AuthProps {
 
 export function Auth({ onLogin }: AuthProps) {
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState({ username: '', password: '' });
+  const { username, password } = form;
+  const [submitState, setSubmitState] = useState<{ loading: boolean; error: string | null }>({
+    loading: false,
+    error: null,
+  });
+  const { loading, error } = submitState;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+    setSubmitState({ loading: true, error: null });
 
     try {
       const data = isLogin
@@ -32,9 +34,9 @@ export function Auth({ onLogin }: AuthProps) {
       onLogin(data.token, data.user, tenantId);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Authentication failed';
-      setError(message);
+      setSubmitState({ loading: false, error: message });
     } finally {
-      setLoading(false);
+      setSubmitState((s) => ({ ...s, loading: false }));
     }
   };
 
@@ -105,16 +107,17 @@ export function Auth({ onLogin }: AuthProps) {
           <form onSubmit={handleSubmit} className="space-y-6 relative">
             {/* Username Field */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] ml-1">
+              <label htmlFor="auth-username" className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] ml-1">
                 Username
               </label>
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-[#FFCC00] transition-colors" />
                 <input
+                  id="auth-username"
                   type="text"
                   required
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
                   className="w-full pl-12 pr-4 py-4 neu-inset rounded-xl focus-gold transition-all outline-none text-[#FFCC00] placeholder-zinc-600 font-medium"
                   placeholder="Enter username"
                 />
@@ -123,16 +126,17 @@ export function Auth({ onLogin }: AuthProps) {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] ml-1">
+              <label htmlFor="auth-password" className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em] ml-1">
                 Password
               </label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-[#FFCC00] transition-colors" />
                 <input
+                  id="auth-password"
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                   className="w-full pl-12 pr-4 py-4 neu-inset rounded-xl focus-gold transition-all outline-none text-[#FFCC00] placeholder-zinc-600 font-medium"
                   placeholder="••••••••"
                 />
@@ -199,7 +203,7 @@ export function Auth({ onLogin }: AuthProps) {
           </p>
           <div className="mt-3 flex justify-center gap-1">
             {[...Array(5)].map((_, i) => (
-              <span key={i} className="w-1 h-1 rounded-full cba-gold-bg opacity-40" />
+              <span key={`sk-${i}`} className="w-1 h-1 rounded-full cba-gold-bg opacity-40" />
             ))}
           </div>
         </div>

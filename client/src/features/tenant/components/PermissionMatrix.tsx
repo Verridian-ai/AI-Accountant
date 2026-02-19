@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useReducer, useEffect, useCallback } from 'react';
 import { Save, RotateCcw, Lock, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { tenantApi } from '@/api';
@@ -61,13 +61,71 @@ const ROLE_COLORS: Record<string, string> = {
   viewer: 'text-zinc-400',
 };
 
+type PMState = {
+  matrix: PermissionMap;
+  original: PermissionMap;
+  modified: Set<string>;
+  saving: boolean;
+  saved: boolean;
+  error: string | null;
+};
+
+type PMAction =
+  | { type: 'loaded'; data: PermissionMap }
+  | { type: 'toggle'; role: string; permission: string }
+  | { type: 'save_start' }
+  | { type: 'save_success' }
+  | { type: 'save_error'; message: string }
+  | { type: 'reset' }
+  | { type: 'clear_saved' };
+
+function pmReducer(state: PMState, action: PMAction): PMState {
+  switch (action.type) {
+    case 'loaded': {
+      return { ...state, matrix: action.data, original: action.data };
+    }
+    case 'toggle': {
+      const rolePerms = { ...(state.matrix[action.role] ?? {}) };
+      rolePerms[action.permission] = !rolePerms[action.permission];
+      return {
+        ...state,
+        matrix: { ...state.matrix, [action.role]: rolePerms },
+        modified: new Set([...state.modified, action.role]),
+      };
+    }
+    case 'save_start':
+      return { ...state, saving: true, error: null };
+    case 'save_success':
+      return {
+        ...state,
+        saving: false,
+        saved: true,
+        original: { ...state.matrix },
+        modified: new Set(),
+      };
+    case 'save_error':
+      return { ...state, saving: false, error: action.message };
+    case 'reset':
+      return { ...state, matrix: DEFAULTS, modified: new Set(ROLES as unknown as string[]) };
+    case 'clear_saved':
+      return { ...state, saved: false };
+    default:
+      return state;
+  }
+}
+
+const PM_INITIAL: PMState = {
+  matrix: DEFAULTS,
+  original: DEFAULTS,
+  modified: new Set(),
+  saving: false,
+  saved: false,
+  error: null,
+};
+
 export function PermissionMatrix() {
-  const [matrix, setMatrix] = useState<PermissionMap>(DEFAULTS);
-  const [original, setOriginal] = useState<PermissionMap>(DEFAULTS);
-  const [modified, setModified] = useState<Set<string>>(new Set());
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(pmReducer, PM_INITIAL);
+  const { matrix, modified, saving, saved, error } = state;
 
   const tenantId = localStorage.getItem('tenantId');
 
@@ -76,9 +134,7 @@ export function PermissionMatrix() {
     tenantApi
       .getPermissions(tenantId)
       .then((data: PermissionMap) => {
-        const merged = { ...DEFAULTS, ...data };
-        setMatrix(merged);
-        setOriginal(merged);
+        dispatch({ type: 'loaded', data: { ...DEFAULTS, ...data } });
       })
       .catch(() => {
         // Use defaults if fetch fails
@@ -90,39 +146,30 @@ export function PermissionMatrix() {
       if (role === 'owner') return; // Owner always has all perms
       const perm = PERMISSIONS.find((p) => p.key === permission);
       if (perm?.system && matrix[role]?.[permission]) return; // Can't remove system read perms
-
-      setMatrix((prev) => {
-        const rolePerms = { ...(prev[role] ?? {}) };
-        rolePerms[permission] = !rolePerms[permission];
-        return { ...prev, [role]: rolePerms };
-      });
-      setModified((prev) => new Set([...prev, role]));
+      dispatch({ type: 'toggle', role, permission });
     },
     [matrix],
   );
 
   const handleSave = async () => {
     if (!tenantId) return;
-    setSaving(true);
-    setError(null);
+    dispatch({ type: 'save_start' });
     try {
       for (const role of modified) {
         await tenantApi.updatePermissions(tenantId, role, matrix[role] ?? {});
       }
-      setOriginal({ ...matrix });
-      setModified(new Set());
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      dispatch({ type: 'save_success' });
+      setTimeout(() => dispatch({ type: 'clear_saved' }), 3000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save permissions');
-    } finally {
-      setSaving(false);
+      dispatch({
+        type: 'save_error',
+        message: err instanceof Error ? err.message : 'Failed to save permissions',
+      });
     }
   };
 
   const handleReset = () => {
-    setMatrix(DEFAULTS);
-    setModified(new Set(ROLES as unknown as string[]));
+    dispatch({ type: 'reset' });
   };
 
   return (

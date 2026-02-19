@@ -169,21 +169,23 @@ export function ParserHealth({
   onExportErrors,
   className,
 }: ParserHealthProps) {
-  const [bankStats, setBankStats] = useState<BankParserStats[]>([]);
-  const [overallStats, setOverallStats] = useState<OverallStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchState, setFetchState] = useState<{
+    bankStats: BankParserStats[];
+    overallStats: OverallStats | null;
+    loading: boolean;
+  }>({ bankStats: [], overallStats: null, loading: true });
+  const { bankStats, overallStats, loading } = fetchState;
   const [expandedBank, setExpandedBank] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState('7d');
   const [retryingId, setRetryingId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    setFetchState((s) => ({ ...s, loading: true }));
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      setBankStats(mockBankStats);
-      setOverallStats(mockOverallStats);
-    } finally {
-      setLoading(false);
+      setFetchState({ bankStats: mockBankStats, overallStats: mockOverallStats, loading: false });
+    } catch {
+      setFetchState((s) => ({ ...s, loading: false }));
     }
   }, []);
 

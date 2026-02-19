@@ -145,10 +145,11 @@ export function TenantCreate() {
           <div className="space-y-5">
             <h3 className="text-lg font-bold text-zinc-100">Business Details</h3>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              <label htmlFor="tenant-name" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
                 Business Name
               </label>
               <input
+                id="tenant-name"
                 type="text"
                 value={form.name}
                 onChange={(e) =>
@@ -160,12 +161,13 @@ export function TenantCreate() {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              <label htmlFor="tenant-slug" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
                 Workspace URL
               </label>
               <div className="flex items-center neu-inset rounded-xl">
                 <span className="text-sm text-zinc-500 pl-3">goldledger.app/</span>
                 <input
+                  id="tenant-slug"
                   type="text"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
@@ -174,10 +176,11 @@ export function TenantCreate() {
               </div>
             </div>
             <div>
-              <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+              <label htmlFor="tenant-abn" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
                 ABN (optional)
               </label>
               <input
+                id="tenant-abn"
                 type="text"
                 value={form.abn}
                 onChange={(e) => setForm({ ...form, abn: e.target.value })}

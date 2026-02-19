@@ -48,11 +48,10 @@ export function TenantSettings() {
     financialYearEnd: 'June',
     timezone: 'Australia/Sydney',
   });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showDeactivate, setShowDeactivate] = useState(false);
-  const [deactivateConfirm, setDeactivateConfirm] = useState('');
+  const [saveState, setSaveState] = useState<{ saving: boolean; saved: boolean; error: string | null }>({ saving: false, saved: false, error: null });
+  const { saving, saved, error } = saveState;
+  const [deactivateState, setDeactivateState] = useState({ show: false, confirm: '' });
+  const { show: showDeactivate, confirm: deactivateConfirm } = deactivateState;
   const [hasPermission, setHasPermission] = useState(true);
 
   const tenantId = localStorage.getItem('tenantId');
@@ -76,23 +75,19 @@ export function TenantSettings() {
         if (err.message.includes('403') || err.message.includes('permission')) {
           setHasPermission(false);
         }
-        setError(err.message);
+        setSaveState((s) => ({ ...s, error: err.message }));
       });
   }, [tenantId]);
 
   const handleSave = async () => {
     if (!tenantId) return;
-    setSaving(true);
-    setError(null);
-    setSaved(false);
+    setSaveState({ saving: true, saved: false, error: null });
     try {
       await tenantApi.updateTenant(tenantId, form);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setSaveState({ saving: false, saved: true, error: null });
+      setTimeout(() => setSaveState((s) => ({ ...s, saved: false })), 3000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
-    } finally {
-      setSaving(false);
+      setSaveState({ saving: false, saved: false, error: err instanceof Error ? err.message : 'Failed to save' });
     }
   };
 
@@ -103,7 +98,7 @@ export function TenantSettings() {
       localStorage.removeItem('tenantId');
       window.location.reload();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to deactivate');
+      setSaveState((s) => ({ ...s, error: err instanceof Error ? err.message : 'Failed to deactivate' }));
     }
   };
 
@@ -136,10 +131,11 @@ export function TenantSettings() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-name" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
               Name
             </label>
             <input
+              id="ts-name"
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -147,10 +143,11 @@ export function TenantSettings() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-slug" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
               Slug
             </label>
             <input
+              id="ts-slug"
               type="text"
               value={tenant?.slug ?? ''}
               readOnly
@@ -158,10 +155,11 @@ export function TenantSettings() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-abn" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
               ABN
             </label>
             <input
+              id="ts-abn"
               type="text"
               value={form.abn}
               onChange={(e) => setForm({ ...form, abn: e.target.value })}
@@ -170,10 +168,11 @@ export function TenantSettings() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-entity-type" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
               Entity Type
             </label>
             <select
+              id="ts-entity-type"
               value={form.entityType}
               onChange={(e) => setForm({ ...form, entityType: e.target.value })}
               className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -186,10 +185,11 @@ export function TenantSettings() {
             </select>
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-industry" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
               Industry
             </label>
             <input
+              id="ts-industry"
               type="text"
               value={form.industry}
               onChange={(e) => setForm({ ...form, industry: e.target.value })}
@@ -198,10 +198,11 @@ export function TenantSettings() {
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-fy-end" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
               Financial Year End
             </label>
             <select
+              id="ts-fy-end"
               value={form.financialYearEnd}
               onChange={(e) => setForm({ ...form, financialYearEnd: e.target.value })}
               className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -214,10 +215,11 @@ export function TenantSettings() {
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
+            <label htmlFor="ts-timezone" className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1.5">
               Timezone
             </label>
             <select
+              id="ts-timezone"
               value={form.timezone}
               onChange={(e) => setForm({ ...form, timezone: e.target.value })}
               className="w-full neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -257,7 +259,7 @@ export function TenantSettings() {
         {!showDeactivate ? (
           <button
             type="button"
-            onClick={() => setShowDeactivate(true)}
+            onClick={() => setDeactivateState((d) => ({ ...d, show: true }))}
             className="px-4 py-2 rounded-xl text-sm font-bold border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
           >
             Deactivate Workspace
@@ -270,7 +272,7 @@ export function TenantSettings() {
             <input
               type="text"
               value={deactivateConfirm}
-              onChange={(e) => setDeactivateConfirm(e.target.value)}
+              onChange={(e) => setDeactivateState((d) => ({ ...d, confirm: e.target.value }))}
               className="w-full max-w-sm neu-inset px-3 py-2.5 rounded-xl text-sm text-zinc-200 bg-transparent outline-none focus:ring-1 focus:ring-red-500/30"
             />
             <div className="flex gap-2">
@@ -285,8 +287,8 @@ export function TenantSettings() {
               <button
                 type="button"
                 onClick={() => {
-                  setShowDeactivate(false);
-                  setDeactivateConfirm('');
+                  setDeactivateState((d) => ({ ...d, show: false }));
+                  setDeactivateState((d) => ({ ...d, confirm: '' }));
                 }}
                 className="px-4 py-2 rounded-xl text-sm font-bold text-zinc-400 hover:text-zinc-200 transition-colors"
               >

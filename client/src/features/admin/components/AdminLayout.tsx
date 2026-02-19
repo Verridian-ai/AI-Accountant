@@ -66,8 +66,45 @@ const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType; gro
   { id: 'features', label: 'Feature Flags', icon: Flag, group: 'Admin' },
 ];
 
+function AdminSectionPanel({
+  section,
+  onNavigate,
+}: {
+  section: AdminSection;
+  onNavigate: (s: AdminSection) => void;
+}) {
+  switch (section) {
+    case 'dashboard':
+      return <AdminDashboard onNavigate={onNavigate} />;
+    case 'transactions':
+      return <AdminTransactionsView />;
+    case 'agents':
+      return <AgentMonitor />;
+    case 'costs':
+      return <AgentCostDashboard />;
+    case 'config':
+      return <AgentConfigManager />;
+    case 'health':
+      return <SystemHealthDashboard />;
+    case 'cognee':
+      return <CogneeManager />;
+    case 'search':
+      return <CogneeSearchTester />;
+    case 'users':
+      return <UserManager />;
+    case 'activity':
+      return <ActivityLog />;
+    case 'features':
+      return <FeatureFlagManager />;
+    case 'metrics':
+      return <SystemMetricsCharts />;
+    default:
+      return <AdminDashboard onNavigate={onNavigate} />;
+  }
+}
+
 export function AdminLayout({ onLogout }: AdminLayoutProps) {
-  const [authenticated, setAuthenticated] = useState(!!localStorage.getItem('admin_token'));
+  const [authenticated, setAuthenticated] = useState(() => !!localStorage.getItem('admin_token'));
   const [adminUser, setAdminUser] = useState<{ username: string; role: string } | null>(null);
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -97,37 +134,6 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
   if (!authenticated) {
     return <AdminLogin onLogin={handleLogin} />;
   }
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'dashboard':
-        return <AdminDashboard onNavigate={setActiveSection} />;
-      case 'transactions':
-        return <AdminTransactionsView />;
-      case 'agents':
-        return <AgentMonitor />;
-      case 'costs':
-        return <AgentCostDashboard />;
-      case 'config':
-        return <AgentConfigManager />;
-      case 'health':
-        return <SystemHealthDashboard />;
-      case 'cognee':
-        return <CogneeManager />;
-      case 'search':
-        return <CogneeSearchTester />;
-      case 'users':
-        return <UserManager />;
-      case 'activity':
-        return <ActivityLog />;
-      case 'features':
-        return <FeatureFlagManager />;
-      case 'metrics':
-        return <SystemMetricsCharts />;
-      default:
-        return <AdminDashboard onNavigate={setActiveSection} />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#0a0a1a] flex">
@@ -212,7 +218,9 @@ export function AdminLayout({ onLogout }: AdminLayoutProps) {
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto p-6">{renderContent()}</div>
+        <div className="max-w-7xl mx-auto p-6">
+          <AdminSectionPanel section={activeSection} onNavigate={setActiveSection} />
+        </div>
       </main>
     </div>
   );

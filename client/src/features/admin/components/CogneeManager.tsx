@@ -23,31 +23,39 @@ interface GraphStats {
 }
 
 export function CogneeManager() {
-  const [datasets, setDatasets] = useState<Dataset[]>([]);
-  const [graphStats, setGraphStats] = useState<GraphStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchState, setFetchState] = useState<{
+    datasets: Dataset[];
+    graphStats: GraphStats | null;
+    loading: boolean;
+  }>({ datasets: [], graphStats: null, loading: true });
+  const { datasets, graphStats, loading } = fetchState;
   const [reindexing, setReindexing] = useState<string | null>(null);
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
-    setLoading(true);
     try {
       const [ds, gs] = await Promise.allSettled([
         fetchCogneeAdminDatasets(),
         fetchCogneeGraphStats(),
       ]);
-      if (ds.status === 'fulfilled')
-        setDatasets(Array.isArray(ds.value) ? ds.value : ds.value?.datasets || []);
-      if (gs.status === 'fulfilled') setGraphStats(gs.value);
+      setFetchState({
+        datasets:
+          ds.status === 'fulfilled'
+            ? Array.isArray(ds.value)
+              ? ds.value
+              : (ds.value as { datasets: Dataset[] })?.datasets ?? []
+            : [],
+        graphStats: gs.status === 'fulfilled' ? (gs.value as GraphStats) : null,
+        loading: false,
+      });
     } catch {
-      /* */
+      setFetchState((s) => ({ ...s, loading: false }));
     }
-    setLoading(false);
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const handleReindex = async (name: string) => {
     setReindexing(name);
@@ -110,7 +118,7 @@ export function CogneeManager() {
           </button>
           <button
             type="button"
-            onClick={loadData}
+            onClick={() => { setFetchState((s) => ({ ...s, loading: true })); void loadData(); }}
             className="p-2 rounded-xl bg-[#16213e] text-zinc-400 hover:text-[#FFCC00]"
           >
             <RefreshCw className="w-4 h-4" />

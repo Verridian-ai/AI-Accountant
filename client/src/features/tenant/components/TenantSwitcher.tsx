@@ -32,7 +32,7 @@ const ROLE_CONFIG: Record<string, { color: string; icon: typeof Crown }> = {
 export function TenantSwitcher() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [currentTenantId, setCurrentTenantId] = useState<string | null>(
-    localStorage.getItem('tenantId'),
+    () => localStorage.getItem('tenantId'),
   );
   const [isOpen, setIsOpen] = useState(false);
   const [switching, setSwitching] = useState(false);

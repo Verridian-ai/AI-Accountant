@@ -24,13 +24,16 @@ export function GraphStatsPanel({ datasetName }: GraphStatsPanelProps) {
 
   useEffect(() => {
     if (!datasetName) return;
-    setLoading(true);
-    setError(null);
-    knowledgeApi
-      .graphStats(datasetName)
-      .then(setStats)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
-      .finally(() => setLoading(false));
+    const tid = setTimeout(() => {
+      setLoading(true);
+      setError(null);
+      knowledgeApi
+        .graphStats(datasetName)
+        .then(setStats)
+        .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
+        .finally(() => setLoading(false));
+    }, 0);
+    return () => clearTimeout(tid);
   }, [datasetName]);
 
   if (loading) {

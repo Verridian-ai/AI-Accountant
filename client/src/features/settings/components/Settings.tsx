@@ -23,11 +23,27 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [fetchState, setFetchState] = useState<{
+    settings: UserSettings | null;
+    loading: boolean;
+  }>({ settings: null, loading: true });
+  const { settings, loading } = fetchState;
+  const [saveState, setSaveState] = useState<{ saving: boolean; saved: boolean }>({
+    saving: false,
+    saved: false,
+  });
+  const { saving, saved } = saveState;
   const [hoveredModel, setHoveredModel] = useState<ModelInfo | null>(null);
+
+  const fetchSettings = async () => {
+    try {
+      const data = await api.fetchSettings();
+      setFetchState({ settings: data, loading: false });
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+      setFetchState((s) => ({ ...s, loading: false }));
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -35,29 +51,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   }, [isOpen]);
 
-  const fetchSettings = async () => {
-    setLoading(true);
-    try {
-      const data = await api.fetchSettings();
-      setSettings(data);
-    } catch (error) {
-      console.error('Failed to fetch settings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSave = async () => {
     if (!settings) return;
-    setSaving(true);
+    setSaveState({ saving: true, saved: false });
     try {
       await api.updateSettings(settings);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      setSaveState({ saving: false, saved: true });
+      setTimeout(() => setSaveState((s) => ({ ...s, saved: false })), 2000);
     } catch (error) {
       console.error('Failed to save settings:', error);
-    } finally {
-      setSaving(false);
+      setSaveState({ saving: false, saved: false });
     }
   };
 
@@ -108,7 +111,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           {loading ? (
             <div className="space-y-8 animate-in fade-in duration-500">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="space-y-3">
+                <div key={`sk-${i}`} className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8 rounded-lg" />
                     <div className="space-y-1">
@@ -129,7 +132,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   description="Model used to extract transactions from text-based PDFs"
                   value={settings?.modelParsingText || ''}
                   onChange={(val) =>
-                    setSettings((s) => (s ? { ...s, modelParsingText: val } : null))
+                    setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelParsingText: val  } : null }))
                   }
                   models={chatModels}
                   onHover={setHoveredModel}
@@ -141,7 +144,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   description="Requires vision capability for scanned or image-based statements"
                   value={settings?.modelParsingVision || ''}
                   onChange={(val) =>
-                    setSettings((s) => (s ? { ...s, modelParsingVision: val } : null))
+                    setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelParsingVision: val  } : null }))
                   }
                   models={visionModels}
                   onHover={setHoveredModel}
@@ -153,7 +156,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   description="Model that assigns tax categories and GST status"
                   value={settings?.modelCategorization || ''}
                   onChange={(val) =>
-                    setSettings((s) => (s ? { ...s, modelCategorization: val } : null))
+                    setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelCategorization: val  } : null }))
                   }
                   models={chatModels}
                   onHover={setHoveredModel}
@@ -164,7 +167,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   label="Chat Assistant"
                   description="The model you interact with in the sidebar"
                   value={settings?.modelChat || ''}
-                  onChange={(val) => setSettings((s) => (s ? { ...s, modelChat: val } : null))}
+                  onChange={(val) => setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelChat: val  } : null }))}
                   models={chatModels}
                   onHover={setHoveredModel}
                   icon={<Sparkles className="w-4 h-4" />}
@@ -174,7 +177,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   label="Embedding Model"
                   description="Used for semantic search and RAG knowledge base"
                   value={settings?.modelEmbedding || ''}
-                  onChange={(val) => setSettings((s) => (s ? { ...s, modelEmbedding: val } : null))}
+                  onChange={(val) => setFetchState((fs) => ({ ...fs, settings: fs.settings ? { ...fs.settings, modelEmbedding: val  } : null }))}
                   models={embeddingModels}
                   onHover={setHoveredModel}
                   icon={<Info className="w-4 h-4" />}

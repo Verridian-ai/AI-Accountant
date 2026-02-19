@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback, useReducer } from 'react';
 import ForceGraph3D, { type ForceGraph3DInstance } from '3d-force-graph';
 import {
   Search,
@@ -34,19 +34,48 @@ export function CogneeGraphViewer({
   const graphContainerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<ForceGraph3DInstance | null>(null);
 
-  const [allNodes, setAllNodes] = useState<GraphNode[]>([]);
-  const [allLinks, setAllLinks] = useState<GraphLink[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  type FetchState = {
+    allNodes: GraphNode[];
+    allLinks: GraphLink[];
+    loading: boolean;
+    error: string | null;
+  };
+  type FetchAction =
+    | { type: 'fetch_start' }
+    | { type: 'fetch_success'; nodes: GraphNode[]; links: GraphLink[] }
+    | { type: 'fetch_error'; message: string };
+
+  function fetchReducer(state: FetchState, action: FetchAction): FetchState {
+    switch (action.type) {
+      case 'fetch_start':
+        return { ...state, loading: true, error: null };
+      case 'fetch_success':
+        return { allNodes: action.nodes, allLinks: action.links, loading: false, error: null };
+      case 'fetch_error':
+        return { ...state, loading: false, error: action.message };
+      default:
+        return state;
+    }
+  }
+
+  const [{ allNodes, allLinks, loading, error }, fetchDispatch] = useReducer(fetchReducer, {
+    allNodes: [],
+    allLinks: [],
+    loading: true,
+    error: null,
+  });
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [webglSupported] = useState(() => detectWebGL());
 
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedDataset, setSelectedDataset] = useState<string>('');
-  const [selectedEdgeTypes, setSelectedEdgeTypes] = useState<string[]>([]);
-  const [minConnections, setMinConnections] = useState(1);
+  const [filters, setFilters] = useState({
+    types: [] as string[],
+    dataset: '',
+    edgeTypes: [] as string[],
+    minConnections: 1,
+  });
+  const { types: selectedTypes, dataset: selectedDataset, edgeTypes: selectedEdgeTypes, minConnections } = filters;
 
   const allEntityTypes = useMemo(
     () => [...new Set(allNodes.map((n) => n.type))].sort(),
@@ -109,8 +138,7 @@ export function CogneeGraphViewer({
   ]);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    fetchDispatch({ type: 'fetch_start' });
     try {
       let raw: RawGraphResponse;
       if (datasetName) {
@@ -121,12 +149,12 @@ export function CogneeGraphViewer({
         raw = (await adminFetch('/api/admin/cognee/graph/stats')) as RawGraphResponse;
       }
       const { nodes, links } = transformToGraphData(raw);
-      setAllNodes(nodes);
-      setAllLinks(links);
+      fetchDispatch({ type: 'fetch_success', nodes, links });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load graph data');
-    } finally {
-      setLoading(false);
+      fetchDispatch({
+        type: 'fetch_error',
+        message: err instanceof Error ? err.message : 'Failed to load graph data',
+      });
     }
   }, [datasetName]);
 
@@ -194,10 +222,7 @@ export function CogneeGraphViewer({
     graphRef.current?.zoomToFit(400, 40);
     setSelectedNode(null);
     setSearchQuery('');
-    setSelectedTypes([]);
-    setSelectedDataset('');
-    setSelectedEdgeTypes([]);
-    setMinConnections(1);
+    setFilters({ types: [], dataset: '', edgeTypes: [], minConnections: 1 });
   }, []);
 
   const handleNavigateToNode = useCallback(
@@ -280,12 +305,12 @@ export function CogneeGraphViewer({
           label="Types"
           options={allEntityTypes}
           selected={selectedTypes}
-          onChange={setSelectedTypes}
+          onChange={(v) => setFilters((f) => ({ ...f, types: v }))}
         />
 
         <select
           value={selectedDataset}
-          onChange={(e) => setSelectedDataset(e.target.value)}
+          onChange={(e) => setFilters((f) => ({ ...f, dataset: e.target.value }))}
           className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-gray-300 hover:border-[#FFCC00]/40 focus:outline-none"
         >
           <option value="">All datasets</option>
@@ -300,7 +325,7 @@ export function CogneeGraphViewer({
           label="Edges"
           options={allEdgeTypes}
           selected={selectedEdgeTypes}
-          onChange={setSelectedEdgeTypes}
+          onChange={(v) => setFilters((f) => ({ ...f, edgeTypes: v }))}
         />
 
         <div className="flex items-center gap-1 text-xs text-gray-400">
@@ -311,7 +336,7 @@ export function CogneeGraphViewer({
             min={1}
             max={Math.max(20, Math.max(...allNodes.map((n) => n.connections), 1))}
             value={minConnections}
-            onChange={(e) => setMinConnections(Number(e.target.value))}
+            onChange={(e) => setFilters((f) => ({ ...f, minConnections: Number(e.target.value) }))}
             className="w-16 accent-[#FFCC00]"
           />
           <span className="text-[#FFCC00] w-4 text-center">{minConnections}</span>

@@ -24,36 +24,42 @@ interface Execution {
   error?: string;
 }
 
+type AgentMonitorStats = {
+  totalExecutions: number;
+  successRate: number;
+  avgDuration: number;
+  agentBreakdown: AgentStat[];
+};
+
 export function AgentMonitor() {
-  const [stats, setStats] = useState<{
-    totalExecutions: number;
-    successRate: number;
-    avgDuration: number;
-    agentBreakdown: AgentStat[];
-  } | null>(null);
-  const [executions, setExecutions] = useState<Execution[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetchState, setFetchState] = useState<{
+    stats: AgentMonitorStats | null;
+    executions: Execution[];
+    loading: boolean;
+  }>({ stats: null, executions: [], loading: true });
+  const { stats, executions, loading } = fetchState;
   const [page, setPage] = useState(0);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
-    setLoading(true);
     try {
       const [s, e] = await Promise.all([
         fetchAgentStats(),
         fetchAgentExecutions({ limit: '20', offset: '0' }),
       ]);
-      setStats(s);
-      setExecutions(Array.isArray(e) ? e : e.executions || []);
+      setFetchState({
+        stats: s as AgentMonitorStats,
+        executions: Array.isArray(e) ? e : (e as { executions: Execution[] }).executions ?? [],
+        loading: false,
+      });
     } catch {
-      /* */
+      setFetchState((s) => ({ ...s, loading: false }));
     }
-    setLoading(false);
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const loadMore = async () => {
     const nextPage = page + 1;
@@ -61,8 +67,8 @@ export function AgentMonitor() {
       const params: Record<string, string> = { limit: '20', offset: String(nextPage * 20) };
       if (selectedAgent) params.agentType = selectedAgent;
       const e = await fetchAgentExecutions(params);
-      const list = Array.isArray(e) ? e : e.executions || [];
-      setExecutions((prev) => [...prev, ...list]);
+      const list = Array.isArray(e) ? e : (e as { executions: Execution[] }).executions ?? [];
+      setFetchState((prev) => ({ ...prev, executions: [...prev.executions, ...list] }));
       setPage(nextPage);
     } catch {
       /* */
@@ -76,7 +82,10 @@ export function AgentMonitor() {
       const params: Record<string, string> = { limit: '20', offset: '0' };
       if (agent) params.agentType = agent;
       const e = await fetchAgentExecutions(params);
-      setExecutions(Array.isArray(e) ? e : e.executions || []);
+      setFetchState((prev) => ({
+        ...prev,
+        executions: Array.isArray(e) ? e : (e as { executions: Execution[] }).executions ?? [],
+      }));
     } catch {
       /* */
     }
@@ -105,7 +114,7 @@ export function AgentMonitor() {
         </div>
         <button
           type="button"
-          onClick={loadData}
+          onClick={() => { setFetchState((s) => ({ ...s, loading: true })); void loadData(); }}
           className="p-2 rounded-xl bg-[#16213e] text-zinc-400 hover:text-[#FFCC00] transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
