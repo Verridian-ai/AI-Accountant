@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { GitBranch, Plus, Loader2, CheckCircle, XCircle, Layers, ArrowRight } from 'lucide-react';
+import { GitBranch, Plus, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
 import { knowledgeApi } from '../../../api';
 
 interface OntologyManagerProps {

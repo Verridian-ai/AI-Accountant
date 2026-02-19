@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Network, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { intelligenceApi } from '../../../api';
-import { cn } from '../../../lib/utils';
 
 interface ModuleConnectionMapProps {
   connections?: Connection[];
