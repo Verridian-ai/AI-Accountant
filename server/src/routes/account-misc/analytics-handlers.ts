@@ -76,8 +76,11 @@ export function registerAnalyticsHandlers(app: Hono): void {
       const budgets = await budgetService.listBudgets(payload.userId, status);
       return c.json({ data: budgets });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get budgets';
-      return c.json({ error: message, code: 'GET_BUDGETS_FAILED' }, 500);
+      console.error('[Analytics] Get budgets failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'GET_BUDGETS_FAILED' },
+        500,
+      );
     }
   });
 
@@ -89,8 +92,11 @@ export function registerAnalyticsHandlers(app: Hono): void {
       const budget = await budgetService.createBudget(payload.userId, params);
       return c.json({ data: budget }, 201);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create budget';
-      return c.json({ error: message, code: 'CREATE_BUDGET_FAILED' }, 500);
+      console.error('[Analytics] Create budget failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'CREATE_BUDGET_FAILED' },
+        500,
+      );
     }
   });
 
@@ -106,8 +112,11 @@ export function registerAnalyticsHandlers(app: Hono): void {
         await anomalyDetectionService.dismissAlert(alertId, reason);
         return c.json({ data: { success: true, alertId } });
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to dismiss alert';
-        return c.json({ error: message, code: 'DISMISS_ALERT_FAILED' }, 500);
+        console.error('[Analytics] Dismiss alert failed:', err);
+        return c.json(
+          { error: 'Internal server error. Please try again.', code: 'DISMISS_ALERT_FAILED' },
+          500,
+        );
       }
     },
   );

@@ -33,7 +33,7 @@ export function registerParseRoute(app: Hono): void {
         {
           success: false,
           agentType: 'statement_parser',
-          error: err instanceof Error ? err.message : String(err),
+          error: 'Internal server error. Please try again.',
           durationMs: Date.now() - startTime,
         },
         500,

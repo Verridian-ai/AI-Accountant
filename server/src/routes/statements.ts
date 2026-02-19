@@ -18,8 +18,11 @@ statementRoutes.get('/', async (c) => {
   try {
     return c.json(await statementService.getAll(getUserId(c)));
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get statements';
-    return c.json({ error: message, code: 'GET_STATEMENTS_FAILED' }, 500);
+    console.error('[Statements] Get statements failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GET_STATEMENTS_FAILED' },
+      500,
+    );
   }
 });
 
@@ -33,8 +36,11 @@ statementRoutes.post('/upload', async (c) => {
     const result = await statementService.upload(getUserId(c), file);
     return c.json(result);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Upload failed';
-    return c.json({ error: message, code: 'UPLOAD_FAILED' }, 500);
+    console.error('[Statements] Upload failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'UPLOAD_FAILED' },
+      500,
+    );
   }
 });
 
@@ -44,8 +50,11 @@ statementRoutes.post('/:id/reprocess', zValidator('json', z.object({}).optional(
     const result = await statementService.reprocess(getUserId(c), c.req.param('id'));
     return c.json(result);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Reprocess failed';
-    return c.json({ error: message, code: 'REPROCESS_FAILED' }, 500);
+    console.error('[Statements] Reprocess failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'REPROCESS_FAILED' },
+      500,
+    );
   }
 });
 
@@ -54,8 +63,11 @@ statementRoutes.get('/gap-analysis', async (c) => {
   try {
     return c.json(await statementService.getGapAnalysis(getUserId(c)));
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get gap analysis';
-    return c.json({ error: message, code: 'GAP_ANALYSIS_FAILED' }, 500);
+    console.error('[Statements] Gap analysis failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GAP_ANALYSIS_FAILED' },
+      500,
+    );
   }
 });
 

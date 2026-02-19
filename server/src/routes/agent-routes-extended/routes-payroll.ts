@@ -34,7 +34,7 @@ export function registerPayrollRoute(app: Hono): void {
         {
           success: false,
           agentType: 'payroll_agent',
-          error: err instanceof Error ? err.message : String(err),
+          error: 'Internal server error. Please try again.',
           durationMs: Date.now() - startTime,
         },
         500,

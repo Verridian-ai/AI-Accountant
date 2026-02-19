@@ -34,7 +34,7 @@ export function registerTaxRoutes(app: Hono): void {
         {
           success: false,
           agentType: 'tax_strategy',
-          error: err instanceof Error ? err.message : String(err),
+          error: 'Internal server error. Please try again.',
           durationMs: Date.now() - startTime,
         },
         500,
@@ -72,7 +72,7 @@ export function registerTaxRoutes(app: Hono): void {
         {
           success: false,
           agentType: 'personal_tax_claims',
-          error: err instanceof Error ? err.message : String(err),
+          error: 'Internal server error. Please try again.',
           durationMs: Date.now() - startTime,
         },
         500,

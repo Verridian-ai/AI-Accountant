@@ -39,7 +39,7 @@ export function registerMerchantRoute(app: Hono): void {
         {
           success: false,
           agentType: 'merchant_intelligence',
-          error: err instanceof Error ? err.message : String(err),
+          error: 'Internal server error. Please try again.',
           durationMs: Date.now() - startTime,
         },
         500,

@@ -111,8 +111,11 @@ miscRoutes.post('/push/subscribe', zValidator('json', pushSubscribeSchema), asyn
     await pushNotificationService.subscribe(userId, tenantId, { endpoint, keys }, deviceName);
     return c.json({ data: { success: true } }, 201);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to subscribe';
-    return c.json({ error: message, code: 'SUBSCRIBE_FAILED' }, 500);
+    console.error('[Misc] Push subscribe failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'SUBSCRIBE_FAILED' },
+      500,
+    );
   }
 });
 
@@ -123,8 +126,11 @@ miscRoutes.delete('/push/subscribe', zValidator('json', pushUnsubscribeSchema), 
     await pushNotificationService.unsubscribe(userId, endpoint);
     return c.json({ data: { success: true } });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to unsubscribe';
-    return c.json({ error: message, code: 'UNSUBSCRIBE_FAILED' }, 500);
+    console.error('[Misc] Push unsubscribe failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'UNSUBSCRIBE_FAILED' },
+      500,
+    );
   }
 });
 
@@ -135,8 +141,11 @@ miscRoutes.get('/push/subscriptions', async (c) => {
     const subscriptions = await pushNotificationService.getSubscriptions(userId, tenantId);
     return c.json({ data: { count: subscriptions.length, subscriptions } });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get subscriptions';
-    return c.json({ error: message, code: 'GET_SUBSCRIPTIONS_FAILED' }, 500);
+    console.error('[Misc] Get subscriptions failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GET_SUBSCRIPTIONS_FAILED' },
+      500,
+    );
   }
 });
 
@@ -160,8 +169,11 @@ miscRoutes.get('/notifications/preferences', async (c) => {
       },
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get preferences';
-    return c.json({ error: message, code: 'GET_PREFS_FAILED' }, 500);
+    console.error('[Misc] Get preferences failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GET_PREFS_FAILED' },
+      500,
+    );
   }
 });
 
@@ -178,8 +190,11 @@ miscRoutes.put(
         .where(eq(notificationPreferences.userId, userId));
       return c.json({ success: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update preferences';
-      return c.json({ error: message, code: 'UPDATE_PREFS_FAILED' }, 500);
+      console.error('[Misc] Update preferences failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'UPDATE_PREFS_FAILED' },
+        500,
+      );
     }
   },
 );
@@ -194,8 +209,8 @@ miscRoutes.post('/sync', zValidator('json', syncBodySchema), async (c) => {
     const result = await syncService.processSync(userId, tenantId, operations);
     return c.json({ data: result });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Sync failed';
-    return c.json({ error: message, code: 'SYNC_FAILED' }, 500);
+    console.error('[Misc] Sync failed:', err);
+    return c.json({ error: 'Internal server error. Please try again.', code: 'SYNC_FAILED' }, 500);
   }
 });
 
@@ -206,8 +221,11 @@ miscRoutes.get('/sync/conflicts', async (c) => {
     const conflicts = await syncService.getConflicts(userId, tenantId);
     return c.json({ data: { conflicts, count: conflicts.length } });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get conflicts';
-    return c.json({ error: message, code: 'GET_CONFLICTS_FAILED' }, 500);
+    console.error('[Misc] Get conflicts failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GET_CONFLICTS_FAILED' },
+      500,
+    );
   }
 });
 
@@ -218,11 +236,15 @@ miscRoutes.post('/sync/resolve/:conflictId', zValidator('json', syncResolveSchem
     await syncService.resolveConflict(conflictId, resolution);
     return c.json({ data: { success: true, conflictId } });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to resolve conflict';
-    if (message.includes('not found')) {
-      return c.json({ error: message, code: 'CONFLICT_NOT_FOUND' }, 404);
+    const msg = err instanceof Error ? err.message : '';
+    if (msg.includes('not found')) {
+      return c.json({ error: msg, code: 'CONFLICT_NOT_FOUND' }, 404);
     }
-    return c.json({ error: message, code: 'RESOLVE_FAILED' }, 500);
+    console.error('[Misc] Resolve conflict failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'RESOLVE_FAILED' },
+      500,
+    );
   }
 });
 
@@ -234,8 +256,11 @@ miscRoutes.get('/sync/log', zValidator('query', syncLogQuerySchema), async (c) =
     const entries = await syncService.getSyncLog(userId, tenantId, limit, offset);
     return c.json({ data: { entries, count: entries.length } });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get sync log';
-    return c.json({ error: message, code: 'GET_LOG_FAILED' }, 500);
+    console.error('[Misc] Get sync log failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GET_LOG_FAILED' },
+      500,
+    );
   }
 });
 

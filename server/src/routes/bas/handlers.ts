@@ -21,8 +21,11 @@ export function registerBASHandlers(app: Hono): void {
       const payload = c.get('jwtPayload');
       return c.json(await basService.getAvailableQuarters(payload.userId));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get BAS quarters';
-      return c.json({ error: message, code: 'GET_QUARTERS_FAILED' }, 500);
+      console.error('[BAS] Get quarters failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'GET_QUARTERS_FAILED' },
+        500,
+      );
     }
   });
 
@@ -77,8 +80,11 @@ export function registerBASHandlers(app: Hono): void {
         _raw: result,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to calculate BAS';
-      return c.json({ error: message, code: 'CALCULATE_BAS_FAILED' }, 500);
+      console.error('[BAS] Calculate BAS failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'CALCULATE_BAS_FAILED' },
+        500,
+      );
     }
   });
 
@@ -98,8 +104,11 @@ export function registerBASHandlers(app: Hono): void {
       events.emit('update', { type: 'bas_updated' });
       return c.json(result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save BAS';
-      return c.json({ error: message, code: 'SAVE_BAS_FAILED' }, 500);
+      console.error('[BAS] Save BAS failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'SAVE_BAS_FAILED' },
+        500,
+      );
     }
   });
 
@@ -128,8 +137,11 @@ export function registerBASHandlers(app: Hono): void {
       });
       return c.json(history);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get BAS history';
-      return c.json({ error: message, code: 'GET_HISTORY_FAILED' }, 500);
+      console.error('[BAS] Get history failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'GET_HISTORY_FAILED' },
+        500,
+      );
     }
   });
 
@@ -138,8 +150,11 @@ export function registerBASHandlers(app: Hono): void {
     try {
       return c.json(await db.select().from(taxCodes).all());
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get tax codes';
-      return c.json({ error: message, code: 'GET_TAX_CODES_FAILED' }, 500);
+      console.error('[BAS] Get tax codes failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'GET_TAX_CODES_FAILED' },
+        500,
+      );
     }
   });
 
@@ -172,8 +187,14 @@ export function registerBASHandlers(app: Hono): void {
         transactionCounts: { total: result.transactionCount },
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to calculate BAS';
-      return c.json({ error: message, code: 'CALCULATE_ENHANCED_BAS_FAILED' }, 500);
+      console.error('[BAS] Enhanced calculate failed:', err);
+      return c.json(
+        {
+          error: 'Internal server error. Please try again.',
+          code: 'CALCULATE_ENHANCED_BAS_FAILED',
+        },
+        500,
+      );
     }
   });
 
@@ -193,8 +214,11 @@ export function registerBASHandlers(app: Hono): void {
       );
       return c.json({ success: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update BAS status';
-      return c.json({ error: message, code: 'UPDATE_STATUS_FAILED' }, 500);
+      console.error('[BAS] Update status failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'UPDATE_STATUS_FAILED' },
+        500,
+      );
     }
   });
 
@@ -214,8 +238,11 @@ export function registerBASHandlers(app: Hono): void {
       ]);
       return c.json({ periodA: result1, periodB: result2 });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to compare BAS periods';
-      return c.json({ error: message, code: 'COMPARE_BAS_FAILED' }, 500);
+      console.error('[BAS] Compare periods failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'COMPARE_BAS_FAILED' },
+        500,
+      );
     }
   });
 

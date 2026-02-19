@@ -60,7 +60,7 @@ agents.post('/analyze', zValidator('json', analyzeSchema), async (c) => {
     return c.json(result);
   } catch (err) {
     console.error('[Agents] Analyze error:', err);
-    return c.json({ error: err instanceof Error ? err.message : 'Analysis failed' }, 500);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 
@@ -117,7 +117,7 @@ agents.post('/bas/calculate', zValidator('json', basCalculateSchema), async (c) 
     return c.json(result);
   } catch (err) {
     console.error('[Agents] BAS calculate error:', err);
-    return c.json({ error: err instanceof Error ? err.message : 'BAS calculation failed' }, 500);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 
@@ -146,7 +146,7 @@ agents.post('/reconcile', zValidator('json', reconcileSchema), async (c) => {
     return c.json(result);
   } catch (err) {
     console.error('[Agents] Reconcile error:', err);
-    return c.json({ error: err instanceof Error ? err.message : 'Reconciliation failed' }, 500);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 
@@ -175,7 +175,7 @@ agents.post('/transfers/analyze', zValidator('json', transfersAnalyzeSchema), as
     return c.json(result);
   } catch (err) {
     console.error('[Agents] Transfer analysis error:', err);
-    return c.json({ error: err instanceof Error ? err.message : 'Transfer analysis failed' }, 500);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 

@@ -94,10 +94,11 @@ export function registerInvoiceHandlers(app: Hono): void {
       const result = await invoicingService.updateInvoice(userId, invoiceId, data);
       return c.json(result);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = err instanceof Error ? err.message : '';
       if (msg.includes('not found')) return c.json({ error: msg }, 404);
       if (msg.includes('Cannot update')) return c.json({ error: msg }, 400);
-      return c.json({ error: msg || 'Failed to update invoice' }, 500);
+      console.error('[Invoicing] Update invoice failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 
@@ -109,10 +110,11 @@ export function registerInvoiceHandlers(app: Hono): void {
       const result = await invoicingService.sendInvoice(userId, invoiceId);
       return c.json(result);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = err instanceof Error ? err.message : '';
       if (msg.includes('not found')) return c.json({ error: msg }, 404);
       if (msg.includes('Cannot send')) return c.json({ error: msg }, 400);
-      return c.json({ error: msg || 'Failed to send invoice' }, 500);
+      console.error('[Invoicing] Send invoice failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 
@@ -124,11 +126,12 @@ export function registerInvoiceHandlers(app: Hono): void {
       const result = await invoicingService.voidInvoice(userId, invoiceId);
       return c.json(result);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = err instanceof Error ? err.message : '';
       if (msg.includes('not found')) return c.json({ error: msg }, 404);
       if (msg.includes('Cannot void') || msg.includes('already void'))
         return c.json({ error: msg }, 400);
-      return c.json({ error: msg || 'Failed to void invoice' }, 500);
+      console.error('[Invoicing] Void invoice failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 
@@ -160,9 +163,10 @@ export function registerInvoiceHandlers(app: Hono): void {
       c.header('Content-Disposition', `attachment; filename="invoice-${invoiceNumber}.pdf"`);
       return c.body(new Uint8Array(pdfBuffer));
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = err instanceof Error ? err.message : '';
       if (msg.includes('not found')) return c.json({ error: msg }, 404);
-      return c.json({ error: msg || 'Failed to generate PDF' }, 500);
+      console.error('[Invoicing] Generate PDF failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 
@@ -179,10 +183,11 @@ export function registerInvoiceHandlers(app: Hono): void {
       );
       return c.json(payment, 201);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = err instanceof Error ? err.message : '';
       if (msg.includes('not found')) return c.json({ error: msg }, 404);
       if (msg.includes('Cannot record')) return c.json({ error: msg }, 400);
-      return c.json({ error: msg || 'Failed to record payment' }, 500);
+      console.error('[Invoicing] Record payment failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 }

@@ -37,7 +37,7 @@ export function registerCategorizeRoute(app: Hono): void {
         {
           success: false,
           agentType: 'transaction_categorizer',
-          error: err instanceof Error ? err.message : String(err),
+          error: 'Internal server error. Please try again.',
           durationMs: Date.now() - startTime,
         },
         500,

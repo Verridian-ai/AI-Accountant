@@ -102,7 +102,8 @@ reportRoutes.get('/pnl', async (c) => {
     const svc = new FinancialReportService();
     return c.json(await svc.generateProfitAndLoss(userId, start, end, accountId));
   } catch (err) {
-    return c.json({ error: err instanceof Error ? err.message : 'Failed to generate P&L' }, 500);
+    console.error('[Reports] P&L generation failed:', err);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 
@@ -115,10 +116,8 @@ reportRoutes.get('/balance-sheet', async (c) => {
     const svc = new FinancialReportService();
     return c.json(await svc.generateBalanceSheet(userId, asAt));
   } catch (err) {
-    return c.json(
-      { error: err instanceof Error ? err.message : 'Failed to generate balance sheet' },
-      500,
-    );
+    console.error('[Reports] Balance sheet generation failed:', err);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 
@@ -132,10 +131,8 @@ reportRoutes.get('/cash-flow', async (c) => {
     const svc = new FinancialReportService();
     return c.json(await svc.generateCashFlow(userId, start, end));
   } catch (err) {
-    return c.json(
-      { error: err instanceof Error ? err.message : 'Failed to generate cash flow' },
-      500,
-    );
+    console.error('[Reports] Cash flow generation failed:', err);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 
@@ -148,10 +145,8 @@ reportRoutes.get('/trial-balance', async (c) => {
     const svc = new FinancialReportService();
     return c.json(await svc.generateTrialBalance(userId, asAt));
   } catch (err) {
-    return c.json(
-      { error: err instanceof Error ? err.message : 'Failed to generate trial balance' },
-      500,
-    );
+    console.error('[Reports] Trial balance generation failed:', err);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 
@@ -163,7 +158,8 @@ reportRoutes.get('/kpis', async (c) => {
     const svc = new FinancialReportService();
     return c.json(await svc.getKPIs(userId, period));
   } catch (err) {
-    return c.json({ error: err instanceof Error ? err.message : 'Failed to calculate KPIs' }, 500);
+    console.error('[Reports] KPI calculation failed:', err);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 
@@ -183,7 +179,8 @@ reportRoutes.get('/compare', async (c) => {
       await svc.comparePeriods(userId, currentStart, currentEnd, priorStart, priorEnd, type),
     );
   } catch (err) {
-    return c.json({ error: err instanceof Error ? err.message : 'Failed to compare periods' }, 500);
+    console.error('[Reports] Period comparison failed:', err);
+    return c.json({ error: 'Internal server error. Please try again.' }, 500);
   }
 });
 

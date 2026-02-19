@@ -65,8 +65,11 @@ analyticsRoutes.get('/category-breakdown', analyticsQuery, async (c) => {
       total: totalExpense,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get category breakdown';
-    return c.json({ error: message, code: 'CATEGORY_BREAKDOWN_FAILED' }, 500);
+    console.error('[Analytics] Category breakdown failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'CATEGORY_BREAKDOWN_FAILED' },
+      500,
+    );
   }
 });
 
@@ -104,8 +107,11 @@ analyticsRoutes.get('/spending-trends', async (c) => {
         })),
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get spending trends';
-    return c.json({ error: message, code: 'SPENDING_TRENDS_FAILED' }, 500);
+    console.error('[Analytics] Spending trends failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'SPENDING_TRENDS_FAILED' },
+      500,
+    );
   }
 });
 
@@ -152,8 +158,11 @@ analyticsRoutes.get('/recurring-payments', async (c) => {
     }
     return c.json(recurring);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get recurring payments';
-    return c.json({ error: message, code: 'RECURRING_PAYMENTS_FAILED' }, 500);
+    console.error('[Analytics] Recurring payments failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'RECURRING_PAYMENTS_FAILED' },
+      500,
+    );
   }
 });
 
@@ -193,8 +202,11 @@ analyticsRoutes.get('/budget-vs-actual', async (c) => {
       })),
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get budget vs actual';
-    return c.json({ error: message, code: 'BUDGET_VS_ACTUAL_FAILED' }, 500);
+    console.error('[Analytics] Budget vs actual failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'BUDGET_VS_ACTUAL_FAILED' },
+      500,
+    );
   }
 });
 
@@ -210,8 +222,11 @@ analyticsRoutes.get('/anomalies', async (c) => {
     });
     return c.json({ data: alerts });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get anomalies';
-    return c.json({ error: message, code: 'GET_ANOMALIES_FAILED' }, 500);
+    console.error('[Analytics] Get anomalies failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GET_ANOMALIES_FAILED' },
+      500,
+    );
   }
 });
 
@@ -223,8 +238,11 @@ analyticsRoutes.get('/cash-flow-forecast', async (c) => {
     const forecasts = await cashFlowForecastService.getForecasts(userId, status ?? undefined);
     return c.json({ data: forecasts });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to get cash flow forecast';
-    return c.json({ error: message, code: 'GET_FORECAST_FAILED' }, 500);
+    console.error('[Analytics] Cash flow forecast failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GET_FORECAST_FAILED' },
+      500,
+    );
   }
 });
 

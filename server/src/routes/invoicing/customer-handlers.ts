@@ -35,9 +35,10 @@ export function registerCustomerHandlers(app: Hono): void {
       const customer = await customerService.createCustomer(userId, data);
       return c.json(customer, 201);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      const status = msg.includes('ABN') ? 400 : 500;
-      return c.json({ error: msg || 'Failed to create customer' }, status);
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('ABN')) return c.json({ error: msg }, 400);
+      console.error('[Invoicing] Create customer failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 
@@ -49,11 +50,10 @@ export function registerCustomerHandlers(app: Hono): void {
       const result = await customerService.getCustomerWithBalance(userId, customerId);
       return c.json(result);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('not found')) {
-        return c.json({ error: msg }, 404);
-      }
-      return c.json({ error: msg || 'Failed to get customer' }, 500);
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('not found')) return c.json({ error: msg }, 404);
+      console.error('[Invoicing] Get customer failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 
@@ -66,12 +66,11 @@ export function registerCustomerHandlers(app: Hono): void {
       const customer = await customerService.updateCustomer(userId, customerId, data);
       return c.json(customer);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('not found')) {
-        return c.json({ error: msg }, 404);
-      }
-      const status = msg.includes('ABN') ? 400 : 500;
-      return c.json({ error: msg || 'Failed to update customer' }, status);
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('not found')) return c.json({ error: msg }, 404);
+      if (msg.includes('ABN')) return c.json({ error: msg }, 400);
+      console.error('[Invoicing] Update customer failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 
@@ -83,11 +82,10 @@ export function registerCustomerHandlers(app: Hono): void {
       await customerService.archiveCustomer(userId, customerId);
       return c.json({ success: true });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('not found')) {
-        return c.json({ error: msg }, 404);
-      }
-      return c.json({ error: msg || 'Failed to archive customer' }, 500);
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('not found')) return c.json({ error: msg }, 404);
+      console.error('[Invoicing] Archive customer failed:', err);
+      return c.json({ error: 'Internal server error. Please try again.' }, 500);
     }
   });
 
