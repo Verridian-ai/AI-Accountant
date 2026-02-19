@@ -5,6 +5,8 @@ import path from 'path';
 import fs from 'fs';
 import { ragService } from '../services/rag.js';
 import { adminAuthMiddleware } from '../services/admin-auth/index.js';
+import { logger } from '../lib/logger.js';
+import { getProductionPool, isMaskedBranchActive, neonHealthCheck } from '../db/neon-connection.js';
 
 const adminExtRoutes = new Hono();
 
@@ -48,10 +50,43 @@ adminExtRoutes.post(
       const result = await ragService.addDocuments(documents, targetDataset);
       return c.json(result);
     } catch (err) {
-      console.error('Ingestion failed:', err);
+      logger.error('Ingestion failed:', err);
       return c.json({ error: 'Ingestion failed' }, 500);
     }
   },
 );
+
+// GET /api/admin/pool-stats — Connection pool utilization metrics (TASK-049)
+adminExtRoutes.get('/admin/pool-stats', async (c) => {
+  try {
+    const prodPool = getProductionPool();
+    const prodStats = {
+      totalCount: prodPool.totalCount,
+      idleCount: prodPool.idleCount,
+      waitingCount: prodPool.waitingCount,
+      status: prodPool.totalCount > 0 ? 'healthy' : 'initializing',
+    };
+
+    const maskedActive = isMaskedBranchActive();
+    const health = await neonHealthCheck();
+
+    return c.json({
+      production: prodStats,
+      masked: {
+        active: maskedActive,
+        totalCount: health.masked.poolStats?.totalCount ?? 0,
+        idleCount: health.masked.poolStats?.idleCount ?? 0,
+        waitingCount: health.masked.poolStats?.waitingCount ?? 0,
+        status: maskedActive ? health.masked.status : 'fallback_to_production',
+      },
+      overall: health.production.status,
+      useNeon: health.useNeon,
+      maskedBranchConfigured: health.maskedBranchConfigured,
+      checkedAt: new Date().toISOString(),
+    });
+  } catch {
+    return c.json({ error: 'Failed to retrieve pool stats' }, 500);
+  }
+});
 
 export default adminExtRoutes;
