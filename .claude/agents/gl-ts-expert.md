@@ -20,3 +20,7 @@ When fixing type errors:
 2. Understand the root cause (not just the symptom)
 3. Make the minimal fix
 4. Verify with tsc
+
+MCP tools available:
+- Use context7 MCP to look up TypeScript, Hono, and Drizzle docs in real-time
+- Use serena MCP to find symbol definitions across the codebase

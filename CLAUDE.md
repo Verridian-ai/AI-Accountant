@@ -251,3 +251,111 @@ grep -rn 'as any' server/src/ --include='*.ts' | grep -v test | grep -v .d.ts | 
 - `docs/TS_ERROR_REPORT.md` — TypeScript error task list
 - `docs/DATA_MASKING_PLAN.md` — 110 PII column masking rules
 - `docs/COGNEE_NEON_BRIDGE_PLAN.md` — Cognee dual-database bridge
+
+---
+
+## Plugin Arsenal (29 plugins, 58+ commands, 40+ agents, 7 MCP servers)
+
+### Non-Negotiable Rules (enforced by hooks)
+1. NEVER use `@ts-ignore` or `@ts-expect-error` — fix types properly
+2. NEVER use `as any` — use proper types or `as unknown as T`
+3. Run `cd server && npx tsc --noEmit` after EVERY server file change — 0 errors required
+4. Run `cd client && npx tsc --noEmit` after EVERY client file change — 0 errors required
+5. NEVER hardcode `localhost:3000` or `localhost:8080` — use `BASE_URL` / `API_URL`
+6. NEVER store secrets in code — use `process.env.X`
+7. All route POST/PATCH/PUT handlers MUST use `zValidator` for body validation
+8. All JWT payload access MUST have null guard
+9. All `parseInt()` calls MUST have radix 10
+10. Commit after each logical fix group
+
+### GoldLedger Custom Commands
+- `/gl-fix "issue"` — Full fix workflow: diagnose, plan, fix, verify, commit
+- `/gl-audit routes|schema|services|client|security|all` — Targeted audit sweep
+- `/gl-migrate "name"` — Generate and review Drizzle migration
+- `/gl-agent-team "name" "mission" N` — Scaffold and launch agent team
+- `/gl-tsc` — Full TypeScript check (server + client)
+- `/gl-neon "SQL"` — Query Neon database directly
+- `/gl-ralph "problem"` — Start iterative Ralph loop
+- `/gl-hive search|store|codify|rules` — Query/write to Hive Memory knowledge graph
+
+### Plugin Slash Commands
+- `/plan` — Step-by-step planning with risk analysis (everything-claude-code)
+- `/write-plan` — Detailed implementation plan (superpowers)
+- `/execute-plan` — Execute a written plan in batches (superpowers)
+- `/orchestrate feature|bugfix|refactor|security "desc"` — Multi-agent orchestration
+- `/feature-dev "desc"` — Guided feature development with codebase exploration
+- `/tdd` — Test-driven development workflow
+- `/build-fix` — Build error diagnosis and fix loop
+- `/ralph-loop "task"` — Iterative self-improving AI loop
+- `/code-review` — Full code review
+- `/review-pr` — 6-agent comprehensive PR review (pr-review-toolkit)
+- `/verify` — Verification before completion
+- `/commit` — Smart git commit with auto-message
+- `/commit-push-pr` — Commit, push, and create PR
+- `/hookify "behavior"` — Create hook to prevent unwanted behavior
+- `/revise-claude-md` — Update CLAUDE.md with session learnings
+
+### Available Specialist Agents
+
+**Plugin Agents** (invoke with Task tool):
+- `code-reviewer` — Code quality (pr-review-toolkit + everything-claude-code)
+- `silent-failure-hunter` — Find swallowed errors (pr-review-toolkit)
+- `type-design-analyzer` — TypeScript type design (pr-review-toolkit)
+- `security-reviewer` — Security vulnerabilities (everything-claude-code)
+- `architect` — System design (everything-claude-code)
+- `planner` — Implementation planning (everything-claude-code)
+- `build-error-resolver` — Build error diagnosis (everything-claude-code)
+- `tdd-guide` — Test-driven development (everything-claude-code)
+- `database-reviewer` — PostgreSQL/Supabase review (everything-claude-code)
+
+**GoldLedger Custom Agents**:
+- `gl-ts-expert` — TypeScript expert for Hono/Drizzle/React (uses context7 + serena MCPs)
+- `gl-security` — Security reviewer for auth and middleware (uses sonatype-guide + serena MCPs)
+- `gl-schema` — Database schema expert for Drizzle/Neon (uses context7 + serena MCPs)
+- `gl-reviewer` — Full-stack code reviewer (uses sonatype-guide + serena + greptile MCPs)
+- `gl-hive-memory` — Hive Memory knowledge graph agent (uses cognee-hive-local MCP)
+
+### MCP Servers (7 active)
+| MCP Server | Tools | Use For |
+|------------|-------|---------|
+| context7 | resolve-library-id, query-docs | Real-time Hono/Drizzle/React/Neon docs |
+| serena | find_symbol, search_for_pattern, get_symbols_overview | Codebase navigation and symbol lookup |
+| github | create_pull_request, create_issue, list_commits | PR/issue management |
+| greptile | list_merge_requests, trigger_code_review | AI code review on PRs |
+| sonatype-guide | getComponentVersion, getRecommendedComponentVersions | Dependency CVE scanning |
+| playwright | browser_navigate, browser_click, browser_snapshot | Browser E2E testing |
+| circleback | (meeting context) | Meeting notes and discussion tracking |
+
+### Per-Agent Plugin/MCP Matrix
+
+| Agent Role | MCPs | Commands | Agents |
+|-----------|------|----------|--------|
+| **Architect/Planner** | context7, serena, github | /plan, /write-plan, /feature-dev | architect, planner |
+| **Code Review** | serena, greptile, sonatype-guide | /review-pr, /code-review, /verify | gl-reviewer, silent-failure-hunter, type-design-analyzer |
+| **TypeScript/Build** | context7, serena | /gl-tsc, /gl-fix, /build-fix | gl-ts-expert, build-error-resolver |
+| **Security** | sonatype-guide, serena, github | /gl-audit security, /orchestrate security | gl-security, security-reviewer |
+| **Database/Schema** | context7, serena | /gl-migrate, /gl-neon | gl-schema, database-reviewer |
+| **Testing/QA** | playwright, context7 | /tdd, /e2e, /verify | tdd-guide, e2e-runner |
+| **Documentation** | context7, github | /revise-claude-md, /update-codemaps | doc-updater |
+| **Git/Release** | github, greptile | /commit, /commit-push-pr | (commit-commands plugin) |
+| **Full-Stack Dev** | context7, serena, github | /feature-dev, /orchestrate, /ralph-loop | code-architect, code-explorer |
+| **Knowledge Graph** | cognee-hive-local | /gl-hive | gl-hive-memory |
+
+### Active Hooks
+| Hook | Trigger | Action |
+|------|---------|--------|
+| pre-commit-gate | `git commit` | Blocks @ts-ignore/@ts-expect-error in staged changes |
+| block-dangerous-patterns | Write .ts/.tsx | Blocks @ts-ignore, hardcoded secrets |
+| post-edit-tsc | Edit/Write .ts/.tsx | Runs tsc, reports error count |
+
+### Agent Team Architecture
+Teams live in `agent-team-N/` directories.
+Launch: `bash '/mnt/c/Users/Danie/Desktop/claude-agent-teams/scripts/launch-team.sh' '/mnt/c/Users/Danie/Desktop/CBA Statements Parse' 'agent-team-N/orchestration-prompt.md' 'session-name' 'N'`
+Attach: `wsl -e bash -c "tmux attach -t session-name"`
+
+### File Ownership Rules (for agent teams)
+- `server/src/routes/` — route handlers only
+- `server/src/services/` — business logic only
+- `server/src/schema/` — schema definitions only
+- `client/src/features/` — feature components only
+- `client/src/api/` — API client only

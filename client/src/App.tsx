@@ -83,14 +83,20 @@ function AppContent() {
 
   const [totalTransactions, setTotalTransactions] = useState(0);
 
-  const handleLogin = (token: string, userData: { id: string; username: string }) => {
+  const handleLogin = (
+    token: string,
+    userData: { id: string; username: string },
+    tenantId?: string | null,
+  ) => {
     localStorage.setItem('token', token);
+    if (tenantId) localStorage.setItem('tenantId', tenantId);
     setIsAuthenticated(true);
     setUser(userData);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('tenantId');
     setIsAuthenticated(false);
     setUser(null);
     setTransactions([]);

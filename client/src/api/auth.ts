@@ -1,9 +1,13 @@
 import { BASE_URL, getAuthHeaders } from './client';
 
-export async function login(
-  username: string,
-  password: string,
-): Promise<{ token: string; user: { id: string; username: string } }> {
+export interface LoginResponse {
+  token: string;
+  user: { id: string; username: string };
+  tenants?: unknown[];
+  activeTenant?: { tenantId?: string; id?: string } | null;
+}
+
+export async function login(username: string, password: string): Promise<LoginResponse> {
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -16,10 +20,7 @@ export async function login(
   return res.json();
 }
 
-export async function register(
-  username: string,
-  password: string,
-): Promise<{ token: string; user: { id: string; username: string } }> {
+export async function register(username: string, password: string): Promise<LoginResponse> {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

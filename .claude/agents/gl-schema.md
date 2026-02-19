@@ -18,3 +18,7 @@ When reviewing schema files:
 2. Check every `text('..._id')` — does it have .references()? If no, flag it
 3. Check every timestamp — does it have .notNull()? If no, flag it
 4. Check for `default('default')` — flag all instances
+
+MCP tools available:
+- Use context7 MCP to look up Drizzle ORM API and migration docs in real-time
+- Use serena MCP to find all table references and schema usages across the codebase

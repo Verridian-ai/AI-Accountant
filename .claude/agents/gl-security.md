@@ -20,3 +20,7 @@ When reviewing:
 2. Check every POST route for missing body validation
 3. Check index.ts publicPaths for over-exposure
 4. Report: CRITICAL / HIGH / MEDIUM / LOW with file:line
+
+MCP tools available:
+- Use sonatype-guide MCP to check package CVEs and dependency vulnerabilities
+- Use serena MCP to trace middleware chains and find all route usages

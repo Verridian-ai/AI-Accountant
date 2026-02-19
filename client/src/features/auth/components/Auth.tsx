@@ -4,7 +4,11 @@ import { User, Lock, Loader2, ArrowRight, UserPlus, LogIn, Sparkles } from 'luci
 import { cn } from '@/lib/utils';
 
 interface AuthProps {
-  onLogin: (token: string, user: { id: string; username: string }) => void;
+  onLogin: (
+    token: string,
+    user: { id: string; username: string },
+    tenantId?: string | null,
+  ) => void;
 }
 
 export function Auth({ onLogin }: AuthProps) {
@@ -24,7 +28,8 @@ export function Auth({ onLogin }: AuthProps) {
         ? await api.login(username, password)
         : await api.register(username, password);
 
-      onLogin(data.token, data.user);
+      const tenantId = data.activeTenant?.tenantId ?? data.activeTenant?.id ?? null;
+      onLogin(data.token, data.user, tenantId);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Authentication failed';
       setError(message);

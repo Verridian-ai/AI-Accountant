@@ -8,6 +8,56 @@
     "deny": []
   },
   "model": "sonnet",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "tool == \"Bash\" && tool_input.command matches \"git commit\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/mnt/c/Users/Danie/Desktop/CBA Statements Parse/.claude/hooks/pre-commit-gate.sh'",
+            "timeout": 30
+          }
+        ],
+        "description": "Pre-commit quality gate — blocks @ts-ignore and @ts-expect-error in staged changes"
+      },
+      {
+        "matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/mnt/c/Users/Danie/Desktop/CBA Statements Parse/.claude/hooks/block-dangerous-patterns.sh'",
+            "timeout": 10
+          }
+        ],
+        "description": "Block @ts-ignore, hardcoded secrets in new TypeScript files"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/mnt/c/Users/Danie/Desktop/CBA Statements Parse/.claude/hooks/post-edit-tsc.sh'",
+            "timeout": 120
+          }
+        ],
+        "description": "Run tsc after TypeScript file edits — shows error count"
+      },
+      {
+        "matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/mnt/c/Users/Danie/Desktop/CBA Statements Parse/.claude/hooks/post-edit-tsc.sh'",
+            "timeout": 120
+          }
+        ],
+        "description": "Run tsc after new TypeScript files are created — shows error count"
+      }
+    ]
+  },
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
