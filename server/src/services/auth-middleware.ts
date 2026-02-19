@@ -89,6 +89,7 @@ export function tenantAuthMiddleware() {
     }
 
     // 5. Attach context for downstream handlers
+    c.set('jwtPayload', payload);
     c.set('tenantId', payload.tenantId);
     c.set('userId', payload.userId);
     c.set('role', payload.role);

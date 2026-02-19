@@ -61,6 +61,8 @@ services:
       # Admin auth
       - ADMIN_JWT_SECRET=${ADMIN_JWT_SECRET:-goldledger-admin-jwt-secret-2025}
       - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD:-Admin123!}
+      # Tenant JWT secret must match JWT_SECRET so global middleware can verify tenant tokens
+      - TENANT_JWT_SECRET=${JWT_SECRET}
       # AI Keys
       - VITE_OPENAI_API_KEY=${VITE_OPENAI_API_KEY}
       - VITE_OPENROUTER_API_KEY=${VITE_OPENROUTER_API_KEY}
