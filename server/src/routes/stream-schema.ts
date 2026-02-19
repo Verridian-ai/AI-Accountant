@@ -29,6 +29,8 @@ const agentStreamInputSchema = z
   })
   .passthrough();
 
+const schemaValidateInputSchema = z.object({ output: z.any() });
+
 // POST /api/stream/agent/:agentType
 streamSchemaRoutes.post(
   '/stream/agent/:agentType',
@@ -92,24 +94,28 @@ streamSchemaRoutes.post(
 );
 
 // POST /api/schemas/:agentType/validate
-streamSchemaRoutes.post('/schemas/:agentType/validate', async (c) => {
-  try {
-    const rawAgentType = c.req.param('agentType');
-    if (!ALL_AGENT_TYPES.includes(rawAgentType as AgentType)) {
-      return c.json({ error: `Invalid agent type: ${rawAgentType}` }, 400);
+streamSchemaRoutes.post(
+  '/schemas/:agentType/validate',
+  zValidator('json', schemaValidateInputSchema),
+  async (c) => {
+    try {
+      const rawAgentType = c.req.param('agentType');
+      if (!ALL_AGENT_TYPES.includes(rawAgentType as AgentType)) {
+        return c.json({ error: `Invalid agent type: ${rawAgentType}` }, 400);
+      }
+      const agentType = rawAgentType as AgentType;
+      const { output } = c.req.valid('json');
+      if (output === undefined)
+        return c.json({ error: 'Request body must include "output" field' }, 400);
+      const result = schemaRegistry.validateOutput(agentType, output);
+      schemaRegistry.updateStats(agentType, result.valid);
+      return c.json({ agentType, valid: result.valid, errors: result.errors?.issues ?? null });
+    } catch (err) {
+      console.error('Schema validation failed:', err);
+      return c.json({ error: 'Failed to validate output' }, 500);
     }
-    const agentType = rawAgentType as AgentType;
-    const { output } = await c.req.json();
-    if (output === undefined)
-      return c.json({ error: 'Request body must include "output" field' }, 400);
-    const result = schemaRegistry.validateOutput(agentType, output);
-    schemaRegistry.updateStats(agentType, result.valid);
-    return c.json({ agentType, valid: result.valid, errors: result.errors?.issues ?? null });
-  } catch (err) {
-    console.error('Schema validation failed:', err);
-    return c.json({ error: 'Failed to validate output' }, 500);
-  }
-});
+  },
+);
 
 // GET /api/schemas/:agentType/stats
 streamSchemaRoutes.get('/schemas/:agentType/stats', async (c) => {

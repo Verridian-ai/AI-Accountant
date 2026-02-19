@@ -1,9 +1,20 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { DashboardService } from '../services/dashboard.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const chartsRoutes = new Hono();
 const dashboardService = new DashboardService();
+
+const saveChartSchema = z.object({
+  userId: z.string().optional(),
+  chartType: z.string(),
+  title: z.string(),
+  dataSource: z.string(),
+  configJson: z.record(z.unknown()).optional(),
+  filtersJson: z.record(z.unknown()).optional(),
+});
 
 // Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
 chartsRoutes.use('/*', tenantAuthMiddleware());
@@ -22,9 +33,9 @@ chartsRoutes.get('/', async (c) => {
 });
 
 // POST /api/charts
-chartsRoutes.post('/', async (c) => {
+chartsRoutes.post('/', zValidator('json', saveChartSchema), async (c) => {
   try {
-    const body = await c.req.json();
+    const body = c.req.valid('json');
     const userId = body.userId || 'default';
     const chart = await dashboardService.saveChart(userId, body);
     return c.json(chart, 201);

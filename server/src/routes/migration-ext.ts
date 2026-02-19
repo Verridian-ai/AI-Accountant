@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { db } from '../schema.js';
 import { sql } from 'drizzle-orm';
 import { schemaRegistry } from '../services/singletons.js';
@@ -8,33 +10,39 @@ import { adminAuthMiddleware } from '../services/admin-auth/index.js';
 
 const migrationExtRoutes = new Hono();
 
+const schemaValidateBodySchema = z.object({ output: z.any() });
+
 // Apply admin auth to all routes — schema validation and migration management are admin-only
 migrationExtRoutes.use('/*', adminAuthMiddleware());
 
 // POST /api/schemas/:agentType/validate — Validate output against schema
-migrationExtRoutes.post('/schemas/:agentType/validate', async (c) => {
-  try {
-    const rawAgentType = c.req.param('agentType');
-    if (!ALL_AGENT_TYPES.includes(rawAgentType as AgentType)) {
-      return c.json({ error: `Invalid agent type: ${rawAgentType}` }, 400);
+migrationExtRoutes.post(
+  '/schemas/:agentType/validate',
+  zValidator('json', schemaValidateBodySchema),
+  async (c) => {
+    try {
+      const rawAgentType = c.req.param('agentType');
+      if (!ALL_AGENT_TYPES.includes(rawAgentType as AgentType)) {
+        return c.json({ error: `Invalid agent type: ${rawAgentType}` }, 400);
+      }
+      const agentType = rawAgentType as AgentType;
+      const { output } = c.req.valid('json');
+      if (output === undefined) {
+        return c.json({ error: 'Request body must include "output" field' }, 400);
+      }
+      const result = schemaRegistry.validateOutput(agentType, output);
+      schemaRegistry.updateStats(agentType, result.valid);
+      return c.json({
+        agentType,
+        valid: result.valid,
+        errors: result.errors?.issues ?? null,
+      });
+    } catch (err) {
+      console.error('Schema validation failed:', err);
+      return c.json({ error: 'Failed to validate output' }, 500);
     }
-    const agentType = rawAgentType as AgentType;
-    const { output } = await c.req.json();
-    if (output === undefined) {
-      return c.json({ error: 'Request body must include "output" field' }, 400);
-    }
-    const result = schemaRegistry.validateOutput(agentType, output);
-    schemaRegistry.updateStats(agentType, result.valid);
-    return c.json({
-      agentType,
-      valid: result.valid,
-      errors: result.errors?.issues ?? null,
-    });
-  } catch (err) {
-    console.error('Schema validation failed:', err);
-    return c.json({ error: 'Failed to validate output' }, 500);
-  }
-});
+  },
+);
 
 // GET /api/schemas/:agentType/stats — Get validation stats
 migrationExtRoutes.get('/schemas/:agentType/stats', async (c) => {
