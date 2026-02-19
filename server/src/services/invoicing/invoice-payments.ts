@@ -38,11 +38,7 @@ export async function voidInvoice(userId: string, invoiceId: string): Promise<In
     throw new Error('Invoice is already void');
   }
 
-  await db
-    .update(invoices)
-    .set({ status: 'void' })
-    .where(eq(invoices.id, invoiceId))
-    .run();
+  await db.update(invoices).set({ status: 'void' }).where(eq(invoices.id, invoiceId)).run();
 
   return {
     ...invoice,
@@ -143,7 +139,7 @@ export async function createCreditNote(
       customerId: data.customerId,
       invoiceNumber,
       status: 'draft',
-      invoiceDate: issueDateStr,
+      issueDate: issueDateStr,
       dueDate: issueDateStr,
       subtotal,
       gstAmount,
@@ -178,7 +174,7 @@ export async function createCreditNote(
       customerId: data.customerId,
       invoiceNumber,
       status: 'draft',
-      invoiceDate: issueDateStr,
+      issueDate: issueDateStr,
       dueDate: issueDateStr,
       subtotal,
       gstAmount,

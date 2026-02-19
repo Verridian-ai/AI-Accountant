@@ -1,6 +1,5 @@
 import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 import { users } from './core.js';
-import { transactions } from './transactions.js';
 
 // IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
 // The wrapPgDb() proxy stores the literal string 'CURRENT_TIMESTAMP' in PostgreSQL
@@ -93,27 +92,33 @@ export const purchaseOrders = sqliteTable('purchase_orders', {
     .notNull()
     .references(() => suppliers.id),
   poNumber: text('po_number').notNull().unique(),
-  poDate: text('po_date').notNull(),
+  issueDate: text('issue_date').notNull(),
+  expectedDate: text('expected_date'),
   status: text('status').notNull().default('draft'),
+  subtotal: integer('subtotal').notNull().default(0),
+  gstAmount: integer('gst_amount').notNull().default(0),
   totalAmount: integer('total_amount').notNull().default(0),
+  notes: text('notes'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
+  updatedAt: text('updated_at'),
 });
 
 export const poLines = sqliteTable('po_lines', {
   id: text('id').primaryKey(),
-  poId: text('po_id')
+  purchaseOrderId: text('po_id')
     .notNull()
     .references(() => purchaseOrders.id, { onDelete: 'cascade' }),
   description: text('description').notNull(),
   quantity: real('quantity').notNull().default(1),
   unitPrice: integer('unit_price').notNull().default(0),
   amount: integer('amount').notNull().default(0),
+  quantityReceived: real('quantity_received').default(0),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
 export const poReceipts = sqliteTable('po_receipts', {
   id: text('id').primaryKey(),
-  poId: text('po_id')
+  purchaseOrderId: text('po_id')
     .notNull()
     .references(() => purchaseOrders.id),
   receiptDate: text('receipt_date').notNull(),
@@ -147,7 +152,7 @@ export const supplierPaymentRuns = sqliteTable('supplier_payment_runs', {
 
 export const supplierPaymentRunItems = sqliteTable('supplier_payment_run_items', {
   id: text('id').primaryKey(),
-  runId: text('run_id')
+  paymentRunId: text('run_id')
     .notNull()
     .references(() => supplierPaymentRuns.id, { onDelete: 'cascade' }),
   billId: text('bill_id')

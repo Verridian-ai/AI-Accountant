@@ -5,15 +5,22 @@
 export interface Supplier {
   id: string;
   userId: string;
-  name: string;
+  name?: string;
+  businessName: string;
+  contactName: string | null;
   email: string | null;
   phone: string | null;
   address: string | null;
   abn: string | null;
-  paymentTerms: string | null;
+  paymentTerms?: string | null;
+  paymentTermsDays: number;
+  bankBsb: string | null;
+  bankAccountNumber: string | null;
+  bankAccountName: string | null;
+  notes: string | null;
   isActive: boolean;
   createdAt: string;
-  tenantId: string | null;
+  tenantId?: string | null;
 }
 
 export interface CreateSupplierInput {

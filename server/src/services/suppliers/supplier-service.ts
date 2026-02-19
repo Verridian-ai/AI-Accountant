@@ -201,11 +201,11 @@ export class SupplierService {
   // --- Delegated Mutations ---
 
   async createSupplier(userId: string, data: CreateSupplierInput): Promise<Supplier> {
-    return createSupplierRecord(userId, data, (row, mask) => this.rowToSupplier(row, mask));
+    return createSupplierRecord(userId, data, (row) => this.rowToSupplier(row, true));
   }
 
   async updateSupplier(supplierId: string, data: UpdateSupplierInput): Promise<Supplier> {
-    return updateSupplierRecord(supplierId, data, (row, mask) => this.rowToSupplier(row, mask));
+    return updateSupplierRecord(supplierId, data, (row) => this.rowToSupplier(row, true));
   }
 
   async archiveSupplier(supplierId: string): Promise<{ archived: boolean; warning?: string }> {

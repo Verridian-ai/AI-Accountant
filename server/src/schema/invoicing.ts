@@ -53,7 +53,7 @@ export const invoices = sqliteTable('invoices', {
     .notNull()
     .references(() => customers.id),
   invoiceNumber: text('invoice_number').notNull(),
-  invoiceDate: text('invoice_date').notNull(),
+  issueDate: text('invoice_date').notNull(),
   dueDate: text('due_date').notNull(),
   subtotal: integer('subtotal').notNull().default(0),
   gstAmount: integer('gst_amount').notNull().default(0),

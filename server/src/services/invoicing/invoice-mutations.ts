@@ -5,7 +5,7 @@
  */
 
 import { db } from '../../schema.js';
-import { invoices, invoiceLines, invoiceNumberSequences, customers } from '../../schema.js';
+import { invoices, invoiceLines, invoiceNumberSequences } from '../../schema.js';
 import { eq, and } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type {
@@ -81,8 +81,8 @@ export async function createInvoice(
 
   const { subtotal, gstAmount, totalAmount } = calculateInvoiceTotals(calculatedLines, 0);
 
-  const invoiceDate = data.issueDate ?? today();
-  let dueDate = data.dueDate ?? invoiceDate;
+  const issueDate = data.issueDate ?? today();
+  const dueDate = data.dueDate ?? issueDate;
 
   const now = nowISO();
 
@@ -94,7 +94,7 @@ export async function createInvoice(
       customerId: data.customerId,
       invoiceNumber,
       status: 'draft',
-      invoiceDate,
+      issueDate,
       dueDate,
       subtotal,
       gstAmount,
@@ -129,7 +129,7 @@ export async function createInvoice(
       customerId: data.customerId,
       invoiceNumber,
       status: 'draft',
-      invoiceDate,
+      issueDate,
       dueDate,
       subtotal,
       gstAmount,
@@ -172,7 +172,7 @@ export async function updateInvoice(
 
   const updates: Record<string, unknown> = {};
   if (data.customerId !== undefined) updates.customerId = data.customerId;
-  if (data.issueDate !== undefined) updates.invoiceDate = data.issueDate;
+  if (data.issueDate !== undefined) updates.issueDate = data.issueDate;
   if (data.dueDate !== undefined) updates.dueDate = data.dueDate;
 
   if (data.lineItems && data.lineItems.length > 0) {
@@ -235,8 +235,8 @@ export async function sendInvoice(userId: string, invoiceId: string): Promise<vo
 
   const updates: Record<string, unknown> = { status: 'sent' };
 
-  if (!invoice.invoiceDate) {
-    updates.invoiceDate = today();
+  if (!invoice.issueDate) {
+    updates.issueDate = today();
   }
 
   await db.update(invoices).set(updates).where(eq(invoices.id, invoiceId)).run();
