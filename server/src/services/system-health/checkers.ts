@@ -16,7 +16,8 @@ export async function checkPostgres(): Promise<HealthCheckResult> {
   const start = Date.now();
   try {
     const result = await withTimeout(async () => {
-      // Test basic connectivity
+      // Test basic connectivity (result intentionally discarded)
+
       await db
         .select({ one: sql`1` })
         .from(sql`(SELECT 1) AS t`)

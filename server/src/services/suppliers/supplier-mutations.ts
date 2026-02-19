@@ -13,7 +13,6 @@ import { validateABN, normalizeABN } from '../../utils/abn.js';
 import { ABNLookupService } from '../enrichment/abn-lookup.js';
 import { logger } from '../../utils/logger.js';
 import type { Supplier, CreateSupplierInput, UpdateSupplierInput } from './types.js';
-import { encrypt } from './encryption.js';
 
 // ---------------------------------------------------------------------------
 // Lazy table references (shared with supplier-service.ts)

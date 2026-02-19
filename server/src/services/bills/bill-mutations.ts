@@ -5,7 +5,7 @@ import { db, bills, billLines } from '../../schema.js';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 import type { CreateBillInput, UpdateBillInput } from './types.js';
-import { calcLineAmount, calcGst, calcBillTotals } from './types.js';
+import { calcLineAmount, calcBillTotals } from './types.js';
 
 /**
  * Create a new bill with line items.
