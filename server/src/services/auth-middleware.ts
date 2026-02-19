@@ -151,14 +151,22 @@ export function tenantAuthMiddleware() {
         try {
           const legacyPayload = (await verify(token, JWT_SECRET)) as Record<string, unknown>;
           if (legacyPayload && legacyPayload.userId) {
+            // Verify tenant membership before granting access
+            const headerTenantId = c.req.header('X-Tenant-Id');
+            if (headerTenantId) {
+              const memberTenants = await tenantService.getMemberTenants(
+                legacyPayload.userId as string,
+              );
+              const isMember = memberTenants.some((mt) => mt.tenant.id === headerTenantId);
+              if (!isMember) {
+                return c.json({ error: 'Not a member of the specified tenant' }, 403);
+              }
+              c.set('tenantId', headerTenantId);
+            }
             c.set('jwtPayload', legacyPayload);
             c.set('userId', legacyPayload.userId as string);
             c.set('role', 'owner');
             c.set('permissions', []);
-            const headerTenantId = c.req.header('X-Tenant-Id');
-            if (headerTenantId) {
-              c.set('tenantId', headerTenantId);
-            }
             return next();
           }
         } catch {

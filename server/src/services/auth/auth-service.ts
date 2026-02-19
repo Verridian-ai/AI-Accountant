@@ -3,11 +3,17 @@ import bcrypt from 'bcryptjs';
 import { sign } from 'hono/jwt';
 import { requireEnv } from '../../lib/config.js';
 import { AuthenticationError, DuplicateError } from '../../errors.js';
+import { validatePassword } from '../admin-auth/index.js';
 
 const JWT_SECRET = requireEnv('JWT_SECRET');
 
 export class AuthService {
   async register(username: string, password: string) {
+    const validation = validatePassword(password);
+    if (!validation.valid) {
+      throw new Error(`Password requirements not met: ${validation.errors.join(', ')}`);
+    }
+
     const existing = await userRepository.findByUsername(username);
     if (existing) {
       throw new DuplicateError('User', 'username', username);
@@ -18,7 +24,11 @@ export class AuthService {
 
     if (!user) throw new Error('Failed to create user');
 
-    const payload = { userId: user.id, username, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 };
+    const payload = {
+      userId: user.id,
+      username,
+      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    };
     const token = await sign(payload, JWT_SECRET);
     return { token, user: { id: user.id, username } };
   }
@@ -29,7 +39,11 @@ export class AuthService {
       throw new AuthenticationError('Invalid credentials');
     }
 
-    const payload = { userId: user.id, username, exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 };
+    const payload = {
+      userId: user.id,
+      username,
+      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    };
     const token = await sign(payload, JWT_SECRET);
     return { token, user: { id: user.id, username } };
   }

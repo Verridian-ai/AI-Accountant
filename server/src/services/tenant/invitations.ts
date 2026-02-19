@@ -44,7 +44,7 @@ export async function inviteMember(
     );
   const now = new Date().toISOString();
   const invitationId = crypto.randomUUID();
-  const token = crypto.randomUUID();
+  const token = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + INVITATION_EXPIRY_MS).toISOString();
   await db
     .insert(tenantInvitations)

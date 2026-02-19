@@ -85,10 +85,11 @@ app.use(
   '/*',
   cors({
     origin: (origin) => {
+      const corsIsProd = process.env.NODE_ENV === 'production';
       const allowed = [
-        'http://localhost:5173',
-        'http://localhost:8080',
-        'http://localhost:3501',
+        ...(corsIsProd
+          ? []
+          : ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:3501']),
         ...(process.env.ALLOWED_ORIGINS?.split(',').map((s) => s.trim()) ?? []),
       ];
       return allowed.includes(origin) ? origin : null;
@@ -237,10 +238,13 @@ setInterval(
   5 * 60 * 1000,
 );
 
-// Apply strict auth rate limiter to all login endpoints
+// Apply strict auth rate limiter to all login and refresh endpoints
 app.use('/api/admin/login', authLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/auth/login', authLimiter);
+app.use('/api/auth/refresh', authLimiter);
+app.use('/auth/refresh', authLimiter);
+app.use('/api/admin/refresh', authLimiter);
 
 // Apply rate limiting to API routes, but exclude statement upload/processing
 app.use('/api/*', async (c, next) => {
