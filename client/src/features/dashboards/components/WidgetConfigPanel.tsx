@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useReducer } from 'react';
 import { X, Save, RotateCcw } from 'lucide-react';
 
 import type { WidgetConfig } from '../hooks/useDashboard';
@@ -10,19 +10,38 @@ interface WidgetConfigPanelProps {
   onSave: (widgetId: string, updates: Partial<WidgetConfig>) => void;
 }
 
+interface WidgetPanelState {
+  title: string;
+  dataSourceUrl: string;
+  refreshInterval: number;
+  chartConfig: Record<string, unknown>;
+  prevWidgetId: string | null;
+}
+
+const initialState: WidgetPanelState = {
+  title: '',
+  dataSourceUrl: '',
+  refreshInterval: 0,
+  chartConfig: {},
+  prevWidgetId: null,
+};
+
 export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfigPanelProps) {
-  const [title, setTitle] = useState('');
-  const [dataSourceUrl, setDataSourceUrl] = useState('');
-  const [refreshInterval, setRefreshInterval] = useState(0);
-  const [chartConfig, setChartConfig] = useState<Record<string, unknown>>({});
-  const [prevWidgetId, setPrevWidgetId] = useState<string | null>(null);
+  const [state, setState] = useReducer(
+    (prev: WidgetPanelState, next: Partial<WidgetPanelState>) => ({ ...prev, ...next }),
+    initialState
+  );
+
+  const { title, dataSourceUrl, refreshInterval, chartConfig, prevWidgetId } = state;
 
   if (widget && widget.id !== prevWidgetId) {
-    setPrevWidgetId(widget.id);
-    setTitle(widget.title);
-    setDataSourceUrl(widget.dataSourceUrl ?? '');
-    setRefreshInterval(widget.refreshInterval ?? 0);
-    setChartConfig(widget.config ?? {});
+    setState({
+      prevWidgetId: widget.id,
+      title: widget.title,
+      dataSourceUrl: widget.dataSourceUrl ?? '',
+      refreshInterval: widget.refreshInterval ?? 0,
+      chartConfig: widget.config ?? {},
+    });
   }
 
   if (!open || !widget) return null;
@@ -39,15 +58,17 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
 
   const handleReset = () => {
     if (widget) {
-      setTitle(widget.title);
-      setDataSourceUrl(widget.dataSourceUrl ?? '');
-      setRefreshInterval(widget.refreshInterval ?? 0);
-      setChartConfig(widget.config ?? {});
+      setState({
+        title: widget.title,
+        dataSourceUrl: widget.dataSourceUrl ?? '',
+        refreshInterval: widget.refreshInterval ?? 0,
+        chartConfig: widget.config ?? {},
+      });
     }
   };
 
   const updateConfig = (key: string, value: unknown) => {
-    setChartConfig((prev) => ({ ...prev, [key]: value }));
+    setState({ chartConfig: { ...chartConfig, [key]: value } });
   };
 
   return (
@@ -81,7 +102,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => setState({ title: e.target.value })}
               className="config-input"
               placeholder="Widget title"
             />
@@ -91,7 +112,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
             <input
               type="text"
               value={dataSourceUrl}
-              onChange={(e) => setDataSourceUrl(e.target.value)}
+              onChange={(e) => setState({ dataSourceUrl: e.target.value })}
               className="config-input"
               placeholder="/api/transactions?limit=100"
             />
@@ -101,7 +122,7 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
             <input
               type="number"
               value={refreshInterval}
-              onChange={(e) => setRefreshInterval(Number(e.target.value))}
+              onChange={(e) => setState({ refreshInterval: Number(e.target.value) })}
               className="config-input"
               min={0}
               step={10}

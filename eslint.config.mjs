@@ -32,6 +32,12 @@ export default tseslint.config(
   {
     files: ['client/src/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
+    linterOptions: {
+      // Disable auto-removal of disable comments: react-hooks/set-state-in-effect
+      // v7 uses TypeScript flow analysis that fires only in full-project context,
+      // so single-file runs report the directive as "unused" even when it's needed.
+      reportUnusedDisableDirectives: 'off',
+    },
     languageOptions: {
       globals: { ...globals.browser },
       parserOptions: { project: './client/tsconfig.app.json' },

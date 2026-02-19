@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useReducer, useEffect } from 'react';
 import { testCogneeSearch, fetchCogneeAdminDatasets } from '../../../api';
 import { Search, Play, Clock, Database, AlertCircle } from 'lucide-react';
 
@@ -17,21 +17,40 @@ interface SearchResult {
   latencyMs: number;
 }
 
+interface CogneeSearchState {
+  query: string;
+  selectedDatasets: string[];
+  selectedTypes: string[];
+  topK: number;
+  results: SearchResult[];
+  loading: boolean;
+  datasets: string[];
+  error: string;
+}
+
+const initialState: CogneeSearchState = {
+  query: '',
+  selectedDatasets: [],
+  selectedTypes: ['CHUNKS'],
+  topK: 5,
+  results: [],
+  loading: false,
+  datasets: [],
+  error: '',
+};
+
 export function CogneeSearchTester() {
-  const [query, setQuery] = useState('');
-  const [selectedDatasets, setSelectedDatasets] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(['CHUNKS']);
-  const [topK, setTopK] = useState(5);
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [datasets, setDatasets] = useState<string[]>([]);
-  const [error, setError] = useState('');
+  const [state, setState] = useReducer(
+    (prev: CogneeSearchState, next: Partial<CogneeSearchState>) => ({ ...prev, ...next }),
+    initialState
+  );
+  const { query, selectedDatasets, selectedTypes, topK, results, loading, datasets, error } = state;
 
   useEffect(() => {
     fetchCogneeAdminDatasets()
       .then((res: { datasets?: Array<{ name: string }> } | Array<{ name: string }>) => {
         const ds = Array.isArray(res) ? res : res?.datasets || [];
-        setDatasets(ds.map((d: { name: string }) => d.name));
+        setState({ datasets: ds.map((d: { name: string }) => d.name) });
       })
       .catch(() => {
         /* */
@@ -40,9 +59,7 @@ export function CogneeSearchTester() {
 
   const handleSearch = async () => {
     if (!query.trim()) return;
-    setLoading(true);
-    setError('');
-    setResults([]);
+    setState({ loading: true, error: '', results: [] });
     try {
       const res = await testCogneeSearch(query, {
         datasets: selectedDatasets.length > 0 ? selectedDatasets : undefined,
@@ -50,15 +67,14 @@ export function CogneeSearchTester() {
         topK,
       });
       const searchRes = res as SearchResult[] | { results?: SearchResult[] };
-      setResults(Array.isArray(searchRes) ? searchRes : searchRes?.results || []);
+      setState({ results: Array.isArray(searchRes) ? searchRes : searchRes?.results || [], loading: false });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Search failed');
+      setState({ error: err instanceof Error ? err.message : 'Search failed', loading: false });
     }
-    setLoading(false);
   };
 
-  const toggleItem = (list: string[], item: string, setter: (v: string[]) => void) => {
-    setter(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
+  const toggleItem = (list: string[], item: string, key: keyof CogneeSearchState) => {
+    setState({ [key]: list.includes(item) ? list.filter((x) => x !== item) : [...list, item] });
   };
 
   return (
@@ -81,7 +97,7 @@ export function CogneeSearchTester() {
                 id="search-query"
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => setState({ query: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="w-full pl-10 pr-4 py-3 bg-[#1a1a2e] border border-border rounded-xl text-primary placeholder-zinc-600 focus:outline-none focus:border-cba-gold/50"
                 placeholder="Enter search query..."
@@ -110,7 +126,7 @@ export function CogneeSearchTester() {
               <button
                 key={ds}
                 type="button"
-                onClick={() => toggleItem(selectedDatasets, ds, setSelectedDatasets)}
+                onClick={() => toggleItem(selectedDatasets, ds, 'selectedDatasets')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedDatasets.includes(ds)
                   ? 'bg-cba-gold/10 text-cba-gold border border-cba-gold/20'
                   : 'bg-[#1a1a2e] text-secondary border border-border/50 hover:border-border'
@@ -133,7 +149,7 @@ export function CogneeSearchTester() {
               <button
                 key={st}
                 type="button"
-                onClick={() => toggleItem(selectedTypes, st, setSelectedTypes)}
+                onClick={() => toggleItem(selectedTypes, st, 'selectedTypes')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${selectedTypes.includes(st)
                   ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
                   : 'bg-[#1a1a2e] text-secondary border border-border/50 hover:border-border'
@@ -156,7 +172,7 @@ export function CogneeSearchTester() {
             min={1}
             max={20}
             value={topK}
-            onChange={(e) => setTopK(parseInt(e.target.value) || 5)}
+            onChange={(e) => setState({ topK: parseInt(e.target.value) || 5 })}
             className="w-20 px-3 py-1.5 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm text-center focus:outline-none focus:border-cba-gold/50"
           />
         </div>

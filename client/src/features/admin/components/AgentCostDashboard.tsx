@@ -36,6 +36,7 @@ export function AgentCostDashboard() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadCosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
