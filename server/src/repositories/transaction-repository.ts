@@ -1,6 +1,12 @@
 import { db, transactions, transactionHistory } from '../schema.js';
 import { eq, and, desc, gte, lte, like, sql, type SQL } from 'drizzle-orm';
-import { selectOne, selectMany, insert, update as typedUpdate, deleteRows } from '../db/typed-queries.js';
+import {
+  selectOne,
+  selectMany,
+  insert,
+  update as typedUpdate,
+  deleteRows,
+} from '../db/typed-queries.js';
 
 export interface TransactionFilters {
   limit?: number;
@@ -87,24 +93,27 @@ export class TransactionRepository {
     return results;
   }
 
-  async findById(userId: string, transactionId: string): Promise<typeof transactions.$inferSelect | undefined> {
+  async findById(
+    userId: string,
+    transactionId: string,
+  ): Promise<typeof transactions.$inferSelect | undefined> {
     return selectOne(
       db,
       transactions,
-      and(eq(transactions.id, transactionId), eq(transactions.userId, userId))
+      and(eq(transactions.id, transactionId), eq(transactions.userId, userId)),
     );
   }
 
   async update(
     userId: string,
     transactionId: string,
-    data: Partial<typeof transactions.$inferInsert>
+    data: Partial<typeof transactions.$inferInsert>,
   ): Promise<void> {
     await typedUpdate(
       db,
       transactions,
       data,
-      and(eq(transactions.id, transactionId), eq(transactions.userId, userId))
+      and(eq(transactions.id, transactionId), eq(transactions.userId, userId)),
     );
   }
 
@@ -121,12 +130,46 @@ export class TransactionRepository {
     await deleteRows(
       db,
       transactions,
-      and(eq(transactions.id, transactionId), eq(transactions.userId, userId))
+      and(eq(transactions.id, transactionId), eq(transactions.userId, userId)),
     );
   }
 
   async createHistory(data: typeof transactionHistory.$inferInsert): Promise<void> {
     await insert(db, transactionHistory, data);
+  }
+
+  /**
+   * Admin-only: paginated query without mandatory userId filter.
+   * Pass userId to scope to one user, omit to see all transactions.
+   */
+  async findManyAdmin(filters: {
+    limit?: number;
+    offset?: number;
+    userId?: string;
+  }): Promise<{ data: Array<typeof transactions.$inferSelect>; total: number }> {
+    const { limit = 100, offset = 0, userId } = filters;
+    const conditions: SQL[] = [];
+    if (userId) conditions.push(eq(transactions.userId, userId));
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [result, countResult] = await Promise.all([
+      db
+        .select()
+        .from(transactions)
+        .where(whereClause)
+        .orderBy(desc(transactions.date))
+        .limit(limit)
+        .offset(offset)
+        .all() as Promise<Array<typeof transactions.$inferSelect>>,
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(transactions)
+        .where(whereClause)
+        .get() as Promise<{ count: number } | undefined>,
+    ]);
+
+    return { data: result, total: countResult?.count ?? 0 };
   }
 
   async findByStatementId(statementId: string): Promise<Array<typeof transactions.$inferSelect>> {

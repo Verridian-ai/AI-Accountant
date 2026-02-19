@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { adminAuthService } from '../services/admin-auth.js';
+import { transactionRepository } from '../repositories/transaction-repository.js';
 
 const adminAuthRoutes = new Hono();
 
@@ -62,6 +63,34 @@ adminAuthRoutes.get('/me', async (c) => {
   } catch (err: unknown) {
     console.error('[AdminAuth] Me error:', err);
     return c.json({ error: 'Failed to get admin profile' }, 500);
+  }
+});
+
+// GET /admin/transactions — admin-only, no userId filter required
+adminAuthRoutes.get('/transactions', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return c.json({ error: 'Token required' }, 401);
+    }
+    const token = authHeader.slice(7);
+    const payload = await adminAuthService.verifyToken(token);
+    if (!payload) return c.json({ error: 'Invalid admin token' }, 401);
+
+    const limit = Math.min(parseInt(c.req.query('limit') || '100', 10), 500);
+    const offset = parseInt(c.req.query('offset') || '0', 10);
+    const userId = c.req.query('userId');
+
+    const { data: transactions, total } = await transactionRepository.findManyAdmin({
+      limit,
+      offset,
+      userId,
+    });
+
+    return c.json({ transactions, total });
+  } catch (err: unknown) {
+    console.error('[AdminAuth] Transactions error:', err);
+    return c.json({ error: 'Failed to fetch transactions' }, 500);
   }
 });
 
