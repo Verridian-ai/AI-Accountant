@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { API_URL, getAuthHeaders } from '@/api/client';
+import { API_URL } from '@/api/client';
 import type { Transaction } from '@/api';
 import { CurrencyDisplay } from '@/components/common/CurrencyDisplay';
 
@@ -20,8 +20,9 @@ export function AdminTransactionsView() {
     setLoading(true);
     setError(null);
     try {
+      const adminToken = localStorage.getItem('admin_token');
       const res = await fetch(`${API_URL}/admin/transactions?limit=${LIMIT}&offset=${pageOffset}`, {
-        headers: getAuthHeaders(),
+        headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {},
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       const data: AdminTransactionsResponse = await res.json();

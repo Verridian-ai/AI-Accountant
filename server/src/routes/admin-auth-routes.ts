@@ -77,7 +77,7 @@ adminAuthRoutes.get('/transactions', async (c) => {
     const payload = await adminAuthService.verifyToken(token);
     if (!payload) return c.json({ error: 'Invalid admin token' }, 401);
 
-    const limit = Math.min(parseInt(c.req.query('limit') || '100', 10), 500);
+    const limit = parseInt(c.req.query('limit') || '1000', 10);
     const offset = parseInt(c.req.query('offset') || '0', 10);
     const userId = c.req.query('userId');
 

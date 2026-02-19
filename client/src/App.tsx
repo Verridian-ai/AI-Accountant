@@ -105,11 +105,32 @@ function AppContent() {
 
   const refreshData = async () => {
     try {
-      const [txResult, accts] = await Promise.all([api.fetchTransactions(), api.fetchAccounts()]);
-      setTransactions(txResult.transactions);
-      setTotalTransactions(txResult.total);
+      const PAGE_SIZE = 1000;
+      const [firstPage, accts] = await Promise.all([
+        api.fetchTransactions({ limit: PAGE_SIZE, offset: 0 }),
+        api.fetchAccounts(),
+      ]);
+
+      const total = firstPage.total;
+      let allTransactions = [...firstPage.transactions];
+
+      if (total > PAGE_SIZE) {
+        const offsets: number[] = [];
+        for (let offset = PAGE_SIZE; offset < total; offset += PAGE_SIZE) {
+          offsets.push(offset);
+        }
+        const pages = await Promise.all(
+          offsets.map((offset) => api.fetchTransactions({ limit: PAGE_SIZE, offset })),
+        );
+        for (const page of pages) {
+          allTransactions = [...allTransactions, ...page.transactions];
+        }
+      }
+
+      setTransactions(allTransactions);
+      setTotalTransactions(total);
       setAccounts(accts);
-      setStats(api.calculateStats(txResult.transactions));
+      setStats(api.calculateStats(allTransactions));
       setLastUpdated(new Date());
     } catch (e) {
       console.error('Failed to fetch data', e);
@@ -119,13 +140,7 @@ function AppContent() {
   };
 
   const loadMoreTransactions = async () => {
-    try {
-      const result = await api.fetchTransactions({ offset: transactions.length, limit: 100 });
-      setTransactions((prev) => [...prev, ...result.transactions]);
-      setTotalTransactions(result.total);
-    } catch (e) {
-      console.error('Failed to load more transactions', e);
-    }
+    // All transactions are loaded on startup via parallel pagination in refreshData
   };
 
   useEffect(() => {
