@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Loader2, Settings2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Loader2, Settings2, ChevronDown, ChevronUp } from 'lucide-react';
 import { reconApi } from '@/api';
 import { cn } from '@/lib/utils';
 
@@ -173,7 +173,7 @@ export function ReconRulesManager() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Match Type</Label>
+                <p className="text-sm font-medium leading-none">Match Type</p>
                 <Select value={formMatchType} onValueChange={setFormMatchType}>
                   <SelectTrigger>
                     <SelectValue />
@@ -237,8 +237,9 @@ export function ReconRulesManager() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>Priority (lower = higher priority)</Label>
+                <Label htmlFor="rule-priority">Priority (lower = higher priority)</Label>
                 <Input
+                  id="rule-priority"
                   type="number"
                   value={formPriority}
                   onChange={(e) => setFormPriority(e.target.value)}

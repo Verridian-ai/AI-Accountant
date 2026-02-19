@@ -31,9 +31,8 @@ export function KnowledgeDashboard() {
   const [quickStats, setQuickStats] = useState<QuickStat[]>([]);
   const userId = 'default'; // Would come from auth context in production
 
-  // Load datasets
+  // Load datasets — initialized to true via useState(true), no sync setState needed
   useEffect(() => {
-    setLoadingDatasets(true);
     knowledgeApi
       .getGraph('', { maxNodes: 0 })
       .then(() => {

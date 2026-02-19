@@ -238,10 +238,14 @@ export function AccountSetupWizard({
                     />
                   </div>
                   <div className="space-y-2 col-span-2">
-                    <label className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1">
+                    <label
+                      htmlFor="wizard-min-payment"
+                      className="text-[9px] font-black uppercase text-zinc-600 tracking-widest ml-1"
+                    >
                       Minimum Obligation ($)
                     </label>
                     <input
+                      id="wizard-min-payment"
                       type="number"
                       value={minimumPayment}
                       onChange={(e) => setMinimumPayment(e.target.value)}

@@ -83,7 +83,7 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
       const data = await intelligenceApi.listInsights(userId, params);
       setInsights(Array.isArray(data) ? data : (data.insights ?? []));
       setError(null);
-    } catch (e) {
+    } catch {
       setError('Failed to load insights');
     } finally {
       setLoading(false);

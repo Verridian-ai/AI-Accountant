@@ -6,9 +6,6 @@ import {
   Globe,
   Plus,
   Trash2,
-  ToggleLeft,
-  ToggleRight,
-  Edit3,
   X,
 } from 'lucide-react';
 import { intelligenceApi } from '../../../api';
