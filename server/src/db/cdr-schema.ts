@@ -1,22 +1,19 @@
 /**
  * CDR Open Banking Schema (Wave 18)
  * Consumer Data Right product tables for bank product comparison and rate alerts.
- * Uses sqliteTable() — the project-wide convention; wrapPgDb() proxies PG at runtime.
+ * Migrated from sqliteTable() to pgTable() (TASK-043).
  */
 
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
-import { users } from '../schema/core.js';
+import { pgTable, text, integer, boolean, doublePrecision } from 'drizzle-orm/pg-core';
 
-// IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
-// The wrapPgDb() proxy stores the literal string 'CURRENT_TIMESTAMP' in PostgreSQL
-// instead of evaluating it. All inserts MUST set timestamp fields explicitly:
-//   createdAt: new Date().toISOString()   (see repositories/*.ts)
+// NOTE: .references() to users (core.ts) omitted until core.ts migrates to pgTable (TASK-045).
+// DB-level FK constraints remain intact in SQL migration files.
 
 // ============================================================================
 // CDR DATA HOLDERS
 // ============================================================================
 
-export const cdrDataHolders = sqliteTable('cdr_data_holders', {
+export const cdrDataHolders = pgTable('cdr_data_holders', {
   id: text('id').primaryKey(),
   dataHolderBrandId: text('data_holder_brand_id').notNull(),
   brandName: text('brand_name').notNull(),
@@ -37,23 +34,21 @@ export const cdrDataHolders = sqliteTable('cdr_data_holders', {
 // CDR PRODUCTS
 // ============================================================================
 
-export const cdrProducts = sqliteTable('cdr_products', {
+export const cdrProducts = pgTable('cdr_products', {
   id: text('id').primaryKey(),
-  dataHolderId: text('data_holder_id')
-    .notNull()
-    .references(() => cdrDataHolders.id),
+  dataHolderId: text('data_holder_id').notNull(), // FK → cdr_data_holders(id)
   productId: text('product_id').notNull(),
   name: text('name').notNull(),
   description: text('description'),
   brand: text('brand'),
   brandName: text('brand_name'),
   productCategory: text('product_category').notNull(),
-  isTailored: integer('is_tailored', { mode: 'boolean' }).default(false),
+  isTailored: boolean('is_tailored').default(false),
   effectiveFrom: text('effective_from'),
   effectiveTo: text('effective_to'),
   applicationUri: text('application_uri'),
   additionalInfoUri: text('additional_info_uri'),
-  rawJson: text('raw_json'), // JSON stored as text via sqliteTable; JSONB in PG migration
+  rawJson: text('raw_json'), // JSON stored as text; JSONB migration deferred to TASK-046
   lastUpdated: text('last_updated'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
@@ -63,20 +58,18 @@ export const cdrProducts = sqliteTable('cdr_products', {
 // CDR LENDING RATES
 // ============================================================================
 
-export const cdrLendingRates = sqliteTable('cdr_lending_rates', {
+export const cdrLendingRates = pgTable('cdr_lending_rates', {
   id: text('id').primaryKey(),
-  productId: text('product_id')
-    .notNull()
-    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull(), // FK → cdr_products(id) CASCADE
   lendingRateType: text('lending_rate_type').notNull(),
-  rate: real('rate').notNull(),
-  comparisonRate: real('comparison_rate'),
+  rate: doublePrecision('rate').notNull(),
+  comparisonRate: doublePrecision('comparison_rate'),
   calculationFrequency: text('calculation_frequency'),
   applicationFrequency: text('application_frequency'),
   interestPaymentDue: text('interest_payment_due'),
   repaymentType: text('repayment_type'),
   loanPurpose: text('loan_purpose'),
-  tiers: text('tiers'), // JSON stored as text; JSONB in PG migration
+  tiers: text('tiers'), // JSON stored as text; JSONB migration deferred to TASK-046
   additionalValue: text('additional_value'),
   additionalInfo: text('additional_info'),
   additionalInfoUri: text('additional_info_uri'),
@@ -87,16 +80,14 @@ export const cdrLendingRates = sqliteTable('cdr_lending_rates', {
 // CDR DEPOSIT RATES
 // ============================================================================
 
-export const cdrDepositRates = sqliteTable('cdr_deposit_rates', {
+export const cdrDepositRates = pgTable('cdr_deposit_rates', {
   id: text('id').primaryKey(),
-  productId: text('product_id')
-    .notNull()
-    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull(), // FK → cdr_products(id) CASCADE
   depositRateType: text('deposit_rate_type').notNull(),
-  rate: real('rate').notNull(),
+  rate: doublePrecision('rate').notNull(),
   calculationFrequency: text('calculation_frequency'),
   applicationFrequency: text('application_frequency'),
-  tiers: text('tiers'), // JSON stored as text; JSONB in PG migration
+  tiers: text('tiers'), // JSON stored as text; JSONB migration deferred to TASK-046
   additionalValue: text('additional_value'),
   additionalInfo: text('additional_info'),
   additionalInfoUri: text('additional_info_uri'),
@@ -107,11 +98,9 @@ export const cdrDepositRates = sqliteTable('cdr_deposit_rates', {
 // CDR FEES
 // ============================================================================
 
-export const cdrFees = sqliteTable('cdr_fees', {
+export const cdrFees = pgTable('cdr_fees', {
   id: text('id').primaryKey(),
-  productId: text('product_id')
-    .notNull()
-    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull(), // FK → cdr_products(id) CASCADE
   name: text('name').notNull(),
   feeType: text('fee_type').notNull(),
   amount: text('amount'),
@@ -123,7 +112,7 @@ export const cdrFees = sqliteTable('cdr_fees', {
   additionalValue: text('additional_value'),
   additionalInfo: text('additional_info'),
   additionalInfoUri: text('additional_info_uri'),
-  discounts: text('discounts'), // JSON stored as text; JSONB in PG migration
+  discounts: text('discounts'), // JSON stored as text; JSONB migration deferred to TASK-046
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -131,16 +120,14 @@ export const cdrFees = sqliteTable('cdr_fees', {
 // CDR FEATURES
 // ============================================================================
 
-export const cdrFeatures = sqliteTable('cdr_features', {
+export const cdrFeatures = pgTable('cdr_features', {
   id: text('id').primaryKey(),
-  productId: text('product_id')
-    .notNull()
-    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull(), // FK → cdr_products(id) CASCADE
   featureType: text('feature_type').notNull(),
   additionalValue: text('additional_value'),
   additionalInfo: text('additional_info'),
   additionalInfoUri: text('additional_info_uri'),
-  isActivated: integer('is_activated', { mode: 'boolean' }).default(true),
+  isActivated: boolean('is_activated').default(true),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
@@ -148,11 +135,9 @@ export const cdrFeatures = sqliteTable('cdr_features', {
 // CDR ELIGIBILITY
 // ============================================================================
 
-export const cdrEligibility = sqliteTable('cdr_eligibility', {
+export const cdrEligibility = pgTable('cdr_eligibility', {
   id: text('id').primaryKey(),
-  productId: text('product_id')
-    .notNull()
-    .references(() => cdrProducts.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull(), // FK → cdr_products(id) CASCADE
   eligibilityType: text('eligibility_type').notNull(),
   additionalValue: text('additional_value'),
   additionalInfo: text('additional_info'),
@@ -164,14 +149,14 @@ export const cdrEligibility = sqliteTable('cdr_eligibility', {
 // CDR CRAWL LOG
 // ============================================================================
 
-export const cdrCrawlLog = sqliteTable('cdr_crawl_log', {
+export const cdrCrawlLog = pgTable('cdr_crawl_log', {
   id: text('id').primaryKey(),
-  dataHolderId: text('data_holder_id').references(() => cdrDataHolders.id),
+  dataHolderId: text('data_holder_id'), // FK → cdr_data_holders(id)
   crawlType: text('crawl_type').notNull(),
   status: text('status').notNull().default('running'),
   productsDiscovered: integer('products_discovered').default(0),
   productsUpdated: integer('products_updated').default(0),
-  errors: text('errors'), // JSON stored as text; JSONB in PG migration
+  errors: text('errors'), // JSON stored as text; JSONB migration deferred to TASK-046
   startedAt: text('started_at').notNull().default('CURRENT_TIMESTAMP'),
   completedAt: text('completed_at'),
   durationMs: integer('duration_ms'),
@@ -181,17 +166,15 @@ export const cdrCrawlLog = sqliteTable('cdr_crawl_log', {
 // CDR RATE ALERTS
 // ============================================================================
 
-export const cdrRateAlerts = sqliteTable('cdr_rate_alerts', {
+export const cdrRateAlerts = pgTable('cdr_rate_alerts', {
   id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull(), // FK → users(id) CASCADE
   alertType: text('alert_type').notNull(),
   productCategory: text('product_category'),
   rateType: text('rate_type'),
-  thresholdRate: real('threshold_rate'),
-  comparisonProductId: text('comparison_product_id').references(() => cdrProducts.id),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  thresholdRate: doublePrecision('threshold_rate'),
+  comparisonProductId: text('comparison_product_id'), // FK → cdr_products(id)
+  isActive: boolean('is_active').default(true),
   lastTriggeredAt: text('last_triggered_at'),
   notificationMethod: text('notification_method').default('in_app'),
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),

@@ -84,6 +84,9 @@ services:
       - NEON_API_KEY=${NEON_API_KEY}
       - NEON_PROJECT_ID=${NEON_PROJECT_ID}
       - NEON_ORG_ID=${NEON_ORG_ID}
+      # Connection pool sizing
+      - DB_POOL_MAX=${DB_POOL_MAX:-20}
+      - DB_POOL_MIN=${DB_POOL_MIN:-2}
       # Redis (queue + caching)
       - REDIS_URL=redis://redis:6379
       # Encryption keys

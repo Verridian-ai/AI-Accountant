@@ -1,20 +1,15 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
-import { users } from './core.js';
+import { pgTable, text, integer, boolean, doublePrecision } from 'drizzle-orm/pg-core';
 
-// IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
-// The wrapPgDb() proxy stores the literal string 'CURRENT_TIMESTAMP' in PostgreSQL
-// instead of evaluating it. All inserts MUST set timestamp fields explicitly:
-//   createdAt: new Date().toISOString()   (see repositories/*.ts)
+// NOTE: .references() to users (core.ts) omitted until core.ts migrates to pgTable (TASK-045).
+// DB-level FK constraints remain intact in SQL migration files.
 
 // ============================================================================
 // WAVE 2: Agent Sessions, Mutations & Audit Log
 // ============================================================================
 
-export const agentSessions = sqliteTable('agent_sessions', {
+export const agentSessions = pgTable('agent_sessions', {
   id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull(), // FK → users(id) CASCADE
   startedAt: text('started_at').notNull().default('CURRENT_TIMESTAMP'),
   lastActivityAt: text('last_activity_at').notNull().default('CURRENT_TIMESTAMP'),
   status: text('status').notNull().default('active'),
@@ -27,11 +22,9 @@ export const agentSessions = sqliteTable('agent_sessions', {
   createdAt: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const agentMutations = sqliteTable('agent_mutations', {
+export const agentMutations = pgTable('agent_mutations', {
   id: text('id').primaryKey(),
-  sessionId: text('session_id')
-    .notNull()
-    .references(() => agentSessions.id),
+  sessionId: text('session_id').notNull(), // FK → agent_sessions(id)
   agentType: text('agent_type').notNull(),
   mutationType: text('mutation_type').notNull(),
   targetTable: text('target_table').notNull(),
@@ -41,10 +34,8 @@ export const agentMutations = sqliteTable('agent_mutations', {
   afterState: text('after_state').notNull(),
   description: text('description').notNull(),
   status: text('status').notNull().default('proposed'),
-  confidence: real('confidence'),
-  requiresConfirmation: integer('requires_confirmation', { mode: 'boolean' })
-    .notNull()
-    .default(true),
+  confidence: doublePrecision('confidence'),
+  requiresConfirmation: boolean('requires_confirmation').notNull().default(true),
   confirmedAt: text('confirmed_at'),
   executedAt: text('executed_at'),
   rejectedAt: text('rejected_at'),
@@ -55,10 +46,10 @@ export const agentMutations = sqliteTable('agent_mutations', {
   updatedAt: text('updated_at').notNull().default('CURRENT_TIMESTAMP'),
 });
 
-export const agentAuditLog = sqliteTable('agent_audit_log', {
+export const agentAuditLog = pgTable('agent_audit_log', {
   id: text('id').primaryKey(),
-  mutationId: text('mutation_id').references(() => agentMutations.id),
-  sessionId: text('session_id').references(() => agentSessions.id),
+  mutationId: text('mutation_id'), // FK → agent_mutations(id)
+  sessionId: text('session_id'), // FK → agent_sessions(id)
   agentType: text('agent_type').notNull(),
   action: text('action').notNull(),
   targetTable: text('target_table'),

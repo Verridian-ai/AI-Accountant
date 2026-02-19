@@ -1,57 +1,45 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
-import { users } from './core.js';
-import { tenants } from './multitenant.js';
+import { pgTable, text, integer, boolean } from 'drizzle-orm/pg-core';
 
-// IMPORTANT — CURRENT_TIMESTAMP in PostgreSQL:
-// The wrapPgDb() proxy stores the literal string 'CURRENT_TIMESTAMP' in PostgreSQL
-// instead of evaluating it. All inserts MUST set timestamp fields explicitly:
-//   createdAt: new Date().toISOString()   (see repositories/*.ts)
+// NOTE: .references() to users/tenants (core.ts/multitenant.ts) omitted until those tables
+// migrate to pgTable (TASK-045/046). DB-level FK constraints remain intact in SQL migrations.
 
 // ============================================================================
 // PWA SUPPORT (Wave 24)
 // ============================================================================
 
-export const pushSubscriptions = sqliteTable('push_subscriptions', {
+export const pushSubscriptions = pgTable('push_subscriptions', {
   id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id')
-    .notNull()
-    .references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull(), // FK → users(id) CASCADE
+  tenantId: text('tenant_id').notNull(), // FK → tenants(id) CASCADE
   endpoint: text('endpoint').notNull().unique(),
   keysJson: text('keys_json').notNull(),
   userAgent: text('user_agent'),
   deviceName: text('device_name'),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  isActive: boolean('is_active').notNull().default(true),
   lastUsedAt: text('last_used_at'),
   errorCount: integer('error_count').notNull().default(0),
   createdAt: text('created_at').default('CURRENT_TIMESTAMP'),
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const notificationPreferences = sqliteTable('notification_preferences', {
+export const notificationPreferences = pgTable('notification_preferences', {
   id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id')
-    .notNull()
-    .references(() => tenants.id, { onDelete: 'cascade' }),
-  transactionAlerts: integer('transaction_alerts', { mode: 'boolean' }).notNull().default(true),
-  basReminders: integer('bas_reminders', { mode: 'boolean' }).notNull().default(true),
-  budgetAlerts: integer('budget_alerts', { mode: 'boolean' }).notNull().default(true),
-  taxReminders: integer('tax_reminders', { mode: 'boolean' }).notNull().default(true),
-  billReminders: integer('bill_reminders', { mode: 'boolean' }).notNull().default(true),
-  syncNotifications: integer('sync_notifications', { mode: 'boolean' }).notNull().default(false),
-  teamNotifications: integer('team_notifications', { mode: 'boolean' }).notNull().default(true),
-  systemNotifications: integer('system_notifications', { mode: 'boolean' }).notNull().default(true),
+  userId: text('user_id').notNull(), // FK → users(id) CASCADE
+  tenantId: text('tenant_id').notNull(), // FK → tenants(id) CASCADE
+  transactionAlerts: boolean('transaction_alerts').notNull().default(true),
+  basReminders: boolean('bas_reminders').notNull().default(true),
+  budgetAlerts: boolean('budget_alerts').notNull().default(true),
+  taxReminders: boolean('tax_reminders').notNull().default(true),
+  billReminders: boolean('bill_reminders').notNull().default(true),
+  syncNotifications: boolean('sync_notifications').notNull().default(false),
+  teamNotifications: boolean('team_notifications').notNull().default(true),
+  systemNotifications: boolean('system_notifications').notNull().default(true),
   largeTransactionThresholdCents: integer('large_transaction_threshold_cents')
     .notNull()
     .default(100000),
   budgetAlertThresholdPercent: integer('budget_alert_threshold_percent').notNull().default(80),
-  pushEnabled: integer('push_enabled', { mode: 'boolean' }).notNull().default(true),
-  emailEnabled: integer('email_enabled', { mode: 'boolean' }).notNull().default(false),
+  pushEnabled: boolean('push_enabled').notNull().default(true),
+  emailEnabled: boolean('email_enabled').notNull().default(false),
   quietHoursStart: text('quiet_hours_start'),
   quietHoursEnd: text('quiet_hours_end'),
   timezone: text('timezone').default('Australia/Sydney'),
@@ -59,14 +47,10 @@ export const notificationPreferences = sqliteTable('notification_preferences', {
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const offlineSyncLog = sqliteTable('offline_sync_log', {
+export const offlineSyncLog = pgTable('offline_sync_log', {
   id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  tenantId: text('tenant_id')
-    .notNull()
-    .references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull(), // FK → users(id) CASCADE
+  tenantId: text('tenant_id').notNull(), // FK → tenants(id) CASCADE
   deviceId: text('device_id').notNull(),
   operation: text('operation').notNull(),
   resourceType: text('resource_type').notNull(),

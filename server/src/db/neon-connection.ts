@@ -67,6 +67,42 @@ function createPool(opts: PoolOptions): Pool {
   return pool;
 }
 
+// ── Retry Helpers ───────────────────────────────────────────
+
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Verify a pg.Pool can accept connections, retrying up to 3 times with
+ * exponential backoff (1s → 2s → 4s). Handles Neon cold-start latency.
+ * Call at server startup after ensureProductionPool() / ensureMaskedPool().
+ */
+export async function warmupPoolWithRetry(pool: Pool, label: string): Promise<void> {
+  const delays = [1000, 2000, 4000];
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      const client = await pool.connect();
+      client.release();
+      logger.info(`[NeonConnection] ${label} pool warmup OK (attempt ${attempt + 1})`);
+      return;
+    } catch (err) {
+      if (attempt < delays.length) {
+        const delay = delays[attempt]!;
+        logger.warn(
+          `[NeonConnection] ${label} pool warmup attempt ${attempt + 1} failed — retrying in ${delay}ms`,
+          err,
+        );
+        await sleep(delay);
+      } else {
+        logger.error(
+          `[NeonConnection] ${label} pool warmup failed after ${delays.length + 1} attempts`,
+          err,
+        );
+        throw err;
+      }
+    }
+  }
+}
+
 // ── Pool State ──────────────────────────────────────────────
 
 let productionPool: Pool | null = null;
