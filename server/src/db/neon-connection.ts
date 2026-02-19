@@ -11,7 +11,7 @@
 
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from './postgres-schema.js';
+import * as schema from '../schema/index.js';
 import type { NeonHealthResult, PoolHealthStatus } from '../services/neon/masking-types.js';
 import { logger } from '../lib/logger.js';
 
@@ -118,6 +118,14 @@ function ensureMaskedPool(): Pool {
 }
 
 // ── Public API ──────────────────────────────────────────────
+
+/**
+ * Get the raw production pg.Pool.
+ * Used by schema/connection.ts to share a single pool instance.
+ */
+export function getProductionPool(): Pool {
+  return ensureProductionPool();
+}
 
 /**
  * Get the production database (real data).

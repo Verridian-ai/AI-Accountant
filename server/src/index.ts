@@ -11,7 +11,7 @@ import { securityHeaders } from './middleware/security.js';
 import { auditMiddleware } from './middleware/audit.js';
 import { ConfirmationFlowService } from './services/claude/confirmation-flow.js';
 import { SchemaRegistry } from './services/claude/schemas/schema-registry.js';
-import { neonHealthCheck } from './db/neon-connection.js';
+import { neonHealthCheck, closePools } from './db/neon-connection.js';
 
 // Route file imports
 import authRoutes from './routes/auth-routes.js';
@@ -320,4 +320,30 @@ console.log(`Server is running on port ${port}`);
 serve({
   fetch: app.fetch,
   port,
+});
+
+// Graceful shutdown — close all Neon connection pools
+process.on('SIGTERM', async () => {
+  console.log('[Shutdown] SIGTERM received — closing DB pools');
+  await closePools();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('[Shutdown] SIGINT received — closing DB pools');
+  await closePools();
+  process.exit(0);
+});
+
+// Graceful shutdown — close all Neon connection pools
+process.on('SIGTERM', async () => {
+  console.log('[Shutdown] SIGTERM received — closing DB pools');
+  await closePools();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('[Shutdown] SIGINT received — closing DB pools');
+  await closePools();
+  process.exit(0);
 });

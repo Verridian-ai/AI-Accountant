@@ -18,3 +18,4 @@ export * from './payroll.js';
 export * from './ui.js';
 export * from '../db/cdr-schema.js';
 export * from '../db/market-schema.js';
+export { getProductionDb, getMaskedDb, getReadDb, closePools, getProductionPool } from '../db/neon-connection.js';

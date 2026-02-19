@@ -10,7 +10,7 @@
  */
 
 import * as sqliteSchema from '../schema.js';
-import * as pgSchema from './postgres-schema.js';
+import * as pgSchema from '../schema/index.js';
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 

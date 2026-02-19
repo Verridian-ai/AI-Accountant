@@ -7,31 +7,13 @@
  */
 
 import { drizzle } from 'drizzle-orm/node-postgres';
-import pg from 'pg';
-import dotenv from 'dotenv';
-dotenv.config();
+import { getProductionPool } from '../db/neon-connection.js';
 
 // ============================================================================
-// NEON CLOUD CONNECTION
+// NEON CLOUD CONNECTION — single pool managed by db/neon-connection.ts
 // ============================================================================
 
-const neonUrl = process.env.NEON_DATABASE_URL;
-
-if (!neonUrl) {
-  throw new Error(
-    '[DB] NEON_DATABASE_URL is not set. Add it to server/.env — see NEON_MIGRATION_COMPLETE.md',
-  );
-}
-
-console.log('[DB] Connecting to Neon Cloud PostgreSQL');
-
-export const pool = new pg.Pool({
-  connectionString: neonUrl,
-  ssl: { rejectUnauthorized: false },
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-});
+export const pool = getProductionPool();
 
 // ============================================================================
 // SQLITE COMPAT PROXY

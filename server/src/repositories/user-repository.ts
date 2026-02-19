@@ -1,4 +1,4 @@
-import { db } from '../db/index.js';
+import { db } from '../schema.js';
 import { users, userSettings } from '../schema.js';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
