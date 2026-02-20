@@ -1,8 +1,84 @@
 import { API_URL, getAuthHeaders } from './client';
 
+// ─── Response types (mirroring server route return shapes) ───────────────────
+
+export interface TransferMatch {
+  id: string;
+  fromAccountId: string;
+  toAccountId: string;
+  amount: number;
+  transferDate: string;
+  confidence: number;
+  isUserConfirmed: boolean;
+}
+
+export interface MoneyFlowEntry {
+  sourceAccountId: string;
+  destinationAccountId: string;
+  amount: number;
+  transferDate: string;
+}
+
+export interface NetPosition {
+  accountAId: string;
+  accountBId: string;
+  netAmount: number;
+  transferCount: number;
+}
+
+export interface CategoryBreakdownItem {
+  name: string;
+  value: number;
+}
+
+export interface SpendingTrendEntry {
+  month: string;
+  categories: Record<string, number>;
+  total: number;
+}
+
+export interface RecurringPayment {
+  id: string;
+  merchantPattern: string;
+  typicalAmount: number;
+  frequency: 'weekly' | 'fortnightly' | 'monthly';
+}
+
+export interface BudgetVsActualItem {
+  id: string;
+  category: string;
+  actualCents: number;
+}
+
+export interface AnomalyAlert {
+  id: string;
+  userId: string;
+  detectorType: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'acknowledged' | 'resolved' | 'dismissed';
+  title: string;
+  description: string;
+  transactionId: string | null;
+  detectedAt: string;
+  resolvedAt: string | null;
+}
+
+export interface CashFlowForecast {
+  id: string;
+  userId: string;
+  forecastType: 'linear' | 'seasonal' | 'ml_weighted';
+  startDate: string;
+  endDate: string;
+  granularity: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+  status: string;
+  createdAt: string;
+}
+
+// ─── API client ──────────────────────────────────────────────────────────────
+
 export const analyticsApi = {
   // Transfer matching endpoints
-  fetchTransferMatches: async (): Promise<any[]> => {
+  fetchTransferMatches: async (): Promise<TransferMatch[]> => {
     const res = await fetch(`${API_URL}/transfers/matches`, {
       headers: getAuthHeaders(),
     });
@@ -26,7 +102,7 @@ export const analyticsApi = {
     if (!res.ok) throw new Error('Failed to reject transfer');
   },
 
-  fetchMoneyFlow: async (period: string): Promise<any[]> => {
+  fetchMoneyFlow: async (period: string): Promise<MoneyFlowEntry[]> => {
     const res = await fetch(`${API_URL}/transfers/flow/${encodeURIComponent(period)}`, {
       headers: getAuthHeaders(),
     });
@@ -38,7 +114,7 @@ export const analyticsApi = {
     accountAId: number,
     accountBId: number,
     dateRange?: { start: string; end: string },
-  ): Promise<any> => {
+  ): Promise<NetPosition> => {
     const params = new URLSearchParams({
       accountA: accountAId.toString(),
       accountB: accountBId.toString(),
@@ -55,7 +131,7 @@ export const analyticsApi = {
   },
 
   // Analytics endpoints
-  fetchCategoryBreakdown: async (period: string): Promise<any[]> => {
+  fetchCategoryBreakdown: async (period: string): Promise<CategoryBreakdownItem[]> => {
     const res = await fetch(
       `${API_URL}/analytics/category-breakdown?period=${encodeURIComponent(period)}`,
       {
@@ -63,10 +139,11 @@ export const analyticsApi = {
       },
     );
     if (!res.ok) throw new Error('Failed to fetch category breakdown');
-    return res.json();
+    const data = (await res.json()) as { categories: CategoryBreakdownItem[]; total: number };
+    return data.categories;
   },
 
-  fetchRecurringPayments: async (): Promise<any[]> => {
+  fetchRecurringPayments: async (): Promise<RecurringPayment[]> => {
     const res = await fetch(`${API_URL}/analytics/recurring-payments`, {
       headers: getAuthHeaders(),
     });
@@ -74,7 +151,7 @@ export const analyticsApi = {
     return res.json();
   },
 
-  fetchSpendingTrends: async (months: number): Promise<any[]> => {
+  fetchSpendingTrends: async (months: number): Promise<SpendingTrendEntry[]> => {
     const res = await fetch(`${API_URL}/analytics/spending-trends?months=${months}`, {
       headers: getAuthHeaders(),
     });
@@ -82,7 +159,7 @@ export const analyticsApi = {
     return res.json();
   },
 
-  fetchBudgets: async (period: string): Promise<any[]> => {
+  fetchBudgets: async (period: string): Promise<BudgetVsActualItem[]> => {
     const res = await fetch(`${API_URL}/analytics/budgets?period=${encodeURIComponent(period)}`, {
       headers: getAuthHeaders(),
     });
@@ -99,7 +176,7 @@ export const analyticsApi = {
     if (!res.ok) throw new Error('Failed to save budget');
   },
 
-  fetchBudgetVsActual: async (period: string): Promise<any[]> => {
+  fetchBudgetVsActual: async (period: string): Promise<BudgetVsActualItem[]> => {
     const res = await fetch(
       `${API_URL}/analytics/budget-vs-actual?period=${encodeURIComponent(period)}`,
       {
@@ -110,12 +187,13 @@ export const analyticsApi = {
     return res.json();
   },
 
-  fetchAnomalies: async (): Promise<any[]> => {
+  fetchAnomalies: async (): Promise<AnomalyAlert[]> => {
     const res = await fetch(`${API_URL}/analytics/anomalies`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to fetch anomalies');
-    return res.json();
+    const data = (await res.json()) as { data: AnomalyAlert[] };
+    return data.data;
   },
 
   dismissAnomaly: async (id: string, reason?: string): Promise<void> => {
@@ -127,12 +205,13 @@ export const analyticsApi = {
     if (!res.ok) throw new Error('Failed to dismiss anomaly');
   },
 
-  fetchCashFlowForecast: async (months: number): Promise<any[]> => {
+  fetchCashFlowForecast: async (months: number): Promise<CashFlowForecast[]> => {
     const res = await fetch(`${API_URL}/analytics/cash-flow-forecast?months=${months}`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error('Failed to fetch cash flow forecast');
-    return res.json();
+    const data = (await res.json()) as { data: CashFlowForecast[] };
+    return data.data;
   },
 
   // TODO: server endpoint doesn't exist yet — GET /api/analytics/bill-alerts

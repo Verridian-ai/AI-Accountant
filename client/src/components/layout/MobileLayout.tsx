@@ -44,6 +44,8 @@ export function MobileLayout({
           <div className="flex gap-2">
             {onFilterClick && (
               <button
+                type="button"
+                aria-label="Filter"
                 onClick={onFilterClick}
                 className={cn(
                   'w-10 h-10 rounded-xl flex items-center justify-center transition-all',
@@ -75,6 +77,8 @@ export function MobileLayout({
       {/* Mobile Bottom FAB (Floating Action Button) */}
       {onAddClick && (
         <button
+          type="button"
+          aria-label="Add"
           onClick={onAddClick}
           className="fixed bottom-24 right-4 w-14 h-14 cba-gold-gradient rounded-full shadow-2xl shadow-[#FFCC00]/30 flex items-center justify-center text-black z-50 active:scale-95 transition-transform"
         >
