@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { anomalyApi } from '../../../api';
 import {
   AlertTriangle,
@@ -70,11 +70,7 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
 
-  useEffect(() => {
-    loadAlerts();
-  }, [userId]);
-
-  const loadAlerts = async () => {
+  const loadAlerts = useCallback(async () => {
     try {
       setLoading(true);
       const [alertData, statsData] = await Promise.all([
@@ -94,7 +90,11 @@ export function AnomalyAlertPanel({ userId }: AnomalyAlertPanelProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadAlerts();
+  }, [loadAlerts]);
 
   const handleScan = async () => {
     try {

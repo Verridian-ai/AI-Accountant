@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, AlertTriangle, TrendingUp, TrendingDown, Target } from 'lucide-react';
 import { budgetsApi } from '../../../api';
 import type { BudgetVariance, VarianceSummary } from '../../../api';
@@ -13,11 +13,7 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
   const [variance, setVariance] = useState<BudgetVariance[]>([]);
   const [summary, setSummary] = useState<VarianceSummary | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [budgetId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [vData, sData] = await Promise.all([
@@ -31,7 +27,11 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [budgetId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const fmt = (cents: number) =>
     '$' + (cents / 100).toLocaleString('en-AU', { minimumFractionDigits: 2 });
@@ -94,9 +94,7 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
             <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">
               Total Budgeted
             </p>
-            <p className="text-xl font-bold text-primary font-mono">
-              {fmt(summary.totalBudgeted)}
-            </p>
+            <p className="text-xl font-bold text-primary font-mono">{fmt(summary.totalBudgeted)}</p>
           </div>
           <div className="neu-raised rounded-2xl p-5">
             <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">
@@ -129,26 +127,28 @@ export function VarianceView({ budgetId, onBack }: VarianceViewProps) {
       {/* Top Variances Alert */}
       {summary && summary.topVariances.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {(summary.topVariances as Array<Record<string, unknown>>).slice(0, 5).map((tv, i: number) => (
-            <div key={i} className="neu-inset rounded-xl p-3 flex items-center gap-3">
-              <div
-                className={`p-2 rounded-lg ${tv.variance < 0 ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}
-              >
-                <AlertTriangle className="w-4 h-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-primary truncate">{tv.category}</p>
-                <p className="text-xs text-muted">
-                  Budget: {fmt(tv.budgeted)} &middot; Actual: {fmt(tv.actual)}
+          {(summary.topVariances as Array<Record<string, unknown>>)
+            .slice(0, 5)
+            .map((tv, i: number) => (
+              <div key={i} className="neu-inset rounded-xl p-3 flex items-center gap-3">
+                <div
+                  className={`p-2 rounded-lg ${tv.variance < 0 ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-primary truncate">{tv.category}</p>
+                  <p className="text-xs text-muted">
+                    Budget: {fmt(tv.budgeted)} &middot; Actual: {fmt(tv.actual)}
+                  </p>
+                </div>
+                <p
+                  className={`text-sm font-bold font-mono ${tv.variance < 0 ? 'text-red-400' : 'text-amber-400'}`}
+                >
+                  {fmt(tv.variance)}
                 </p>
               </div>
-              <p
-                className={`text-sm font-bold font-mono ${tv.variance < 0 ? 'text-red-400' : 'text-amber-400'}`}
-              >
-                {fmt(tv.variance)}
-              </p>
-            </div>
-          ))}
+            ))}
         </div>
       )}
 

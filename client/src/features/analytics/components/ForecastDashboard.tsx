@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2, TrendingUp, AlertTriangle } from 'lucide-react';
 import { analyticsApi } from '@/api';
@@ -27,11 +27,7 @@ function ForecastDashboardInner() {
   const [error, setError] = useState<string | null>(null);
   const [months, setMonths] = useState(6);
 
-  useEffect(() => {
-    loadAllData();
-  }, [months]);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -49,7 +45,11 @@ function ForecastDashboardInner() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [months]);
+
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
 
   // Revenue forecast chart data
   const revenueChartData = useMemo(() => {

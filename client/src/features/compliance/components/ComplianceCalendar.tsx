@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { complianceApi } from '../../../api';
 import { ChevronLeft, ChevronRight, Loader2, Calendar as CalIcon } from 'lucide-react';
 import { cn } from '../../../lib/utils';
@@ -31,11 +31,7 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadCalendar();
-  }, [userId]);
-
-  const loadCalendar = async () => {
+  const loadCalendar = useCallback(async () => {
     try {
       setLoading(true);
       const data = await complianceApi.calendar(userId);
@@ -45,7 +41,11 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadCalendar();
+  }, [loadCalendar]);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -162,9 +162,7 @@ export function ComplianceCalendar({ userId }: ComplianceCalendarProps) {
                       />
                     ))}
                     {dayObs.length > 3 && (
-                      <span className="text-[8px] text-muted font-bold">
-                        +{dayObs.length - 3}
-                      </span>
+                      <span className="text-[8px] text-muted font-bold">+{dayObs.length - 3}</span>
                     )}
                   </div>
                 )}

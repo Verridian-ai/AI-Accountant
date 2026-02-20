@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -18,11 +18,7 @@ export function CashFlowForecast() {
   const [loading, setLoading] = useState(true);
   const [months, setMonths] = useState(3);
 
-  useEffect(() => {
-    loadForecast();
-  }, [months]);
-
-  const loadForecast = async () => {
+  const loadForecast = useCallback(async () => {
     setLoading(true);
     try {
       const data = await analyticsApi.fetchCashFlowForecast(months);
@@ -32,7 +28,11 @@ export function CashFlowForecast() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [months]);
+
+  useEffect(() => {
+    loadForecast();
+  }, [loadForecast]);
 
   const hasNegative = forecast.some((f) => f.lowerBound < 0 || f.projectedBalance < 0);
 
@@ -144,9 +144,7 @@ export function CashFlowForecast() {
                 onClick={() => setMonths(m)}
                 className={cn(
                   'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-                  months === m
-                    ? 'bg-cba-gold text-base'
-                    : 'text-muted hover:text-primary',
+                  months === m ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
                 )}
               >
                 {m}m

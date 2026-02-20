@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,18 +15,18 @@ export function TaxOptimizerPanel({ year }: { year: string }) {
   const [strategies, setStrategies] = useState<TaxStrategyRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const loadStrategies = () => {
+  const loadStrategies = useCallback(() => {
     setLoading(true);
     taxApi
       .fetchStrategies(year)
       .then(setStrategies)
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load'))
       .finally(() => setLoading(false));
-  };
+  }, [year]);
 
   useEffect(() => {
     loadStrategies();
-  }, [year]);
+  }, [loadStrategies]);
 
   const handleGenerate = async () => {
     setGenerating(true);

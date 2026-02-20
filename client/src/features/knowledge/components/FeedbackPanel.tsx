@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   MessageSquare,
   TrendingUp,
@@ -43,7 +43,7 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
   const [memifying, setMemifying] = useState(false);
   const [memifyResult, setMemifyResult] = useState<string | null>(null);
 
-  const loadStats = () => {
+  const loadStats = useCallback(() => {
     setLoading(true);
     setError(null);
     knowledgeApi
@@ -51,11 +51,11 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
       .then(setStats)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
       .finally(() => setLoading(false));
-  };
+  }, [userId]);
 
   useEffect(() => {
     loadStats();
-  }, [userId]);
+  }, [loadStats]);
 
   const handleMemify = async () => {
     setMemifying(true);
@@ -122,9 +122,7 @@ export function FeedbackPanel({ userId }: FeedbackPanelProps) {
           <p className="text-2xl font-bold text-zinc-100">
             {((stats?.accuracyRate ?? 0) * 100).toFixed(1)}%
           </p>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
-            Accuracy Rate
-          </p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted">Accuracy Rate</p>
         </div>
         <div className="neu-raised rounded-xl p-4 text-center">
           <TrendIcon className={`w-5 h-5 mx-auto mb-2 ${trendColor}`} />

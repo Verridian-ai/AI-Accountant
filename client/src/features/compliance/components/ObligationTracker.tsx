@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { complianceApi } from '../../../api';
 import { Filter, Plus, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
@@ -50,11 +50,7 @@ export function ObligationTracker({ userId }: ObligationTrackerProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [generating, setGenerating] = useState(false);
 
-  useEffect(() => {
-    loadObligations();
-  }, [userId]);
-
-  const loadObligations = async () => {
+  const loadObligations = useCallback(async () => {
     try {
       setLoading(true);
       const data = await complianceApi.obligations(userId);
@@ -64,7 +60,11 @@ export function ObligationTracker({ userId }: ObligationTrackerProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadObligations();
+  }, [loadObligations]);
 
   const handleGenerateSchedule = async () => {
     try {

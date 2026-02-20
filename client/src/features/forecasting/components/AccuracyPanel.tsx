@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { forecastApi } from '../../../api';
 import { RefreshCw, TrendingUp, Target, AlertTriangle, Compass } from 'lucide-react';
 
@@ -54,7 +54,8 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadAccuracy = async () => {
+  const loadAccuracy = useCallback(async () => {
+    if (!forecastId) return;
     setLoading(true);
     setError(null);
     try {
@@ -65,11 +66,11 @@ export function AccuracyPanel({ forecastId }: AccuracyPanelProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [forecastId]);
 
   useEffect(() => {
-    if (forecastId) loadAccuracy();
-  }, [forecastId]);
+    loadAccuracy();
+  }, [loadAccuracy]);
 
   const updateActuals = async () => {
     setLoading(true);

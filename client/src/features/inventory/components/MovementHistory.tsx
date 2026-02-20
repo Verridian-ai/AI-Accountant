@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { inventoryApi } from '@/api';
 import { ChevronLeft, ChevronRight, Loader2, ArrowDownUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -39,7 +39,7 @@ export function MovementHistory() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const loadMovements = async () => {
+  const loadMovements = useCallback(async () => {
     setLoading(true);
     try {
       const filters: Record<string, string | number> = { limit: PAGE_SIZE, offset };
@@ -55,11 +55,11 @@ export function MovementHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [offset, typeFilter, startDate, endDate]);
 
   useEffect(() => {
     loadMovements();
-  }, [offset, typeFilter, startDate, endDate]);
+  }, [loadMovements]);
 
   return (
     <div className="space-y-4">

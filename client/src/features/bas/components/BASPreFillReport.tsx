@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -69,15 +69,7 @@ export function BASPreFillReport() {
 
   const quarterKey = `${selectedYear}-Q${selectedQuarter}`;
 
-  useEffect(() => {
-    loadAvailableYears();
-  }, []);
-
-  useEffect(() => {
-    loadBAS();
-  }, [quarterKey, basMethod]);
-
-  const loadAvailableYears = async () => {
+  const loadAvailableYears = useCallback(async () => {
     try {
       const quarters = await basApi.fetchQuarters();
       const yearSet = new Set<number>();
@@ -92,9 +84,9 @@ export function BASPreFillReport() {
       // Fallback: just current year
       setAvailableYears([getCurrentFinancialYear()]);
     }
-  };
+  }, []);
 
-  const loadBAS = async () => {
+  const loadBAS = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -106,7 +98,15 @@ export function BASPreFillReport() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [quarterKey, basMethod]);
+
+  useEffect(() => {
+    loadAvailableYears();
+  }, [loadAvailableYears]);
+
+  useEffect(() => {
+    loadBAS();
+  }, [loadBAS]);
 
   const handleStatusChange = async (newStatus: string) => {
     const s = newStatus as BASStatus;

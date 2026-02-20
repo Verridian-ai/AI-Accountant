@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   fetchEmployee,
   updateEmployee,
@@ -27,7 +27,7 @@ export function useEmployeeData(employeeId: string) {
   const [editing, setEditing] = useState<string | null>(null);
   const [editData, setEditData] = useState<Record<string, string>>({});
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const emp = await fetchEmployee(employeeId);
@@ -49,11 +49,11 @@ export function useEmployeeData(employeeId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [employeeId]);
 
   useEffect(() => {
     loadData();
-  }, [employeeId]);
+  }, [loadData]);
 
   const handleSavePersonal = async () => {
     try {

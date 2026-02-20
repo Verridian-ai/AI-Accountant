@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { taxApi } from '@/api';
 import type {
   TaxCalculationResult,
@@ -26,11 +26,7 @@ export function useTaxDashboard() {
   const [depreciableAssets, setDepreciableAssets] = useState<DepreciableAsset[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadTaxData();
-  }, [selectedYear]);
-
-  const loadTaxData = async () => {
+  const loadTaxData = useCallback(async () => {
     setLoading(true);
     try {
       const [summary, deductionsList, assets, events, depreciation] = await Promise.all([
@@ -66,7 +62,11 @@ export function useTaxDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedYear, entityType, hasPrivateHealth]);
+
+  useEffect(() => {
+    loadTaxData();
+  }, [loadTaxData]);
 
   const calculateTax = async () => {
     if (!grossIncome) return;

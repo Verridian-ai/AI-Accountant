@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   ArrowLeft,
   PackageCheck,
@@ -62,28 +62,26 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
   const [threeWay, setThreeWay] = useState<ThreeWayMatch | null>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadPO();
-  }, [poId]);
-
-  const loadPO = async () => {
+  const loadPO = useCallback(async () => {
     try {
       const poData = await apApi.fetchPurchaseOrder(poId);
       setPO(poData);
 
       // Build receiving lines from PO line items
-      const receivingLines: ReceivingLine[] = (poData.lineItems ?? []).map((li: Record<string, unknown>) => {
-        const prevReceived = li.receivedQuantity ?? 0;
-        return {
-          lineId: li.id ?? li.lineId ?? '',
-          description: li.description,
-          orderedQty: li.quantity,
-          previouslyReceived: prevReceived,
-          receivingNow: 0,
-          unitPrice: li.unitPrice,
-          maxReceivable: li.quantity - prevReceived,
-        };
-      });
+      const receivingLines: ReceivingLine[] = (poData.lineItems ?? []).map(
+        (li: Record<string, unknown>) => {
+          const prevReceived = li.receivedQuantity ?? 0;
+          return {
+            lineId: li.id ?? li.lineId ?? '',
+            description: li.description,
+            orderedQty: li.quantity,
+            previouslyReceived: prevReceived,
+            receivingNow: 0,
+            unitPrice: li.unitPrice,
+            maxReceivable: li.quantity - prevReceived,
+          };
+        },
+      );
       setLines(receivingLines);
 
       // Load receipt history if available
@@ -106,7 +104,11 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [poId]);
+
+  useEffect(() => {
+    loadPO();
+  }, [loadPO]);
 
   const updateReceivingQty = (lineId: string, qty: number) => {
     setLines((prev) =>
@@ -272,7 +274,9 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
                 <th className="text-right px-3 py-2 text-xs font-semibold text-secondary">
                   Unit Price
                 </th>
-                <th className="text-right px-4 py-2 text-xs font-semibold text-secondary">Amount</th>
+                <th className="text-right px-4 py-2 text-xs font-semibold text-secondary">
+                  Amount
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -345,8 +349,11 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
       {isReceivable && (
         <div className="neu-raised rounded-2xl p-5 space-y-4">
           <div>
-            <label htmlFor="porece-f1" className="block text-xs font-medium text-secondary mb-1.5">Receipt Notes</label>
-            <textarea id="porece-f1"
+            <label htmlFor="porece-f1" className="block text-xs font-medium text-secondary mb-1.5">
+              Receipt Notes
+            </label>
+            <textarea
+              id="porece-f1"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
@@ -421,7 +428,9 @@ export function POReceiving({ poId, onBack, onReceived }: POReceivingProps) {
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-border/50">
               <p className="text-xs text-muted mb-1">PO Total</p>
-              <p className="text-sm font-semibold text-primary">{formatCurrency(threeWay.poTotal)}</p>
+              <p className="text-sm font-semibold text-primary">
+                {formatCurrency(threeWay.poTotal)}
+              </p>
             </div>
             <div className="text-center p-3 rounded-xl bg-white/[0.02] border border-border/50">
               <p className="text-xs text-muted mb-1">Receipt Total</p>

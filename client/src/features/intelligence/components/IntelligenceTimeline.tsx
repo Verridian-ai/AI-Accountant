@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   DollarSign,
   TrendingUp,
@@ -55,7 +55,7 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
     new Set(Object.keys(moduleConfig)),
   );
 
-  const loadTimeline = async () => {
+  const loadTimeline = useCallback(async () => {
     try {
       setFetchState((prev) => ({ ...prev, loading: true, error: null }));
       const params: Record<string, string> = { granularity };
@@ -70,12 +70,12 @@ export function IntelligenceTimeline({ userId }: IntelligenceTimelineProps) {
     } catch {
       setFetchState((prev) => ({ ...prev, loading: false, error: 'Failed to load timeline' }));
     }
-  };
+  }, [userId, granularity, startDate, endDate]);
 
   useEffect(() => {
-    const id = setTimeout(() => void loadTimeline(), 0);
-    return () => clearTimeout(id);
-  }, [userId, granularity, startDate, endDate]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadTimeline();
+  }, [loadTimeline]);
 
   const toggleModule = (mod: string) => {
     setActiveModules((prev) => {

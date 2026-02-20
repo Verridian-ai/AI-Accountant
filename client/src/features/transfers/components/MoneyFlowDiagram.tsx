@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2, GitBranch } from 'lucide-react';
 import { analyticsApi } from '@/api';
@@ -27,11 +27,7 @@ export function MoneyFlowDiagram() {
   const [period, setPeriod] = useState<string>('3m');
   const [hoveredFlow, setHoveredFlow] = useState<number | null>(null);
 
-  useEffect(() => {
-    loadFlows();
-  }, [period]);
-
-  const loadFlows = async () => {
+  const loadFlows = useCallback(async () => {
     setLoading(true);
     try {
       const data = await analyticsApi.fetchMoneyFlow(period);
@@ -41,7 +37,11 @@ export function MoneyFlowDiagram() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    loadFlows();
+  }, [loadFlows]);
 
   const { accounts, maxAmount } = useMemo(() => {
     const accountMap = new Map<number, AccountNode>();

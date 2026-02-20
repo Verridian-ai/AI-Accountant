@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { forecastsApi } from '../../../api';
 
@@ -30,11 +30,9 @@ export function ScenarioComparison({ scenarioIds }: ScenarioComparisonProps) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ComparisonData | null>(null);
 
-  useEffect(() => {
-    loadComparison();
-  }, [scenarioIds.join(',')]);
+  const scenarioKey = scenarioIds.join(',');
 
-  const loadComparison = async () => {
+  const loadComparison = useCallback(async () => {
     setLoading(true);
     try {
       const result = await forecastsApi.compareScenarios(scenarioIds);
@@ -44,7 +42,13 @@ export function ScenarioComparison({ scenarioIds }: ScenarioComparisonProps) {
     } finally {
       setLoading(false);
     }
-  };
+    // scenarioKey is a stable string derived from scenarioIds
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenarioKey]);
+
+  useEffect(() => {
+    loadComparison();
+  }, [loadComparison]);
 
   const fmt = (cents: number) =>
     '$' + (cents / 100).toLocaleString('en-AU', { minimumFractionDigits: 2 });

@@ -59,22 +59,32 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
     setError(null);
     try {
       const data = await knowledgeApi.getGraph(datasetName, { maxNodes: 200, ontologyId });
-      const nodes: GraphNode[] = (data.nodes ?? []).map((n: { id: string; label?: string; type?: string; neighbors?: Array<{ id: string; label: string; edgeType: string }>; properties?: Record<string, unknown> }) => ({
-        id: n.id,
-        label: n.label || n.id,
-        type: n.type || 'default',
-        x: Math.random() * 800 - 400,
-        y: Math.random() * 600 - 300,
-        vx: 0,
-        vy: 0,
-        neighbors: n.neighbors,
-        properties: n.properties,
-      }));
-      const edges: GraphEdge[] = (data.edges ?? []).map((e: { source: string; target: string; type?: string }) => ({
-        source: e.source,
-        target: e.target,
-        type: e.type || 'related',
-      }));
+      const nodes: GraphNode[] = (data.nodes ?? []).map(
+        (n: {
+          id: string;
+          label?: string;
+          type?: string;
+          neighbors?: Array<{ id: string; label: string; edgeType: string }>;
+          properties?: Record<string, unknown>;
+        }) => ({
+          id: n.id,
+          label: n.label || n.id,
+          type: n.type || 'default',
+          x: Math.random() * 800 - 400,
+          y: Math.random() * 600 - 300,
+          vx: 0,
+          vy: 0,
+          neighbors: n.neighbors,
+          properties: n.properties,
+        }),
+      );
+      const edges: GraphEdge[] = (data.edges ?? []).map(
+        (e: { source: string; target: string; type?: string }) => ({
+          source: e.source,
+          target: e.target,
+          type: e.type || 'related',
+        }),
+      );
       nodesRef.current = nodes;
       edgesRef.current = edges;
 
@@ -91,6 +101,80 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
   useEffect(() => {
     loadGraph();
   }, [loadGraph]);
+
+  const draw = useCallback(
+    (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+      const nodes = nodesRef.current;
+      const edges = edgesRef.current;
+      const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+      const cx = canvas.width / 2 + pan.x;
+      const cy = canvas.height / 2 + pan.y;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(zoom, zoom);
+
+      const filteredIds = new Set(
+        nodes
+          .filter((n) => typeFilters.has(n.type))
+          .filter((n) => !searchQuery || n.label.toLowerCase().includes(searchQuery.toLowerCase()))
+          .map((n) => n.id),
+      );
+
+      // Draw edges
+      ctx.lineWidth = 0.5;
+      for (const edge of edges) {
+        const src = nodeMap.get(edge.source);
+        const tgt = nodeMap.get(edge.target);
+        if (!src || !tgt) continue;
+        if (!filteredIds.has(src.id) || !filteredIds.has(tgt.id)) continue;
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        if (selectedNode && (edge.source === selectedNode.id || edge.target === selectedNode.id)) {
+          ctx.strokeStyle = 'rgba(255,204,0,0.4)';
+          ctx.lineWidth = 1.5;
+        }
+        ctx.beginPath();
+        ctx.moveTo(src.x, src.y);
+        ctx.lineTo(tgt.x, tgt.y);
+        ctx.stroke();
+        ctx.lineWidth = 0.5;
+      }
+
+      // Draw nodes
+      for (const node of nodes) {
+        if (!filteredIds.has(node.id)) continue;
+        const color = TYPE_COLORS[node.type] ?? TYPE_COLORS.default;
+        const radius = selectedNode?.id === node.id ? 10 : 6;
+
+        // Glow for selected
+        if (selectedNode?.id === node.id) {
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 15;
+        }
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        // Label
+        if (zoom > 0.6 || selectedNode?.id === node.id) {
+          ctx.font = `${Math.max(9, 11 / zoom)}px sans-serif`;
+          ctx.fillStyle = selectedNode?.id === node.id ? '#FFCC00' : 'rgba(255,255,255,0.6)';
+          ctx.textAlign = 'center';
+          ctx.fillText(node.label.slice(0, 20), node.x, node.y + radius + 12);
+        }
+      }
+
+      ctx.restore();
+    },
+    [pan, zoom, typeFilters, searchQuery, selectedNode],
+  );
 
   // Force-directed layout simulation
   useEffect(() => {
@@ -199,78 +283,7 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
       cancelAnimationFrame(animRef.current);
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, [loading, error, typeFilters, searchQuery, selectedNode, zoom, pan]);
-
-  const draw = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-    const nodes = nodesRef.current;
-    const edges = edgesRef.current;
-    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-    const cx = canvas.width / 2 + pan.x;
-    const cy = canvas.height / 2 + pan.y;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.scale(zoom, zoom);
-
-    const filteredIds = new Set(
-      nodes
-        .filter((n) => typeFilters.has(n.type))
-        .filter((n) => !searchQuery || n.label.toLowerCase().includes(searchQuery.toLowerCase()))
-        .map((n) => n.id),
-    );
-
-    // Draw edges
-    ctx.lineWidth = 0.5;
-    for (const edge of edges) {
-      const src = nodeMap.get(edge.source);
-      const tgt = nodeMap.get(edge.target);
-      if (!src || !tgt) continue;
-      if (!filteredIds.has(src.id) || !filteredIds.has(tgt.id)) continue;
-
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      if (selectedNode && (edge.source === selectedNode.id || edge.target === selectedNode.id)) {
-        ctx.strokeStyle = 'rgba(255,204,0,0.4)';
-        ctx.lineWidth = 1.5;
-      }
-      ctx.beginPath();
-      ctx.moveTo(src.x, src.y);
-      ctx.lineTo(tgt.x, tgt.y);
-      ctx.stroke();
-      ctx.lineWidth = 0.5;
-    }
-
-    // Draw nodes
-    for (const node of nodes) {
-      if (!filteredIds.has(node.id)) continue;
-      const color = TYPE_COLORS[node.type] ?? TYPE_COLORS.default;
-      const radius = selectedNode?.id === node.id ? 10 : 6;
-
-      // Glow for selected
-      if (selectedNode?.id === node.id) {
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 15;
-      }
-
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-
-      // Label
-      if (zoom > 0.6 || selectedNode?.id === node.id) {
-        ctx.font = `${Math.max(9, 11 / zoom)}px sans-serif`;
-        ctx.fillStyle = selectedNode?.id === node.id ? '#FFCC00' : 'rgba(255,255,255,0.6)';
-        ctx.textAlign = 'center';
-        ctx.fillText(node.label.slice(0, 20), node.x, node.y + radius + 12);
-      }
-    }
-
-    ctx.restore();
-  };
+  }, [loading, error, typeFilters, searchQuery, selectedNode, zoom, pan, draw]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -386,7 +399,9 @@ export function KnowledgeGraphExplorer({ datasetName, ontologyId }: KnowledgeGra
               type="button"
               onClick={() => toggleTypeFilter(type)}
               className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                typeFilters.has(type) ? 'text-zinc-100 ring-1' : 'text-zinc-600 hover:text-secondary'
+                typeFilters.has(type)
+                  ? 'text-zinc-100 ring-1'
+                  : 'text-zinc-600 hover:text-secondary'
               }`}
               style={{
                 backgroundColor: typeFilters.has(type)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2, Target, Pencil, Check, X, Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -29,11 +29,7 @@ export function BudgetVsActual() {
   const [editAmount, setEditAmount] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    loadBudgets();
-  }, [periodType]);
-
-  const loadBudgets = async () => {
+  const loadBudgets = useCallback(async () => {
     setLoading(true);
     try {
       const data = await analyticsApi.fetchBudgetVsActual(periodType);
@@ -43,7 +39,11 @@ export function BudgetVsActual() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [periodType]);
+
+  useEffect(() => {
+    loadBudgets();
+  }, [loadBudgets]);
 
   const startEdit = (budget: Budget) => {
     setEditingId(budget.id);
@@ -108,9 +108,7 @@ export function BudgetVsActual() {
                 onClick={() => setPeriodType(pt)}
                 className={cn(
                   'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-                  periodType === pt
-                    ? 'bg-cba-gold text-base'
-                    : 'text-muted hover:text-primary',
+                  periodType === pt ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
                 )}
               >
                 {pt}
@@ -161,9 +159,7 @@ export function BudgetVsActual() {
               <div key={budget.id} className="group">
                 {/* Desktop layout */}
                 <div className="hidden sm:grid grid-cols-[1fr_100px_100px_100px_140px_60px] gap-3 px-5 py-3 items-center hover:bg-white/[0.02] transition-colors">
-                  <span className="text-xs font-bold text-primary truncate">
-                    {budget.category}
-                  </span>
+                  <span className="text-xs font-bold text-primary truncate">{budget.category}</span>
 
                   {isEditing ? (
                     <input
@@ -280,9 +276,7 @@ export function BudgetVsActual() {
         {/* Total Row */}
         <div className="px-5 py-4 border-t border-border bg-white/[0.02]">
           <div className="hidden sm:grid grid-cols-[1fr_100px_100px_100px_140px_60px] gap-3 items-center">
-            <span className="text-xs font-black text-cba-gold uppercase tracking-wider">
-              Total
-            </span>
+            <span className="text-xs font-black text-cba-gold uppercase tracking-wider">Total</span>
             <span className="text-xs font-black text-primary text-right tabular-nums">
               {formatCurrency(totalBudget)}
             </span>

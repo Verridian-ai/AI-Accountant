@@ -56,7 +56,10 @@ export function ModuleConnectionMap({ connections: propConnections }: ModuleConn
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    // Only load on mount; propConnections is intentionally excluded since
+    // the caller controls the data externally when provided
     if (!propConnections) loadConnections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadConnections = async () => {

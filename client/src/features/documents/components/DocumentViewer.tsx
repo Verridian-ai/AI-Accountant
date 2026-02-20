@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   ArrowLeft,
   RefreshCw,
@@ -67,7 +67,7 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
   const [processing, setProcessing] = useState(false);
   const [showRawData, setShowRawData] = useState(false);
 
-  const loadDocument = async () => {
+  const loadDocument = useCallback(async () => {
     setLoading(true);
     try {
       const data = await documentsApi.get(documentId);
@@ -77,11 +77,11 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [documentId]);
 
   useEffect(() => {
     loadDocument();
-  }, [documentId]);
+  }, [loadDocument]);
 
   const handleReprocess = async () => {
     setProcessing(true);

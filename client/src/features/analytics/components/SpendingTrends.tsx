@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2, TrendingUp, TrendingDown, Minus, LineChart } from 'lucide-react';
 import { getCategoryColor } from '@/utils/categoryColors';
@@ -43,6 +43,16 @@ function getHexColor(category: string): string {
   return COLOR_HEX[dotClass] || '#FFCC00';
 }
 
+// Chart dimensions (module-level constants — stable across renders)
+const CHART_W = 600;
+const CHART_H = 300;
+const PAD_L = 60;
+const PAD_R = 20;
+const PAD_T = 20;
+const PAD_B = 40;
+const PLOT_W = CHART_W - PAD_L - PAD_R;
+const PLOT_H = CHART_H - PAD_T - PAD_B;
+
 export function SpendingTrends() {
   const [trends, setTrends] = useState<SpendingTrend[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,11 +60,7 @@ export function SpendingTrends() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
-  useEffect(() => {
-    loadTrends();
-  }, [months]);
-
-  const loadTrends = async () => {
+  const loadTrends = useCallback(async () => {
     setLoading(true);
     try {
       const data = await analyticsApi.fetchSpendingTrends(months);
@@ -76,7 +82,11 @@ export function SpendingTrends() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [months]);
+
+  useEffect(() => {
+    loadTrends();
+  }, [loadTrends]);
 
   const allCategories = useMemo(() => {
     const cats = new Set<string>();
@@ -92,16 +102,6 @@ export function SpendingTrends() {
       return n;
     });
   };
-
-  // Chart dimensions
-  const CHART_W = 600,
-    CHART_H = 300;
-  const PAD_L = 60,
-    PAD_R = 20,
-    PAD_T = 20,
-    PAD_B = 40;
-  const PLOT_W = CHART_W - PAD_L - PAD_R;
-  const PLOT_H = CHART_H - PAD_T - PAD_B;
 
   const { maxValue, yTicks, lines } = useMemo(() => {
     if (trends.length === 0) return { maxValue: 0, yTicks: [], lines: [] };

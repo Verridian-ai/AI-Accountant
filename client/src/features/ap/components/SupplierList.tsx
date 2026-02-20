@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { apApi } from '../../../api';
 import type { Supplier } from '../../../api';
@@ -17,7 +17,7 @@ export function SupplierList({ onSelect, onNew }: SupplierListProps) {
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const loadSuppliers = async () => {
+  const loadSuppliers = useCallback(async () => {
     setLoading(true);
     try {
       const result = await apApi.fetchSuppliers({
@@ -33,11 +33,11 @@ export function SupplierList({ onSelect, onNew }: SupplierListProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search, showArchived]);
 
   useEffect(() => {
     loadSuppliers();
-  }, [page, search, showArchived]);
+  }, [loadSuppliers]);
 
   const totalPages = Math.ceil(total / limit);
 

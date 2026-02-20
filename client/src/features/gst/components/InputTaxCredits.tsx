@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/format';
@@ -18,11 +18,7 @@ export function InputTaxCredits({
   const [credits, setCredits] = useState<InputTaxCredit[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadCredits();
-  }, [period]);
-
-  const loadCredits = async () => {
+  const loadCredits = useCallback(async () => {
     setLoading(true);
     try {
       const data = await gstApi.fetchInputTaxCredits(period);
@@ -32,7 +28,11 @@ export function InputTaxCredits({
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    loadCredits();
+  }, [loadCredits]);
 
   const totalClaimable = credits.reduce((sum, c) => sum + c.gstCredits, 0);
   const missingInvoices = credits.filter((c) => !c.hasInvoice && c.gstCredits > 8250); // >$82.50 threshold in cents

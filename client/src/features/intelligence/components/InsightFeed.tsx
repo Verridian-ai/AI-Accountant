@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Lightbulb,
   Zap,
@@ -67,11 +67,7 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
     minConfidence: 0,
   });
 
-  useEffect(() => {
-    loadInsights();
-  }, [userId, dateRange, filters]);
-
-  const loadInsights = async () => {
+  const loadInsights = useCallback(async () => {
     try {
       setLoading(true);
       const params: Record<string, string> = {};
@@ -88,7 +84,11 @@ export function InsightFeed({ userId, dateRange }: InsightFeedProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, dateRange, filters]);
+
+  useEffect(() => {
+    loadInsights();
+  }, [loadInsights]);
 
   const updateStatus = async (insightId: string, status: string) => {
     try {

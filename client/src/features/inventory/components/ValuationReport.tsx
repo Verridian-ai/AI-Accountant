@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { inventoryApi } from '@/api';
 import { DollarSign, Loader2, PieChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,7 @@ export function ValuationReport() {
   const [loading, setLoading] = useState(true);
   const [asOfDate, setAsOfDate] = useState('');
 
-  const loadValuation = async () => {
+  const loadValuation = useCallback(async () => {
     setLoading(true);
     try {
       const result = await inventoryApi.getValuation(asOfDate || undefined);
@@ -33,11 +33,11 @@ export function ValuationReport() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [asOfDate]);
 
   useEffect(() => {
     loadValuation();
-  }, [asOfDate]);
+  }, [loadValuation]);
 
   if (loading) {
     return (
@@ -71,18 +71,18 @@ export function ValuationReport() {
     <div className="space-y-6">
       {/* Date Selector */}
       <div className="flex items-center gap-3">
-        <label htmlFor="valuat-f1" className="text-sm text-muted">As of date:</label>
-        <input id="valuat-f1"
+        <label htmlFor="valuat-f1" className="text-sm text-muted">
+          As of date:
+        </label>
+        <input
+          id="valuat-f1"
           type="date"
           value={asOfDate}
           onChange={(e) => setAsOfDate(e.target.value)}
           className="px-4 py-2 rounded-xl neu-inset bg-transparent text-primary text-sm"
         />
         {asOfDate && (
-          <button
-            onClick={() => setAsOfDate('')}
-            className="text-xs text-muted hover:text-primary"
-          >
+          <button onClick={() => setAsOfDate('')} className="text-xs text-muted hover:text-primary">
             Clear
           </button>
         )}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Plus, Trash2, Sparkles, ChevronRight } from 'lucide-react';
 import { budgetsApi } from '../../../api';
 import type { Budget, BudgetLine } from '../../../api';
@@ -23,11 +23,7 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
   const [newAmount, setNewAmount] = useState('');
   const [newNotes, setNewNotes] = useState('');
 
-  useEffect(() => {
-    loadBudget();
-  }, [budgetId]);
-
-  const loadBudget = async () => {
+  const loadBudget = useCallback(async () => {
     setLoading(true);
     try {
       const data = await budgetsApi.get(budgetId);
@@ -38,7 +34,11 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [budgetId]);
+
+  useEffect(() => {
+    loadBudget();
+  }, [loadBudget]);
 
   const handleAddLine = async () => {
     if (!newCategory || !newAmount) return;

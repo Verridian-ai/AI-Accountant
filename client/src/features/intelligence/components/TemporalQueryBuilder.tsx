@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Save, Clock, Database, ChevronRight } from 'lucide-react';
 import {
   LineChart,
@@ -60,20 +60,18 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
   const [queryName, setQueryName] = useState('');
   const [cached, setCached] = useState(false);
 
-  useEffect(() => {
-    // Defer to avoid sync setState-in-effect lint violation
-    const id = setTimeout(() => void loadSavedQueries(), 0);
-    return () => clearTimeout(id);
-  }, [userId]);
-
-  const loadSavedQueries = async () => {
+  const loadSavedQueries = useCallback(async () => {
     try {
       const data = await intelligenceApi.listSavedQueries(userId);
       setSavedQueries(Array.isArray(data) ? data : (data.queries ?? []));
     } catch {
       // ignore
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadSavedQueries();
+  }, [loadSavedQueries]);
 
   const buildQueryPayload = () => {
     const payload: Record<string, unknown> = {
@@ -122,8 +120,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
     if (queryType === 'point_in_time') {
       return (
         <div className="flex items-center gap-2">
-          <label htmlFor="intel-f1" className="text-xs text-muted font-medium">Date:</label>
-          <input id="intel-f1"
+          <label htmlFor="intel-f1" className="text-xs text-muted font-medium">
+            Date:
+          </label>
+          <input
+            id="intel-f1"
             type="date"
             value={pointDate}
             onChange={(e) => setPointDate(e.target.value)}
@@ -135,8 +136,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
     return (
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <div className="flex items-center gap-2 flex-1">
-          <label htmlFor="intel-f2" className="text-xs text-muted font-medium">From:</label>
-          <input id="intel-f2"
+          <label htmlFor="intel-f2" className="text-xs text-muted font-medium">
+            From:
+          </label>
+          <input
+            id="intel-f2"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -144,8 +148,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
           />
         </div>
         <div className="flex items-center gap-2 flex-1">
-          <label htmlFor="intel-f3" className="text-xs text-muted font-medium">To:</label>
-          <input id="intel-f3"
+          <label htmlFor="intel-f3" className="text-xs text-muted font-medium">
+            To:
+          </label>
+          <input
+            id="intel-f3"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
@@ -294,8 +301,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="intel-f4" className="text-xs text-muted font-medium block mb-1">Query Type</label>
-              <select id="intel-f4"
+              <label htmlFor="intel-f4" className="text-xs text-muted font-medium block mb-1">
+                Query Type
+              </label>
+              <select
+                id="intel-f4"
                 value={queryType}
                 onChange={(e) => setQueryType(e.target.value as QueryType)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
@@ -308,8 +318,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               </select>
             </div>
             <div>
-              <label htmlFor="intel-f5" className="text-xs text-muted font-medium block mb-1">Target Entity</label>
-              <select id="intel-f5"
+              <label htmlFor="intel-f5" className="text-xs text-muted font-medium block mb-1">
+                Target Entity
+              </label>
+              <select
+                id="intel-f5"
                 value={entity}
                 onChange={(e) => setEntity(e.target.value as EntityType)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-primary"
@@ -328,8 +341,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
           {/* Parameters */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label htmlFor="intel-f6" className="text-xs text-muted font-medium block mb-1">Category</label>
-              <input id="intel-f6"
+              <label htmlFor="intel-f6" className="text-xs text-muted font-medium block mb-1">
+                Category
+              </label>
+              <input
+                id="intel-f6"
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -338,8 +354,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               />
             </div>
             <div>
-              <label htmlFor="intel-f7" className="text-xs text-muted font-medium block mb-1">Min Amount</label>
-              <input id="intel-f7"
+              <label htmlFor="intel-f7" className="text-xs text-muted font-medium block mb-1">
+                Min Amount
+              </label>
+              <input
+                id="intel-f7"
                 type="number"
                 value={minAmount}
                 onChange={(e) => setMinAmount(e.target.value)}
@@ -348,8 +367,11 @@ export function TemporalQueryBuilder({ userId }: TemporalQueryBuilderProps) {
               />
             </div>
             <div>
-              <label htmlFor="intel-f8" className="text-xs text-muted font-medium block mb-1">Max Amount</label>
-              <input id="intel-f8"
+              <label htmlFor="intel-f8" className="text-xs text-muted font-medium block mb-1">
+                Max Amount
+              </label>
+              <input
+                id="intel-f8"
                 type="number"
                 value={maxAmount}
                 onChange={(e) => setMaxAmount(e.target.value)}

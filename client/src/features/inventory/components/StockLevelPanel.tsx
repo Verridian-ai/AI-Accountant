@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { inventoryApi } from '@/api';
 import { AlertTriangle, ArrowRightLeft, Loader2, Warehouse } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -19,7 +19,7 @@ export function StockLevelPanel() {
   const [loading, setLoading] = useState(true);
   const [warehouseFilter, setWarehouseFilter] = useState('');
 
-  const loadLevels = async () => {
+  const loadLevels = useCallback(async () => {
     setLoading(true);
     try {
       const filters: { warehouseId?: string } = {};
@@ -31,11 +31,11 @@ export function StockLevelPanel() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [warehouseFilter]);
 
   useEffect(() => {
     loadLevels();
-  }, [warehouseFilter]);
+  }, [loadLevels]);
 
   const warehouses = [...new Set(levels.map((l) => l.warehouseName).filter(Boolean))];
   const lowStockItems = levels.filter((l) => l.quantityOnHand < l.reorderPoint);

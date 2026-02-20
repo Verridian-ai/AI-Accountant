@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   fetchPayCategories,
   fetchPayStructure,
@@ -26,7 +26,7 @@ export function usePayStructure(employeeId: string) {
   const [formAnnualSalary, setFormAnnualSalary] = useState('');
   const [formEffectiveDate, setFormEffectiveDate] = useState(today());
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [empResult, catResult, structResult] = await Promise.all([
@@ -45,11 +45,11 @@ export function usePayStructure(employeeId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [employeeId]);
 
   useEffect(() => {
     loadData();
-  }, [employeeId]);
+  }, [loadData]);
 
   const selectedCategory = useMemo(
     () => categories.find((c) => c.id === formCategoryId),

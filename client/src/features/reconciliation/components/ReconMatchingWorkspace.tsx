@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -73,11 +73,7 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
   const [selectedBankTx, setSelectedBankTx] = useState<BankTransaction | null>(null);
   const [suggestions, setSuggestions] = useState<MatchSuggestion[]>([]);
 
-  useEffect(() => {
-    loadSession();
-  }, [sessionId]);
-
-  const loadSession = async () => {
+  const loadSession = useCallback(async () => {
     setLoading(true);
     try {
       const data = await reconApi.getSession(sessionId);
@@ -87,7 +83,11 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  useEffect(() => {
+    loadSession();
+  }, [loadSession]);
 
   const handleAutoMatch = async () => {
     setAutoMatching(true);

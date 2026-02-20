@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -78,15 +78,12 @@ export function BASComparison() {
       setQuarterA(first.value);
       setQuarterB(second.value);
     }
+    // quarters is derived from generateQuarters() which is stable (no external deps)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (quarterA && quarterB && quarterA !== quarterB) {
-      loadComparison();
-    }
-  }, [quarterA, quarterB]);
-
-  const loadComparison = async () => {
+  const loadComparison = useCallback(async () => {
+    if (!quarterA || !quarterB || quarterA === quarterB) return;
     setLoading(true);
     try {
       const result = await gstApi.fetchBASComparison(quarterA, quarterB);
@@ -96,7 +93,11 @@ export function BASComparison() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [quarterA, quarterB]);
+
+  useEffect(() => {
+    loadComparison();
+  }, [loadComparison]);
 
   const getVariance = (a: number, b: number): { change: number; variance: number } => {
     const change = a - b;
@@ -106,8 +107,8 @@ export function BASComparison() {
 
   const allLabels = data
     ? Array.from(
-      new Set([...Object.keys(data.periodA.labels), ...Object.keys(data.periodB.labels)]),
-    ).sort()
+        new Set([...Object.keys(data.periodA.labels), ...Object.keys(data.periodB.labels)]),
+      ).sort()
     : [];
 
   return (
@@ -177,8 +178,9 @@ export function BASComparison() {
                 return (
                   <div
                     key={label}
-                    className={`grid grid-cols-5 gap-2 py-2 px-2 rounded-lg text-sm items-center ${absVariance > 50 ? 'bg-red-500/5' : absVariance > 20 ? 'bg-amber-500/5' : ''
-                      }`}
+                    className={`grid grid-cols-5 gap-2 py-2 px-2 rounded-lg text-sm items-center ${
+                      absVariance > 50 ? 'bg-red-500/5' : absVariance > 20 ? 'bg-amber-500/5' : ''
+                    }`}
                   >
                     <div>
                       <span className="font-mono text-xs text-cba-gold mr-2">{label}</span>

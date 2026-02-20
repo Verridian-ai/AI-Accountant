@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2, PieChart } from 'lucide-react';
 import { getCategoryColor } from '@/utils/categoryColors';
@@ -77,11 +77,7 @@ export function CategoryBreakdown() {
   const [mode, setMode] = useState<'expenses' | 'income'>('expenses');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [period, mode]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const data = await analyticsApi.fetchCategoryBreakdown(`${period}_${mode}`);
@@ -91,7 +87,11 @@ export function CategoryBreakdown() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period, mode]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const segments = useMemo(() => {
     if (items.length === 0) return [];

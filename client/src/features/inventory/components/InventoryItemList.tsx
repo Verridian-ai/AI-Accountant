@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { inventoryApi } from '@/api';
 import { Search, Plus, Edit2, XCircle, Package, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,7 +36,7 @@ export function InventoryItemList() {
     reorderPoint: 10,
   });
 
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     setLoading(true);
     try {
       const filters: { search?: string; category?: string } = {};
@@ -49,11 +49,11 @@ export function InventoryItemList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, categoryFilter]);
 
   useEffect(() => {
     loadItems();
-  }, [search, categoryFilter]);
+  }, [loadItems]);
 
   const categories = [...new Set(items.map((i) => i.category).filter(Boolean))];
 
@@ -156,32 +156,44 @@ export function InventoryItemList() {
           <h3 className="text-lg font-bold text-zinc-100">{editItem ? 'Edit Item' : 'New Item'}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="inven-f1" className="text-xs text-muted font-semibold uppercase">SKU</label>
-              <input id="inven-f1"
+              <label htmlFor="inven-f1" className="text-xs text-muted font-semibold uppercase">
+                SKU
+              </label>
+              <input
+                id="inven-f1"
                 value={formData.sku}
                 onChange={(e) => setFormData((p) => ({ ...p, sku: e.target.value }))}
                 className="w-full mt-1 px-3 py-2 rounded-lg neu-inset bg-transparent text-zinc-100 text-sm"
               />
             </div>
             <div>
-              <label htmlFor="inven-f2" className="text-xs text-muted font-semibold uppercase">Name</label>
-              <input id="inven-f2"
+              <label htmlFor="inven-f2" className="text-xs text-muted font-semibold uppercase">
+                Name
+              </label>
+              <input
+                id="inven-f2"
                 value={formData.name}
                 onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                 className="w-full mt-1 px-3 py-2 rounded-lg neu-inset bg-transparent text-zinc-100 text-sm"
               />
             </div>
             <div>
-              <label htmlFor="inven-f3" className="text-xs text-muted font-semibold uppercase">Category</label>
-              <input id="inven-f3"
+              <label htmlFor="inven-f3" className="text-xs text-muted font-semibold uppercase">
+                Category
+              </label>
+              <input
+                id="inven-f3"
                 value={formData.category}
                 onChange={(e) => setFormData((p) => ({ ...p, category: e.target.value }))}
                 className="w-full mt-1 px-3 py-2 rounded-lg neu-inset bg-transparent text-zinc-100 text-sm"
               />
             </div>
             <div>
-              <label htmlFor="inven-f4" className="text-xs text-muted font-semibold uppercase">Unit</label>
-              <input id="inven-f4"
+              <label htmlFor="inven-f4" className="text-xs text-muted font-semibold uppercase">
+                Unit
+              </label>
+              <input
+                id="inven-f4"
                 value={formData.unit}
                 onChange={(e) => setFormData((p) => ({ ...p, unit: e.target.value }))}
                 className="w-full mt-1 px-3 py-2 rounded-lg neu-inset bg-transparent text-zinc-100 text-sm"
@@ -191,7 +203,8 @@ export function InventoryItemList() {
               <label htmlFor="inven-f5" className="text-xs text-muted font-semibold uppercase">
                 Cost Price (cents)
               </label>
-              <input id="inven-f5"
+              <input
+                id="inven-f5"
                 type="number"
                 value={formData.costPriceCents}
                 onChange={(e) =>
@@ -204,7 +217,8 @@ export function InventoryItemList() {
               <label htmlFor="inven-f6" className="text-xs text-muted font-semibold uppercase">
                 Sale Price (cents)
               </label>
-              <input id="inven-f6"
+              <input
+                id="inven-f6"
                 type="number"
                 value={formData.salePriceCents}
                 onChange={(e) =>
@@ -214,8 +228,11 @@ export function InventoryItemList() {
               />
             </div>
             <div>
-              <label htmlFor="inven-f7" className="text-xs text-muted font-semibold uppercase">Reorder Point</label>
-              <input id="inven-f7"
+              <label htmlFor="inven-f7" className="text-xs text-muted font-semibold uppercase">
+                Reorder Point
+              </label>
+              <input
+                id="inven-f7"
                 type="number"
                 value={formData.reorderPoint}
                 onChange={(e) =>

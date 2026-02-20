@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Wallet, Target, TrendingUp, Plus, Filter } from 'lucide-react';
 import { budgetsApi } from '../../../api';
 import type { Budget } from '../../../api';
@@ -43,11 +43,7 @@ export function BudgetsDashboard() {
   const [createAutoGenerate, setCreateAutoGenerate] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    if (tab === 'budgets') loadBudgets();
-  }, [tab, statusFilter]);
-
-  const loadBudgets = async () => {
+  const loadBudgets = useCallback(async () => {
     setLoading(true);
     try {
       const data = await budgetsApi.list(statusFilter || undefined);
@@ -57,7 +53,11 @@ export function BudgetsDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    if (tab === 'budgets') loadBudgets();
+  }, [tab, statusFilter, loadBudgets]);
 
   const handleCreate = async () => {
     if (!createName || !createStart || !createEnd) return;

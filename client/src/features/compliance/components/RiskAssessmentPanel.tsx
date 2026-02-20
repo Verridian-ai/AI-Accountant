@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { complianceApi } from '../../../api';
 import { RefreshCw, Loader2, TrendingDown, AlertTriangle, Clock, FileX } from 'lucide-react';
 
@@ -49,11 +49,7 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
   const [risk, setRisk] = useState<RiskAssessment | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadRisk();
-  }, [userId]);
-
-  const loadRisk = async () => {
+  const loadRisk = useCallback(async () => {
     try {
       setLoading(true);
       const data = await complianceApi.risk(userId);
@@ -63,7 +59,11 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadRisk();
+  }, [loadRisk]);
 
   if (loading) {
     return (

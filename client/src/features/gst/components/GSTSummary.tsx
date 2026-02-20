@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
@@ -15,11 +15,7 @@ export function GSTSummary({ period = 'current', businessOnly: _businessOnly }: 
   const [data, setData] = useState<GSTSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadSummary();
-  }, [period]);
-
-  const loadSummary = async () => {
+  const loadSummary = useCallback(async () => {
     setLoading(true);
     try {
       const result = await gstApi.fetchSummary(period);
@@ -29,7 +25,11 @@ export function GSTSummary({ period = 'current', businessOnly: _businessOnly }: 
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    loadSummary();
+  }, [loadSummary]);
 
   const getChangePercent = (current: number, previous?: number): number | null => {
     if (previous === undefined || previous === 0) return null;

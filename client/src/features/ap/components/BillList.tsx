@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   FileText,
   ChevronLeft,
@@ -28,7 +28,7 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const loadBills = async () => {
+  const loadBills = useCallback(async () => {
     setLoading(true);
     try {
       const result = await apApi.fetchBills({
@@ -43,12 +43,11 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, statusFilter]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     loadBills();
-  }, [page, statusFilter]);
+  }, [loadBills]);
 
   const totalPages = Math.ceil(total / limit);
 

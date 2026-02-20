@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { basApi } from '@/api';
 import type { BASCalculation, BASQuarter } from '@/types/tax';
 import { getCurrentQuarter, getQuarterDates } from '../utils.js';
@@ -28,21 +28,7 @@ export function useBASDashboard() {
   const [activeTab, setActiveTab] = useState<'calculate' | 'breakdown' | 'history'>('calculate');
   const [availableQuarters, setAvailableQuarters] = useState<QuarterOption[]>([]);
 
-  useEffect(() => {
-    loadHistory();
-    loadAvailableQuarters();
-    const { year, quarter } = getCurrentQuarter();
-    setSelectedQuarter(`${year}-Q${quarter}`);
-  }, []);
-
-  // Auto-calculate when quarter or method changes
-  useEffect(() => {
-    if (selectedQuarter) {
-      autoCalculate();
-    }
-  }, [selectedQuarter, method]);
-
-  const autoCalculate = async () => {
+  const autoCalculate = useCallback(async () => {
     if (!selectedQuarter) return;
     setCalculating(true);
     setError(null);
@@ -55,9 +41,9 @@ export function useBASDashboard() {
     } finally {
       setCalculating(false);
     }
-  };
+  }, [selectedQuarter, method]);
 
-  const loadAvailableQuarters = async () => {
+  const loadAvailableQuarters = useCallback(async () => {
     try {
       const apiQuarters = await basApi.fetchQuarters();
       const options = apiQuarters.map((q) => apiQuarterToOption(q.financialYear, q.quarter));
@@ -78,16 +64,30 @@ export function useBASDashboard() {
       const currentFy = `${year}-${(year + 1).toString().slice(2)}`;
       setAvailableQuarters([apiQuarterToOption(currentFy, quarter)]);
     }
-  };
+  }, []);
 
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     try {
       const data = await basApi.fetchHistory();
       setHistory(data);
     } catch (err) {
       console.error('Failed to load BAS history:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void loadHistory();
+    void loadAvailableQuarters();
+    const { year, quarter } = getCurrentQuarter();
+    setSelectedQuarter(`${year}-Q${quarter}`);
+  }, [loadHistory, loadAvailableQuarters]);
+
+  // Auto-calculate when quarter or method changes
+  useEffect(() => {
+    if (selectedQuarter) {
+      void autoCalculate();
+    }
+  }, [selectedQuarter, method, autoCalculate]);
 
   const calculateBAS = async () => {
     if (!selectedQuarter) return;
