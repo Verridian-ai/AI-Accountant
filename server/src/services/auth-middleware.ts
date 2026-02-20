@@ -169,7 +169,7 @@ export function tenantAuthMiddleware() {
             }
             c.set('jwtPayload', legacyPayload);
             c.set('userId', legacyPayload.userId as string);
-            c.set('role', 'viewer');  // legacy tokens get minimum privileges
+            c.set('role', 'viewer'); // legacy tokens get minimum privileges
             c.set('permissions', []);
             return next();
           }
