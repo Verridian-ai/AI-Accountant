@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CATEGORY_NAMES_BY_TYPE } from '../constants/categories';
@@ -42,12 +42,15 @@ export function CategorySelect({
   };
 
   // Build flat list of all options for keyboard nav
-  const allOptions: string[] = [];
-  if (includeAll) allOptions.push('All');
-  for (const group of GROUP_ORDER) {
-    const items = CATEGORY_NAMES_BY_TYPE[group];
-    if (items) allOptions.push(...items);
-  }
+  const allOptions = useMemo(() => {
+    const options: string[] = [];
+    if (includeAll) options.push('All');
+    for (const group of GROUP_ORDER) {
+      const items = CATEGORY_NAMES_BY_TYPE[group];
+      if (items) options.push(...items);
+    }
+    return options;
+  }, [includeAll]);
 
   const selectedColor = value && value !== 'All' ? getCategoryColor(value) : null;
 
@@ -114,7 +117,7 @@ export function CategorySelect({
         type="button"
         role="combobox"
         aria-label={ariaLabel}
-        aria-expanded={open}
+        aria-expanded={open ? 'true' : 'false'}
         aria-haspopup="listbox"
         aria-controls="category-listbox"
         onClick={() => setOpen(!open)}
@@ -149,17 +152,24 @@ export function CategorySelect({
           {includeAll && (
             <li
               role="option"
-              aria-selected={value === 'All'}
+              aria-selected={value === 'All' ? 'true' : 'false'}
               tabIndex={-1}
               className={cn(
                 'px-4 py-2.5 text-xs font-bold cursor-pointer transition-colors',
-                value === 'All'
-                  ? 'text-cba-gold bg-cba-gold/5'
-                  : 'text-primary hover:bg-overlay',
+                value === 'All' ? 'text-cba-gold bg-cba-gold/5' : 'text-primary hover:bg-overlay',
                 highlightIndex === 0 && 'bg-overlay-hover',
               )}
-              onClick={() => { onChange('All'); setOpen(false); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange('All'); setOpen(false); } }}
+              onClick={() => {
+                onChange('All');
+                setOpen(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onChange('All');
+                  setOpen(false);
+                }
+              }}
             >
               All Categories
             </li>
@@ -180,7 +190,7 @@ export function CategorySelect({
                     <div
                       key={cat}
                       role="option"
-                      aria-selected={value === cat}
+                      aria-selected={value === cat ? 'true' : 'false'}
                       tabIndex={-1}
                       className={cn(
                         'px-4 py-2 text-xs font-bold cursor-pointer transition-colors flex items-center gap-2',
@@ -189,8 +199,17 @@ export function CategorySelect({
                           : 'text-primary hover:bg-overlay',
                         highlightIndex === flatIndex && 'bg-overlay-hover',
                       )}
-                      onClick={() => { onChange(cat); setOpen(false); }}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(cat); setOpen(false); } }}
+                      onClick={() => {
+                        onChange(cat);
+                        setOpen(false);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onChange(cat);
+                          setOpen(false);
+                        }
+                      }}
                     >
                       <span className={cn('w-2 h-2 rounded-full shrink-0', color.dot)} />
                       {cat}

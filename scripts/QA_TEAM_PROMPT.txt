@@ -1,0 +1,286 @@
+Create a 10-agent QA team for GoldLedger. This is a full Australian accounting SaaS — PDF/XLS/XML statement uploads flow into a Neon PostgreSQL ledger, then all accounting functions (GST, BAS, reports, matching) run from there.
+
+Run in TWO sequential phases. Do NOT start Phase 2 until ALL 5 Phase 1 auditors have written their findings files.
+
+════════════════════════════════════════════════════════
+PHASE 1 — AUDIT (5 agents in parallel)
+════════════════════════════════════════════════════════
+
+Spawn these 5 teammates simultaneously. Each writes a markdown findings file.
+
+──────────────────────────────────────────────────────
+AGENT 1: react-auditor
+──────────────────────────────────────────────────────
+Audit ALL React components in client/src/. Find and document:
+
+COMPONENT HEALTH:
+- Console errors and warnings (check component code for patterns that cause them)
+- Missing React key props on any .map() rendering lists
+- useEffect missing dependency arrays or infinite loops
+- Components that render empty/zero/undefined when they should show data
+- Broken imports (components importing from files that don't exist)
+- Dead/commented-out render paths
+
+TYPESCRIPT:
+- Any TypeScript errors (run: cd client && npx tsc --noEmit)
+- Props typed as 'any' instead of proper types
+- Missing prop type definitions
+
+ACCESSIBILITY:
+- Interactive elements (buttons, links, inputs) missing aria-label or aria-describedby
+- Form inputs missing associated <label> elements
+- Icon-only buttons missing aria-label
+- Modal/dialog components missing role="dialog" and aria-labelledby
+- Images missing alt attributes
+
+DATA DISPLAY:
+- Tables/lists that should show transaction data but render empty
+- Dashboard cards showing 0 or undefined instead of real values
+- Report sections that exist in UI but display no data
+- Check client/src/api/*.ts — are all functions making real fetch() calls or returning empty {}?
+
+Write ALL findings to: docs/QA_REACT_AUDIT.md
+Format: ## [Component/Area] then bullet points with file:line references.
+
+──────────────────────────────────────────────────────
+AGENT 2: data-flow-auditor
+──────────────────────────────────────────────────────
+Trace the complete data path: Neon DB → Hono API → React Query → Components.
+
+API ROUTE COVERAGE (server/src/routes/):
+- List every route file and confirm each handler returns real data (not stub {} or [])
+- Flag any routes that do: return c.json({}) or return c.json([]) with no DB query
+- Check auth middleware is applied consistently (tenantAuthMiddleware on all protected routes)
+- Verify zValidator is used on all POST/PATCH/PUT routes
+
+CLIENT API LAYER (client/src/api/):
+- Check every function in accounts.ts, transactions.ts, reports.ts, statements.ts, tax.ts, etc.
+- Flag any function that: returns hardcoded data, catches errors silently, or never calls fetch()
+- Confirm React Query hooks in features/ are wired to the correct API functions
+
+DATABASE CONNECTIVITY:
+- Verify server connects to NEON_DATABASE_URL (not SQLite or old local DB)
+- Check server/src/schema.ts and server/src/db-adapter.ts for correct Neon connection
+- Confirm all Drizzle queries use the correct table names from server/src/schema/
+
+AUTHENTICATION FLOW:
+- JWT token generation and validation (server/src/routes/auth-routes.ts)
+- tenantAuthMiddleware applied correctly
+- X-Tenant-Id header handling
+- Token expiry and refresh working
+
+Write ALL findings to: docs/QA_DATA_FLOW_AUDIT.md
+
+──────────────────────────────────────────────────────
+AGENT 3: calculation-auditor
+──────────────────────────────────────────────────────
+Audit all financial calculations end-to-end.
+
+GST/BAS CALCULATIONS:
+- Check server/src/services/bas-service.ts (or equivalent)
+- W1 (Gross Wages): is it querying payroll/wage transactions? Should NOT be zero
+- W2 (PAYG Withheld): approximated at ~32% of W1?
+- G1 (Total Sales): summing all income transactions
+- G2/G3 (GST-free/input-taxed sales): correctly filtered by tax code
+- 1A (GST Collected): 10% of taxable sales
+- 1B (GST Credits): 10% of taxable purchases
+- BAS quarters: Q1 (Jul-Sep), Q2 (Oct-Dec), Q3 (Jan-Mar), Q4 (Apr-Jun) — all 4 showing values?
+
+TRANSACTION MATCHING:
+- Check server/src/services/ for reconciliation/matching logic
+- Are bank transactions matched to invoices/bills?
+- Is the matching algorithm running or stubbed out?
+- Check client/src/features/matching/ and client/src/features/reconciliation/
+
+FINANCIAL STATEMENTS:
+- P&L calculation: revenue - expenses = net profit (check report service)
+- Balance Sheet: assets = liabilities + equity (check balancing)
+- Cash Flow: operating + investing + financing activities summed correctly
+- All amounts in cents (integer)? Flag any float arithmetic on money
+
+TAX CALCULATIONS:
+- Income tax brackets (Australian: 0%, 19%, 32.5%, 37%, 45%)
+- Depreciation calculations if present
+- Superannuation (11.5% of gross wages for FY2024-25)
+
+Write ALL findings to: docs/QA_CALCULATIONS_AUDIT.md
+
+──────────────────────────────────────────────────────
+AGENT 4: upload-auditor
+──────────────────────────────────────────────────────
+Audit the full document upload → ledger pipeline.
+
+PDF UPLOAD PIPELINE:
+- server/src/services/pipeline.ts (or pipeline/ directory): is it complete?
+- pdf-parse: correctly extracting transaction rows from bank statements?
+- CBA parser (server/src/services/parsers/banks/cba.ts): regex patterns working?
+- Parser registry: auto-detects bank from statement correctly?
+- Parsed transactions saved to Neon DB (statements + transactions tables)?
+- Duplicate detection: hash-based dedup working?
+
+XLS/CSV UPLOAD:
+- Does the app accept XLS/CSV bank exports?
+- server/src/routes/batch-uploads.ts or similar: checking for Excel parsing logic
+- csv-parse library being used correctly?
+
+STATEMENT MANAGEMENT:
+- POST /api/statements: file accepted, processed, saved?
+- GET /api/statements: returns user's uploaded statements?
+- Statement status tracking (pending → processing → complete → failed)?
+- Error handling: what happens when PDF parsing fails?
+
+TRANSACTION CREATION:
+- After parsing, are transactions created with: date, description, amount, category, accountId?
+- Account auto-detection: is the bank account created/linked on first upload?
+- Category assignment: initial categorization on upload?
+
+Write ALL findings to: docs/QA_UPLOAD_AUDIT.md
+
+──────────────────────────────────────────────────────
+AGENT 5: reports-auditor
+──────────────────────────────────────────────────────
+Audit all financial report generation and display.
+
+CLIENT REPORT VIEWS (check client/src/features/reports/ and each feature):
+- P&L Report: does it fetch real data and render income/expense breakdown?
+- Balance Sheet: assets, liabilities, equity sections populated?
+- BAS Report: client/src/features/bas/ — quarters showing, values calculating?
+- Cash Flow: forecast/actuals showing?
+- Transaction list (client/src/features/transactions/): filterable, paginated?
+- GST report (client/src/features/gst/ or tax/): tax codes, totals correct?
+- Dashboard (client/src/features/dashboards/): cards showing real numbers?
+
+SERVER REPORT ROUTES (server/src/routes/reports.ts):
+- GET /api/reports/pnl/:period — returning real P&L data?
+- GET /api/reports/balance-sheet/:period — returning real BS data?
+- GET /api/reports/cash-flow/:period — returning real CF data?
+- GET /api/reports/trial-balance — returning real TB data?
+- GET /api/reports/kpi — returning real KPI data?
+
+EXPORT FUNCTIONS:
+- PDF export of reports working?
+- CSV export of transactions working?
+- Date range filtering working on all reports?
+
+CHART DATA:
+- client/src/components/charts/ — are charts receiving and rendering real data?
+- Chart series correctly mapped to financial data categories?
+
+Write ALL findings to: docs/QA_REPORTS_AUDIT.md
+
+════════════════════════════════════════════════════════
+PHASE 2 — FIX (5 agents in parallel, AFTER Phase 1 complete)
+════════════════════════════════════════════════════════
+
+After ALL 5 auditors have completed their findings files, spawn these 5 fixer teammates. Each reads the corresponding audit file and fixes all issues found.
+
+CRITICAL RULES for all fixers:
+- NEVER use @ts-ignore or @ts-expect-error — fix types properly
+- NEVER use 'as any' — use proper types or 'as unknown as T'
+- All currency must be integers (cents), never float
+- Run tsc --noEmit after every file change — 0 errors required
+- Commit after each logical group of fixes
+
+──────────────────────────────────────────────────────
+AGENT 6: react-fixer
+──────────────────────────────────────────────────────
+Read docs/QA_REACT_AUDIT.md and fix ALL issues found.
+
+Priority order:
+1. Fix TypeScript errors (cd client && npx tsc --noEmit → 0 errors)
+2. Add missing React key props (critical — causes React warnings)
+3. Fix aria attributes (aria-label, role, alt on all interactive/image elements)
+4. Fix data display (wire components to real API data where empty)
+5. Fix broken imports
+6. Fix useEffect dependency arrays
+
+After all fixes: cd client && npx tsc --noEmit → must be 0 errors
+Commit: git add client/src/ && git commit -m "fix(react): aria, key props, types, data display from QA audit"
+
+──────────────────────────────────────────────────────
+AGENT 7: data-flow-fixer
+──────────────────────────────────────────────────────
+Read docs/QA_DATA_FLOW_AUDIT.md and fix ALL stub routes and broken API connections.
+
+Priority order:
+1. Replace all stub route handlers (return c.json({})) with real Drizzle DB queries
+2. Fix client/src/api/ functions that don't make real fetch() calls
+3. Add missing zValidator to POST/PATCH/PUT routes
+4. Fix auth middleware gaps
+5. Fix Neon DB connection if broken
+
+After all fixes: cd server && npx tsc --noEmit → must be 0 errors
+Commit: git add server/src/ client/src/api/ && git commit -m "fix(data-flow): replace stubs with real DB queries, fix API layer from QA audit"
+
+──────────────────────────────────────────────────────
+AGENT 8: calculation-fixer
+──────────────────────────────────────────────────────
+Read docs/QA_CALCULATIONS_AUDIT.md and fix ALL calculation bugs.
+
+Priority order:
+1. Fix BAS W1 (gross wages) — query payroll/wage transactions properly
+2. Fix BAS quarters — ensure all 4 quarters return non-zero values when data exists
+3. Fix GST collected/credits calculations (1A and 1B)
+4. Fix P&L net profit calculation
+5. Fix balance sheet equation (assets = liabilities + equity)
+6. Replace any float money arithmetic with integer cents arithmetic
+7. Fix transaction matching/reconciliation if stubbed
+
+After all fixes: cd server && npx tsc --noEmit → must be 0 errors
+Commit: git add server/src/services/ && git commit -m "fix(calculations): BAS wages, GST, P&L, balance sheet, integer money from QA audit"
+
+──────────────────────────────────────────────────────
+AGENT 9: upload-fixer
+──────────────────────────────────────────────────────
+Read docs/QA_UPLOAD_AUDIT.md and fix ALL upload pipeline issues.
+
+Priority order:
+1. Fix PDF parsing pipeline — ensure parsed transactions are saved to Neon DB
+2. Fix statement status tracking (processing states)
+3. Fix duplicate detection if broken
+4. Add XLS/CSV support if missing
+5. Fix account auto-detection and linking
+6. Fix error handling in upload route
+
+After all fixes: cd server && npx tsc --noEmit → must be 0 errors
+Commit: git add server/src/services/pipeline* server/src/routes/statements* && git commit -m "fix(upload): PDF parsing, transaction saving, dedup, status tracking from QA audit"
+
+──────────────────────────────────────────────────────
+AGENT 10: reports-fixer
+──────────────────────────────────────────────────────
+Read docs/QA_REPORTS_AUDIT.md and fix ALL report display issues.
+
+Priority order:
+1. Fix server report routes that return {} stubs — add real FinancialReportService queries
+2. Fix client report components that display empty/zero data
+3. Fix BAS report quarters display
+4. Fix chart data mapping in client/src/components/charts/
+5. Fix export functions (PDF/CSV) if broken
+6. Fix date range filtering
+
+After all fixes:
+- cd server && npx tsc --noEmit → 0 errors
+- cd client && npx tsc --noEmit → 0 errors
+Commit: git add server/src/routes/reports* client/src/features/reports* client/src/features/bas* && git commit -m "fix(reports): P&L, BAS, balance sheet, charts, exports from QA audit"
+
+════════════════════════════════════════════════════════
+COMPLETION
+════════════════════════════════════════════════════════
+
+After ALL 10 agents complete:
+
+1. Run final TSC check:
+   cd server && npx tsc --noEmit
+   cd client && npx tsc --noEmit
+   Both must be 0 errors.
+
+2. Commit any uncommitted changes:
+   git add -A && git commit -m "fix(qa-final): complete QA audit+fix pass"
+
+3. Write summary report to docs/QA_COMPLETION_REPORT.md with:
+   - Issues found per category
+   - Issues fixed per category
+   - Remaining known issues (if any)
+   - TSC error counts (before/after)
+
+4. Clean up the team.

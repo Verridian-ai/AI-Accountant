@@ -9,14 +9,13 @@ function getAdminAuthHeaders(): HeadersInit {
 type StubApi = Record<string, (...args: unknown[]) => Promise<unknown>>;
 
 export const entityApi: StubApi = {
-  createEntity: async (_data: unknown) => Promise.resolve({} as Record<string, unknown>),
-  getHierarchy: async () => Promise.resolve({} as Record<string, unknown>),
-  updateSettings: async (_id: string, _settings: unknown) => Promise.resolve(),
-  getInterEntityTransactions: async (_filters: unknown) =>
+  createEntity: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  getHierarchy: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  updateSettings: async (..._args: unknown[]) => Promise.resolve(),
+  getInterEntityTransactions: async (..._args: unknown[]) =>
     Promise.resolve([] as Record<string, unknown>[]),
-  confirmInterEntityTransaction: async (_id: string, _entityId: string, _confirmed: boolean) =>
-    Promise.resolve(),
-  recordInterEntityTransaction: async (_data: unknown) => Promise.resolve(),
+  confirmInterEntityTransaction: async (..._args: unknown[]) => Promise.resolve(),
+  recordInterEntityTransaction: async (..._args: unknown[]) => Promise.resolve(),
 };
 
 export const assetApi: StubApi = {
@@ -156,11 +155,13 @@ export const consolidationApi: StubApi = {
   finalizeSnapshot: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const documentsApi: StubApi = {
+export const documentsApi = {
   list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   delete: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  upload: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  process: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  upload: async (..._args: unknown[]) =>
+    Promise.resolve({} as { id?: string } & Record<string, unknown>),
+  process: async (..._args: unknown[]) =>
+    Promise.resolve({} as { confidenceScore?: number } & Record<string, unknown>),
   get: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   classify: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   getLineItems: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
