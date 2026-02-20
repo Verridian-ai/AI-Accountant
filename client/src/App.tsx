@@ -163,7 +163,7 @@ function AppContent() {
 
   const stableRefreshData = useCallback(() => {
     refreshData();
-  }, [isAuthenticated]);
+  }, []);
 
   useSSE(stableRefreshData);
 

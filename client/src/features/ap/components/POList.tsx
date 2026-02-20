@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
-  Search,
   Plus,
   ChevronLeft,
   ChevronRight,
@@ -45,7 +44,7 @@ export function POList({ onNewPO, onEditPO, onReceive }: POListProps) {
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     setLoading(true);
     try {
       const result = await apApi.fetchPurchaseOrders({
@@ -60,11 +59,11 @@ export function POList({ onNewPO, onEditPO, onReceive }: POListProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, statusFilter]);
 
   useEffect(() => {
     loadOrders();
-  }, [page, statusFilter]);
+  }, [page, limit, statusFilter, loadOrders]);
 
   const handleSendPO = async (id: string) => {
     try {
@@ -172,13 +171,17 @@ export function POList({ onNewPO, onEditPO, onReceive }: POListProps) {
               </tr>
             ) : (
               orders.map((po) => {
-                const badge = STATUS_BADGE[po.status] ?? STATUS_BADGE.draft;
+                const badge = STATUS_BADGE[po.status] || {
+                  bg: 'bg-zinc-500/10',
+                  text: 'text-zinc-400',
+                  label: po.status,
+                };
                 const receivedPct = po.receivedPercentage ?? 0;
 
                 return (
                   <tr
                     key={po.id}
-                    className="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
+                    className="border-b border-border/50 hover:bg-white/2 transition-colors"
                   >
                     <td className="px-4 py-3">
                       <span className="text-sm font-mono font-medium text-primary">
@@ -209,9 +212,9 @@ export function POList({ onNewPO, onEditPO, onReceive }: POListProps) {
                     <td className="px-4 py-3 hidden md:table-cell">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-1.5 rounded-full bg-overlay overflow-hidden">
+                          <style>{`.progress-${po.id} { width: ${receivedPct}%; }`}</style>
                           <div
-                            className="h-full rounded-full bg-cba-gold transition-all"
-                            style={{ width: `${receivedPct}%` }}
+                            className={`h-full rounded-full bg-cba-gold transition-all progress-${po.id}`}
                           />
                         </div>
                         <span className="text-xs text-muted w-9 text-right">{receivedPct}%</span>
@@ -274,6 +277,8 @@ export function POList({ onNewPO, onEditPO, onReceive }: POListProps) {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="p-2 rounded-lg bg-overlay text-secondary hover:text-primary disabled:opacity-30 transition-all"
+              title="Previous Page"
+              aria-label="Previous Page"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -281,6 +286,8 @@ export function POList({ onNewPO, onEditPO, onReceive }: POListProps) {
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="p-2 rounded-lg bg-overlay text-secondary hover:text-primary disabled:opacity-30 transition-all"
+              title="Next Page"
+              aria-label="Next Page"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

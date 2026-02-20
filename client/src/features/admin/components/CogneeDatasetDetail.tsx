@@ -24,19 +24,21 @@ export function CogneeDatasetDetail({ datasetName, onBack }: CogneeDatasetDetail
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDetail();
-  }, [datasetName]);
-
-  const loadDetail = async () => {
-    setLoading(true);
-    try {
-      const res = await fetchCogneeDatasetDetail(datasetName);
-      setData(res);
-    } catch {
-      /* */
+    let mounted = true;
+    async function fetchDetail() {
+      try {
+        const res = await fetchCogneeDatasetDetail(datasetName);
+        if (mounted) setData(res as unknown as DatasetDetailData);
+      } catch {
+        // ignore
+      }
+      if (mounted) setLoading(false);
     }
-    setLoading(false);
-  };
+    void fetchDetail();
+    return () => {
+      mounted = false;
+    };
+  }, [datasetName]);
 
   if (loading) {
     return <div className="animate-pulse h-64 rounded-2xl bg-[#16213e]" />;
@@ -59,6 +61,7 @@ export function CogneeDatasetDetail({ datasetName, onBack }: CogneeDatasetDetail
         <button
           type="button"
           onClick={onBack}
+          aria-label="Go back"
           className="p-2 rounded-xl bg-[#16213e] text-secondary hover:text-cba-gold"
         >
           <ArrowLeft className="w-4 h-4" />

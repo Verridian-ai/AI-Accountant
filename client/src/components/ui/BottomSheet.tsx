@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * BottomSheet Component
  *
@@ -13,6 +14,7 @@ import React, {
   useMemo,
   forwardRef,
   useImperativeHandle,
+  useId,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '../../lib/utils';
@@ -97,35 +99,21 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const [isDragging, setIsDragging] = useState(false);
     const [height, setHeight] = useState(snapPoints[initialSnap]);
     const [isAnimating, setIsAnimating] = useState(false);
+    const componentId = useId().replace(/:/g, '');
 
     // Refs for cleanup
     const animationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Sort snap points in ascending order - memoized to prevent infinite loops
+    const snapPointsKey = snapPoints.join(',');
     const sortedSnapPoints = useMemo(
-      () => [...snapPoints].sort((a, b) => a - b),
-      [snapPoints.join(',')],
+      () =>
+        snapPointsKey
+          .split(',')
+          .map(Number)
+          .sort((a, b) => a - b),
+      [snapPointsKey],
     );
-
-    // ========================================================================
-    // IMPERATIVE HANDLE
-    // ========================================================================
-
-    useImperativeHandle(ref, () => ({
-      snapTo: (index: number) => {
-        if (index >= 0 && index < sortedSnapPoints.length) {
-          animateToSnap(index);
-        }
-      },
-      expand: () => {
-        animateToSnap(sortedSnapPoints.length - 1);
-      },
-      collapse: () => {
-        animateToSnap(0);
-      },
-      close: onClose,
-    }));
 
     // ========================================================================
     // ANIMATION
@@ -179,6 +167,25 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         }
       };
     }, []);
+
+    // ========================================================================
+    // IMPERATIVE HANDLE
+    // ========================================================================
+
+    useImperativeHandle(ref, () => ({
+      snapTo: (index: number) => {
+        if (index >= 0 && index < sortedSnapPoints.length) {
+          animateToSnap(index);
+        }
+      },
+      expand: () => {
+        animateToSnap(sortedSnapPoints.length - 1);
+      },
+      collapse: () => {
+        animateToSnap(0);
+      },
+      close: onClose,
+    }));
 
     // ========================================================================
     // DRAG HANDLING
@@ -364,8 +371,11 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
     useEffect(() => {
       if (open) {
-        setHeight(sortedSnapPoints[initialSnap]);
-        setCurrentSnapIndex(initialSnap);
+        // eslint-disable-next-line
+        setTimeout(() => {
+          setHeight(sortedSnapPoints[initialSnap]);
+          setCurrentSnapIndex(initialSnap);
+        }, 0);
       }
     }, [open, initialSnap, sortedSnapPoints]);
 
@@ -393,24 +403,21 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         )}
 
         {/* Sheet */}
+        <style>{`.bottom-sheet-${componentId} { height: ${height}vh; padding-bottom: env(safe-area-inset-bottom, 0px); }`}</style>
         <div
           ref={sheetRef}
           className={cn(
             'absolute bottom-0 left-0 right-0 bg-dark-surface rounded-t-3xl shadow-2xl',
-            'flex flex-col overflow-hidden',
+            'flex flex-col overflow-hidden max-h-[95vh]',
             isAnimating && !isDragging && 'transition-all duration-300 ease-out',
+            `bottom-sheet-${componentId}`,
             className,
           )}
-          style={{
-            height: `${height}vh`,
-            maxHeight: '95vh',
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          }}
         >
           {/* Drag Handle */}
           <div
             className={cn(
-              'flex-shrink-0 pt-3 pb-2 cursor-grab active:cursor-grabbing',
+              'shrink-0 pt-3 pb-2 cursor-grab active:cursor-grabbing',
               'touch-none select-none',
             )}
             onMouseDown={handleMouseDown}

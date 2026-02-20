@@ -24,7 +24,6 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
   const [supplierSearch, setSupplierSearch] = useState('');
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
 
   const [billNumber, setBillNumber] = useState('');
   const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
@@ -53,19 +52,25 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
           setPurchaseOrderId(bill.purchaseOrderId ?? '');
           if (bill.lineItems?.length) {
             setLineItems(
-              bill.lineItems.map((li) => ({
-                description: li.description,
-                quantity: li.quantity,
-                unitPrice: li.unitPrice,
-                gstRate: li.gstRate,
-              })),
+              bill.lineItems.map(
+                (li: {
+                  description: string;
+                  quantity: number;
+                  unitPrice: number;
+                  gstRate: number;
+                }) => ({
+                  description: li.description,
+                  quantity: li.quantity,
+                  unitPrice: li.unitPrice,
+                  gstRate: li.gstRate,
+                }),
+              ),
             );
           }
           // Load selected supplier
           apApi
             .fetchSupplier(bill.supplierId)
             .then((s) => {
-              setSelectedSupplier(s);
               setSupplierSearch(s.businessName);
             })
             .catch(() => {});
@@ -96,15 +101,14 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
   // Auto-calculate due date from supplier payment terms
   const selectSupplier = (s: Supplier) => {
-    setSupplierId(s.id);
-    setSelectedSupplier(s);
+    setSupplierId(s.id || '');
     setSupplierSearch(s.businessName);
     setShowSupplierDropdown(false);
     // Auto-calculate due date
     if (issueDate) {
       const due = new Date(issueDate);
       due.setDate(due.getDate() + s.paymentTermsDays);
-      setDueDate(due.toISOString().split('T')[0]);
+      setDueDate(due.toISOString().split('T')[0] ?? '');
     }
   };
 
@@ -214,10 +218,13 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
         {/* Supplier Autocomplete */}
         <div className="relative">
-          <label htmlFor="ap-f1" className="block text-xs font-medium text-secondary mb-1.5">Supplier *</label>
+          <label htmlFor="ap-f1" className="block text-xs font-medium text-secondary mb-1.5">
+            Supplier *
+          </label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-            <input id="ap-f1"
+            <input
+              id="ap-f1"
               type="text"
               value={supplierSearch}
               onChange={(e) => {
@@ -225,7 +232,6 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                 setShowSupplierDropdown(true);
                 if (!e.target.value) {
                   setSupplierId('');
-                  setSelectedSupplier(null);
                 }
               }}
               onFocus={() => setShowSupplierDropdown(true)}
@@ -243,9 +249,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                   className="w-full px-4 py-2.5 text-left text-sm text-primary hover:bg-overlay hover:text-primary transition-colors"
                 >
                   <span className="font-medium">{s.businessName}</span>
-                  {s.abn && (
-                    <span className="ml-2 text-xs text-muted font-mono">ABN: {s.abn}</span>
-                  )}
+                  {s.abn && <span className="ml-2 text-xs text-muted font-mono">ABN: {s.abn}</span>}
                 </button>
               ))}
             </div>
@@ -254,8 +258,11 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="ap-f2" className="block text-xs font-medium text-secondary mb-1.5">Bill Number *</label>
-            <input id="ap-f2"
+            <label htmlFor="ap-f2" className="block text-xs font-medium text-secondary mb-1.5">
+              Bill Number *
+            </label>
+            <input
+              id="ap-f2"
               type="text"
               value={billNumber}
               onChange={(e) => setBillNumber(e.target.value)}
@@ -264,8 +271,11 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
             />
           </div>
           <div>
-            <label htmlFor="ap-f3" className="block text-xs font-medium text-secondary mb-1.5">Issue Date</label>
-            <input id="ap-f3"
+            <label htmlFor="ap-f3" className="block text-xs font-medium text-secondary mb-1.5">
+              Issue Date
+            </label>
+            <input
+              id="ap-f3"
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
@@ -273,8 +283,11 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
             />
           </div>
           <div>
-            <label htmlFor="ap-f4" className="block text-xs font-medium text-secondary mb-1.5">Due Date</label>
-            <input id="ap-f4"
+            <label htmlFor="ap-f4" className="block text-xs font-medium text-secondary mb-1.5">
+              Due Date
+            </label>
+            <input
+              id="ap-f4"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
@@ -287,7 +300,8 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
           <label htmlFor="ap-f5" className="block text-xs font-medium text-secondary mb-1.5">
             Link to Purchase Order (optional)
           </label>
-          <input id="ap-f5"
+          <input
+            id="ap-f5"
             type="text"
             value={purchaseOrderId}
             onChange={(e) => setPurchaseOrderId(e.target.value)}
@@ -356,6 +370,9 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                       className="w-full px-2 py-1.5 rounded-lg bg-overlay border border-border text-sm text-primary text-right focus:outline-none focus:border-cba-gold/30 transition-all"
                       min="1"
                       step="1"
+                      title="Quantity"
+                      placeholder="Qty"
+                      aria-label="Quantity"
                     />
                   </td>
                   <td className="px-1 py-2">
@@ -366,6 +383,9 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                       className="w-full px-2 py-1.5 rounded-lg bg-overlay border border-border text-sm text-primary text-right focus:outline-none focus:border-cba-gold/30 transition-all"
                       min="0"
                       step="0.01"
+                      title="Unit Price"
+                      placeholder="Price"
+                      aria-label="Unit Price"
                     />
                   </td>
                   <td className="px-1 py-2">
@@ -377,6 +397,9 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                       min="0"
                       max="100"
                       step="1"
+                      title="GST Rate"
+                      placeholder="GST %"
+                      aria-label="GST Rate"
                     />
                   </td>
                   <td className="px-2 py-2 text-right text-sm text-primary font-mono">
@@ -391,6 +414,8 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
                       onClick={() => removeLineItem(index)}
                       disabled={lineItems.length <= 1}
                       className="p-1 rounded-lg text-muted hover:text-red-400 hover:bg-red-400/10 transition-all disabled:opacity-20"
+                      title="Remove item"
+                      aria-label="Remove item"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -422,8 +447,11 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
 
       {/* Notes */}
       <div className="neu-raised rounded-2xl p-6">
-        <label htmlFor="ap-f6" className="block text-xs font-medium text-secondary mb-1.5">Notes</label>
-        <textarea id="ap-f6"
+        <label htmlFor="ap-f6" className="block text-xs font-medium text-secondary mb-1.5">
+          Notes
+        </label>
+        <textarea
+          id="ap-f6"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className="w-full px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary placeholder-zinc-500 focus:outline-none focus:border-cba-gold/30 focus:ring-1 focus:ring-[#FFCC00]/20 transition-all resize-none"

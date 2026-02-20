@@ -4,14 +4,13 @@ import {
   ClipboardList,
   Users,
   Banknote,
-  Plus,
   AlertTriangle,
   Clock,
   DollarSign,
   ShoppingCart,
 } from 'lucide-react';
 import { apApi } from '../../../api';
-import type { APAgingReport } from '../../../api';
+import type { APAgingReport, APAgingBucket } from '../../../api';
 import { SupplierList } from './SupplierList';
 import { SupplierDetail } from './SupplierDetail';
 import { SupplierForm } from './SupplierForm';
@@ -31,8 +30,7 @@ type View =
   | { type: 'bill-entry'; id?: string }
   | { type: 'bill-approval'; id: string }
   | { type: 'po-editor'; id?: string }
-  | { type: 'po-receiving'; id: string }
-  | { type: 'payment-run' };
+  | { type: 'po-receiving'; id: string };
 
 export function APDashboard() {
   const [activeTab, setActiveTab] = useState<APTab>('bills');
@@ -67,13 +65,10 @@ export function APDashboard() {
     { id: 'payment-runs', label: 'Payment Runs', icon: Banknote },
   ];
 
-  const overdueBucket = aging?.buckets.find(
-    (b) => b.label === '61-90 days' || b.label === '90+ days',
-  );
   const totalOverdue = aging
     ? aging.buckets
-        .filter((b) => b.label.includes('61') || b.label.includes('90'))
-        .reduce((sum, b) => sum + b.amount, 0)
+        .filter((b: APAgingBucket) => b.label !== 'Current')
+        .reduce((sum: number, b: APAgingBucket) => sum + b.amount, 0)
     : 0;
 
   const statCards = [
@@ -91,7 +86,8 @@ export function APDashboard() {
     },
     {
       label: 'Bills Due This Week',
-      value: aging?.buckets.find((b) => b.label === 'Current')?.count?.toString() ?? '0',
+      value:
+        aging?.buckets.find((b: APAgingBucket) => b.label === 'Current')?.count?.toString() ?? '0',
       icon: Clock,
       color: 'text-amber-400',
     },
@@ -133,7 +129,7 @@ export function APDashboard() {
       icon: Banknote,
       action: () => {
         setActiveTab('payment-runs');
-        setView({ type: 'payment-run' });
+        setView({ type: 'list' });
       },
     },
   ];
@@ -214,18 +210,6 @@ export function APDashboard() {
     );
   }
 
-  if (view.type === 'payment-run') {
-    return (
-      <SupplierPaymentRun
-        onBack={() => setView({ type: 'list' })}
-        onComplete={() => {
-          setView({ type: 'list' });
-          loadAging();
-        }}
-      />
-    );
-  }
-
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
@@ -277,14 +261,14 @@ export function APDashboard() {
         <div className="neu-raised rounded-2xl p-5">
           <h3 className="text-sm font-semibold text-primary mb-3">AP Aging Distribution</h3>
           <div className="flex items-end gap-2 h-20">
-            {aging.buckets.map((bucket) => {
-              const maxAmount = Math.max(...aging.buckets.map((b) => b.amount));
+            {aging.buckets.map((bucket: APAgingBucket) => {
+              const maxAmount = Math.max(...aging.buckets.map((b: APAgingBucket) => b.amount));
               const height = maxAmount > 0 ? (bucket.amount / maxAmount) * 100 : 0;
               return (
                 <div key={bucket.label} className="flex-1 flex flex-col items-center gap-1">
+                  <style>{`.bucket-${bucket.label.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')} { height: ${Math.max(height, 4)}%; }`}</style>
                   <div
-                    className="w-full rounded-t bg-cba-gold/60 transition-all hover:bg-cba-gold/80"
-                    style={{ height: `${Math.max(height, 4)}%` }}
+                    className={`w-full rounded-t bg-cba-gold/60 transition-all hover:bg-cba-gold/80 bucket-${bucket.label.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`}
                     title={`${bucket.label}: ${formatCurrency(bucket.amount)} (${bucket.count} bills)`}
                   />
                   <span className="text-[10px] text-muted truncate w-full text-center">

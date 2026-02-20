@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useRef, useCallback, useReducer } from 'react';
 import { FileUp, X, Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { Progress } from '../../../components/ui/progress';
 import { Badge } from '../../../components/ui/badge';
@@ -21,11 +21,31 @@ interface DocumentUploadProps {
   onUploadComplete?: () => void;
 }
 
+interface DocumentUploadState {
+  files: UploadFile[];
+  autoProcess: boolean;
+  isDragging: boolean;
+  accountId: string;
+}
+
+const initialState: DocumentUploadState = {
+  files: [],
+  autoProcess: true,
+  isDragging: false,
+  accountId: '',
+};
+
+type StateUpdater<T> = Partial<T> | ((prev: T) => Partial<T>);
+
 export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
-  const [files, setFiles] = useState<UploadFile[]>([]);
-  const [autoProcess, setAutoProcess] = useState(true);
-  const [isDragging, setIsDragging] = useState(false);
-  const [accountId, setAccountId] = useState('');
+  const [state, setState] = useReducer(
+    (prev: DocumentUploadState, action: StateUpdater<DocumentUploadState>) => ({
+      ...prev,
+      ...(typeof action === 'function' ? action(prev) : action),
+    }),
+    initialState,
+  );
+  const { files, autoProcess, isDragging, accountId } = state;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback((newFiles: FileList | File[]) => {
@@ -58,62 +78,66 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
         progress: 0,
       });
     });
-    setFiles((prev) => [...prev, ...validFiles]);
+    setState((prev) => ({ files: [...prev.files, ...validFiles] }));
   }, []);
 
   const uploadFile = async (uploadFile: UploadFile) => {
-    setFiles((prev) =>
-      prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 30 } : f)),
-    );
+    setState((prev) => ({
+      files: prev.files.map((f) =>
+        f.id === uploadFile.id ? { ...f, status: 'uploading', progress: 30 } : f,
+      ),
+    }));
     try {
       const result = await documentsApi.upload(uploadFile.file, 'default', accountId || undefined);
-      setFiles((prev) =>
-        prev.map((f) =>
+      setState((prev) => ({
+        files: prev.files.map((f) =>
           f.id === uploadFile.id
             ? {
-              ...f,
-              status: autoProcess ? 'processing' : 'done',
-              progress: autoProcess ? 60 : 100,
-              documentId: result.id,
-            }
+                ...f,
+                status: autoProcess ? 'processing' : 'done',
+                progress: autoProcess ? 60 : 100,
+                documentId: result.id,
+              }
             : f,
         ),
-      );
+      }));
 
       if (autoProcess && result.id) {
         try {
           const processResult = await documentsApi.process(result.id);
-          setFiles((prev) =>
-            prev.map((f) =>
+          setState((prev) => ({
+            files: prev.files.map((f) =>
               f.id === uploadFile.id
                 ? {
-                  ...f,
-                  status: 'done',
-                  progress: 100,
-                  confidenceScore: processResult.confidenceScore,
-                }
+                    ...f,
+                    status: 'done',
+                    progress: 100,
+                    confidenceScore: processResult.confidenceScore,
+                  }
                 : f,
             ),
-          );
+          }));
         } catch {
-          setFiles((prev) =>
-            prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'done', progress: 100 } : f)),
-          );
+          setState((prev) => ({
+            files: prev.files.map((f) =>
+              f.id === uploadFile.id ? { ...f, status: 'done', progress: 100 } : f,
+            ),
+          }));
         }
       }
     } catch (err) {
-      setFiles((prev) =>
-        prev.map((f) =>
+      setState((prev) => ({
+        files: prev.files.map((f) =>
           f.id === uploadFile.id
             ? {
-              ...f,
-              status: 'error',
-              progress: 0,
-              error: err instanceof Error ? err.message : 'Upload failed',
-            }
+                ...f,
+                status: 'error',
+                progress: 0,
+                error: err instanceof Error ? err.message : 'Upload failed',
+              }
             : f,
         ),
-      );
+      }));
     }
   };
 
@@ -128,23 +152,23 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
   const retryFile = async (id: string) => {
     const file = files.find((f) => f.id === id);
     if (!file) return;
-    setFiles((prev) =>
-      prev.map((f) =>
+    setState((prev) => ({
+      files: prev.files.map((f) =>
         f.id === id ? { ...f, status: 'pending', progress: 0, error: undefined } : f,
       ),
-    );
+    }));
     await uploadFile(file);
     onUploadComplete?.();
   };
 
   const removeFile = (id: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
+    setState((prev) => ({ files: prev.files.filter((f) => f.id !== id) }));
   };
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      setIsDragging(false);
+      setState({ isDragging: false });
       addFiles(e.dataTransfer.files);
     },
     [addFiles],
@@ -159,13 +183,14 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
       <div
         role="button"
         tabIndex={0}
-        className={`neu-inset rounded-xl p-8 border-2 border-dashed transition-all cursor-pointer ${isDragging ? 'border-cba-gold bg-cba-gold/5' : 'border-border hover:border-border'
-          }`}
+        className={`neu-inset rounded-xl p-8 border-2 border-dashed transition-all cursor-pointer ${
+          isDragging ? 'border-cba-gold bg-cba-gold/5' : 'border-border hover:border-border'
+        }`}
         onDragOver={(e) => {
           e.preventDefault();
-          setIsDragging(true);
+          setState({ isDragging: true });
         }}
-        onDragLeave={() => setIsDragging(false)}
+        onDragLeave={() => setState({ isDragging: false })}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         onKeyDown={(e) => {
@@ -201,21 +226,24 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
       {/* Options */}
       <div className="neu-raised rounded-xl p-4 flex flex-wrap items-center gap-4">
         <label htmlFor="docume-f1" className="flex items-center gap-2 cursor-pointer">
-          <input id="docume-f1"
+          <input
+            id="docume-f1"
             type="checkbox"
             checked={autoProcess}
-            onChange={(e) => setAutoProcess(e.target.checked)}
+            onChange={(e) => setState({ autoProcess: e.target.checked })}
             className="rounded border-border bg-overlay text-cba-gold focus:ring-[#FFCC00]/20"
           />
           <span className="text-sm text-primary">Auto-process after upload</span>
         </label>
         <div className="flex items-center gap-2">
-          <label htmlFor="account-id-input" className="text-sm text-muted">Account:</label>
+          <label htmlFor="account-id-input" className="text-sm text-muted">
+            Account:
+          </label>
           <input
             id="account-id-input"
             type="text"
             value={accountId}
-            onChange={(e) => setAccountId(e.target.value)}
+            onChange={(e) => setState({ accountId: e.target.value })}
             placeholder="Optional account ID"
             className="px-3 py-1.5 rounded-lg text-sm bg-overlay border border-border text-primary placeholder:text-zinc-600 focus:ring-1 focus:ring-[#FFCC00]/20 focus:outline-none"
           />
@@ -239,7 +267,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             </h3>
             {doneCount === files.length && files.length > 0 && (
               <button
-                onClick={() => setFiles([])}
+                onClick={() => setState({ files: [] })}
                 className="text-xs text-muted hover:text-primary transition-colors"
               >
                 Clear all

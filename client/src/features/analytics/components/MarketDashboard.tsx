@@ -138,12 +138,6 @@ const KPI_DATA: KpiTile[] = [
   },
 ];
 
-// ─── Formatters ───────────────────────────────────────────
-
-function formatPct(val: number): string {
-  return `${val.toFixed(1)}%`;
-}
-
 // ─── Component ────────────────────────────────────────────
 
 function MarketDashboardInner() {

@@ -11,14 +11,12 @@ const formatCurrency = (cents: number) =>
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
 export function BudgetProjections() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [revenue, setRevenue] = useState<ProjectionResult | null>(null);
   const [expenses, setExpenses] = useState<ProjectionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
     Promise.all([
       analyticsApi.projectRevenue('sole_trader', 6),
       analyticsApi.projectExpenses('sole_trader', 6),
@@ -119,19 +117,26 @@ export function BudgetProjections() {
                 <span className="text-right">Projected</span>
                 <span className="text-right">Upper</span>
               </div>
-              {revenue.projections.map((p: { month: string; lowerBound: number; projected: number; upperBound: number }) => (
-                <div
-                  key={p.month}
-                  className="grid grid-cols-4 text-sm py-1.5 border-b border-border/50 last:border-0"
-                >
-                  <span className="text-secondary">{p.month}</span>
-                  <span className="text-right text-muted">{formatCurrency(p.lowerBound)}</span>
-                  <span className="text-right font-medium text-emerald-400">
-                    {formatCurrency(p.projected)}
-                  </span>
-                  <span className="text-right text-muted">{formatCurrency(p.upperBound)}</span>
-                </div>
-              ))}
+              {revenue.projections.map(
+                (p: {
+                  month: string;
+                  lowerBound: number;
+                  projected: number;
+                  upperBound: number;
+                }) => (
+                  <div
+                    key={p.month}
+                    className="grid grid-cols-4 text-sm py-1.5 border-b border-border/50 last:border-0"
+                  >
+                    <span className="text-secondary">{p.month}</span>
+                    <span className="text-right text-muted">{formatCurrency(p.lowerBound)}</span>
+                    <span className="text-right font-medium text-emerald-400">
+                      {formatCurrency(p.projected)}
+                    </span>
+                    <span className="text-right text-muted">{formatCurrency(p.upperBound)}</span>
+                  </div>
+                ),
+              )}
             </div>
           </CardContent>
         </Card>
@@ -154,19 +159,26 @@ export function BudgetProjections() {
                 <span className="text-right">Projected</span>
                 <span className="text-right">Upper</span>
               </div>
-              {expenses.projections.map((p: { month: string; lowerBound: number; projected: number; upperBound: number }) => (
-                <div
-                  key={p.month}
-                  className="grid grid-cols-4 text-sm py-1.5 border-b border-border/50 last:border-0"
-                >
-                  <span className="text-secondary">{p.month}</span>
-                  <span className="text-right text-muted">{formatCurrency(p.lowerBound)}</span>
-                  <span className="text-right font-medium text-red-400">
-                    {formatCurrency(p.projected)}
-                  </span>
-                  <span className="text-right text-muted">{formatCurrency(p.upperBound)}</span>
-                </div>
-              ))}
+              {expenses.projections.map(
+                (p: {
+                  month: string;
+                  lowerBound: number;
+                  projected: number;
+                  upperBound: number;
+                }) => (
+                  <div
+                    key={p.month}
+                    className="grid grid-cols-4 text-sm py-1.5 border-b border-border/50 last:border-0"
+                  >
+                    <span className="text-secondary">{p.month}</span>
+                    <span className="text-right text-muted">{formatCurrency(p.lowerBound)}</span>
+                    <span className="text-right font-medium text-red-400">
+                      {formatCurrency(p.projected)}
+                    </span>
+                    <span className="text-right text-muted">{formatCurrency(p.upperBound)}</span>
+                  </div>
+                ),
+              )}
             </div>
           </CardContent>
         </Card>

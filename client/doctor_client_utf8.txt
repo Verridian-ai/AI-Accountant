@@ -1,0 +1,98 @@
+﻿react-doctor v0.0.28
+
+[2mScanning c:\Users\Danie\Desktop\CBA Statements Parse\client...[22m
+
+
+  [33mΓÜá[39m Enforce a clickable non-interactive element has at least one keyboard event listener.[33m (11)[39m
+[2m    Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.[22m
+
+  [33mΓÜá[39m Static HTML elements with event handlers require a role.[33m (14)[39m
+[2m    Add a role attribute to this element, or use a semantic HTML element instead.[22m
+
+  [33mΓÜá[39m Component "ParserHealth" is 301 lines ΓÇö consider breaking it into smaller focused components[33m (58)[39m
+[2m    Extract logical sections into focused components: `<UserHeader />`, `<UserActions />`, etc.[22m
+
+  [33mΓÜá[39m Array index "i" used as key ΓÇö causes bugs when list is reordered or filtered[33m (111)[39m
+[2m    Use a stable unique identifier: `key={item.id}` or `key={item.slug}` ΓÇö index keys break on reorder/filter[22m
+
+  [33mΓÜá[39m 4 setState calls in a single useEffect ΓÇö consider using useReducer or deriving state[33m (30)[39m
+[2m    Combine into useReducer: `const [state, dispatch] = useReducer(reducer, initialState)`[22m
+
+  [33mΓÜá[39m Component "AgentConfigManager" has 5 useState calls ΓÇö consider useReducer for related state[33m (106)[39m
+[2m    Group related state: `const [state, dispatch] = useReducer(reducer, { field1, field2, ... })`[22m
+
+  [33mΓÜá[39m Inline render function "renderStep()" ΓÇö extract to a separate component for proper reconciliation[33m (13)[39m
+[2m    Extract to a named component: `const ListItem = ({ item }) => <div>{item.name}</div>`[22m
+
+  [33mΓÜá[39m "recharts" is a heavy library ΓÇö use React.lazy() or next/dynamic for code splitting[33m (31)[39m
+[2m    Use `const Component = dynamic(() => import('library'), { ssr: false })` from next/dynamic or React.lazy()[22m
+
+  [33mΓÜá[39m Import from barrel/index file ΓÇö import directly from the source module for better tree-shaking
+[2m    Import from the direct path: `import { Button } from './components/Button'` instead of `./components`[22m
+
+  [33mΓÜá[39m Permanent will-change wastes GPU memory ΓÇö apply only during active animation and remove after[33m (2)[39m
+[2m    Add will-change on animation start (`onMouseEnter`) and remove on end (`onAnimationEnd`). Permanent promotion wastes GPU memory and can degrade performance[22m
+
+  [33mΓÜá[39m setOffset(offset + ...) ΓÇö use functional update to avoid stale closures[33m (2)[39m
+[2m    Use the callback form: `setState(prev => prev + 1)` to always read the latest value[22m
+
+  [33mΓÜá[39m useEffect simulating an event handler ΓÇö move logic to an actual event handler instead[33m (4)[39m
+[2m    Move the conditional logic into onClick, onChange, or onSubmit handlers directly[22m
+
+  [33mΓÜá[39m useState(slice()) calls initializer on every render ΓÇö use useState(() => slice()) for lazy initialization
+[2m    Wrap in an arrow function so it only runs once: `useState(() => expensiveComputation())`[22m
+
+  [33mΓÜá[39m "touchend" listener without { passive: true } ΓÇö blocks scrolling performance
+[2m    Add `{ passive: true }` as the third argument: `addEventListener('scroll', handler, { passive: true })`[22m
+
+  [33mΓÜá[39m Unused file[33m (197)[39m
+[2m    This file is not imported by any other file in the project.[22m
+
+  [33mΓÜá[39m Unused export: useSSEEvent[33m (60)[39m
+
+  [33mΓÜá[39m Unused type: RouteSection[33m (60)[39m
+
+  [33mΓÜá[39m Duplicate export: LedgerPage|default[33m (3)[39m
+
+  [2mΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ[22m
+  [2mΓöé[22m [32mΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ[39m                                            [2mΓöé[22m
+  [2mΓöé[22m [32mΓöé Γùá Γùá Γöé[39m                                            [2mΓöé[22m
+  [2mΓöé[22m [32mΓöé  Γû╜  Γöé[39m                                            [2mΓöé[22m
+  [2mΓöé[22m [32mΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ[39m                                            [2mΓöé[22m
+  [2mΓöé[22m React Doctor [2m(www.react.doctor)[22m                    [2mΓöé[22m
+  [2mΓöé[22m                                                    [2mΓöé[22m
+  [2mΓöé[22m [32m87[39m / 100  [32mGreat[39m                                    [2mΓöé[22m
+  [2mΓöé[22m                                                    [2mΓöé[22m
+  [2mΓöé[22m [32mΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûêΓûê[39m[2mΓûæΓûæΓûæΓûæΓûæΓûæ[22m [2mΓöé[22m
+  [2mΓöé[22m                                                    [2mΓöé[22m
+  [2mΓöé[22m [33mΓÜá 705 warnings[39m  [2macross 455/549 files[22m  [2min 2.5s[22m      [2mΓöé[22m
+  [2mΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ[22m
+
+[2m  Full diagnostics written to C:\Users\Danie\AppData\Local\Temp\react-doctor-97e62ebd-1ee5-4a2a-9f57-6050ce1162f3[22m
+
+[2m  Share your results: [36mhttps://www.react.doctor/share?p=client&s=87&w=705&f=455[39m[22m
+
+
+[?25l[36m?[39m [1mFix issues?[22m [90m┬╗[39m [90m- Use arrow-keys. Return to submit.[39m
+[36m>[39m   [36m[4mUse Ami (recommended)[39m[24m[90m - Optimized coding agent for React Doctor[39m
+    Skip[90m[39m
+[2K[1G  [2mΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ[22m
+  [2mΓöé[22m Score: [32m87[39m [2mΓåÆ[22m [32m~97[39m                                      [2mΓöé[22m
+  [2mΓöé[22m                                                      [2mΓöé[22m
+  [2mΓöé[22m [36mAmi[39m is a coding agent built for React. It reads      [2mΓöé[22m
+  [2mΓöé[22m your react-doctor report, understands your codebase, [2mΓöé[22m
+  [2mΓöé[22m and fixes [33m705[39m issues one by one ΓÇö then re-runs the   [2mΓöé[22m
+  [2mΓöé[22m scan to verify the score improved.                   [2mΓöé[22m
+  [2mΓöé[22m                                                      [2mΓöé[22m
+  [2mΓöé[22m Free to use. [36mhttps://ami.dev[39m                         [2mΓöé[22m
+  [2mΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ[22m
+
+[36m?[39m [1mFix issues?[22m [90m┬╗[39m [90m- Use arrow-keys. Return to submit.[39m
+[36m>[39m   [36m[4mUse Ami (recommended)[39m[24m[90m - Optimized coding agent for React Doctor[39m
+    Skip[90m[39m
+[2K[1G[32mΓêÜ[39m [1mFix issues?[22m [90m┬╗[39m Use Ami (recommended)
+[?25h[31mAmi is not installed.[39m
+[2mDownload at [36mhttps://github.com/millionco/ami-releases/releases[39m[22m
+
+[2mOpen this link to start fixing:[22m
+[36mhttps://www.react.doctor/open?cwd=c%3A%5CUsers%5CDanie%5CDesktop%5CCBA+Statements+Parse%5Cclient&prompt=%2F%7Bslash-command%3Aami%3Areact-doctor%7D&mode=agent&autoSubmit=true&source=react-doctor[39m

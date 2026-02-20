@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Plus, Trash2, Save, Send, Package, Search } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowLeft, Plus, Trash2, Save, Send, Search } from 'lucide-react';
 import { apApi } from '../../../api';
 import type { Supplier } from '../../../api';
 
@@ -40,11 +40,41 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
   const [error, setError] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const loadPO = useCallback(async () => {
+    try {
+      const po = await apApi.fetchPurchaseOrder(poId!);
+      setPONumber(po.poNumber);
+      setSupplierId(po.supplierId);
+      setSupplierSearch(po.supplierName ?? '');
+      setExpectedDate(po.expectedDate ?? '');
+      setNotes(po.notes ?? '');
+      setStatus(po.status);
+      if (po.lineItems?.length) {
+        setLineItems(
+          po.lineItems.map(
+            (li: { id?: string; description: string; quantity: number; unitPrice: number }) => ({
+              id: li.id ?? nextLineId(),
+              description: li.description,
+              quantity: li.quantity,
+              unitPrice: li.unitPrice,
+              amount: li.quantity * li.unitPrice,
+            }),
+          ),
+        );
+      }
+    } catch (e) {
+      console.error('Failed to load PO', e);
+      setError('Failed to load purchase order');
+    } finally {
+      setLoading(false);
+    }
+  }, [poId]);
+
   useEffect(() => {
     if (poId) {
       loadPO();
     }
-  }, [poId]);
+  }, [poId, loadPO]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -64,34 +94,6 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const loadPO = async () => {
-    try {
-      const po = await apApi.fetchPurchaseOrder(poId!);
-      setPONumber(po.poNumber);
-      setSupplierId(po.supplierId);
-      setSupplierSearch(po.supplierName ?? '');
-      setExpectedDate(po.expectedDate ?? '');
-      setNotes(po.notes ?? '');
-      setStatus(po.status);
-      if (po.lineItems?.length) {
-        setLineItems(
-          po.lineItems.map((li: { id?: string; description: string; quantity: number; unitPrice: number }) => ({
-            id: li.id ?? nextLineId(),
-            description: li.description,
-            quantity: li.quantity,
-            unitPrice: li.unitPrice,
-            amount: li.quantity * li.unitPrice,
-          })),
-        );
-      }
-    } catch (e) {
-      console.error('Failed to load PO', e);
-      setError('Failed to load purchase order');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadSuppliers = async (search: string) => {
     try {
@@ -148,7 +150,11 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
     }
 
     setError('');
-    sendAfter ? setSending(true) : setSaving(true);
+    if (sendAfter) {
+      setSending(true);
+    } else {
+      setSaving(true);
+    }
 
     try {
       const payload = {
@@ -201,6 +207,8 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         <button
           onClick={onCancel}
           className="p-2 rounded-xl bg-overlay text-secondary hover:text-primary transition-all"
+          title="Go back"
+          aria-label="Go back"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
@@ -228,10 +236,13 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         {/* Supplier + Expected Date Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative" ref={dropdownRef}>
-            <label htmlFor="purcha-f1" className="block text-xs font-medium text-secondary mb-1.5">Supplier *</label>
+            <label htmlFor="purcha-f1" className="block text-xs font-medium text-secondary mb-1.5">
+              Supplier *
+            </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
-              <input id="purcha-f1"
+              <input
+                id="purcha-f1"
                 type="text"
                 value={supplierSearch}
                 onChange={(e) => {
@@ -263,7 +274,8 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
             <label htmlFor="purcha-f2" className="block text-xs font-medium text-secondary mb-1.5">
               Expected Delivery Date
             </label>
-            <input id="purcha-f2"
+            <input
+              id="purcha-f2"
               type="date"
               value={expectedDate}
               onChange={(e) => setExpectedDate(e.target.value)}
@@ -276,7 +288,10 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
         {/* Line Items */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label htmlFor="purcha-f3" className="text-xs font-medium text-secondary uppercase tracking-wider">
+            <label
+              htmlFor="purcha-f3"
+              className="text-xs font-medium text-secondary uppercase tracking-wider"
+            >
               Line Items
             </label>
             {isEditable && (
@@ -293,7 +308,7 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
           <div className="rounded-xl border border-border/50 overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border/50 bg-white/[0.02]">
+                <tr className="border-b border-border/50 bg-white/2">
                   <th className="text-left px-3 py-2 text-xs font-semibold text-secondary w-[45%]">
                     Description
                   </th>
@@ -319,6 +334,8 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                         onChange={(e) => updateLine(li.id, 'description', e.target.value)}
                         disabled={!isEditable}
                         placeholder="Item description"
+                        title="Item description"
+                        aria-label="Item description"
                         className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-primary placeholder-zinc-600 focus:outline-none focus:border-cba-gold/20 transition-all disabled:opacity-50"
                       />
                     </td>
@@ -330,6 +347,9 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                         value={li.quantity}
                         onChange={(e) => updateLine(li.id, 'quantity', Number(e.target.value))}
                         disabled={!isEditable}
+                        placeholder="Quantity"
+                        title="Quantity"
+                        aria-label="Quantity"
                         className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-primary text-right focus:outline-none focus:border-cba-gold/20 transition-all disabled:opacity-50"
                       />
                     </td>
@@ -341,6 +361,9 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                         value={li.unitPrice}
                         onChange={(e) => updateLine(li.id, 'unitPrice', Number(e.target.value))}
                         disabled={!isEditable}
+                        placeholder="Unit Price"
+                        title="Unit Price"
+                        aria-label="Unit Price"
                         className="w-full px-2 py-1.5 rounded-lg bg-transparent border border-transparent text-sm text-primary text-right focus:outline-none focus:border-cba-gold/20 transition-all disabled:opacity-50"
                       />
                     </td>
@@ -352,6 +375,8 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
                         <button
                           onClick={() => removeLine(li.id)}
                           className="p-1 rounded-lg text-zinc-600 hover:text-red-400 transition-colors"
+                          title="Remove item"
+                          aria-label="Remove item"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -384,8 +409,11 @@ export function PurchaseOrderEditor({ poId, onSave, onCancel }: PurchaseOrderEdi
 
         {/* Notes */}
         <div>
-          <label htmlFor="purcha-f4" className="block text-xs font-medium text-secondary mb-1.5">Notes</label>
-          <textarea id="purcha-f4"
+          <label htmlFor="purcha-f4" className="block text-xs font-medium text-secondary mb-1.5">
+            Notes
+          </label>
+          <textarea
+            id="purcha-f4"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             disabled={!isEditable}

@@ -96,7 +96,7 @@ export function CategoryBreakdown() {
   const segments = useMemo(() => {
     if (items.length === 0) return [];
     const sorted = [...items].sort((a, b) => b.total - a.total);
-    let top = sorted.slice(0, 5);
+    const top = sorted.slice(0, 5);
     const rest = sorted.slice(5);
 
     const displayItems: CategoryBreakdownItem[] = [...top];
@@ -155,9 +155,7 @@ export function CategoryBreakdown() {
               onClick={() => setMode('expenses')}
               className={cn(
                 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-                mode === 'expenses'
-                  ? 'bg-cba-gold text-base'
-                  : 'text-muted hover:text-primary',
+                mode === 'expenses' ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
               )}
             >
               Expenses
@@ -167,9 +165,7 @@ export function CategoryBreakdown() {
               onClick={() => setMode('income')}
               className={cn(
                 'px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-                mode === 'income'
-                  ? 'bg-cba-gold text-base'
-                  : 'text-muted hover:text-primary',
+                mode === 'income' ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
               )}
             >
               Income
@@ -183,9 +179,7 @@ export function CategoryBreakdown() {
                 onClick={() => setPeriod(p)}
                 className={cn(
                   'px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all',
-                  period === p
-                    ? 'bg-cba-gold text-base'
-                    : 'text-muted hover:text-primary',
+                  period === p ? 'bg-cba-gold text-base' : 'text-muted hover:text-primary',
                 )}
               >
                 {p}

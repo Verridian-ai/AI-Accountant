@@ -1,0 +1,620 @@
+﻿
+> client@0.0.0 lint
+> eslint .
+
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\api\analytics.ts
+    5:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   41:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   58:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   69:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   77:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  139:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  139:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\api\ap.ts
+  239:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  272:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\api\invoicing.ts
+   30:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   40:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   67:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  161:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\api\payroll.ts
+   11:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   24:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   24:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   34:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   42:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   42:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   61:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   69:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   69:78  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:76  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  132:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  132:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  162:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\api\tax.ts
+  196:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  212:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  212:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  214:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  214:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  215:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  216:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  216:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  217:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  217:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  219:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  219:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  221:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  221:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  225:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  251:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  259:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  298:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  306:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\components\charts\PieChart.tsx
+  6:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\components\ui\PullToRefresh.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\components\ui\PullToRefresh\index.tsx
+  2:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  5:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\components\ui\SwipeableCard.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\components\ui\SwipeableCard\index.tsx
+  3:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  3:30  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  3:48  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\components\ui\badge.tsx
+  32:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\accounts\components\AccountBalanceTimeline.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\admin\components\CogneeGraph2DFallback.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\admin\components\CogneeGraph2DFallback\index.tsx
+  10:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  10:22  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  10:36  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  10:50  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  11:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\admin\components\CogneeGraphViewer.tsx
+  2:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\admin\components\CogneeGraphViewer\index.tsx
+  2:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\admin\components\UserManagement.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\admin\components\UserManagement\index.tsx
+  2:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\analytics\components\BudgetVsActual.tsx
+  34:6  warning  React Hook useEffect has a missing dependency: 'loadBudgets'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\analytics\components\CashFlowForecast.tsx
+  23:6  warning  React Hook useEffect has a missing dependency: 'loadForecast'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\analytics\components\CategoryBreakdown.tsx
+  82:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\analytics\components\ForecastDashboard.tsx
+  32:6  warning  React Hook useEffect has a missing dependency: 'loadAllData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\analytics\components\InventoryValuation.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\analytics\components\InventoryValuation\index.tsx
+  11:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  11:26  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  11:37  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  15:3   warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  21:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\analytics\components\SpendingTrends.tsx
+   55:6  warning  React Hook useEffect has a missing dependency: 'loadTrends'. Either include it or remove the dependency array           react-hooks/exhaustive-deps
+  131:6  warning  React Hook useMemo has missing dependencies: 'PLOT_H' and 'PLOT_W'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\ap\components\BillEntry.tsx
+  27:10  error  'selectedSupplier' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\ap\components\BillList.tsx
+  50:6  warning  React Hook useEffect has a missing dependency: 'loadBills'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\ap\components\POList.tsx
+   3:3  error    'Search' is defined but never used. Allowed unused vars must match /^_/u                                       @typescript-eslint/no-unused-vars
+  67:6  warning  React Hook useEffect has a missing dependency: 'loadOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\ap\components\POReceiving.tsx
+  67:6  warning  React Hook useEffect has a missing dependency: 'loadPO'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\ap\components\PurchaseOrderEditor.tsx
+    2:47  error    'Package' is defined but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+   47:6   warning  React Hook useEffect has a missing dependency: 'loadPO'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  151:5   error    Expected an assignment or function call and instead saw an expression                                      @typescript-eslint/no-unused-expressions
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\ap\components\SupplierList.tsx
+  40:6  warning  React Hook useEffect has a missing dependency: 'loadSuppliers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\assets\components\AssetDisposalForm.tsx
+  13:10  error  'Badge' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\assets\components\AssetRegisterTable.tsx
+  13:50  error  'Calculator' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\assets\components\RegisterAssetForm.tsx
+  13:10  error  'Badge' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\banking-products\components\BankingProductsDashboard.tsx
+  9:3  error  'ArrowUpDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\bas\components\BASComparison.tsx
+  81:6  warning  React Hook useEffect has a missing dependency: 'quarters'. Either include it or remove the dependency array        react-hooks/exhaustive-deps
+  87:6  warning  React Hook useEffect has a missing dependency: 'loadComparison'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\bas\components\BASDashboard\hooks\useBASDashboard.ts
+  43:6  warning  React Hook useEffect has a missing dependency: 'autoCalculate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\bas\components\BASPreFillReport.tsx
+  78:6  warning  React Hook useEffect has a missing dependency: 'loadBAS'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\budgets\components\BudgetEditor.tsx
+    2:45  error    'Save' is defined but never used. Allowed unused vars must match /^_/u                                         @typescript-eslint/no-unused-vars
+   28:6   warning  React Hook useEffect has a missing dependency: 'loadBudget'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  103:9   error    'currentIndex' is assigned a value but never used. Allowed unused vars must match /^_/u                        @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\budgets\components\BudgetsDashboard.tsx
+   2:44  error    'BarChart3' is defined but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+   9:10  error    'CATEGORY_NAMES' is defined but never used. Allowed unused vars must match /^_/u                                @typescript-eslint/no-unused-vars
+  50:6   warning  React Hook useEffect has a missing dependency: 'loadBudgets'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\budgets\components\ScenarioComparison.tsx
+  35:6  warning  React Hook useEffect has a missing dependency: 'loadComparison'. Either include it or remove the dependency array                         react-hooks/exhaustive-deps
+  35:7  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\budgets\components\VarianceView.tsx
+  18:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\chat\components\StreamingMessage.tsx
+  2:10  error  'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\compliance\components\AnomalyAlertPanel.tsx
+  75:6  warning  React Hook useEffect has a missing dependency: 'loadAlerts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\compliance\components\ComplianceCalendar.tsx
+  36:6  warning  React Hook useEffect has a missing dependency: 'loadCalendar'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\compliance\components\ComplianceReport.tsx
+  3:42  error  'Download' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\compliance\components\ObligationTracker.tsx
+   3:10  error    'CheckCircle' is defined but never used. Allowed unused vars must match /^_/u                                       @typescript-eslint/no-unused-vars
+   3:23  error    'Clock' is defined but never used. Allowed unused vars must match /^_/u                                             @typescript-eslint/no-unused-vars
+   3:30  error    'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+  55:6   warning  React Hook useEffect has a missing dependency: 'loadObligations'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\compliance\components\RiskAssessmentPanel.tsx
+   4:10  error    'cn' is defined but never used. Allowed unused vars must match /^_/u                                         @typescript-eslint/no-unused-vars
+  55:6   warning  React Hook useEffect has a missing dependency: 'loadRisk'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\dashboards\components\WidgetPicker.tsx
+  132:21  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\dashboards\components\WidgetPicker.tsx:132:21
+  130 |   const handleSelect = (wt: WidgetType) => {
+  131 |     const widget: WidgetConfig = {
+> 132 |       id: `widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      |                     ^^^^^^^^^^ Cannot call impure function
+  133 |       chartType: wt.chartType,
+  134 |       title: wt.name,
+  135 |       position: { col: 0, row: 0, width: 6, height: 4 },                      react-hooks/purity
+  132:35  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\dashboards\components\WidgetPicker.tsx:132:35
+  130 |   const handleSelect = (wt: WidgetType) => {
+  131 |     const widget: WidgetConfig = {
+> 132 |       id: `widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      |                                   ^^^^^^^^^^^^^ Cannot call impure function
+  133 |       chartType: wt.chartType,
+  134 |       title: wt.name,
+  135 |       position: { col: 0, row: 0, width: 6, height: 4 },  react-hooks/purity
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\documents\components\DocumentViewer.tsx
+  51:10  error    'confidenceBarColor' is defined but never used. Allowed unused vars must match /^_/u                             @typescript-eslint/no-unused-vars
+  84:6   warning  React Hook useEffect has a missing dependency: 'loadDocument'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\documents\components\DocumentsDashboard.tsx
+  7:3  error  'XCircle' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  8:3  error  'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\entities\components\ConsolidationView.tsx
+  12:10  error  'Skeleton' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\entities\components\EntitiesDashboard.tsx
+  14:40  error  'EntityData' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\entities\components\EntitySettingsPanel.tsx
+   2:29  error  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+   2:41  error  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  26:10  error  'loading' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  26:19  error  'setLoading' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\forecasting\components\AccuracyPanel.tsx
+  72:6  warning  React Hook useEffect has a missing dependency: 'loadAccuracy'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\gst\components\GSTSummary.tsx
+  20:6  warning  React Hook useEffect has a missing dependency: 'loadSummary'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\gst\components\InputTaxCredits.tsx
+  23:6  warning  React Hook useEffect has a missing dependency: 'loadCredits'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\intelligence\components\InsightFeed.tsx
+  72:6  warning  React Hook useEffect has a missing dependency: 'loadInsights'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\intelligence\components\IntelligenceTimeline.tsx
+  78:6  warning  React Hook useEffect has a missing dependency: 'loadTimeline'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\intelligence\components\ModuleConnectionMap.tsx
+  60:6  warning  React Hook useEffect has a missing dependency: 'propConnections'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\intelligence\components\SubscriptionManager.tsx
+  61:6  warning  React Hook useEffect has a missing dependency: 'loadSubscriptions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\intelligence\components\TemporalQueryBuilder.tsx
+  55:42  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  67:6   warning  React Hook useEffect has a missing dependency: 'loadSavedQueries'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\inventory\components\InventoryItemList.tsx
+  56:6  warning  React Hook useEffect has a missing dependency: 'loadItems'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\inventory\components\MovementHistory.tsx
+  62:6  warning  React Hook useEffect has a missing dependency: 'loadMovements'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\inventory\components\StockLevelPanel.tsx
+  38:6  warning  React Hook useEffect has a missing dependency: 'loadLevels'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\inventory\components\ValuationReport.tsx
+  40:6  warning  React Hook useEffect has a missing dependency: 'loadValuation'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\invoicing\components\CustomerDetail.tsx
+  12:3  error  'FileText' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\invoicing\components\InvoiceEditor.tsx
+   4:10  error    'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  31:46  warning  Unexpected any. Specify a different type                              @typescript-eslint/no-explicit-any
+  34:60  warning  Unexpected any. Specify a different type                              @typescript-eslint/no-explicit-any
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\invoicing\components\InvoiceList.tsx
+   4:3  error  'Search' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+  68:9  error  'setCustomerFilter' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\invoicing\components\InvoicingDashboard.tsx
+  12:3   error    'Eye' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  52:56  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\knowledge\components\DataPointManager.tsx
+  66:6  warning  React Hook useEffect has a missing dependency: 'loadDataPoints'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\knowledge\components\FeedbackPanel.tsx
+  58:6  warning  React Hook useEffect has a missing dependency: 'loadStats'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\knowledge\components\KnowledgeGraphExplorer.tsx
+  202:6  warning  React Hook useEffect has a missing dependency: 'draw'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\knowledge\components\OntologyManager.tsx
+  58:6  warning  React Hook useEffect has a missing dependency: 'loadOntologies'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\loans\components\RateScenarios.tsx
+  1:20  error  'useEffect' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\loans\components\RefinanceAnalysis.tsx
+  17:3  error  'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\notifications\components\NotificationCenter.tsx
+  2:16  error  'Check' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\notifications\components\PushPermissionPrompt.tsx
+  16:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\notifications\components\PushPermissionPrompt.tsx:16:7
+  14 |     const permission = Notification.permission;
+  15 |     if (permission === 'granted' || permission === 'denied') {
+> 16 |       setStatus(permission === 'granted' ? 'granted' : 'denied');
+     |       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  17 |       return;
+  18 |     }
+  19 |  react-hooks/set-state-in-effect
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\offline\components\OfflineIndicator.tsx
+  12:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\offline\components\OfflineIndicator.tsx:12:7
+  10 |   useEffect(() => {
+  11 |     if (!isOnline) {
+> 12 |       setDismissed(false);
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  13 |       setVisible(true);
+  14 |     } else if (syncStatus === 'syncing') {
+  15 |       setVisible(true);  react-hooks/set-state-in-effect
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\payroll\components\EmployeeDetail\hooks\useEmployeeData.ts
+  56:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\payroll\components\EmployeeList.tsx
+  37:62  error  'onRefresh' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\payroll\components\EmployeeOnboarding.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\payroll\components\PayCategoryManager.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\payroll\components\PayStructureEditor\hooks\usePayStructure.ts
+  52:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\reconciliation\components\ReconMatchingWorkspace.tsx
+  54:7  error    'statusColors' is assigned a value but never used. Allowed unused vars must match /^_/u                         @typescript-eslint/no-unused-vars
+  78:6  warning  React Hook useEffect has a missing dependency: 'loadSession'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\reports\components\ReportsDashboard.tsx
+  63:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\reports\components\ReportsDashboard.tsx:63:5
+  61 |   // Sync custom dates with FY selection
+  62 |   useEffect(() => {
+> 63 |     setCustomStart(fy.start);
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  64 |     setCustomEnd(fy.end);
+  65 |   }, [selectedFY]);
+  66 |  react-hooks/set-state-in-effect
+  65:6  warning  React Hook useEffect has missing dependencies: 'fy.end' and 'fy.start'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\subscription\components\PlanComparison.tsx
+  106:3  error  'isOnboarding' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\CompanyReturn.tsx
+  20:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\CompanyReturn.tsx:20:5
+  18 |
+  19 |   useEffect(() => {
+> 20 |     setLoading(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |     setError(null);
+  22 |     taxApi
+  23 |       .fetchCompanyReturn(year)  react-hooks/set-state-in-effect
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\PersonalReturn.tsx
+  20:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\PersonalReturn.tsx:20:5
+  18 |
+  19 |   useEffect(() => {
+> 20 |     setLoading(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |     setError(null);
+  22 |     taxApi
+  23 |       .fetchPersonalReturn(year)  react-hooks/set-state-in-effect
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\SoleTraderReturn.tsx
+  27:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\SoleTraderReturn.tsx:27:5
+  25 |
+  26 |   useEffect(() => {
+> 27 |     setLoading(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |     setError(null);
+  29 |     taxApi
+  30 |       .fetchSoleTraderReturn(year)  react-hooks/set-state-in-effect
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\TaxDashboard\hooks\useTaxDashboard.ts
+  31:6  warning  React Hook useEffect has a missing dependency: 'loadTaxData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\TaxOptimizerPanel.tsx
+  29:6  warning  React Hook useEffect has a missing dependency: 'loadStrategies'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\TrustReturn.tsx
+  20:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\tax\components\TrustReturn.tsx:20:5
+  18 |
+  19 |   useEffect(() => {
+> 20 |     setLoading(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |     setError(null);
+  22 |     taxApi
+  23 |       .fetchTrustReturn(year)  react-hooks/set-state-in-effect
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\CategorySelect.tsx
+  45:9  warning  The 'allOptions' array makes the dependencies of useCallback Hook (at line 108) change on every render. To fix this, wrap the initialization of 'allOptions' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\DeleteConfirmDialog.tsx
+  235:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\LedgerPage.tsx
+  179:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\LedgerPage.tsx:179:5
+  177 |   // Update announcement when filtered count changes
+  178 |   useEffect(() => {
+> 179 |     setAnnounceMessage(
+      |     ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  180 |       `Showing ${filteredTransactions.length} of ${transactions.length} transactions`,
+  181 |     );
+  182 |   }, [filteredTransactions.length, transactions.length]);  react-hooks/set-state-in-effect
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\LedgerTable.tsx
+  117:5  warning  React Hook useMemo has a missing dependency: 'bulkSelect'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+  126:7  error    Error: Expected the dependency list to be an array of simple expressions (e.g. `x`, `x.y.z`, `x?.y?.z`)
+
+Expected the dependency list to be an array of simple expressions (e.g. `x`, `x.y.z`, `x?.y?.z`).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\LedgerTable.tsx:126:7
+  124 |       handleSplitStart,
+  125 |       setEditingId,
+> 126 |       !!bulkSelect,
+      |       ^^^^^^^^^^^^ Expected the dependency list to be an array of simple expressions (e.g. `x`, `x.y.z`, `x?.y?.z`)
+  127 |       onSelectAll,
+  128 |     ],
+  129 |   );  react-hooks/use-memo
+  126:7  warning  React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\LedgerTableColumns.tsx
+  1:1  warning  This rule can't verify that `export *` only exports components  react-refresh/only-export-components
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\TransactionCardList.tsx
+  35:23  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transactions\components\TransactionCardList.tsx:35:23
+  33 |   const parentRef = useRef<HTMLDivElement>(null);
+  34 |
+> 35 |   const virtualizer = useVirtualizer({
+     |                       ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  36 |     count: transactions.length,
+  37 |     getScrollElement: () => parentRef.current,
+  38 |     estimateSize: () => 120, // Estimated card height including margin  react-hooks/incompatible-library
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\features\transfers\components\MoneyFlowDiagram.tsx
+  32:6  warning  React Hook useEffect has a missing dependency: 'loadFlows'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\hooks\useOffline.ts
+  58:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\hooks\useOffline.ts:58:5
+  56 |
+  57 |   useEffect(() => {
+> 58 |     refreshCounts();
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  59 |     refreshTimer.current = setInterval(refreshCounts, 5000);
+  60 |     return () => {
+  61 |       if (refreshTimer.current) clearInterval(refreshTimer.current);  react-hooks/set-state-in-effect
+
+C:\Users\Danie\Desktop\CBA Statements Parse\client\src\routes.tsx
+   45:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   51:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   57:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   63:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   69:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   75:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   81:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   88:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   90:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   96:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  102:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  108:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  114:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  120:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  126:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+  132:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+
+Γ£û 230 problems (50 errors, 180 warnings)
+

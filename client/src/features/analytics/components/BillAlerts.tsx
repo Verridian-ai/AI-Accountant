@@ -9,12 +9,11 @@ const formatCurrency = (cents: number) =>
   new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100);
 
 export function BillAlerts() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [bills, setBills] = useState<RecurringBill[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
     analyticsApi
       .fetchBillAlerts()
       .then(setBills)
@@ -53,6 +52,8 @@ export function BillAlerts() {
         return <TrendingUp className="w-4 h-4 text-amber-400" />;
       case 'current':
         return <CheckCircle className="w-4 h-4 text-emerald-400" />;
+      default:
+        return null;
     }
   };
 
@@ -63,6 +64,8 @@ export function BillAlerts() {
       case 'amount_changed':
         return 'border-amber-500/20 bg-amber-500/5';
       case 'current':
+        return 'border-border/50';
+      default:
         return 'border-border/50';
     }
   };

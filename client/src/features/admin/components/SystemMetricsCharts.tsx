@@ -25,19 +25,21 @@ export function SystemMetricsCharts() {
   const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h'>('6h');
 
   useEffect(() => {
-    loadMetrics();
-  }, [timeRange]);
-
-  const loadMetrics = async () => {
-    setLoading(true);
-    try {
-      const res = await fetchSystemMetrics({ range: timeRange });
-      setMetrics(res);
-    } catch {
-      /* */
+    let mounted = true;
+    async function fetchMetrics() {
+      try {
+        const res = await fetchSystemMetrics({ range: timeRange });
+        if (mounted) setMetrics(res as unknown as MetricsData);
+      } catch {
+        // ignore
+      }
+      if (mounted) setLoading(false);
     }
-    setLoading(false);
-  };
+    void fetchMetrics();
+    return () => {
+      mounted = false;
+    };
+  }, [timeRange]);
 
   const renderSparkline = (history: MetricPoint[], color: string, maxVal?: number) => {
     if (!history || history.length < 2) return null;
@@ -100,9 +102,7 @@ export function SystemMetricsCharts() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-primary">System Metrics</h2>
-          <p className="text-sm text-muted">
-            Memory, CPU, API latency, and database performance
-          </p>
+          <p className="text-sm text-muted">Memory, CPU, API latency, and database performance</p>
         </div>
         <div className="flex items-center gap-1 rounded-xl bg-[#1a1a2e] p-1">
           {(['1h', '6h', '24h'] as const).map((r) => (
