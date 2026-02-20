@@ -184,6 +184,13 @@ export class BASService {
     const fuelTaxCredits = labels['7C'] + labels['7D'];
     const totalPayable = netGst + labels.W2 + labels['5A'] - fuelTaxCredits;
 
+    const warnings: string[] =
+      labels.W1 > 0
+        ? [
+            'W2 (PAYG Withheld) is estimated at 32% of gross wages. Verify against your payroll records for accurate lodgement.',
+          ]
+        : [];
+
     return {
       period: {
         financialYear,
@@ -199,6 +206,7 @@ export class BASService {
       isRefund: totalPayable < 0,
       transactionCount: quarterTransactions.length,
       estimated: { W2: true },
+      warnings,
     };
   }
 

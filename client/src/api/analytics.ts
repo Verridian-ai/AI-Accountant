@@ -135,12 +135,23 @@ export const analyticsApi = {
     return res.json();
   },
 
-  fetchBillAlerts: async (..._args: unknown[]): Promise<Record<string, unknown>[]> =>
+  // TODO: server endpoint doesn't exist yet — GET /api/analytics/bill-alerts
+  // The bills route only supports CRUD, not alert/due-date queries
+  fetchBillAlerts: async (_params?: { days?: number }): Promise<Record<string, unknown>[]> =>
     Promise.resolve([]),
-  projectRevenue: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  projectExpenses: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  calculateWealthProjection: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
+
+  // TODO: server endpoint doesn't exist yet — GET /api/analytics/revenue-projection
+  projectRevenue: async (_params?: { months?: number }): Promise<Record<string, unknown>> =>
+    Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — GET /api/analytics/expense-projection
+  projectExpenses: async (_params?: { months?: number }): Promise<Record<string, unknown>> =>
+    Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — GET /api/analytics/wealth-projection
+  calculateWealthProjection: async (_params?: {
+    years?: number;
+    annualSavings?: number;
+    returnRate?: number;
+  }): Promise<Record<string, unknown>> => Promise.resolve({}),
 };

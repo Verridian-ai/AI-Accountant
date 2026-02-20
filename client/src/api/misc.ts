@@ -8,16 +8,29 @@ function getAdminAuthHeaders(): HeadersInit {
 
 type StubApi = Record<string, (...args: unknown[]) => Promise<unknown>>;
 
-export const entityApi: StubApi = {
+export const entityApi = {
+  // GET /api/tenants — lists tenants (entities in multi-company context)
+  list: async (): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/tenants`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error(`entity list failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  // TODO: no server route for create entity
   createEntity: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server route for entity hierarchy
   getHierarchy: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server route for entity settings
   updateSettings: async (..._args: unknown[]) => Promise.resolve(),
+  // TODO: no server route for inter-entity transactions
   getInterEntityTransactions: async (..._args: unknown[]) =>
     Promise.resolve([] as Record<string, unknown>[]),
+  // TODO: no server route for inter-entity transaction confirm
   confirmInterEntityTransaction: async (..._args: unknown[]) => Promise.resolve(),
+  // TODO: no server route for inter-entity transaction record
   recordInterEntityTransaction: async (..._args: unknown[]) => Promise.resolve(),
 };
 
+// TODO: no server route for assets — asset register not yet implemented server-side
 export const assetApi: StubApi = {
   disposeAsset: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   getRegister: async (..._args: unknown[]) =>
@@ -30,44 +43,53 @@ export const assetApi: StubApi = {
 };
 
 export const forecastApi = {
+  // GET /api/analytics/cash-flow-forecast
   list: async (_userId?: string, status?: string): Promise<unknown> => {
     const params = new URLSearchParams();
     if (status) params.set('status', status);
     const res = await fetch(`${API_URL}/analytics/cash-flow-forecast?${params}`, {
       headers: getAuthHeaders(),
     });
-    if (!res.ok) throw new Error('Failed to list forecasts');
+    if (!res.ok) throw new Error(`forecast list failed: ${res.status}`);
     const json = (await res.json()) as Record<string, unknown>;
     return json.data ?? json;
   },
+  // GET /api/analytics/forecasts/:id
   getById: async (forecastId: string): Promise<Record<string, unknown>> => {
     const res = await fetch(`${API_URL}/analytics/forecasts/${forecastId}`, {
       headers: getAuthHeaders(),
     });
-    if (!res.ok) throw new Error('Failed to get forecast');
+    if (!res.ok) throw new Error(`forecast getById failed: ${res.status}`);
     return res.json() as Promise<Record<string, unknown>>;
   },
+  // POST /api/analytics/forecasts/generate
   generate: async (params: Record<string, string>): Promise<Record<string, unknown>> => {
     const res = await fetch(`${API_URL}/analytics/forecasts/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(params),
     });
-    if (!res.ok) throw new Error('Failed to generate forecast');
+    if (!res.ok) throw new Error(`forecast generate failed: ${res.status}`);
     return res.json() as Promise<Record<string, unknown>>;
   },
+  // POST /api/analytics/forecasts/:id/archive
   archive: async (forecastId: string): Promise<void> => {
     const res = await fetch(`${API_URL}/analytics/forecasts/${forecastId}/archive`, {
       method: 'POST',
       headers: getAuthHeaders(),
     });
-    if (!res.ok) throw new Error('Failed to archive forecast');
+    if (!res.ok) throw new Error(`forecast archive failed: ${res.status}`);
   },
+  // TODO: no server route for forecast accuracy calculation
   calculateAccuracy: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server route for updating actuals
   updateActuals: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server route for comparing forecasts
   compare: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
+// TODO: no server routes for intelligence API — cross-module intelligence service
+// exists (server/src/services/cross-module-intelligence) but is not wired to any routes
 export const intelligenceApi: StubApi = {
   findCorrelations: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   listInsights: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
@@ -113,6 +135,8 @@ export const inventoryApi: StubApi = {
   createWarehouse: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
+// TODO: no server routes for matches API — PaymentMatchingService exists in
+// server/src/services/payment-matching but is not exposed via any HTTP routes
 export const matchesApi: StubApi = {
   autoMatch: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   confirm: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
@@ -125,7 +149,28 @@ export const matchesApi: StubApi = {
   deleteRule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const reconApi: StubApi = {
+export const reconApi = {
+  // GET /api/reconciliation-alerts — list reconciliation alerts
+  listAlerts: async (params?: { showResolved?: boolean }): Promise<Record<string, unknown>[]> => {
+    const qp = new URLSearchParams();
+    if (params?.showResolved) qp.set('showResolved', 'true');
+    const res = await fetch(`${API_URL}/reconciliation-alerts?${qp}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error(`reconciliation alerts list failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>[]>;
+  },
+  // POST /api/reconciliation-alerts/:id/resolve — resolve a reconciliation alert
+  resolveAlert: async (alertId: string, notes?: string): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/reconciliation-alerts/${alertId}/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ notes: notes ?? null }),
+    });
+    if (!res.ok) throw new Error(`resolve alert failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  // TODO: no server route — BankReconciliationService exists but is not wired to HTTP routes
   listSessions: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
   createSession: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   getSession: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
@@ -147,6 +192,8 @@ export const budgetsApi: StubApi = {
   getVarianceSummary: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
+// TODO: no server routes for loan API — LoanCalculatorService exists in
+// server/src/services/loan-calculator but is not exposed via any HTTP routes
 export const loanApi: StubApi = {
   calculateCarFinance: async (..._args: unknown[]) =>
     Promise.resolve({} as Record<string, unknown>),
@@ -159,13 +206,37 @@ export const loanApi: StubApi = {
     Promise.resolve({} as Record<string, unknown>),
 };
 
-export const anomalyApi: StubApi = {
-  list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+export const anomalyApi = {
+  // GET /api/analytics/anomalies
+  list: async (params?: { severity?: string; status?: string }): Promise<Record<string, unknown>[]> => {
+    const qp = new URLSearchParams();
+    if (params?.severity) qp.set('severity', params.severity);
+    if (params?.status) qp.set('status', params.status);
+    const res = await fetch(`${API_URL}/analytics/anomalies?${qp}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error(`anomaly list failed: ${res.status}`);
+    const json = (await res.json()) as { data?: Record<string, unknown>[] } | Record<string, unknown>[];
+    return (Array.isArray(json) ? json : ((json as { data?: Record<string, unknown>[] }).data ?? []));
+  },
+  // POST /api/analytics/anomalies/:id/dismiss
+  dismiss: async (alertId: string, reason?: string): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/analytics/anomalies/${alertId}/dismiss`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ reason: reason ?? 'dismissed' }),
+    });
+    if (!res.ok) throw new Error(`anomaly dismiss failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  // TODO: no server route for anomaly stats
   stats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server route for anomaly scan trigger
   scan: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server route for anomaly acknowledge
   acknowledge: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server route for anomaly resolve
   resolve: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  dismiss: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
 export const complianceApi: StubApi = {
@@ -225,77 +296,110 @@ export const adminLogin = async (
   }
   return res.json();
 };
+// TODO: no server route for activity log
 export const fetchActivityLog = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for activity summary
 export const fetchActivitySummary = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// GET /api/admin/me — admin profile (uses admin JWT)
 export const fetchAdminProfile = async (): Promise<Record<string, unknown>> => {
   const res = await fetch(`${API_URL}/admin/me`, { headers: getAdminAuthHeaders() });
   if (!res.ok) throw new Error(`Admin profile fetch failed (${res.status})`);
   const data = await res.json();
   return data.admin ?? data;
 };
+// TODO: no server route for admin user list
 export const fetchAdminUsers = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for agent configs
 export const fetchAgentConfigs = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for agent costs
 export const fetchAgentCosts = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for agent executions
 export const fetchAgentExecutions = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for agent stats
 export const fetchAgentStats = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for best rates (CDR not mounted in index.ts)
 export const fetchBestRates = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for CDR alerts
 export const fetchCdrAlerts = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for CDR products
 export const fetchCdrProducts = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for Cognee admin datasets
 export const fetchCogneeAdminDatasets = async (
   ..._args: unknown[]
 ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for Cognee dataset detail
 export const fetchCogneeDatasetDetail = async (
   ..._args: unknown[]
 ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for Cognee graph stats
 export const fetchCogneeGraphStats = async (
   ..._args: unknown[]
 ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for CDR data holders
 export const fetchDataHolders = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for disk usage
 export const fetchDiskUsage = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for feature flags
 export const fetchFeatureFlags = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for health history
 export const fetchHealthHistory = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for system health dashboard
 export const fetchSystemHealth = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for system metrics
 export const fetchSystemMetrics = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for Cognee search test
 export const testCogneeSearch = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for Cognee dataset reindex
 export const reindexCogneeDataset = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for CDR crawl trigger
 export const triggerCdrCrawl = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for CDR product comparison
 export const compareCdrProducts = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for savings calculation
 export const calculateSavings = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for admin user creation
 export const createAdminUser = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for CDR alert creation
 export const createCdrAlert = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for feature flag creation
 export const createFeatureFlag = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for admin user deletion
 export const deleteAdminUser = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for CDR alert deletion
 export const deleteCdrAlert = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for admin user update
 export const updateAdminUser = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for agent config update
 export const updateAgentConfig = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
+// TODO: no server route for feature flag update
 export const updateFeatureFlag = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
 

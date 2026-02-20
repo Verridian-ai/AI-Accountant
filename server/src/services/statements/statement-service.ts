@@ -76,10 +76,45 @@ export class StatementService {
   async getGapAnalysis(userId: string) {
     const stmts = await statementRepository.getByUserId(userId);
 
-    const completedStmts = stmts.filter(
-      (s: Record<string, unknown>) => s.parsingStatus === 'COMPLETED',
-    );
-    return { totalStatements: completedStmts.length };
+    const completedStmts = stmts
+      .filter(
+        (s) =>
+          s.parsingStatus === 'COMPLETED' &&
+          s.periodStartDate != null &&
+          s.periodEndDate != null,
+      )
+      .sort((a, b) => {
+        const aStart = a.periodStartDate ?? '';
+        const bStart = b.periodStartDate ?? '';
+        return aStart.localeCompare(bStart);
+      });
+
+    // Find gaps between consecutive statement periods
+    const gaps: Array<{ from: string; to: string; daysMissing: number }> = [];
+
+    for (let i = 1; i < completedStmts.length; i++) {
+      const prevEnd = new Date(completedStmts[i - 1].periodEndDate!);
+      const currStart = new Date(completedStmts[i].periodStartDate!);
+      const daysDiff = Math.floor(
+        (currStart.getTime() - prevEnd.getTime()) / (1000 * 60 * 60 * 24),
+      );
+
+      if (daysDiff > 1) {
+        gaps.push({
+          from: completedStmts[i - 1].periodEndDate!,
+          to: completedStmts[i].periodStartDate!,
+          daysMissing: daysDiff - 1,
+        });
+      }
+    }
+
+    return {
+      totalStatements: completedStmts.length,
+      gaps,
+      coverageFromDate: completedStmts[0]?.periodStartDate ?? null,
+      coverageToDate: completedStmts[completedStmts.length - 1]?.periodEndDate ?? null,
+      hasGaps: gaps.length > 0,
+    };
   }
 }
 

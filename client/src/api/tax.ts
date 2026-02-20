@@ -209,26 +209,43 @@ export const taxApi = {
     return res.json();
   },
 
-  fetchCompanyReturn: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  fetchPersonalReturn: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  fetchSoleTraderReturn: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  fetchTrustReturn: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  fetchStrategies: async (..._args: unknown[]): Promise<Record<string, unknown>[]> =>
-    Promise.resolve([]),
-  generateStrategies: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  updateStrategyStatus: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  scanEquity: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  confirmEquityEvent: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
-  fetchEquitySummary: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-    Promise.resolve({} as Record<string, unknown>),
+  // TODO: server endpoint doesn't exist yet — POST /api/tax/company-return
+  fetchCompanyReturn: async (_year: number): Promise<Record<string, unknown>> =>
+    Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — POST /api/tax/personal-return
+  fetchPersonalReturn: async (_year: number): Promise<Record<string, unknown>> =>
+    Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — POST /api/tax/sole-trader-return
+  fetchSoleTraderReturn: async (_year: number): Promise<Record<string, unknown>> =>
+    Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — POST /api/tax/trust-return
+  fetchTrustReturn: async (_year: number): Promise<Record<string, unknown>> => Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — GET /api/tax/strategies
+  fetchStrategies: async (_year: number): Promise<Record<string, unknown>[]> => Promise.resolve([]),
+
+  // TODO: server endpoint doesn't exist yet — POST /api/tax/strategies/generate
+  generateStrategies: async (_params: {
+    year: number;
+    income: number;
+  }): Promise<Record<string, unknown>> => Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — PATCH /api/tax/strategies/:id/status
+  updateStrategyStatus: async (_id: string, _status: string): Promise<Record<string, unknown>> =>
+    Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — POST /api/tax/equity/scan
+  scanEquity: async (): Promise<Record<string, unknown>> => Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — POST /api/tax/equity/:id/confirm
+  confirmEquityEvent: async (_id: string): Promise<Record<string, unknown>> => Promise.resolve({}),
+
+  // TODO: server endpoint doesn't exist yet — GET /api/tax/equity/summary
+  fetchEquitySummary: async (_year: number): Promise<Record<string, unknown>> =>
+    Promise.resolve({}),
 };
 
 export const gstApi = {

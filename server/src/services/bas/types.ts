@@ -52,4 +52,6 @@ export interface BASResult {
   transactionCount: number;
   /** Fields that are estimated (not derived from actual payroll/records) */
   estimated?: Record<string, boolean>;
+  /** Human-readable warnings about estimated or approximated values */
+  warnings?: string[];
 }

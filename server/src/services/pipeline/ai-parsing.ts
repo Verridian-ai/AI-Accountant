@@ -146,8 +146,10 @@ export async function runVisionVerification(
         );
       }
 
-      // Store verification results on statement
+      // Store verification results on statement (validationErrors column repurposed
+      // for vision-check metadata; type field distinguishes from parse error payloads)
       const visionVerification = JSON.stringify({
+        type: 'vision_verification',
         primaryCount: primaryTxCount,
         visionCount: visionTxCount,
         discrepancyPct: Math.round(discrepancyPct * 10) / 10,
