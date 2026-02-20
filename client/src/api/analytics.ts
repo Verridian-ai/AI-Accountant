@@ -90,7 +90,7 @@ export const analyticsApi = {
     return res.json();
   },
 
-  saveBudget: async (budget: Partial<any>): Promise<void> => {
+  saveBudget: async (budget: Record<string, unknown>): Promise<void> => {
     const res = await fetch(`${API_URL}/analytics/budgets`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -135,8 +135,16 @@ export const analyticsApi = {
     return res.json();
   },
 
-  fetchBillAlerts: async (..._args: any[]) => Promise.resolve([] as any[]),
-  projectRevenue: async (..._args: any[]) => Promise.resolve({} as any),
-  projectExpenses: async (..._args: any[]) => Promise.resolve({} as any),
-  calculateWealthProjection: async (..._args: any[]) => Promise.resolve({} as any),
+  fetchBillAlerts: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>[]> => Promise.resolve([]),
+  projectRevenue: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  projectExpenses: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  calculateWealthProjection: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
 };

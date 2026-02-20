@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ChevronUp, ChevronDown, Trash2, Calculator, Edit } from 'lucide-react';
+import { Search, ChevronUp, ChevronDown, Trash2, Edit } from 'lucide-react';
 import type { FixedAssetData } from '@/api';
 
 const formatCurrency = (cents: number) =>
@@ -51,7 +51,15 @@ interface AssetRegisterTableProps {
   onEdit?: (asset: FixedAssetData) => void;
 }
 
-function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: 'asc' | 'desc' }) {
+function SortIcon({
+  col,
+  sortKey,
+  sortDir,
+}: {
+  col: SortKey;
+  sortKey: SortKey;
+  sortDir: 'asc' | 'desc';
+}) {
   if (sortKey !== col) return null;
   return sortDir === 'asc' ? (
     <ChevronUp className="w-3 h-3 inline ml-1" />
@@ -201,7 +209,8 @@ export function AssetRegisterTable({ assets, onDispose, onEdit }: AssetRegisterT
                     className="text-right py-3 px-2 cursor-pointer hover:text-primary"
                     onClick={() => handleSort('currentWrittenDownValue')}
                   >
-                    WDV <SortIcon col="currentWrittenDownValue" sortKey={sortKey} sortDir={sortDir} />
+                    WDV{' '}
+                    <SortIcon col="currentWrittenDownValue" sortKey={sortKey} sortDir={sortDir} />
                   </th>
                   <th
                     className="text-left py-3 px-2 cursor-pointer hover:text-primary"
@@ -277,9 +286,7 @@ export function AssetRegisterTable({ assets, onDispose, onEdit }: AssetRegisterT
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
                               <p className="text-muted text-xs">Method</p>
-                              <p className="text-primary font-medium">
-                                {asset.depreciationMethod}
-                              </p>
+                              <p className="text-primary font-medium">{asset.depreciationMethod}</p>
                             </div>
                             <div>
                               <p className="text-muted text-xs">Effective Life</p>

@@ -46,6 +46,7 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     loadBills();
   }, [page, statusFilter]);
 

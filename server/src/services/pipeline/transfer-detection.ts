@@ -42,6 +42,15 @@ export async function flagLikelyTransfersByDescription(
   }
 }
 
+/** Convert a UUID string to a deterministic positive integer for TransferCandidate IDs */
+function uuidToNumericId(uuid: string): number {
+  let hash = 0;
+  for (let i = 0; i < uuid.length; i++) {
+    hash = ((hash << 5) - hash + uuid.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) || 1; // ensure non-zero
+}
+
 /** Detect transfers across accounts */
 export async function detectTransfers(
   toInsert: Array<{ id: string; description: string; category?: string }>,
@@ -49,9 +58,6 @@ export async function detectTransfers(
   _accountDetection: AccountDetectionResult,
 ) {
   if (!userId || toInsert.length === 0) {
-    if (userId && toInsert.length > 0) {
-      await flagLikelyTransfersByDescription(toInsert);
-    }
     return;
   }
 
@@ -65,28 +71,45 @@ export async function detectTransfers(
     const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
 
     if (userAccounts.length > 1 && allUserTxs.length > 1) {
-      // Convert to TransferCandidate format
-      const candidates: TransferCandidate[] = allUserTxs.map((t: Record<string, unknown>) => ({
-        id: parseInt(t.id as string, 10) || 0,
-        accountId: parseInt((t.accountId as string) || '0', 10) || 0,
-        date: t.date as string,
-        description: t.description as string,
-        amount: t.amount as number,
-        isLinked: (t.isTransfer as boolean) || false,
-        linkedTransactionId: t.transferLinkId
-          ? parseInt(t.transferLinkId as string, 10)
-          : undefined,
-      }));
+      // Build reverse lookup maps: numeric ID → UUID string
+      const txIdMap = new Map<number, string>();
+      const acctIdMap = new Map<number, string>();
+
+      // Convert to TransferCandidate format using deterministic numeric hashes
+      const candidates: TransferCandidate[] = allUserTxs.map((t: Record<string, unknown>) => {
+        const txUuid = t.id as string;
+        const acctUuid = (t.accountId as string) || '';
+        const numTxId = uuidToNumericId(txUuid);
+        const numAcctId = acctUuid ? uuidToNumericId(acctUuid) : 0;
+        txIdMap.set(numTxId, txUuid);
+        acctIdMap.set(numAcctId, acctUuid);
+
+        const linkUuid = t.transferLinkId as string | undefined;
+        return {
+          id: numTxId,
+          accountId: numAcctId,
+          date: t.date as string,
+          description: t.description as string,
+          amount: t.amount as number,
+          isLinked: (t.isTransfer as boolean) || false,
+          linkedTransactionId: linkUuid ? uuidToNumericId(linkUuid) : undefined,
+        };
+      });
 
       // Convert accounts to AccountContext format
-      const accountContexts: AccountContext[] = userAccounts.map((a: Record<string, unknown>) => ({
-        id: parseInt(a.id as string, 10) || 0,
-        accountNumber: a.accountNumber as string,
-        bankId: (a.bankName as string) || '',
-        accountName: a.accountName as string,
-        accountType: a.accountType as string,
-        ownershipTag: ((a.ownershipTag as string) || 'business') as 'personal' | 'business',
-      }));
+      const accountContexts: AccountContext[] = userAccounts.map((a: Record<string, unknown>) => {
+        const acctUuid = a.id as string;
+        const numId = uuidToNumericId(acctUuid);
+        acctIdMap.set(numId, acctUuid);
+        return {
+          id: numId,
+          accountNumber: a.accountNumber as string,
+          bankId: (a.bankName as string) || '',
+          accountName: a.accountName as string,
+          accountType: a.accountType as string,
+          ownershipTag: ((a.ownershipTag as string) || 'business') as 'personal' | 'business',
+        };
+      });
 
       const detector = new TransferDetector();
       const matches = detector.detectTransfers(candidates, accountContexts);
@@ -103,9 +126,11 @@ export async function detectTransfers(
           const m = matches[mi];
           const linkId = persistResult.linkIds[mi] || '';
           if (linkId) {
+            const srcAcctUuid = acctIdMap.get(m.sourceTransaction.accountId) ?? null;
+            const dstAcctUuid = acctIdMap.get(m.targetTransaction.accountId) ?? null;
             events.emitTransferDetected({
-              sourceAccountId: String(m.sourceTransaction.accountId) || null,
-              destinationAccountId: String(m.targetTransaction.accountId) || null,
+              sourceAccountId: srcAcctUuid,
+              destinationAccountId: dstAcctUuid,
               amount: Math.abs(m.sourceTransaction.amount),
               confidence: m.confidence,
               linkId,
@@ -119,7 +144,8 @@ export async function detectTransfers(
           const srcAcct = accountContexts.find((a) => a.id === match.sourceTransaction.accountId);
           const dstAcct = accountContexts.find((a) => a.id === match.targetTransaction.accountId);
           if (srcAcct?.ownershipTag === 'personal' && dstAcct?.ownershipTag === 'business') {
-            ownerContribIds.push(String(match.targetTransaction.id));
+            const targetUuid = txIdMap.get(match.targetTransaction.id);
+            if (targetUuid) ownerContribIds.push(targetUuid);
           }
         }
         if (ownerContribIds.length > 0) {

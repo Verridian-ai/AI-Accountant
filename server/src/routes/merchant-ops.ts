@@ -18,8 +18,12 @@ import {
   linkTransferSchema,
   resolveAlertSchema,
 } from '../validation/operations.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const merchantOpsRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+merchantOpsRoutes.use('/*', tenantAuthMiddleware());
 
 // POST /api/pending-categorizations/:id/resolve
 merchantOpsRoutes.post(

@@ -5,8 +5,12 @@ import { BillService } from '../services/bills.js';
 import { PurchaseOrderService } from '../services/purchase-orders.js';
 import { getErrorMessage } from '../utils/error.js';
 import { getUserId } from '../utils/auth-helpers.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const apExtrasRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+apExtrasRoutes.use('/*', tenantAuthMiddleware());
 const billService = new BillService();
 const purchaseOrderService = new PurchaseOrderService();
 

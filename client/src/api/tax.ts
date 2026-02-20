@@ -193,7 +193,7 @@ export const taxApi = {
     return res.json();
   },
 
-  calculateDepreciation: async (assetId: string): Promise<any> => {
+  calculateDepreciation: async (assetId: string): Promise<Record<string, unknown>> => {
     const res = await fetch(`${API_URL}/tax/depreciation/calculate/${assetId}`, {
       headers: getAuthHeaders(),
     });
@@ -209,16 +209,36 @@ export const taxApi = {
     return res.json();
   },
 
-  fetchCompanyReturn: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchPersonalReturn: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchSoleTraderReturn: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchTrustReturn: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchStrategies: async (..._args: any[]) => Promise.resolve([] as any[]),
-  generateStrategies: async (..._args: any[]) => Promise.resolve({} as any),
-  updateStrategyStatus: async (..._args: any[]) => Promise.resolve({} as any),
-  scanEquity: async (..._args: any[]) => Promise.resolve({} as any),
-  confirmEquityEvent: async (..._args: any[]) => Promise.resolve({} as any),
-  fetchEquitySummary: async (..._args: any[]) => Promise.resolve({} as any),
+  fetchCompanyReturn: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  fetchPersonalReturn: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  fetchSoleTraderReturn: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  fetchTrustReturn: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  fetchStrategies: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>[]> => Promise.resolve([]),
+  generateStrategies: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  updateStrategyStatus: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  scanEquity: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  confirmEquityEvent: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  fetchEquitySummary: async (
+    ..._args: unknown[]
+  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
 };
 
 export const gstApi = {

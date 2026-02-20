@@ -8,8 +8,12 @@ import { getErrorMessage } from '../utils/error.js';
 import { sseStreamMiddleware, streamingRateLimiter } from '../services/streaming-middleware.js';
 import { streamingRegistry, streamingService } from '../services/singletons.js';
 import type { AgentType } from '../services/claude/types.js';
+import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
 const streamSessionsRoutes = new Hono();
+
+// Apply tenant auth to all routes - requires valid JWT + X-Tenant-Id + tenant membership
+streamSessionsRoutes.use('/*', tenantAuthMiddleware());
 
 const streamInputSchema = z.object({}).passthrough();
 

@@ -111,27 +111,82 @@ taxRoutes.get('/gst/summary', async (c) => {
         ),
       )
       .all();
-    let _taxableSales = 0,
-      _taxablePurchases = 0,
+    let taxableSales = 0,
+      taxablePurchases = 0,
+      gstFreeSales = 0,
+      gstFreePurchases = 0,
+      inputTaxedTotal = 0,
+      capitalTotal = 0,
+      privateTotal = 0,
       classifiedCount = 0,
       needReviewCount = 0;
     for (const tx of quarterTxns) {
-      const _cat = tx.gstCategory || 'taxable_10';
+      const cat = tx.gstCategory || '';
       const amt = Math.abs(tx.amount);
       if (!tx.gstCategory) needReviewCount++;
       else classifiedCount++;
-      if (tx.amount > 0) _taxableSales += amt;
-      else _taxablePurchases += amt;
+      const isIncome = tx.amount > 0;
+      switch (cat) {
+        case 'taxable_10':
+          if (isIncome) taxableSales += amt;
+          else taxablePurchases += amt;
+          break;
+        case 'gst_free':
+          if (isIncome) gstFreeSales += amt;
+          else gstFreePurchases += amt;
+          break;
+        case 'input_taxed':
+          inputTaxedTotal += amt;
+          break;
+        case 'capital':
+          capitalTotal += amt;
+          break;
+        case 'private':
+          privateTotal += amt;
+          break;
+        default:
+          // Unclassified — count as taxable for conservative estimate
+          if (isIncome) taxableSales += amt;
+          else taxablePurchases += amt;
+          break;
+      }
     }
+
+    // Calculate previous period for trend comparison
+    let previousPeriodNetGST: number | undefined;
+    try {
+      const prevQuarter = quarter > 1 ? quarter - 1 : 4;
+      const prevFY =
+        quarter > 1
+          ? financialYear
+          : `${parseInt(financialYear.split('-')[0], 10) - 1}-${financialYear.split('-')[0].slice(2)}`;
+      const prevResult = await basService.calculateBAS(payload.userId, prevFY, prevQuarter);
+      previousPeriodNetGST = prevResult.netGst;
+    } catch {
+      // No previous period data available
+    }
+
     return c.json({
       gstCollected: result.labels['1A'],
       gstCredits: result.labels['1B'],
       netGST: result.netGst,
+      breakdown: {
+        taxable: { sales: taxableSales, purchases: taxablePurchases },
+        gstFree: { sales: gstFreeSales, purchases: gstFreePurchases },
+        inputTaxed: inputTaxedTotal,
+        capital: capitalTotal,
+        private: privateTotal,
+      },
       transactionsClassified: classifiedCount,
       transactionsNeedReview: needReviewCount,
+      previousPeriodNetGST,
     });
-  } catch {
-    return c.json({ gstCollected: 0, gstCredits: 0, netGST: 0 });
+  } catch (err) {
+    console.error('[Tax] GST summary failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GST_SUMMARY_FAILED' },
+      500,
+    );
   }
 });
 
@@ -163,8 +218,12 @@ taxRoutes.get('/gst/review-queue', async (c) => {
       currentCategory: tx.category || 'Uncategorized',
     }));
     return c.json(items);
-  } catch {
-    return c.json([]);
+  } catch (err) {
+    console.error('[Tax] GST review queue failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'REVIEW_QUEUE_FAILED' },
+      500,
+    );
   }
 });
 

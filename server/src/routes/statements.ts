@@ -26,6 +26,21 @@ statementRoutes.get('/', async (c) => {
   }
 });
 
+// File validation constants
+const MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+const ALLOWED_EXTENSIONS = new Set(['.pdf', '.csv', '.xls', '.xlsx', '.ofx', '.qfx', '.qif']);
+const ALLOWED_MIME_TYPES = new Set([
+  'application/pdf',
+  'text/csv',
+  'text/plain',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/x-ofx',
+  'application/x-qfx',
+  'application/x-qif',
+  'application/octet-stream', // generic fallback — validated by extension
+]);
+
 // Authenticated Upload
 statementRoutes.post('/upload', async (c) => {
   try {
@@ -33,6 +48,32 @@ statementRoutes.post('/upload', async (c) => {
     const file = body['file'];
     if (!file || !(file instanceof File))
       return c.json({ error: 'No file provided', code: 'NO_FILE' }, 400);
+
+    // Validate file size
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      return c.json(
+        { error: `File too large. Maximum size is ${MAX_UPLOAD_SIZE_BYTES / 1024 / 1024}MB.`, code: 'FILE_TOO_LARGE' },
+        400,
+      );
+    }
+
+    // Validate file extension
+    const ext = (file.name.match(/\.[^.]+$/)?.[0] ?? '').toLowerCase();
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      return c.json(
+        { error: `Unsupported file type "${ext}". Accepted: ${[...ALLOWED_EXTENSIONS].join(', ')}`, code: 'INVALID_FILE_TYPE' },
+        400,
+      );
+    }
+
+    // Validate MIME type (allow generic octet-stream if extension is valid)
+    if (file.type && !ALLOWED_MIME_TYPES.has(file.type)) {
+      return c.json(
+        { error: `Unsupported MIME type "${file.type}".`, code: 'INVALID_MIME_TYPE' },
+        400,
+      );
+    }
+
     const result = await statementService.upload(getUserId(c), file);
     return c.json(result);
   } catch (err) {

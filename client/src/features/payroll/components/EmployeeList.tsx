@@ -34,7 +34,12 @@ const typeLabels: Record<string, string> = {
 
 const PAGE_SIZE = 10;
 
-export function EmployeeList({ employees, loading, onSelect, onRefresh }: EmployeeListProps) {
+export function EmployeeList({
+  employees,
+  loading,
+  onSelect,
+  onRefresh: _onRefresh,
+}: EmployeeListProps) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(0);

@@ -11,14 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import {
-  Loader2,
-  ArrowRightLeft,
-  TrendingDown,
-  CheckCircle,
-  AlertTriangle,
-  MinusCircle,
-} from 'lucide-react';
+import { Loader2, ArrowRightLeft, CheckCircle, AlertTriangle, MinusCircle } from 'lucide-react';
 import { BASE_URL, getAuthHeaders } from '@/api';
 
 interface RefinanceInput {

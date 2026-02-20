@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { invoicingApi } from '@/api';
 import { Plus, X, Loader2, Save, Send } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface LineItem {
   id: string;
@@ -275,13 +274,14 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
 
       {/* Invoice Details */}
       <div className="neu-raised rounded-2xl p-5 space-y-4">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-muted">
-          Invoice Details
-        </h4>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted">Invoice Details</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="invoi-f1" className="block text-xs text-muted mb-1">Issue Date</label>
-            <input id="invoi-f1"
+            <label htmlFor="invoi-f1" className="block text-xs text-muted mb-1">
+              Issue Date
+            </label>
+            <input
+              id="invoi-f1"
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
@@ -289,8 +289,11 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
             />
           </div>
           <div>
-            <label htmlFor="invoi-f2" className="block text-xs text-muted mb-1">Due Date</label>
-            <input id="invoi-f2"
+            <label htmlFor="invoi-f2" className="block text-xs text-muted mb-1">
+              Due Date
+            </label>
+            <input
+              id="invoi-f2"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
@@ -299,8 +302,11 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
           </div>
         </div>
         <div>
-          <label htmlFor="invoi-f3" className="block text-xs text-muted mb-1">Notes</label>
-          <textarea id="invoi-f3"
+          <label htmlFor="invoi-f3" className="block text-xs text-muted mb-1">
+            Notes
+          </label>
+          <textarea
+            id="invoi-f3"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
@@ -309,8 +315,11 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
           />
         </div>
         <div>
-          <label htmlFor="invoi-f4" className="block text-xs text-muted mb-1">Terms & Conditions</label>
-          <textarea id="invoi-f4"
+          <label htmlFor="invoi-f4" className="block text-xs text-muted mb-1">
+            Terms & Conditions
+          </label>
+          <textarea
+            id="invoi-f4"
             value={terms}
             onChange={(e) => setTerms(e.target.value)}
             rows={2}

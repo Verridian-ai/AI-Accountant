@@ -18,16 +18,18 @@ export class StatementRepository {
    * Create a new statement record.
    */
   async create(data: {
+    id?: string;
     filename: string;
     hash: string;
     uploadDate: string;
     parsingStatus: string;
     userId: string;
   }): Promise<typeof statements.$inferSelect | null> {
-    const id = randomUUID();
+    const id = data.id ?? randomUUID();
+    const { id: _discardedId, ...rest } = data;
     await insert(db, statements, {
       id,
-      ...data,
+      ...rest,
     });
     return this.getById(id);
   }

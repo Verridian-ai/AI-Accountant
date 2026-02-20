@@ -12,7 +12,13 @@ import crypto from 'crypto';
 import { events } from '../../events.js';
 import { logger } from '../../utils/logger.js';
 import { computeTransactionHash } from './categorization.js';
-import type { AccountDetectionResult, RawTransactionData, CategorizationResult } from './types.js';
+import {
+  type AccountDetectionResult,
+  type RawTransactionData,
+  type CategorizationResult,
+  inferGstCategory,
+  calculateGstAmount,
+} from './types.js';
 
 /** Handle the Claude agent path: insert transactions, index, and finalize */
 export async function handleAgentPathInsertion(
@@ -32,6 +38,10 @@ export async function handleAgentPathInsertion(
       merchantNormalized: '',
       needsReview: true,
     };
+    const gstCategory = inferGstCategory(aiCat.category, aiCat.gst);
+    const gstAmount =
+      aiCat.gst && gstCategory === 'taxable_10' ? calculateGstAmount(tx.amount_cents) : 0;
+
     return {
       id: crypto.randomUUID(),
       statementId,
@@ -43,6 +53,8 @@ export async function handleAgentPathInsertion(
       balance: tx.balance_cents,
       category: aiCat.category,
       gstApplicable: aiCat.gst,
+      gstAmount,
+      gstCategory,
       aiReasoningNotes: aiCat.notes,
       confidenceScore: aiCat.confidence,
       merchantNormalized: aiCat.merchantNormalized || null,
@@ -83,9 +95,11 @@ export async function handleAgentPathInsertion(
       await tx.insert(transactions).values(toInsert);
 
       const pendingItems: (typeof pendingCategorization.$inferInsert)[] = [];
-      for (let i = 0; i < categorizations.length; i++) {
-        const cat = categorizations[i];
+      for (let i = 0; i < toInsert.length; i++) {
         const t = toInsert[i];
+        // Find the matching categorization by looking up the original index
+        const origIdx = allAgentInserts.findIndex((a) => a.id === t.id);
+        const cat = origIdx >= 0 ? categorizations[origIdx] : undefined;
         if (cat && cat.needsReview && cat.confidence < 0.7 && userId) {
           pendingItems.push({
             id: crypto.randomUUID(),

@@ -29,6 +29,7 @@ export class StatementService {
     await writeFile(filePath, Buffer.from(fileBuffer));
 
     await statementRepository.create({
+      id,
       filename: file.name,
       hash,
       uploadDate: new Date().toISOString(),
@@ -37,7 +38,10 @@ export class StatementService {
     });
 
     events.emit('update', { type: 'statement_added', id });
-    pipeline.processStatement(id, filePath);
+    pipeline.processStatement(id, filePath).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[StatementService] Pipeline processing failed for ${id}: ${msg}`);
+    });
 
     return { id, message: 'Started' };
   }

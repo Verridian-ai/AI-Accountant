@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 import { db, marketPrices } from '../schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { marketPriceService } from '../services/market-prices.js';
 import { tenantAuthMiddleware } from '../services/auth-middleware.js';
 
-// POST /refresh reads no JSON body — triggers external price refresh only
-const _priceRefreshShape = z.object({ symbols: z.array(z.string()).optional() });
+const priceRefreshSchema = z.object({ symbols: z.array(z.string()).optional() }).optional();
 
 const priceRoutes = new Hono();
 
@@ -17,7 +17,7 @@ priceRoutes.get('/search/:query', async (c) => {
   return c.json({ results: await marketPriceService.searchSymbol(c.req.param('query')) });
 });
 
-priceRoutes.post('/refresh', async (c) => {
+priceRoutes.post('/refresh', zValidator('json', priceRefreshSchema), async (c) => {
   return c.json(await marketPriceService.refreshPrices());
 });
 

@@ -32,8 +32,15 @@ export async function tryClaudeAgentParsing(
       gst: (m.gstApplicable as boolean) ?? false,
     }));
 
+    // Orchestrator expects numeric ID — use deterministic hash of UUID
+    let numericId = 0;
+    for (let i = 0; i < statementId.length; i++) {
+      numericId = ((numericId << 5) - numericId + statementId.charCodeAt(i)) | 0;
+    }
+    numericId = Math.abs(numericId) || 1;
+
     const agentResult = await orchestrator.processStatement(
-      parseInt(statementId, 10) || 0,
+      numericId,
       pdfText,
       stmtFilename,
       memoryPatterns,
