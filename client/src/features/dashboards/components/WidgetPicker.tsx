@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   BarChart3,
   LineChart as LineChartIcon,
@@ -125,19 +125,22 @@ interface WidgetPickerProps {
 }
 
 export function WidgetPicker({ open, onClose, onSelect }: WidgetPickerProps) {
-  if (!open) return null;
+  const handleSelect = useCallback(
+    (wt: WidgetType) => {
+      const widget: WidgetConfig = {
+        id: `widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        chartType: wt.chartType,
+        title: wt.name,
+        position: { col: 0, row: 0, width: 6, height: 4 },
+        config: { ...wt.defaultConfig },
+      };
+      onSelect(widget);
+      onClose();
+    },
+    [onSelect, onClose],
+  );
 
-  const handleSelect = (wt: WidgetType) => {
-    const widget: WidgetConfig = {
-      id: `widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      chartType: wt.chartType,
-      title: wt.name,
-      position: { col: 0, row: 0, width: 6, height: 4 },
-      config: { ...wt.defaultConfig },
-    };
-    onSelect(widget);
-    onClose();
-  };
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

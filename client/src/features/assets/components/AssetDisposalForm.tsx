@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Loader2, Trash2, AlertTriangle } from 'lucide-react';
 import { assetApi } from '@/api';
 import type { FixedAssetData } from '@/api';

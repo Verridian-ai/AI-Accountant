@@ -12,18 +12,34 @@ const formatCurrency = (cents: number) =>
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
 export function PersonalReturn({ year }: { year: string }) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<TaxReturnResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [prevYear, setPrevYear] = useState(year);
 
-  useEffect(() => {
+  if (prevYear !== year) {
+    setPrevYear(year);
     setLoading(true);
     setError(null);
+    setData(null);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     taxApi
       .fetchPersonalReturn(year)
-      .then(setData)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load'))
-      .finally(() => setLoading(false));
+      .then((result) => {
+        if (!cancelled) setData(result);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [year]);
 
   if (loading) {

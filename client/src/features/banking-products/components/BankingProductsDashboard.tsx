@@ -1,14 +1,5 @@
 import { useState } from 'react';
-import {
-  Search,
-  BarChart3,
-  Trophy,
-  Building2,
-  Bell,
-  Calculator,
-  ArrowUpDown,
-  DollarSign,
-} from 'lucide-react';
+import { Search, BarChart3, Trophy, Building2, Bell, Calculator, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProductExplorer } from './ProductExplorer';
 import { ProductComparison } from './ProductComparison';

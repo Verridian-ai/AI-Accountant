@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Lightbulb } from 'lucide-react';
 import { assetApi } from '@/api';
 import { toast } from 'sonner';

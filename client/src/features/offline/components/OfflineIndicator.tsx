@@ -6,15 +6,24 @@ export function OfflineIndicator() {
   const { isOnline, pendingChanges, syncStatus } = useOffline();
   const [dismissed, setDismissed] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [prevOnline, setPrevOnline] = useState(isOnline);
+  const [prevSync, setPrevSync] = useState(syncStatus);
 
-  useEffect(() => {
+  // Update visibility during render when connectivity changes (React-recommended pattern)
+  if (isOnline !== prevOnline || syncStatus !== prevSync) {
+    setPrevOnline(isOnline);
+    setPrevSync(syncStatus);
     if (!isOnline) {
       setDismissed(false);
       setVisible(true);
     } else if (syncStatus === 'syncing') {
       setVisible(true);
-    } else {
-      // Fade out after going online
+    }
+  }
+
+  // Delayed fade-out after going back online
+  useEffect(() => {
+    if (isOnline && syncStatus !== 'syncing') {
       const timer = setTimeout(() => setVisible(false), 2000);
       return () => clearTimeout(timer);
     }

@@ -246,4 +246,73 @@ analyticsRoutes.get('/cash-flow-forecast', async (c) => {
   }
 });
 
+// Generate a new forecast
+analyticsRoutes.post('/forecasts/generate', async (c) => {
+  try {
+    const userId = getUserId(c);
+    const body = (await c.req.json()) as Record<string, string>;
+    const forecastType = body.forecastType || 'seasonal';
+    const financialYear = body.financialYear || '';
+    const granularity = body.granularity || 'monthly';
+
+    // Derive start/end dates from financial year (AU: Jul 1 to Jun 30)
+    let startDate: string;
+    let endDate: string;
+    if (financialYear.includes('-')) {
+      const startYear = parseInt(financialYear.split('-')[0], 10);
+      startDate = `${startYear}-07-01`;
+      endDate = `${startYear + 1}-06-30`;
+    } else {
+      const year = new Date().getFullYear();
+      startDate = `${year}-07-01`;
+      endDate = `${year + 1}-06-30`;
+    }
+
+    const result = await cashFlowForecastService.generateForecast(userId, null, {
+      type: forecastType as 'linear' | 'seasonal' | 'ml_weighted',
+      startDate,
+      endDate,
+      granularity: granularity as 'daily' | 'weekly' | 'monthly' | 'quarterly',
+    });
+    return c.json(result);
+  } catch (err) {
+    console.error('[Analytics] Generate forecast failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GENERATE_FORECAST_FAILED' },
+      500,
+    );
+  }
+});
+
+// Get a specific forecast by ID
+analyticsRoutes.get('/forecasts/:id', async (c) => {
+  try {
+    const forecastId = c.req.param('id');
+    const result = await cashFlowForecastService.getForecastById(forecastId);
+    if (!result) return c.json({ error: 'Forecast not found' }, 404);
+    return c.json(result);
+  } catch (err) {
+    console.error('[Analytics] Get forecast by ID failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'GET_FORECAST_BY_ID_FAILED' },
+      500,
+    );
+  }
+});
+
+// Archive a forecast
+analyticsRoutes.post('/forecasts/:id/archive', async (c) => {
+  try {
+    const forecastId = c.req.param('id');
+    const result = await cashFlowForecastService.archiveForecast(forecastId);
+    return c.json(result);
+  } catch (err) {
+    console.error('[Analytics] Archive forecast failed:', err);
+    return c.json(
+      { error: 'Internal server error. Please try again.', code: 'ARCHIVE_FORECAST_FAILED' },
+      500,
+    );
+  }
+});
+
 export default analyticsRoutes;

@@ -1,28 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Bell, X } from 'lucide-react';
 import { apApi } from '../../../api';
 
 const DISMISS_KEY = 'goldledger_push_dismissed_until';
 
+function getInitialStatus(): 'prompt' | 'subscribing' | 'granted' | 'denied' {
+  if (typeof window === 'undefined' || !('Notification' in window)) return 'prompt';
+  if (Notification.permission === 'granted') return 'granted';
+  if (Notification.permission === 'denied') return 'denied';
+  return 'prompt';
+}
+
+function getInitialVisible(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return false;
+  if (Notification.permission !== 'default') return false;
+  const dismissedUntil = localStorage.getItem(DISMISS_KEY);
+  if (dismissedUntil && Date.now() < Number(dismissedUntil)) return false;
+  return true;
+}
+
 export function PushPermissionPrompt() {
-  const [visible, setVisible] = useState(false);
-  const [status, setStatus] = useState<'prompt' | 'subscribing' | 'granted' | 'denied'>('prompt');
-
-  useEffect(() => {
-    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-
-    const permission = Notification.permission;
-    if (permission === 'granted' || permission === 'denied') {
-      setStatus(permission === 'granted' ? 'granted' : 'denied');
-      return;
-    }
-
-    // Check if dismissed recently
-    const dismissedUntil = localStorage.getItem(DISMISS_KEY);
-    if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
-
-    setVisible(true);
-  }, []);
+  const [visible, setVisible] = useState(getInitialVisible);
+  const [status, setStatus] = useState(getInitialStatus);
 
   const handleEnable = useCallback(async () => {
     setStatus('subscribing');

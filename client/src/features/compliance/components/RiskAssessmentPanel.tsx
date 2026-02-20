@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { complianceApi } from '../../../api';
 import { RefreshCw, Loader2, TrendingDown, AlertTriangle, Clock, FileX } from 'lucide-react';
-import { cn } from '../../../lib/utils';
 
 interface RiskAssessment {
   overallScore: number;
@@ -127,9 +126,7 @@ export function RiskAssessmentPanel({ userId }: RiskAssessmentPanelProps) {
               {scoreLabel(score)}
             </text>
           </svg>
-          <p className="text-muted text-xs text-center">
-            Risk score: 0 (safest) to 100 (critical)
-          </p>
+          <p className="text-muted text-xs text-center">Risk score: 0 (safest) to 100 (critical)</p>
         </div>
 
         {/* Factor Cards */}

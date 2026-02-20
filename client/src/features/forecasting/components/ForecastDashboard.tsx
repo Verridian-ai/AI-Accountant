@@ -131,8 +131,9 @@ export function ForecastDashboard() {
         granularity,
       });
       await loadForecasts();
-      if (result?.id) {
-        const detail = await forecastApi.getById(result.id);
+      const newId = (result?.id ?? result?.forecastId) as string | undefined;
+      if (newId) {
+        const detail = await forecastApi.getById(newId);
         setSelectedForecast(detail);
       }
     } catch {
@@ -167,10 +168,14 @@ export function ForecastDashboard() {
       <div className="neu-raised rounded-2xl p-4 sm:p-6">
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label htmlFor="foreca-f1" className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5">
+            <label
+              htmlFor="foreca-f1"
+              className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5"
+            >
               Method
             </label>
-            <select id="foreca-f1"
+            <select
+              id="foreca-f1"
               value={forecastType}
               onChange={(e) => setForecastType(e.target.value)}
               className="bg-overlay border border-border rounded-xl px-3 py-2 text-sm text-primary outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -184,10 +189,14 @@ export function ForecastDashboard() {
           </div>
 
           <div>
-            <label htmlFor="foreca-f2" className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5">
+            <label
+              htmlFor="foreca-f2"
+              className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5"
+            >
               Financial Year
             </label>
-            <select id="foreca-f2"
+            <select
+              id="foreca-f2"
               value={financialYear}
               onChange={(e) => setFinancialYear(e.target.value)}
               className="bg-overlay border border-border rounded-xl px-3 py-2 text-sm text-primary outline-none focus:ring-1 focus:ring-[#FFCC00]/30"
@@ -201,10 +210,14 @@ export function ForecastDashboard() {
           </div>
 
           <div>
-            <label htmlFor="foreca-f3" className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5">
+            <label
+              htmlFor="foreca-f3"
+              className="text-[11px] text-muted font-bold uppercase tracking-wider block mb-1.5"
+            >
               Granularity
             </label>
-            <select id="foreca-f3"
+            <select
+              id="foreca-f3"
               value={granularity}
               onChange={(e) => setGranularity(e.target.value)}
               className="bg-overlay border border-border rounded-xl px-3 py-2 text-sm text-primary outline-none focus:ring-1 focus:ring-[#FFCC00]/30"

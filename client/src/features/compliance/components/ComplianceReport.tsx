@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { complianceApi } from '../../../api';
-import { FileText, Copy, Check, Loader2, Download } from 'lucide-react';
+import { FileText, Copy, Check, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
 interface ReportData {
@@ -80,8 +80,11 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
         <h4 className="text-primary font-bold text-sm mb-4">Generate Report</h4>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label htmlFor="compli-f1" className="block text-secondary text-xs font-bold mb-1.5">Period</label>
-            <select id="compli-f1"
+            <label htmlFor="compli-f1" className="block text-secondary text-xs font-bold mb-1.5">
+              Period
+            </label>
+            <select
+              id="compli-f1"
               value={periodType}
               onChange={(e) => setPeriodType(e.target.value as 'quarter' | 'year')}
               className="neu-inset px-3 py-2 rounded-xl bg-transparent text-sm text-primary outline-none"
@@ -92,7 +95,8 @@ export function ComplianceReport({ userId }: ComplianceReportProps) {
           </div>
 
           <label htmlFor="compli-f2" className="flex items-center gap-2 cursor-pointer">
-            <input id="compli-f2"
+            <input
+              id="compli-f2"
               type="checkbox"
               checked={includeRecommendations}
               onChange={(e) => setIncludeRecommendations(e.target.checked)}

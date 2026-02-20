@@ -51,7 +51,7 @@ interface ReconMatchingWorkspaceProps {
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(cents / 100);
 
-const statusColors: Record<string, string> = {
+const _statusColors: Record<string, string> = {
   confirmed: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
   suggested: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
@@ -356,7 +356,10 @@ export function ReconMatchingWorkspace({ sessionId, onBack }: ReconMatchingWorks
                     {ledgerEntries.map((le) => {
                       const StatusIcon = statusIcons[le.matchStatus] ?? MinusCircle;
                       return (
-                        <div key={le.id} className="p-2.5 rounded-lg border border-border/50 text-xs">
+                        <div
+                          key={le.id}
+                          className="p-2.5 rounded-lg border border-border/50 text-xs"
+                        >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <StatusIcon

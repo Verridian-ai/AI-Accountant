@@ -9,7 +9,6 @@ import {
   TrendingUp,
   Loader2,
   ArrowLeft,
-  Eye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CustomerList } from './CustomerList';
@@ -67,7 +66,9 @@ export function InvoicingDashboard() {
         (sum: number, c: Record<string, unknown>) => sum + ((c.outstandingBalance as number) ?? 0),
         0,
       );
-      const overdueCount = customers.filter((c: Record<string, unknown>) => ((c.overdueAmount as number) ?? 0) > 0).length;
+      const overdueCount = customers.filter(
+        (c: Record<string, unknown>) => ((c.overdueAmount as number) ?? 0) > 0,
+      ).length;
 
       setStats({
         totalOutstanding,
@@ -199,14 +200,16 @@ export function InvoicingDashboard() {
           <InvoicePreview
             invoice={{
               ...viewingInvoice,
-              lineItems: (viewingInvoice.lineItems as Array<Record<string, unknown>> ?? []).map((li) => ({
-                description: li.description ?? '',
-                quantity: li.quantity ?? 1,
-                unitPrice: li.unitPrice ?? 0,
-                gstRate: li.gstRate ?? 0.1,
-                amount: li.amount ?? 0,
-                gstAmount: li.gstAmount ?? 0,
-              })),
+              lineItems: ((viewingInvoice.lineItems as Array<Record<string, unknown>>) ?? []).map(
+                (li) => ({
+                  description: li.description ?? '',
+                  quantity: li.quantity ?? 1,
+                  unitPrice: li.unitPrice ?? 0,
+                  gstRate: li.gstRate ?? 0.1,
+                  amount: li.amount ?? 0,
+                  gstAmount: li.gstAmount ?? 0,
+                }),
+              ),
             }}
           />
         </div>
@@ -240,9 +243,7 @@ export function InvoicingDashboard() {
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
           Invoicing & Customers
         </h2>
-        <p className="text-sm text-muted">
-          Manage customers, create invoices, and track payments
-        </p>
+        <p className="text-sm text-muted">Manage customers, create invoices, and track payments</p>
       </div>
 
       {/* Summary Stats */}

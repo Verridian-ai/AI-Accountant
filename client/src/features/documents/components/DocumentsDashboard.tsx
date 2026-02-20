@@ -1,16 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  FileText,
-  FileUp,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Loader2,
-  FileScan,
-  Eye,
-  Trash2,
-} from 'lucide-react';
+import { FileText, FileUp, Clock, CheckCircle, Loader2, FileScan, Eye, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { documentsApi } from '@/api';
 import type { OCRDocument } from '@/api';
@@ -217,9 +206,7 @@ export function DocumentsDashboard() {
                 </button>
               ))}
             </div>
-            <span className="text-xs font-bold text-muted uppercase tracking-wide ml-4">
-              Type:
-            </span>
+            <span className="text-xs font-bold text-muted uppercase tracking-wide ml-4">Type:</span>
             <div className="flex gap-1 flex-wrap">
               {DOC_TYPE_FILTERS.map((t) => (
                 <button

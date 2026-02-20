@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Layers, Play, Lock, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react';
 import { consolidationApi } from '@/api';
 import type {
@@ -285,17 +284,19 @@ export function ConsolidationView({ entities, financialYear }: ConsolidationView
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {(detail.eliminations as Array<Record<string, unknown>>).map((elim, idx: number) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
-                    >
-                      <span className="text-sm text-secondary">{elim.description}</span>
-                      <span className="text-sm font-bold text-blue-400">
-                        {formatMoney(elim.amount)}
-                      </span>
-                    </div>
-                  ))}
+                  {(detail.eliminations as Array<Record<string, unknown>>).map(
+                    (elim, idx: number) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+                      >
+                        <span className="text-sm text-secondary">{elim.description}</span>
+                        <span className="text-sm font-bold text-blue-400">
+                          {formatMoney(elim.amount)}
+                        </span>
+                      </div>
+                    ),
+                  )}
                 </div>
               </CardContent>
             </Card>

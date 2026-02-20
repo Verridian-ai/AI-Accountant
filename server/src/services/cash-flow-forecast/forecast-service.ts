@@ -8,7 +8,12 @@
 import { db, transactions, cashFlowForecasts, cashFlowForecastPeriods } from '../../schema.js';
 import { eq, and, gte, lte, desc, sql, type SQL } from 'drizzle-orm';
 import crypto from 'crypto';
-import type { ForecastOptions, ForecastPeriodResult, AccuracyMetrics, ForecastComparison } from './types.js';
+import type {
+  ForecastOptions,
+  ForecastPeriodResult,
+  AccuracyMetrics,
+  ForecastComparison,
+} from './types.js';
 import { projectPeriods } from './projections.js';
 
 type HistoricalTransaction = Pick<typeof transactions.$inferSelect, 'date' | 'amount' | 'category'>;
@@ -37,7 +42,11 @@ export class CashFlowForecastService {
     }
 
     const historicalTx = await db
-      .select({ date: transactions.date, amount: transactions.amount, category: transactions.category })
+      .select({
+        date: transactions.date,
+        amount: transactions.amount,
+        category: transactions.category,
+      })
       .from(transactions)
       .where(and(...conditions))
       .all();
@@ -45,78 +54,119 @@ export class CashFlowForecastService {
     const periodData = this._aggregateTransactionsByPeriod(historicalTx, options.granularity);
 
     const periods = projectPeriods(periodData, options.type, options.granularity, {
-      startDate: options.startDate, endDate: options.endDate, confidenceLevel: confidence,
+      startDate: options.startDate,
+      endDate: options.endDate,
+      confidenceLevel: confidence,
     });
 
     let categoryBreakdowns: Map<string, Record<string, number>> | undefined;
     if (options.categoryBreakdown) {
-      categoryBreakdowns = this._buildCategoryBreakdowns(historicalTx, options.granularity, periods);
+      categoryBreakdowns = this._buildCategoryBreakdowns(
+        historicalTx,
+        options.granularity,
+        periods,
+      );
     }
 
     await db.insert(cashFlowForecasts).values({
-      id: forecastId, userId, accountId,
+      id: forecastId,
+      userId,
+      accountId,
       name: `${options.type} forecast (${options.granularity})`,
-      forecastType: options.type, startDate: options.startDate, endDate: options.endDate,
-      granularity: options.granularity, confidenceLevel: confidence,
+      forecastType: options.type,
+      startDate: options.startDate,
+      endDate: options.endDate,
+      granularity: options.granularity,
+      confidenceLevel: confidence,
       parameters: JSON.stringify({
-        historyStart: historyStartStr, historyEnd: historyEndStr,
-        transactionCount: historicalTx.length, periodsAnalyzed: periodData.size,
+        historyStart: historyStartStr,
+        historyEnd: historyEndStr,
+        transactionCount: historicalTx.length,
+        periodsAnalyzed: periodData.size,
         categoryBreakdown: options.categoryBreakdown ?? false,
       }),
-      status: 'active', createdAt: now, updatedAt: now,
+      status: 'active',
+      createdAt: now,
+      updatedAt: now,
     });
 
     for (const period of periods) {
       const breakdown = categoryBreakdowns?.get(period.periodStart);
       await db.insert(cashFlowForecastPeriods).values({
-        id: crypto.randomUUID(), forecastId,
-        periodStart: period.periodStart, periodEnd: period.periodEnd,
-        predictedInflow: period.predictedInflow, predictedOutflow: period.predictedOutflow,
-        predictedNet: period.predictedNet, confidenceLower: period.confidenceLower,
+        id: crypto.randomUUID(),
+        forecastId,
+        periodStart: period.periodStart,
+        periodEnd: period.periodEnd,
+        predictedInflow: period.predictedInflow,
+        predictedOutflow: period.predictedOutflow,
+        predictedNet: period.predictedNet,
+        confidenceLower: period.confidenceLower,
         confidenceUpper: period.confidenceUpper,
-        breakdown: breakdown ? JSON.stringify(breakdown) : null, createdAt: now,
+        breakdown: breakdown ? JSON.stringify(breakdown) : null,
+        createdAt: now,
       });
     }
 
     return {
-      id: forecastId, userId, accountId, forecastType: options.type,
-      startDate: options.startDate, endDate: options.endDate,
-      granularity: options.granularity, confidenceLevel: confidence, status: 'active', periods,
+      id: forecastId,
+      userId,
+      accountId,
+      forecastType: options.type,
+      startDate: options.startDate,
+      endDate: options.endDate,
+      financialYear: this._deriveFinancialYear(options.startDate),
+      granularity: options.granularity,
+      confidenceLevel: confidence,
+      status: 'active',
+      periods,
     };
   }
 
   async calculateAccuracy(forecastId: string): Promise<AccuracyMetrics> {
-    const periods = await db.select().from(cashFlowForecastPeriods)
-      .where(eq(cashFlowForecastPeriods.forecastId, forecastId)).all();
+    const periods = await db
+      .select()
+      .from(cashFlowForecastPeriods)
+      .where(eq(cashFlowForecastPeriods.forecastId, forecastId))
+      .all();
 
     type PeriodWithActual = typeof cashFlowForecastPeriods.$inferSelect & { actualNet: number };
     const evaluated = periods.filter(
       (p: typeof cashFlowForecastPeriods.$inferSelect): p is PeriodWithActual =>
-        p.actualNet !== null && p.actualNet !== undefined
+        p.actualNet !== null && p.actualNet !== undefined,
     );
     if (evaluated.length === 0) {
       return { mae: 0, rmse: 0, mape: 0, directionAccuracy: 0, periodsEvaluated: 0 };
     }
 
-    let sumAbsError = 0, sumSquaredError = 0, sumAbsPctError = 0, directionCorrect = 0;
+    let sumAbsError = 0,
+      sumSquaredError = 0,
+      sumAbsPctError = 0,
+      directionCorrect = 0;
     for (const p of evaluated) {
       const error = p.predictedNet - p.actualNet;
       sumAbsError += Math.abs(error);
       sumSquaredError += error ** 2;
       if (p.actualNet !== 0) sumAbsPctError += Math.abs(error / p.actualNet);
-      if ((p.predictedNet >= 0 && p.actualNet >= 0) || (p.predictedNet < 0 && p.actualNet < 0)) directionCorrect++;
+      if ((p.predictedNet >= 0 && p.actualNet >= 0) || (p.predictedNet < 0 && p.actualNet < 0))
+        directionCorrect++;
     }
 
     const n = evaluated.length;
     const accuracy: AccuracyMetrics = {
-      mae: Math.round(sumAbsError / n), rmse: Math.round(Math.sqrt(sumSquaredError / n)),
+      mae: Math.round(sumAbsError / n),
+      rmse: Math.round(Math.sqrt(sumSquaredError / n)),
       mape: parseFloat(((sumAbsPctError / n) * 100).toFixed(2)),
-      directionAccuracy: parseFloat((directionCorrect / n).toFixed(4)), periodsEvaluated: n,
+      directionAccuracy: parseFloat((directionCorrect / n).toFixed(4)),
+      periodsEvaluated: n,
     };
 
     const overallScore = Math.max(0, 1 - accuracy.mape / 100);
-    await db.update(cashFlowForecasts)
-      .set({ accuracyScore: parseFloat(overallScore.toFixed(4)), updatedAt: new Date().toISOString() })
+    await db
+      .update(cashFlowForecasts)
+      .set({
+        accuracyScore: parseFloat(overallScore.toFixed(4)),
+        updatedAt: new Date().toISOString(),
+      })
       .where(eq(cashFlowForecasts.id, forecastId));
 
     return accuracy;
@@ -127,14 +177,21 @@ export class CashFlowForecastService {
     const allPeriodData = new Map<string, Record<string, number>>();
 
     for (const fid of forecastIds) {
-      const forecast = await db.select().from(cashFlowForecasts).where(eq(cashFlowForecasts.id, fid)).get();
+      const forecast = await db
+        .select()
+        .from(cashFlowForecasts)
+        .where(eq(cashFlowForecasts.id, fid))
+        .get();
       if (!forecast) continue;
       const accuracy = await this.calculateAccuracy(fid);
       forecastResults.push({ id: fid, type: forecast.forecastType, accuracy });
 
-      const periods = await db.select().from(cashFlowForecastPeriods)
+      const periods = await db
+        .select()
+        .from(cashFlowForecastPeriods)
         .where(eq(cashFlowForecastPeriods.forecastId, fid))
-        .orderBy(sql`${cashFlowForecastPeriods.periodStart} ASC`).all();
+        .orderBy(sql`${cashFlowForecastPeriods.periodStart} ASC`)
+        .all();
 
       for (const p of periods) {
         if (!allPeriodData.has(p.periodStart)) allPeriodData.set(p.periodStart, {});
@@ -143,7 +200,8 @@ export class CashFlowForecastService {
     }
 
     const periodDeltas = Array.from(allPeriodData.entries())
-      .sort(([a], [b]) => a.localeCompare(b)).map(([period, values]) => ({ period, values }));
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([period, values]) => ({ period, values }));
 
     let recommendation = 'Insufficient data to recommend a model.';
     const evaluated = forecastResults.filter((f) => f.accuracy.periodsEvaluated > 0);
@@ -156,11 +214,18 @@ export class CashFlowForecastService {
   }
 
   async updateActuals(forecastId: string) {
-    const forecast = await db.select().from(cashFlowForecasts).where(eq(cashFlowForecasts.id, forecastId)).get();
+    const forecast = await db
+      .select()
+      .from(cashFlowForecasts)
+      .where(eq(cashFlowForecasts.id, forecastId))
+      .get();
     if (!forecast) throw new Error(`Forecast not found: ${forecastId}`);
 
-    const periods = await db.select().from(cashFlowForecastPeriods)
-      .where(eq(cashFlowForecastPeriods.forecastId, forecastId)).all();
+    const periods = await db
+      .select()
+      .from(cashFlowForecastPeriods)
+      .where(eq(cashFlowForecastPeriods.forecastId, forecastId))
+      .all();
 
     const today = new Date().toISOString().slice(0, 10);
     let updatedCount = 0;
@@ -169,29 +234,40 @@ export class CashFlowForecastService {
       if (period.periodEnd > today) continue;
       const conditions: SQL<unknown>[] = [
         eq(transactions.userId, forecast.userId),
-        gte(transactions.date, period.periodStart), lte(transactions.date, period.periodEnd),
+        gte(transactions.date, period.periodStart),
+        lte(transactions.date, period.periodEnd),
       ];
       if (forecast.accountId) conditions.push(eq(transactions.accountId, forecast.accountId));
 
-      const txns = await db.select({ amount: transactions.amount }).from(transactions).where(and(...conditions)).all();
-      let actualInflow = 0, actualOutflow = 0;
+      const txns = await db
+        .select({ amount: transactions.amount })
+        .from(transactions)
+        .where(and(...conditions))
+        .all();
+      let actualInflow = 0,
+        actualOutflow = 0;
       for (const tx of txns) {
         if (tx.amount >= 0) actualInflow += tx.amount;
         else actualOutflow += Math.abs(tx.amount);
       }
       const actualNet = actualInflow - actualOutflow;
       const variance = actualNet - period.predictedNet;
-      const variancePct = period.predictedNet !== 0
-        ? parseFloat(((variance / Math.abs(period.predictedNet)) * 100).toFixed(2)) : 0;
+      const variancePct =
+        period.predictedNet !== 0
+          ? parseFloat(((variance / Math.abs(period.predictedNet)) * 100).toFixed(2))
+          : 0;
 
-      await db.update(cashFlowForecastPeriods)
+      await db
+        .update(cashFlowForecastPeriods)
         .set({ actualInflow, actualOutflow, actualNet, variance, variancePct })
         .where(eq(cashFlowForecastPeriods.id, period.id));
       updatedCount++;
     }
 
-    await db.update(cashFlowForecasts)
-      .set({ updatedAt: new Date().toISOString() }).where(eq(cashFlowForecasts.id, forecastId));
+    await db
+      .update(cashFlowForecasts)
+      .set({ updatedAt: new Date().toISOString() })
+      .where(eq(cashFlowForecasts.id, forecastId));
     return { forecastId, periodsUpdated: updatedCount };
   }
 
@@ -199,41 +275,61 @@ export class CashFlowForecastService {
     const conditions: SQL<unknown>[] = [eq(cashFlowForecasts.userId, userId)];
     if (status) conditions.push(eq(cashFlowForecasts.status, status));
 
-    const forecasts = await db.select().from(cashFlowForecasts)
-      .where(and(...conditions)).orderBy(desc(cashFlowForecasts.createdAt)).all();
+    const forecasts = await db
+      .select()
+      .from(cashFlowForecasts)
+      .where(and(...conditions))
+      .orderBy(desc(cashFlowForecasts.createdAt))
+      .all();
 
     return forecasts.map((f: typeof cashFlowForecasts.$inferSelect) => ({
-      ...f, parameters: typeof f.parameters === 'string' ? JSON.parse(f.parameters) : f.parameters,
+      ...f,
+      parameters: typeof f.parameters === 'string' ? JSON.parse(f.parameters) : f.parameters,
+      financialYear: this._deriveFinancialYear(f.startDate),
     }));
   }
 
   async getForecastById(forecastId: string) {
-    const forecast = await db.select().from(cashFlowForecasts).where(eq(cashFlowForecasts.id, forecastId)).get();
+    const forecast = await db
+      .select()
+      .from(cashFlowForecasts)
+      .where(eq(cashFlowForecasts.id, forecastId))
+      .get();
     if (!forecast) return null;
 
-    const periods = await db.select().from(cashFlowForecastPeriods)
+    const periods = await db
+      .select()
+      .from(cashFlowForecastPeriods)
       .where(eq(cashFlowForecastPeriods.forecastId, forecastId))
-      .orderBy(sql`${cashFlowForecastPeriods.periodStart} ASC`).all();
+      .orderBy(sql`${cashFlowForecastPeriods.periodStart} ASC`)
+      .all();
 
     return {
       ...forecast,
-      parameters: typeof forecast.parameters === 'string'
-        ? JSON.parse(forecast.parameters) : forecast.parameters,
+      parameters:
+        typeof forecast.parameters === 'string'
+          ? JSON.parse(forecast.parameters)
+          : forecast.parameters,
+      financialYear: this._deriveFinancialYear(forecast.startDate),
       periods: periods.map((p: typeof cashFlowForecastPeriods.$inferSelect) => ({
-        ...p, breakdown: typeof p.breakdown === 'string' ? JSON.parse(p.breakdown) : p.breakdown,
+        ...p,
+        period: p.periodStart,
+        breakdown: typeof p.breakdown === 'string' ? JSON.parse(p.breakdown) : p.breakdown,
       })),
     };
   }
 
   async archiveForecast(forecastId: string) {
-    await db.update(cashFlowForecasts)
+    await db
+      .update(cashFlowForecasts)
       .set({ status: 'archived', updatedAt: new Date().toISOString() })
       .where(eq(cashFlowForecasts.id, forecastId));
     return { forecastId, status: 'archived' };
   }
 
   _aggregateTransactionsByPeriod(
-    txns: HistoricalTransaction[], granularity: string,
+    txns: HistoricalTransaction[],
+    granularity: string,
   ): Map<string, { inflow: number; outflow: number }> {
     const result = new Map<string, { inflow: number; outflow: number }>();
     for (const tx of txns) {
@@ -252,7 +348,8 @@ export class CashFlowForecastService {
     const month = d.getMonth();
 
     switch (granularity) {
-      case 'daily': return dateStr.slice(0, 10);
+      case 'daily':
+        return dateStr.slice(0, 10);
       case 'weekly': {
         const day = d.getDay();
         const diff = d.getDate() - day + (day === 0 ? -6 : 1);
@@ -260,17 +357,29 @@ export class CashFlowForecastService {
         monday.setDate(diff);
         return `${monday.getFullYear()}-W${String(Math.ceil((monday.getDate() + new Date(monday.getFullYear(), monday.getMonth(), 1).getDay()) / 7)).padStart(2, '0')}`;
       }
-      case 'monthly': return `${year}-${String(month + 1).padStart(2, '0')}`;
+      case 'monthly':
+        return `${year}-${String(month + 1).padStart(2, '0')}`;
       case 'quarterly': {
         const q = Math.floor(month / 3) + 1;
         return `${year}-Q${q}`;
       }
-      default: return `${year}-${String(month + 1).padStart(2, '0')}`;
+      default:
+        return `${year}-${String(month + 1).padStart(2, '0')}`;
     }
   }
 
+  private _deriveFinancialYear(startDate: string): string {
+    const year = new Date(startDate).getFullYear();
+    const month = new Date(startDate).getMonth();
+    // AU FY: Jul 1 start → "2025-2026", Jan start → "2024-2025"
+    const fyStart = month >= 6 ? year : year - 1;
+    return `${fyStart}-${fyStart + 1}`;
+  }
+
   private _buildCategoryBreakdowns(
-    txns: HistoricalTransaction[], granularity: string, futurePeriods: ForecastPeriodResult[],
+    txns: HistoricalTransaction[],
+    granularity: string,
+    futurePeriods: ForecastPeriodResult[],
   ): Map<string, Record<string, number>> {
     const catPeriods = new Map<string, Map<string, number>>();
     for (const tx of txns) {
@@ -286,7 +395,8 @@ export class CashFlowForecastService {
       const breakdown: Record<string, number> = {};
       for (const [cat, periodMap] of catPeriods) {
         const values = Array.from(periodMap.values());
-        const avg = values.length > 0 ? Math.round(values.reduce((s, v) => s + v, 0) / values.length) : 0;
+        const avg =
+          values.length > 0 ? Math.round(values.reduce((s, v) => s + v, 0) / values.length) : 0;
         if (avg !== 0) breakdown[cat] = avg;
       }
       result.set(period.periodStart, breakdown);

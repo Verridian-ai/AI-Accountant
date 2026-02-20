@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Wallet, Target, TrendingUp, Plus, BarChart3, Filter } from 'lucide-react';
+import { Wallet, Target, TrendingUp, Plus, Filter } from 'lucide-react';
 import { budgetsApi } from '../../../api';
 import type { Budget } from '../../../api';
 import { BudgetEditor } from './BudgetEditor';
 import { VarianceView } from './VarianceView';
 import { ForecastScenarios } from './ForecastScenarios';
 import { ScenarioComparison } from './ScenarioComparison';
-import { CATEGORY_NAMES } from '../../transactions/constants/categories';
-
 type Tab = 'budgets' | 'create' | 'forecasts';
 
 const statusColors: Record<string, string> = {
@@ -118,9 +116,7 @@ export function BudgetsDashboard() {
         <h2 className="text-2xl font-bold tracking-tight text-gradient-gold">
           Budgets & Forecasts
         </h2>
-        <p className="text-sm text-muted">
-          Plan, track, and forecast your financial performance
-        </p>
+        <p className="text-sm text-muted">Plan, track, and forecast your financial performance</p>
       </div>
 
       {/* Tabs */}
@@ -251,8 +247,11 @@ export function BudgetsDashboard() {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="budget-f1" className="block text-xs text-muted mb-1">Budget Name</label>
-              <input id="budget-f1"
+              <label htmlFor="budget-f1" className="block text-xs text-muted mb-1">
+                Budget Name
+              </label>
+              <input
+                id="budget-f1"
                 value={createName}
                 onChange={(e) => setCreateName(e.target.value)}
                 placeholder="e.g. Q1 2026 Operating Budget"
@@ -262,10 +261,15 @@ export function BudgetsDashboard() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="budget-f2" className="block text-xs text-muted mb-1">Budget Type</label>
-                <select id="budget-f2"
+                <label htmlFor="budget-f2" className="block text-xs text-muted mb-1">
+                  Budget Type
+                </label>
+                <select
+                  id="budget-f2"
                   value={createType}
-                  onChange={(e) => setCreateType(e.target.value as 'annual' | 'quarterly' | 'monthly' | 'project')}
+                  onChange={(e) =>
+                    setCreateType(e.target.value as 'annual' | 'quarterly' | 'monthly' | 'project')
+                  }
                   className="w-full neu-inset rounded-xl px-3 py-3 text-sm bg-transparent text-primary focus:ring-1 focus:ring-[#FFCC00]/50 outline-none"
                 >
                   <option value="annual">Annual</option>
@@ -275,8 +279,11 @@ export function BudgetsDashboard() {
                 </select>
               </div>
               <div>
-                <label htmlFor="budget-f3" className="block text-xs text-muted mb-1">Period Start</label>
-                <input id="budget-f3"
+                <label htmlFor="budget-f3" className="block text-xs text-muted mb-1">
+                  Period Start
+                </label>
+                <input
+                  id="budget-f3"
                   type="date"
                   value={createStart}
                   onChange={(e) => setCreateStart(e.target.value)}
@@ -284,7 +291,9 @@ export function BudgetsDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="budget-create-end" className="block text-xs text-muted mb-1">Period End</label>
+                <label htmlFor="budget-create-end" className="block text-xs text-muted mb-1">
+                  Period End
+                </label>
                 <input
                   id="budget-create-end"
                   type="date"

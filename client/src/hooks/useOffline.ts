@@ -55,9 +55,11 @@ export function useOffline(): OfflineState {
   }, []);
 
   useEffect(() => {
-    refreshCounts();
+    // Defer initial call to avoid synchronous setState in effect
+    const initialTimer = setTimeout(refreshCounts, 0);
     refreshTimer.current = setInterval(refreshCounts, 5000);
     return () => {
+      clearTimeout(initialTimer);
       if (refreshTimer.current) clearInterval(refreshTimer.current);
     };
   }, [refreshCounts]);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { complianceApi } from '../../../api';
-import { CheckCircle, Clock, AlertTriangle, Filter, Plus, Loader2 } from 'lucide-react';
+import { Filter, Plus, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
 interface Obligation {

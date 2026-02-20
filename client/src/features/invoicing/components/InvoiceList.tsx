@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { invoicingApi } from '@/api';
 import {
-  Search,
   Plus,
   ChevronLeft,
   ChevronRight,
@@ -64,10 +63,22 @@ export function InvoiceList({ onSelectInvoice, onCreateInvoice }: InvoiceListPro
   const [page, setPage] = useState(0);
 
   // Reset page inline when filters change (avoids useEffect state reset anti-pattern)
-  const setStatusFilter = (v: string) => { setStatusFilterState(v); setPage(0); };
-  const setCustomerFilter = (v: string) => { setCustomerFilterState(v); setPage(0); };
-  const setDateFrom = (v: string) => { setDateFromState(v); setPage(0); };
-  const setDateTo = (v: string) => { setDateToState(v); setPage(0); };
+  const setStatusFilter = (v: string) => {
+    setStatusFilterState(v);
+    setPage(0);
+  };
+  const _setCustomerFilter = (v: string) => {
+    setCustomerFilterState(v);
+    setPage(0);
+  };
+  const setDateFrom = (v: string) => {
+    setDateFromState(v);
+    setPage(0);
+  };
+  const setDateTo = (v: string) => {
+    setDateToState(v);
+    setPage(0);
+  };
 
   const loadInvoices = useCallback(async () => {
     setLoading(true);
@@ -229,10 +240,7 @@ export function InvoiceList({ onSelectInvoice, onCreateInvoice }: InvoiceListPro
                         </span>
                       </td>
                       <td
-                        className={cn(
-                          'px-4 py-3 text-primary',
-                          sc.strikethrough && 'line-through',
-                        )}
+                        className={cn('px-4 py-3 text-primary', sc.strikethrough && 'line-through')}
                       >
                         {inv.customerName ?? '—'}
                       </td>

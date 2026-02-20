@@ -300,8 +300,12 @@ export function registerBASHandlers(app: Hono): void {
           category: tx.category,
         })),
       );
-    } catch {
-      return c.json([]);
+    } catch (err) {
+      console.error('[BAS] Drill-down failed:', err);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'DRILL_DOWN_FAILED' },
+        500,
+      );
     }
   });
 }

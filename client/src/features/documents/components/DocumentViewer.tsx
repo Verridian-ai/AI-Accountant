@@ -48,7 +48,7 @@ function confidenceColor(score: number) {
   return 'text-red-400';
 }
 
-function confidenceBarColor(score: number) {
+function _confidenceBarColor(score: number) {
   if (score > 80) return '[&_[role=progressbar]>div]:bg-green-500';
   if (score > 50) return '[&_[role=progressbar]>div]:bg-amber-500';
   return '[&_[role=progressbar]>div]:bg-red-500';
@@ -226,9 +226,7 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
           {/* Vendor Info */}
           <div className="neu-raised rounded-xl p-5">
-            <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-3">
-              Vendor
-            </h3>
+            <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-3">Vendor</h3>
             <div className="space-y-2 text-sm">
               <div>
                 <p className="text-muted text-xs">Name</p>
@@ -341,9 +339,7 @@ export function DocumentViewer({ documentId, onBack }: DocumentViewerProps) {
 
       {/* Line Items */}
       <div className="neu-raised rounded-xl p-5">
-        <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-4">
-          Line Items
-        </h3>
+        <h3 className="text-sm font-bold text-cba-gold uppercase tracking-wide mb-4">Line Items</h3>
         <LineItemEditor documentId={documentId} />
       </div>
     </div>

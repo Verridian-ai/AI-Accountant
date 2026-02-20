@@ -29,13 +29,42 @@ export const assetApi: StubApi = {
   registerAsset: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const forecastApi: StubApi = {
+export const forecastApi = {
+  list: async (_userId?: string, status?: string): Promise<unknown> => {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    const res = await fetch(`${API_URL}/analytics/cash-flow-forecast?${params}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to list forecasts');
+    const json = (await res.json()) as Record<string, unknown>;
+    return json.data ?? json;
+  },
+  getById: async (forecastId: string): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/analytics/forecasts/${forecastId}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to get forecast');
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  generate: async (params: Record<string, string>): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/analytics/forecasts/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) throw new Error('Failed to generate forecast');
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  archive: async (forecastId: string): Promise<void> => {
+    const res = await fetch(`${API_URL}/analytics/forecasts/${forecastId}/archive`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to archive forecast');
+  },
   calculateAccuracy: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   updateActuals: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
-  getById: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  generate: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  archive: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
   compare: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Trash2, Sparkles, Save, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Sparkles, ChevronRight } from 'lucide-react';
 import { budgetsApi } from '../../../api';
 import type { Budget, BudgetLine } from '../../../api';
 import { CATEGORY_NAMES } from '../../transactions/constants/categories';
@@ -100,7 +100,7 @@ export function BudgetEditor({ budgetId, onBack }: BudgetEditorProps) {
   const totalBudgeted = lines.reduce((sum, l) => sum + (l.budgetedAmount ?? 0), 0);
 
   const statusFlow: Array<'draft' | 'active' | 'closed'> = ['draft', 'active', 'closed'];
-  const currentIndex = statusFlow.indexOf(budget?.status as 'draft' | 'active' | 'closed');
+  const _currentIndex = statusFlow.indexOf(budget?.status as 'draft' | 'active' | 'closed');
 
   if (loading) {
     return (

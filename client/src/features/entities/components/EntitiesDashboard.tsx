@@ -11,7 +11,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Building2, ArrowLeftRight, Layers, Settings, GitBranch, AlertCircle } from 'lucide-react';
 import { entityApi } from '@/api';
-import type { EntityHierarchyResponse, EntityData } from '@/api';
+import type { EntityHierarchyResponse } from '@/api';
 import { EntityHierarchyView } from './EntityHierarchyView';
 import { InterEntityTransactionsView } from './InterEntityTransactionsView';
 import { ConsolidationView } from './ConsolidationView';
@@ -46,8 +46,13 @@ export function EntitiesDashboard() {
 
   const entities = hierarchy?.entities ?? [];
   const totalEntities = hierarchy?.totalEntities ?? 0;
-  const linkedAccounts = entities.reduce((sum: number, e: Record<string, unknown>) => sum + ((e.accounts as unknown[])?.length ?? 0), 0);
-  const consolidatedParents = entities.filter((e: Record<string, unknown>) => e.isConsolidatedParent).length;
+  const linkedAccounts = entities.reduce(
+    (sum: number, e: Record<string, unknown>) => sum + ((e.accounts as unknown[])?.length ?? 0),
+    0,
+  );
+  const consolidatedParents = entities.filter(
+    (e: Record<string, unknown>) => e.isConsolidatedParent,
+  ).length;
 
   return (
     <div className="space-y-6">

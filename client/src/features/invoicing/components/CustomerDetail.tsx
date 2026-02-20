@@ -9,7 +9,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  FileText,
   Plus,
   UserPlus,
   DollarSign,
@@ -48,7 +47,15 @@ interface CustomerRecord {
   isActive?: boolean;
   outstandingBalance?: number;
   overdueAmount?: number;
-  invoices?: Array<{ id: string; invoiceNumber?: string; issueDate?: string; date?: string; totalCents?: number; total?: number; status?: string }>;
+  invoices?: Array<{
+    id: string;
+    invoiceNumber?: string;
+    issueDate?: string;
+    date?: string;
+    totalCents?: number;
+    total?: number;
+    status?: string;
+  }>;
   [key: string]: unknown;
 }
 
@@ -275,10 +282,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
               </span>
             </div>
             <p
-              className={cn(
-                'text-2xl font-bold',
-                outstanding > 0 ? 'text-cba-gold' : 'text-muted',
-              )}
+              className={cn('text-2xl font-bold', outstanding > 0 ? 'text-cba-gold' : 'text-muted')}
             >
               {formatAUD(outstanding)}
             </p>
@@ -373,9 +377,7 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
 
       {/* Invoice History */}
       <div className="neu-raised rounded-2xl p-5 space-y-3">
-        <h4 className="text-sm font-bold text-primary uppercase tracking-wider">
-          Invoice History
-        </h4>
+        <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Invoice History</h4>
         {invoices.length === 0 ? (
           <p className="text-xs text-zinc-600">No invoices for this customer yet.</p>
         ) : (
@@ -398,33 +400,45 @@ export function CustomerDetail({ customerId, onBack, onEdit }: CustomerDetailPro
                 </tr>
               </thead>
               <tbody>
-                {invoices.map((inv: { id: string; invoiceNumber?: string; issueDate?: string; date?: string; totalCents?: number; total?: number; status?: string }) => (
-                  <tr key={inv.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
-                    <td className="px-3 py-2 text-primary font-mono">
-                      {inv.invoiceNumber ?? inv.id}
-                    </td>
-                    <td className="px-3 py-2 text-secondary">{inv.issueDate ?? inv.date ?? '—'}</td>
-                    <td className="px-3 py-2 text-right font-semibold text-cba-gold">
-                      {formatAUD(inv.totalCents ?? inv.total ?? 0)}
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      <span
-                        className={cn(
-                          'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
-                          inv.status === 'paid'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : inv.status === 'overdue'
-                              ? 'bg-red-500/20 text-red-400'
-                              : inv.status === 'sent'
-                                ? 'bg-blue-500/20 text-blue-400'
-                                : 'bg-zinc-700/50 text-muted',
-                        )}
-                      >
-                        {inv.status ?? 'draft'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {invoices.map(
+                  (inv: {
+                    id: string;
+                    invoiceNumber?: string;
+                    issueDate?: string;
+                    date?: string;
+                    totalCents?: number;
+                    total?: number;
+                    status?: string;
+                  }) => (
+                    <tr key={inv.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+                      <td className="px-3 py-2 text-primary font-mono">
+                        {inv.invoiceNumber ?? inv.id}
+                      </td>
+                      <td className="px-3 py-2 text-secondary">
+                        {inv.issueDate ?? inv.date ?? '—'}
+                      </td>
+                      <td className="px-3 py-2 text-right font-semibold text-cba-gold">
+                        {formatAUD(inv.totalCents ?? inv.total ?? 0)}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className={cn(
+                            'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
+                            inv.status === 'paid'
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : inv.status === 'overdue'
+                                ? 'bg-red-500/20 text-red-400'
+                                : inv.status === 'sent'
+                                  ? 'bg-blue-500/20 text-blue-400'
+                                  : 'bg-zinc-700/50 text-muted',
+                          )}
+                        >
+                          {inv.status ?? 'draft'}
+                        </span>
+                      </td>
+                    </tr>
+                  ),
+                )}
               </tbody>
             </table>
           </div>

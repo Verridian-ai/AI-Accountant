@@ -134,7 +134,10 @@ export function registerGSTHandlers(app: Hono): void {
       return c.json(credits);
     } catch (err) {
       console.error('Failed to fetch input tax credits:', err);
-      return c.json([]);
+      return c.json(
+        { error: 'Internal server error. Please try again.', code: 'INPUT_TAX_CREDITS_FAILED' },
+        500,
+      );
     }
   });
 }

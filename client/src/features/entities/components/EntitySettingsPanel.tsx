@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,7 +23,6 @@ interface EntitySettingsPanelProps {
 export function EntitySettingsPanel({ entities }: EntitySettingsPanelProps) {
   const [selectedEntityId, setSelectedEntityId] = useState<string>(entities[0]?.id ?? '');
   const [settings, setSettings] = useState<EntitySettingData | null>(null);
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

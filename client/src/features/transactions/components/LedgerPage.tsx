@@ -171,15 +171,8 @@ export function LedgerPage({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [editingId, showFilters, memoizedHandleCancel, setShowFilters]);
 
-  // Aria-live announcement state for screen readers
-  const [announceMessage, setAnnounceMessage] = useState('');
-
-  // Update announcement when filtered count changes
-  useEffect(() => {
-    setAnnounceMessage(
-      `Showing ${filteredTransactions.length} of ${transactions.length} transactions`,
-    );
-  }, [filteredTransactions.length, transactions.length]);
+  // Aria-live announcement for screen readers (derived, no state needed)
+  const announceMessage = `Showing ${filteredTransactions.length} of ${transactions.length} transactions`;
 
   // Loading state - show skeleton
   if (loading) {

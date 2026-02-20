@@ -103,7 +103,7 @@ export function PlanComparison({
   currentPlan = '',
   selectedPlan,
   onSelectPlan,
-  isOnboarding,
+  isOnboarding: _isOnboarding,
 }: PlanComparisonProps) {
   const [annual, setAnnual] = useState(true);
 
@@ -184,9 +184,7 @@ export function PlanComparison({
               <div className="neu-inset rounded-xl p-3 mb-4 space-y-1.5 text-xs">
                 <div className="flex justify-between text-secondary">
                   <span>Members</span>
-                  <span className="font-bold text-primary">
-                    {formatLimit(plan.limits.members)}
-                  </span>
+                  <span className="font-bold text-primary">{formatLimit(plan.limits.members)}</span>
                 </div>
                 <div className="flex justify-between text-secondary">
                   <span>Accounts</span>
