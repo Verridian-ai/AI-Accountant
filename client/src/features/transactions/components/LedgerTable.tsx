@@ -123,7 +123,7 @@ export function LedgerTable({
       handleDelete,
       handleSplitStart,
       setEditingId,
-      !!bulkSelect,
+      bulkSelect,
       onSelectAll,
     ],
   );

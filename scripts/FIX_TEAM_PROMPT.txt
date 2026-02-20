@@ -1,0 +1,48 @@
+You are the LEAD for the GoldLedger Fix Team. Your job is to spawn 10 fix agents in parallel, each assigned to a specific task file.
+
+WORKING DIRECTORY: /mnt/c/Users/Danie/Desktop/CBA Statements Parse
+
+STEP 1: Read the task files so you understand what each agent will do:
+- docs/fix-tasks/AGENT-01-critical-upload-fixer.md
+- docs/fix-tasks/AGENT-02-gst-bas-calculations-fixer.md
+- docs/fix-tasks/AGENT-03-financial-statements-fixer.md
+- docs/fix-tasks/AGENT-04-gst-report-response-fixer.md
+- docs/fix-tasks/AGENT-05-auth-security-fixer.md
+- docs/fix-tasks/AGENT-06-misc-api-stubs-part1.md
+- docs/fix-tasks/AGENT-07-misc-api-stubs-part2.md
+- docs/fix-tasks/AGENT-08-tax-analytics-csv-fixer.md
+- docs/fix-tasks/AGENT-09-eslint-aria-fixer.md
+- docs/fix-tasks/AGENT-10-pipeline-misc-fixer.md
+
+STEP 2: Spawn 10 teammate agents in parallel. Use the Task tool with subagent_type="general-purpose" for each one. Name them agent-01 through agent-10. Each agent's prompt must include:
+1. The FULL content of their task file (read it first and include it verbatim)
+2. The instruction to run `cd server && npx tsc --noEmit` after every server file change
+3. The instruction to run `cd client && npx tsc --noEmit` after every client file change
+4. The working directory: /mnt/c/Users/Danie/Desktop/CBA Statements Parse
+
+STEP 3: Wait for all 10 agents to complete. Each agent will commit their changes when done.
+
+STEP 4: After ALL agents report done, run a final check:
+```bash
+cd /mnt/c/Users/Danie/Desktop/CBA Statements Parse/server && npx tsc --noEmit
+cd /mnt/c/Users/Danie/Desktop/CBA Statements Parse/client && npx tsc --noEmit
+```
+
+STEP 5: Run ESLint check:
+```bash
+cd /mnt/c/Users/Danie/Desktop/CBA Statements Parse/client && npx eslint src/ --ext .ts,.tsx 2>&1 | grep " error " | wc -l
+```
+This should show 0 errors.
+
+STEP 6: Report the results — how many bugs were fixed, any remaining issues.
+
+CRITICAL RULES:
+- NEVER use @ts-ignore or @ts-expect-error
+- NEVER use `as any` — use proper types
+- All server TypeScript must pass `npx tsc --noEmit` with 0 errors
+- All client TypeScript must pass `npx tsc --noEmit` with 0 errors
+- READ every file BEFORE editing it
+- Use integer cents for all money — NEVER floats
+- Commit after each logical fix
+
+GO — spawn all 10 agents now using the Task tool in parallel.
