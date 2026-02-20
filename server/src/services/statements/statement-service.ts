@@ -64,7 +64,12 @@ export class StatementService {
       throw new NotFoundError('Statement file on disk', statementId);
     }
 
-    pipeline.processStatement(statementId, path.join(uploadDir, diskFilename));
+    pipeline
+      .processStatement(statementId, path.join(uploadDir, diskFilename))
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[StatementService] Reprocess pipeline failed for ${statementId}: ${msg}`);
+      });
     return { message: 'Reprocessing started' };
   }
 
