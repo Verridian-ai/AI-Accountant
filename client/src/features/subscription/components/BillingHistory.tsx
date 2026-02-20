@@ -70,7 +70,7 @@ export function BillingHistory() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" aria-label="Billing history">
               <thead>
                 <tr className="border-b border-border/50">
                   <th className="text-left px-4 py-3 text-[10px] font-black text-muted uppercase tracking-widest">

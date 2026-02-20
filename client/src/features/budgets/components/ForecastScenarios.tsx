@@ -186,7 +186,7 @@ export function ForecastScenarios({ onCompare }: ForecastScenariosProps) {
                   min={1}
                   max={60}
                   value={forecastMonths}
-                  onChange={(e) => setForecastMonths(parseInt(e.target.value))}
+                  onChange={(e) => setForecastMonths(parseInt(e.target.value, 10))}
                   className="flex-1 accent-[#FFCC00]"
                 />
                 <span className="text-sm text-cba-gold font-mono w-8">{forecastMonths}</span>

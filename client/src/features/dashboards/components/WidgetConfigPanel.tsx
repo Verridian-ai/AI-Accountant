@@ -82,10 +82,10 @@ export function WidgetConfigPanel({ widget, open, onClose, onSave }: WidgetConfi
       />
 
       {/* Slide-in Panel */}
-      <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 neu-raised border-l border-cba-gold/10 flex flex-col animate-in slide-in-from-right duration-300">
+      <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm z-50 neu-raised border-l border-cba-gold/10 flex flex-col animate-in slide-in-from-right duration-300" role="dialog" aria-labelledby="widget-settings-title" aria-modal="true">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-cba-gold/20 shrink-0">
-          <h3 className="text-lg font-bold text-gradient-gold">Widget Settings</h3>
+          <h3 id="widget-settings-title" className="text-lg font-bold text-gradient-gold">Widget Settings</h3>
           <button
             onClick={onClose}
             aria-label="Close widget settings"

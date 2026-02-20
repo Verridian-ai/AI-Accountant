@@ -36,7 +36,7 @@ export function CarFinanceCalculator() {
       const data = await loanApi.calculateCarFinance({
         vehiclePrice: Math.round(parseFloat(vehiclePrice) * 100),
         deposit: Math.round(parseFloat(deposit) * 100),
-        termMonths: parseInt(termMonths),
+        termMonths: parseInt(termMonths, 10),
         personalLoanRate: parseFloat(personalRate) / 100,
         chattelMortgageRate: parseFloat(chattelRate) / 100,
         novatedLeaseRate: parseFloat(novatedRate) / 100,

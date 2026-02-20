@@ -55,9 +55,9 @@ function RefinanceCalculator() {
       const data = await loanApi.calculateRefinanceSavings({
         currentBalance: Math.round(parseFloat(balance) * 100),
         currentRate: parseFloat(currentRate) / 100,
-        currentRemainingMonths: parseInt(remainingMonths),
+        currentRemainingMonths: parseInt(remainingMonths, 10),
         newRate: parseFloat(newRate) / 100,
-        newTermMonths: parseInt(newTerm),
+        newTermMonths: parseInt(newTerm, 10),
         switchingCosts: Math.round(parseFloat(switchingCosts) * 100),
       });
       setResult(data);
@@ -229,7 +229,7 @@ function BorrowingCapacityCalculator() {
         otherIncome: Math.round(parseFloat(otherIncome) * 100),
         existingDebts: Math.round(parseFloat(debts) * 100),
         livingExpenses: Math.round(parseFloat(expenses) * 100),
-        dependants: parseInt(dependants),
+        dependants: parseInt(dependants, 10),
         interestRate: parseFloat(rate) / 100,
       });
       setResult(data);

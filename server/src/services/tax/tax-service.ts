@@ -63,7 +63,7 @@ export class TaxService {
     }
 
     const totalTax = Math.max(0, incomeTax + medicare.levy + medicare.surcharge - taxOffsets);
-    const effectiveTaxRate = grossIncome > 0 ? (totalTax / grossIncome) * 100 : 0;
+    const effectiveTaxRate = taxableIncome > 0 ? (totalTax / taxableIncome) * 100 : 0;
 
     return {
       grossIncome,

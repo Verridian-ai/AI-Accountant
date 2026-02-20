@@ -78,11 +78,11 @@ export function ReconRulesManager() {
   const buildMatchConfig = (): Record<string, unknown> => {
     switch (formMatchType) {
       case 'amount_exact':
-        return { tolerance_cents: parseInt(formToleranceCents) || 0 };
+        return { tolerance_cents: parseInt(formToleranceCents, 10) || 0 };
       case 'amount_date':
         return {
-          tolerance_cents: parseInt(formToleranceCents) || 0,
-          date_window_days: parseInt(formDateWindowDays) || 3,
+          tolerance_cents: parseInt(formToleranceCents, 10) || 0,
+          date_window_days: parseInt(formDateWindowDays, 10) || 3,
         };
       case 'reference_number':
         return { reference_field: formReferenceField };
@@ -110,7 +110,7 @@ export function ReconRulesManager() {
         matchType: formMatchType,
         matchConfig: buildMatchConfig(),
         autoConfirm: formAutoConfirm,
-        priority: parseInt(formPriority) || 10,
+        priority: parseInt(formPriority, 10) || 10,
       });
       await loadRules();
       resetForm();

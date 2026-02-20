@@ -84,9 +84,9 @@ export function RuleManager() {
         amountMin: form.amountMin ? parseFloat(form.amountMin) : undefined,
         amountMax: form.amountMax ? parseFloat(form.amountMax) : undefined,
         amountTolerance: parseFloat(form.amountTolerance) || 0.01,
-        dateToleranceDays: parseInt(form.dateToleranceDays) || 3,
+        dateToleranceDays: parseInt(form.dateToleranceDays, 10) || 3,
         categoryFilter: form.categoryFilter || undefined,
-        priority: parseInt(form.priority) || 10,
+        priority: parseInt(form.priority, 10) || 10,
       });
       setForm(DEFAULT_FORM);
       setShowForm(false);

@@ -26,7 +26,7 @@ function CategoryTable({
   return (
     <div className="neu-raised rounded-2xl p-5">
       <h3 className={`text-sm font-bold uppercase tracking-wider mb-4 ${colorClass}`}>{title}</h3>
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" aria-label={`${title} breakdown`}>
         <thead>
           <tr className="text-muted border-b border-border/50">
             <th className="text-left pb-2 font-medium">Category</th>

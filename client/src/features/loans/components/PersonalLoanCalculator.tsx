@@ -30,7 +30,7 @@ export function PersonalLoanCalculator() {
       const data = await loanApi.calculatePersonalLoan({
         principal: Math.round(parseFloat(principal) * 100),
         annualRate: parseFloat(rate) / 100,
-        termMonths: parseInt(term),
+        termMonths: parseInt(term, 10),
         establishmentFee: establishmentFee
           ? Math.round(parseFloat(establishmentFee) * 100)
           : undefined,

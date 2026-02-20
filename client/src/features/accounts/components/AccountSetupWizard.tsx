@@ -89,7 +89,7 @@ export function AccountSetupWizard({
         interestRate: interestRate ? parseFloat(interestRate) : undefined,
         creditLimit: creditLimit ? Math.round(parseFloat(creditLimit) * 100) : undefined,
         minimumPayment: minimumPayment ? Math.round(parseFloat(minimumPayment) * 100) : undefined,
-        paymentDueDay: paymentDueDay ? parseInt(paymentDueDay) : undefined,
+        paymentDueDay: paymentDueDay ? parseInt(paymentDueDay, 10) : undefined,
       });
       onComplete(result.id);
     } catch (err: unknown) {
@@ -102,7 +102,7 @@ export function AccountSetupWizard({
   const isCreditOrLoan = accountType === 'credit_card' || accountType === 'loan';
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300" role="dialog" aria-labelledby="account-wizard-title" aria-modal="true">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cba-gold/5 rounded-full blur-[160px]" />
       </div>
@@ -115,7 +115,7 @@ export function AccountSetupWizard({
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-gradient-gold tracking-tight uppercase">
+              <h2 id="account-wizard-title" className="text-2xl font-black text-gradient-gold tracking-tight uppercase">
                 Vault Initialization
               </h2>
               <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1 flex items-center gap-1.5">

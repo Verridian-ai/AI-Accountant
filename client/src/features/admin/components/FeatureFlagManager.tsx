@@ -150,7 +150,7 @@ export function FeatureFlagManager() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <button type="button" onClick={() => toggleFlag(flag)}>
+                    <button type="button" onClick={() => toggleFlag(flag)} aria-label={flag.enabled ? `Disable ${flag.name}` : `Enable ${flag.name}`}>
                       {flag.enabled ? (
                         <ToggleRight className="w-7 h-7 text-emerald-400" />
                       ) : (
@@ -180,7 +180,7 @@ export function FeatureFlagManager() {
                         max={100}
                         step={5}
                         value={flag.rolloutPercentage ?? 100}
-                        onChange={(e) => updateRollout(flag, parseInt(e.target.value))}
+                        onChange={(e) => updateRollout(flag, parseInt(e.target.value, 10))}
                         className="flex-1 accent-[#FFCC00]"
                       />
                       <span className="text-xs text-cba-gold font-bold w-10 text-right">
@@ -204,7 +204,7 @@ export function FeatureFlagManager() {
 
       {/* Create Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-labelledby="create-flag-dialog-title" aria-modal="true">
           <button
             type="button"
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -213,11 +213,12 @@ export function FeatureFlagManager() {
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-primary">Create Feature Flag</h3>
+              <h3 id="create-flag-dialog-title" className="text-lg font-bold text-primary">Create Feature Flag</h3>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
                 className="text-muted hover:text-primary"
+                aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -276,7 +277,7 @@ export function FeatureFlagManager() {
                   step={5}
                   value={formData.rolloutPercentage}
                   onChange={(e) =>
-                    setFormData({ ...formData, rolloutPercentage: parseInt(e.target.value) })
+                    setFormData({ ...formData, rolloutPercentage: parseInt(e.target.value, 10) })
                   }
                   className="w-full accent-[#FFCC00]"
                 />

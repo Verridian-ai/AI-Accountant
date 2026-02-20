@@ -203,7 +203,7 @@ export function PermissionMatrix() {
 
       <div className="neu-raised rounded-2xl border border-border/50 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm" aria-label="Role permissions">
             <thead>
               <tr className="border-b border-border/50">
                 <th className="text-left px-4 py-3 text-[10px] font-black text-muted uppercase tracking-widest min-w-[200px]">

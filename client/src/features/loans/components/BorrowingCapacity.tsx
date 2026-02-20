@@ -104,9 +104,9 @@ export function BorrowingCapacity() {
           monthly_payment: Math.round(parseFloat(d.monthlyPayment || '0') * 100),
         })),
         monthly_living_expenses: Math.round(parseFloat(livingExpenses) * 100),
-        dependents: parseInt(dependents),
+        dependents: parseInt(dependents, 10),
         loan_purpose: loanPurpose,
-        loan_term_years: parseInt(loanTerm),
+        loan_term_years: parseInt(loanTerm, 10),
         sensitivity_max_increase: parseFloat(sensitivityRange),
       });
       setResult(data);

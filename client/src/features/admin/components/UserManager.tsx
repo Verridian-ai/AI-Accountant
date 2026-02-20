@@ -132,7 +132,7 @@ export function UserManager() {
 
       {/* User Table */}
       <div className="rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6 overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" aria-label="Admin users">
           <thead>
             <tr className="text-left text-muted text-xs uppercase tracking-wider border-b border-border/50">
               <th className="pb-3 pr-4">Username</th>
@@ -175,6 +175,7 @@ export function UserManager() {
                       type="button"
                       onClick={() => setEditingUser({ ...u })}
                       className="p-1.5 rounded-lg text-secondary hover:text-cba-gold hover:bg-cba-gold/5"
+                      aria-label={`Edit ${u.username}`}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -182,6 +183,7 @@ export function UserManager() {
                       type="button"
                       onClick={() => handleDelete(u.id, u.username)}
                       className="p-1.5 rounded-lg text-secondary hover:text-red-400 hover:bg-red-500/5"
+                      aria-label={`Delete ${u.username}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -196,7 +198,7 @@ export function UserManager() {
 
       {/* Create Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-labelledby="create-user-dialog-title" aria-modal="true">
           <button
             type="button"
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -205,11 +207,12 @@ export function UserManager() {
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-primary">Create User</h3>
+              <h3 id="create-user-dialog-title" className="text-lg font-bold text-primary">Create User</h3>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
                 className="text-muted hover:text-primary"
+                aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -291,7 +294,7 @@ export function UserManager() {
 
       {/* Edit Modal */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-labelledby="edit-user-dialog-title" aria-modal="true">
           <button
             type="button"
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -300,11 +303,12 @@ export function UserManager() {
           />
           <div className="relative w-full max-w-md rounded-2xl bg-[#16213e] shadow-[6px_6px_12px_#0a0a1a,-6px_-6px_12px_#222244] p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-primary">Edit User</h3>
+              <h3 id="edit-user-dialog-title" className="text-lg font-bold text-primary">Edit User</h3>
               <button
                 type="button"
                 onClick={() => setEditingUser(null)}
                 className="text-muted hover:text-primary"
+                aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
               </button>

@@ -116,7 +116,7 @@ export function EmployeeList({ employees, loading, onSelect, onRefresh }: Employ
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full" aria-label="Employees">
           <thead>
             <tr className="border-b border-border/50">
               <th className="text-left text-xs font-medium text-muted uppercase tracking-wider px-4 py-3">

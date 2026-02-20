@@ -184,7 +184,7 @@ export function MatchStatistics() {
             <p className="text-muted text-sm">No rules configured yet</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm" aria-label="Match statistics">
                 <thead>
                   <tr className="text-secondary text-xs uppercase tracking-wider">
                     <th className="text-left pb-3 font-semibold">Rule</th>

@@ -71,7 +71,7 @@ export function TaxTab({ taxDeclaration, employeeId, onRefresh }: TaxTabProps) {
             type="number"
             min="0"
             value={form.dependants}
-            onChange={(e) => setForm({ ...form, dependants: parseInt(e.target.value) || 0 })}
+            onChange={(e) => setForm({ ...form, dependants: parseInt(e.target.value, 10) || 0 })}
             disabled={!editing}
             className="w-full mt-1 px-3 py-2 rounded-lg bg-overlay border border-border text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40 disabled:opacity-60"
           />

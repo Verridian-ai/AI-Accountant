@@ -11,6 +11,15 @@ interface LineItem {
   gstRate: number; // 0.10 for 10%
 }
 
+interface CustomerRecord {
+  id: string;
+  businessName: string;
+  contactName?: string;
+  abn?: string;
+  email?: string;
+  paymentTermsDays?: number;
+}
+
 interface InvoiceEditorProps {
   invoiceId?: string;
   onSave: () => void;
@@ -28,10 +37,10 @@ const DEFAULT_TERMS = `Payment is due within the specified terms. Late payments 
 export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProps) {
   const [loading, setLoading] = useState(!!invoiceId);
   const [saving, setSaving] = useState(false);
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null);
 
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [issueDate, setIssueDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -222,6 +231,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
                 setCustomerSearch('');
               }}
               className="p-1.5 rounded-lg hover:bg-zinc-700/50 text-secondary hover:text-zinc-100 transition-colors"
+              aria-label="Clear selected customer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -386,6 +396,7 @@ export function InvoiceEditor({ invoiceId, onSave, onCancel }: InvoiceEditorProp
                   onClick={() => removeLine(li.id)}
                   disabled={lineItems.length === 1}
                   className="p-1.5 rounded-lg hover:bg-red-500/20 text-muted hover:text-red-400 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                  aria-label="Remove line item"
                 >
                   <X className="w-4 h-4" />
                 </button>

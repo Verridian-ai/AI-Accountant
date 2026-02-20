@@ -74,7 +74,7 @@ export function RateScenarios() {
     try {
       const data = await fetchRateScenarios({
         loan_amount: Math.round(parseFloat(loanAmount) * 100),
-        term_years: parseInt(termYears),
+        term_years: parseInt(termYears, 10),
         current_rate: parseFloat(currentRate) / 100,
         custom_scenarios: customScenarios
           .filter((s) => s.name && s.rate)

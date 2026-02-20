@@ -164,7 +164,7 @@ export function AssetRegisterTable({ assets, onDispose, onEdit }: AssetRegisterT
           <p className="text-muted text-center py-8">No assets found</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" aria-label="Asset register">
               <thead>
                 <tr className="border-b border-border text-muted text-xs uppercase tracking-wider">
                   <th

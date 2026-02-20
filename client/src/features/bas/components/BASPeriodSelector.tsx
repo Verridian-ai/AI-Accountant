@@ -78,7 +78,7 @@ export function BASPeriodSelector({
     <div className={cn('space-y-3', className)}>
       <div className="flex items-center gap-3 flex-wrap">
         {/* Financial Year */}
-        <Select value={String(selectedYear)} onValueChange={(v) => onYearChange(parseInt(v))}>
+        <Select value={String(selectedYear)} onValueChange={(v) => onYearChange(parseInt(v, 10))}>
           <SelectTrigger className="w-[160px]">
             <Calendar className="w-4 h-4 mr-2 opacity-50" />
             <SelectValue />

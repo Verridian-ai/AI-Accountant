@@ -326,7 +326,7 @@ export function BillEntry({ billId, onSave, onCancel }: BillEntryProps) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px]">
+          <table className="w-full min-w-[640px]" aria-label="Bill line items">
             <thead>
               <tr className="border-b border-border/50">
                 <th className="text-left px-2 py-2 text-xs font-semibold text-secondary w-[35%]">

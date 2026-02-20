@@ -35,8 +35,8 @@ export function NetPositionCalculator() {
     try {
       const dateRange = startDate && endDate ? { start: startDate, end: endDate } : undefined;
       const data = await analyticsApi.fetchNetPosition(
-        parseInt(accountAId),
-        parseInt(accountBId),
+        parseInt(accountAId, 10),
+        parseInt(accountBId, 10),
         dateRange,
       );
       setResult(data);

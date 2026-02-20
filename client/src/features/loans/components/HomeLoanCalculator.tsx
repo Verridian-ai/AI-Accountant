@@ -37,7 +37,7 @@ export function HomeLoanCalculator() {
       const params = {
         principal: Math.round(parseFloat(principal) * 100),
         annualRate: parseFloat(rate) / 100,
-        termMonths: parseInt(term) * 12,
+        termMonths: parseInt(term, 10) * 12,
         frequency,
         offsetBalance: offsetBalance ? Math.round(parseFloat(offsetBalance) * 100) : undefined,
         extraRepayment: extraRepayment ? Math.round(parseFloat(extraRepayment) * 100) : undefined,

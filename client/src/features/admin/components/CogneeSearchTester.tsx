@@ -172,7 +172,7 @@ export function CogneeSearchTester() {
             min={1}
             max={20}
             value={topK}
-            onChange={(e) => setState({ topK: parseInt(e.target.value) || 5 })}
+            onChange={(e) => setState({ topK: parseInt(e.target.value, 10) || 5 })}
             className="w-20 px-3 py-1.5 bg-[#1a1a2e] border border-border rounded-lg text-primary text-sm text-center focus:outline-none focus:border-cba-gold/50"
           />
         </div>

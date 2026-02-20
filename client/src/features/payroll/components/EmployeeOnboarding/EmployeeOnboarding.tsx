@@ -317,7 +317,7 @@ export function EmployeeOnboarding({ onComplete, onCancel }: EmployeeOnboardingP
                 type="number"
                 min="0"
                 value={claimDependents}
-                onChange={(e) => setClaimDependents(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={(e) => setClaimDependents(Math.max(0, parseInt(e.target.value, 10) || 0))}
                 className="w-24 px-3 py-2.5 rounded-xl bg-overlay border border-border text-sm text-primary focus:outline-none focus:ring-1 focus:ring-[#FFCC00]/40"
               />
             </div>

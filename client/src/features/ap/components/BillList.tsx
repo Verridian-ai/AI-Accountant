@@ -121,7 +121,7 @@ export function BillList({ onNewBill, onEditBill, onApproveBill }: BillListProps
 
       {/* Table */}
       <div className="neu-raised rounded-2xl overflow-hidden">
-        <table className="w-full">
+        <table className="w-full" aria-label="Bills">
           <thead>
             <tr className="border-b border-border/50">
               <th className="text-left px-4 py-3 text-xs font-semibold text-secondary uppercase tracking-wider">

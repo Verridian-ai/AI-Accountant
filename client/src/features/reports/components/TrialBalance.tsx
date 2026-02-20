@@ -123,7 +123,7 @@ export function TrialBalance({ asAtDate }: Props) {
 
       {/* Trial Balance Table */}
       <div className="neu-raised rounded-2xl p-5 overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" aria-label="Trial balance">
           <thead>
             <tr className="text-muted border-b border-border/50">
               <th

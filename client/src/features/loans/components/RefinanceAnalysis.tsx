@@ -131,7 +131,7 @@ export function RefinanceAnalysis() {
         current_lender: input.currentLender,
         current_rate: parseFloat(input.currentRate) / 100,
         current_balance: Math.round(parseFloat(input.currentBalance) * 100),
-        remaining_term_months: parseInt(input.remainingTermYears) * 12,
+        remaining_term_months: parseInt(input.remainingTermYears, 10) * 12,
         monthly_repayment: Math.round(parseFloat(input.monthlyRepayment) * 100),
         loan_purpose: input.loanPurpose,
         required_features: input.features,
