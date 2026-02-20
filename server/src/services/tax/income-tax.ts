@@ -33,7 +33,7 @@ export function getCurrentFinancialYear(): string {
  * Get financial year dates
  */
 export function getFinancialYearDates(taxYear: string): { start: string; end: string } {
-  const startYear = parseInt(taxYear.split('-')[0]);
+  const startYear = parseInt(taxYear.split('-')[0], 10);
   return {
     start: `${startYear}-07-01`,
     end: `${startYear + 1}-06-30`,

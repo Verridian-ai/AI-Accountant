@@ -67,7 +67,7 @@ export async function generateFromHistory(
     const monthSums = new Map<number, { total: number; count: number }>();
 
     for (const [monthStr, amount] of monthAmounts) {
-      const calMonth = parseInt(monthStr.split('-')[1]);
+      const calMonth = parseInt(monthStr.split('-')[1], 10);
       const existing = monthSums.get(calMonth) ?? { total: 0, count: 0 };
       monthSums.set(calMonth, { total: existing.total + amount, count: existing.count + 1 });
     }
@@ -79,7 +79,7 @@ export async function generateFromHistory(
 
     // Generate budget lines for each target month
     for (const targetMonth of targetMonths) {
-      const calMonth = parseInt(targetMonth.split('-')[1]);
+      const calMonth = parseInt(targetMonth.split('-')[1], 10);
       const seasonalFactor = monthFactors.get(calMonth) ?? 1.0;
       const budgetedAmount = Math.round(overallAvg * seasonalFactor);
 

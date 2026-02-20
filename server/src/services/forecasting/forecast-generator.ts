@@ -75,7 +75,7 @@ export async function generateForecast(scenarioId: string) {
       const monthTotal = amounts.reduce((s, v) => s + v, 0);
       monthlyTotals.push(monthTotal);
 
-      const calMonth = parseInt(monthStr.split('-')[1]);
+      const calMonth = parseInt(monthStr.split('-')[1], 10);
       if (!calMonthTotals.has(calMonth)) {
         calMonthTotals.set(calMonth, []);
       }

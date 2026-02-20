@@ -34,7 +34,7 @@ export class CBAParser extends BaseBankParser {
     periodStartMonth: number,
     periodEndMonth: number,
   ): number {
-    const monthNum = parseInt(MONTH_MAP[month.toLowerCase()] || '0');
+    const monthNum = parseInt(MONTH_MAP[month.toLowerCase()] || '0', 10);
     if (monthNum === 0) return statementYear;
     if (periodEndMonth < periodStartMonth) {
       if (monthNum >= periodStartMonth) return statementYear;
@@ -57,14 +57,14 @@ export class CBAParser extends BaseBankParser {
     );
     if (periodMatch) {
       const [, sd, sm, sy, ed, em, ey] = periodMatch;
-      const startMonth = parseInt(MONTH_MAP[sm.toLowerCase()] || '0');
-      const endMonth = parseInt(MONTH_MAP[em.toLowerCase()] || '0');
+      const startMonth = parseInt(MONTH_MAP[sm.toLowerCase()] || '0', 10);
+      const endMonth = parseInt(MONTH_MAP[em.toLowerCase()] || '0', 10);
       return {
         startDate: `${sy}-${String(startMonth).padStart(2, '0')}-${sd.padStart(2, '0')}`,
         endDate: `${ey}-${String(endMonth).padStart(2, '0')}-${ed.padStart(2, '0')}`,
-        startYear: parseInt(sy),
+        startYear: parseInt(sy, 10),
         startMonth,
-        endYear: parseInt(ey),
+        endYear: parseInt(ey, 10),
         endMonth,
       };
     }
@@ -77,10 +77,10 @@ export class CBAParser extends BaseBankParser {
       return {
         startDate: `${sy}-${sm.padStart(2, '0')}-${sd.padStart(2, '0')}`,
         endDate: `${ey}-${em.padStart(2, '0')}-${ed.padStart(2, '0')}`,
-        startYear: parseInt(sy),
-        startMonth: parseInt(sm),
-        endYear: parseInt(ey),
-        endMonth: parseInt(em),
+        startYear: parseInt(sy, 10),
+        startMonth: parseInt(sm, 10),
+        endYear: parseInt(ey, 10),
+        endMonth: parseInt(em, 10),
       };
     }
 

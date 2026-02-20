@@ -17,7 +17,11 @@ import type { JWTPayload } from './auth-types.js';
 import { adminAuthService } from './admin-auth.js';
 import { tenantService } from './tenant.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || '';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET environment variable must be set in production');
+}
+const jwtSecret = JWT_SECRET || 'dev-only-secret-change-in-prod';
 
 // ============================================================================
 // ROLE HIERARCHY
@@ -147,9 +151,9 @@ export function tenantAuthMiddleware() {
       }
 
       // 2b. Try legacy JWT (has userId but no tenantId — from /auth/login)
-      if (JWT_SECRET) {
+      if (jwtSecret) {
         try {
-          const legacyPayload = (await verify(token, JWT_SECRET)) as Record<string, unknown>;
+          const legacyPayload = (await verify(token, jwtSecret)) as Record<string, unknown>;
           if (legacyPayload && legacyPayload.userId) {
             // Verify tenant membership before granting access
             const headerTenantId = c.req.header('X-Tenant-Id');
@@ -165,7 +169,7 @@ export function tenantAuthMiddleware() {
             }
             c.set('jwtPayload', legacyPayload);
             c.set('userId', legacyPayload.userId as string);
-            c.set('role', 'owner');
+            c.set('role', 'viewer');  // legacy tokens get minimum privileges
             c.set('permissions', []);
             return next();
           }

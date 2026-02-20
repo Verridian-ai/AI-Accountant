@@ -52,7 +52,7 @@ function parseDateWithFormat(dateStr: string, format: string): string | null {
       const match = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{2})/);
       if (match) {
         const [, day, month, yearShort] = match;
-        const year = parseInt(yearShort) > 50 ? `19${yearShort}` : `20${yearShort}`;
+        const year = parseInt(yearShort, 10) > 50 ? `19${yearShort}` : `20${yearShort}`;
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       }
     }
@@ -74,7 +74,7 @@ function parseDateWithFormat(dateStr: string, format: string): string | null {
         const [, day, monthStr, yearShort] = match;
         const month = monthNames[monthStr.toLowerCase()];
         if (month) {
-          const year = parseInt(yearShort) > 50 ? `19${yearShort}` : `20${yearShort}`;
+          const year = parseInt(yearShort, 10) > 50 ? `19${yearShort}` : `20${yearShort}`;
           return `${year}-${month}-${day.padStart(2, '0')}`;
         }
       }

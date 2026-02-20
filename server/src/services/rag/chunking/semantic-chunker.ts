@@ -187,7 +187,7 @@ export function createCategorySummaryChunk(
 
   // Parse month for display
   const [year, monthNum] = month.split('-');
-  const monthName = new Date(parseInt(year), parseInt(monthNum) - 1, 1).toLocaleDateString(
+  const monthName = new Date(parseInt(year, 10), parseInt(monthNum, 10) - 1, 1).toLocaleDateString(
     'en-AU',
     { month: 'long', year: 'numeric' },
   );
