@@ -77,20 +77,31 @@ export class FinancialReportService {
       transactionCount += count;
       if (SYSTEM_CATEGORIES.includes(cat)) continue;
 
-      const group: CategoryGroup = {
-        category: cat,
-        amount: Math.abs(amount),
-        transactionCount: count,
-      };
       if (REVENUE_CATEGORIES.includes(cat)) {
+        // Revenue: use signed amount (positive = income, negative = net refund reduces revenue)
+        const group: CategoryGroup = { category: cat, amount, transactionCount: count };
         revenue.push(group);
-        grossRevenue += Math.abs(amount);
+        grossRevenue += amount;
       } else if (COGS_CATEGORIES.includes(cat)) {
+        // COGS: expense amounts are negative in DB, negate to get positive cost
+        const displayAmount = -amount;
+        const group: CategoryGroup = {
+          category: cat,
+          amount: displayAmount,
+          transactionCount: count,
+        };
         costOfGoodsSold.push(group);
-        totalCOGS += Math.abs(amount);
+        totalCOGS += displayAmount;
       } else {
+        // Expenses: negative in DB, negate to get positive expense
+        const displayAmount = -amount;
+        const group: CategoryGroup = {
+          category: cat,
+          amount: displayAmount,
+          transactionCount: count,
+        };
         expenses.push(group);
-        totalExpenses += Math.abs(amount);
+        totalExpenses += displayAmount;
       }
     }
 
@@ -177,9 +188,24 @@ export class FinancialReportService {
       }
     }
 
-    const retainedEarnings = totalAssets - totalLiabilities - totalContributions + totalDrawings;
+    // Calculate retained earnings from P&L (cumulative net profit) — NOT as a plug figure
+    const pnlResult = await db
+      .select({
+        totalAmount: sql<number>`COALESCE(SUM(${transactions.amount}), 0)`,
+      })
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.userId, userId),
+          lte(transactions.date, asAtDate),
+          eq(transactions.isTransfer, false),
+        ),
+      )
+      .get();
+    const retainedEarnings = Number(pnlResult?.totalAmount) || 0;
     equityItems.push({ name: 'Retained Earnings', amount: retainedEarnings });
     const totalEquity = totalContributions - totalDrawings + retainedEarnings;
+    // Genuine balance check: A = L + E (not always true when derived independently)
     const isBalanced = Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 1;
 
     return {
@@ -210,6 +236,7 @@ export class FinancialReportService {
           eq(transactions.userId, userId),
           gte(transactions.date, periodStart),
           lte(transactions.date, periodEnd),
+          eq(transactions.isTransfer, false),
         ),
       )
       .groupBy(transactions.category)

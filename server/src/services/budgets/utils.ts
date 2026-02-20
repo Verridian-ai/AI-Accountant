@@ -26,8 +26,8 @@ export function getPeriodDateRange(period: string): { startDate: string; endDate
   if (period.includes('Q')) {
     // Quarterly: 2025-Q1 -> Jan-Mar
     const [yearStr, qStr] = period.split('-Q');
-    const year = parseInt(yearStr);
-    const quarter = parseInt(qStr);
+    const year = parseInt(yearStr, 10);
+    const quarter = parseInt(qStr, 10);
     const startMonth = (quarter - 1) * 3;
     const start = new Date(year, startMonth, 1);
     const end = new Date(year, startMonth + 3, 0); // last day of quarter
@@ -39,8 +39,8 @@ export function getPeriodDateRange(period: string): { startDate: string; endDate
 
   // Monthly: 2025-01 -> full month
   const [yearStr, monthStr] = period.split('-');
-  const year = parseInt(yearStr);
-  const month = parseInt(monthStr) - 1;
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10) - 1;
   const start = new Date(year, month, 1);
   const end = new Date(year, month + 1, 0); // last day of month
   return {

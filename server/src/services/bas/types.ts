@@ -50,4 +50,6 @@ export interface BASResult {
   totalPayable: number;
   isRefund: boolean;
   transactionCount: number;
+  /** Fields that are estimated (not derived from actual payroll/records) */
+  estimated?: Record<string, boolean>;
 }

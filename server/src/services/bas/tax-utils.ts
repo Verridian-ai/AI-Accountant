@@ -21,10 +21,10 @@ export function grossFromNet(netDollars: number, fyStartYear: number): number {
 }
 
 export function estimateTax(grossDollars: number, _fyStartYear: number): number {
-  // 2024-25 Australian individual tax brackets
+  // 2024-25 Australian individual tax brackets (Stage 3 tax cuts)
   if (grossDollars <= 18_200) return 0;
-  if (grossDollars <= 45_000) return (grossDollars - 18_200) * 0.19;
-  if (grossDollars <= 120_000) return 5_092 + (grossDollars - 45_000) * 0.325;
-  if (grossDollars <= 180_000) return 29_467 + (grossDollars - 120_000) * 0.37;
-  return 51_667 + (grossDollars - 180_000) * 0.45;
+  if (grossDollars <= 45_000) return (grossDollars - 18_200) * 0.16;
+  if (grossDollars <= 135_000) return 4_288 + (grossDollars - 45_000) * 0.3;
+  if (grossDollars <= 190_000) return 31_288 + (grossDollars - 135_000) * 0.37;
+  return 51_638 + (grossDollars - 190_000) * 0.45;
 }

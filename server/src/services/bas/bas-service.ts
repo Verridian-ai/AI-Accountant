@@ -128,11 +128,15 @@ export class BASService {
       const gstAmount = tx.gstAmount ?? calculateGstFromInclusive(amount);
 
       if (amount > 0) {
+        // G1 = Total Sales (ATO: includes ALL sales — taxable, exports, GST-free)
+        // G2, G3 are subsets of G1; only INPUT_TAXED and PRIVATE are excluded
         switch (gstCategory) {
           case GSTCategory.EXPORT:
+            labels.G1 += amount;
             labels.G2 += amount;
             break;
           case GSTCategory.GST_FREE:
+            labels.G1 += amount;
             labels.G3 += amount;
             break;
           case GSTCategory.INPUT_TAXED:
@@ -144,10 +148,11 @@ export class BASService {
         }
       } else {
         const absAmount = Math.abs(amount);
+        const absGst = Math.abs(tx.gstAmount ?? calculateGstFromInclusive(amount));
         switch (gstCategory) {
           case GSTCategory.CAPITAL:
             labels.G10 += absAmount;
-            labels['1B'] += gstAmount;
+            labels['1B'] += absGst;
             break;
           case GSTCategory.INPUT_TAXED:
           case GSTCategory.PRIVATE:
@@ -156,7 +161,7 @@ export class BASService {
             break;
           default:
             labels.G11 += absAmount;
-            labels['1B'] += gstAmount;
+            labels['1B'] += absGst;
         }
       }
     }
@@ -193,6 +198,7 @@ export class BASService {
       totalPayable,
       isRefund: totalPayable < 0,
       transactionCount: quarterTransactions.length,
+      estimated: { W2: true },
     };
   }
 

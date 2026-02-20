@@ -7,7 +7,7 @@ import type { QuarterDates } from './types.js';
  * Get quarter dates for Australian financial year
  */
 export function getQuarterDates(financialYear: string, quarter: number): QuarterDates {
-  const startYear = parseInt(financialYear.split('-')[0]);
+  const startYear = parseInt(financialYear.split('-')[0], 10);
 
   const quarterDates: Record<number, QuarterDates> = {
     1: {

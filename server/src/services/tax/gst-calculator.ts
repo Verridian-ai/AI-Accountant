@@ -16,22 +16,24 @@ export function calculateMedicareLevy(
   let levy = 0;
   let surcharge = 0;
 
-  // Base Medicare levy (2%)
-  if (taxableIncome > 30345) {
-    levy = taxableIncome * 0.02;
-  } else if (taxableIncome > 24276) {
+  // Base Medicare levy — use shared constants
+  if (taxableIncome > MEDICARE_LEVY_REDUCTION.shadeInThreshold) {
+    levy = taxableIncome * MEDICARE_LEVY_REDUCTION.standardRate;
+  } else if (taxableIncome > MEDICARE_LEVY_REDUCTION.fullExemptionThreshold) {
     // Shade-in range
-    levy = (taxableIncome - 24276) * 0.1;
+    levy =
+      (taxableIncome - MEDICARE_LEVY_REDUCTION.fullExemptionThreshold) *
+      MEDICARE_LEVY_REDUCTION.shadeInRate;
   }
 
-  // Medicare levy surcharge (if no private health)
-  if (!hasPrivateHealth && taxableIncome > 93000) {
-    if (taxableIncome > 144000) {
-      surcharge = taxableIncome * 0.015; // 1.5%
-    } else if (taxableIncome > 108000) {
-      surcharge = taxableIncome * 0.0125; // 1.25%
+  // Medicare levy surcharge — use shared constants
+  if (!hasPrivateHealth && taxableIncome > MLS_THRESHOLDS.tier0Max) {
+    if (taxableIncome > MLS_THRESHOLDS.tier2Max) {
+      surcharge = taxableIncome * MLS_THRESHOLDS.tier3Rate;
+    } else if (taxableIncome > MLS_THRESHOLDS.tier1Max) {
+      surcharge = taxableIncome * MLS_THRESHOLDS.tier2Rate;
     } else {
-      surcharge = taxableIncome * 0.01; // 1%
+      surcharge = taxableIncome * MLS_THRESHOLDS.tier1Rate;
     }
   }
 
@@ -44,8 +46,12 @@ export function calculateMedicareLevy(
 export function calculateLITO(taxableIncome: number): number {
   if (taxableIncome <= 37500) {
     return 700;
-  } else if (taxableIncome < 66833) {
+  } else if (taxableIncome <= 45000) {
+    // Phase-out tier 1: reduces by 5 cents per $1 above $37,500
     return Math.max(0, 700 - (taxableIncome - 37500) * 0.05);
+  } else if (taxableIncome <= 66667) {
+    // Phase-out tier 2: reduces by 1.5 cents per $1 above $45,000
+    return Math.max(0, 325 - (taxableIncome - 45000) * 0.015);
   }
   return 0;
 }
