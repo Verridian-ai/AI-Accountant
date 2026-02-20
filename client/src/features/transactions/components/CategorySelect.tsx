@@ -115,9 +115,8 @@ export function CategorySelect({
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        role="combobox"
         aria-label={ariaLabel}
-        aria-expanded={open ? 'true' : 'false'}
+        aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls="category-listbox"
         onClick={() => setOpen(!open)}
@@ -152,7 +151,7 @@ export function CategorySelect({
           {includeAll && (
             <li
               role="option"
-              aria-selected={value === 'All' ? 'true' : 'false'}
+              aria-selected={value === 'All'}
               tabIndex={-1}
               className={cn(
                 'px-4 py-2.5 text-xs font-bold cursor-pointer transition-colors',
@@ -179,8 +178,11 @@ export function CategorySelect({
             const items = CATEGORY_NAMES_BY_TYPE[group];
             if (!items || items.length === 0) return null;
             return (
-              <li key={group} role="group">
-                <div className="px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 bg-black/30 sticky top-0">
+              <li key={group} role="group" aria-labelledby={`category-group-${group}`}>
+                <div
+                  id={`category-group-${group}`}
+                  className="px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 bg-black/30 sticky top-0"
+                >
                   {GROUP_LABELS[group]}
                 </div>
                 {items.map((cat) => {
@@ -190,7 +192,7 @@ export function CategorySelect({
                     <div
                       key={cat}
                       role="option"
-                      aria-selected={value === cat ? 'true' : 'false'}
+                      aria-selected={value === cat}
                       tabIndex={-1}
                       className={cn(
                         'px-4 py-2 text-xs font-bold cursor-pointer transition-colors flex items-center gap-2',
