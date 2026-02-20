@@ -52,7 +52,10 @@ statementRoutes.post('/upload', async (c) => {
     // Validate file size
     if (file.size > MAX_UPLOAD_SIZE_BYTES) {
       return c.json(
-        { error: `File too large. Maximum size is ${MAX_UPLOAD_SIZE_BYTES / 1024 / 1024}MB.`, code: 'FILE_TOO_LARGE' },
+        {
+          error: `File too large. Maximum size is ${MAX_UPLOAD_SIZE_BYTES / 1024 / 1024}MB.`,
+          code: 'FILE_TOO_LARGE',
+        },
         400,
       );
     }
@@ -61,7 +64,10 @@ statementRoutes.post('/upload', async (c) => {
     const ext = (file.name.match(/\.[^.]+$/)?.[0] ?? '').toLowerCase();
     if (!ALLOWED_EXTENSIONS.has(ext)) {
       return c.json(
-        { error: `Unsupported file type "${ext}". Accepted: ${[...ALLOWED_EXTENSIONS].join(', ')}`, code: 'INVALID_FILE_TYPE' },
+        {
+          error: `Unsupported file type "${ext}". Accepted: ${[...ALLOWED_EXTENSIONS].join(', ')}`,
+          code: 'INVALID_FILE_TYPE',
+        },
         400,
       );
     }

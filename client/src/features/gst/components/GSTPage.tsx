@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { getAuthHeaders, BASE_URL } from '@/api';
+import { getAuthHeaders, BASE_URL, gstApi } from '@/api';
 import {
   Receipt,
   ShieldCheck,
@@ -14,7 +14,8 @@ import {
   Briefcase,
   Wallet,
 } from 'lucide-react';
-import { Sparkline, CHART_COLORS } from '@/components/charts';
+import { formatCurrency } from '@/lib/format';
+import type { GSTSummaryData } from '@/features/gst/types';
 import { GSTSummary } from './GSTSummary';
 import { GSTReviewQueue } from './GSTReviewQueue';
 import { InputTaxCredits } from './InputTaxCredits';
@@ -67,6 +68,10 @@ export function GSTPage() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [businessOnly, setBusinessOnly] = useState(true);
 
+  // GST summary for summary cards
+  const [gstData, setGstData] = useState<GSTSummaryData | null>(null);
+  const [gstDataLoading, setGstDataLoading] = useState(false);
+
   // enrichment
   const [enrichmentStats, setEnrichmentStats] = useState<EnrichmentStats | null>(null);
   const [enrichmentLoading, setEnrichmentLoading] = useState(false);
@@ -77,6 +82,18 @@ export function GSTPage() {
   const [merchantsLoading, setMerchantsLoading] = useState(false);
 
   // ---------- data loaders ----------
+
+  const loadGstData = useCallback(async () => {
+    setGstDataLoading(true);
+    try {
+      const result: GSTSummaryData = await gstApi.fetchSummary(period);
+      setGstData(result);
+    } catch {
+      // GST summary load failed — cards will show dashes
+    } finally {
+      setGstDataLoading(false);
+    }
+  }, [period]);
 
   const loadEnrichmentStats = useCallback(async () => {
     setEnrichmentLoading(true);
@@ -127,6 +144,10 @@ export function GSTPage() {
       setMerchantsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    loadGstData();
+  }, [loadGstData]);
 
   useEffect(() => {
     loadEnrichmentStats();
@@ -236,69 +257,58 @@ export function GSTPage() {
         </div>
       </div>
 
-      {/* ---- GST Category Summary Cards with Sparklines ---- */}
+      {/* ---- GST Category Summary Cards ---- */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4 flex items-center justify-between">
-          <div>
-            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
-              GST Collected
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4">
+          <p className="text-[9px] font-black text-muted uppercase tracking-widest">
+            GST Collected (1A)
+          </p>
+          {gstDataLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-cba-gold mt-1" />
+          ) : (
+            <p className="text-lg font-black text-cba-gold tabular-nums">
+              {gstData ? formatCurrency(gstData.gstCollected) : '\u2014'}
             </p>
-            <p className="text-lg font-black text-cba-gold tabular-nums">10%</p>
-          </div>
-          <Sparkline
-            data={[820, 950, 870, 1100, 1050, 1200]}
-            width={80}
-            height={24}
-            color={CHART_COLORS.primary}
-            showArea
-            trend="up"
-          />
+          )}
         </div>
-        <div className="neu-raised rounded-2xl border border-border/50 p-4 flex items-center justify-between">
-          <div>
-            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
-              GST Free
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4">
+          <p className="text-[9px] font-black text-muted uppercase tracking-widest">
+            GST Credits (1B)
+          </p>
+          {gstDataLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-blue-400 mt-1" />
+          ) : (
+            <p className="text-lg font-black text-blue-400 tabular-nums">
+              {gstData ? formatCurrency(gstData.gstCredits) : '\u2014'}
             </p>
-            <p className="text-lg font-black text-primary tabular-nums">0%</p>
-          </div>
-          <Sparkline
-            data={[300, 280, 350, 310, 290, 320]}
-            width={80}
-            height={24}
-            color={CHART_COLORS.axis}
-            trend="flat"
-          />
+          )}
         </div>
-        <div className="neu-raised rounded-2xl border border-border/50 p-4 flex items-center justify-between">
-          <div>
-            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
-              Input Taxed
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4">
+          <p className="text-[9px] font-black text-muted uppercase tracking-widest">Net GST</p>
+          {gstDataLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-primary mt-1" />
+          ) : (
+            <p className="text-lg font-black text-primary tabular-nums">
+              {gstData ? formatCurrency(gstData.netGST) : '\u2014'}
             </p>
-            <p className="text-lg font-black text-primary tabular-nums">N/A</p>
-          </div>
-          <Sparkline
-            data={[50, 60, 45, 70, 55, 65]}
-            width={80}
-            height={24}
-            color={CHART_COLORS.primaryDark}
-            trend="flat"
-          />
+          )}
         </div>
-        <div className="neu-raised rounded-2xl border border-border/50 p-4 flex items-center justify-between">
-          <div>
-            <p className="text-[9px] font-black text-muted uppercase tracking-widest">
-              BAS Ready
-            </p>
-            <p className="text-lg font-black text-emerald-400 tabular-nums">Q1</p>
-          </div>
-          <Sparkline
-            data={[1, 2, 3, 3, 4, 4]}
-            width={80}
-            height={24}
-            color={CHART_COLORS.revenue}
-            showArea
-            trend="up"
-          />
+        <div className="neu-raised rounded-2xl border border-border/50 p-3 sm:p-4">
+          <p className="text-[9px] font-black text-muted uppercase tracking-widest">
+            Classification
+          </p>
+          {gstDataLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-emerald-400 mt-1" />
+          ) : gstData ? (
+            <div>
+              <p className="text-lg font-black text-emerald-400 tabular-nums">
+                {gstData.transactionsClassified}
+              </p>
+              <p className="text-[10px] text-muted">{gstData.transactionsNeedReview} need review</p>
+            </div>
+          ) : (
+            <p className="text-lg font-black text-secondary tabular-nums">{'\u2014'}</p>
+          )}
         </div>
       </div>
 

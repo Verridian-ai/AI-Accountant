@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Pencil, Save, Plus, X, Settings2, Loader2 } from 'lucide-react';
+import { Pencil, Save, Plus, X, Settings2, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '../../../../lib/utils';
 import { useDashboard } from '../../hooks/useDashboard';
 import type { WidgetConfig } from '../../hooks/useDashboard';
@@ -13,7 +13,9 @@ async function fetchWidgetData(url: string, headers: HeadersInit): Promise<unkno
   const res = await fetch(url, { headers });
   const data = (await res.json()) as unknown;
   const obj = data as Record<string, unknown>;
-  return Array.isArray(data) ? (data as unknown[]) : ((obj.transactions ?? obj.data ?? []) as unknown[]);
+  return Array.isArray(data)
+    ? (data as unknown[])
+    : ((obj.transactions ?? obj.data ?? []) as unknown[]);
 }
 
 export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
@@ -33,6 +35,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
   const [configWidget, setConfigWidget] = useState<WidgetConfig | null>(null);
   const [saving, setSaving] = useState(false);
   const [widgetData, setWidgetData] = useState<Record<string, unknown[]>>({});
+  const [widgetErrors, setWidgetErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     widgets.forEach((w) => {
@@ -43,7 +46,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
         fetchWidgetData(url, getAuthHeaders())
           .then((items) => setWidgetData((prev) => ({ ...prev, [w.id]: items })))
           .catch(() => {
-            // Silently fail - widget will show demo data
+            setWidgetErrors((prev) => ({ ...prev, [w.id]: true }));
           });
       }
     });
@@ -162,6 +165,7 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
               className={cn(
                 'neu-raised rounded-2xl overflow-hidden border border-border/50 transition-all duration-200',
                 editMode && 'hover:border-cba-gold/30',
+                widgetErrors[widget.id] && 'border-amber-500/30',
               )}
               style={{
                 gridColumn: `span ${Math.min(widget.position.width, 12)}`,
@@ -189,7 +193,15 @@ export function CustomDashboard({ dashboardId }: CustomDashboardProps) {
                   </div>
                 </div>
               )}
-              <div className="p-3">{renderWidget(widget, widgetData)}</div>
+              <div className="p-3">
+                {widgetErrors[widget.id] && (
+                  <div className="flex items-center gap-1.5 mb-2 text-xs text-amber-400">
+                    <AlertTriangle className="w-3 h-3 shrink-0" />
+                    <span>Data unavailable — showing defaults</span>
+                  </div>
+                )}
+                {renderWidget(widget, widgetData)}
+              </div>
             </div>
           ))}
         </div>

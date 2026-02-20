@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/format';
 import { Loader2, TrendingUp, TrendingDown, Download, FileText, ArrowRight } from 'lucide-react';
-import { gstApi } from '@/api';
+import { gstApi, API_URL } from '@/api';
 import type { GSTSummaryData } from '@/features/gst/types';
 
 interface GSTSummaryProps {
@@ -98,54 +98,62 @@ export function GSTSummary({ period = 'current', businessOnly: _businessOnly }: 
         </Card>
       </div>
 
-      {/* Breakdown */}
-      <Card className="neu-raised rounded-xl">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">GST Breakdown</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between items-center">
-              <span className="text-secondary">Taxable Sales</span>
-              <span className="font-medium">{formatCurrency(data.breakdown.taxable.sales)}</span>
+      {/* Breakdown — guarded against missing breakdown field */}
+      {data.breakdown && (
+        <Card className="neu-raised rounded-xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">GST Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-secondary">Taxable Sales</span>
+                <span className="font-medium">
+                  {formatCurrency(data.breakdown.taxable?.sales ?? 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-secondary">Taxable Purchases</span>
+                <span className="font-medium">
+                  {formatCurrency(data.breakdown.taxable?.purchases ?? 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-secondary">GST-Free Sales</span>
+                <span className="font-medium">
+                  {formatCurrency(data.breakdown.gstFree?.sales ?? 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-secondary">GST-Free Purchases</span>
+                <span className="font-medium">
+                  {formatCurrency(data.breakdown.gstFree?.purchases ?? 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-secondary">Input Taxed</span>
+                <span className="font-medium">
+                  {formatCurrency(data.breakdown.inputTaxed ?? 0)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-secondary">Capital Acquisitions</span>
+                <span className="font-medium">{formatCurrency(data.breakdown.capital ?? 0)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-secondary">Private/Non-Deductible</span>
+                <span className="font-medium">{formatCurrency(data.breakdown.private ?? 0)}</span>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-secondary">Taxable Purchases</span>
-              <span className="font-medium">
-                {formatCurrency(data.breakdown.taxable.purchases)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-secondary">GST-Free Sales</span>
-              <span className="font-medium">{formatCurrency(data.breakdown.gstFree.sales)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-secondary">GST-Free Purchases</span>
-              <span className="font-medium">
-                {formatCurrency(data.breakdown.gstFree.purchases)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-secondary">Input Taxed</span>
-              <span className="font-medium">{formatCurrency(data.breakdown.inputTaxed)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-secondary">Capital Acquisitions</span>
-              <span className="font-medium">{formatCurrency(data.breakdown.capital)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-secondary">Private/Non-Deductible</span>
-              <span className="font-medium">{formatCurrency(data.breakdown.private)}</span>
-            </div>
-          </div>
 
-          <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted">
-            <span>
-              {data.transactionsClassified} classified | {data.transactionsNeedReview} need review
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted">
+              <span>
+                {data.transactionsClassified} classified | {data.transactionsNeedReview} need review
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2">
@@ -153,7 +161,13 @@ export function GSTSummary({ period = 'current', businessOnly: _businessOnly }: 
           <ArrowRight className="w-4 h-4 mr-1" />
           View Details
         </Button>
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            window.open(`${API_URL}/transactions/export?format=csv`, '_blank');
+          }}
+        >
           <Download className="w-4 h-4 mr-1" />
           Export CSV
         </Button>
