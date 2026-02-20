@@ -107,19 +107,54 @@ export const intelligenceApi: StubApi = {
   saveQuery: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const knowledgeApi: StubApi = {
+// knowledgeApi — wired to /api/cognee/* where server routes exist.
+// Confirmed routes: POST /api/cognee/memify/trigger, GET /api/cognee/graph/:userId
+// datapoints, ontologies, feedback have no registered server routes yet.
+export const knowledgeApi = {
+  // TODO: no server endpoint yet — /api/knowledge/datapoints GET not registered
   listDataPoints: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  // TODO: no server endpoint yet — /api/knowledge/datapoints POST not registered
   createDataPoint: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — /api/knowledge/datapoints/:id/deactivate not registered
   deactivateDataPoint: async (..._args: unknown[]) =>
     Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — /api/knowledge/datapoints/:id/activate not registered
   activateDataPoint: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — /api/knowledge/feedback/stats not registered
   feedbackStats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  triggerMemify: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  graphStats: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  getGraph: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // POST /api/cognee/memify/trigger
+  triggerMemify: async (datasets: string[]): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/cognee/memify/trigger`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ datasets }),
+    });
+    if (!res.ok) throw new Error(`triggerMemify failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  // GET /api/cognee/graph/:userId — returns graph metadata and dataset list
+  graphStats: async (userId: string): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/cognee/graph/${userId}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error(`graphStats failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  // GET /api/cognee/graph/:userId — same endpoint as graphStats
+  getGraph: async (userId: string): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/cognee/graph/${userId}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error(`getGraph failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  // TODO: no server endpoint yet — /api/knowledge/feedback POST not registered
   submitFeedback: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — /api/knowledge/ontologies GET not registered
   listOntologies: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
+  // TODO: no server endpoint yet — /api/knowledge/ontologies POST not registered
   createOntology: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — /api/knowledge/ontologies/:id/apply not registered
   applyOntology: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
@@ -182,13 +217,47 @@ export const reconApi = {
   createRule: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
-export const budgetsApi: StubApi = {
+// budgetsApi — wired to /api/analytics/budgets where server routes exist.
+// Confirmed routes: GET /api/analytics/budgets, POST /api/analytics/budgets
+// get/:id, addLine, update, getVariance, getVarianceSummary have no registered routes.
+export const budgetsApi = {
+  // GET /api/analytics/budgets
+  list: async (params?: { status?: string }): Promise<Record<string, unknown>> => {
+    const qp = new URLSearchParams();
+    if (params?.status) qp.set('status', params.status);
+    const res = await fetch(`${API_URL}/analytics/budgets?${qp}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error(`budgets list failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  // POST /api/analytics/budgets
+  create: async (body: {
+    name: string;
+    budgetType: string;
+    periodStart: string;
+    periodEnd: string;
+    accountId?: string;
+    autoGenerate?: boolean;
+    lookbackMonths?: number;
+  }): Promise<Record<string, unknown>> => {
+    const res = await fetch(`${API_URL}/analytics/budgets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`budgets create failed: ${res.status}`);
+    return res.json() as Promise<Record<string, unknown>>;
+  },
+  // TODO: no server endpoint yet — GET /api/analytics/budgets/:id not registered
   get: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — POST /api/analytics/budgets/:id/lines not registered
   addLine: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — PATCH /api/analytics/budgets/:id not registered
   update: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
-  list: async (..._args: unknown[]) => Promise.resolve([] as Record<string, unknown>[]),
-  create: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — GET /api/analytics/budgets/:id/variance not registered
   getVariance: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
+  // TODO: no server endpoint yet — GET /api/analytics/budgets/:id/variance-summary not registered
   getVarianceSummary: async (..._args: unknown[]) => Promise.resolve({} as Record<string, unknown>),
 };
 
@@ -208,7 +277,10 @@ export const loanApi: StubApi = {
 
 export const anomalyApi = {
   // GET /api/analytics/anomalies
-  list: async (params?: { severity?: string; status?: string }): Promise<Record<string, unknown>[]> => {
+  list: async (params?: {
+    severity?: string;
+    status?: string;
+  }): Promise<Record<string, unknown>[]> => {
     const qp = new URLSearchParams();
     if (params?.severity) qp.set('severity', params.severity);
     if (params?.status) qp.set('status', params.status);
@@ -216,8 +288,10 @@ export const anomalyApi = {
       headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error(`anomaly list failed: ${res.status}`);
-    const json = (await res.json()) as { data?: Record<string, unknown>[] } | Record<string, unknown>[];
-    return (Array.isArray(json) ? json : ((json as { data?: Record<string, unknown>[] }).data ?? []));
+    const json = (await res.json()) as
+      | { data?: Record<string, unknown>[] }
+      | Record<string, unknown>[];
+    return Array.isArray(json) ? json : ((json as { data?: Record<string, unknown>[] }).data ?? []);
   },
   // POST /api/analytics/anomalies/:id/dismiss
   dismiss: async (alertId: string, reason?: string): Promise<Record<string, unknown>> => {
@@ -366,9 +440,19 @@ export const fetchSystemMetrics = async (..._args: unknown[]): Promise<Record<st
 // TODO: no server route for Cognee search test
 export const testCogneeSearch = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);
-// TODO: no server route for Cognee dataset reindex
-export const reindexCogneeDataset = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
-  Promise.resolve({} as Record<string, unknown>);
+// POST /api/cognee/reindex — triggers re-indexing of datasets for a user
+export const reindexCogneeDataset = async (
+  userId: string,
+  datasets?: string[],
+): Promise<Record<string, unknown>> => {
+  const res = await fetch(`${API_URL}/cognee/reindex`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ userId, datasets }),
+  });
+  if (!res.ok) throw new Error(`reindexCogneeDataset failed: ${res.status}`);
+  return res.json() as Promise<Record<string, unknown>>;
+};
 // TODO: no server route for CDR crawl trigger
 export const triggerCdrCrawl = async (..._args: unknown[]): Promise<Record<string, unknown>> =>
   Promise.resolve({} as Record<string, unknown>);

@@ -79,9 +79,7 @@ export class StatementService {
     const completedStmts = stmts
       .filter(
         (s) =>
-          s.parsingStatus === 'COMPLETED' &&
-          s.periodStartDate != null &&
-          s.periodEndDate != null,
+          s.parsingStatus === 'COMPLETED' && s.periodStartDate != null && s.periodEndDate != null,
       )
       .sort((a, b) => {
         const aStart = a.periodStartDate ?? '';
