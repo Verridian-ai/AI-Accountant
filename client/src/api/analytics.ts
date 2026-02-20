@@ -135,16 +135,12 @@ export const analyticsApi = {
     return res.json();
   },
 
-  fetchBillAlerts: async (
-    ..._args: unknown[]
-  ): Promise<Record<string, unknown>[]> => Promise.resolve([]),
-  projectRevenue: async (
-    ..._args: unknown[]
-  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
-  projectExpenses: async (
-    ..._args: unknown[]
-  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
-  calculateWealthProjection: async (
-    ..._args: unknown[]
-  ): Promise<Record<string, unknown>> => Promise.resolve({} as Record<string, unknown>),
+  fetchBillAlerts: async (..._args: unknown[]): Promise<Record<string, unknown>[]> =>
+    Promise.resolve([]),
+  projectRevenue: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+    Promise.resolve({} as Record<string, unknown>),
+  projectExpenses: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+    Promise.resolve({} as Record<string, unknown>),
+  calculateWealthProjection: async (..._args: unknown[]): Promise<Record<string, unknown>> =>
+    Promise.resolve({} as Record<string, unknown>),
 };
